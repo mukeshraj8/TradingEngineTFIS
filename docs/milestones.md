@@ -1,25 +1,23 @@
-﻿# Milestones
+# Milestones
 
-## Phase 0
+## Completed
 
-- create clean repository skeleton
-- define package boundaries
-- document architecture and rule model
-- add validation and import smoke tests
+- clean project skeleton
+- domain model
+- safe formula engine
+- S23 strategy evaluation
+- broker-agnostic foundation
+- architecture boundary tests
+- market structure layer
+- order planner
+- risk policy
+- offline pipeline
 
-## Phase 1
+## Next
 
-- define normalized schema for workbook export
-- add workbook importer scaffolding
-- add domain models for rules and formulas
-
-## Phase 2
-
-- implement config-driven rule loading
-- add formula evaluation contracts
-- add first offline strategy execution path
-
-## Phase 3
-
-- add interface-based adapters for future integrations
-- add richer rule validation and error reporting
+- Excel importer
+- more strategy configs
+- historical backtest runner
+- paper broker integration
+- real broker adapters later
+- optional current TradingEngine scoring integration later

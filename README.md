@@ -39,6 +39,20 @@ The intended workflow is:
 - Paper/mock broker must be used for tests.
 - Existing TradingEngine scoring model may be integrated later only through clean interfaces, not copied directly into TFIS core.
 
+## Current Status
+
+Current state of the project:
+- clean project skeleton is in place
+- typed domain model is implemented
+- safe formula engine is implemented
+- S23 strategy evaluation is working offline
+- broker-agnostic foundation is in place
+- architecture boundary tests are active
+- market structure layer is implemented
+- order planner is implemented
+- risk policy is implemented
+- offline strategy pipeline is implemented
+
 ## Development
 
 Requirements:

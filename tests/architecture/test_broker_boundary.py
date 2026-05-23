@@ -20,6 +20,14 @@ FORBIDDEN_TERMS = (
     "upstox",
     "PaperBroker",
     "tfis.broker.paper_broker",
+    "place_order(",
+    "get_positions(",
+    "access_token",
+    "client_id",
+    "fyersModel",
+    "KiteConnect",
+    "SmartConnect",
+    "Upstox",
 )
 
 
