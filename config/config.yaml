@@ -1,0 +1,12 @@
+﻿project:
+  name: TradingEngineTFIS
+  mode: development
+  description: Clean TFIS rule-engine project skeleton
+
+runtime:
+  strategy_source: normalized_yaml
+  rule_format: tfis_v1
+
+paths:
+  normalized_rules: data/normalized/rules.yaml
+  normalized_formulas: data/normalized/formulas.yaml
