@@ -1,0 +1,5 @@
+base_strategy: config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D
+overrides:
+  strike_buffer_pct: [3.0, 5.0, 7.0]
+  target_pct: [40.0, 50.0, 60.0]
+  sl_entry_pct: [40.0, 60.0]

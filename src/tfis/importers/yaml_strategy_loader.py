@@ -24,8 +24,46 @@ def _parse_time(value: str) -> time:
     return time.fromisoformat(value.strip())
 
 
+def _load_strategy_folder(path: Path) -> dict:
+    strategy_path = path / "strategy.yaml"
+    formulas_path = path / "formulas.yaml"
+    parameters_path = path / "parameters.yaml"
+
+    strategy_data = _load_yaml(strategy_path)
+    formulas_data = _load_yaml(formulas_path)
+    parameters_data = _load_yaml(parameters_path)
+    if not isinstance(parameters_data, dict):
+        raise ValueError(f"parameters.yaml must contain a mapping: {parameters_path}")
+
+    merged = dict(strategy_data)
+    merged.update(formulas_data)
+    merged["parameters"] = {
+        str(key): float(value) for key, value in parameters_data.items()
+    }
+    return merged
+
+
+def _load_strategy_source(path: str | Path) -> dict:
+    source_path = Path(path)
+    if not source_path.exists():
+        legacy_candidate = source_path.parent / "legacy" / source_path.name
+        if legacy_candidate.exists():
+            source_path = legacy_candidate
+
+    if source_path.is_dir():
+        return _load_strategy_folder(source_path)
+
+    if source_path.name == "strategy.yaml":
+        formulas_path = source_path.with_name("formulas.yaml")
+        parameters_path = source_path.with_name("parameters.yaml")
+        if formulas_path.exists() and parameters_path.exists():
+            return _load_strategy_folder(source_path.parent)
+
+    return _load_yaml(source_path)
+
+
 def load_strategy_rule(path: str | Path) -> StrategyRule:
-    data = _load_yaml(path)
+    data = _load_strategy_source(path)
 
     option_type_raw = data.get("option_type")
     option_type = OptionType(option_type_raw) if option_type_raw else None
@@ -50,4 +88,5 @@ def load_strategy_rule(path: str | Path) -> StrategyRule:
         target_formula=data["target_formula"],
         stoploss_formula=data["stoploss_formula"],
         carry_forward_allowed=bool(data["carry_forward_allowed"]),
+        parameters={str(key): float(value) for key, value in (data.get("parameters") or {}).items()},
     )

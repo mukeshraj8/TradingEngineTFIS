@@ -25,4 +25,8 @@ def test_validate_strategy_configs_script_passes_for_current_configs() -> None:
     )
 
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "PASS S23_NIFTY_OP_SELL_WK_DIFF_2D_3D.yaml" in result.stdout
+    assert "LEGACY PASS config\\strategies\\legacy\\S23_NIFTY_OP_SELL_WK_DIFF_2D_3D.yaml" in result.stdout
+    assert (
+        "PASS config\\strategies\\options_sell\\nifty\\S23_NIFTY_OP_SELL_WK_DIFF_2D_3D\\strategy.yaml"
+        in result.stdout
+    )

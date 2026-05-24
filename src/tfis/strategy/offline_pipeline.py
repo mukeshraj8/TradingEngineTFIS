@@ -30,7 +30,7 @@ class OfflineStrategyPipeline:
         rule: StrategyRule,
         *,
         market_levels: MarketLevels,
-        runtime_values: dict[str, float | int] | None = None,
+        runtime_values: dict[str, object] | None = None,
         lot_size: int,
         trades_taken_today: int,
     ) -> OfflinePipelineResult:

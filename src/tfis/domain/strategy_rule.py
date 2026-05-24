@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import time
+from math import isfinite
 
 from .enums import MonthlyStatus, OptionType, Segment
 
@@ -15,6 +16,20 @@ def _require_text(name: str, value: str) -> str:
 def _require_non_negative_int(name: str, value: int) -> None:
     if value < 0:
         raise ValueError(f"{name} must be non-negative")
+
+
+def _normalize_parameters(parameters: dict[str, float] | None) -> dict[str, float]:
+    if parameters is None:
+        return {}
+    normalized: dict[str, float] = {}
+    for key, value in parameters.items():
+        if not isinstance(key, str) or not key.strip():
+            raise ValueError("parameter names must be non-empty strings")
+        numeric_value = float(value)
+        if not isfinite(numeric_value):
+            raise ValueError(f"parameter {key!r} must be finite")
+        normalized[key.strip()] = numeric_value
+    return normalized
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +51,7 @@ class StrategyRule:
     target_formula: str
     stoploss_formula: str
     carry_forward_allowed: bool
+    parameters: dict[str, float] | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "strategy_code", _require_text("strategy_code", self.strategy_code))
@@ -65,6 +81,7 @@ class StrategyRule:
             object.__setattr__(self, name, _require_text(name, getattr(self, name)))
 
         _require_non_negative_int("minimum_oi", self.minimum_oi)
+        object.__setattr__(self, "parameters", _normalize_parameters(self.parameters))
 
         if self.segment in {Segment.OPTIONS_BUY, Segment.OPTIONS_SELL} and self.option_type is None:
             raise ValueError("option_type is required for option segments")

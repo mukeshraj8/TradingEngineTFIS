@@ -17,43 +17,50 @@ class StrategyEvaluator:
         rule: StrategyRule,
         *,
         market_levels: MarketLevels,
-        runtime_values: dict[str, float | int] | None = None,
+        runtime_values: dict[str, object] | None = None,
     ) -> TradePlan:
-        inputs = runtime_values or {}
+        inputs = dict(runtime_values or {})
         start_strike = self._formula_engine.evaluate(
             rule.start_strike_formula,
             market_levels=market_levels,
             runtime_values=inputs,
+            parameters=rule.parameters,
         )
         end_strike = self._formula_engine.evaluate(
             rule.end_strike_formula,
             market_levels=market_levels,
             runtime_values=inputs,
+            parameters=rule.parameters,
         )
         ideal_premium = self._formula_engine.evaluate(
             rule.ideal_premium_formula,
             market_levels=market_levels,
             runtime_values=inputs,
+            parameters=rule.parameters,
         )
         minimum_premium = self._formula_engine.evaluate(
             rule.minimum_premium_formula,
             market_levels=market_levels,
             runtime_values=inputs,
+            parameters=rule.parameters,
         )
         entry_price = self._formula_engine.evaluate(
             rule.entry_formula,
             market_levels=market_levels,
             runtime_values=inputs,
+            parameters=rule.parameters,
         )
         target_price = self._formula_engine.evaluate(
             rule.target_formula,
             market_levels=market_levels,
             runtime_values=inputs,
+            parameters=rule.parameters,
         )
         stoploss_price = self._formula_engine.evaluate(
             rule.stoploss_formula,
             market_levels=market_levels,
             runtime_values=inputs,
+            parameters=rule.parameters,
         )
 
         return TradePlan(
