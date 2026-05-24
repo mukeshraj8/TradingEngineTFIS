@@ -75,7 +75,7 @@ def test_run_backtest_writes_markdown_report_and_keeps_json_valid(
     assert "slippage_points_per_side: `1.00`" in markdown
     assert "brokerage_points_per_trade: `0.50`" in markdown
     assert "other_cost_points_per_trade: `0.50`" in markdown
-    assert "| Timestamp | Entry Price | Exit Price | Exit Reason | Gross PnL | Costs | Net PnL | Net Rupees | Cumulative Net Rupees | Drawdown Rupees | MFE | MAE | Bars Held |" in markdown
+    assert "| Timestamp | Monthly Status | Selected Branches | Entry Price | Exit Price | Exit Reason | Gross PnL | Costs | Net PnL | Net Rupees | Cumulative Net Rupees | Drawdown Rupees | MFE | MAE | Bars Held |" in markdown
 
     report = json.loads(json_output.read_text(encoding="utf-8"))
     assert report["mode"] == "historical"

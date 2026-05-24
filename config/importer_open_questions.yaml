@@ -1,0 +1,26 @@
+open_questions:
+  - id: s23_put_recalc_strike_ll_vs_high
+    workbook_cells:
+      - AB6 OS!M179
+      - AB6 OS!O179
+      - AB6 OS!M180
+      - AB6 OS!O180
+    description: >
+      S23 Bull Put and Bear Put recalculated strike rows use MAX(...) wording
+      while the displayed intraday label says 09:29:59 AM LL. The workbook
+      wording does not make it fully clear whether the recalculated strike input
+      should use the current-day low literally or the current-day high implied
+      by the strike direction.
+    current_behavior: >
+      The diagnostic recalculation layer currently uses recalculation spot HIGH
+      for put-branch strike recalculation. This is now treated as the
+      confirmed workbook correction rather than an open ambiguity.
+    alternative_interpretation: >
+      Follow the workbook LL wording literally and use the recalculation spot
+      LOW inside the MAX(...) strike formulas for Bull Put and Bear Put.
+    resolution: >
+      Confirmed correction: use recalculation spot HIGH for the Bull Put and
+      Bear Put recalculated strike rows. The LL wording in AB6 OS M179/O179
+      and M180/O180 is treated as a workbook copy-paste issue, not as the
+      intended business rule.
+    status: RESOLVED

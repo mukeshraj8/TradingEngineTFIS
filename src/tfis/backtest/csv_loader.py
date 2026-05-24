@@ -56,6 +56,10 @@ def load_intraday_option_bars_csv(path: str | Path) -> list[OhlcBar]:
     return load_daily_bars_csv(path)
 
 
+def load_intraday_spot_bars_csv(path: str | Path) -> list[OhlcBar]:
+    return load_daily_bars_csv(path)
+
+
 def load_option_levels_csv(path: str | Path) -> dict[str, float]:
     snapshots = load_option_levels_series_csv(path)
     return snapshots[-1].opt_levels

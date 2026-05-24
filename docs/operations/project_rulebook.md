@@ -61,3 +61,29 @@
 - Existing TradingEngine scoring can only enter TFIS through a clean interface.
 - No direct code copying from the old engine into TFIS core.
 - Integrations should be optional filters or confirmations, not hidden hard dependencies.
+
+## Operational Coordination Rules
+
+- After every meaningful task, Codex must update:
+  - `docs/operations/current_state.md` if implemented behavior, architecture,
+    tests, or known limitations changed.
+  - `docs/operations/next_steps.md` if task ordering, blockers, or next priority
+    changed.
+  - `docs/operations/milestones.md` for historical progress.
+- If a document does not need an update for a given task, that must be stated
+  explicitly in the task close-out.
+- Operational coordination docs are part of the implementation discipline, not
+  optional cleanup.
+
+## Standard Codex Task Output Contract
+
+Every meaningful task close-out should report:
+
+- files changed
+- behavior changed
+- tests added or updated
+- validation output
+- current_state updated: yes or no
+- next_steps updated: yes or no
+- remaining open questions
+- recommended next action

@@ -174,6 +174,71 @@ Branch selection:
 - in non-strict mode it skips invalid folder inputs and records warning metadata
 - in strict mode it raises immediately on invalid or incomplete strategy folders
 
+Optional monthly-status-driven branch selection:
+
+- the historical backtest runner can now opt into monthly-status-driven branch selection
+- this mode requires:
+  - `--strategy-root`
+  - `--use-monthly-status-engine`
+  - `--monthly-csv`
+  - `--weekly-csv`
+- the default backtest path is unchanged:
+  - `--strategy-path` still runs one explicitly chosen folder strategy
+- monthly-status mode is additive and audit-focused:
+  - it classifies monthly status for each historical step
+  - it selects eligible folder branches through `StrategyBranchSelector`
+  - it reports monthly status, trigger, reversal dominance, selected branches,
+    and decision candidates in the backtest output
+- if monthly or weekly reference data is insufficient for a step, that step is skipped
+  with a recorded reason instead of forcing a guessed status
+
+Optional S23 missed-entry recalculation:
+
+- historical backtest can now opt into S23 ORPT missed-entry detection and recalculation
+- this mode is enabled with:
+  - `--enable-s23-recalculation`
+- it is available only with `--historical`
+- default behavior remains unchanged when the flag is absent
+- when enabled:
+  - the runner checks the ORPT snapshot at or before `09:24:59`
+  - it applies the Excel missed-entry rule `option_low < entry_price`
+  - if entry is missed, it checks the recalculation snapshot at or before `09:29:59`
+  - it builds an effective recalculated trade plan for lifecycle simulation only
+  - it records base-plan and recalculated-plan audit data in the report
+- if required ORPT or recalculation snapshots are missing:
+  - the candidate is not crashed
+  - the base trade plan is kept
+  - a clear warning is recorded in the recalculation audit
+- if a recalculated put branch touches an unresolved workbook ambiguity:
+  - the report includes the linked open-question metadata from
+    `config/importer_open_questions.yaml`
+- spot intraday sourcing:
+  - if `--spot-intraday-csv` is provided, ORPT and recalculation spot high/low come from that intraday spot/index series
+  - if it is not provided, spot high/low fall back to current-day market-level highs and lows
+  - the report records which source was used so the path remains audit-friendly rather than implicit
+
+Optional option-chain contract selection:
+
+- historical backtest can now opt into a first-pass option-chain contract selection layer
+- this mode is enabled with:
+  - `--option-chain-csv`
+  - `--enable-option-chain-selection`
+- it is available only with `--historical`
+- default behavior remains unchanged when the flag is absent
+- when enabled:
+  - the runner keeps the existing formula-derived strike range and premium values unchanged
+  - it filters chain rows by option type, strike range, minimum OI, and minimum premium
+  - it prefers the contract whose `ltp` is closest to the computed `ideal_premium`
+  - tie-breakers are:
+    - smaller bid/ask spread
+    - higher OI
+    - strike nearest to the strike-range midpoint
+  - it reports the selected contract metadata and selection reason in validation audit output
+  - if no contract qualifies, the candidate is rejected cleanly instead of silently proceeding
+- current limitation:
+  - lifecycle simulation still uses the generic intraday option series
+  - selected contract metadata improves contract realism and candidate validity, but does not yet switch lifecycle bars to symbol-specific intraday prices
+
 ## CSV Backtest Input
 
 The current backtest foundation can also run from local CSV files.
@@ -197,6 +262,19 @@ Option-level CSV requires:
 - `opt_prv_2dll`
 - `opt_prv_3dhh`
 - `opt_prv_3dll`
+
+Option-chain CSV requires:
+
+- `timestamp`
+- `symbol`
+- `option_type`
+- `strike`
+- `expiry`
+- `bid`
+- `ask`
+- `ltp`
+- `oi`
+- `volume`
 
 Current example:
 
@@ -228,6 +306,30 @@ Historical replay with markdown summary output:
 python scripts/run_backtest.py --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D --historical --daily-csv tests/fixtures/backtest/s23_daily_multi.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels_multi.csv --option-intraday-csv tests/fixtures/backtest/s23_option_intraday.csv --eod-policy square_off_at_close --out tmp/S23_historical_backtest_eod_squareoff.json --markdown-out tmp/S23_historical_backtest_eod_squareoff.md
 ```
 
+Historical replay with monthly-status-driven branch selection:
+
+```powershell
+python scripts/run_backtest.py --strategy-root config/strategies/options_sell/nifty --use-monthly-status-engine --monthly-csv tests/fixtures/backtest/s23_monthly.csv --weekly-csv tests/fixtures/backtest/s23_weekly.csv --daily-csv tests/fixtures/backtest/s23_daily_multi.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels_multi.csv --option-intraday-csv tests/fixtures/backtest/s23_option_intraday.csv --historical --eod-policy square_off_at_close --out tmp/S23_historical_monthly_status_backtest.json --markdown-out tmp/S23_historical_monthly_status_backtest.md
+```
+
+Historical replay with opt-in S23 missed-entry recalculation:
+
+```powershell
+python scripts/run_backtest.py --strategy-root config/strategies/options_sell/nifty --use-monthly-status-engine --monthly-csv tests/fixtures/backtest/s23_monthly.csv --weekly-csv tests/fixtures/backtest/s23_weekly.csv --daily-csv tests/fixtures/backtest/s23_daily_multi.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels_multi.csv --option-intraday-csv tests/fixtures/backtest/s23_option_intraday.csv --historical --eod-policy square_off_at_close --enable-s23-recalculation --out tmp/S23_historical_monthly_status_recalc_backtest.json --markdown-out tmp/S23_historical_monthly_status_recalc_backtest.md
+```
+
+Historical replay with opt-in S23 recalculation plus dedicated spot intraday sourcing:
+
+```powershell
+python scripts/run_backtest.py --strategy-root config/strategies/options_sell/nifty --use-monthly-status-engine --monthly-csv tests/fixtures/backtest/s23_monthly.csv --weekly-csv tests/fixtures/backtest/s23_weekly.csv --daily-csv tests/fixtures/backtest/s23_daily_multi.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels_multi.csv --option-intraday-csv tests/fixtures/backtest/s23_option_intraday.csv --spot-intraday-csv tests/fixtures/backtest/s23_spot_intraday.csv --historical --eod-policy square_off_at_close --enable-s23-recalculation --out tmp/S23_historical_monthly_status_recalc_backtest.json --markdown-out tmp/S23_historical_monthly_status_recalc_backtest.md
+```
+
+Historical replay with opt-in S23 recalculation plus option-chain contract selection:
+
+```powershell
+python scripts/run_backtest.py --strategy-root config/strategies/options_sell/nifty --use-monthly-status-engine --monthly-csv tests/fixtures/backtest/s23_monthly.csv --weekly-csv tests/fixtures/backtest/s23_weekly.csv --daily-csv tests/fixtures/backtest/s23_daily_multi.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels_multi.csv --option-intraday-csv tests/fixtures/backtest/s23_option_intraday.csv --option-chain-csv tests/fixtures/backtest/s23_option_chain.csv --enable-option-chain-selection --historical --eod-policy square_off_at_close --enable-s23-recalculation --out tmp/S23_historical_monthly_status_recalc_chain_backtest.json --markdown-out tmp/S23_historical_monthly_status_recalc_chain_backtest.md
+```
+
 Historical replay with cost and slippage assumptions:
 
 ```powershell
@@ -240,13 +342,16 @@ Current offline modes:
 - snapshot CSV mode: one structural evaluation from local CSV inputs
 - historical replay mode: rolling candidate evaluation across chronological CSV rows
 - historical replay with intraday option CSV: rolling candidate evaluation plus first-pass lifecycle simulation
+- historical replay with opt-in S23 recalculation: the same historical path plus ORPT missed-entry detection and recalculated effective lifecycle plans for S23 branches only
+- historical replay with opt-in S23 recalculation plus spot intraday CSV: the recalculation path can use explicit spot/index ORPT and recalculation snapshots instead of market-level fallback values
+- historical replay with opt-in option-chain selection: the same historical path can now require an actual contract candidate from offline chain data before the candidate remains accepted
 
 This remains a structural backtest only:
 
 - market structure comes from offline daily OHLC
 - option reference levels come from offline CSV
 - historical mode evaluates candidates row by row, not trades from open to close
-- no option-chain simulation
+- no full option-chain execution or symbol-specific lifecycle simulation
 - only a first-pass entry/target/stoploss lifecycle simulation when intraday option CSV is provided
 - no fill simulation
 - no real P&L engine yet

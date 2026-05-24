@@ -75,8 +75,12 @@ def test_historical_runner_processes_rows_chronologically_and_skips_initial_hist
     timestamps = [item.timestamp for item in report.evaluations]
     assert timestamps == sorted(timestamps)
     assert timestamps[0].isoformat() == "2026-05-18T15:30:00"
+    assert report.strategy_root is None
+    assert report.use_monthly_status_engine is False
+    assert report.monthly_status_skips == ()
     assert report.evaluations[0].validation["strategy_config_ok"] is True
     assert report.evaluations[0].trade_outputs["entry_price"] == pytest.approx(197.95)
+    assert report.evaluations[0].monthly_status is None
     assert report.evaluations[0].lifecycle_result is None
 
 
@@ -220,6 +224,9 @@ def test_run_backtest_script_historical_mode_writes_json(tmp_path: Path) -> None
     assert len(report["evaluations"]) == 6
     assert report["metrics"]["accepted_candidates"] == 6
     assert report["evaluations"][0]["timestamp"] == "2026-05-18T15:30:00"
+    assert report["use_monthly_status_engine"] is False
+    assert report["monthly_status_skips"] == []
+    assert report["evaluations"][0]["monthly_status"] is None
 
 
 def test_run_backtest_script_historical_mode_with_lifecycle_writes_json(

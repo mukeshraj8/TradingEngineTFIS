@@ -6,8 +6,13 @@
 - strategy and workbook normalization work is established for the S23 family
 - reference materials are now indexed and reviewable through archive metadata
 - deterministic monthly-status classification is implemented for the confirmed threshold rules
+- optional monthly-status-driven branch selection is available in historical backtests
+- opt-in S23 missed-entry detection and recalculation is available in historical backtests
+- dedicated spot intraday sourcing is available for the opt-in S23 recalculation path
+- S23 put-side recalculated strike wording is resolved as a confirmed workbook correction
+- opt-in option-chain contract selection realism is available in historical backtests
 - quality snapshot:
-  - tests passing: `196`
+  - tests passing: `236`
   - `python scripts/validate_project.py`: passed
 
 ## Completed
@@ -32,25 +37,30 @@
 - monthly-status thresholds
 - monthly-status decision table
 - monthly-status engine
+- optional monthly-status-driven historical branch selection
 - monthly-status CLI report
 - monthly-status manual scenarios
+- S23 missed-entry detection foundation
+- opt-in S23 historical recalculation mode
+- dedicated spot intraday sourcing for opt-in S23 recalculation
+- opt-in option-chain contract selection realism foundation
 
 ## Next Recommended Priorities
 
-- gap-up / gap-down engine
-- missed-entry / recalculation engine
 - shared captured-data adapter from `TradingEngine`
 - rollover lifecycle module
-- monthly option buying engine
+- gap-up / gap-down engine
+- broader missed-entry / recalculation engine beyond the current S23 diagnostic mode
+- contract-specific option-chain intraday pricing and strike-availability realism
 
 ## Explicitly Pending
 
-- gap-up / gap-down engine
-- missed-entry / recalculation engine
 - shared captured-data adapter from `TradingEngine`
 - rollover lifecycle module
+- gap-up / gap-down engine
+- broader missed-entry / recalculation engine beyond the current S23 diagnostic mode
+- contract-specific option-chain intraday pricing and strike-availability realism
 - monthly option buying engine
-- real option-chain and strike-availability simulation
 - broker adapters
 - paper runtime
 - live runtime

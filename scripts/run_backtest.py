@@ -24,8 +24,12 @@ from tfis.backtest import (
     build_backtest_metrics,
     load_daily_bars_csv,
     load_intraday_option_bars_csv,
+    load_intraday_spot_bars_csv,
+    load_monthly_bars_csv,
+    load_option_chain_csv,
     load_option_levels_csv,
     load_option_levels_series_csv,
+    load_weekly_bars_csv,
 )
 from tfis.execution.order_planner import OrderPlanner
 from tfis.market_structure.ohlc import OhlcBar
@@ -38,7 +42,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Run an offline TFIS backtest over deterministic sample inputs."
     )
-    parser.add_argument("--strategy-path", required=True, help="Folder-based strategy path")
+    parser.add_argument("--strategy-path", help="Folder-based strategy path")
+    parser.add_argument(
+        "--strategy-root",
+        help="Folder root containing strategy branches for monthly-status selection",
+    )
     parser.add_argument(
         "--sample",
         action="store_true",
@@ -58,6 +66,31 @@ def build_parser() -> argparse.ArgumentParser:
         "--option-intraday-csv",
         help="Optional path to intraday option OHLC CSV for lifecycle simulation",
     )
+    parser.add_argument(
+        "--spot-intraday-csv",
+        help="Optional path to intraday spot/index OHLC CSV for S23 recalculation sourcing",
+    )
+    parser.add_argument(
+        "--use-monthly-status-engine",
+        action="store_true",
+        help="Select eligible strategy branches from --strategy-root using monthly-status inputs",
+    )
+    parser.add_argument(
+        "--enable-s23-recalculation",
+        action="store_true",
+        help="Opt-in diagnostic S23 ORPT missed-entry detection and recalculation during historical backtests",
+    )
+    parser.add_argument(
+        "--option-chain-csv",
+        help="Optional path to option-chain contract CSV for opt-in contract selection realism",
+    )
+    parser.add_argument(
+        "--enable-option-chain-selection",
+        action="store_true",
+        help="Opt-in option-chain contract selection within computed strike ranges during historical backtests",
+    )
+    parser.add_argument("--monthly-csv", help="Path to monthly reference OHLC CSV")
+    parser.add_argument("--weekly-csv", help="Path to weekly reference OHLC CSV")
     parser.add_argument(
         "--eod-policy",
         choices=[policy.value for policy in EodExitPolicy],
@@ -215,15 +248,18 @@ def _render_validation_status_historical(report: dict[str, Any]) -> str:
 def _render_historical_markdown(report: dict[str, Any]) -> str:
     metrics = report["metrics"]
     evaluations = report.get("evaluations", [])
+    monthly_status_skips = report.get("monthly_status_skips", [])
     cost_model = report.get("cost_model", {})
     strategy_code = evaluations[0]["strategy_code"] if evaluations else "-"
     lines = [
         "# Historical Backtest Report",
         "",
-        f"- Strategy path: `{report['strategy_path']}`",
+        f"- Strategy path: `{report.get('strategy_path') or '-'}`",
+        f"- Strategy root: `{report.get('strategy_root') or '-'}`",
         f"- Strategy code: `{strategy_code}`",
         f"- Mode: `{report['mode']}`",
         f"- EOD policy: `{report.get('eod_policy', EodExitPolicy.MARK_NO_EXIT.value)}`",
+        f"- Monthly-status engine: `{'enabled' if report.get('use_monthly_status_engine') else 'disabled'}`",
         f"- Validation status: `{_render_validation_status_historical(report)}`",
         "",
         "This is offline simulation. It does not include brokerage, slippage, liquidity, or real fill modeling yet.",
@@ -268,17 +304,48 @@ def _render_historical_markdown(report: dict[str, Any]) -> str:
         f"- best_trade_net_rupees: `{_format_number(metrics.get('best_trade_net_rupees'), digits=2)}`",
         f"- worst_trade_net_rupees: `{_format_number(metrics.get('worst_trade_net_rupees'), digits=2)}`",
         "",
+    ]
+
+    if report.get("enable_s23_recalculation"):
+        lines.insert(
+            8,
+            "- S23 recalculation: `enabled`",
+        )
+    if report.get("enable_option_chain_selection"):
+        lines.insert(
+            9,
+            "- Option-chain selection: `enabled`",
+        )
+
+    if monthly_status_skips:
+        lines.extend(
+            [
+                "## Monthly Status Skips",
+                "",
+                "| Timestamp | Reason |",
+                "| --- | --- |",
+            ]
+        )
+        for skip in monthly_status_skips:
+            lines.append(f"| {skip['timestamp']} | {skip['reason']} |")
+        lines.append("")
+
+    lines.extend(
+        [
         "## Trade Table",
         "",
-        "| Timestamp | Entry Price | Exit Price | Exit Reason | Gross PnL | Costs | Net PnL | Net Rupees | Cumulative Net Rupees | Drawdown Rupees | MFE | MAE | Bars Held |",
-        "| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
-    ]
+        "| Timestamp | Monthly Status | Selected Branches | Entry Price | Exit Price | Exit Reason | Gross PnL | Costs | Net PnL | Net Rupees | Cumulative Net Rupees | Drawdown Rupees | MFE | MAE | Bars Held |",
+        "| --- | --- | --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
 
     for evaluation in evaluations:
         lifecycle = evaluation.get("lifecycle_result") or {}
         lines.append(
             "| "
             f"{evaluation['timestamp']} | "
+            f"{evaluation.get('monthly_status') or '-'} | "
+            f"{', '.join(evaluation.get('selected_branch_unique_codes') or []) or '-'} | "
             f"{_format_number(evaluation['trade_outputs'].get('entry_price'))} | "
             f"{_format_number(lifecycle.get('exit_price'))} | "
             f"{lifecycle.get('exit_reason', '-')} | "
@@ -372,7 +439,8 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
 
-    strategy_path = Path(args.strategy_path)
+    strategy_path = Path(args.strategy_path) if args.strategy_path else None
+    strategy_root = Path(args.strategy_root) if args.strategy_root else None
     eod_policy = EodExitPolicy(args.eod_policy)
     cost_model = CostModel(
         slippage_points_per_side=float(args.slippage_points_per_side),
@@ -381,7 +449,25 @@ def main() -> int:
     )
     try:
         if args.sample:
-            if args.historical or args.daily_csv or args.option_levels_csv or args.option_intraday_csv:
+            if args.use_monthly_status_engine:
+                parser.error("--sample cannot be combined with --use-monthly-status-engine")
+            if args.enable_s23_recalculation:
+                parser.error("--enable-s23-recalculation is supported only with --historical")
+            if args.enable_option_chain_selection:
+                parser.error("--enable-option-chain-selection is supported only with --historical")
+            if strategy_path is None:
+                parser.error("--sample requires --strategy-path")
+            if (
+                args.historical
+                or args.daily_csv
+                or args.option_levels_csv
+                or args.option_intraday_csv
+                or args.spot_intraday_csv
+                or args.option_chain_csv
+                or args.strategy_root
+                or args.monthly_csv
+                or args.weekly_csv
+            ):
                 parser.error(
                     "Choose either --sample mode or CSV inputs, not both"
                 )
@@ -390,12 +476,43 @@ def main() -> int:
             report = None
         elif args.daily_csv and args.option_levels_csv:
             if args.historical:
+                if args.use_monthly_status_engine:
+                    if strategy_root is None:
+                        parser.error(
+                            "--use-monthly-status-engine requires --strategy-root"
+                        )
+                    if not args.monthly_csv or not args.weekly_csv:
+                        parser.error(
+                            "--use-monthly-status-engine requires --monthly-csv and --weekly-csv"
+                        )
+                    if strategy_path is not None:
+                        parser.error(
+                            "Use --strategy-root instead of --strategy-path when --use-monthly-status-engine is enabled"
+                        )
+                elif strategy_path is None:
+                    parser.error("--historical mode requires --strategy-path")
+                if args.enable_option_chain_selection and not args.option_chain_csv:
+                    parser.error(
+                        "--enable-option-chain-selection requires --option-chain-csv"
+                    )
                 daily_bars = load_daily_bars_csv(Path(args.daily_csv))
                 option_levels_series = load_option_levels_series_csv(
                     Path(args.option_levels_csv)
                 )
                 report = _build_historical_runner(eod_policy, cost_model).run(
                     strategy_path=strategy_path,
+                    strategy_root=strategy_root,
+                    use_monthly_status_engine=args.use_monthly_status_engine,
+                    monthly_bars=(
+                        load_monthly_bars_csv(Path(args.monthly_csv))
+                        if args.monthly_csv
+                        else None
+                    ),
+                    weekly_bars=(
+                        load_weekly_bars_csv(Path(args.weekly_csv))
+                        if args.weekly_csv
+                        else None
+                    ),
                     daily_bars=daily_bars,
                     option_levels_series=option_levels_series,
                     option_intraday_bars=(
@@ -403,15 +520,49 @@ def main() -> int:
                         if args.option_intraday_csv
                         else None
                     ),
+                    spot_intraday_bars=(
+                        load_intraday_spot_bars_csv(Path(args.spot_intraday_csv))
+                        if args.spot_intraday_csv
+                        else None
+                    ),
                     runtime_values_base={"ENTRY": 200.0},
                     lot_size=50,
                     trades_taken_today=1,
+                    enable_s23_recalculation=args.enable_s23_recalculation,
+                    option_chain_contracts=(
+                        load_option_chain_csv(Path(args.option_chain_csv))
+                        if args.option_chain_csv
+                        else None
+                    ),
+                    enable_option_chain_selection=args.enable_option_chain_selection,
                 )
                 mode = "historical"
             else:
+                if args.use_monthly_status_engine:
+                    parser.error(
+                        "--use-monthly-status-engine is supported only with --historical"
+                    )
+                if args.enable_s23_recalculation:
+                    parser.error(
+                        "--enable-s23-recalculation is supported only with --historical"
+                    )
+                if args.enable_option_chain_selection:
+                    parser.error(
+                        "--enable-option-chain-selection is supported only with --historical"
+                    )
+                if strategy_path is None:
+                    parser.error("CSV snapshot mode requires --strategy-path")
                 if args.option_intraday_csv:
                     parser.error(
                         "--option-intraday-csv is supported only with --historical"
+                    )
+                if args.spot_intraday_csv:
+                    parser.error(
+                        "--spot-intraday-csv is supported only with --historical"
+                    )
+                if args.option_chain_csv:
+                    parser.error(
+                        "--option-chain-csv is supported only with --historical"
                     )
                 backtest_input = _csv_backtest_input(
                     strategy_path,
@@ -434,13 +585,20 @@ def main() -> int:
 
     if mode == "historical":
         output = {
-            "strategy_path": str(strategy_path),
+            "strategy_path": str(report.strategy_path) if report.strategy_path is not None else None,
+            "strategy_root": str(report.strategy_root) if report.strategy_root is not None else None,
+            "use_monthly_status_engine": report.use_monthly_status_engine,
             "mode": mode,
             "eod_policy": eod_policy.value,
             "cost_model": _to_jsonable(cost_model),
             "evaluations": _to_jsonable(report.evaluations),
             "metrics": _to_jsonable(report.metrics),
+            "monthly_status_skips": _to_jsonable(list(report.monthly_status_skips)),
         }
+        if report.enable_s23_recalculation:
+            output["enable_s23_recalculation"] = True
+        if report.enable_option_chain_selection:
+            output["enable_option_chain_selection"] = True
     else:
         metrics = build_backtest_metrics([result])
         output = {

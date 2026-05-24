@@ -111,14 +111,23 @@ The current engine intentionally does not implement:
 - prior-status persistence
 - carry-forward state logic
 - rollover effects on monthly status
-- any backtest coupling beyond consumers optionally using the engine output
+- any mandatory backtest coupling beyond consumers optionally using the engine output
 
 An integration path now exists from:
 
 - `MonthlyStatusEngine.classify(...)`
 - to `StrategyBranchSelector.select(...)`
 
-Automatic backtest integration still remains pending by design.
+An opt-in historical backtest integration path now exists:
+
+- backtests may provide monthly and weekly reference CSVs
+- the engine may classify status per historical step
+- eligible branch folders may then be selected from a strategy root
+
+Default backtest behavior still remains manual and unchanged:
+
+- `--strategy-path` continues to run one explicitly chosen strategy folder
+- monthly-status-driven branch selection is enabled only when its dedicated CLI flags are supplied
 
 ## Safety Principles
 

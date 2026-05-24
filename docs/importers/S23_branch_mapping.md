@@ -26,3 +26,6 @@ Notes:
 - The branch-specific folder `unique_code` values append a branch suffix for
   normalized config uniqueness, even though the workbook identity anchor uses
   the shared base code `NIFTY_OP_SELL_WK_DIFF_2D_3D`.
+- Any workbook wording that remains ambiguous after normalization review is
+  tracked separately in [excel_ambiguity_audit.md](excel_ambiguity_audit.md)
+  and [config/importer_open_questions.yaml](../../config/importer_open_questions.yaml).
