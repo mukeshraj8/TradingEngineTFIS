@@ -31,7 +31,7 @@ def main() -> int:
     if not workbook_path.exists():
         print(f"Workbook not found: {workbook_path}")
         print(
-            "See docs/importer_input_instructions.md for where to place the TFIS workbook."
+            "See docs/importers/importer_input_instructions.md for where to place the TFIS workbook."
         )
         return 1
 

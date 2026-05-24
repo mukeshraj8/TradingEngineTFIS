@@ -1,0 +1,33 @@
+strategy_code: S23
+unique_code: NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT
+source_sheet: AB6 OS
+source_branch: Bull/Bull CF Put
+source_cells:
+  monthly_status: D162
+  option_type: F165
+  start_strike_formula: G165
+  end_strike_formula: G166
+  ideal_premium_formula: H165
+  minimum_premium_formula: H166
+  minimum_oi: I165
+  entry_formula: M165
+  target_formula: O165
+  stoploss_formula: M166
+
+sample_calculation:
+  spot_levels:
+    SPT_PRV_2DHH: 22500
+    SPT_PRV_3DHH: 22600
+  option_levels:
+    OPT_PRV_2DLL: 210
+    OPT_PRV_3DHH: 330
+  runtime_values:
+    ENTRY: 200
+  expected:
+    start_strike: 21375
+    end_strike: 22501
+    ideal_premium: 270
+    minimum_premium: 202.5
+    entry_price: 194.25
+    target_price: 80
+    stoploss_price: 320

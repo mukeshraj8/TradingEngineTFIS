@@ -1,0 +1,90 @@
+scenarios:
+  - name: nifty_clear_bull_candidate
+    instrument_group: nifty
+    reference_levels:
+      PMH: 100
+      PML: 90
+      CMH: 102
+      CML: 91
+      PWH: 101
+      PWL: 92
+      CWH: 102
+      CWL: 93
+      current_price: 103
+    expected_candidates:
+      BULL_A_THRESHOLD: true
+      BEAR_A_THRESHOLD: false
+      REVERSAL_BULL_C_THRESHOLD: true
+      REVERSAL_BEAR_C_THRESHOLD: false
+    expected_final_status: null
+    notes: "Final status intentionally unresolved until transition rules are confirmed."
+
+  - name: nifty_clear_bear_candidate
+    instrument_group: nifty
+    reference_levels:
+      PMH: 100
+      PML: 90
+      CMH: 99
+      CML: 88
+      PWH: 98
+      PWL: 92
+      CWH: 97
+      CWL: 91
+      current_price: 89
+    expected_candidates:
+      BULL_A_THRESHOLD: false
+      BEAR_A_THRESHOLD: true
+      REVERSAL_BULL_C_THRESHOLD: false
+      REVERSAL_BEAR_C_THRESHOLD: true
+    expected_final_status: null
+    notes: "Diagnostic BEAR example only; final transition logic is still pending."
+
+  - name: stock_threshold_example
+    instrument_group: stock
+    reference_levels:
+      PMH: 200
+      PML: 180
+      CMH: 202
+      CML: 179
+      PWH: 198
+      PWL: 182
+      CWH: 199
+      CWL: 183
+      current_price: 205.1
+    bullish_value: 203
+    bearish_value: 177
+    expected_candidates:
+      BULL_A_THRESHOLD: true
+      BEAR_A_THRESHOLD: false
+      BULL_CF_B_THRESHOLD: false
+      BEAR_CF_B_THRESHOLD: false
+      REVERSAL_BULL_C_THRESHOLD: true
+      REVERSAL_BEAR_C_THRESHOLD: false
+    expected_thresholds:
+      BULL_A_THRESHOLD: 205.0
+      BULL_CF_B_THRESHOLD: 207.06
+      REVERSAL_BULL_C_THRESHOLD: 200.99
+    expected_final_status: null
+    notes: "Uses stock a/b/c thresholds to prove they differ from the nifty defaults."
+
+  - name: unresolved_cf_example
+    instrument_group: nifty
+    reference_levels:
+      PMH: 100
+      PML: 90
+      CMH: 101
+      CML: 89
+      PWH: 101
+      PWL: 98
+      CWH: 102
+      CWL: 97
+      current_price: 100
+    expected_candidates:
+      BULL_A_THRESHOLD: false
+      BEAR_A_THRESHOLD: false
+      BULL_CF_B_THRESHOLD: null
+      BEAR_CF_B_THRESHOLD: null
+      REVERSAL_BULL_C_THRESHOLD: false
+      REVERSAL_BEAR_C_THRESHOLD: false
+    expected_final_status: null
+    notes: "Bullish and bearish reference values are intentionally omitted so CF rows stay unresolved."

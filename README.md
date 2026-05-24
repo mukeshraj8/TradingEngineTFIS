@@ -43,24 +43,27 @@ The intended workflow is:
 ## Current Status
 
 Current state of the project:
-- clean project skeleton is in place
-- typed domain model is implemented
-- safe formula engine is implemented
-- parameterized formulas are supported through `PARAM(name)`
-- SPT vs OPT alias separation is enforced in formulas
-- S23 strategy evaluation is working offline
-- S23 workbook profiling, extraction discovery, and mapping docs are in place
-- folder-based strategy config layout is implemented
-- Excel cross-check artifacts are required for folder strategies
-- broker-agnostic foundation is in place
-- architecture boundary tests are active
-- market structure layer is implemented
-- order planner is implemented
-- risk policy is implemented
-- offline strategy pipeline is implemented
-- offline backtest runner is implemented
-- parameter sweep runner and ranking report are implemented
-- CSV-driven historical backtest input foundation is implemented
+- broker-agnostic architecture is in place
+- typed domain model and safe formula engine are in place
+- parameterized formulas and SPT vs OPT alias separation are enforced
+- folder-based strategy config layout is in place
+- all four canonical S23 branches are represented as validated strategy folders
+- Excel cross-checks and formula safety validation are in place
+- branch selector is implemented for folder-based monthly-status strategy variants
+- strategy registry governance is in place
+- strategy registry enforcement is in place
+- shared market-data reuse direction is documented
+- reference materials are indexed and governed through a review workflow
+- historical lifecycle backtesting is in place
+- EOD policies are in place
+- cost/slippage assumptions are in place
+- rupee P&L reporting is in place
+- equity curve and drawdown reporting are in place
+- monthly-status thresholds are captured
+- monthly-status decision table is implemented as a diagnostic foundation
+- monthly-status engine is implemented for the confirmed threshold rules
+- monthly-status CLI report is implemented
+- monthly-status manual review scenarios are in place
 
 ## Strategy Configuration Layout
 
@@ -79,6 +82,48 @@ Folder-based strategies are the accepted path for backtesting. A folder strategy
 - strategy config validation
 - Excel cross-check validation
 - formula safety validation
+
+## Strategy Relevance And Governance
+
+TFIS distinguishes between a strategy being structurally valid and a strategy being current-market relevant.
+
+- the Excel workbook is a historical/source specification, not automatic market approval
+- strategies should be classified through a registry before implementation or promotion
+- current classifications include `ACTIVE_CANDIDATE`, `HISTORICAL_BACKTEST_ONLY`, and `UNKNOWN_REQUIRES_REVIEW`
+- shared captured market data should be reused where possible instead of building a duplicate live capture stack
+
+## Documentation
+
+The TFIS docs are organized by area under [docs/README.md](docs/README.md):
+- architecture
+- strategy
+- importers
+- reference materials
+- operations
+
+## Quality Snapshot
+
+Current repo health:
+- tests passing: `196`
+- `python scripts/validate_project.py`: passed
+
+Next recommended priorities:
+- gap-up / gap-down engine
+- missed-entry / recalculation engine
+- shared captured-data adapter from `TradingEngine`
+- rollover lifecycle module
+- monthly option buying engine
+
+Still intentionally pending:
+- gap-up / gap-down engine
+- missed-entry / recalculation engine
+- shared captured-data adapter from `TradingEngine`
+- rollover lifecycle module
+- monthly option buying engine
+- real option-chain and strike-availability simulation
+- broker adapters
+- paper runtime
+- live runtime
 
 ## Offline Capabilities
 

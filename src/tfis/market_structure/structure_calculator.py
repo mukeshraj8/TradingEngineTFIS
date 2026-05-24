@@ -14,18 +14,31 @@ class MarketStructureError(ValueError):
 
 @dataclass(slots=True)
 class MarketStructureCalculator:
-    """Builds deterministic MarketLevels from offline OHLC bars."""
+    """Builds deterministic MarketLevels from offline OHLC bars.
+
+    Completed-daily semantics:
+
+    - `PRV_2DHH`, `PRV_2DLL`, `PRV_3DHH`, `PRV_3DLL`, `PRV_4DHH`, and
+      `PRV_4DLL` are calculated only from completed prior daily candles.
+    - The latest daily bar in the provided window is treated as the current day
+      context and is excluded from those previous-day calculations.
+    - Current-day dynamic levels are represented separately through
+      `current_day_high` / `current_day_low`, which can come from intraday bars
+      when provided, or from the latest daily bar otherwise.
+    """
 
     def build_market_levels(
         self,
         daily_bars: list[OhlcBar],
         intraday_bars: list[OhlcBar] | None = None,
     ) -> MarketLevels:
+        """Build market levels from completed prior daily bars plus current-day context."""
         if not daily_bars:
             raise MarketStructureError("daily_bars must not be empty")
 
         sorted_daily = sorted(daily_bars, key=lambda bar: bar.timestamp)
         latest_daily = sorted_daily[-1]
+        # Previous-day references always exclude the latest/current-day bar.
         previous_daily = sorted_daily[:-1]
         if len(previous_daily) < 4:
             raise MarketStructureError(
@@ -74,6 +87,7 @@ class MarketStructureCalculator:
         latest_daily: OhlcBar,
         intraday_bars: list[OhlcBar] | None,
     ) -> tuple[float, float]:
+        """Resolve current-day dynamic high/low independently from completed prior bars."""
         if intraday_bars:
             matching = [
                 bar for bar in intraday_bars if bar.timestamp.date() == current_day

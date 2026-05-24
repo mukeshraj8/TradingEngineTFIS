@@ -1,0 +1,45 @@
+strategies:
+  S23_NIFTY_OP_SELL_WK_DIFF_2D_3D:
+    status: ACTIVE_CANDIDATE
+    notes:
+      - "Nifty weekly option-selling branch."
+      - "Requires ongoing liquidity and current-market relevance validation before ACTIVE promotion."
+  S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT:
+    status: ACTIVE_CANDIDATE
+    notes:
+      - "Nifty weekly option-selling branch."
+      - "Requires ongoing liquidity and current-market relevance validation before ACTIVE promotion."
+  S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL:
+    status: ACTIVE_CANDIDATE
+    notes:
+      - "Nifty weekly option-selling branch."
+      - "Requires ongoing liquidity and current-market relevance validation before ACTIVE promotion."
+  S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT:
+    status: ACTIVE_CANDIDATE
+    notes:
+      - "Nifty weekly option-selling branch."
+      - "Requires ongoing liquidity and current-market relevance validation before ACTIVE promotion."
+  BANKNIFTY_WEEKLY_OPTIONS_SELL:
+    status: HISTORICAL_BACKTEST_ONLY
+    notes:
+      - "Do not treat as active until current weekly-contract availability is verified."
+  BANKNIFTY_WEEKLY_OPTIONS_BUY:
+    status: HISTORICAL_BACKTEST_ONLY
+    notes:
+      - "Do not treat as active until current weekly-contract availability is verified."
+  BANKNIFTY_BACKTESTING_TEMPLATE:
+    status: HISTORICAL_BACKTEST_ONLY
+    notes:
+      - "Historical BankNifty backtesting reference only."
+  MONTHLY_OPTION_BUYING:
+    status: UNKNOWN_REQUIRES_REVIEW
+    notes:
+      - "Separate strategy family from S23 option selling."
+  STOCK_OPTION_BUYING_MONTHLY:
+    status: UNKNOWN_REQUIRES_REVIEW
+    notes:
+      - "Must use configurable liquid-stock universe before implementation."
+  ROLLOVER_RULES:
+    status: PLACEHOLDER
+    notes:
+      - "Lifecycle design reference only; not an executable strategy."

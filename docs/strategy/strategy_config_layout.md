@@ -30,6 +30,24 @@ config/
 
 This folder-based layout is the preferred configuration format for all new TFIS strategies.
 
+When one workbook strategy block contains multiple canonical branches, TFIS may
+represent those branches as separate folders so each branch can be validated and
+backtested independently.
+
+Current S23 example:
+
+- `S23_NIFTY_OP_SELL_WK_DIFF_2D_3D` as Bull / Bull CF Call
+- `S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT`
+- `S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL`
+- `S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT`
+
+Branch selection:
+
+- branch selection should work only on folder-based strategies
+- the selector filters already-configured folders by `allowed_monthly_statuses`
+- legacy YAML files are transitional artifacts and should be ignored by branch selection
+- monthly status calculation itself belongs elsewhere and is not part of the selector
+
 ## What Each File Means
 
 `strategy.yaml`
@@ -78,6 +96,15 @@ Examples:
 For migrated strategies, the folder layout is the preferred place to reflect workbook-correct semantics even if a legacy YAML file still preserves older compatibility behavior.
 
 For S23 specifically, the folder-based config follows the Excel/workbook premium semantics as the source of truth.
+
+Completed daily reference semantics:
+
+- `PRV_2DHH`, `PRV_2DLL`, `PRV_3DHH`, `PRV_3DLL`, `PRV_4DHH`, and `PRV_4DLL`
+  are references to completed prior daily candles only
+- the current/latest day is not part of those previous-day calculations
+- `CDHH` and `CDLL` are separate current-day dynamic references
+- gap-up and gap-down interpretation should be handled separately in a later
+  importer and strategy-normalization phase
 
 ## How To Modify Parameters For Experiments
 

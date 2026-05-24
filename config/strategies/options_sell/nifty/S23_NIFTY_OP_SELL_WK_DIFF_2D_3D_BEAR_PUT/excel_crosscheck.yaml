@@ -1,0 +1,33 @@
+strategy_code: S23
+unique_code: NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT
+source_sheet: AB6 OS
+source_branch: Bear/Bear CF Put
+source_cells:
+  monthly_status: D168
+  option_type: F171
+  start_strike_formula: G171
+  end_strike_formula: G172
+  ideal_premium_formula: H171
+  minimum_premium_formula: H172
+  minimum_oi: I171
+  entry_formula: M171
+  target_formula: O171
+  stoploss_formula: M172
+
+sample_calculation:
+  spot_levels:
+    SPT_PRV_3DHH: 22600
+    SPT_PRV_2DHH: 22500
+  option_levels:
+    OPT_PRV_3DLL: 220
+    OPT_PRV_2DHH: 300
+  runtime_values:
+    ENTRY: 200
+  expected:
+    start_strike: 21470
+    end_strike: 22601
+    ideal_premium: 271.2
+    minimum_premium: 203.4
+    entry_price: 203.5
+    target_price: 80
+    stoploss_price: 320

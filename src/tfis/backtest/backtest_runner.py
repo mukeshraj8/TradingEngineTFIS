@@ -5,7 +5,11 @@ from pathlib import Path
 
 from tfis.backtest.models import BacktestInput, BacktestTradeResult, BacktestValidation
 from tfis.execution.order_planner import OrderPlanner
-from tfis.importers import load_strategy_rule, validate_folder_strategy_detailed
+from tfis.importers import (
+    assert_backtest_allowed,
+    load_strategy_rule,
+    validate_folder_strategy_detailed,
+)
 from tfis.market_structure.structure_calculator import MarketStructureCalculator
 from tfis.risk.risk_policy import RiskPolicy
 from tfis.strategy.strategy_evaluator import StrategyEvaluator
@@ -30,6 +34,7 @@ class BacktestRunner:
             raise ValueError(f"Strategy folder validation failed: {message}")
 
         rule = load_strategy_rule(strategy_path)
+        assert_backtest_allowed(rule.unique_code)
         market_levels = self.structure_calculator.build_market_levels(
             backtest_input.daily_bars,
             intraday_bars=backtest_input.intraday_bars,

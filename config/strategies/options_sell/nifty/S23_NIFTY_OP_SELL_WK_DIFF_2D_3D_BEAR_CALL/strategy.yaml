@@ -1,0 +1,13 @@
+strategy_code: S23
+unique_code: NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL
+symbol: NIFTY
+segment: OPTIONS_SELL
+expiry_type: WEEKLY
+allowed_monthly_statuses:
+  - BEAR
+  - BEAR_CF
+option_type: CALL
+entry_time: "09:24:59"
+recalculation_time: "09:29:59"
+minimum_oi: 500
+carry_forward_allowed: true

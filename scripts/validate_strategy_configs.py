@@ -10,6 +10,7 @@ if str(SRC_DIR) not in sys.path:
 
 from tfis.importers import (
     discover_strategy_sources,
+    get_strategy_status,
     validate_folder_strategy_detailed,
     validate_folder_strategy,
     validate_legacy_strategy,
@@ -42,6 +43,11 @@ def main() -> int:
             print(f"FAIL {file_path.relative_to(ROOT)}: {message}")
         else:
             print(f"PASS {file_path.relative_to(ROOT)}")
+            status = get_strategy_status(file_path.parent.name)
+            if status is None:
+                print(f"WARN {file_path.relative_to(ROOT)} missing registry entry")
+            else:
+                print(f"STATUS {file_path.relative_to(ROOT)} {status}")
             for finding in warnings:
                 print(
                     f"WARN {file_path.relative_to(ROOT)} {finding.field_name}: "

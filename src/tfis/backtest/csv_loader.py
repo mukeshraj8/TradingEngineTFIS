@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -19,6 +20,12 @@ OPTION_REQUIRED_COLUMNS = (
     "opt_prv_3dhh",
     "opt_prv_3dll",
 )
+
+
+@dataclass(frozen=True, slots=True)
+class OptionLevelsSnapshot:
+    timestamp: datetime
+    opt_levels: dict[str, float]
 
 
 def load_daily_bars_csv(path: str | Path) -> list[OhlcBar]:
@@ -45,16 +52,25 @@ def load_daily_bars_csv(path: str | Path) -> list[OhlcBar]:
     return bars
 
 
+def load_intraday_option_bars_csv(path: str | Path) -> list[OhlcBar]:
+    return load_daily_bars_csv(path)
+
+
 def load_option_levels_csv(path: str | Path) -> dict[str, float]:
+    snapshots = load_option_levels_series_csv(path)
+    return snapshots[-1].opt_levels
+
+
+def load_option_levels_series_csv(path: str | Path) -> list[OptionLevelsSnapshot]:
     csv_path = Path(path)
     rows = _read_rows(csv_path, OPTION_REQUIRED_COLUMNS)
-    snapshots: list[tuple[datetime, dict[str, float]]] = []
+    snapshots: list[OptionLevelsSnapshot] = []
     for index, row in enumerate(rows, start=2):
         timestamp = _parse_timestamp(csv_path, row_number=index, value=row["timestamp"])
         snapshots.append(
-            (
-                timestamp,
-                {
+            OptionLevelsSnapshot(
+                timestamp=timestamp,
+                opt_levels={
                     "OPT_PRV_2DHH": _parse_float(
                         csv_path,
                         row_number=index,
@@ -83,11 +99,8 @@ def load_option_levels_csv(path: str | Path) -> dict[str, float]:
             )
         )
 
-    if not snapshots:
-        raise BacktestCsvError(f"CSV contains no data rows: {csv_path}")
-
-    snapshots.sort(key=lambda item: item[0])
-    return snapshots[-1][1]
+    snapshots.sort(key=lambda item: item.timestamp)
+    return snapshots
 
 
 def _read_rows(path: Path, required_columns: tuple[str, ...]) -> list[dict[str, str]]:

@@ -1,0 +1,49 @@
+instrument_groups:
+  nifty:
+    a_pct: 0.75
+    b_pct: 0.75
+    c_pct: 0.15
+    source_notes:
+      - "Captured from user-provided monthly-status reference images."
+  banknifty:
+    a_pct: 0.75
+    b_pct: 0.75
+    c_pct: 0.15
+    source_notes:
+      - "Captured from user-provided monthly-status reference images."
+  stock:
+    a_pct: 2.50
+    b_pct: 2.00
+    c_pct: 1.00
+    source_notes:
+      - "Captured from user-provided monthly-status reference images."
+  currency:
+    a_pct: 0.15
+    b_pct: 0.05
+    c_pct: 0.05
+    source_notes:
+      - "Captured from user-provided monthly-status reference images."
+  gold:
+    a_pct: 0.50
+    b_pct: 0.50
+    c_pct: 0.12
+    source_notes:
+      - "Captured from user-provided monthly-status reference images."
+  silver:
+    a_pct: 0.70
+    b_pct: 0.70
+    c_pct: 0.15
+    source_notes:
+      - "Captured from user-provided monthly-status reference images."
+  crude_oil:
+    a_pct: 2.00
+    b_pct: 1.50
+    c_pct: 0.30
+    source_notes:
+      - "Captured from user-provided monthly-status reference images."
+  natural_gas:
+    a_pct: 2.00
+    b_pct: 2.00
+    c_pct: 0.50
+    source_notes:
+      - "Captured from user-provided monthly-status reference images."

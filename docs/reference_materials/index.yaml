@@ -1,0 +1,436 @@
+categories:
+  monthly_status:
+    description: "Monthly-status screenshots and reference notes used for threshold capture and future transition-rule clarification."
+    files:
+      - filename: AllSegmentRules-01.jpg
+        path: monthly_status/AllSegmentRules-01.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, thresholds]
+      - filename: AllSegmentRules-02.jpg
+        path: monthly_status/AllSegmentRules-02.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, thresholds]
+      - filename: CrudeOilRules-01.jpg
+        path: monthly_status/CrudeOilRules-01.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, crude_oil, thresholds]
+      - filename: CrudeOilRules-02.jpg
+        path: monthly_status/CrudeOilRules-02.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, crude_oil, thresholds]
+      - filename: CurrencyFutureAndOptionRules-01.jpg
+        path: monthly_status/CurrencyFutureAndOptionRules-01.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, currency, thresholds]
+      - filename: CurrencyFutureAndOptionRules-02.jpg
+        path: monthly_status/CurrencyFutureAndOptionRules-02.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, currency, thresholds]
+      - filename: GoldFutureRules-01.jpg
+        path: monthly_status/GoldFutureRules-01.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, gold, thresholds]
+      - filename: GoldFutureRules-02.jpg
+        path: monthly_status/GoldFutureRules-02.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, gold, thresholds]
+      - filename: IndexFutureAndOptionRules-01.jpg
+        path: monthly_status/IndexFutureAndOptionRules-01.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, nifty, banknifty, thresholds]
+      - filename: IndexFutureAndOptionRules-02.jpg
+        path: monthly_status/IndexFutureAndOptionRules-02.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, nifty, banknifty, thresholds]
+      - filename: SilverFutureRules-01.jpg
+        path: monthly_status/SilverFutureRules-01.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, silver, thresholds]
+      - filename: SilverFutureRules-02.jpg
+        path: monthly_status/SilverFutureRules-02.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, silver, thresholds]
+      - filename: StockFutureAndOptionRules-01.jpg
+        path: monthly_status/StockFutureAndOptionRules-01.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, stock, thresholds]
+      - filename: StockFutureAndOptionRules-02.jpg
+        path: monthly_status/StockFutureAndOptionRules-02.jpg
+        type: screenshot
+        status: partially_reviewed
+        related_topics: [monthly_status, stock, thresholds]
+
+  option_selling:
+    description: "Primary option-selling rule references, including workbook-derived source sheets and workbook-level rule spreadsheets."
+    files:
+      - filename: Rule.xlsx
+        path: Rule.xlsx
+        type: excel
+        status: partially_reviewed
+        related_topics: [option_selling, workbook_source, formulas]
+      - filename: OptionSellRules.xlsx
+        path: option_selling/OptionSellRules.xlsx
+        type: excel
+        status: partially_reviewed
+        related_topics: [option_selling, formulas, strategy_rules]
+
+  option_buying:
+    description: "Monthly and stock option-buying reference sheets kept for future review, not yet normalized into TFIS strategy logic."
+    files:
+      - filename: MonthlyOptionBuyRiskManagement.xlsx
+        path: option_buying/MonthlyOptionBuyRiskManagement.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [option_buying, monthly_option_buying, target_management, APS]
+      - filename: Option Buy Rules.xlsx
+        path: option_buying/Option Buy Rules.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [option_buying, strategy_rules]
+      - filename: OptionBuyRulesForStock.xlsx
+        path: option_buying/OptionBuyRulesForStock.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [option_buying, stock_option_buying]
+      - filename: OptionBuyStockRules.xlsx
+        path: option_buying/OptionBuyStockRules.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [option_buying, stock_option_buying]
+
+  rollover:
+    description: "Rollover screenshots and spreadsheets for futures and option rollover handling. These are design references for a separate lifecycle module."
+    files:
+      - filename: Nifty_futures_strategy_and_rollover_Session_Notes_Dt__17th_May_23_lyst3711.xlsx
+        path: rollover/Nifty_futures_strategy_and_rollover_Session_Notes_Dt__17th_May_23_lyst3711.xlsx
+        type: excel
+        status: partially_reviewed
+        related_topics: [rollover, futures, session_notes]
+      - filename: Rollover Rules for Monthly Stock Option Buy.xlsx
+        path: rollover/Rollover Rules for Monthly Stock Option Buy.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [rollover, monthly_option_buying, stock_option_buying]
+      - filename: RollOverRules.xlsx
+        path: rollover/RollOverRules.xlsx
+        type: excel
+        status: partially_reviewed
+        related_topics: [rollover, option_selling, option_buying]
+
+  banknifty_backtesting:
+    description: "Reserved category for BankNifty backtesting reference materials. The folder currently exists, but no dedicated tracked file is present here yet."
+    files: []
+
+  companies_list:
+    description: "Reference materials for configurable stock universe selection. These should inform user-configurable tradable universe inputs, not hard-coded strategy universes."
+    files:
+      - filename: List_of_companies_lyst9083.xlsx
+        path: companies_list/List_of_companies_lyst9083.xlsx
+        type: excel
+        status: partially_reviewed
+        related_topics: [companies_list, stock_universe, stock_options]
+
+  session_notes:
+    description: "Loose session notes, assignments, screenshots, and class artifacts retained for review context but not treated as direct implementation specifications."
+    files:
+      - filename: 03-Aug-2023_lyst3394.xlsx
+        path: session_notes/03-Aug-2023_lyst3394.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: 19-07-2023_lyst3176.xlsx
+        path: session_notes/19-07-2023_lyst3176.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: BankniftyAssignment.jpg
+        path: session_notes/BankniftyAssignment.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes, banknifty_backtesting]
+      - filename: Nifty_futures_strategy_and_rollover_Session_Notes_Dt__17th_May_23_lyst3711.xlsx
+        path: session_notes/Nifty_futures_strategy_and_rollover_Session_Notes_Dt__17th_May_23_lyst3711.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes, rollover, futures]
+      - filename: PNL_Session_Notes_Dt__31st_May_23_lyst1666.xlsx
+        path: session_notes/PNL_Session_Notes_Dt__31st_May_23_lyst1666.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes, pnl]
+      - filename: Screenshot 2023-01-18 213731.jpg
+        path: session_notes/Screenshot 2023-01-18 213731.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Screenshot 2023-01-19 100332.jpg
+        path: session_notes/Screenshot 2023-01-19 100332.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Screenshot 2023-01-19 202519.jpg
+        path: session_notes/Screenshot 2023-01-19 202519.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Screenshot 2023-01-19 203047.jpg
+        path: session_notes/Screenshot 2023-01-19 203047.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Screenshot 2023-01-19 225722.jpg
+        path: session_notes/Screenshot 2023-01-19 225722.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Screenshot 2023-01-19 230716.jpg
+        path: session_notes/Screenshot 2023-01-19 230716.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_4th_August_23_lyst3071.xlsx
+        path: session_notes/Session_Notes_4th_August_23_lyst3071.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_dt18th_Sep_23xlsx_lyst8575.xlsx
+        path: session_notes/Session_Notes_dt18th_Sep_23xlsx_lyst8575.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_Dt_17th_July_23_lyst7032.xlsx
+        path: session_notes/Session_Notes_Dt_17th_July_23_lyst7032.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_Dt_20th_July_23_lyst5500.xlsx
+        path: session_notes/Session_Notes_Dt_20th_July_23_lyst5500.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_Dt_26th_July_23_lyst6741.xlsx
+        path: session_notes/Session_Notes_Dt_26th_July_23_lyst6741.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_Dt_27th_July_23_lyst1563.xlsx
+        path: session_notes/Session_Notes_Dt_27th_July_23_lyst1563.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_dt__14th_Aug_lyst2212.xlsx
+        path: session_notes/Session_Notes_dt__14th_Aug_lyst2212.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_Dt__21st_Aug_23_lyst7697.xlsx
+        path: session_notes/Session_Notes_Dt__21st_Aug_23_lyst7697.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_Dt__21st_July_23_lyst8384.xlsx
+        path: session_notes/Session_Notes_Dt__21st_July_23_lyst8384.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_dt__30th_July_23_lyst3736.xlsx
+        path: session_notes/Session_Notes_dt__30th_July_23_lyst3736.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: Session_Notes_Dt__30th_May_23_lyst8761.xlsx
+        path: session_notes/Session_Notes_Dt__30th_May_23_lyst8761.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes]
+      - filename: SOB_Live_MArket_Session_notes_dt26th_Oct_23xlsx_lyst2445.xlsx
+        path: session_notes/SOB_Live_MArket_Session_notes_dt26th_Oct_23xlsx_lyst2445.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes, option_buying]
+      - filename: Strategy_1_Assignment_AK_lyst2605.xlsx
+        path: session_notes/Strategy_1_Assignment_AK_lyst2605.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes, assignment]
+      - filename: Strategy_1_Assignment_lyst8638.xlsx
+        path: session_notes/Strategy_1_Assignment_lyst8638.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes, assignment]
+      - filename: Strategy_2_Assignment_AK_lyst7304.xlsx
+        path: session_notes/Strategy_2_Assignment_AK_lyst7304.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes, assignment]
+      - filename: Strategy_2_Assignment_lyst7389.xlsx
+        path: session_notes/Strategy_2_Assignment_lyst7389.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [session_notes, assignment]
+      - filename: USDINR Assignment 26=07-2023.jpg
+        path: session_notes/USDINR Assignment 26=07-2023.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes, currency]
+      - filename: VOLTAS Assignment 26-07-2023.jpg
+        path: session_notes/VOLTAS Assignment 26-07-2023.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [session_notes, stock]
+
+  bulk_templates:
+    description: "Operational bulk-order and alert templates preserved as archive templates, not current TFIS runtime inputs."
+    files:
+      - filename: 1__09_00_Target_Template_lyst9546.csv
+        path: bulk_templates/1__09_00_Target_Template_lyst9546.csv
+        type: template
+        status: reference_only
+        related_topics: [template, target_management]
+      - filename: 2__09_05_Entry___Stoploss_Template_lyst3724.csv
+        path: bulk_templates/2__09_05_Entry___Stoploss_Template_lyst3724.csv
+        type: template
+        status: reference_only
+        related_topics: [template, entry_management, stoploss]
+      - filename: 3__09_10_Entry___Stoploss_Template_lyst5689.csv
+        path: bulk_templates/3__09_10_Entry___Stoploss_Template_lyst5689.csv
+        type: template
+        status: reference_only
+        related_topics: [template, entry_management, stoploss]
+      - filename: 4__09_15_Entry___Stoploss_Template_lyst8993.csv
+        path: bulk_templates/4__09_15_Entry___Stoploss_Template_lyst8993.csv
+        type: template
+        status: reference_only
+        related_topics: [template, entry_management, stoploss]
+      - filename: 5__09_15_Target_Template_lyst8545.csv
+        path: bulk_templates/5__09_15_Target_Template_lyst8545.csv
+        type: template
+        status: reference_only
+        related_topics: [template, target_management]
+      - filename: 6__09_20_Entry___Stoploss_Template_lyst6758.csv
+        path: bulk_templates/6__09_20_Entry___Stoploss_Template_lyst6758.csv
+        type: template
+        status: reference_only
+        related_topics: [template, entry_management, stoploss]
+      - filename: 7__09_25_Entry___Stoploss_Template_lyst7092.csv
+        path: bulk_templates/7__09_25_Entry___Stoploss_Template_lyst7092.csv
+        type: template
+        status: reference_only
+        related_topics: [template, entry_management, stoploss]
+      - filename: 8__09_30_Entry___Stoploss_Template_lyst5276.csv
+        path: bulk_templates/8__09_30_Entry___Stoploss_Template_lyst5276.csv
+        type: template
+        status: reference_only
+        related_topics: [template, entry_management, stoploss]
+      - filename: Bulk_New_Entries_lyst7396.csv
+        path: bulk_templates/Bulk_New_Entries_lyst7396.csv
+        type: template
+        status: reference_only
+        related_topics: [template, entry_management]
+      - filename: Bulk_Open_SL_lyst9726.csv
+        path: bulk_templates/Bulk_Open_SL_lyst9726.csv
+        type: template
+        status: reference_only
+        related_topics: [template, stoploss]
+      - filename: Bulk_Open_Target_lyst5008.csv
+        path: bulk_templates/Bulk_Open_Target_lyst5008.csv
+        type: template
+        status: reference_only
+        related_topics: [template, target_management]
+      - filename: PriceAlert_lyst8524.csv
+        path: bulk_templates/PriceAlert_lyst8524.csv
+        type: template
+        status: reference_only
+        related_topics: [template, alerts]
+      - filename: Template_for_Entry_lyst9394.csv
+        path: bulk_templates/Template_for_Entry_lyst9394.csv
+        type: template
+        status: reference_only
+        related_topics: [template, entry_management]
+      - filename: Template_for_SL_lyst1179.csv
+        path: bulk_templates/Template_for_SL_lyst1179.csv
+        type: template
+        status: reference_only
+        related_topics: [template, stoploss]
+      - filename: Template_for_Target_lyst5359.csv
+        path: bulk_templates/Template_for_Target_lyst5359.csv
+        type: template
+        status: reference_only
+        related_topics: [template, target_management]
+
+  equity_all_time_high:
+    description: "Separate archive of equity all-time-high backtesting and assignment materials. Useful for discovery and context, but not yet normalized into TFIS strategy logic."
+    files:
+      - filename: ATH_Backtesting_lyst8581.xlsx
+        path: equity_all_time_high/ATH_Backtesting_lyst8581.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [equity_all_time_high, backtesting]
+      - filename: ATH_Backtesting_MCC_Answer_Key_lyst3009.xlsx
+        path: equity_all_time_high/ATH_Backtesting_MCC_Answer_Key_lyst3009.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [equity_all_time_high, answer_key]
+      - filename: ATH_GapUp-GapDown_Assignment_AnsKey_lyst9520.xlsx
+        path: equity_all_time_high/ATH_GapUp-GapDown_Assignment_AnsKey_lyst9520.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [equity_all_time_high, gap_up_gap_down, answer_key]
+      - filename: ATH_GapUp-GapDown_Assignment_lyst6085.xlsx
+        path: equity_all_time_high/ATH_GapUp-GapDown_Assignment_lyst6085.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [equity_all_time_high, gap_up_gap_down, assignment]
+      - filename: ATH_Session_Note_lyst3243.xlsx
+        path: equity_all_time_high/ATH_Session_Note_lyst3243.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [equity_all_time_high, session_notes]
+      - filename: ATH_WCC_and_DCC_lyst8454.xlsx
+        path: equity_all_time_high/ATH_WCC_and_DCC_lyst8454.xlsx
+        type: excel
+        status: reference_only
+        related_topics: [equity_all_time_high, weekly_close_context]
+      - filename: Screenshot 2023-09-01 175259.jpg
+        path: equity_all_time_high/Screenshot 2023-09-01 175259.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [equity_all_time_high]
+      - filename: Screenshot 2023-09-01 175321.jpg
+        path: equity_all_time_high/Screenshot 2023-09-01 175321.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [equity_all_time_high]
+      - filename: Screenshot 2023-09-01 175338.jpg
+        path: equity_all_time_high/Screenshot 2023-09-01 175338.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [equity_all_time_high]
+      - filename: Screenshot 2023-09-01 175805.jpg
+        path: equity_all_time_high/Screenshot 2023-09-01 175805.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [equity_all_time_high]
+      - filename: Screenshot 2023-09-01 175831.jpg
+        path: equity_all_time_high/Screenshot 2023-09-01 175831.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [equity_all_time_high]
+      - filename: Screenshot 2023-09-01 175857.jpg
+        path: equity_all_time_high/Screenshot 2023-09-01 175857.jpg
+        type: screenshot
+        status: reference_only
+        related_topics: [equity_all_time_high]

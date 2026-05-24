@@ -1,0 +1,5 @@
+universe_name: liquid_stock_options
+status: USER_CONFIGURABLE
+symbols: []
+notes:
+  - "Populate only with liquid optionable stocks approved for TFIS testing."

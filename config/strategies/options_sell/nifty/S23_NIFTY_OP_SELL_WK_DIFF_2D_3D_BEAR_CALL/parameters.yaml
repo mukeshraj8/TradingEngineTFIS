@@ -1,0 +1,7 @@
+strike_buffer_pct: 5.0
+ideal_premium_pct: 1.20
+minimum_premium_pct: 0.90
+entry_discount_pct: 7.5
+target_pct: 60.0
+sl_entry_pct: 60.0
+sl_reference_pct: 10.0
