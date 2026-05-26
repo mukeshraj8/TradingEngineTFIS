@@ -1,0 +1,76 @@
+{
+  "mode": "historical",
+  "strategy_path": "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "strategy_root": null,
+  "eod_policy": "square_off_at_close",
+  "metrics": {
+    "total_evaluations": 2,
+    "accepted_candidates": 1,
+    "rejected_candidates": 1,
+    "entered_trades": 1,
+    "target_hits": 1,
+    "stoploss_hits": 0,
+    "eod_square_off": 0,
+    "no_entry": 1,
+    "no_exit": 0,
+    "total_net_pnl_points": 77.95,
+    "total_net_pnl_rupees": 3897.5,
+    "average_net_pnl_rupees": 3897.5,
+    "max_drawdown_rupees": 0.0,
+    "win_rate": 1.0,
+    "loss_rate": 0.0,
+    "expiry_day_candidates": 0,
+    "expiry_day_exit_satisfied": 0,
+    "expiry_day_exit_pending": 0,
+    "rejection_reason_distribution": {
+      "No entry": 1
+    }
+  },
+  "evaluations": [
+    {
+      "timestamp": "2026-05-18T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "",
+      "trade_outputs": {
+        "start_strike": 23047,
+        "end_strike": 21949,
+        "ideal_premium": 263.4,
+        "minimum_premium": 197.55,
+        "entry_price": 197.95,
+        "stoploss_price": 314.58,
+        "target_price": 80.0
+      },
+      "lifecycle_result": {
+        "exit_price": 120.0,
+        "net_pnl_points": 77.95,
+        "net_pnl_rupees": 3897.5
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": []
+      }
+    },
+    {
+      "timestamp": "2026-05-19T15:30:00",
+      "strategy_code": "S23",
+      "accepted": false,
+      "rejection_reason": "No entry",
+      "trade_outputs": {
+        "start_strike": 23047,
+        "end_strike": 21949,
+        "ideal_premium": 263.4,
+        "minimum_premium": 197.55,
+        "entry_price": 197.95,
+        "stoploss_price": 314.58,
+        "target_price": 80.0
+      },
+      "lifecycle_result": null,
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": []
+      }
+    }
+  ],
+  "monthly_status_skips": []
+}

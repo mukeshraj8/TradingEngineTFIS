@@ -201,13 +201,15 @@ Resolved row:
 Current implementation scope:
 
 - rows `183-186`
-  - apply populated `R/S/U/W` workbook formulas
+  - apply populated `R/S/U/W/Z` workbook formulas
+  - `Z183:Z186` now map to the current-day option-entry override that updates
+    `TradePlan.entry_price`
 - rows `184/185/187/188`
   - also apply the workbook-backed recalculated FSL from `M/O`
 - rows `187-188`
   - remain `FSL-only`
-  - TFIS must not invent strike or premium recalculation because `R/S/U/W`
-    are blank
+  - TFIS must not invent strike, premium, or entry recalculation because
+    `R/S/U/W/Z` are blank there
 - unsupported paths remain unchanged:
   - Bull / Bull CF Put not missed
   - Bear / Bear CF Call not missed
@@ -224,10 +226,14 @@ Historical backtest integration:
   - `09:29:59` for missed current-day recalculation and FSL
 - when a branch path is unsupported by workbook coverage, TFIS keeps the base
   trade plan and records a warning instead of inferring behavior
+- rows `183-186` can now also override `entry_price` from the workbook-backed
+  `Z183:Z186` option-entry cells, which means this opt-in layer may change
+  lifecycle entry timing and realized P&L under apples-to-apples inputs
 - when row `184` is applied, audit output preserves the resolved workbook
   clarification rather than hiding the mixed Call / Put evidence
 
 ## Open Questions
 
-- Should recalculated target and stoploss remain inherited from the base plan, or should later Excel-backed logic override them as part of a fuller gap engine?
+- No additional target override formulas were found in `AB6 OS` rows `162-191`; any future target override needs new workbook evidence from outside this block.
+- Rows `190-191` still only describe position-open process flow and do not provide a numeric continuation-stoploss rule in this block.
 - How should same-day recalculation interact with later carry-forward and rollover logic once those modules exist?

@@ -119,14 +119,20 @@ def test_contract_specific_lifecycle_uses_selected_contract_series_when_availabl
     assert report["enable_contract_specific_lifecycle"] is True
     assert audit["selected_contract_symbol"] == "NIFTY_20260528_22100_CE"
     assert audit["lifecycle_price_source"] == "contract_specific_series"
+    assert audit["contract_specific_intraday_found"] is True
+    assert audit["generic_fallback_used"] is False
+    assert audit["fallback_reason"] is None
+    assert audit["contract_specific_bars_available_count"] >= 1
+    assert audit["contract_specific_bars_usable_count"] >= 1
+    assert audit["lifecycle_bars_used_count"] == audit["contract_specific_bars_usable_count"]
     assert audit["warning"] is None
 
 
-def test_contract_specific_lifecycle_falls_back_to_generic_series_with_warning(
+def test_contract_specific_lifecycle_uses_added_put_contract_series_when_available(
 ) -> None:
     report = _run_contract_specific_backtest(
         enable_contract_specific_lifecycle=True,
-        output_name="historical_contract_specific_fallback.json",
+        output_name="historical_contract_specific_put_coverage.json",
     )
 
     evaluation = next(
@@ -134,8 +140,38 @@ def test_contract_specific_lifecycle_falls_back_to_generic_series_with_warning(
         for item in report["evaluations"]
         if item["validation"]["option_chain_selection"]["selected_contract"]["symbol"]
         == "NIFTY_20260528_22300_PE"
+        and item["validation"]["contract_specific_lifecycle"]["lifecycle_price_source"]
+        == "contract_specific_series"
     )
     audit = evaluation["validation"]["contract_specific_lifecycle"]
 
-    assert audit["lifecycle_price_source"] == "generic_option_series"
-    assert "fell back to generic option intraday series" in audit["warning"]
+    assert audit["selected_contract_symbol"] == "NIFTY_20260528_22300_PE"
+    assert audit["lifecycle_price_source"] == "contract_specific_series"
+    assert audit["contract_specific_intraday_found"] is True
+    assert audit["generic_fallback_used"] is False
+    assert audit["fallback_reason"] is None
+    assert audit["contract_specific_bars_available_count"] >= 1
+    assert audit["contract_specific_bars_usable_count"] >= 1
+    assert audit["warning"] is None
+
+
+def test_contract_specific_lifecycle_achieves_full_fixture_coverage_without_fallback(
+) -> None:
+    report = _run_contract_specific_backtest(
+        enable_contract_specific_lifecycle=True,
+        output_name="historical_contract_specific_full_coverage.json",
+    )
+
+    audits = [
+        item["validation"]["contract_specific_lifecycle"]
+        for item in report["evaluations"]
+    ]
+    assert any(audit["selected_contract_symbol"] == "NIFTY_20260528_22300_PE" for audit in audits)
+
+    assert all(audit["lifecycle_price_source"] == "contract_specific_series" for audit in audits)
+    assert all(audit["contract_specific_intraday_found"] is True for audit in audits)
+    assert all(audit["generic_fallback_used"] is False for audit in audits)
+    assert all(audit["fallback_reason"] is None for audit in audits)
+    assert all(audit["contract_specific_bars_available_count"] >= 1 for audit in audits)
+    assert all(audit["contract_specific_bars_usable_count"] >= 1 for audit in audits)
+    assert all(audit["warning"] is None for audit in audits)

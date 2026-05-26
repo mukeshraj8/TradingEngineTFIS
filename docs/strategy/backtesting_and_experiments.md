@@ -1,4 +1,4 @@
-# Backtesting And Experiments
+﻿# Backtesting And Experiments
 
 ## Why Parameterized Formulas Matter
 
@@ -221,6 +221,8 @@ Optional S23 current-day FSL / TRP handling:
 
 - historical backtest can now opt into workbook-backed S23 current-day
   `FSL / TRP missed / not-missed` handling
+- for supported rows `183-186`, that opt-in layer now also applies the
+  workbook-backed `Z183:Z186` current-day option-entry override
 - this mode is enabled with:
   - `--enable-s23-current-day-fsl-trp`
 - it is available only with `--historical`
@@ -299,7 +301,11 @@ Optional contract-specific lifecycle pricing:
   - the validation audit records:
     - `lifecycle_price_source`
     - selected contract symbol
-    - fallback warning when relevant
+    - whether contract-specific bars were found for that symbol
+    - contract-specific bar counts before and after lifecycle cutoff
+    - whether generic fallback was used
+    - fallback reason and warning when relevant
+    - lifecycle bar count actually used by the simulator
 - current limitation:
   - this is still an offline CSV-only foundation
   - it depends on symbol-keyed intraday archives already being available
@@ -330,21 +336,69 @@ Comparison reporting across modes:
 
 - TFIS now includes a read-only comparison tool for existing backtest JSON outputs
 - this tool does not rerun backtests or alter strategy logic
+- the comparison path is now intentionally bounded and deterministic:
+  - it rejects oversized JSON files before parsing them
+  - it normalizes only the fields needed for S23 mode comparison instead of diffing entire raw payloads
+  - it supports `--max-trades` for bounded local or debug runs
+  - it supports `--timeout-seconds` as a cooperative guard around multi-report comparison work
+  - it fails clearly on missing files, malformed JSON, or structurally invalid report payloads
 - it compares already-generated reports across historical modes such as:
+  - base mode
   - monthly-status branch selection only
   - monthly-status plus S23 recalculation
+  - current-day S23 FSL / TRP handling
   - monthly-status plus recalculation plus option-chain selection
   - monthly-status plus recalculation plus option-chain plus contract-specific lifecycle pricing
-- current comparison output focuses on:
-  - aggregate performance metrics
-  - audit coverage counts
-  - feature flags enabled in each report
+- current comparison output focuses on normalized S23 trade summaries and mode-level differences:
+  - total trades and accepted/rejected counts per mode
+  - trades added or removed versus the chosen baseline
+  - entry, stoploss, and target differences
+  - P&L deltas
+  - branch and workbook-row differences
+  - rejection and monthly-status skip summaries
+  - input-dataset paths and cost settings recorded per mode
+  - explicit apples-to-apples integrity status so mismatched datasets, fallback paths, or cost settings are called out instead of being compared silently
+  - runtime and performance summary for the comparison tool itself
 - example command:
 
 ```powershell
-python scripts/compare_backtest_reports.py --report base=tmp/S23_historical_monthly_status_backtest.json --report recalc=tmp/S23_historical_monthly_status_recalc_backtest.json --report chain=tmp/S23_historical_monthly_status_recalc_chain_contract_backtest.json --out tmp/S23_mode_comparison.json --markdown-out tmp/S23_mode_comparison.md
+python scripts/compare_backtest_reports.py --report base=tmp/S23_historical_backtest_costed.json --report monthly_status=tmp/S23_historical_monthly_status_backtest.json --report recalculation=tmp/S23_historical_monthly_status_recalc_backtest.json --report current_day_fsl_trp=tmp/S23_historical_current_day_fsl_trp_backtest.json --report option_chain=tmp/S23_historical_monthly_status_recalc_chain_backtest.json --report contract_specific_lifecycle=tmp/S23_historical_monthly_status_recalc_chain_contract_backtest.json --max-trades 200 --timeout-seconds 10 --out tmp/S23_mode_comparison.json --markdown-out tmp/S23_mode_comparison.md
 ```
 
+Normalized apples-to-apples lifecycle-source comparison:
+
+- use the monthly-status plus recalculation plus option-chain path as the lifecycle baseline
+- keep the same daily, monthly, weekly, option-level, option-intraday, spot-intraday, option-chain, and cost inputs for both reports
+- pass `--contract-intraday-csv` to both runs so the dataset path is recorded consistently
+- enable `--enable-contract-specific-lifecycle` only for the contract-specific report
+- this isolates lifecycle data-source impact without changing strategy formulas or branch selection
+
+Baseline command:
+
+```powershell
+python scripts/run_backtest.py --strategy-root config/strategies/options_sell/nifty --use-monthly-status-engine --monthly-csv tests/fixtures/backtest/s23_monthly.csv --weekly-csv tests/fixtures/backtest/s23_weekly.csv --daily-csv tests/fixtures/backtest/s23_daily_multi.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels_multi.csv --option-intraday-csv tests/fixtures/backtest/s23_option_intraday.csv --spot-intraday-csv tests/fixtures/backtest/s23_spot_intraday.csv --option-chain-csv tests/fixtures/backtest/s23_option_chain.csv --contract-intraday-csv tests/fixtures/backtest/s23_contract_intraday.csv --enable-option-chain-selection --historical --eod-policy square_off_at_close --enable-s23-recalculation --slippage-points-per-side 1.0 --brokerage-points-per-trade 0.5 --other-cost-points-per-trade 0.5 --out tmp/S23_historical_monthly_status_recalc_chain_lifecycle_baseline.json --markdown-out tmp/S23_historical_monthly_status_recalc_chain_lifecycle_baseline.md
+```
+
+Contract-specific command:
+
+```powershell
+python scripts/run_backtest.py --strategy-root config/strategies/options_sell/nifty --use-monthly-status-engine --monthly-csv tests/fixtures/backtest/s23_monthly.csv --weekly-csv tests/fixtures/backtest/s23_weekly.csv --daily-csv tests/fixtures/backtest/s23_daily_multi.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels_multi.csv --option-intraday-csv tests/fixtures/backtest/s23_option_intraday.csv --spot-intraday-csv tests/fixtures/backtest/s23_spot_intraday.csv --option-chain-csv tests/fixtures/backtest/s23_option_chain.csv --contract-intraday-csv tests/fixtures/backtest/s23_contract_intraday.csv --enable-option-chain-selection --enable-contract-specific-lifecycle --historical --eod-policy square_off_at_close --enable-s23-recalculation --slippage-points-per-side 1.0 --brokerage-points-per-trade 0.5 --other-cost-points-per-trade 0.5 --out tmp/S23_historical_monthly_status_recalc_chain_contract_lifecycle_normalized.json --markdown-out tmp/S23_historical_monthly_status_recalc_chain_contract_lifecycle_normalized.md
+```
+
+Comparison command:
+
+```powershell
+python scripts/compare_backtest_reports.py --report base=tmp/S23_historical_monthly_status_recalc_chain_lifecycle_baseline.json --report contract_specific_lifecycle=tmp/S23_historical_monthly_status_recalc_chain_contract_lifecycle_normalized.json --max-trades 200 --timeout-seconds 10 --out tmp/S23_contract_lifecycle_source_comparison.json --markdown-out tmp/S23_contract_lifecycle_source_comparison.md
+```
+
+With the current fixture set, that normalized comparison should report:
+
+- `apples_to_apples: yes`
+- `selected contracts: 10`
+- `contract bars found and used: 3`
+- `generic fallback used: 7`
+- `entry/SL/target differences: 0`
+- one isolated P&L delta where selected-contract bars are available
 ## CSV Backtest Input
 
 The current backtest foundation can also run from local CSV files.
@@ -481,9 +535,9 @@ Current offline modes:
 - historical replay with intraday option CSV: rolling candidate evaluation plus first-pass lifecycle simulation
 - historical replay with opt-in S23 recalculation: the same historical path plus ORPT missed-entry detection and recalculated effective lifecycle plans for S23 branches only
 - historical replay with opt-in S23 recalculation plus spot intraday CSV: the recalculation path can use explicit spot/index ORPT and recalculation snapshots instead of market-level fallback values
-- historical replay with opt-in S23 current-day FSL / TRP handling: the same historical path can apply workbook-backed `09:15 -> ORPT / RC` current-day branch handling for the confirmed `AB6 OS` rows `183-188`
+- historical replay with opt-in S23 current-day FSL / TRP handling: the same historical path can apply workbook-backed `09:15 -> ORPT / RC` current-day branch handling for the confirmed `AB6 OS` rows `183-188`, including `Z183:Z186` entry-price overrides for the supported `183-186` rows
 - historical replay with opt-in option-chain selection: the same historical path can now require an actual contract candidate from offline chain data before the candidate remains accepted
-- historical replay with opt-in contract-specific lifecycle pricing: the same historical path can now use symbol-specific intraday bars for the selected contract when those bars are available
+- historical replay with opt-in contract-specific lifecycle pricing: the same historical path can now use symbol-specific intraday bars for the selected contract when those bars are available, and it now records explicit provenance whenever it falls back to the generic option series
 - shared-data-root mode: the same snapshot or historical paths can now source normalized CSV inputs from a shared archive root instead of passing each file path separately
 
 This remains a structural backtest only:
@@ -569,3 +623,5 @@ Parameterized support is additive:
 - old formulas still evaluate
 - old YAML files still load
 - parameter-aware backtests can be added incrementally
+
+

@@ -235,6 +235,131 @@ def _to_jsonable(value: Any) -> Any:
     return value
 
 
+def _is_project_fixture_path(path: Path | None) -> bool:
+    if path is None:
+        return False
+    normalized = path.as_posix().lower()
+    return (
+        "/tests/fixtures/" in normalized
+        or normalized.startswith("tests/fixtures/")
+        or normalized.endswith("/tests/fixtures")
+        or normalized == "tests/fixtures"
+    )
+
+
+def _is_generated_synthetic_fixture_path(path: Path | None) -> bool:
+    if path is None:
+        return False
+    normalized = path.as_posix().lower()
+    return (
+        "/tests/_tmp_pytest_local/" in normalized
+        or normalized.startswith("tests/_tmp_pytest_local/")
+        or normalized.endswith("/tests/_tmp_pytest_local")
+        or normalized == "tests/_tmp_pytest_local"
+    )
+
+
+def _build_input_metadata(
+    *,
+    daily_csv: Path | None,
+    option_levels_csv: Path | None,
+    option_intraday_csv: Path | None,
+    spot_intraday_csv: Path | None,
+    monthly_csv: Path | None,
+    weekly_csv: Path | None,
+    option_chain_csv: Path | None,
+    contract_intraday_csv: Path | None,
+    use_monthly_status_engine: bool,
+    enable_s23_recalculation: bool,
+    enable_s23_current_day_fsl_trp: bool,
+    enable_option_chain_selection: bool,
+    enable_contract_specific_lifecycle: bool,
+) -> dict[str, Any]:
+    def dataset_entry(path: Path | None, *, used: bool, fallback_behavior: str | None = None) -> dict[str, Any]:
+        return {
+            "path": str(path) if path is not None else None,
+            "provided": path is not None,
+            "used": used,
+            "fallback_behavior": fallback_behavior,
+            "project_fixture": _is_project_fixture_path(path),
+            "synthetic_fixture": _is_generated_synthetic_fixture_path(path),
+        }
+
+    datasets = {
+        "daily": dataset_entry(daily_csv, used=daily_csv is not None),
+        "option_levels": dataset_entry(
+            option_levels_csv,
+            used=option_levels_csv is not None,
+        ),
+        "option_intraday": dataset_entry(
+            option_intraday_csv,
+            used=option_intraday_csv is not None,
+        ),
+        "spot_intraday": dataset_entry(
+            spot_intraday_csv,
+            used=spot_intraday_csv is not None and (
+                enable_s23_recalculation or enable_s23_current_day_fsl_trp
+            ),
+            fallback_behavior=(
+                "current_day_market_levels"
+                if spot_intraday_csv is None
+                and (enable_s23_recalculation or enable_s23_current_day_fsl_trp)
+                else None
+            ),
+        ),
+        "monthly": dataset_entry(
+            monthly_csv,
+            used=monthly_csv is not None and use_monthly_status_engine,
+        ),
+        "weekly": dataset_entry(
+            weekly_csv,
+            used=weekly_csv is not None and use_monthly_status_engine,
+        ),
+        "option_chain": dataset_entry(
+            option_chain_csv,
+            used=option_chain_csv is not None and enable_option_chain_selection,
+        ),
+        "contract_intraday": dataset_entry(
+            contract_intraday_csv,
+            used=(
+                contract_intraday_csv is not None
+                and enable_contract_specific_lifecycle
+            ),
+        ),
+    }
+    synthetic_fixture_data_used = any(
+        _is_generated_synthetic_fixture_path(path)
+        for path in (
+            daily_csv,
+            option_levels_csv,
+            option_intraday_csv,
+            spot_intraday_csv,
+            monthly_csv,
+            weekly_csv,
+            option_chain_csv,
+            contract_intraday_csv,
+        )
+    )
+    project_fixture_data_used = any(
+        _is_project_fixture_path(path)
+        for path in (
+            daily_csv,
+            option_levels_csv,
+            option_intraday_csv,
+            spot_intraday_csv,
+            monthly_csv,
+            weekly_csv,
+            option_chain_csv,
+            contract_intraday_csv,
+        )
+    )
+    return {
+        "datasets": datasets,
+        "synthetic_fixture_data_used": synthetic_fixture_data_used,
+        "project_fixture_data_used": project_fixture_data_used,
+    }
+
+
 def _format_number(value: Any, *, digits: int = 2) -> str:
     if value is None:
         return "-"
@@ -399,6 +524,46 @@ def _render_historical_markdown(report: dict[str, Any]) -> str:
             f"{_format_number(lifecycle.get('max_adverse_excursion'), digits=2)} | "
             f"{_format_number(lifecycle.get('bars_held'))} |"
         )
+
+    contract_specific_rows: list[tuple[dict[str, Any], dict[str, Any], dict[str, Any]]] = []
+    for evaluation in evaluations:
+        validation = evaluation.get("validation") or {}
+        if not isinstance(validation, dict):
+            continue
+        contract_specific = validation.get("contract_specific_lifecycle")
+        if not isinstance(contract_specific, dict):
+            continue
+        option_chain = validation.get("option_chain_selection") or {}
+        if not isinstance(option_chain, dict):
+            option_chain = {}
+        selected_contract = option_chain.get("selected_contract") or {}
+        if not isinstance(selected_contract, dict):
+            selected_contract = {}
+        contract_specific_rows.append((evaluation, contract_specific, selected_contract))
+
+    if contract_specific_rows:
+        lines.extend(
+            [
+                "",
+                "## Contract-Specific Lifecycle Provenance",
+                "",
+                "| Timestamp | Selected Contract | Price Source | Contract Bars Found | Bars Available | Usable Bars | Generic Fallback | Fallback Reason | Bars Used |",
+                "| --- | --- | --- | --- | ---: | ---: | --- | --- | ---: |",
+            ]
+        )
+        for evaluation, audit, selected_contract in contract_specific_rows:
+            lines.append(
+                "| "
+                f"{evaluation['timestamp']} | "
+                f"{audit.get('selected_contract_symbol') or selected_contract.get('symbol') or '-'} | "
+                f"{audit.get('lifecycle_price_source') or '-'} | "
+                f"{audit.get('contract_specific_intraday_found')} | "
+                f"{_format_number(audit.get('contract_specific_bars_available_count'))} | "
+                f"{_format_number(audit.get('contract_specific_bars_usable_count'))} | "
+                f"{audit.get('generic_fallback_used')} | "
+                f"{audit.get('fallback_reason') or '-'} | "
+                f"{_format_number(audit.get('lifecycle_bars_used_count'))} |"
+            )
 
     return "\n".join(lines) + "\n"
 
@@ -713,6 +878,21 @@ def main() -> int:
         return 1
 
     if mode == "historical":
+        input_metadata = _build_input_metadata(
+            daily_csv=daily_csv,
+            option_levels_csv=option_levels_csv,
+            option_intraday_csv=option_intraday_csv,
+            spot_intraday_csv=spot_intraday_csv,
+            monthly_csv=monthly_csv,
+            weekly_csv=weekly_csv,
+            option_chain_csv=option_chain_csv,
+            contract_intraday_csv=contract_intraday_csv,
+            use_monthly_status_engine=args.use_monthly_status_engine,
+            enable_s23_recalculation=args.enable_s23_recalculation,
+            enable_s23_current_day_fsl_trp=args.enable_s23_current_day_fsl_trp,
+            enable_option_chain_selection=args.enable_option_chain_selection,
+            enable_contract_specific_lifecycle=args.enable_contract_specific_lifecycle,
+        )
         output = {
             "strategy_path": str(report.strategy_path) if report.strategy_path is not None else None,
             "strategy_root": str(report.strategy_root) if report.strategy_root is not None else None,
@@ -720,6 +900,7 @@ def main() -> int:
             "mode": mode,
             "eod_policy": eod_policy.value,
             "cost_model": _to_jsonable(cost_model),
+            "input_metadata": _to_jsonable(input_metadata),
             "evaluations": _to_jsonable(report.evaluations),
             "metrics": _to_jsonable(report.metrics),
             "monthly_status_skips": _to_jsonable(list(report.monthly_status_skips)),
@@ -737,11 +918,27 @@ def main() -> int:
             if resolved_shared_dataset is not None:
                 output["shared_data_dataset"] = _to_jsonable(resolved_shared_dataset)
     else:
+        input_metadata = _build_input_metadata(
+            daily_csv=daily_csv,
+            option_levels_csv=option_levels_csv,
+            option_intraday_csv=option_intraday_csv,
+            spot_intraday_csv=spot_intraday_csv,
+            monthly_csv=monthly_csv,
+            weekly_csv=weekly_csv,
+            option_chain_csv=option_chain_csv,
+            contract_intraday_csv=contract_intraday_csv,
+            use_monthly_status_engine=False,
+            enable_s23_recalculation=False,
+            enable_s23_current_day_fsl_trp=False,
+            enable_option_chain_selection=False,
+            enable_contract_specific_lifecycle=False,
+        )
         metrics = build_backtest_metrics([result])
         output = {
             "strategy_path": str(strategy_path),
             "mode": mode,
             "cost_model": _to_jsonable(cost_model),
+            "input_metadata": _to_jsonable(input_metadata),
             "validation": _to_jsonable(result.validation),
             "result": _to_jsonable(result),
             "metrics": _to_jsonable(metrics),

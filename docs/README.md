@@ -13,13 +13,13 @@ This folder contains the TFIS design, governance, importer, and operations docum
 - monthly-status support now includes thresholds, a diagnostic decision table, a deterministic status engine, a CLI report, manual review scenarios, an opt-in historical branch-selection mode, and an opt-in S23 recalculation path with optional spot intraday sourcing
 - historical backtests can now also opt into workbook-backed S23 current-day `FSL / TRP missed / not-missed` handling for the confirmed `AB6 OS` rows `183-188`
 - historical backtests can now opt into offline option-chain contract selection realism without changing the default path
-- historical backtests can now also opt into contract-specific lifecycle pricing when symbol-keyed intraday option bars exist for the selected contract
+- historical backtests can now also opt into contract-specific lifecycle pricing when symbol-keyed intraday option bars exist for the selected contract; the current fixture-backed archive now covers all 10 selected-contract evaluations with no fallback
 - historical backtests can now review expiry-day full-exit compliance from selected contract expiry metadata
 - a read-only shared captured-data adapter is now available for normalized CSV roots
-- a read-only comparison tool is now available for generated historical backtest mode reports
+- a bounded read-only comparison tool is now available for generated historical backtest mode reports
 - reference materials are indexed with review workflow and archive-governance guidance
 - current quality snapshot:
-  - tests passing: `265`
+  - tests passing: `274`
   - `python scripts/validate_project.py`: passed
 
 ## Architecture
@@ -38,6 +38,7 @@ This folder contains the TFIS design, governance, importer, and operations docum
 - [monthly_option_buying_design.md](strategy/monthly_option_buying_design.md)
 - [rollover_rules_design.md](strategy/rollover_rules_design.md)
 - [rule_model.md](strategy/rule_model.md)
+- [s23_contract_archive_ingestion_plan.md](strategy/s23_contract_archive_ingestion_plan.md)
 - [s23_gap_recalculation_design.md](strategy/s23_gap_recalculation_design.md)
 - [strategy_config_layout.md](strategy/strategy_config_layout.md)
 - [strategy_relevance_and_data_governance.md](strategy/strategy_relevance_and_data_governance.md)
@@ -61,10 +62,12 @@ This folder contains the TFIS design, governance, importer, and operations docum
 - [next_steps.md](operations/next_steps.md)
 - [open_questions.md](operations/open_questions.md)
 - [project_rulebook.md](operations/project_rulebook.md)
+- [s23_live_paper_data_contract.md](operations/s23_live_paper_data_contract.md)
+- [s23_paper_session_state_machine.md](operations/s23_paper_session_state_machine.md)
+- [s23_paper_trading_readiness_audit.md](operations/s23_paper_trading_readiness_audit.md)
 
 ## Still Pending
 
-- wider comparison reporting across S23 historical modes
 - fuller missed-entry / recalculation engine
 - futures rollover lifecycle module
 - monthly option buying engine

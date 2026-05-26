@@ -639,6 +639,7 @@ class HistoricalBacktestRunner:
                 rule=rule,
                 base_trade_plan=result.trade_plan,
                 market_levels=market_levels,
+                option_levels=opt_levels,
                 intraday_bars=intraday_bars,
                 spot_intraday_bars=spot_intraday_bars,
             )
@@ -828,41 +829,68 @@ class HistoricalBacktestRunner:
         if selection_result is not None and selection_result.selected_contract is not None:
             selected_symbol = selection_result.selected_contract.symbol
 
+        available_contract_bars: list[OhlcBar] = []
+        if selected_symbol is not None:
+            available_contract_bars = list(
+                contract_intraday_lookup.get(session_date, {}).get(selected_symbol, [])
+            )
+
+        contract_bars = (
+            resolve_contract_intraday_bars(
+                contract_intraday_lookup,
+                session_date=session_date,
+                symbol=selected_symbol,
+                after_timestamp=cutoff_timestamp,
+            )
+            if selected_symbol is not None
+            else []
+        )
+
         audit: dict[str, object] = {
             "enabled": True,
             "selected_contract_symbol": selected_symbol,
             "lifecycle_price_source": "generic_option_series",
+            "contract_specific_intraday_found": bool(available_contract_bars),
+            "generic_fallback_used": True,
+            "fallback_reason": None,
+            "contract_specific_bars_available_count": len(available_contract_bars),
+            "contract_specific_bars_usable_count": len(contract_bars),
+            "generic_intraday_bar_count": len(generic_intraday_bars),
+            "lifecycle_bars_used_count": len(generic_intraday_bars),
+            "lifecycle_start_cutoff_timestamp": (
+                cutoff_timestamp.isoformat() if cutoff_timestamp is not None else None
+            ),
             "warning": None,
             "notes": [
                 "Contract-specific lifecycle pricing is opt-in and only applies after option-chain contract selection.",
                 "If matching symbol-keyed contract intraday bars are unavailable, TFIS falls back to the generic option intraday series.",
+                "The audit now records contract-specific bar availability, usable post-cutoff bars, fallback reason, and the lifecycle series that was actually used.",
             ],
         }
 
         if selected_symbol is None:
+            audit["fallback_reason"] = "no_selected_contract"
             audit["warning"] = (
                 "No selected option-chain contract was available; generic option intraday series kept."
             )
             return generic_intraday_bars, audit
 
-        contract_bars = resolve_contract_intraday_bars(
-            contract_intraday_lookup,
-            session_date=session_date,
-            symbol=selected_symbol,
-            after_timestamp=cutoff_timestamp,
-        )
         if contract_bars:
             audit["lifecycle_price_source"] = "contract_specific_series"
+            audit["generic_fallback_used"] = False
+            audit["lifecycle_bars_used_count"] = len(contract_bars)
             return contract_bars, audit
 
-        if contract_intraday_lookup.get(session_date, {}).get(selected_symbol) is None:
+        if not available_contract_bars:
+            audit["fallback_reason"] = "missing_contract_intraday_for_selected_symbol"
             audit["warning"] = (
                 "Selected contract intraday bars were not found; fell back to generic option intraday series."
             )
         else:
+            audit["fallback_reason"] = "no_contract_intraday_after_lifecycle_cutoff"
             audit["warning"] = (
                 "Selected contract intraday bars existed only before the effective lifecycle start cutoff; fell back to generic option intraday series."
-        )
+            )
         return generic_intraday_bars, audit
 
     def _apply_s23_current_day_fsl_trp_if_needed(
@@ -871,6 +899,7 @@ class HistoricalBacktestRunner:
         rule: StrategyRule,
         base_trade_plan,
         market_levels,
+        option_levels: dict[str, float],
         intraday_bars: list[OhlcBar],
         spot_intraday_bars: list[OhlcBar],
     ) -> tuple[object, list[OhlcBar], dict[str, object]]:
@@ -885,8 +914,10 @@ class HistoricalBacktestRunner:
             "recalculation_snapshot": None,
             "trigger_result": None,
             "result": None,
+            "entry_override": None,
             "resolved_workbook_clarifications": [],
             "notes": [
+                "Rows 183-186 can also apply workbook-backed current-day option-entry overrides from Z183:Z186 when those cells are populated.",
                 "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
                 "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
                 "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path.",
@@ -950,6 +981,7 @@ class HistoricalBacktestRunner:
                 branch_unique_code=rule.unique_code,
                 base_trade_plan=base_trade_plan,
                 market_levels=market_levels,
+                option_levels=option_levels,
                 trigger_snapshot_at_0915=trigger_snapshot,
                 snapshot_at_orpt=orpt_snapshot,
                 snapshot_at_recalc=recalculation_snapshot,
@@ -983,6 +1015,11 @@ class HistoricalBacktestRunner:
                 if handling_result.recalculated_minimum_premium is not None
                 else base_trade_plan.minimum_premium
             ),
+            entry_price=(
+                handling_result.recalculated_entry_price
+                if handling_result.recalculated_entry_price is not None
+                else base_trade_plan.entry_price
+            ),
             stoploss_price=(
                 handling_result.recalculated_stoploss_price
                 if handling_result.recalculated_stoploss_price is not None
@@ -990,6 +1027,13 @@ class HistoricalBacktestRunner:
             ),
         )
 
+        base_audit["entry_override"] = {
+            "applied": handling_result.recalculated_entry_price is not None,
+            "source_cell": handling_result.entry_override_source_cell,
+            "original_entry_price": base_trade_plan.entry_price,
+            "overridden_entry_price": handling_result.recalculated_entry_price,
+            "effective_entry_price": effective_trade_plan.entry_price,
+        }
         base_audit["applied"] = handling_result.applied
         base_audit["trigger_result"] = self._current_day_fsl_trp_trigger_to_dict(
             handling_result.trigger_result
@@ -1342,7 +1386,9 @@ class HistoricalBacktestRunner:
             "recalculated_end_strike": result.recalculated_end_strike,
             "recalculated_ideal_premium": result.recalculated_ideal_premium,
             "recalculated_minimum_premium": result.recalculated_minimum_premium,
+            "recalculated_entry_price": result.recalculated_entry_price,
             "recalculated_stoploss_price": result.recalculated_stoploss_price,
+            "entry_override_source_cell": result.entry_override_source_cell,
             "lifecycle_start_after": (
                 result.lifecycle_start_after.isoformat()
                 if result.lifecycle_start_after is not None

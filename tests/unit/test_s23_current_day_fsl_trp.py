@@ -51,12 +51,24 @@ def _snapshot(
     )
 
 
-def test_row_183_bull_call_not_missed_recalculates_only_workbook_backed_fields() -> None:
+def _option_levels(
+    *,
+    opt_prv_2dll: float = 204.0,
+    opt_prv_3dll: float = 210.0,
+) -> dict[str, float]:
+    return {
+        "OPT_PRV_2DLL": opt_prv_2dll,
+        "OPT_PRV_3DLL": opt_prv_3dll,
+    }
+
+
+def test_row_183_bull_call_not_missed_recalculates_workbook_backed_entry_and_strike_fields() -> None:
     result = S23CurrentDayFslTrpEngine().apply(
         S23CurrentDayFslTrpInput(
             branch_unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D",
             base_trade_plan=_base_trade_plan(option_type=OptionType.CALL),
             market_levels=MarketLevels(d3ll=21950.0),
+            option_levels=_option_levels(opt_prv_3dll=210.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 18, 9, 15, 0),
                 spot_low=22210.0,
@@ -89,18 +101,21 @@ def test_row_183_bull_call_not_missed_recalculates_only_workbook_backed_fields()
     assert result.recalculated_end_strike == 21869
     assert result.recalculated_ideal_premium == pytest.approx(262.44)
     assert result.recalculated_minimum_premium == pytest.approx(196.83)
+    assert result.recalculated_entry_price == pytest.approx(194.25)
+    assert result.entry_override_source_cell == "AB6_OS_Z183"
     assert result.recalculated_stoploss_price is None
     assert result.lifecycle_start_after == datetime(2026, 5, 18, 9, 24, 59)
     assert result.source_rule == "AB6_OS_ROW_183"
-    assert result.unsupported_fields == ("entry_price", "target_price", "stoploss_price")
+    assert result.unsupported_fields == ("target_price", "stoploss_price")
 
 
-def test_row_184_bull_call_missed_uses_workbook_directed_put_formula_family() -> None:
+def test_row_184_bull_call_missed_uses_workbook_directed_put_formula_family_and_entry_override() -> None:
     result = S23CurrentDayFslTrpEngine().apply(
         S23CurrentDayFslTrpInput(
             branch_unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D",
             base_trade_plan=_base_trade_plan(option_type=OptionType.CALL),
             market_levels=MarketLevels(d2hh=22410.0),
+            option_levels=_option_levels(opt_prv_2dll=204.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 18, 9, 15, 0),
                 spot_low=22210.0,
@@ -133,14 +148,16 @@ def test_row_184_bull_call_missed_uses_workbook_directed_put_formula_family() ->
     assert result.recalculated_end_strike == 22651
     assert result.recalculated_ideal_premium == pytest.approx(265.44)
     assert result.recalculated_minimum_premium == pytest.approx(199.08)
+    assert result.recalculated_entry_price == pytest.approx(188.7)
+    assert result.entry_override_source_cell == "AB6_OS_Z184"
     assert result.recalculated_stoploss_price == pytest.approx(353.1)
     assert result.lifecycle_start_after == datetime(2026, 5, 18, 9, 29, 59)
     assert result.source_rule == "AB6_OS_ROW_184"
-    assert result.unsupported_fields == ("entry_price", "target_price")
-    assert any("Put-side Q/R/S/U/W family intentional" in note for note in result.audit_notes)
+    assert result.unsupported_fields == ("target_price",)
+    assert any("Put-side Q/R/S/U/W/Z family intentional" in note for note in result.audit_notes)
 
 
-def test_row_185_bear_call_missed_recalculates_strike_premium_and_fsl() -> None:
+def test_row_185_bear_call_missed_recalculates_strike_premium_entry_and_fsl() -> None:
     result = S23CurrentDayFslTrpEngine().apply(
         S23CurrentDayFslTrpInput(
             branch_unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
@@ -149,6 +166,7 @@ def test_row_185_bear_call_missed_recalculates_strike_premium_and_fsl() -> None:
                 stoploss_price=320.0,
             ),
             market_levels=MarketLevels(d2ll=22010.0),
+            option_levels=_option_levels(opt_prv_2dll=204.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 21, 9, 15, 0),
                 spot_low=22310.0,
@@ -180,10 +198,12 @@ def test_row_185_bear_call_missed_recalculates_strike_premium_and_fsl() -> None:
     assert result.recalculated_end_strike == 21919
     assert result.recalculated_ideal_premium == pytest.approx(263.04)
     assert result.recalculated_minimum_premium == pytest.approx(197.28)
+    assert result.recalculated_entry_price == pytest.approx(188.7)
+    assert result.entry_override_source_cell == "AB6_OS_Z185"
     assert result.recalculated_stoploss_price == pytest.approx(374.0)
 
 
-def test_row_186_bear_put_not_missed_recalculates_only_confirmed_fields() -> None:
+def test_row_186_bear_put_not_missed_recalculates_entry_and_other_confirmed_fields() -> None:
     result = S23CurrentDayFslTrpEngine().apply(
         S23CurrentDayFslTrpInput(
             branch_unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
@@ -193,6 +213,7 @@ def test_row_186_bear_put_not_missed_recalculates_only_confirmed_fields() -> Non
                 stoploss_price=319.93,
             ),
             market_levels=MarketLevels(d3hh=22410.0),
+            option_levels=_option_levels(opt_prv_3dll=210.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 18, 9, 15, 0),
                 spot_low=22230.0,
@@ -224,10 +245,12 @@ def test_row_186_bear_put_not_missed_recalculates_only_confirmed_fields() -> Non
     assert result.recalculated_end_strike == 22511
     assert result.recalculated_ideal_premium == pytest.approx(265.44)
     assert result.recalculated_minimum_premium == pytest.approx(199.08)
+    assert result.recalculated_entry_price == pytest.approx(194.25)
+    assert result.entry_override_source_cell == "AB6_OS_Z186"
     assert result.recalculated_stoploss_price is None
 
 
-def test_rows_187_and_188_apply_only_fsl_and_do_not_infer_blank_fields() -> None:
+def test_rows_187_and_188_apply_only_fsl_and_do_not_infer_blank_entry_or_premium_fields() -> None:
     engine = S23CurrentDayFslTrpEngine()
     bull_result = engine.apply(
         S23CurrentDayFslTrpInput(
@@ -238,6 +261,7 @@ def test_rows_187_and_188_apply_only_fsl_and_do_not_infer_blank_fields() -> None
                 stoploss_price=320.0,
             ),
             market_levels=MarketLevels(d2hh=22500.0),
+            option_levels=_option_levels(),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 23, 9, 15, 0),
                 spot_low=22210.0,
@@ -270,6 +294,7 @@ def test_rows_187_and_188_apply_only_fsl_and_do_not_infer_blank_fields() -> None
                 stoploss_price=319.93,
             ),
             market_levels=MarketLevels(d3hh=22600.0),
+            option_levels=_option_levels(),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 21, 9, 15, 0),
                 spot_low=22310.0,
@@ -298,12 +323,16 @@ def test_rows_187_and_188_apply_only_fsl_and_do_not_infer_blank_fields() -> None
     assert bull_result.recalculated_stoploss_price == pytest.approx(374.0)
     assert bull_result.recalculated_start_strike is None
     assert bull_result.recalculated_ideal_premium is None
-    assert "start_strike" in bull_result.unsupported_fields
+    assert bull_result.recalculated_entry_price is None
+    assert bull_result.entry_override_source_cell is None
+    assert "entry_price" in bull_result.unsupported_fields
 
     assert bear_result.row_number == 188
     assert bear_result.recalculated_stoploss_price == pytest.approx(374.5)
     assert bear_result.recalculated_end_strike is None
     assert bear_result.recalculated_minimum_premium is None
+    assert bear_result.recalculated_entry_price is None
+    assert bear_result.entry_override_source_cell is None
     assert "minimum_premium" in bear_result.unsupported_fields
 
 
@@ -317,6 +346,7 @@ def test_unsupported_not_missed_paths_are_not_inferred() -> None:
                 stoploss_price=320.0,
             ),
             market_levels=MarketLevels(d2hh=22500.0),
+            option_levels=_option_levels(),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 23, 9, 15, 0),
                 spot_low=22210.0,
@@ -345,4 +375,5 @@ def test_unsupported_not_missed_paths_are_not_inferred() -> None:
     assert result.reason == "bull_put_not_missed_not_confirmed"
     assert result.row_number is None
     assert result.recalculated_start_strike is None
+    assert result.recalculated_entry_price is None
     assert any("not-missed row" in note for note in result.audit_notes)

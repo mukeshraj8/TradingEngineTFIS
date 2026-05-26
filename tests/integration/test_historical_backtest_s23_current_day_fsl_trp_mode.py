@@ -197,7 +197,7 @@ def test_default_historical_backtest_is_unchanged_without_current_day_fsl_trp_fl
     assert "s23_current_day_fsl_trp" not in report["evaluations"][0]["validation"]
 
 
-def test_row_184_bull_call_missed_updates_effective_plan_and_records_resolution_audit() -> None:
+def test_row_184_bull_call_missed_updates_effective_plan_entry_and_records_resolution_audit() -> None:
     tmp_path = _make_local_tmp_dir()
     option_csv = tmp_path / "option_row_184.csv"
     spot_csv = tmp_path / "spot_row_184.csv"
@@ -241,18 +241,28 @@ def test_row_184_bull_call_missed_updates_effective_plan_and_records_resolution_
     assert audit["applied"] is True
     assert audit["result"]["row_number"] == 184
     assert audit["result"]["effective_option_type"] == "PUT"
+    assert audit["result"]["recalculated_entry_price"] == pytest.approx(188.7)
+    assert audit["result"]["entry_override_source_cell"] == "AB6_OS_Z184"
+    assert audit["entry_override"] == {
+        "applied": True,
+        "source_cell": "AB6_OS_Z184",
+        "original_entry_price": pytest.approx(197.95),
+        "overridden_entry_price": pytest.approx(188.7),
+        "effective_entry_price": pytest.approx(188.7),
+    }
     assert audit["resolved_workbook_clarifications"]
     assert (
         audit["resolved_workbook_clarifications"][0]["id"]
         == "s23_fsl_trp_row_184_mixed_mapping"
     )
     assert evaluation["trade_outputs"]["start_strike"] == 21518
+    assert evaluation["trade_outputs"]["entry_price"] == pytest.approx(188.7)
     assert evaluation["trade_outputs"]["ideal_premium"] == pytest.approx(265.44)
     assert evaluation["trade_outputs"]["minimum_premium"] == pytest.approx(199.08)
     assert evaluation["trade_outputs"]["stoploss_price"] == pytest.approx(353.1)
 
 
-def test_row_187_bull_put_missed_is_fsl_only_and_does_not_infer_blank_fields() -> None:
+def test_row_187_bull_put_missed_is_fsl_only_and_does_not_infer_blank_entry_fields() -> None:
     tmp_path = _make_local_tmp_dir()
     option_csv = tmp_path / "option_row_187.csv"
     spot_csv = tmp_path / "spot_row_187.csv"
@@ -294,12 +304,24 @@ def test_row_187_bull_put_missed_is_fsl_only_and_does_not_infer_blank_fields() -
 
     assert audit["applied"] is True
     assert audit["result"]["row_number"] == 187
+    assert audit["result"]["recalculated_entry_price"] is None
+    assert audit["result"]["entry_override_source_cell"] is None
+    assert audit["entry_override"] == {
+        "applied": False,
+        "source_cell": None,
+        "original_entry_price": pytest.approx(audit["base_trade_plan"]["entry_price"]),
+        "overridden_entry_price": None,
+        "effective_entry_price": pytest.approx(audit["effective_trade_plan"]["entry_price"]),
+    }
     assert evaluation["trade_outputs"]["start_strike"] == pytest.approx(
         audit["base_trade_plan"]["start_strike"]
+    )
+    assert evaluation["trade_outputs"]["entry_price"] == pytest.approx(
+        audit["base_trade_plan"]["entry_price"]
     )
     assert evaluation["trade_outputs"]["ideal_premium"] == pytest.approx(
         audit["base_trade_plan"]["ideal_premium"]
     )
     assert evaluation["trade_outputs"]["stoploss_price"] == pytest.approx(374.0)
-    assert "start_strike" in audit["result"]["unsupported_fields"]
+    assert "entry_price" in audit["result"]["unsupported_fields"]
     assert "minimum_premium" in audit["result"]["unsupported_fields"]

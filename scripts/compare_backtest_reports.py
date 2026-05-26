@@ -11,9 +11,10 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from tfis.backtest.report_comparison import (
-    compare_backtest_reports,
+    BacktestReportComparisonError,
+    ComparisonLimits,
     comparison_to_dict,
-    load_backtest_report,
+    load_and_compare_backtest_reports,
     render_comparison_markdown,
 )
 
@@ -32,6 +33,24 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--markdown-out",
         help="Optional path for markdown comparison output",
+    )
+    parser.add_argument(
+        "--max-trades",
+        type=int,
+        default=10000,
+        help="Maximum evaluations to normalize per report before truncating comparison detail.",
+    )
+    parser.add_argument(
+        "--max-file-bytes",
+        type=int,
+        default=5_000_000,
+        help="Maximum JSON file size accepted for comparison.",
+    )
+    parser.add_argument(
+        "--timeout-seconds",
+        type=float,
+        default=10.0,
+        help="Cooperative timeout for bounded comparison processing.",
     )
     return parser
 
@@ -55,16 +74,36 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
 
-    labeled_reports = []
+    if args.max_trades <= 0:
+        parser.error("--max-trades must be positive.")
+    if args.max_file_bytes <= 0:
+        parser.error("--max-file-bytes must be positive.")
+    if args.timeout_seconds <= 0:
+        parser.error("--timeout-seconds must be positive.")
+
+    labeled_reports: list[tuple[str, Path]] = []
     for raw_report in args.report:
         try:
             label, path = _parse_report_arg(raw_report)
         except ValueError as exc:
             parser.error(str(exc))
-        report = load_backtest_report(path)
-        labeled_reports.append((label, path, report))
+        labeled_reports.append((label, path))
 
-    comparison = compare_backtest_reports(labeled_reports)
+    limits = ComparisonLimits(
+        max_file_bytes=args.max_file_bytes,
+        max_trades=args.max_trades,
+        timeout_seconds=args.timeout_seconds,
+    )
+
+    try:
+        comparison = load_and_compare_backtest_reports(
+            labeled_reports,
+            limits=limits,
+        )
+    except BacktestReportComparisonError as exc:
+        print(f"Comparison failed: {exc}", file=sys.stderr)
+        return 1
+
     output = comparison_to_dict(comparison)
 
     out_path = Path(args.out)
