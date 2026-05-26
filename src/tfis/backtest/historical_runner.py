@@ -10,8 +10,14 @@ import yaml
 
 from tfis.backtest.backtest_runner import BacktestRunner
 from tfis.backtest.cost_model import CostModel
+from tfis.backtest.contract_intraday import (
+    ContractIntradayBar,
+    build_contract_intraday_lookup,
+    resolve_contract_intraday_bars,
+)
 from tfis.backtest.csv_loader import OptionLevelsSnapshot
 from tfis.backtest.entry_missed import EntryMissedInput, S23EntryMissedDetector
+from tfis.backtest.expiry_day import build_expiry_day_lifecycle_review
 from tfis.backtest.monthly_status_context import (
     HistoricalMonthlyStatusSkip,
     build_monthly_status_context,
@@ -27,6 +33,15 @@ from tfis.backtest.recalculation import (
     IntradaySnapshot,
     RecalculationInput,
     S23RecalculationEngine,
+)
+from tfis.backtest.s23_current_day_fsl_trp import (
+    CurrentDaySnapshot,
+    S23CurrentDayFslTrpEngine,
+    S23CurrentDayFslTrpInput,
+    S23CurrentDayFslTrpResult,
+    S23_CURRENT_DAY_FSL_TRIGGER_TIME,
+    S23_CURRENT_DAY_ORPT_TIME,
+    S23_CURRENT_DAY_RC_TIME,
 )
 from tfis.backtest.trade_lifecycle import (
     EodExitPolicy,
@@ -50,6 +65,9 @@ S23_RECALC_SUPPORTED_UNIQUE_CODES = {
 }
 S23_RECALC_OPEN_QUESTION_IDS = {
     "s23_put_recalc_strike_ll_vs_high",
+}
+S23_CURRENT_DAY_FSL_TRP_RESOLVED_IDS = {
+    "s23_fsl_trp_row_184_mixed_mapping",
 }
 
 
@@ -91,6 +109,10 @@ class HistoricalBacktestMetrics:
     rejected_candidates: int
     rejection_reason_distribution: dict[str, int]
     entered_trades: int
+    expiry_day_candidates: int
+    expiry_day_entered: int
+    expiry_day_exit_satisfied: int
+    expiry_day_exit_pending: int
     target_hits: int
     stoploss_hits: int
     no_entry: int
@@ -128,7 +150,9 @@ class HistoricalBacktestReport:
     strategy_root: Path | None = None
     use_monthly_status_engine: bool = False
     enable_s23_recalculation: bool = False
+    enable_s23_current_day_fsl_trp: bool = False
     enable_option_chain_selection: bool = False
+    enable_contract_specific_lifecycle: bool = False
     monthly_status_skips: tuple[HistoricalMonthlyStatusSkip, ...] = ()
 
 
@@ -210,6 +234,7 @@ class HistoricalBacktestRunner:
         )
         self._entry_missed_detector = S23EntryMissedDetector()
         self._recalculation_engine = S23RecalculationEngine()
+        self._current_day_fsl_trp_engine = S23CurrentDayFslTrpEngine()
         self._option_chain_selector = OptionChainSelector()
 
     def run(
@@ -225,12 +250,19 @@ class HistoricalBacktestRunner:
         option_intraday_bars: list[OhlcBar] | None = None,
         spot_intraday_bars: list[OhlcBar] | None = None,
         option_chain_contracts: list[OptionChainContract] | None = None,
+        contract_intraday_bars: list[ContractIntradayBar] | None = None,
         runtime_values_base: dict[str, object] | None = None,
         lot_size: int = 50,
         trades_taken_today: int = 1,
         enable_s23_recalculation: bool = False,
+        enable_s23_current_day_fsl_trp: bool = False,
         enable_option_chain_selection: bool = False,
+        enable_contract_specific_lifecycle: bool = False,
     ) -> HistoricalBacktestReport:
+        if enable_s23_recalculation and enable_s23_current_day_fsl_trp:
+            raise ValueError(
+                "Historical backtest cannot combine --enable-s23-recalculation with --enable-s23-current-day-fsl-trp"
+            )
         if use_monthly_status_engine:
             if strategy_root is None:
                 raise ValueError(
@@ -263,6 +295,9 @@ class HistoricalBacktestRunner:
         spot_intraday_by_date: dict[date, list[OhlcBar]] = {}
         for bar in sorted(spot_intraday_bars or [], key=lambda item: item.timestamp):
             spot_intraday_by_date.setdefault(bar.timestamp.date(), []).append(bar)
+        contract_intraday_lookup = build_contract_intraday_lookup(
+            contract_intraday_bars or []
+        )
 
         evaluations: list[HistoricalCandidateResult] = []
         monthly_status_skips: list[HistoricalMonthlyStatusSkip] = []
@@ -331,9 +366,12 @@ class HistoricalBacktestRunner:
                                 [],
                             ),
                             option_chain_contracts=option_chain_contracts or [],
+                            contract_intraday_lookup=contract_intraday_lookup,
                             market_levels=market_levels,
                             enable_s23_recalculation=enable_s23_recalculation,
+                            enable_s23_current_day_fsl_trp=enable_s23_current_day_fsl_trp,
                             enable_option_chain_selection=enable_option_chain_selection,
+                            enable_contract_specific_lifecycle=enable_contract_specific_lifecycle,
                             monthly_status=context.status_result.status.value,
                             monthly_status_trigger=context.status_result.trigger_name,
                             reversal_dominated=context.status_result.reversal_dominated,
@@ -371,9 +409,12 @@ class HistoricalBacktestRunner:
                             [],
                         ),
                         option_chain_contracts=option_chain_contracts or [],
+                        contract_intraday_lookup=contract_intraday_lookup,
                         market_levels=market_levels,
                         enable_s23_recalculation=enable_s23_recalculation,
+                        enable_s23_current_day_fsl_trp=enable_s23_current_day_fsl_trp,
                         enable_option_chain_selection=enable_option_chain_selection,
+                        enable_contract_specific_lifecycle=enable_contract_specific_lifecycle,
                     )
                 )
 
@@ -384,6 +425,10 @@ class HistoricalBacktestRunner:
         accepted_candidates = 0
         rejected_candidates = 0
         entered_trades = 0
+        expiry_day_candidates = 0
+        expiry_day_entered = 0
+        expiry_day_exit_satisfied = 0
+        expiry_day_exit_pending = 0
         target_hits = 0
         stoploss_hits = 0
         no_entry = 0
@@ -402,6 +447,16 @@ class HistoricalBacktestRunner:
         winning_trades = 0
         losing_trades = 0
         for evaluation in evaluations:
+            expiry_day_review = evaluation.validation.get("expiry_day_review")
+            if isinstance(expiry_day_review, dict) and expiry_day_review.get("is_expiry_day") is True:
+                expiry_day_candidates += 1
+                lifecycle = evaluation.lifecycle_result
+                if lifecycle is not None and lifecycle.entered:
+                    expiry_day_entered += 1
+                if expiry_day_review.get("exit_satisfied") is True:
+                    expiry_day_exit_satisfied += 1
+                elif expiry_day_review.get("exit_satisfied") is False:
+                    expiry_day_exit_pending += 1
             if evaluation.accepted:
                 accepted_candidates += 1
             else:
@@ -485,6 +540,10 @@ class HistoricalBacktestRunner:
                 rejected_candidates=rejected_candidates,
                 rejection_reason_distribution=rejection_reason_distribution,
                 entered_trades=entered_trades,
+                expiry_day_candidates=expiry_day_candidates,
+                expiry_day_entered=expiry_day_entered,
+                expiry_day_exit_satisfied=expiry_day_exit_satisfied,
+                expiry_day_exit_pending=expiry_day_exit_pending,
                 target_hits=target_hits,
                 stoploss_hits=stoploss_hits,
                 no_entry=no_entry,
@@ -516,7 +575,9 @@ class HistoricalBacktestRunner:
             strategy_root=strategy_root_path,
             use_monthly_status_engine=use_monthly_status_engine,
             enable_s23_recalculation=enable_s23_recalculation,
+            enable_s23_current_day_fsl_trp=enable_s23_current_day_fsl_trp,
             enable_option_chain_selection=enable_option_chain_selection,
+            enable_contract_specific_lifecycle=enable_contract_specific_lifecycle,
             monthly_status_skips=tuple(monthly_status_skips),
         )
 
@@ -533,9 +594,12 @@ class HistoricalBacktestRunner:
         intraday_bars: list[OhlcBar],
         spot_intraday_bars: list[OhlcBar],
         option_chain_contracts: list[OptionChainContract],
+        contract_intraday_lookup: dict[date, dict[str, list[OhlcBar]]],
         market_levels,
         enable_s23_recalculation: bool = False,
+        enable_s23_current_day_fsl_trp: bool = False,
         enable_option_chain_selection: bool = False,
+        enable_contract_specific_lifecycle: bool = False,
         monthly_status: str | None = None,
         monthly_status_trigger: str | None = None,
         reversal_dominated: bool | None = None,
@@ -561,8 +625,24 @@ class HistoricalBacktestRunner:
         effective_trade_plan = result.trade_plan
         lifecycle_intraday_bars = intraday_bars
         recalculation_audit: dict[str, object] | None = None
+        current_day_fsl_trp_audit: dict[str, object] | None = None
         option_chain_audit: dict[str, object] | None = None
-        if enable_s23_recalculation:
+        contract_specific_lifecycle_audit: dict[str, object] | None = None
+        expiry_day_review_audit: dict[str, object] | None = None
+        selection_result: OptionSelectionResult | None = None
+        if enable_s23_current_day_fsl_trp:
+            (
+                effective_trade_plan,
+                lifecycle_intraday_bars,
+                current_day_fsl_trp_audit,
+            ) = self._apply_s23_current_day_fsl_trp_if_needed(
+                rule=rule,
+                base_trade_plan=result.trade_plan,
+                market_levels=market_levels,
+                intraday_bars=intraday_bars,
+                spot_intraday_bars=spot_intraday_bars,
+            )
+        elif enable_s23_recalculation:
             (
                 effective_trade_plan,
                 lifecycle_intraday_bars,
@@ -611,7 +691,11 @@ class HistoricalBacktestRunner:
             option_chain_audit = self._option_selection_result_to_dict(selection_result)
             option_chain_audit["notes"] = [
                 "Selected contract metadata is reported for audit and contract realism review.",
-                "Lifecycle simulation still uses the generic intraday option series and does not yet switch to contract-specific intraday prices.",
+                (
+                    "Lifecycle simulation may switch to contract-specific intraday prices when contract-specific lifecycle mode is enabled and matching symbol bars are available."
+                    if enable_contract_specific_lifecycle
+                    else "Lifecycle simulation still uses the generic intraday option series unless contract-specific lifecycle mode is explicitly enabled."
+                ),
             ]
             if accepted and not selection_result.selected:
                 accepted = False
@@ -619,6 +703,17 @@ class HistoricalBacktestRunner:
                     "Rejected: option-chain selection failed - "
                     f"{selection_result.selection_reason}"
                 )
+        if enable_contract_specific_lifecycle:
+            (
+                lifecycle_intraday_bars,
+                contract_specific_lifecycle_audit,
+            ) = self._resolve_lifecycle_price_series(
+                session_date=window[-1].timestamp.date(),
+                generic_intraday_bars=lifecycle_intraday_bars,
+                contract_intraday_lookup=contract_intraday_lookup,
+                selection_result=selection_result,
+                recalculation_audit=recalculation_audit,
+            )
         lifecycle_result = None
         if lifecycle_intraday_bars and accepted:
             lifecycle_result = self._lifecycle_simulator.simulate(
@@ -628,6 +723,15 @@ class HistoricalBacktestRunner:
             lifecycle_result = self._cost_model.apply_with_quantity(
                 lifecycle_result,
                 quantity=result.order_intent.quantity,
+            )
+        if selection_result is not None:
+            expiry_day_review = build_expiry_day_lifecycle_review(
+                evaluation_timestamp=window[-1].timestamp,
+                selection_result=selection_result,
+                lifecycle_result=lifecycle_result,
+            )
+            expiry_day_review_audit = self._expiry_day_review_to_dict(
+                expiry_day_review
             )
 
         current_bar = window[-1]
@@ -647,8 +751,11 @@ class HistoricalBacktestRunner:
             parameters=effective_parameters,
             validation=self._build_validation_payload(
                 result,
+                current_day_fsl_trp_audit,
                 recalculation_audit,
                 option_chain_audit,
+                contract_specific_lifecycle_audit,
+                expiry_day_review_audit,
             ),
             market_snapshot=HistoricalMarketSnapshot(
                 d2hh=market_levels.d2hh,
@@ -672,8 +779,11 @@ class HistoricalBacktestRunner:
     def _build_validation_payload(
         self,
         result,
+        current_day_fsl_trp_audit: dict[str, object] | None,
         recalculation_audit: dict[str, object] | None,
         option_chain_audit: dict[str, object] | None,
+        contract_specific_lifecycle_audit: dict[str, object] | None,
+        expiry_day_review_audit: dict[str, object] | None,
     ) -> dict[str, object]:
         payload: dict[str, object] = {
             "strategy_config_ok": result.validation.strategy_config_ok,
@@ -687,11 +797,229 @@ class HistoricalBacktestRunner:
                 for finding in result.validation.formula_safety_findings
             ],
         }
+        if current_day_fsl_trp_audit is not None:
+            payload["s23_current_day_fsl_trp"] = current_day_fsl_trp_audit
         if recalculation_audit is not None:
             payload["s23_recalculation"] = recalculation_audit
         if option_chain_audit is not None:
             payload["option_chain_selection"] = option_chain_audit
+        if contract_specific_lifecycle_audit is not None:
+            payload["contract_specific_lifecycle"] = contract_specific_lifecycle_audit
+        if expiry_day_review_audit is not None:
+            payload["expiry_day_review"] = expiry_day_review_audit
         return payload
+
+    def _resolve_lifecycle_price_series(
+        self,
+        *,
+        session_date: date,
+        generic_intraday_bars: list[OhlcBar],
+        contract_intraday_lookup: dict[date, dict[str, list[OhlcBar]]],
+        selection_result: OptionSelectionResult | None,
+        recalculation_audit: dict[str, object] | None,
+    ) -> tuple[list[OhlcBar], dict[str, object]]:
+        cutoff_timestamp = None
+        if recalculation_audit is not None:
+            cutoff_value = recalculation_audit.get("effective_lifecycle_start_after")
+            if isinstance(cutoff_value, str):
+                cutoff_timestamp = datetime.fromisoformat(cutoff_value)
+
+        selected_symbol = None
+        if selection_result is not None and selection_result.selected_contract is not None:
+            selected_symbol = selection_result.selected_contract.symbol
+
+        audit: dict[str, object] = {
+            "enabled": True,
+            "selected_contract_symbol": selected_symbol,
+            "lifecycle_price_source": "generic_option_series",
+            "warning": None,
+            "notes": [
+                "Contract-specific lifecycle pricing is opt-in and only applies after option-chain contract selection.",
+                "If matching symbol-keyed contract intraday bars are unavailable, TFIS falls back to the generic option intraday series.",
+            ],
+        }
+
+        if selected_symbol is None:
+            audit["warning"] = (
+                "No selected option-chain contract was available; generic option intraday series kept."
+            )
+            return generic_intraday_bars, audit
+
+        contract_bars = resolve_contract_intraday_bars(
+            contract_intraday_lookup,
+            session_date=session_date,
+            symbol=selected_symbol,
+            after_timestamp=cutoff_timestamp,
+        )
+        if contract_bars:
+            audit["lifecycle_price_source"] = "contract_specific_series"
+            return contract_bars, audit
+
+        if contract_intraday_lookup.get(session_date, {}).get(selected_symbol) is None:
+            audit["warning"] = (
+                "Selected contract intraday bars were not found; fell back to generic option intraday series."
+            )
+        else:
+            audit["warning"] = (
+                "Selected contract intraday bars existed only before the effective lifecycle start cutoff; fell back to generic option intraday series."
+        )
+        return generic_intraday_bars, audit
+
+    def _apply_s23_current_day_fsl_trp_if_needed(
+        self,
+        *,
+        rule: StrategyRule,
+        base_trade_plan,
+        market_levels,
+        intraday_bars: list[OhlcBar],
+        spot_intraday_bars: list[OhlcBar],
+    ) -> tuple[object, list[OhlcBar], dict[str, object]]:
+        base_audit: dict[str, object] = {
+            "enabled": True,
+            "branch_unique_code": rule.unique_code,
+            "applied": False,
+            "base_trade_plan": self._trade_plan_to_dict(base_trade_plan),
+            "effective_trade_plan": None,
+            "trigger_snapshot": None,
+            "orpt_snapshot": None,
+            "recalculation_snapshot": None,
+            "trigger_result": None,
+            "result": None,
+            "resolved_workbook_clarifications": [],
+            "notes": [
+                "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
+                "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
+                "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path.",
+            ],
+        }
+
+        if rule.unique_code not in S23_RECALC_SUPPORTED_UNIQUE_CODES:
+            base_audit["warning"] = (
+                "S23 current-day FSL/TRP handling is supported only for canonical S23 branch folders."
+            )
+            return base_trade_plan, intraday_bars, base_audit
+
+        trigger_snapshot = self._find_current_day_snapshot_at_or_before(
+            option_intraday_bars=intraday_bars,
+            spot_intraday_bars=spot_intraday_bars,
+            cutoff=S23_CURRENT_DAY_FSL_TRIGGER_TIME,
+        )
+        if trigger_snapshot is None:
+            base_audit["warning"] = (
+                "Missing aggregated 09:15:00 option or spot snapshot for S23 current-day FSL/TRP handling; base trade plan kept."
+            )
+            return base_trade_plan, intraday_bars, base_audit
+
+        orpt_snapshot = self._find_current_day_snapshot_at_or_before(
+            option_intraday_bars=intraday_bars,
+            spot_intraday_bars=spot_intraday_bars,
+            cutoff=S23_CURRENT_DAY_ORPT_TIME,
+        )
+        if orpt_snapshot is None:
+            base_audit["warning"] = (
+                "Missing aggregated ORPT snapshot at or before 09:24:59 for S23 current-day FSL/TRP handling; base trade plan kept."
+            )
+            return base_trade_plan, intraday_bars, base_audit
+
+        base_audit["trigger_snapshot"] = self._current_day_snapshot_to_dict(
+            trigger_snapshot
+        )
+        base_audit["orpt_snapshot"] = self._current_day_snapshot_to_dict(orpt_snapshot)
+        trigger_missed = float(trigger_snapshot.option_high) > float(
+            base_trade_plan.stoploss_price
+        )
+        if trigger_missed:
+            recalculation_snapshot = self._find_current_day_snapshot_at_or_before(
+                option_intraday_bars=intraday_bars,
+                spot_intraday_bars=spot_intraday_bars,
+                cutoff=S23_CURRENT_DAY_RC_TIME,
+            )
+            if recalculation_snapshot is None:
+                base_audit["warning"] = (
+                    "Missing aggregated recalculation snapshot at or before 09:29:59 for S23 current-day FSL/TRP handling; base trade plan kept."
+                )
+                return base_trade_plan, intraday_bars, base_audit
+            base_audit["recalculation_snapshot"] = self._current_day_snapshot_to_dict(
+                recalculation_snapshot
+            )
+        else:
+            recalculation_snapshot = orpt_snapshot
+
+        handling_result = self._current_day_fsl_trp_engine.apply(
+            S23CurrentDayFslTrpInput(
+                branch_unique_code=rule.unique_code,
+                base_trade_plan=base_trade_plan,
+                market_levels=market_levels,
+                trigger_snapshot_at_0915=trigger_snapshot,
+                snapshot_at_orpt=orpt_snapshot,
+                snapshot_at_recalc=recalculation_snapshot,
+            )
+        )
+
+        effective_trade_plan = replace(
+            base_trade_plan,
+            option_type=(
+                handling_result.effective_option_type
+                if handling_result.effective_option_type is not None
+                else base_trade_plan.option_type
+            ),
+            start_strike=(
+                handling_result.recalculated_start_strike
+                if handling_result.recalculated_start_strike is not None
+                else base_trade_plan.start_strike
+            ),
+            end_strike=(
+                handling_result.recalculated_end_strike
+                if handling_result.recalculated_end_strike is not None
+                else base_trade_plan.end_strike
+            ),
+            ideal_premium=(
+                handling_result.recalculated_ideal_premium
+                if handling_result.recalculated_ideal_premium is not None
+                else base_trade_plan.ideal_premium
+            ),
+            minimum_premium=(
+                handling_result.recalculated_minimum_premium
+                if handling_result.recalculated_minimum_premium is not None
+                else base_trade_plan.minimum_premium
+            ),
+            stoploss_price=(
+                handling_result.recalculated_stoploss_price
+                if handling_result.recalculated_stoploss_price is not None
+                else base_trade_plan.stoploss_price
+            ),
+        )
+
+        base_audit["applied"] = handling_result.applied
+        base_audit["trigger_result"] = self._current_day_fsl_trp_trigger_to_dict(
+            handling_result.trigger_result
+        )
+        base_audit["result"] = self._current_day_fsl_trp_result_to_dict(
+            handling_result
+        )
+        base_audit["effective_trade_plan"] = self._trade_plan_to_dict(
+            effective_trade_plan
+        )
+        if handling_result.row_number == 184:
+            base_audit["resolved_workbook_clarifications"] = (
+                self._importer_questions_by_ids(
+                    S23_CURRENT_DAY_FSL_TRP_RESOLVED_IDS,
+                    status="RESOLVED",
+                )
+            )
+        if not handling_result.applied:
+            base_audit["warning"] = (
+                "Workbook-backed S23 current-day FSL/TRP branch was not confirmed for this path; base trade plan kept."
+            )
+            return base_trade_plan, intraday_bars, base_audit
+
+        lifecycle_intraday_bars = [
+            bar
+            for bar in intraday_bars
+            if handling_result.lifecycle_start_after is None
+            or bar.timestamp > handling_result.lifecycle_start_after
+        ]
+        return effective_trade_plan, lifecycle_intraday_bars, base_audit
 
     def _apply_s23_recalculation_if_needed(
         self,
@@ -821,6 +1149,35 @@ class HistoricalBacktestRunner:
         ]
         return recalculated_trade_plan, lifecycle_intraday_bars, base_audit
 
+    def _find_current_day_snapshot_at_or_before(
+        self,
+        option_intraday_bars: list[OhlcBar],
+        *,
+        spot_intraday_bars: list[OhlcBar],
+        cutoff: time,
+    ) -> CurrentDaySnapshot | None:
+        option_eligible = [
+            bar
+            for bar in sorted(option_intraday_bars, key=lambda item: item.timestamp)
+            if bar.timestamp.time() <= cutoff
+        ]
+        spot_eligible = [
+            bar
+            for bar in sorted(spot_intraday_bars, key=lambda item: item.timestamp)
+            if bar.timestamp.time() <= cutoff
+        ]
+        if not option_eligible or not spot_eligible:
+            return None
+
+        session_date = option_eligible[-1].timestamp.date()
+        return CurrentDaySnapshot(
+            timestamp=datetime.combine(session_date, cutoff),
+            spot_low=min(bar.low for bar in spot_eligible),
+            spot_high=max(bar.high for bar in spot_eligible),
+            option_low=min(bar.low for bar in option_eligible),
+            option_high=max(bar.high for bar in option_eligible),
+        )
+
     def _find_intraday_snapshot_at_or_before(
         self,
         option_intraday_bars: list[OhlcBar],
@@ -894,7 +1251,31 @@ class HistoricalBacktestRunner:
             "notes": list(result.notes),
         }
 
+    def _current_day_fsl_trp_trigger_to_dict(
+        self,
+        result,
+    ) -> dict[str, object]:
+        return {
+            "fsl_trp_missed": result.fsl_trp_missed,
+            "rule_name": result.rule_name,
+            "compared_value": result.compared_value,
+            "threshold_stoploss_price": result.threshold_stoploss_price,
+            "notes": list(result.notes),
+        }
+
     def _snapshot_to_dict(self, snapshot: IntradaySnapshot) -> dict[str, object]:
+        return {
+            "timestamp": snapshot.timestamp.isoformat(),
+            "spot_low": snapshot.spot_low,
+            "spot_high": snapshot.spot_high,
+            "option_low": snapshot.option_low,
+            "option_high": snapshot.option_high,
+        }
+
+    def _current_day_snapshot_to_dict(
+        self,
+        snapshot: CurrentDaySnapshot,
+    ) -> dict[str, object]:
         return {
             "timestamp": snapshot.timestamp.isoformat(),
             "spot_low": snapshot.spot_low,
@@ -944,6 +1325,52 @@ class HistoricalBacktestRunner:
             "audit_notes": list(result.audit_notes),
         }
 
+    def _current_day_fsl_trp_result_to_dict(
+        self,
+        result: S23CurrentDayFslTrpResult,
+    ) -> dict[str, object]:
+        return {
+            "applied": result.applied,
+            "reason": result.reason,
+            "row_number": result.row_number,
+            "effective_option_type": (
+                result.effective_option_type.value
+                if result.effective_option_type is not None
+                else None
+            ),
+            "recalculated_start_strike": result.recalculated_start_strike,
+            "recalculated_end_strike": result.recalculated_end_strike,
+            "recalculated_ideal_premium": result.recalculated_ideal_premium,
+            "recalculated_minimum_premium": result.recalculated_minimum_premium,
+            "recalculated_stoploss_price": result.recalculated_stoploss_price,
+            "lifecycle_start_after": (
+                result.lifecycle_start_after.isoformat()
+                if result.lifecycle_start_after is not None
+                else None
+            ),
+            "source_rule": result.source_rule,
+            "unsupported_fields": list(result.unsupported_fields),
+            "audit_notes": list(result.audit_notes),
+        }
+
+    def _expiry_day_review_to_dict(self, review) -> dict[str, object]:
+        return {
+            "evaluation_date": review.evaluation_date.isoformat(),
+            "expiry_date": (
+                review.expiry_date.isoformat()
+                if review.expiry_date is not None
+                else None
+            ),
+            "selected_contract_symbol": review.selected_contract_symbol,
+            "expiry_date_source": review.expiry_date_source,
+            "applicable": review.applicable,
+            "is_expiry_day": review.is_expiry_day,
+            "full_exit_required": review.full_exit_required,
+            "exit_satisfied": review.exit_satisfied,
+            "warning": review.warning,
+            "notes": list(review.notes),
+        }
+
     def _recalculation_open_questions(
         self,
         unique_code: str,
@@ -972,6 +1399,18 @@ class HistoricalBacktestRunner:
             for question in _load_importer_open_questions()
             if question.get("id") in S23_RECALC_OPEN_QUESTION_IDS
             and question.get("status") == status
+        ]
+
+    def _importer_questions_by_ids(
+        self,
+        question_ids: set[str],
+        *,
+        status: str,
+    ) -> list[dict[str, object]]:
+        return [
+            question
+            for question in _load_importer_open_questions()
+            if question.get("id") in question_ids and question.get("status") == status
         ]
 
     def _select_rules_for_monthly_status(

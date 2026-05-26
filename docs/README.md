@@ -11,10 +11,15 @@ This folder contains the TFIS design, governance, importer, and operations docum
 - branch selection is available for folder-based monthly-status strategy variants
 - offline historical lifecycle backtesting is in place with EOD policies, cost/slippage assumptions, rupee P&L, and equity/drawdown reporting
 - monthly-status support now includes thresholds, a diagnostic decision table, a deterministic status engine, a CLI report, manual review scenarios, an opt-in historical branch-selection mode, and an opt-in S23 recalculation path with optional spot intraday sourcing
+- historical backtests can now also opt into workbook-backed S23 current-day `FSL / TRP missed / not-missed` handling for the confirmed `AB6 OS` rows `183-188`
 - historical backtests can now opt into offline option-chain contract selection realism without changing the default path
+- historical backtests can now also opt into contract-specific lifecycle pricing when symbol-keyed intraday option bars exist for the selected contract
+- historical backtests can now review expiry-day full-exit compliance from selected contract expiry metadata
+- a read-only shared captured-data adapter is now available for normalized CSV roots
+- a read-only comparison tool is now available for generated historical backtest mode reports
 - reference materials are indexed with review workflow and archive-governance guidance
 - current quality snapshot:
-  - tests passing: `236`
+  - tests passing: `265`
   - `python scripts/validate_project.py`: passed
 
 ## Architecture
@@ -59,11 +64,11 @@ This folder contains the TFIS design, governance, importer, and operations docum
 
 ## Still Pending
 
-- gap-up / gap-down overlay
+- wider comparison reporting across S23 historical modes
 - fuller missed-entry / recalculation engine
-- shared captured-data adapter from `TradingEngine`
-- rollover lifecycle module
+- futures rollover lifecycle module
 - monthly option buying engine
-- contract-specific option-chain intraday pricing and fuller strike-availability simulation
+- fuller strike-availability simulation and broader contract-specific archive coverage
+- raw shared capture-format adapters beyond normalized CSV roots
 - broker adapters
 - paper and live runtime execution layers

@@ -6,20 +6,26 @@ way.
 
 ## Immediate Next Priorities
 
-1. TradingEngine shared-data adapter.
-2. Rollover lifecycle module.
-3. Gap-up / gap-down refinement.
-4. Broader recalculation refinement beyond the current S23 opt-in path.
-5. Contract-specific option-chain intraday pricing and strike-availability realism.
+1. Wider comparison reporting across S23 historical modes.
+2. Broader recalculation refinement beyond the current S23 opt-in paths.
+3. Fuller strike-availability realism and broader contract-specific archive coverage.
+4. Raw TradingEngine or NiftyTradingEngine capture-format adapters beyond normalized CSV roots.
+5. Futures rollover module for future-based strategy families.
 
 ## Blocked / Pending Clarification
 
 - any later expansion of recalculated target / stoploss behavior still needs
   workbook-backed confirmation beyond the current strike / premium / entry scope
-- contract-specific lifecycle pricing still needs symbol-keyed intraday option data before the new option-chain selector can become execution-realistic
+- current-day S23 FSL / TRP unsupported paths remain intentionally unchanged
+  until the workbook confirms additional rows:
+  - Bull / Bull CF Put not missed
+  - Bear / Bear CF Call not missed
+- fuller strike-availability realism still needs wider symbol/date coverage than the current fixture-backed contract-specific lifecycle foundation
+- raw shared capture ingestion still needs explicit normalization contracts for parquet/jsonl/session artifacts before TFIS should parse them directly
 
 ## Deferred
 
+- futures rollover module for future-based strategy families
 - monthly option buying
 - BankNifty weekly live support
 - broker adapters

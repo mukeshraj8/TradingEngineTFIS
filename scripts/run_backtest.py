@@ -19,6 +19,7 @@ from tfis.backtest import (
     BacktestInput,
     BacktestRunner,
     CostModel,
+    load_contract_intraday_bars_csv,
     EodExitPolicy,
     HistoricalBacktestRunner,
     build_backtest_metrics,
@@ -29,6 +30,7 @@ from tfis.backtest import (
     load_option_chain_csv,
     load_option_levels_csv,
     load_option_levels_series_csv,
+    resolve_shared_backtest_dataset,
     load_weekly_bars_csv,
 )
 from tfis.execution.order_planner import OrderPlanner
@@ -81,13 +83,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="Opt-in diagnostic S23 ORPT missed-entry detection and recalculation during historical backtests",
     )
     parser.add_argument(
+        "--enable-s23-current-day-fsl-trp",
+        action="store_true",
+        help="Opt-in workbook-backed S23 current-day FSL/TRP missed/not-missed handling during historical backtests",
+    )
+    parser.add_argument(
         "--option-chain-csv",
         help="Optional path to option-chain contract CSV for opt-in contract selection realism",
+    )
+    parser.add_argument(
+        "--contract-intraday-csv",
+        help="Optional path to symbol-keyed contract intraday OHLC CSV for opt-in contract-specific lifecycle pricing",
+    )
+    parser.add_argument(
+        "--shared-data-root",
+        help="Optional normalized shared-data root or instrument-scoped folder",
+    )
+    parser.add_argument(
+        "--allow-partial-shared-data",
+        action="store_true",
+        help="Allow incomplete shared-data roots and rely on explicit CSV flags for missing files",
     )
     parser.add_argument(
         "--enable-option-chain-selection",
         action="store_true",
         help="Opt-in option-chain contract selection within computed strike ranges during historical backtests",
+    )
+    parser.add_argument(
+        "--enable-contract-specific-lifecycle",
+        action="store_true",
+        help="Opt-in contract-specific lifecycle pricing after option-chain contract selection during historical backtests",
     )
     parser.add_argument("--monthly-csv", help="Path to monthly reference OHLC CSV")
     parser.add_argument("--weekly-csv", help="Path to weekly reference OHLC CSV")
@@ -256,6 +281,7 @@ def _render_historical_markdown(report: dict[str, Any]) -> str:
         "",
         f"- Strategy path: `{report.get('strategy_path') or '-'}`",
         f"- Strategy root: `{report.get('strategy_root') or '-'}`",
+        f"- Shared data root: `{report.get('shared_data_root') or '-'}`",
         f"- Strategy code: `{strategy_code}`",
         f"- Mode: `{report['mode']}`",
         f"- EOD policy: `{report.get('eod_policy', EodExitPolicy.MARK_NO_EXIT.value)}`",
@@ -275,6 +301,10 @@ def _render_historical_markdown(report: dict[str, Any]) -> str:
         f"- total_evaluations: `{metrics['total_evaluations']}`",
         f"- accepted_candidates: `{metrics['accepted_candidates']}`",
         f"- entered_trades: `{metrics['entered_trades']}`",
+        f"- expiry_day_candidates: `{metrics.get('expiry_day_candidates', 0)}`",
+        f"- expiry_day_entered: `{metrics.get('expiry_day_entered', 0)}`",
+        f"- expiry_day_exit_satisfied: `{metrics.get('expiry_day_exit_satisfied', 0)}`",
+        f"- expiry_day_exit_pending: `{metrics.get('expiry_day_exit_pending', 0)}`",
         f"- target_hits: `{metrics['target_hits']}`",
         f"- stoploss_hits: `{metrics['stoploss_hits']}`",
         f"- eod_square_off: `{metrics.get('eod_square_off', 0)}`",
@@ -311,10 +341,20 @@ def _render_historical_markdown(report: dict[str, Any]) -> str:
             8,
             "- S23 recalculation: `enabled`",
         )
-    if report.get("enable_option_chain_selection"):
+    if report.get("enable_s23_current_day_fsl_trp"):
         lines.insert(
             9,
+            "- S23 current-day FSL/TRP: `enabled`",
+        )
+    if report.get("enable_option_chain_selection"):
+        lines.insert(
+            10,
             "- Option-chain selection: `enabled`",
+        )
+    if report.get("enable_contract_specific_lifecycle"):
+        lines.insert(
+            11,
+            "- Contract-specific lifecycle pricing: `enabled`",
         )
 
     if monthly_status_skips:
@@ -372,6 +412,7 @@ def _render_single_result_markdown(report: dict[str, Any]) -> str:
         "# Backtest Report",
         "",
         f"- Strategy path: `{report['strategy_path']}`",
+        f"- Shared data root: `{report.get('shared_data_root') or '-'}`",
         f"- Strategy code: `{result['strategy_code']}`",
         f"- Mode: `{report['mode']}`",
         f"- EOD policy: `{report.get('eod_policy', EodExitPolicy.MARK_NO_EXIT.value)}`",
@@ -441,6 +482,24 @@ def main() -> int:
 
     strategy_path = Path(args.strategy_path) if args.strategy_path else None
     strategy_root = Path(args.strategy_root) if args.strategy_root else None
+    shared_data_root = Path(args.shared_data_root) if args.shared_data_root else None
+    resolved_shared_dataset = None
+    daily_csv = Path(args.daily_csv) if args.daily_csv else None
+    option_levels_csv = Path(args.option_levels_csv) if args.option_levels_csv else None
+    option_intraday_csv = (
+        Path(args.option_intraday_csv) if args.option_intraday_csv else None
+    )
+    spot_intraday_csv = (
+        Path(args.spot_intraday_csv) if args.spot_intraday_csv else None
+    )
+    option_chain_csv = (
+        Path(args.option_chain_csv) if args.option_chain_csv else None
+    )
+    contract_intraday_csv = (
+        Path(args.contract_intraday_csv) if args.contract_intraday_csv else None
+    )
+    monthly_csv = Path(args.monthly_csv) if args.monthly_csv else None
+    weekly_csv = Path(args.weekly_csv) if args.weekly_csv else None
     eod_policy = EodExitPolicy(args.eod_policy)
     cost_model = CostModel(
         slippage_points_per_side=float(args.slippage_points_per_side),
@@ -453,8 +512,16 @@ def main() -> int:
                 parser.error("--sample cannot be combined with --use-monthly-status-engine")
             if args.enable_s23_recalculation:
                 parser.error("--enable-s23-recalculation is supported only with --historical")
+            if args.enable_s23_current_day_fsl_trp:
+                parser.error("--enable-s23-current-day-fsl-trp is supported only with --historical")
             if args.enable_option_chain_selection:
                 parser.error("--enable-option-chain-selection is supported only with --historical")
+            if args.enable_contract_specific_lifecycle:
+                parser.error("--enable-contract-specific-lifecycle is supported only with --historical")
+            if shared_data_root is not None:
+                parser.error("--shared-data-root is supported only with CSV-backed modes")
+            if args.allow_partial_shared_data:
+                parser.error("--allow-partial-shared-data requires --shared-data-root")
             if strategy_path is None:
                 parser.error("--sample requires --strategy-path")
             if (
@@ -464,6 +531,8 @@ def main() -> int:
                 or args.option_intraday_csv
                 or args.spot_intraday_csv
                 or args.option_chain_csv
+                or args.contract_intraday_csv
+                or args.shared_data_root
                 or args.strategy_root
                 or args.monthly_csv
                 or args.weekly_csv
@@ -474,16 +543,34 @@ def main() -> int:
             backtest_input = _sample_backtest_input(strategy_path)
             mode = "sample"
             report = None
-        elif args.daily_csv and args.option_levels_csv:
+        else:
+            if args.allow_partial_shared_data and shared_data_root is None:
+                parser.error("--allow-partial-shared-data requires --shared-data-root")
+            if shared_data_root is not None:
+                resolved_shared_dataset = resolve_shared_backtest_dataset(
+                    shared_data_root,
+                    strategy_path=strategy_path,
+                    strategy_root=strategy_root,
+                    allow_partial=args.allow_partial_shared_data,
+                )
+                daily_csv = daily_csv or resolved_shared_dataset.daily_csv
+                option_levels_csv = option_levels_csv or resolved_shared_dataset.option_levels_csv
+                option_intraday_csv = option_intraday_csv or resolved_shared_dataset.option_intraday_csv
+                option_chain_csv = option_chain_csv or resolved_shared_dataset.option_chain_csv
+                monthly_csv = monthly_csv or resolved_shared_dataset.monthly_csv
+                weekly_csv = weekly_csv or resolved_shared_dataset.weekly_csv
+        if args.sample:
+            pass
+        elif daily_csv and option_levels_csv:
             if args.historical:
                 if args.use_monthly_status_engine:
                     if strategy_root is None:
                         parser.error(
                             "--use-monthly-status-engine requires --strategy-root"
                         )
-                    if not args.monthly_csv or not args.weekly_csv:
+                    if monthly_csv is None or weekly_csv is None:
                         parser.error(
-                            "--use-monthly-status-engine requires --monthly-csv and --weekly-csv"
+                            "--use-monthly-status-engine requires monthly and weekly OHLC data from explicit CSV flags or --shared-data-root"
                         )
                     if strategy_path is not None:
                         parser.error(
@@ -491,50 +578,76 @@ def main() -> int:
                         )
                 elif strategy_path is None:
                     parser.error("--historical mode requires --strategy-path")
-                if args.enable_option_chain_selection and not args.option_chain_csv:
+                if args.enable_option_chain_selection and option_chain_csv is None:
                     parser.error(
-                        "--enable-option-chain-selection requires --option-chain-csv"
+                        "--enable-option-chain-selection requires option-chain data from --option-chain-csv or --shared-data-root"
                     )
-                daily_bars = load_daily_bars_csv(Path(args.daily_csv))
+                if args.enable_s23_recalculation and args.enable_s23_current_day_fsl_trp:
+                    parser.error(
+                        "--enable-s23-current-day-fsl-trp cannot be combined with --enable-s23-recalculation"
+                    )
+                if args.enable_s23_current_day_fsl_trp and option_intraday_csv is None:
+                    parser.error(
+                        "--enable-s23-current-day-fsl-trp requires --option-intraday-csv"
+                    )
+                if args.enable_s23_current_day_fsl_trp and spot_intraday_csv is None:
+                    parser.error(
+                        "--enable-s23-current-day-fsl-trp requires --spot-intraday-csv"
+                    )
+                if (
+                    args.enable_contract_specific_lifecycle
+                    and not args.enable_option_chain_selection
+                ):
+                    parser.error(
+                        "--enable-contract-specific-lifecycle requires --enable-option-chain-selection"
+                    )
+                daily_bars = load_daily_bars_csv(daily_csv)
                 option_levels_series = load_option_levels_series_csv(
-                    Path(args.option_levels_csv)
+                    option_levels_csv
                 )
                 report = _build_historical_runner(eod_policy, cost_model).run(
                     strategy_path=strategy_path,
                     strategy_root=strategy_root,
                     use_monthly_status_engine=args.use_monthly_status_engine,
                     monthly_bars=(
-                        load_monthly_bars_csv(Path(args.monthly_csv))
-                        if args.monthly_csv
+                        load_monthly_bars_csv(monthly_csv)
+                        if monthly_csv
                         else None
                     ),
                     weekly_bars=(
-                        load_weekly_bars_csv(Path(args.weekly_csv))
-                        if args.weekly_csv
+                        load_weekly_bars_csv(weekly_csv)
+                        if weekly_csv
                         else None
                     ),
                     daily_bars=daily_bars,
                     option_levels_series=option_levels_series,
                     option_intraday_bars=(
-                        load_intraday_option_bars_csv(Path(args.option_intraday_csv))
-                        if args.option_intraday_csv
+                        load_intraday_option_bars_csv(option_intraday_csv)
+                        if option_intraday_csv
                         else None
                     ),
                     spot_intraday_bars=(
-                        load_intraday_spot_bars_csv(Path(args.spot_intraday_csv))
-                        if args.spot_intraday_csv
+                        load_intraday_spot_bars_csv(spot_intraday_csv)
+                        if spot_intraday_csv
                         else None
                     ),
                     runtime_values_base={"ENTRY": 200.0},
                     lot_size=50,
                     trades_taken_today=1,
                     enable_s23_recalculation=args.enable_s23_recalculation,
+                    enable_s23_current_day_fsl_trp=args.enable_s23_current_day_fsl_trp,
                     option_chain_contracts=(
-                        load_option_chain_csv(Path(args.option_chain_csv))
-                        if args.option_chain_csv
+                        load_option_chain_csv(option_chain_csv)
+                        if option_chain_csv
                         else None
                     ),
                     enable_option_chain_selection=args.enable_option_chain_selection,
+                    contract_intraday_bars=(
+                        load_contract_intraday_bars_csv(contract_intraday_csv)
+                        if contract_intraday_csv
+                        else None
+                    ),
+                    enable_contract_specific_lifecycle=args.enable_contract_specific_lifecycle,
                 )
                 mode = "historical"
             else:
@@ -546,9 +659,17 @@ def main() -> int:
                     parser.error(
                         "--enable-s23-recalculation is supported only with --historical"
                     )
+                if args.enable_s23_current_day_fsl_trp:
+                    parser.error(
+                        "--enable-s23-current-day-fsl-trp is supported only with --historical"
+                    )
                 if args.enable_option_chain_selection:
                     parser.error(
                         "--enable-option-chain-selection is supported only with --historical"
+                    )
+                if args.enable_contract_specific_lifecycle:
+                    parser.error(
+                        "--enable-contract-specific-lifecycle is supported only with --historical"
                     )
                 if strategy_path is None:
                     parser.error("CSV snapshot mode requires --strategy-path")
@@ -564,16 +685,24 @@ def main() -> int:
                     parser.error(
                         "--option-chain-csv is supported only with --historical"
                     )
+                if args.contract_intraday_csv:
+                    parser.error(
+                        "--contract-intraday-csv is supported only with --historical"
+                    )
+                if args.shared_data_root and args.option_intraday_csv:
+                    parser.error(
+                        "--option-intraday-csv remains historical-only even when --shared-data-root is supplied"
+                    )
                 backtest_input = _csv_backtest_input(
                     strategy_path,
-                    daily_csv=Path(args.daily_csv),
-                    option_levels_csv=Path(args.option_levels_csv),
+                    daily_csv=daily_csv,
+                    option_levels_csv=option_levels_csv,
                 )
                 mode = "csv"
                 report = None
         else:
             parser.error(
-                "Provide either --sample or both --daily-csv and --option-levels-csv"
+                "Provide either --sample, both --daily-csv and --option-levels-csv, or a --shared-data-root that supplies them"
             )
         if mode == "historical":
             result = None
@@ -597,8 +726,16 @@ def main() -> int:
         }
         if report.enable_s23_recalculation:
             output["enable_s23_recalculation"] = True
+        if report.enable_s23_current_day_fsl_trp:
+            output["enable_s23_current_day_fsl_trp"] = True
         if report.enable_option_chain_selection:
             output["enable_option_chain_selection"] = True
+        if report.enable_contract_specific_lifecycle:
+            output["enable_contract_specific_lifecycle"] = True
+        if shared_data_root is not None:
+            output["shared_data_root"] = str(shared_data_root)
+            if resolved_shared_dataset is not None:
+                output["shared_data_dataset"] = _to_jsonable(resolved_shared_dataset)
     else:
         metrics = build_backtest_metrics([result])
         output = {
@@ -609,6 +746,10 @@ def main() -> int:
             "result": _to_jsonable(result),
             "metrics": _to_jsonable(metrics),
         }
+        if shared_data_root is not None:
+            output["shared_data_root"] = str(shared_data_root)
+            if resolved_shared_dataset is not None:
+                output["shared_data_dataset"] = _to_jsonable(resolved_shared_dataset)
 
     out_path = Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

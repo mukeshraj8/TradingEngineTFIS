@@ -2,6 +2,12 @@
 
 from .backtest_runner import BacktestRunner
 from .cost_model import CostModel
+from .contract_intraday import (
+    ContractIntradayBar,
+    build_contract_intraday_lookup,
+    load_contract_intraday_bars_csv,
+    resolve_contract_intraday_bars,
+)
 from .csv_loader import (
     BacktestCsvError,
     OptionLevelsSnapshot,
@@ -19,6 +25,10 @@ from .historical_runner import (
     HistoricalMarketSnapshot,
 )
 from .entry_missed import EntryMissedInput, EntryMissedResult, S23EntryMissedDetector
+from .expiry_day import (
+    ExpiryDayLifecycleReview,
+    build_expiry_day_lifecycle_review,
+)
 from .metrics import build_backtest_metrics
 from .models import BacktestInput, BacktestMetrics, BacktestTradeResult, BacktestValidation
 from .parameter_sweep import (
@@ -35,11 +45,26 @@ from .parameter_sweep import (
     sample_daily_bars,
     sample_runtime_values,
 )
+from .report_comparison import (
+    BacktestModeComparison,
+    BacktestModeSummary,
+    compare_backtest_reports,
+    comparison_to_dict,
+    load_backtest_report,
+    render_comparison_markdown,
+)
 from .recalculation import (
     IntradaySnapshot,
     RecalculationInput,
     RecalculationResult,
     S23RecalculationEngine,
+)
+from .s23_current_day_fsl_trp import (
+    CurrentDayFslTrpTriggerResult,
+    CurrentDaySnapshot,
+    S23CurrentDayFslTrpEngine,
+    S23CurrentDayFslTrpInput,
+    S23CurrentDayFslTrpResult,
 )
 from .trade_lifecycle import EodExitPolicy, TradeLifecycleResult, TradeLifecycleSimulator
 from .monthly_status_context import (
@@ -57,17 +82,28 @@ from .option_chain import (
     OptionSelectionResult,
     load_option_chain_csv,
 )
+from .shared_data_adapter import (
+    SharedBacktestDataset,
+    discover_shared_data_roots,
+    resolve_shared_backtest_dataset,
+)
 
 __all__ = [
     "BacktestInput",
     "BacktestCsvError",
     "BacktestMetrics",
+    "BacktestModeComparison",
+    "BacktestModeSummary",
     "BacktestRunner",
     "BacktestTradeResult",
     "BacktestValidation",
     "CostModel",
+    "CurrentDayFslTrpTriggerResult",
+    "CurrentDaySnapshot",
+    "ContractIntradayBar",
     "EntryMissedInput",
     "EntryMissedResult",
+    "ExpiryDayLifecycleReview",
     "HistoricalBacktestMetrics",
     "HistoricalBacktestReport",
     "HistoricalBacktestRunner",
@@ -82,8 +118,12 @@ __all__ = [
     "OptionLevelsSnapshot",
     "OptionSelectionRequest",
     "OptionSelectionResult",
+    "SharedBacktestDataset",
     "EodExitPolicy",
     "S23EntryMissedDetector",
+    "S23CurrentDayFslTrpEngine",
+    "S23CurrentDayFslTrpInput",
+    "S23CurrentDayFslTrpResult",
     "TradeLifecycleResult",
     "TradeLifecycleSimulator",
     "ParameterSweepReport",
@@ -97,18 +137,28 @@ __all__ = [
     "S23RecalculationEngine",
     "build_parameter_sweep_ranking",
     "build_backtest_metrics",
+    "build_expiry_day_lifecycle_review",
+    "build_contract_intraday_lookup",
     "build_monthly_status_context",
+    "compare_backtest_reports",
+    "comparison_to_dict",
     "load_daily_bars_csv",
+    "load_contract_intraday_bars_csv",
     "load_intraday_option_bars_csv",
     "load_intraday_spot_bars_csv",
     "load_monthly_bars_csv",
     "load_option_levels_csv",
     "load_option_levels_series_csv",
     "load_option_chain_csv",
+    "load_backtest_report",
+    "discover_shared_data_roots",
     "load_weekly_bars_csv",
     "calculate_risk_reward_metrics",
     "generate_parameter_combinations",
     "render_parameter_sweep_markdown",
+    "resolve_shared_backtest_dataset",
+    "resolve_contract_intraday_bars",
+    "render_comparison_markdown",
     "sample_daily_bars",
     "sample_runtime_values",
 ]

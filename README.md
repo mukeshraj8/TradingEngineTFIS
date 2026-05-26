@@ -67,7 +67,12 @@ Current state of the project:
 - optional monthly-status-driven branch selection is available for historical backtests
 - opt-in S23 missed-entry detection and recalculation is available for historical backtests
 - the opt-in S23 recalculation path can consume dedicated spot intraday CSV inputs while preserving an explicit fallback audit path when none is supplied
+- opt-in workbook-backed S23 current-day `FSL / TRP missed / not-missed` handling is available for the confirmed `AB6 OS` rows `183-188`
 - opt-in offline option-chain contract selection is available for historical backtests
+- opt-in contract-specific lifecycle pricing is available for historical backtests when symbol-keyed intraday bars exist for the selected contract
+- expiry-day full-exit review is available for historical backtests when selected contract expiry metadata is present
+- a read-only shared captured-data adapter is available for normalized CSV roots
+- a read-only comparison tool is available for generated historical backtest mode reports
 
 ## Strategy Configuration Layout
 
@@ -108,24 +113,24 @@ The TFIS docs are organized by area under [docs/README.md](docs/README.md):
 ## Quality Snapshot
 
 Current repo health:
-- tests passing: `236`
+- tests passing: `265`
 - `python scripts/validate_project.py`: passed
 
 Next recommended priorities:
-- shared captured-data adapter from `TradingEngine`
-- rollover lifecycle module
-- gap-up / gap-down refinement
+- wider comparison reporting across S23 historical modes
 - broader missed-entry / recalculation engine
-- contract-specific option-chain intraday pricing and strike-availability realism
+- fuller strike-availability realism and broader contract-specific archive coverage
+- raw shared capture-format adapters beyond normalized CSV roots
+- futures rollover lifecycle module
 - monthly option buying engine
 
 Still intentionally pending:
-- shared captured-data adapter from `TradingEngine`
 - rollover lifecycle module
-- gap-up / gap-down refinement
+- generic gap-up / gap-down refinement beyond the current workbook-backed S23 FSL / TRP scope
 - broader missed-entry / recalculation engine
 - monthly option buying engine
-- contract-specific option-chain intraday pricing and fuller strike-availability simulation
+- fuller strike-availability simulation and broader contract-specific archive coverage
+- raw shared capture-format adapters beyond normalized CSV roots
 - broker adapters
 - paper runtime
 - live runtime
@@ -139,11 +144,12 @@ Current offline TFIS flow supports:
 - sample-mode structural backtests
 - CSV-driven structural backtests using local daily OHLC and option reference-level CSV files
 - opt-in offline option-chain contract selection within computed strike ranges
+- opt-in contract-specific lifecycle pricing using symbol-keyed intraday option bars when available
 - parameter sweep experiments using runtime `PARAMS` overrides only
 
 Current limits:
 - no live broker execution
-- no contract-specific option lifecycle simulation yet
+- no full execution-grade strike-availability or complete symbol archive realism yet
 - no fill simulation
 - no real P&L engine yet
 
@@ -172,6 +178,8 @@ Supported modes:
 - `--historical` with `--strategy-root` plus `--use-monthly-status-engine` for opt-in monthly-status-driven branch selection across eligible folder strategies
 - `--historical` plus `--enable-s23-recalculation` for opt-in ORPT missed-entry detection and recalculated effective trade plans
 - `--historical` plus `--option-chain-csv` and `--enable-option-chain-selection` for opt-in contract selection realism inside computed strike ranges
+- `--historical` plus `--contract-intraday-csv` and `--enable-contract-specific-lifecycle` for opt-in symbol-specific lifecycle pricing after contract selection
+- `scripts/compare_backtest_reports.py` for read-only comparison of generated historical backtest reports across modes
 
 Parameter sweeps:
 - use folder-based strategies only
@@ -186,6 +194,7 @@ python scripts/validate_strategy_configs.py
 python scripts/run_backtest.py --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D --sample --out tmp/S23_sample_backtest.json
 python scripts/run_backtest.py --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D --daily-csv tests/fixtures/backtest/s23_daily.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels.csv --out tmp/S23_csv_backtest.json
 python scripts/run_backtest.py --strategy-root config/strategies/options_sell/nifty --use-monthly-status-engine --monthly-csv tests/fixtures/backtest/s23_monthly.csv --weekly-csv tests/fixtures/backtest/s23_weekly.csv --daily-csv tests/fixtures/backtest/s23_daily_multi.csv --option-levels-csv tests/fixtures/backtest/s23_option_levels_multi.csv --option-intraday-csv tests/fixtures/backtest/s23_option_intraday.csv --option-chain-csv tests/fixtures/backtest/s23_option_chain.csv --enable-option-chain-selection --historical --eod-policy square_off_at_close --enable-s23-recalculation --out tmp/S23_historical_monthly_status_recalc_chain_backtest.json --markdown-out tmp/S23_historical_monthly_status_recalc_chain_backtest.md
+python scripts/compare_backtest_reports.py --report base=tmp/S23_historical_monthly_status_backtest.json --report recalc=tmp/S23_historical_monthly_status_recalc_backtest.json --report chain=tmp/S23_historical_monthly_status_recalc_chain_backtest.json --out tmp/S23_mode_comparison.json --markdown-out tmp/S23_mode_comparison.md
 python scripts/run_parameter_sweep.py --experiment config/experiments/S23_parameter_sweep.yaml --out tmp/S23_parameter_sweep.json --markdown-out tmp/S23_parameter_sweep.md
 ```
 

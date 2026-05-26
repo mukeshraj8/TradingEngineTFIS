@@ -2,8 +2,8 @@
 
 ## Purpose
 
-This document records the first TFIS foundation for S23 missed-entry and gap-style
-recalculation logic.
+This document records the current TFIS foundation for S23 missed-entry and
+current-day FSL / TRP handling.
 
 This layer is intentionally:
 
@@ -160,6 +160,72 @@ This first foundation does not yet implement:
 - target / stoploss recalculation
 - next-step order management after recalculation
 - backtest runtime integration by default
+
+## Current-Day FSL / TRP Rows `183-188`
+
+Workbook rows `183-188` were inspected directly and now back a separate,
+opt-in `S23 current-day FSL / TRP missed / not-missed` layer.
+
+Safe evidence-backed rows:
+
+- `183`
+  - Bull / Bull CF Call
+  - FSL / TRP not missed
+  - populated current-day strike and premium formulas
+- `185`
+  - Bear / Bear CF Call
+  - FSL / TRP missed
+  - populated current-day strike and premium formulas plus recalculated FSL
+- `186`
+  - Bear / Bear CF Put
+  - FSL / TRP not missed
+  - populated current-day strike and premium formulas
+- `187`
+  - Bull / Bull CF Put
+  - FSL / TRP missed
+  - only recalculated FSL is confirmed
+- `188`
+  - Bear / Bear CF Put
+  - FSL / TRP missed
+  - only recalculated FSL is confirmed
+
+Resolved row:
+
+- `184`
+  - Bull / Bull CF Call
+  - FSL / TRP missed
+  - workbook text says Call-side missed context
+  - visible `Q184` plus `R/S/U/W` use the Put-side formula family
+  - TFIS implements it exactly as workbook-directed after user confirmation
+
+Current implementation scope:
+
+- rows `183-186`
+  - apply populated `R/S/U/W` workbook formulas
+- rows `184/185/187/188`
+  - also apply the workbook-backed recalculated FSL from `M/O`
+- rows `187-188`
+  - remain `FSL-only`
+  - TFIS must not invent strike or premium recalculation because `R/S/U/W`
+    are blank
+- unsupported paths remain unchanged:
+  - Bull / Bull CF Put not missed
+  - Bear / Bear CF Call not missed
+
+Historical backtest integration:
+
+- this layer is opt-in only through `--enable-s23-current-day-fsl-trp`
+- it is separate from the older `--enable-s23-recalculation` ORPT missed-entry
+  path
+- it requires explicit spot and option intraday CSV data
+- it uses aggregated current-day snapshots at:
+  - `09:15:00` for the FSL / TRP missed trigger
+  - `09:24:59` for not-missed current-day `CDHH / CDLL` formulas
+  - `09:29:59` for missed current-day recalculation and FSL
+- when a branch path is unsupported by workbook coverage, TFIS keeps the base
+  trade plan and records a warning instead of inferring behavior
+- when row `184` is applied, audit output preserves the resolved workbook
+  clarification rather than hiding the mixed Call / Put evidence
 
 ## Open Questions
 

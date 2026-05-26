@@ -8,11 +8,18 @@
 - deterministic monthly-status classification is implemented for the confirmed threshold rules
 - optional monthly-status-driven branch selection is available in historical backtests
 - opt-in S23 missed-entry detection and recalculation is available in historical backtests
+- opt-in S23 current-day FSL / TRP missed / not-missed handling is available in historical backtests
 - dedicated spot intraday sourcing is available for the opt-in S23 recalculation path
 - S23 put-side recalculated strike wording is resolved as a confirmed workbook correction
+- S23 option rollover is clarified as not applicable
+- `AB6 OS` current-day FSL / TRP rows `183-188` are now cell-audited and implemented only within their confirmed workbook-backed scope
+- expiry-day lifecycle review is available in historical reports when selected contract expiry metadata exists
 - opt-in option-chain contract selection realism is available in historical backtests
+- opt-in contract-specific lifecycle pricing is available when symbol-keyed intraday bars exist for the selected contract
+- read-only shared captured-data adapter is available for normalized CSV roots
+- comparison reporting across historical backtest modes is available as a read-only reporting tool
 - quality snapshot:
-  - tests passing: `236`
+  - tests passing: `265`
   - `python scripts/validate_project.py`: passed
 
 ## Completed
@@ -43,23 +50,28 @@
 - S23 missed-entry detection foundation
 - opt-in S23 historical recalculation mode
 - dedicated spot intraday sourcing for opt-in S23 recalculation
+- opt-in S23 current-day FSL / TRP missed / not-missed handling
 - opt-in option-chain contract selection realism foundation
+- opt-in contract-specific lifecycle pricing foundation
+- read-only shared captured-data adapter foundation
+- S23 option rollover clarified as not applicable
+- expiry-day lifecycle review and audit for selected contracts
+- cell-level audit for S23 current-day FSL / TRP rows `183-188`
+- comparison reporting across historical backtest modes
 
 ## Next Recommended Priorities
 
-- shared captured-data adapter from `TradingEngine`
-- rollover lifecycle module
-- gap-up / gap-down engine
 - broader missed-entry / recalculation engine beyond the current S23 diagnostic mode
-- contract-specific option-chain intraday pricing and strike-availability realism
+- fuller strike-availability realism and broader contract-specific archive coverage
+- raw shared capture-format adapters beyond normalized CSV roots
+- futures rollover lifecycle module
 
 ## Explicitly Pending
 
-- shared captured-data adapter from `TradingEngine`
-- rollover lifecycle module
-- gap-up / gap-down engine
 - broader missed-entry / recalculation engine beyond the current S23 diagnostic mode
-- contract-specific option-chain intraday pricing and strike-availability realism
+- fuller strike-availability realism and broader contract-specific archive coverage
+- raw shared capture-format adapters beyond normalized CSV roots
+- futures rollover lifecycle module
 - monthly option buying engine
 - broker adapters
 - paper runtime

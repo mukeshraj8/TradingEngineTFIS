@@ -122,7 +122,10 @@ def test_historical_monthly_status_mode_requires_monthly_and_weekly_csvs(
     )
 
     assert result.returncode != 0
-    assert "--use-monthly-status-engine requires --monthly-csv and --weekly-csv" in result.stderr
+    assert (
+        "--use-monthly-status-engine requires monthly and weekly OHLC data from explicit CSV flags or --shared-data-root"
+        in result.stderr
+    )
 
 
 def test_historical_monthly_status_mode_skips_when_reference_data_is_insufficient(

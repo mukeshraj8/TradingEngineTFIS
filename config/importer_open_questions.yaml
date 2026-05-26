@@ -24,3 +24,30 @@ open_questions:
       and M180/O180 is treated as a workbook copy-paste issue, not as the
       intended business rule.
     status: RESOLVED
+  - id: s23_fsl_trp_row_184_mixed_mapping
+    workbook_cells:
+      - AB6 OS!I184
+      - AB6 OS!Q184
+      - AB6 OS!R184
+      - AB6 OS!S184
+      - AB6 OS!U184
+      - AB6 OS!W184
+    description: >
+      S23 current-day FSL/TRP row 184 mixes labels from different branch
+      families. The row text says "Recalcuate : Call Sell FSL / TRP : Bull /
+      Bull CF", while the visible option-type cell shows Put and the populated
+      R/S/U/W formulas structurally reference the Bull Put branch anchor A165.
+    current_behavior: >
+      TFIS now treats row 184 as a confirmed workbook-directed Bull/Bull CF
+      Call FSL/TRP missed branch that intentionally switches into the Put-side
+      Q/R/S/U/W formula family for current-day strike and premium handling.
+    alternative_interpretation: >
+      Treat row 184 as an intentional workbook-directed Bull Call missed-FSL
+      context that transitions into the Bull Put current-day strike and premium
+      family after the miss condition.
+    resolution: >
+      Confirmed implementation scope: row 184 is not treated as a blocker.
+      TFIS should use row 184 exactly as the workbook gives it for the
+      Bull/Bull CF Call FSL/TRP missed branch, including the visible Put-side
+      Q/R/S/U/W formula family and the 09:29:59 AM HH + 7.00% FSL rule.
+    status: RESOLVED
