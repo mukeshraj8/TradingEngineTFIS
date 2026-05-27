@@ -6,13 +6,13 @@ way.
 
 ## Immediate Next Priorities
 
-1. Run the first archive-backed S23 same-day paper lifecycle parity pilot.
-   The comparator now has an explicit same-day drift policy with deterministic `MATCH`, `MATCH_WITH_ACCEPTABLE_DRIFT`, `PARTIAL_MATCH`, `MISMATCH`, and `UNCOMPARABLE` outcomes. The next safe step is to replay a small normalized non-fixture S23 paper session set and measure how often real archive sessions stay inside acceptable drift.
-2. Broader real/archive contract-specific intraday coverage for S23.
-   The deterministic fixture set is fully covered at 100.0%; the next safe step is a small normalized archive pilot using real session data while keeping TFIS runtime on the existing contract-intraday CSV contract.
-3. Raw TradingEngine or NiftyTradingEngine capture-format adapters beyond normalized CSV roots.
-4. Convert the same-day drift policy into explicit paper-session go/no-go operating thresholds.
-   The comparator now distinguishes exact parity from acceptable same-day drift. The next governance step is to define how many `MATCH_WITH_ACCEPTABLE_DRIFT` sessions are acceptable in a pilot day and which `PARTIAL_MATCH` reasons are allowed versus rollout blockers.
+1. Broaden the S23 ingress-only validation set from the current single-date archive-derived suite into multi-date normalized archive and replay sessions before enabling any live-like fill or lifecycle.
+   `D:/TradingEngineTFIS/tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1` now gives the first operator-grade ingress baseline: `5` sessions, `4 PASS`, `1 WARNING`, `0 NO_GO`, `80.0%` pass rate, `100.0%` selected-contract availability, and a `LIMITED_GO` recommendation. The next safe step is broader date and source-shape coverage, not more strategy logic.
+2. If the broader ingress suite stays within the close-out thresholds, run the first tightly controlled live-like S23 paper fill and same-day lifecycle rehearsal under operator sign-off.
+   The operator policy now exists in `docs/operations/s23_operator_closeout_policy.md`, so the next rehearsal should only happen after a broader multi-date ingress suite still preserves `0` NO_GO sessions and keeps warning cases bounded and reviewed.
+3. Broader real/archive contract-specific intraday coverage for S23.
+   The deterministic fixture set is fully covered at 100.0%; the next safe step is to widen real session coverage while keeping TFIS runtime on the existing contract-intraday CSV contract.
+4. Raw TradingEngine or NiftyTradingEngine capture-format adapters beyond normalized CSV roots.
 
 Comparison reporting note:
 
@@ -21,7 +21,8 @@ Comparison reporting note:
 - the normalized lifecycle-source runbook now compares a matched option-chain baseline against contract-specific lifecycle mode, so lifecycle-source P&L differences can be reviewed without cost or spot-input drift
 - future comparison work should extend reporting depth without regressing the new file-size, trade-count, timeout, and integrity safeguards
 - the row-183 `current_day_fsl_trp` loss flip seen in an older comparison was not reproduced after rerunning all six modes on one shared dataset set and one shared cost model
-- the new S23 paper-vs-historical comparator now reuses the historical normalized trade summaries and compares persisted `INTENT_READY` paper sessions against expected historical trade-plan output with deterministic `MATCH`, `PARTIAL_MATCH`, `MISMATCH`, or `UNCOMPARABLE` statuses, and it now also distinguishes later execution-shell, dispatch-shell, and final no-fill handoff readiness from the earlier arming layer
+- the new S23 paper-vs-historical comparator now reuses the historical normalized trade summaries and compares persisted S23 paper sessions through planning, arming, dispatch, handoff, fill, and same-day lifecycle outcome with deterministic `MATCH`, `MATCH_WITH_ACCEPTABLE_DRIFT`, `PARTIAL_MATCH`, `MISMATCH`, or `UNCOMPARABLE` statuses
+- the new S23 operator close-out policy now classifies ingress-only sessions as `PASS`, `WARNING`, or `NO_GO`, with `LIMITED_GO` or `GO_FOR_CONTROLLED_PAPER` reserved for aggregate suite interpretation rather than individual-session state
 
 ## Blocked / Pending Clarification
 

@@ -6,7 +6,7 @@ change in a meaningful way.
 
 ## Current Focus
 
-- use the new same-day S23 paper lifecycle parity and drift policy on archive-backed paper replays before any broader paper rollout
+- use the new S23 operator close-out policy and broadened ingress-only suite as the final ingress gate, then expand from the current single-date archive-derived validation set into broader multi-date normalized ingress evidence before any controlled live-like paper fill or lifecycle rollout
 
 ## Implemented Systems
 
@@ -52,6 +52,11 @@ change in a meaningful way.
 - S23 Paper Trading MVP v1 Phase 1 fill simulator through `PAPER_ORDER_FILLED` / `PAPER_ORDER_NOT_FILLED` / `PAPER_FILL_ABORTED`
 - S23 Paper Trading MVP v1 Phase 2 same-day lifecycle loop through `PAPER_POSITION_OPEN` / `PAPER_POSITION_CLOSED` / `PAPER_EOD_SQUARE_OFF` / `PAPER_LIFECYCLE_ABORTED`
 - same-day S23 paper-vs-historical lifecycle parity and drift policy with deterministic `MATCH`, `MATCH_WITH_ACCEPTABLE_DRIFT`, `PARTIAL_MATCH`, `MISMATCH`, and `UNCOMPARABLE` outcomes
+- first normalized archive-backed S23 same-day paper lifecycle parity pilot
+- first multi-session archive-backed S23 same-day paper lifecycle parity suite
+- first normalized live-paper ingress-only S23 dry run over deterministic archive-export JSONL
+- S23 operator close-out policy for ingress-only validation
+- broadened multi-session S23 ingress-only dry-run suite with aggregate PASS / WARNING / NO_GO close-out metrics
 
 ## Current Architecture Flow
 
@@ -179,7 +184,7 @@ Current notes:
 
 ## Current Quality Snapshot
 
-- tests passing: `384`
+- tests passing: `391`
 - `python scripts/validate_project.py`: passing
 
 ## Operational Coordination Discipline
@@ -209,12 +214,14 @@ Current notes:
 - Contract-specific lifecycle mode now makes selected-contract provenance explicit per trade, so archive gaps are visible instead of being hidden behind a generic option series fallback.
 - The current fixture-backed lifecycle archive now covers all 10 selected-contract evaluations with real symbol bars, so remaining realism work is broader archive depth rather than a missing-symbol gap in the normalized S23 fixture set.
 - A dedicated S23 contract archive ingestion plan now exists; TFIS still consumes only normalized contract-intraday CSVs, and raw session/parquet/broker-export adapters remain planning-stage work rather than runtime behavior.
-- A dedicated S23 paper-trading readiness audit now exists, and the current disposition is `NO-GO` until later-phase execution controls and an actual paper execution loop exist.
+- A dedicated S23 paper-trading readiness audit now exists, and the current live-paper disposition remains `NO-GO` for broad rollout even though the new operator close-out policy is in place and the first broadened ingress-only suite reached `LIMITED_GO`.
 - Two new operations blueprints now define the next paper-runtime foundation: `s23_live_paper_data_contract.md` covers normalized live-paper inputs and guardrails, while `s23_paper_session_state_machine.md` defines the S23-only session phases, terminal states, and no-trade or abort rules.
 - TFIS now also has a small S23-only `tfis.paper` foundation with immutable normalized event models, required-field validation, readiness or no-trade result objects, and a session manifest builder; this creates the first deterministic paper-runtime contract layer without introducing broker connectivity or an execution loop.
 - `src/tfis/paper/orchestrator.py` now layers a deterministic S23 paper-session orchestrator on top of that contract foundation, rejecting stale, duplicate, and out-of-order events and stopping cleanly at `ORDER_PLANNED`, `NO_TRADE`, or `ABORTED` without simulating any paper fills.
 - `src/tfis/paper/artifacts.py` now persists deterministic terminal planning artifacts under a paper-session folder, including the session manifest, audit trail, decision summary, selected contract details, and terminal no-trade or abort summaries without claiming any execution or fills.
 - `src/tfis/paper/guardrails.py` now adds deterministic kill-switch and failure-handling decisions before planning, including explicit codes, messages, blocking source metadata, and operator-action hints for both in-memory audit and persisted terminal summaries.
+- `docs/operations/s23_operator_closeout_policy.md` now codifies ingress-only session acceptance as `PASS`, `WARNING`, or `NO_GO`, including hard blockers for timezone mismatch, unsupported continuation, missing chain or selected contract, stale data, and ORPT / RC lag beyond `5.0s`.
+- the broadened ingress-only suite under `D:/TradingEngineTFIS/tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1` now provides the first aggregate operational baseline: `5` sessions, `4 PASS`, `1 WARNING`, `0 NO_GO`, `80.0%` pass rate, `100.0%` selected-contract availability, and a current rollout recommendation of `LIMITED_GO`
 - `src/tfis/paper/replay_bundle.py` now builds and validates deterministic replay-bundle manifests from persisted paper-session folders, including stable file hashes, terminal-state checks, and readback summaries for `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED` outcomes.
 - `src/tfis/paper/review.py` and `scripts/review_paper_session.py` now turn those artifacts and replay bundles into deterministic operator-facing JSON and Markdown review summaries without implying any execution, fills, or lifecycle monitoring.
 - `src/tfis/paper/paper_vs_historical.py` and `scripts/compare_paper_to_historical.py` now add the first deterministic replay-parity check from a persisted S23 paper intent shell back to expected historical output, which means TFIS can now prove planning-state agreement before any execution loop or lifecycle monitor exists.
@@ -226,6 +233,10 @@ Current notes:
 - `docs/operations/s23_paper_trading_mvp_v1_design.md` now defines the first actual S23 paper fill-simulator and same-day lifecycle-loop policy, including the recommended Phase 1 slice of `PAPER_ORDER_PENDING`, `PAPER_ORDER_FILLED`, and `PAPER_ORDER_NOT_FILLED` before any broker integration or real order flow is considered.
 - `src/tfis/paper/fill_simulator.py` now implements that Phase 1 slice, consuming a handoff-ready paper intent plus selected-contract quote or bar evidence and recording a conservative `filled`, `not filled`, or `aborted` outcome without opening a paper position or starting lifecycle monitoring.
 - `src/tfis/paper/review.py` and `src/tfis/paper/paper_vs_historical.py` now understand Phase 1 fill artifacts, so operator review and replay parity summaries can show fill-shell status without implying any target/SL lifecycle or paper P&L tracking.
+- the first deterministic fixture-backed S23 same-day paper lifecycle parity pilot remains available under `D:/TradingEngineTFIS/tmp/s23_paper_pilots/2026-05-27/s23-lifecycle-parity-pilot`; it reached a target-hit close on `NIFTY_20260528_22400_PE` and returned `MATCH` against the historical expectation with no drift outside policy.
+- the first normalized archive-backed S23 same-day paper lifecycle parity pilot now exists under `D:/TradingEngineTFIS/tmp/s23_paper_pilots/2026-05-08/s23-archive-lifecycle-parity-pilot`; it used direct selected-contract ticks for `NIFTY_20260512_25000_PE`, returned `PAPER_ORDER_FILLED` plus `PAPER_POSITION_CLOSED`, and matched the normalized historical expectation with parity result `MATCH` and no drift outside policy.
+- the first multi-session archive-backed S23 same-day paper lifecycle parity suite now exists under `D:/TradingEngineTFIS/tmp/s23_paper_pilot_suite/2026-05-27/s23-archive-suite-v2`; it covered bull/bear, call/put, target-hit, stoploss-hit, EOD square-off, no-fill, current-day FSL / TRP, and ORPT recalculation paths and returned `5 MATCH`, `1 PARTIAL_MATCH`, `0 MISMATCH`, and `0 UNCOMPARABLE`, which supports a `LIMITED_GO` recommendation for continued archive-backed validation but not yet live-paper rollout.
+- the first normalized live-paper ingress-only dry run now exists under `D:/TradingEngineTFIS/tmp/s23_live_paper_dry_runs/2026-05-08/s23-archive-ingress-dry-run`; it consumed deterministic archive-export JSONL, reached `ORDER_PLANNED`, emitted an `INTENT_READY` shell, returned ingress readiness `PASS`, and recorded `0` stale events, `0` late events, `0` missing chains, `0` missing selected contracts, and `ORPT / RC` arrival lags of `2.0s` inside the current `5.0s` threshold.
 - The `AB6 OS` current-day FSL / TRP rows `183-188` are now implemented only
   within their confirmed workbook-backed scope:
   `183-186` use populated `R/S/U/W`, while `187-188` remain `FSL-only`.

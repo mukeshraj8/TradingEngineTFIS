@@ -97,6 +97,10 @@ The first runtime scaffold is now implemented under `src/tfis/paper/`:
   - `PAPER_ORDER_NOT_FILLED`
   - `PAPER_FILL_ABORTED`
   - without broker connectivity, real order placement, or live position state
+- `ingress_dry_run.py` now consumes deterministic normalized archive-export JSONL,
+  drives the orchestrator only through `ORDER_PLANNED`, `NO_TRADE`, or
+  `ABORTED`, builds the intent shell, and persists review plus ingress-health
+  summaries without starting any fill or lifecycle execution
 - `lifecycle.py` now implements the first same-day lifecycle slice through:
   - `PAPER_POSITION_OPEN`
   - `PAPER_EXIT_PENDING`
@@ -389,19 +393,18 @@ The current runtime scaffold now includes:
 10. execution-shell-aware parity comparison over the persisted paper shell
 11. Phase 1 fill-simulator outcomes through `PAPER_ORDER_FILLED`,
     `PAPER_ORDER_NOT_FILLED`, and `PAPER_FILL_ABORTED`
+12. normalized live-paper ingress-only dry runs over deterministic archive-export JSONL
+    with persisted freshness metrics, ORPT / RC timing audit, selected-contract
+    audit, and intent-shell review outputs
 
 The design for the next runtime phase now exists in
 `docs/operations/s23_paper_trading_mvp_v1_design.md`.
 
-The next runtime step should be Phase 2 of that design:
+The next runtime step should operationalize the current dry-run and paper
+artifacts rather than broadening lifecycle behavior again:
 
-- `PAPER_POSITION_OPEN`
-- `PAPER_EXIT_PENDING`
-- `PAPER_POSITION_CLOSED`
-- `PAPER_EOD_SQUARE_OFF`
-- `paper_position.json`
-- `lifecycle_events.jsonl`
-- `paper_pnl_summary.json`
+- explicit pilot-day thresholds
+- operator close-out policy
+- broader normalized ingress-only source coverage
 
-It should still avoid broker integration, real order placement, and real-money
-flow.
+It should still avoid broker integration, real order placement, and real-money flow.

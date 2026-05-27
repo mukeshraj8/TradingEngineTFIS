@@ -30,6 +30,10 @@ class S23PaperSessionArtifactWriter:
     def __init__(self, artifact_root: str | Path = Path("tmp/paper_sessions")) -> None:
         self._artifact_root = Path(artifact_root)
 
+    @property
+    def artifact_root(self) -> Path:
+        return self._artifact_root
+
     def write_snapshot(
         self,
         snapshot: S23PaperSessionSnapshot,

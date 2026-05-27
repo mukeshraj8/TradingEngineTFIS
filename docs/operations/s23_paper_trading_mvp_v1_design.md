@@ -38,8 +38,10 @@ Current status:
 - still no next-day continuation
 - still no multi-position runtime
 
-The next implementation phase should tighten lifecycle parity policy and
-operator close-out rules before broadening paper-runtime scope.
+The next implementation phase should convert the completed archive-backed pilot
+suite into explicit operator close-out thresholds, manual-review policy, and a
+first live-paper data-ingress-only dry run before broadening paper-runtime
+scope again.
 
 That lifecycle parity and same-day drift policy is now implemented in the
 paper-vs-historical comparator:
@@ -59,8 +61,10 @@ paper-vs-historical comparator:
   - `MISMATCH`
   - `UNCOMPARABLE`
 
-The next paper-runtime step should use this policy on archive-backed sessions
-rather than widening the fill or lifecycle model first.
+A first deterministic fixture-backed pilot remains available under
+`D:/TradingEngineTFIS/tmp/s23_paper_pilots/2026-05-27/s23-lifecycle-parity-pilot` and returned `MATCH` on the selected-contract
+target-hit path. The first normalized archive-backed pilot now also exists under
+`D:/TradingEngineTFIS/tmp/s23_paper_pilots/2026-05-08/s23-archive-lifecycle-parity-pilot`; it used direct selected-contract archive ticks for `NIFTY_20260512_25000_PE`, reached a filled same-day target-hit close, and returned `MATCH` with no drift outside policy. A first multi-session archive-backed suite now also exists under `D:/TradingEngineTFIS/tmp/s23_paper_pilot_suite/2026-05-27/s23-archive-suite-v2`; it covered bull/bear, call/put, target-hit, stoploss-hit, EOD square-off, no-fill, current-day FSL / TRP, and ORPT recalculation paths and returned `5 MATCH`, `1 PARTIAL_MATCH`, `0 MISMATCH`, and `0 UNCOMPARABLE`. The next paper-runtime step should turn those suite results into explicit operator close-out thresholds and a live-paper data-ingress-only dry run rather than broadening the fill or lifecycle model first.
 
 ## Scope
 
@@ -508,7 +512,7 @@ Implement:
 
 Implementation status:
 
-- next runtime priority
+- complete
 
 ### Phase 3: Replay Parity Extension
 
