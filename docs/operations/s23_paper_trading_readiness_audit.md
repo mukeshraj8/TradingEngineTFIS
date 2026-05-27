@@ -22,14 +22,15 @@ Reason:
 
 - S23 offline research and backtest logic is strong
 - S23 paper/live runtime orchestration is still only partially defined
-- several execution-safety and operator-safety layers are missing entirely
+- several execution-safety and operator-safety layers are still incomplete beyond the current pre-execution shell
 
 High-level split:
 
 - offline S23 research and replay logic: strong
 - S23 contract/lifecycle realism on deterministic fixtures: strong
 - paper runtime data contracts: partial
-- paper execution, operator control, and failure handling: missing to partial
+- paper execution and operator review surfaces: partial
+- paper failure handling and kill-switch controls through the final no-fill handoff boundary: partial
 
 ## Readiness Checklist
 
@@ -43,25 +44,24 @@ High-level split:
 | 6. Current-day FSL / TRP handling | PARTIAL | High | Historical workbook-backed rows `183-188` exist and are tested. No paper-runtime timing flow exists. | Define whether paper mode will support current-day FSL / TRP from day one and how required `09:15`, ORPT, and RC snapshots are captured. |
 | 7. `Z183:Z186` entry override behavior | PARTIAL | Medium | Workbook-backed current-day entry overrides are implemented in historical mode. No live-paper application contract exists. | Define when paper mode applies these overrides and how original vs overridden entry is shown to operators. |
 | 8. Selected-contract lifecycle tracking | PARTIAL | High | Historical selected-contract lifecycle tracking is strong and provenance-rich. No paper session selected-contract state model exists yet. | Define active selected-contract state, symbol continuity, price-source labels, and lifecycle quote freshness requirements. |
-| 9. Paper order simulation | MISSING | High | TFIS does not yet have an S23 paper execution loop. | Build S23-only paper execution simulation with explicit paper-only mode tags, order intents, and lifecycle events. |
-| 10. Fill/slippage model | PARTIAL | Medium | Historical cost/slippage assumptions exist, but they are not execution-grade and not live-paper fill rules. | Define a paper fill policy using bid/ask or last-traded-price rules and keep it visibly separate from historical cost assumptions. |
+| 9. Paper order simulation | PARTIAL | High | TFIS now has a complete no-fill shell through `PAPER_EXECUTION_HANDOFF_READY`, Phase 1 fill simulation through `PAPER_ORDER_PENDING`, `PAPER_ORDER_FILLED`, `PAPER_ORDER_NOT_FILLED`, and `PAPER_FILL_ABORTED`, a first same-day lifecycle slice through `PAPER_POSITION_OPEN`, `PAPER_POSITION_CLOSED`, `PAPER_EOD_SQUARE_OFF`, and `PAPER_LIFECYCLE_ABORTED`, and an explicit paper-vs-historical same-day drift policy with `MATCH`, `MATCH_WITH_ACCEPTABLE_DRIFT`, `PARTIAL_MATCH`, `MISMATCH`, and `UNCOMPARABLE` outcomes. | Apply the new drift policy to archive-backed paper sessions, define pilot-day thresholds for acceptable drift, and tighten operator close-out rules before any broader paper rollout. |
+| 10. Fill/slippage model | PARTIAL | Medium | Historical cost/slippage assumptions exist, and the Phase 1 paper fill simulator now applies a separate conservative selected-contract quote/bar fill policy with explicit spread and freshness gates. Lifecycle-time execution friction is still undefined. | Keep the Phase 1 fill policy stable, then define lifecycle-time exit pricing rules separately from historical cost assumptions. |
 | 11. Spread/liquidity/OI validation | PARTIAL | High | Offline option-chain selection already uses OI and spread as ranking signals. Live-paper pre-trade guards are not formalized. | Define hard no-trade gates for spread, zero bid, low OI, missing volume, stale quotes, and untradable books. |
 | 12. Expiry-day and holiday handling | PARTIAL | High | Expiry-day review exists in historical reports. Holiday/session-calendar handling for paper runtime is not defined. | Add session calendar rules, expiry-day paper restrictions, holiday skips, and pre-expiry market-open checks. |
 | 13. Position-open / EOD handling | PARTIAL | High | Historical EOD policies exist. Workbook rows `190-191` remain process-only and do not give numeric next-day continuation logic. | Choose an explicit paper-mode policy: either same-day square-off only for initial rollout or block next-day continuation until workbook evidence exists. |
-| 14. Logging and audit reports | PARTIAL | Medium | Historical reports are strong. Live-paper session logs, decision journals, and operator close-out reports are not yet defined in TFIS. | Define paper-session journal format, decision log schema, and end-of-session audit report. |
-| 15. Dashboard / operator visibility | MISSING | High | TFIS has no dedicated operator dashboard. | Provide at least a minimal operator surface for selected branch, selected contract, live-paper status, warnings, fallback state, and active position state. |
-| 16. Failure handling | MISSING | Critical | TFIS does not yet define S23 paper-mode handling for stale data, missing option chain, missing selected contract quote, broker/API outage, partial data, or rate limits. | Add explicit no-trade, degrade, or safe-exit rules for each failure mode. |
-| 17. Replayability | PARTIAL | High | Historical comparison tooling is strong, but TFIS does not yet define how a paper session is captured and replayed end to end. | Define a paper-session truth journal and a replay path that can compare paper decisions against expected S23 historical logic. |
-| 18. Kill-switch / no-trade guardrails | PARTIAL | Critical | Risk policy and rejection logic exist offline, but paper runtime kill-switch and operator no-trade controls are not present. | Add explicit session kill-switch, branch-level disable, quote-quality no-trade gates, and fallback refusal rules. |
+| 14. Logging and audit reports | PARTIAL | Medium | Historical reports are strong. TFIS now persists session manifests, audit trails, terminal summaries, replay-bundle manifests, operator review outputs, an execution-journal intent shell, later execution-arm or execution-block summaries, fillless dispatch summaries, final handoff summaries, Phase 1 fill/no-fill artifacts, Phase 2 paper position / exit / P&L artifacts, and lifecycle-aware paper-vs-historical comparison summaries. | Add an end-of-session operator close-out report and define which lifecycle deviations should escalate to paper-runtime NO-GO. |
+| 15. Dashboard / operator visibility | PARTIAL | Medium | TFIS now has operator-facing JSON and Markdown review summaries over persisted paper-session artifacts, replay bundles, execution-journal intent shells, execution-shell readiness outcomes, fillless dispatch-only outcomes, final handoff outcomes, Phase 1 fill/no-fill outcomes, and Phase 2 same-day lifecycle / P&L outcomes. | Add an operator-facing close-out surface and explicit lifecycle warning severity model. |
+| 16. Failure handling | PARTIAL | Critical | TFIS now has explicit pre-planning guardrails plus post-planning intent-shell controls, later execution-shell arming controls, fillless dispatch-only guardrails, final no-fill handoff guardrails, Phase 1 fill guardrails, and a first lifecycle-time shell for missing lifecycle data, conservative same-bar conflict handling, explicit EOD square-off, and lifecycle abort visibility. | Harden stale-data, manual-kill, and parity-escalation policy during the open-position phase before any broader paper rollout. |
+| 17. Replayability | PARTIAL | Medium | TFIS now has persisted paper-session artifacts, deterministic replay-bundle manifests with file hashes and terminal-state checks, operator-facing review summaries over those bundles, an execution-journal intent shell, later execution-shell readiness outcomes, fillless dispatch-only outcomes, final handoff outcomes, Phase 1 fill/no-fill artifacts, Phase 2 same-day lifecycle artifacts, and a deterministic paper-vs-historical comparison runner that now understands planning parity plus execution, dispatch, handoff, fill, and lifecycle outcome status. | Define acceptable lifecycle drift and which lifecycle mismatches should block paper-runtime readiness. |
+| 18. Kill-switch / no-trade guardrails | PARTIAL | High | TFIS now has deterministic pre-planning kill-switch controls plus post-planning intent-shell, pre-execution-shell, fillless dispatch-shell, final handoff-shell, Phase 1 fill-shell guardrails, and a first same-day lifecycle shell that can abort or conservatively close based on lifecycle-time data quality. | Refine manual lifecycle kill-switch policy and preserve every later guardrail trigger in operator close-out artifacts. |
 
 ## Key Risks
 
 ### Critical
 
 - no paper execution simulator yet
-- no explicit live-paper failure-handling contract
-- no operator kill-switch / no-trade control surface
 - no TFIS-native dashboard/operator visibility
+- no fill simulator or lifecycle loop beyond the current final no-fill handoff boundary
 
 ### High
 
@@ -115,36 +115,47 @@ Define one session state machine covering:
 - selected-contract tracking
 - expiry/EOD close behavior
 
-### 4. Build S23-only paper execution and journaling
+### 4. Implement the same-day S23 paper lifecycle loop
 
-Needed outputs:
+The blueprint now exists in
+`docs/operations/s23_paper_trading_mvp_v1_design.md`.
 
-- paper order intent
-- accepted or blocked reason
-- active selected contract state
-- lifecycle events
-- operator warnings
-- end-of-session summary
+Phase 1 of that design is now implemented. The next runtime slice should cover:
 
-### 5. Add hard failure-handling and no-trade guardrails
+- `PAPER_POSITION_OPEN`
+- `PAPER_EXIT_PENDING`
+- `PAPER_POSITION_CLOSED`
+- `PAPER_EOD_SQUARE_OFF`
+- `paper_position.json`
+- `lifecycle_events.jsonl`
+- `paper_pnl_summary.json`
 
-Minimum first-wave rules:
+### 5. Extend replay comparison into the lifecycle phase
 
-- stale spot or option data -> no trade
+The current planning, arming, dispatch, handoff, and first fill-status parity
+layer now exists. After lifecycle artifacts exist, the next replay task should:
+
+- compare future fill-simulator artifacts after `PAPER_EXECUTION_HANDOFF_READY`
+- validate that acceptable historical parity remains visible once the shell
+  moves into the first simulated execution phase
+- keep refusing to imply broker placement or real fills
+
+### 6. Extend the first-wave failure-handling guardrails into open-position paper phases
+
+The first-wave planning, arming, dispatch, handoff, and Phase 1 fill guardrails
+now exist for:
+
+- stale spot or selected-contract data -> no trade
 - missing option chain -> no trade
-- missing selected contract quote -> no trade or explicit fallback refusal
-- broker/API outage -> no trade
-- quote-quality or rate-limit degradation -> no trade
-- operator kill-switch -> immediate paper session halt
+- missing selected contract quote -> no trade
+- manual operator abort -> aborted
+- global or S23 paper disable -> no trade or aborted
+- unsupported continuation -> aborted
 
-### 6. Add replayability and operator comparison
+The next failure-handling work should cover later paper phases:
 
-Each paper session should be replayable and comparable against:
-
-- expected S23 branch
-- expected trade plan
-- expected recalculation path
-- expected selected contract and lifecycle source
+- quote-quality or rate-limit degradation during later phases -> safe abort
+- active lifecycle data disappearance -> operator-visible halt or safe abort
 
 ## Go / No-Go Criteria For Starting S23 Paper Trading
 
@@ -161,7 +172,8 @@ The minimum `GO` criteria for S23 paper trading should be:
 7. session logging and replay artifacts exist
 8. operator-visible warnings exist for stale/missing/partial data
 9. kill-switch and no-trade guardrails exist
-10. paper sessions can be compared back to expected historical logic
+10. paper sessions can be compared back to expected historical logic,
+    including the current pre-execution arming, dispatch, and handoff shell
 
 If any of these are missing, S23 paper mode should remain `NO-GO`.
 
@@ -171,11 +183,12 @@ No real-money S23 live test should happen until all paper `GO` criteria are
 met, plus:
 
 1. repeated clean paper sessions across multiple days
-2. replay-confirmed agreement between paper decisions and expected S23 logic
+2. replay-confirmed agreement between paper decisions and expected S23 logic,
+   including the current pre-execution arming, dispatch, and handoff shell
 3. operator dashboard or equivalent session visibility is stable
 4. explicit quote-quality and rate-limit handling is validated
-5. paper fill model and realized paper outcomes are understood well enough to
-   separate logic defects from market-friction drift
+5. paper fill model and same-day lifecycle outcomes are understood well enough
+   to separate logic defects from market-friction drift
 6. any unsupported continuation logic is either proven from workbook evidence or
    explicitly disabled by operating policy
 
@@ -196,4 +209,6 @@ That means the immediate next build steps should focus on:
 2. paper session state machine
 3. paper execution/journaling
 4. failure handling and kill-switches
-5. replayability and comparison back to expected S23 logic
+5. Phase 1 fill simulation and no-fill outcomes
+6. same-day lifecycle monitoring and replayability beyond the current final
+   no-fill handoff boundary

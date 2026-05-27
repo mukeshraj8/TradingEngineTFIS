@@ -23,12 +23,28 @@
 - a dedicated S23 contract archive ingestion plan is now documented so the next realism step can move from deterministic fixtures toward normalized real/archive contract bars without changing S23 logic
 - an S23-only paper-trading readiness audit is now documented, and the current readiness conclusion is explicitly `NO-GO` until paper-runtime data, execution, visibility, and failure-handling gaps are closed
 - S23 live-paper normalized data contract and session state-machine blueprints are now documented, defining the next safe implementation boundary for paper runtime scaffolding
+- S23 live-paper schema scaffolding and required-field validation are now implemented under `src/tfis/paper`, including normalized event models, no-trade or abort validation results, and session manifest building
+- S23 paper-session orchestrator skeleton is now implemented under `src/tfis/paper/orchestrator.py`, with deterministic transitions through `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED`
+- S23 paper-session persistent artifacts and journaling shell are now implemented under `src/tfis/paper/artifacts.py`
+- S23 paper kill-switch and failure-handling guardrails are now implemented under `src/tfis/paper/guardrails.py` and integrated before `ORDER_PLANNED`
+- S23 paper replayable session bundles are now implemented under `src/tfis/paper/replay_bundle.py`
+- S23 paper operator-facing review summaries are now implemented under `src/tfis/paper/review.py` and `scripts/review_paper_session.py`
+- S23 paper order-intent and execution-journal shell is now implemented under `src/tfis/paper/execution_journal.py`
+- S23 paper post-planning failure handling and kill-switch controls are now implemented over the intent shell
+- S23 paper-vs-historical replay comparison over the persisted intent shell is now implemented under `src/tfis/paper/paper_vs_historical.py` and `scripts/compare_paper_to_historical.py`
+- S23 later-phase execution-shell controls beyond `INTENT_READY` are now implemented over the persisted intent shell
+- S23 paper-vs-historical replay comparison is now execution-shell-aware, so it can distinguish planning parity from later pre-execution readiness outcomes
+- S23 fillless dispatch shell beyond `EXECUTION_ARMED` is now implemented, and replay comparison now distinguishes later dispatch readiness from earlier arming readiness
+- S23 final no-fill execution handoff boundary after `ORDER_INTENT_DISPATCHED` is now implemented, and replay comparison now distinguishes later handoff readiness from earlier execution-shell and dispatch-shell outcomes
+- S23 Paper Trading MVP v1 fill simulator and lifecycle-loop design is now documented, so the no-fill shell has a reviewed implementation target instead of an open-ended future phase
+- S23 Paper Trading MVP v1 Phase 1 fill simulator is now implemented, so the paper shell can record deterministic `filled`, `not filled`, or `aborted` outcomes without yet opening a paper position
+- S23 Paper Trading MVP v1 Phase 2 same-day lifecycle loop is now implemented, so a filled paper order can now open a paper-only position, close on target or stoploss, square off at EOD, or abort explicitly on lifecycle-time data failure
 - read-only shared captured-data adapter is available for normalized CSV roots
 - comparison reporting across historical backtest modes is available as a read-only reporting tool
 - S23 mode comparison reporting is now bounded, deterministic, and summary-based rather than relying on unbounded raw JSON comparison
 - S23 mode comparison now records input-dataset paths, cost settings, and apples-to-apples status; the earlier row-183 `current_day_fsl_trp` exit flip did not reproduce after rerunning all six modes on one shared dataset set
 - quality snapshot:
-  - tests passing: `274`
+  - tests passing: `384`
   - `python scripts/validate_project.py`: passed
 
 ## Completed
@@ -77,20 +93,33 @@
 - workbook-backed current-day option-entry overrides from `AB6 OS!Z183:Z186` implemented for supported rows `183-186`
 - S23 live-paper normalized data contract blueprint documented
 - S23 paper-session state-machine blueprint documented
+- S23 live-paper schema scaffolding and required-field validation implemented
+- S23 paper-session orchestrator skeleton implemented through `ORDER_PLANNED` / `NO_TRADE` / `ABORTED`
+- S23 paper-session persistent artifacts and journaling shell implemented
+- S23 paper kill-switch and failure-handling guardrails implemented before planning
+- S23 paper replay-bundle manifests, validation, and readback summaries implemented
+- S23 paper operator-facing review summaries implemented
+- S23 paper order-intent and execution-journal shell implemented
+- S23 paper post-planning failure handling and kill-switch controls implemented
+- S23 paper-vs-historical replay comparison over the persisted intent shell implemented
+- S23 later-phase execution-shell controls beyond `INTENT_READY` implemented
+- S23 paper-vs-historical replay comparison extended through the execution-shell readiness layer
+- S23 fillless dispatch shell beyond `EXECUTION_ARMED` implemented
+- S23 final no-fill execution handoff boundary after `ORDER_INTENT_DISPATCHED` implemented
+- S23 Paper Trading MVP v1 fill simulator and lifecycle-loop design documented
+- S23 Paper Trading MVP v1 Phase 1 fill simulator implemented
+- S23 Paper Trading MVP v1 Phase 2 same-day lifecycle loop implemented
 
 ## Next Recommended Priorities
 
-- S23 live-paper schema scaffolding and required-field validation
-- S23 paper-session orchestrator skeleton and session manifest writer
-- S23 paper execution journaling and operator-facing session artifacts
+- harden same-day S23 paper lifecycle parity and acceptable drift policy
+- extend paper-vs-historical replay comparison into the future fill-simulator phase
 - broader real/archive contract-specific coverage pilot
 - raw shared capture-format adapters beyond normalized CSV roots
 
 ## Explicitly Pending
 
-- S23 live-paper schema scaffolding and required-field validation
-- S23 paper-session orchestrator skeleton and session manifest writer
-- S23 paper execution journaling and operator-facing session artifacts
+- tighter same-day S23 paper lifecycle parity policy and operator close-out rules
 - fuller strike-availability realism and broader contract-specific archive coverage
 - raw shared capture-format adapters beyond normalized CSV roots
 - futures rollover lifecycle module

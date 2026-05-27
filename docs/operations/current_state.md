@@ -6,7 +6,7 @@ change in a meaningful way.
 
 ## Current Focus
 
-- S23 live-paper contract and session-orchestration foundation
+- use the new same-day S23 paper lifecycle parity and drift policy on archive-backed paper replays before any broader paper rollout
 
 ## Implemented Systems
 
@@ -35,6 +35,23 @@ change in a meaningful way.
 - reference-material indexing
 - S23 live-paper normalized data contract blueprint
 - S23 paper-session state-machine blueprint
+- S23 live-paper schema scaffolding and required-field validation foundation
+- S23 paper-session orchestrator skeleton through `ORDER_PLANNED` / `NO_TRADE` / `ABORTED`
+- S23 paper-session persistent artifacts and journaling shell
+- S23 paper kill-switch and failure-handling guardrails before planning
+- S23 paper replayable session bundle manifests and validation
+- S23 paper operator-facing session review summaries over artifacts and replay bundles
+- S23 paper order-intent and execution-journal shell
+- S23 paper post-planning failure handling and kill-switch controls
+- S23 paper-vs-historical replay comparison over the persisted intent shell
+- S23 later-phase execution-shell controls beyond `INTENT_READY`
+- execution-shell-aware S23 paper-vs-historical replay comparison beyond planning-state intent shells
+- fillless S23 order-intent dispatch shell beyond `EXECUTION_ARMED`
+- final no-fill S23 execution handoff boundary after `ORDER_INTENT_DISPATCHED`
+- S23 Paper Trading MVP v1 fill simulator and lifecycle-loop design blueprint
+- S23 Paper Trading MVP v1 Phase 1 fill simulator through `PAPER_ORDER_FILLED` / `PAPER_ORDER_NOT_FILLED` / `PAPER_FILL_ABORTED`
+- S23 Paper Trading MVP v1 Phase 2 same-day lifecycle loop through `PAPER_POSITION_OPEN` / `PAPER_POSITION_CLOSED` / `PAPER_EOD_SQUARE_OFF` / `PAPER_LIFECYCLE_ABORTED`
+- same-day S23 paper-vs-historical lifecycle parity and drift policy with deterministic `MATCH`, `MATCH_WITH_ACCEPTABLE_DRIFT`, `PARTIAL_MATCH`, `MISMATCH`, and `UNCOMPARABLE` outcomes
 
 ## Current Architecture Flow
 
@@ -44,6 +61,39 @@ Current high-level offline path:
 -> `StrategyBranchSelector`
 -> strategy evaluation
 -> historical lifecycle backtest
+
+Current paper-foundation path:
+
+`normalized paper events`
+-> `S23PaperContractValidator`
+-> `S23PaperSessionOrchestrator`
+-> `S23PaperGuardrailEvaluator`
+-> session manifest + in-memory audit trail
+-> `S23PaperSessionArtifactWriter`
+-> deterministic paper-session folder artifacts
+-> `S23PaperReplayBundleManager`
+-> deterministic replay-bundle manifest + validation/readback summary
+-> `S23PaperSessionReviewer`
+-> JSON/Markdown operator review summaries
+-> `S23PaperExecutionJournalWriter`
+-> deterministic order-intent + execution-summary shell
+-> post-planning intent guardrails
+-> explicit `INTENT_READY` / `INTENT_BLOCKED` / `INTENT_ABORTED` statuses
+-> `paper_vs_historical.py`
+-> deterministic paper-vs-historical replay parity summaries
+-> later-phase execution-shell arming guardrails
+-> explicit `EXECUTION_ARMED` / `EXECUTION_BLOCKED` / `EXECUTION_ABORTED` statuses
+-> fillless order-intent dispatch shell
+-> explicit `ORDER_INTENT_DISPATCH_READY` / `ORDER_INTENT_DISPATCHED` / `ORDER_INTENT_DISPATCH_BLOCKED` / `ORDER_INTENT_CANCELLED` statuses
+-> final no-fill execution handoff boundary
+-> explicit `PAPER_EXECUTION_HANDOFF_READY` / `PAPER_EXECUTION_HANDOFF_BLOCKED` / `PAPER_EXECUTION_HANDOFF_ABORTED` statuses
+-> execution-shell-aware replay parity summaries over planning + arming + dispatch + handoff state
+-> Phase 1 fill simulator
+-> explicit `PAPER_ORDER_PENDING` / `PAPER_ORDER_FILLED` / `PAPER_ORDER_NOT_FILLED` / `PAPER_FILL_ABORTED` statuses
+-> fill-status-aware review summaries and paper-vs-historical parity summaries
+-> Phase 2 same-day lifecycle loop
+-> explicit `PAPER_POSITION_OPEN` / `PAPER_EXIT_PENDING` / `PAPER_POSITION_CLOSED` / `PAPER_EOD_SQUARE_OFF` / `PAPER_LIFECYCLE_ABORTED` statuses
+-> lifecycle-aware review summaries and paper-vs-historical parity summaries
 
 Current notes:
 
@@ -57,6 +107,23 @@ Current notes:
 - option-chain selection can reject otherwise acceptable candidates when no chain contract satisfies range, OI, and premium constraints
 - selected contract metadata can now optionally drive lifecycle simulation through symbol-keyed contract intraday bars
 - if contract-specific intraday bars are unavailable for the selected symbol, TFIS falls back to the generic option intraday series and now records explicit provenance including selected symbol, bar counts, fallback reason, and the lifecycle data source actually used
+- the paper orchestrator now applies explicit pre-planning guardrails for global paper disable, S23 paper disable, manual operator abort, stale data, missing chain or selected-contract inputs, session terminality, and one-plan-per-session enforcement, and those guardrail decisions now flow into audit events and persisted terminal summaries
+- the paper artifact layer can now be sealed into a deterministic replay bundle manifest with stable hashes, terminal-state checks, and readback summaries so `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED` sessions can be reconstructed without rerunning execution logic
+- `src/tfis/paper/review.py` and `scripts/review_paper_session.py` now add the first operator-facing review surface over those persisted artifacts and replay bundles, including terminal state, guardrails, selected-contract details, audit timeline, provenance, freshness, bundle validation, and an explicit no-execution disclaimer
+- `src/tfis/paper/execution_journal.py` now turns an `ORDER_PLANNED` S23 paper session into a deterministic intent-only handoff shell with `paper_order_intent.json`, `execution_journal.jsonl`, and `execution_summary.json`, while `NO_TRADE` and `ABORTED` sessions now emit explicit skipped-intent summaries instead of pretending any order or fill occurred
+- the execution-journal shell now also applies post-planning guardrails for manual operator aborts, execution-shell disable switches, replay-bundle integrity failure, stale selected-contract quotes, duplicate intent generation, missing or corrupt intent artifacts, and selected-contract mismatch before any future execution phase exists
+- `src/tfis/paper/paper_vs_historical.py` and `scripts/compare_paper_to_historical.py` now compare persisted `INTENT_READY` paper sessions against expected historical S23 trade-plan output, returning deterministic `MATCH`, `PARTIAL_MATCH`, `MISMATCH`, or `UNCOMPARABLE` results with field-level mismatch reporting and explicit go or no-go language
+- the paper-vs-historical comparator reuses the existing historical trade normalizer, matches same-date S23 candidates by branch, option type, selected contract, and workbook-rule signals, and refuses ambiguous or non-intent-ready sessions instead of guessing
+- the paper shell now persists enough comparison metadata to check selected contract, branch, workbook row, source rule, strikes, premiums, entry, target, stoploss, overlay flags, slippage assumptions, and provenance where available, without claiming any fill or lifecycle execution
+- the execution-journal shell now extends beyond `INTENT_READY` into a distinct pre-execution arming layer, which requires replay-bundle validation, an acceptable paper-vs-historical comparison result, selected-contract freshness, operator-review completion when configured, and same-day-only policy confirmation before the shell can be marked `EXECUTION_ARMED`
+- later execution-shell attempts now persist deterministic `EXECUTION_ARMED`, `EXECUTION_BLOCKED`, `EXECUTION_ABORTED`, or `EXECUTION_SKIPPED` outcomes into the execution journal and review surface, while still refusing to simulate fills, place orders, or start lifecycle monitoring
+- `paper_vs_historical.py` now also understands execution-shell readiness artifacts (`execution_summary.json`, `execution_arm_summary.json`, `execution_block_summary.json`, and execution journal events), so parity checks can distinguish planning agreement from later pre-execution safety blocks
+- planning parity plus `EXECUTION_ARMED` now returns `MATCH`, while planning parity plus known non-strategy execution blocks returns `PARTIAL_MATCH`; incomplete or corrupt execution-shell artifacts now return `UNCOMPARABLE` instead of being silently ignored
+- the same comparator now also applies an explicit same-day lifecycle drift policy for filled paper sessions, distinguishing exact lifecycle parity from bounded acceptable drift on fill price, exit price, exit timestamp, and net P&L while treating selected-contract and explicit exit-reason mismatches as blockers when comparable
+- the fillless shell now extends one step beyond arming into explicit dispatch-only states, which mark the order intent as ready for handoff to a future execution loop or as blocked/cancelled before handoff, while still keeping order placement, fills, and open-position state explicitly false
+- `src/tfis/paper/execution_journal.py` now persists `intent_dispatch_summary.json` plus dispatch-shell journal events, and `review.py` plus `paper_vs_historical.py` now surface dispatch-shell readiness separately from the earlier arming layer
+- `src/tfis/paper/execution_journal.py` now also persists `execution_handoff_summary.json`, which marks whether a dispatched intent is eligible for a future fill simulator without claiming any order placement, fill, or open position
+- `paper_vs_historical.py` now treats the new handoff boundary as the final acceptable no-fill readiness state; planning parity plus acceptable execution, dispatch, and handoff shells now returns `MATCH`, while blocked handoff for a non-strategy safety reason still returns `PARTIAL_MATCH`
 - a normalized apples-to-apples lifecycle-source comparison runbook now exists: the fair baseline is the monthly-status plus recalculation plus option-chain path with identical spot, option, option-chain, contract-intraday, and cost inputs, differing only by the `--enable-contract-specific-lifecycle` flag
 - on the current fixture set, that normalized comparison now shows 10 selected contracts, 10 trades using real selected-contract bars, 0 explicit generic fallbacks, 100.0% lifecycle coverage, and one isolated P&L delta attributable to lifecycle data source alone
 - when selected contract expiry metadata is available, historical reports can now review expiry-day full-exit compliance for S23 without introducing any option rollover behavior
@@ -112,7 +179,7 @@ Current notes:
 
 ## Current Quality Snapshot
 
-- tests passing: `274`
+- tests passing: `384`
 - `python scripts/validate_project.py`: passing
 
 ## Operational Coordination Discipline
@@ -126,9 +193,9 @@ Current notes:
 
 ## Approximate Completion Estimate
 
-- S23 family completion: about `85-90%`
+- S23 family completion: about `90-95%`
 - backtesting realism: about `65-70%`
-- execution realism: about `10-15%`
+- execution realism: about `60-65%`
 
 ## Notes
 
@@ -142,8 +209,23 @@ Current notes:
 - Contract-specific lifecycle mode now makes selected-contract provenance explicit per trade, so archive gaps are visible instead of being hidden behind a generic option series fallback.
 - The current fixture-backed lifecycle archive now covers all 10 selected-contract evaluations with real symbol bars, so remaining realism work is broader archive depth rather than a missing-symbol gap in the normalized S23 fixture set.
 - A dedicated S23 contract archive ingestion plan now exists; TFIS still consumes only normalized contract-intraday CSVs, and raw session/parquet/broker-export adapters remain planning-stage work rather than runtime behavior.
-- A dedicated S23 paper-trading readiness audit now exists, and the current disposition is `NO-GO` until paper-session orchestration, operator visibility, failure handling, and kill-switch guardrails are implemented.
+- A dedicated S23 paper-trading readiness audit now exists, and the current disposition is `NO-GO` until later-phase execution controls and an actual paper execution loop exist.
 - Two new operations blueprints now define the next paper-runtime foundation: `s23_live_paper_data_contract.md` covers normalized live-paper inputs and guardrails, while `s23_paper_session_state_machine.md` defines the S23-only session phases, terminal states, and no-trade or abort rules.
+- TFIS now also has a small S23-only `tfis.paper` foundation with immutable normalized event models, required-field validation, readiness or no-trade result objects, and a session manifest builder; this creates the first deterministic paper-runtime contract layer without introducing broker connectivity or an execution loop.
+- `src/tfis/paper/orchestrator.py` now layers a deterministic S23 paper-session orchestrator on top of that contract foundation, rejecting stale, duplicate, and out-of-order events and stopping cleanly at `ORDER_PLANNED`, `NO_TRADE`, or `ABORTED` without simulating any paper fills.
+- `src/tfis/paper/artifacts.py` now persists deterministic terminal planning artifacts under a paper-session folder, including the session manifest, audit trail, decision summary, selected contract details, and terminal no-trade or abort summaries without claiming any execution or fills.
+- `src/tfis/paper/guardrails.py` now adds deterministic kill-switch and failure-handling decisions before planning, including explicit codes, messages, blocking source metadata, and operator-action hints for both in-memory audit and persisted terminal summaries.
+- `src/tfis/paper/replay_bundle.py` now builds and validates deterministic replay-bundle manifests from persisted paper-session folders, including stable file hashes, terminal-state checks, and readback summaries for `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED` outcomes.
+- `src/tfis/paper/review.py` and `scripts/review_paper_session.py` now turn those artifacts and replay bundles into deterministic operator-facing JSON and Markdown review summaries without implying any execution, fills, or lifecycle monitoring.
+- `src/tfis/paper/paper_vs_historical.py` and `scripts/compare_paper_to_historical.py` now add the first deterministic replay-parity check from a persisted S23 paper intent shell back to expected historical output, which means TFIS can now prove planning-state agreement before any execution loop or lifecycle monitor exists.
+- `src/tfis/paper/execution_journal.py` now also adds a second, later-phase execution-shell readiness layer after `INTENT_READY`, recording whether a persisted paper intent is armed, blocked, aborted, or skipped before any future execution handoff exists.
+- `src/tfis/paper/paper_vs_historical.py` now extends that parity check through the execution-shell readiness layer, which means TFIS can now verify both the planned S23 decision and the later pre-execution arming outcome before any fill or lifecycle phase exists.
+- `src/tfis/paper/execution_journal.py` now extends that same fillless shell one step further through deterministic dispatch-only states, so TFIS can mark an armed intent as handoff-ready or handed off to a future execution loop without claiming any order placement, fill simulation, or open position.
+- `src/tfis/paper/execution_journal.py` now extends the fillless shell one final step further through deterministic handoff-only states, so TFIS can mark a dispatched intent as eligible for a future fill simulator without claiming any order placement, fill simulation, open position, or lifecycle monitoring.
+- `src/tfis/paper/paper_vs_historical.py` now includes execution, dispatch, and handoff shell states in replay parity summaries, which means the persisted paper shell can now be checked through planning, arming, dispatch, and final no-fill handoff readiness before any future fill-simulator phase exists.
+- `docs/operations/s23_paper_trading_mvp_v1_design.md` now defines the first actual S23 paper fill-simulator and same-day lifecycle-loop policy, including the recommended Phase 1 slice of `PAPER_ORDER_PENDING`, `PAPER_ORDER_FILLED`, and `PAPER_ORDER_NOT_FILLED` before any broker integration or real order flow is considered.
+- `src/tfis/paper/fill_simulator.py` now implements that Phase 1 slice, consuming a handoff-ready paper intent plus selected-contract quote or bar evidence and recording a conservative `filled`, `not filled`, or `aborted` outcome without opening a paper position or starting lifecycle monitoring.
+- `src/tfis/paper/review.py` and `src/tfis/paper/paper_vs_historical.py` now understand Phase 1 fill artifacts, so operator review and replay parity summaries can show fill-shell status without implying any target/SL lifecycle or paper P&L tracking.
 - The `AB6 OS` current-day FSL / TRP rows `183-188` are now implemented only
   within their confirmed workbook-backed scope:
   `183-186` use populated `R/S/U/W`, while `187-188` remain `FSL-only`.
@@ -154,6 +236,3 @@ Current notes:
   target, stoploss, or expiry-day exit closes the whole position, and any later
   trade must be a fresh calculation rather than a carried option rollover.
 - Expiry-day review is now explicitly visible in historical reports when option-chain expiry metadata is available, which makes S23 no-rollover governance easier to verify without changing the core lifecycle mechanics.
-
-
-

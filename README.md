@@ -17,9 +17,9 @@ S23 is now in a mature offline state:
 - option-chain and contract-specific lifecycle realism are in place
 - current deterministic fixture coverage for selected-contract lifecycle is
   `10 / 10` with `0` fallback
-- paper trading is still explicitly `NO-GO` until runtime data contracts,
-  session orchestration, journaling, failure handling, and operator controls
-  are implemented
+- paper contract and validation scaffolding now exist, but paper trading is
+  still explicitly `NO-GO` until session orchestration, journaling, failure
+  handling, operator controls, and replay artifacts are implemented
 
 The center of gravity has shifted from formula correctness to runtime readiness
 and broader real/archive data coverage.
@@ -138,12 +138,11 @@ Current readiness disposition: `NO-GO`
 
 Paper trading is intentionally blocked until TFIS has:
 
-- normalized live-paper data contracts
-- an S23-only session state machine
-- schema validation and no-trade guards
-- session manifests and paper decision journals
+- an S23-only session state machine runner
+- persistent session manifests and paper decision journals
 - operator-visible warnings and kill-switch behavior
 - replayability from paper sessions back to expected S23 logic
+- failure-handling around stale, partial, or missing critical paper inputs
 
 The paper-mode blueprint docs now exist:
 
@@ -186,7 +185,7 @@ Key operations and S23 docs:
 
 Current repo health:
 
-- tests passing: `274`
+- tests passing: `281`
 - `python scripts/validate_project.py`: passed
 
 ## Representative Commands
@@ -219,9 +218,9 @@ python scripts/compare_backtest_reports.py --report base=tmp/S23_historical_back
 
 ## Next Recommended Priorities
 
-- S23 live-paper schema scaffolding and required-field validation
-- S23 paper-session orchestrator skeleton and session manifest writer
+- S23 paper-session orchestrator skeleton and transition runner
 - S23 paper execution journaling and operator-facing session artifacts
+- S23 paper failure-handling and kill-switch guardrails
 - broader real/archive contract-specific coverage pilot
 - raw shared capture-format adapters beyond normalized CSV roots
 

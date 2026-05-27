@@ -22,6 +22,104 @@ The first supported paper-session scope should remain:
 If the session encounters a condition outside that scope, it should transition
 to `NO_TRADE` or `ABORTED`.
 
+## Current Scaffold Status
+
+The first runtime scaffold is now implemented under `src/tfis/paper/`:
+
+- normalized event schemas and validation live in `models.py` and `validation.py`
+- `orchestrator.py` now implements deterministic transitions through:
+  - `PRE_MARKET_READY`
+  - `WAITING_FOR_0915`
+  - `WAITING_FOR_ORPT`
+  - `WAITING_FOR_RC`
+  - `DECISION_READY`
+  - `ORDER_PLANNED`
+  - `NO_TRADE`
+  - `ABORTED`
+- the current orchestrator also maintains an in-memory audit trail and session
+  manifest updates
+- `guardrails.py` now adds deterministic pre-planning kill-switch and failure-handling
+  decisions for global disable, S23 disable, manual aborts, stale data, missing
+  option-chain or selected-contract inputs, and one-planned-order-per-session
+  enforcement
+- `artifacts.py` now persists deterministic terminal planning artifacts for
+  `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED` sessions, including guardrail codes,
+  messages, blocking sources, and operator-action hints in the terminal summaries
+- `replay_bundle.py` now seals those persisted session folders into deterministic
+  replay-bundle manifests with stable hashes, terminal-state checks, and replay
+  readback summaries
+- `review.py` and `scripts/review_paper_session.py` now turn those artifacts and
+  replay bundles into deterministic JSON and Markdown operator review summaries
+- `execution_journal.py` now turns an `ORDER_PLANNED` paper session into an
+  intent-only handoff shell with `paper_order_intent.json`,
+  `execution_journal.jsonl`, and `execution_summary.json`, while `NO_TRADE` and
+  `ABORTED` sessions emit explicit skipped-intent summaries
+- the same shell now applies post-planning intent statuses
+  (`INTENT_READY`, `INTENT_BLOCKED`, `INTENT_ABORTED`, `INTENT_SKIPPED`) before
+  any future execution or fill loop exists
+- the execution-journal shell now also supports a later pre-execution arming
+  layer with deterministic `EXECUTION_ARMED`, `EXECUTION_BLOCKED`,
+  `EXECUTION_ABORTED`, and `EXECUTION_SKIPPED` outcomes based on replay-bundle
+  validity, acceptable paper-vs-historical comparison status, selected-contract
+  freshness, operator review completion, and same-day-only policy confirmation
+- the same shell now extends one step further into a fillless dispatch-only
+  layer with deterministic `ORDER_INTENT_DISPATCH_READY`,
+  `ORDER_INTENT_DISPATCHED`, `ORDER_INTENT_DISPATCH_BLOCKED`,
+  `ORDER_INTENT_CANCELLED`, and `ORDER_INTENT_DISPATCH_SKIPPED` outcomes,
+  which mark the intent as handed off to a future execution loop without
+  placing any order or simulating any fill
+- `paper_vs_historical.py` and `scripts/compare_paper_to_historical.py` now
+  compare persisted `INTENT_READY` paper sessions against expected historical
+  S23 trade-plan output, returning deterministic `MATCH`, `PARTIAL_MATCH`,
+  `MISMATCH`, or `UNCOMPARABLE` results with field-level mismatch reporting
+- the same comparison layer now also understands later execution-shell
+  readiness artifacts (`EXECUTION_ARMED`, `EXECUTION_BLOCKED`,
+  `EXECUTION_ABORTED`, `EXECUTION_SKIPPED`) and separates planning parity from
+  later pre-execution safety outcomes
+- the same comparison layer now also understands the new fillless dispatch-only
+  shell and separates planning parity, later arming outcome, and later
+  dispatch readiness before any future execution handoff exists
+- the fillless shell now also includes a final handoff-only layer with
+  deterministic `PAPER_EXECUTION_HANDOFF_READY`,
+  `PAPER_EXECUTION_HANDOFF_BLOCKED`, `PAPER_EXECUTION_HANDOFF_ABORTED`, and
+  `PAPER_EXECUTION_HANDOFF_SKIPPED` outcomes, which mark whether a dispatched
+  intent is eligible for a future fill simulator without placing any order,
+  simulating any fill, or opening any position
+- that means the current fillless shell can now prove both plan parity and the
+  later arming plus dispatch plus handoff outcome before any future fill
+  simulator exists
+- `docs/operations/s23_paper_trading_mvp_v1_design.md` now defines the first
+  actual fill-simulator and same-day lifecycle-loop plan that should begin only
+  after `PAPER_EXECUTION_HANDOFF_READY`
+- `fill_simulator.py` now implements Phase 1 of that design through:
+  - `PAPER_ORDER_PENDING`
+  - `PAPER_ORDER_FILLED`
+  - `PAPER_ORDER_NOT_FILLED`
+  - `PAPER_FILL_ABORTED`
+  - without broker connectivity, real order placement, or live position state
+- `lifecycle.py` now implements the first same-day lifecycle slice through:
+  - `PAPER_POSITION_OPEN`
+  - `PAPER_EXIT_PENDING`
+  - `PAPER_POSITION_CLOSED`
+  - `PAPER_EOD_SQUARE_OFF`
+- `paper_vs_historical.py` now also treats that Phase 2 same-day lifecycle as
+  a first-class parity surface, with explicit same-day-only drift rules for
+  fill price, exit price, exit timestamp, and net P&L plus blocker handling
+  for selected-contract or explicit exit-reason divergence when both sides
+  expose those fields
+  - `PAPER_LIFECYCLE_ABORTED`
+  - `paper_position.json`
+  - `lifecycle_events.jsonl`
+  - `paper_exit.json`
+  - `paper_pnl_summary.json`
+  - while still blocking next-day continuation and multi-position handling
+
+States beyond `ORDER_PLANNED` remain blueprint-only for actual execution,
+fills beyond the current same-day paper slice, and broker connectivity. The
+current scaffold now includes pre-execution arming controls, fill or no-fill
+simulation, and a first same-day paper lifecycle loop, but still no live
+broker integration, no next-day continuation, and no multi-position runtime.
+
 ## Session Phases
 
 The paper session should move through these high-level phases:
@@ -31,10 +129,18 @@ The paper session should move through these high-level phases:
 3. ORPT readiness at `09:24:59`
 4. RC readiness at `09:29:59` when needed
 5. decision planning
-6. paper order open and paper position open
+6. paper order pending or filled, then paper position open
 7. lifecycle monitoring
 8. exit or EOD square-off
 9. session close and artifact finalization
+10. replay-bundle sealing and readback validation
+11. planning-state paper-vs-historical parity verification
+12. later-phase execution-shell arming before any future execution handoff
+13. fillless dispatch-only handoff after arming
+14. final no-fill execution handoff readiness before any future fill simulator
+15. Phase 1 fill or no-fill simulation
+16. Phase 2 same-day lifecycle loop and paper-only exit or P&L artifacts
+17. lifecycle-aware paper-vs-historical parity verification
 
 ## States
 
@@ -56,7 +162,7 @@ The paper session should move through these high-level phases:
 | Transition trigger | all mandatory pre-open controls loaded |
 | Validation checks | not a holiday, same-day square-off policy explicit, kill-switch state known |
 | Audit event emitted | `PRE_MARKET_READY` |
-| Failure / no-trade condition | holiday, kill-switch engaged, paper mode disabled, malformed config |
+| Failure / no-trade condition | holiday -> `NO_TRADE`; kill-switch engaged, paper mode disabled, unsupported continuation, or malformed config -> `ABORTED` |
 
 ### `WAITING_FOR_0915`
 
@@ -96,7 +202,7 @@ The paper session should move through these high-level phases:
 | Transition trigger | all data needed to produce one deterministic S23 paper decision is present |
 | Validation checks | quote freshness, OI and spread guards, selected contract present, no source mismatch |
 | Audit event emitted | `DECISION_READY` |
-| Failure / no-trade condition | stale quote, missing selected contract, chain validation failure, unsupported next-day continuation path |
+| Failure / no-trade condition | stale quote or missing selected contract -> `NO_TRADE`; unsupported next-day continuation and integrity failures -> `ABORTED` |
 
 ### `ORDER_PLANNED`
 
@@ -108,34 +214,54 @@ The paper session should move through these high-level phases:
 | Audit event emitted | `PAPER_ORDER_PLANNED` |
 | Failure / no-trade condition | plan incomplete, selected contract quote stale, operator kill-switch toggled before open |
 
-### `PAPER_ORDER_OPEN`
+### `PAPER_ORDER_PENDING`
 
 | Category | Definition |
 | --- | --- |
 | Required inputs | paper order intent, selected contract quote or first executable bar |
-| Transition trigger | paper order becomes eligible to be treated as opened under the paper fill model |
-| Validation checks | fill model policy explicit, no duplicate open event, quote still tradable |
-| Audit event emitted | `PAPER_ORDER_OPENED` |
-| Failure / no-trade condition | data disappears before simulated fill, quote fails spread or liquidity gates |
+| Transition trigger | handoff-ready paper intent enters the first fill simulator and waits for a valid paper fill |
+| Validation checks | fill model policy explicit, no duplicate pending event, quote still tradable |
+| Audit event emitted | `PAPER_ORDER_PENDING` |
+| Failure / no-trade condition | data disappears before simulated fill, quote fails spread or liquidity gates, or entry window expires without acceptable fill |
+
+### `PAPER_ORDER_FILLED`
+
+| Category | Definition |
+| --- | --- |
+| Required inputs | valid selected-contract quote or selected-contract bar satisfying the paper fill policy |
+| Transition trigger | one deterministic paper fill is accepted |
+| Validation checks | one fill only, fill source explicit, slippage treatment explicit |
+| Audit event emitted | `PAPER_ORDER_FILLED` |
+| Failure / no-trade condition | conflicting quote sources or duplicate fill attempt |
+
+### `PAPER_ORDER_NOT_FILLED`
+
+| Category | Definition |
+| --- | --- |
+| Required inputs | enough context to explain why entry was not simulated |
+| Transition trigger | entry window closes without an acceptable simulated fill |
+| Validation checks | no-fill reason explicit, not generic |
+| Audit event emitted | `PAPER_ORDER_NOT_FILLED` |
+| Failure / no-trade condition | not applicable; this is a valid terminal no-fill outcome unless later artifact integrity breaks |
 
 ### `PAPER_POSITION_OPEN`
 
 | Category | Definition |
 | --- | --- |
 | Required inputs | filled paper order, selected contract lifecycle source, active target / stoploss / FSL fields |
-| Transition trigger | simulated fill accepted and active position begins |
+| Transition trigger | `PAPER_ORDER_FILLED` is accepted and active position begins |
 | Validation checks | selected contract lifecycle source must be explicit, unsupported continuation must remain disabled |
 | Audit event emitted | `PAPER_POSITION_OPENED` |
 | Failure / no-trade condition | invalid lifecycle source, missing bar stream, malformed active position state |
 
-### `EXIT_PENDING`
+### `PAPER_EXIT_PENDING`
 
 | Category | Definition |
 | --- | --- |
 | Required inputs | active contract lifecycle bars or quotes, exit thresholds, EOD calendar context |
 | Transition trigger | target, stoploss, FSL, expiry restriction, or EOD condition approaches |
 | Validation checks | events monotonic, no duplicate closes, EOD policy known |
-| Audit event emitted | `EXIT_PENDING` |
+| Audit event emitted | `PAPER_EXIT_PENDING` |
 | Failure / no-trade condition | lifecycle data stalls, selected contract source becomes ambiguous, kill-switch forces exit handling |
 
 ### `PAPER_POSITION_CLOSED`
@@ -219,6 +345,13 @@ The state machine must emit enough information to produce:
 - replay output summary
 - no-trade reason summary
 
+For the current scaffold, the persisted artifact set now includes the
+terminal planning artifacts, replay bundles, operator review summaries, the
+intent-only execution-journal shell, post-planning intent-block summaries,
+later execution-arm or execution-block summaries, dispatch summaries, and final
+handoff summaries, but it still does not claim any order execution, fills, or
+position lifecycle monitoring.
+
 Minimum per-event audit fields:
 
 - `state_from`
@@ -240,14 +373,35 @@ Minimum per-event audit fields:
 - Rows `190-191` remain process-only; the initial paper rollout should not
   allow next-day continuation based on those notes.
 
-## First Safe Implementation Boundary
+## Current Safe Implementation Boundary
 
-The first runtime step after this blueprint should be:
+The current runtime scaffold now includes:
 
 1. schema or dataclass stubs for the normalized inputs
-2. state-enum scaffolding
-3. transition validation for required inputs
-4. session manifest and no-trade artifact creation
+2. required-field validation
+3. deterministic state transitions through `ORDER_PLANNED` / `NO_TRADE` / `ABORTED`
+4. explicit pre-planning kill-switch and failure-handling guardrails
+5. session manifest updates, persistent terminal planning artifacts, and an in-memory audit trail
+6. deterministic replay-bundle manifests, validation, and readback summaries
+7. operator-facing JSON and Markdown review summaries over artifacts and bundles
+8. later-phase execution-shell arming controls beyond `INTENT_READY`
+9. final no-fill handoff controls beyond `ORDER_INTENT_DISPATCHED`
+10. execution-shell-aware parity comparison over the persisted paper shell
+11. Phase 1 fill-simulator outcomes through `PAPER_ORDER_FILLED`,
+    `PAPER_ORDER_NOT_FILLED`, and `PAPER_FILL_ABORTED`
 
-The first runtime step should not include broker integration or a full paper
-execution loop.
+The design for the next runtime phase now exists in
+`docs/operations/s23_paper_trading_mvp_v1_design.md`.
+
+The next runtime step should be Phase 2 of that design:
+
+- `PAPER_POSITION_OPEN`
+- `PAPER_EXIT_PENDING`
+- `PAPER_POSITION_CLOSED`
+- `PAPER_EOD_SQUARE_OFF`
+- `paper_position.json`
+- `lifecycle_events.jsonl`
+- `paper_pnl_summary.json`
+
+It should still avoid broker integration, real order placement, and real-money
+flow.

@@ -1,0 +1,1162 @@
+{
+  "strategy_path": "config\\strategies\\options_sell\\nifty\\S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+  "strategy_root": null,
+  "use_monthly_status_engine": false,
+  "mode": "historical",
+  "eod_policy": "square_off_at_close",
+  "cost_model": {
+    "slippage_points_per_side": 0.0,
+    "brokerage_points_per_trade": 0.0,
+    "other_cost_points_per_trade": 0.0
+  },
+  "input_metadata": {
+    "datasets": {
+      "daily": {
+        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_daily_multi.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_levels": {
+        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_option_levels_multi.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_intraday": {
+        "path": "D:\\TradingEngineTFIS\\tests\\_tmp_pytest_local\\option_row_187.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": true
+      },
+      "spot_intraday": {
+        "path": "D:\\TradingEngineTFIS\\tests\\_tmp_pytest_local\\spot_row_187.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": true
+      },
+      "monthly": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "weekly": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "option_chain": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "contract_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      }
+    },
+    "synthetic_fixture_data_used": true,
+    "project_fixture_data_used": true
+  },
+  "evaluations": [
+    {
+      "timestamp": "2026-05-18T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 21290,
+        "entry_price": 188.7,
+        "target_price": 80.0,
+        "stoploss_price": 374.00000000000006,
+        "ideal_premium": 268.92,
+        "minimum_premium": 201.69000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_current_day_fsl_trp": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "applied": true,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21290,
+            "end_strike": 22411,
+            "ideal_premium": 268.92,
+            "minimum_premium": 201.69000000000003,
+            "entry_price": 188.7,
+            "stoploss_price": 320.0,
+            "target_price": 80.0
+          },
+          "effective_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21290,
+            "end_strike": 22411,
+            "ideal_premium": 268.92,
+            "minimum_premium": 201.69000000000003,
+            "entry_price": 188.7,
+            "stoploss_price": 374.00000000000006,
+            "target_price": 80.0
+          },
+          "trigger_snapshot": {
+            "timestamp": "2026-05-18T09:15:00",
+            "spot_low": 22210.0,
+            "spot_high": 22320.0,
+            "option_low": 240.0,
+            "option_high": 325.0
+          },
+          "orpt_snapshot": {
+            "timestamp": "2026-05-18T09:24:59",
+            "spot_low": 22170.0,
+            "spot_high": 22420.0,
+            "option_low": 240.0,
+            "option_high": 330.0
+          },
+          "recalculation_snapshot": {
+            "timestamp": "2026-05-18T09:29:59",
+            "spot_low": 22100.0,
+            "spot_high": 22520.0,
+            "option_low": 230.0,
+            "option_high": 340.0
+          },
+          "trigger_result": {
+            "fsl_trp_missed": true,
+            "rule_name": "S23_CURRENT_DAY_FSL_TRP_0915_OPTION_HIGH_CHECK_V1",
+            "compared_value": 325.0,
+            "threshold_stoploss_price": 320.0,
+            "notes": [
+              "Applied workbook FSL/TRP trigger at 09:15:00 using current-day option high versus the base stoploss price.",
+              "Checked PUT side at 2026-05-18T09:15:00: current_day_option_high > stoploss_price."
+            ]
+          },
+          "result": {
+            "applied": true,
+            "reason": "s23_current_day_fsl_trp_row_187_fsl_only_applied",
+            "row_number": 187,
+            "effective_option_type": "PUT",
+            "recalculated_start_strike": null,
+            "recalculated_end_strike": null,
+            "recalculated_ideal_premium": null,
+            "recalculated_minimum_premium": null,
+            "recalculated_entry_price": null,
+            "recalculated_stoploss_price": 374.00000000000006,
+            "entry_override_source_cell": null,
+            "lifecycle_start_after": "2026-05-18T09:29:59",
+            "source_rule": "AB6_OS_ROW_187",
+            "unsupported_fields": [
+              "start_strike",
+              "end_strike",
+              "ideal_premium",
+              "minimum_premium",
+              "entry_price",
+              "target_price"
+            ],
+            "audit_notes": [
+              "Row 187 applied as FSL-only exactly as workbook-backed.",
+              "R/S/U/W/Z are blank in the workbook, so strike, premium, and entry recalculation must not be inferred.",
+              "Used current-day option HH at recalculation time plus 10% for the new FSL.",
+              "Workbook note: 'When You Call And Put Position is Exited'."
+            ]
+          },
+          "entry_override": {
+            "applied": false,
+            "source_cell": null,
+            "original_entry_price": 188.7,
+            "overridden_entry_price": null,
+            "effective_entry_price": 188.7
+          },
+          "resolved_workbook_clarifications": [],
+          "notes": [
+            "Rows 183-186 can also apply workbook-backed current-day option-entry overrides from Z183:Z186 when those cells are populated.",
+            "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
+            "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
+            "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path."
+          ]
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22410.0,
+        "d2ll": 22010.0,
+        "d3hh": 22410.0,
+        "d3ll": 21950.0,
+        "d4hh": 22410.0,
+        "d4ll": 21880.0,
+        "current_day_high": 22440.0,
+        "current_day_low": 22190.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 294.0,
+          "OPT_PRV_2DLL": 204.0,
+          "OPT_PRV_3DHH": 304.0,
+          "OPT_PRV_3DLL": 214.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-19T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 21318,
+        "entry_price": 189.625,
+        "target_price": 80.0,
+        "stoploss_price": 374.00000000000006,
+        "ideal_premium": 269.28000000000003,
+        "minimum_premium": 201.96000000000004
+      },
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_current_day_fsl_trp": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "applied": true,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21318,
+            "end_strike": 22441,
+            "ideal_premium": 269.28000000000003,
+            "minimum_premium": 201.96000000000004,
+            "entry_price": 189.625,
+            "stoploss_price": 320.0,
+            "target_price": 80.0
+          },
+          "effective_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21318,
+            "end_strike": 22441,
+            "ideal_premium": 269.28000000000003,
+            "minimum_premium": 201.96000000000004,
+            "entry_price": 189.625,
+            "stoploss_price": 374.00000000000006,
+            "target_price": 80.0
+          },
+          "trigger_snapshot": {
+            "timestamp": "2026-05-19T09:15:00",
+            "spot_low": 22210.0,
+            "spot_high": 22320.0,
+            "option_low": 240.0,
+            "option_high": 325.0
+          },
+          "orpt_snapshot": {
+            "timestamp": "2026-05-19T09:24:59",
+            "spot_low": 22170.0,
+            "spot_high": 22420.0,
+            "option_low": 240.0,
+            "option_high": 330.0
+          },
+          "recalculation_snapshot": {
+            "timestamp": "2026-05-19T09:29:59",
+            "spot_low": 22100.0,
+            "spot_high": 22520.0,
+            "option_low": 230.0,
+            "option_high": 340.0
+          },
+          "trigger_result": {
+            "fsl_trp_missed": true,
+            "rule_name": "S23_CURRENT_DAY_FSL_TRP_0915_OPTION_HIGH_CHECK_V1",
+            "compared_value": 325.0,
+            "threshold_stoploss_price": 320.0,
+            "notes": [
+              "Applied workbook FSL/TRP trigger at 09:15:00 using current-day option high versus the base stoploss price.",
+              "Checked PUT side at 2026-05-19T09:15:00: current_day_option_high > stoploss_price."
+            ]
+          },
+          "result": {
+            "applied": true,
+            "reason": "s23_current_day_fsl_trp_row_187_fsl_only_applied",
+            "row_number": 187,
+            "effective_option_type": "PUT",
+            "recalculated_start_strike": null,
+            "recalculated_end_strike": null,
+            "recalculated_ideal_premium": null,
+            "recalculated_minimum_premium": null,
+            "recalculated_entry_price": null,
+            "recalculated_stoploss_price": 374.00000000000006,
+            "entry_override_source_cell": null,
+            "lifecycle_start_after": "2026-05-19T09:29:59",
+            "source_rule": "AB6_OS_ROW_187",
+            "unsupported_fields": [
+              "start_strike",
+              "end_strike",
+              "ideal_premium",
+              "minimum_premium",
+              "entry_price",
+              "target_price"
+            ],
+            "audit_notes": [
+              "Row 187 applied as FSL-only exactly as workbook-backed.",
+              "R/S/U/W/Z are blank in the workbook, so strike, premium, and entry recalculation must not be inferred.",
+              "Used current-day option HH at recalculation time plus 10% for the new FSL.",
+              "Workbook note: 'When You Call And Put Position is Exited'."
+            ]
+          },
+          "entry_override": {
+            "applied": false,
+            "source_cell": null,
+            "original_entry_price": 189.625,
+            "overridden_entry_price": null,
+            "effective_entry_price": 189.625
+          },
+          "resolved_workbook_clarifications": [],
+          "notes": [
+            "Rows 183-186 can also apply workbook-backed current-day option-entry overrides from Z183:Z186 when those cells are populated.",
+            "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
+            "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
+            "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path."
+          ]
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22440.0,
+        "d2ll": 22120.0,
+        "d3hh": 22440.0,
+        "d3ll": 22010.0,
+        "d4hh": 22440.0,
+        "d4ll": 21950.0,
+        "current_day_high": 22300.0,
+        "current_day_low": 21900.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 296.0,
+          "OPT_PRV_2DLL": 205.0,
+          "OPT_PRV_3DHH": 306.0,
+          "OPT_PRV_3DLL": 216.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-20T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 21318,
+        "entry_price": 191.475,
+        "target_price": 80.0,
+        "stoploss_price": 374.00000000000006,
+        "ideal_premium": 269.28000000000003,
+        "minimum_premium": 201.96000000000004
+      },
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_current_day_fsl_trp": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "applied": true,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21318,
+            "end_strike": 22441,
+            "ideal_premium": 269.28000000000003,
+            "minimum_premium": 201.96000000000004,
+            "entry_price": 191.475,
+            "stoploss_price": 320.0,
+            "target_price": 80.0
+          },
+          "effective_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21318,
+            "end_strike": 22441,
+            "ideal_premium": 269.28000000000003,
+            "minimum_premium": 201.96000000000004,
+            "entry_price": 191.475,
+            "stoploss_price": 374.00000000000006,
+            "target_price": 80.0
+          },
+          "trigger_snapshot": {
+            "timestamp": "2026-05-20T09:15:00",
+            "spot_low": 22210.0,
+            "spot_high": 22320.0,
+            "option_low": 240.0,
+            "option_high": 325.0
+          },
+          "orpt_snapshot": {
+            "timestamp": "2026-05-20T09:24:59",
+            "spot_low": 22170.0,
+            "spot_high": 22420.0,
+            "option_low": 240.0,
+            "option_high": 330.0
+          },
+          "recalculation_snapshot": {
+            "timestamp": "2026-05-20T09:29:59",
+            "spot_low": 22100.0,
+            "spot_high": 22520.0,
+            "option_low": 230.0,
+            "option_high": 340.0
+          },
+          "trigger_result": {
+            "fsl_trp_missed": true,
+            "rule_name": "S23_CURRENT_DAY_FSL_TRP_0915_OPTION_HIGH_CHECK_V1",
+            "compared_value": 325.0,
+            "threshold_stoploss_price": 320.0,
+            "notes": [
+              "Applied workbook FSL/TRP trigger at 09:15:00 using current-day option high versus the base stoploss price.",
+              "Checked PUT side at 2026-05-20T09:15:00: current_day_option_high > stoploss_price."
+            ]
+          },
+          "result": {
+            "applied": true,
+            "reason": "s23_current_day_fsl_trp_row_187_fsl_only_applied",
+            "row_number": 187,
+            "effective_option_type": "PUT",
+            "recalculated_start_strike": null,
+            "recalculated_end_strike": null,
+            "recalculated_ideal_premium": null,
+            "recalculated_minimum_premium": null,
+            "recalculated_entry_price": null,
+            "recalculated_stoploss_price": 374.00000000000006,
+            "entry_override_source_cell": null,
+            "lifecycle_start_after": "2026-05-20T09:29:59",
+            "source_rule": "AB6_OS_ROW_187",
+            "unsupported_fields": [
+              "start_strike",
+              "end_strike",
+              "ideal_premium",
+              "minimum_premium",
+              "entry_price",
+              "target_price"
+            ],
+            "audit_notes": [
+              "Row 187 applied as FSL-only exactly as workbook-backed.",
+              "R/S/U/W/Z are blank in the workbook, so strike, premium, and entry recalculation must not be inferred.",
+              "Used current-day option HH at recalculation time plus 10% for the new FSL.",
+              "Workbook note: 'When You Call And Put Position is Exited'."
+            ]
+          },
+          "entry_override": {
+            "applied": false,
+            "source_cell": null,
+            "original_entry_price": 191.475,
+            "overridden_entry_price": null,
+            "effective_entry_price": 191.475
+          },
+          "resolved_workbook_clarifications": [],
+          "notes": [
+            "Rows 183-186 can also apply workbook-backed current-day option-entry overrides from Z183:Z186 when those cells are populated.",
+            "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
+            "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
+            "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path."
+          ]
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22440.0,
+        "d2ll": 21900.0,
+        "d3hh": 22440.0,
+        "d3ll": 21900.0,
+        "d4hh": 22440.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22000.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 298.0,
+          "OPT_PRV_2DLL": 207.0,
+          "OPT_PRV_3DHH": 308.0,
+          "OPT_PRV_3DLL": 218.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-21T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 21280,
+        "entry_price": 192.4,
+        "target_price": 80.0,
+        "stoploss_price": 374.00000000000006,
+        "ideal_premium": 268.8,
+        "minimum_premium": 201.60000000000002
+      },
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_current_day_fsl_trp": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "applied": true,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21280,
+            "end_strike": 22401,
+            "ideal_premium": 268.8,
+            "minimum_premium": 201.60000000000002,
+            "entry_price": 192.4,
+            "stoploss_price": 320.0,
+            "target_price": 80.0
+          },
+          "effective_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21280,
+            "end_strike": 22401,
+            "ideal_premium": 268.8,
+            "minimum_premium": 201.60000000000002,
+            "entry_price": 192.4,
+            "stoploss_price": 374.00000000000006,
+            "target_price": 80.0
+          },
+          "trigger_snapshot": {
+            "timestamp": "2026-05-21T09:15:00",
+            "spot_low": 22210.0,
+            "spot_high": 22320.0,
+            "option_low": 240.0,
+            "option_high": 325.0
+          },
+          "orpt_snapshot": {
+            "timestamp": "2026-05-21T09:24:59",
+            "spot_low": 22170.0,
+            "spot_high": 22420.0,
+            "option_low": 240.0,
+            "option_high": 330.0
+          },
+          "recalculation_snapshot": {
+            "timestamp": "2026-05-21T09:29:59",
+            "spot_low": 22100.0,
+            "spot_high": 22520.0,
+            "option_low": 230.0,
+            "option_high": 340.0
+          },
+          "trigger_result": {
+            "fsl_trp_missed": true,
+            "rule_name": "S23_CURRENT_DAY_FSL_TRP_0915_OPTION_HIGH_CHECK_V1",
+            "compared_value": 325.0,
+            "threshold_stoploss_price": 320.0,
+            "notes": [
+              "Applied workbook FSL/TRP trigger at 09:15:00 using current-day option high versus the base stoploss price.",
+              "Checked PUT side at 2026-05-21T09:15:00: current_day_option_high > stoploss_price."
+            ]
+          },
+          "result": {
+            "applied": true,
+            "reason": "s23_current_day_fsl_trp_row_187_fsl_only_applied",
+            "row_number": 187,
+            "effective_option_type": "PUT",
+            "recalculated_start_strike": null,
+            "recalculated_end_strike": null,
+            "recalculated_ideal_premium": null,
+            "recalculated_minimum_premium": null,
+            "recalculated_entry_price": null,
+            "recalculated_stoploss_price": 374.00000000000006,
+            "entry_override_source_cell": null,
+            "lifecycle_start_after": "2026-05-21T09:29:59",
+            "source_rule": "AB6_OS_ROW_187",
+            "unsupported_fields": [
+              "start_strike",
+              "end_strike",
+              "ideal_premium",
+              "minimum_premium",
+              "entry_price",
+              "target_price"
+            ],
+            "audit_notes": [
+              "Row 187 applied as FSL-only exactly as workbook-backed.",
+              "R/S/U/W/Z are blank in the workbook, so strike, premium, and entry recalculation must not be inferred.",
+              "Used current-day option HH at recalculation time plus 10% for the new FSL.",
+              "Workbook note: 'When You Call And Put Position is Exited'."
+            ]
+          },
+          "entry_override": {
+            "applied": false,
+            "source_cell": null,
+            "original_entry_price": 192.4,
+            "overridden_entry_price": null,
+            "effective_entry_price": 192.4
+          },
+          "resolved_workbook_clarifications": [],
+          "notes": [
+            "Rows 183-186 can also apply workbook-backed current-day option-entry overrides from Z183:Z186 when those cells are populated.",
+            "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
+            "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
+            "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path."
+          ]
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22400.0,
+        "d2ll": 21900.0,
+        "d3hh": 22440.0,
+        "d3ll": 21900.0,
+        "d4hh": 22440.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22500.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 299.0,
+          "OPT_PRV_2DLL": 208.0,
+          "OPT_PRV_3DHH": 309.0,
+          "OPT_PRV_3DLL": 219.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-22T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 21375,
+        "entry_price": 189.625,
+        "target_price": 80.0,
+        "stoploss_price": 374.00000000000006,
+        "ideal_premium": 270.0,
+        "minimum_premium": 202.50000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_current_day_fsl_trp": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "applied": true,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21375,
+            "end_strike": 22501,
+            "ideal_premium": 270.0,
+            "minimum_premium": 202.50000000000003,
+            "entry_price": 189.625,
+            "stoploss_price": 320.0,
+            "target_price": 80.0
+          },
+          "effective_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21375,
+            "end_strike": 22501,
+            "ideal_premium": 270.0,
+            "minimum_premium": 202.50000000000003,
+            "entry_price": 189.625,
+            "stoploss_price": 374.00000000000006,
+            "target_price": 80.0
+          },
+          "trigger_snapshot": {
+            "timestamp": "2026-05-22T09:15:00",
+            "spot_low": 22210.0,
+            "spot_high": 22320.0,
+            "option_low": 240.0,
+            "option_high": 325.0
+          },
+          "orpt_snapshot": {
+            "timestamp": "2026-05-22T09:24:59",
+            "spot_low": 22170.0,
+            "spot_high": 22420.0,
+            "option_low": 240.0,
+            "option_high": 330.0
+          },
+          "recalculation_snapshot": {
+            "timestamp": "2026-05-22T09:29:59",
+            "spot_low": 22100.0,
+            "spot_high": 22520.0,
+            "option_low": 230.0,
+            "option_high": 340.0
+          },
+          "trigger_result": {
+            "fsl_trp_missed": true,
+            "rule_name": "S23_CURRENT_DAY_FSL_TRP_0915_OPTION_HIGH_CHECK_V1",
+            "compared_value": 325.0,
+            "threshold_stoploss_price": 320.0,
+            "notes": [
+              "Applied workbook FSL/TRP trigger at 09:15:00 using current-day option high versus the base stoploss price.",
+              "Checked PUT side at 2026-05-22T09:15:00: current_day_option_high > stoploss_price."
+            ]
+          },
+          "result": {
+            "applied": true,
+            "reason": "s23_current_day_fsl_trp_row_187_fsl_only_applied",
+            "row_number": 187,
+            "effective_option_type": "PUT",
+            "recalculated_start_strike": null,
+            "recalculated_end_strike": null,
+            "recalculated_ideal_premium": null,
+            "recalculated_minimum_premium": null,
+            "recalculated_entry_price": null,
+            "recalculated_stoploss_price": 374.00000000000006,
+            "entry_override_source_cell": null,
+            "lifecycle_start_after": "2026-05-22T09:29:59",
+            "source_rule": "AB6_OS_ROW_187",
+            "unsupported_fields": [
+              "start_strike",
+              "end_strike",
+              "ideal_premium",
+              "minimum_premium",
+              "entry_price",
+              "target_price"
+            ],
+            "audit_notes": [
+              "Row 187 applied as FSL-only exactly as workbook-backed.",
+              "R/S/U/W/Z are blank in the workbook, so strike, premium, and entry recalculation must not be inferred.",
+              "Used current-day option HH at recalculation time plus 10% for the new FSL.",
+              "Workbook note: 'When You Call And Put Position is Exited'."
+            ]
+          },
+          "entry_override": {
+            "applied": false,
+            "source_cell": null,
+            "original_entry_price": 189.625,
+            "overridden_entry_price": null,
+            "effective_entry_price": 189.625
+          },
+          "resolved_workbook_clarifications": [],
+          "notes": [
+            "Rows 183-186 can also apply workbook-backed current-day option-entry overrides from Z183:Z186 when those cells are populated.",
+            "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
+            "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
+            "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path."
+          ]
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22000.0,
+        "d3hh": 22500.0,
+        "d3ll": 21900.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22450.0,
+        "current_day_low": 22200.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 295.0,
+          "OPT_PRV_2DLL": 205.0,
+          "OPT_PRV_3DHH": 305.0,
+          "OPT_PRV_3DLL": 215.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-23T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 21375,
+        "entry_price": 194.25,
+        "target_price": 80.0,
+        "stoploss_price": 374.00000000000006,
+        "ideal_premium": 270.0,
+        "minimum_premium": 202.50000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_current_day_fsl_trp": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "applied": true,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21375,
+            "end_strike": 22501,
+            "ideal_premium": 270.0,
+            "minimum_premium": 202.50000000000003,
+            "entry_price": 194.25,
+            "stoploss_price": 320.0,
+            "target_price": 80.0
+          },
+          "effective_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 21375,
+            "end_strike": 22501,
+            "ideal_premium": 270.0,
+            "minimum_premium": 202.50000000000003,
+            "entry_price": 194.25,
+            "stoploss_price": 374.00000000000006,
+            "target_price": 80.0
+          },
+          "trigger_snapshot": {
+            "timestamp": "2026-05-23T09:15:00",
+            "spot_low": 22210.0,
+            "spot_high": 22320.0,
+            "option_low": 240.0,
+            "option_high": 325.0
+          },
+          "orpt_snapshot": {
+            "timestamp": "2026-05-23T09:24:59",
+            "spot_low": 22170.0,
+            "spot_high": 22420.0,
+            "option_low": 240.0,
+            "option_high": 330.0
+          },
+          "recalculation_snapshot": {
+            "timestamp": "2026-05-23T09:29:59",
+            "spot_low": 22100.0,
+            "spot_high": 22520.0,
+            "option_low": 230.0,
+            "option_high": 340.0
+          },
+          "trigger_result": {
+            "fsl_trp_missed": true,
+            "rule_name": "S23_CURRENT_DAY_FSL_TRP_0915_OPTION_HIGH_CHECK_V1",
+            "compared_value": 325.0,
+            "threshold_stoploss_price": 320.0,
+            "notes": [
+              "Applied workbook FSL/TRP trigger at 09:15:00 using current-day option high versus the base stoploss price.",
+              "Checked PUT side at 2026-05-23T09:15:00: current_day_option_high > stoploss_price."
+            ]
+          },
+          "result": {
+            "applied": true,
+            "reason": "s23_current_day_fsl_trp_row_187_fsl_only_applied",
+            "row_number": 187,
+            "effective_option_type": "PUT",
+            "recalculated_start_strike": null,
+            "recalculated_end_strike": null,
+            "recalculated_ideal_premium": null,
+            "recalculated_minimum_premium": null,
+            "recalculated_entry_price": null,
+            "recalculated_stoploss_price": 374.00000000000006,
+            "entry_override_source_cell": null,
+            "lifecycle_start_after": "2026-05-23T09:29:59",
+            "source_rule": "AB6_OS_ROW_187",
+            "unsupported_fields": [
+              "start_strike",
+              "end_strike",
+              "ideal_premium",
+              "minimum_premium",
+              "entry_price",
+              "target_price"
+            ],
+            "audit_notes": [
+              "Row 187 applied as FSL-only exactly as workbook-backed.",
+              "R/S/U/W/Z are blank in the workbook, so strike, premium, and entry recalculation must not be inferred.",
+              "Used current-day option HH at recalculation time plus 10% for the new FSL.",
+              "Workbook note: 'When You Call And Put Position is Exited'."
+            ]
+          },
+          "entry_override": {
+            "applied": false,
+            "source_cell": null,
+            "original_entry_price": 194.25,
+            "overridden_entry_price": null,
+            "effective_entry_price": 194.25
+          },
+          "resolved_workbook_clarifications": [],
+          "notes": [
+            "Rows 183-186 can also apply workbook-backed current-day option-entry overrides from Z183:Z186 when those cells are populated.",
+            "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
+            "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
+            "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path."
+          ]
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22100.0,
+        "d3hh": 22500.0,
+        "d3ll": 22000.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 300.0,
+          "OPT_PRV_2DLL": 210.0,
+          "OPT_PRV_3DHH": 310.0,
+          "OPT_PRV_3DLL": 220.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    }
+  ],
+  "metrics": {
+    "total_evaluations": 6,
+    "accepted_candidates": 6,
+    "rejected_candidates": 0,
+    "rejection_reason_distribution": {},
+    "entered_trades": 0,
+    "expiry_day_candidates": 0,
+    "expiry_day_entered": 0,
+    "expiry_day_exit_satisfied": 0,
+    "expiry_day_exit_pending": 0,
+    "target_hits": 0,
+    "stoploss_hits": 0,
+    "no_entry": 6,
+    "no_exit": 0,
+    "eod_square_off": 0,
+    "carry_forward_pending": 0,
+    "total_pnl_points": 0.0,
+    "average_pnl_points": 0.0,
+    "total_gross_pnl_points": 0.0,
+    "total_cost_points": 0.0,
+    "total_net_pnl_points": 0.0,
+    "average_net_pnl_points": 0.0,
+    "total_gross_pnl_rupees": 0.0,
+    "total_cost_rupees": 0.0,
+    "total_net_pnl_rupees": 0.0,
+    "average_net_pnl_rupees": 0.0,
+    "final_net_pnl_rupees": 0.0,
+    "max_drawdown_rupees": 0.0,
+    "max_drawdown_points": 0.0,
+    "best_trade_net_rupees": 0.0,
+    "worst_trade_net_rupees": 0.0,
+    "average_mfe": 0.0,
+    "average_mae": 0.0,
+    "win_rate": 0.0,
+    "loss_rate": 0.0,
+    "no_entry_rate": 1.0,
+    "no_exit_rate": 0.0
+  },
+  "monthly_status_skips": [],
+  "enable_s23_current_day_fsl_trp": true
+}

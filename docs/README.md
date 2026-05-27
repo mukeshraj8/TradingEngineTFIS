@@ -19,7 +19,7 @@ This folder contains the TFIS design, governance, importer, and operations docum
 - a bounded read-only comparison tool is now available for generated historical backtest mode reports
 - reference materials are indexed with review workflow and archive-governance guidance
 - current quality snapshot:
-  - tests passing: `274`
+  - tests passing: `281`
   - `python scripts/validate_project.py`: passed
 
 ## Architecture

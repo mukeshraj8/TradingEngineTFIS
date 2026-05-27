@@ -1,0 +1,287 @@
+{
+  "strategy_path": "config\\strategies\\options_sell\\nifty\\S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "strategy_root": null,
+  "use_monthly_status_engine": false,
+  "mode": "historical",
+  "eod_policy": "square_off_at_close",
+  "cost_model": {
+    "slippage_points_per_side": 0.0,
+    "brokerage_points_per_trade": 0.0,
+    "other_cost_points_per_trade": 0.0
+  },
+  "input_metadata": {
+    "datasets": {
+      "daily": {
+        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_current_day_applied\\daily.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_levels": {
+        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_current_day_applied\\option_levels.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_intraday": {
+        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_current_day_applied\\option_intraday.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "spot_intraday": {
+        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_current_day_applied\\spot_intraday.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "monthly": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "weekly": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "option_chain": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "contract_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      }
+    },
+    "synthetic_fixture_data_used": false,
+    "project_fixture_data_used": true
+  },
+  "evaluations": [
+    {
+      "timestamp": "2026-05-23T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22785,
+        "entry_price": 194.25,
+        "target_price": 80.0,
+        "stoploss_price": 320.0,
+        "ideal_premium": 260.4,
+        "minimum_premium": 195.3
+      },
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_current_day_fsl_trp": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+          "applied": true,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "CALL",
+            "start_strike": 23100,
+            "end_strike": 21999,
+            "ideal_premium": 264.0,
+            "minimum_premium": 198.00000000000003,
+            "entry_price": 203.5,
+            "stoploss_price": 320.0,
+            "target_price": 80.0
+          },
+          "effective_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "CALL",
+            "start_strike": 22785,
+            "end_strike": 21699,
+            "ideal_premium": 260.4,
+            "minimum_premium": 195.3,
+            "entry_price": 194.25,
+            "stoploss_price": 320.0,
+            "target_price": 80.0
+          },
+          "trigger_snapshot": {
+            "timestamp": "2026-05-23T09:15:00",
+            "spot_low": 22250.0,
+            "spot_high": 22350.0,
+            "option_low": 240.0,
+            "option_high": 250.0
+          },
+          "orpt_snapshot": {
+            "timestamp": "2026-05-23T09:24:59",
+            "spot_low": 21700.0,
+            "spot_high": 22400.0,
+            "option_low": 210.0,
+            "option_high": 250.0
+          },
+          "recalculation_snapshot": null,
+          "trigger_result": {
+            "fsl_trp_missed": false,
+            "rule_name": "S23_CURRENT_DAY_FSL_TRP_0915_OPTION_HIGH_CHECK_V1",
+            "compared_value": 250.0,
+            "threshold_stoploss_price": 320.0,
+            "notes": [
+              "Applied workbook FSL/TRP trigger at 09:15:00 using current-day option high versus the base stoploss price.",
+              "Checked CALL side at 2026-05-23T09:15:00: current_day_option_high > stoploss_price."
+            ]
+          },
+          "result": {
+            "applied": true,
+            "reason": "s23_current_day_fsl_trp_row_183_applied",
+            "row_number": 183,
+            "effective_option_type": "CALL",
+            "recalculated_start_strike": 22785,
+            "recalculated_end_strike": 21699,
+            "recalculated_ideal_premium": 260.4,
+            "recalculated_minimum_premium": 195.3,
+            "recalculated_entry_price": 194.25,
+            "recalculated_stoploss_price": null,
+            "entry_override_source_cell": "AB6_OS_Z183",
+            "lifecycle_start_after": "2026-05-23T09:24:59",
+            "source_rule": "AB6_OS_ROW_183",
+            "unsupported_fields": [
+              "target_price",
+              "stoploss_price"
+            ],
+            "audit_notes": [
+              "Row 183 applied exactly as workbook-backed current-day Bull/Bull CF Call not-missed handling.",
+              "Used MIN(PRV_3DLL, CDLL_at_ORPT) for current-day strike and premium recalculation.",
+              "Used MIN(OPT_PRV_3DLL, OPT_CDLL_at_ORPT) minus 7.50% for the current-day option entry override from AB6_OS_Z183.",
+              "Target and stoploss remain inherited from the base trade plan because row 183 does not confirm additional override cells for those fields."
+            ]
+          },
+          "entry_override": {
+            "applied": true,
+            "source_cell": "AB6_OS_Z183",
+            "original_entry_price": 203.5,
+            "overridden_entry_price": 194.25,
+            "effective_entry_price": 194.25
+          },
+          "resolved_workbook_clarifications": [],
+          "notes": [
+            "Rows 183-186 can also apply workbook-backed current-day option-entry overrides from Z183:Z186 when those cells are populated.",
+            "S23 current-day FSL/TRP handling is opt-in and separate from the older ORPT missed-entry recalculation path.",
+            "This layer uses aggregated current-day spot and option high/low snapshots at 09:15:00, 09:24:59, and 09:29:59.",
+            "Blank workbook branches are not inferred; TFIS keeps the base trade plan when the workbook does not confirm the branch path."
+          ]
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22100.0,
+        "d3hh": 22500.0,
+        "d3ll": 22000.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 300.0,
+          "OPT_PRV_2DLL": 210.0,
+          "OPT_PRV_3DHH": 310.0,
+          "OPT_PRV_3DLL": 220.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": true,
+        "entry_price": 194.25,
+        "exit_price": 80.0,
+        "entry_timestamp": "2026-05-23T09:30:00",
+        "exit_timestamp": "2026-05-23T09:30:00",
+        "bars_held": 1,
+        "exit_reason": "TARGET_HIT",
+        "pnl_points": 114.25,
+        "max_favorable_excursion": 119.25,
+        "max_adverse_excursion": 15.75,
+        "notes": "Target threshold hit on the entry bar",
+        "quantity": 50,
+        "gross_pnl_points": 114.25,
+        "total_cost_points": 0.0,
+        "net_pnl_points": 114.25,
+        "gross_pnl_rupees": 5712.5,
+        "cost_rupees": 0.0,
+        "net_pnl_rupees": 5712.5,
+        "cumulative_net_pnl_rupees": 5712.5,
+        "drawdown_rupees": 0.0
+      },
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    }
+  ],
+  "metrics": {
+    "total_evaluations": 1,
+    "accepted_candidates": 1,
+    "rejected_candidates": 0,
+    "rejection_reason_distribution": {},
+    "entered_trades": 1,
+    "expiry_day_candidates": 0,
+    "expiry_day_entered": 0,
+    "expiry_day_exit_satisfied": 0,
+    "expiry_day_exit_pending": 0,
+    "target_hits": 1,
+    "stoploss_hits": 0,
+    "no_entry": 0,
+    "no_exit": 0,
+    "eod_square_off": 0,
+    "carry_forward_pending": 0,
+    "total_pnl_points": 114.25,
+    "average_pnl_points": 114.25,
+    "total_gross_pnl_points": 114.25,
+    "total_cost_points": 0.0,
+    "total_net_pnl_points": 114.25,
+    "average_net_pnl_points": 114.25,
+    "total_gross_pnl_rupees": 5712.5,
+    "total_cost_rupees": 0.0,
+    "total_net_pnl_rupees": 5712.5,
+    "average_net_pnl_rupees": 5712.5,
+    "final_net_pnl_rupees": 5712.5,
+    "max_drawdown_rupees": 0.0,
+    "max_drawdown_points": 0.0,
+    "best_trade_net_rupees": 5712.5,
+    "worst_trade_net_rupees": 5712.5,
+    "average_mfe": 119.25,
+    "average_mae": 15.75,
+    "win_rate": 1.0,
+    "loss_rate": 0.0,
+    "no_entry_rate": 0.0,
+    "no_exit_rate": 0.0
+  },
+  "monthly_status_skips": [],
+  "enable_s23_current_day_fsl_trp": true
+}

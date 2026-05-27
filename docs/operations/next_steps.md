@@ -6,15 +6,13 @@ way.
 
 ## Immediate Next Priorities
 
-1. Implement S23 live-paper schema scaffolding and validation from the new contract and state-machine blueprints.
-   The next safe build step is not a full paper loop; it is dataclass or schema stubs, required-field validation, session-manifest creation, and deterministic no-trade rejection for missing or stale critical inputs.
-2. Implement the S23 paper-session orchestrator skeleton.
-   The first orchestrator should only model the documented states, transitions, and audit events through `ORDER_PLANNED` / `NO_TRADE` / `ABORTED` before any richer paper execution flow is added.
-3. Build S23 paper execution journaling and operator-facing session artifacts.
-   The first paper-runtime outputs should be a session manifest, decision log, selected-contract log, paper order journal, lifecycle event log, and explicit no-trade or abort summaries.
-4. Broader real/archive contract-specific intraday coverage for S23.
+1. Run the first archive-backed S23 same-day paper lifecycle parity pilot.
+   The comparator now has an explicit same-day drift policy with deterministic `MATCH`, `MATCH_WITH_ACCEPTABLE_DRIFT`, `PARTIAL_MATCH`, `MISMATCH`, and `UNCOMPARABLE` outcomes. The next safe step is to replay a small normalized non-fixture S23 paper session set and measure how often real archive sessions stay inside acceptable drift.
+2. Broader real/archive contract-specific intraday coverage for S23.
    The deterministic fixture set is fully covered at 100.0%; the next safe step is a small normalized archive pilot using real session data while keeping TFIS runtime on the existing contract-intraday CSV contract.
-5. Raw TradingEngine or NiftyTradingEngine capture-format adapters beyond normalized CSV roots.
+3. Raw TradingEngine or NiftyTradingEngine capture-format adapters beyond normalized CSV roots.
+4. Convert the same-day drift policy into explicit paper-session go/no-go operating thresholds.
+   The comparator now distinguishes exact parity from acceptable same-day drift. The next governance step is to define how many `MATCH_WITH_ACCEPTABLE_DRIFT` sessions are acceptable in a pilot day and which `PARTIAL_MATCH` reasons are allowed versus rollout blockers.
 
 Comparison reporting note:
 
@@ -23,6 +21,7 @@ Comparison reporting note:
 - the normalized lifecycle-source runbook now compares a matched option-chain baseline against contract-specific lifecycle mode, so lifecycle-source P&L differences can be reviewed without cost or spot-input drift
 - future comparison work should extend reporting depth without regressing the new file-size, trade-count, timeout, and integrity safeguards
 - the row-183 `current_day_fsl_trp` loss flip seen in an older comparison was not reproduced after rerunning all six modes on one shared dataset set and one shared cost model
+- the new S23 paper-vs-historical comparator now reuses the historical normalized trade summaries and compares persisted `INTENT_READY` paper sessions against expected historical trade-plan output with deterministic `MATCH`, `PARTIAL_MATCH`, `MISMATCH`, or `UNCOMPARABLE` statuses, and it now also distinguishes later execution-shell, dispatch-shell, and final no-fill handoff readiness from the earlier arming layer
 
 ## Blocked / Pending Clarification
 
@@ -36,7 +35,7 @@ Comparison reporting note:
 - current-day S23 FSL / TRP unsupported paths remain intentionally unchanged until the workbook confirms additional rows:
   - Bull / Bull CF Put not missed
   - Bear / Bear CF Call not missed
-- the new S23 live-paper data contract and session state machine define the paper-runtime foundation, but no schema scaffolding, session manifest writer, or paper-session transition validator exists yet
+- the new S23 live-paper data contract and session state machine now have matching schema scaffolding, required-field validation, an in-memory orchestrator, pre-planning kill-switch and failure-handling guardrails, persisted terminal planning artifacts, replay-bundle manifests, operator-facing review summaries, an execution-journal intent shell, post-planning intent guardrails, planning-state paper-vs-historical replay comparison, later-phase execution-shell arming controls, a fillless dispatch-only shell, a final no-fill handoff boundary, execution-shell-aware parity summaries under `src/tfis/paper`, a documented MVP v1 fill-simulator design, Phase 1 fill or no-fill simulation, and Phase 2 same-day lifecycle simulation with paper exit and P&L artifacts, but no broker connectivity, no real order placement, and no next-day continuation support exist yet
 - fuller strike-availability realism still needs wider symbol/date coverage than the current fixture-backed contract-specific lifecycle foundation; the fixture gap is closed, but broader archive depth beyond the current S23 symbol/date set is still pending
 - raw shared capture ingestion still needs explicit normalization contracts for parquet/jsonl/session artifacts before TFIS should parse them directly
 
