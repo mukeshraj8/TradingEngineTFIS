@@ -23,6 +23,16 @@ class OptionType(str, Enum):
     PUT = "PUT"
 
 
+class ExpiryType(str, Enum):
+    WEEKLY = "WEEKLY"
+    MONTHLY = "MONTHLY"
+
+
+class RolloverPolicy(str, Enum):
+    T_MINUS_1 = "T_MINUS_1"
+    T_MINUS_2 = "T_MINUS_2"
+
+
 class RoundingMode(str, Enum):
     ROUND_UP = "ROUND_UP"
     ROUND_DOWN = "ROUND_DOWN"

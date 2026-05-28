@@ -64,7 +64,7 @@ Mandatory market fields:
 
 - `market.underlying_symbol: NIFTY`
 - `market.weekly_expiry`
-- `market.selected_contract_symbol`
+- `market.selected_contract_symbol` only when intentionally using a deterministic smoke override
 
 ## Prelude JSONL Role
 
@@ -79,6 +79,16 @@ The prelude JSONL supplies the non-broker planning context:
   - `ORPT`
   - `RC` when current-day `FSL / TRP` is enabled
 - `TRADE_PLAN_INPUT`
+
+TFIS can now build this paper prelude from normalized runtime inputs through
+the paper-only prelude builder under `src/tfis/paper/live_prelude.py`.
+
+Current limitation:
+
+- FYERS socket and live-session orchestration still do not build or manage this
+  prelude automatically
+- the existing live ingress runner still expects supplied prelude events
+- static `market.selected_contract_symbol` remains a smoke-test override only
 
 The FYERS adapter supplies only broker market-data events:
 
@@ -104,7 +114,13 @@ Preflight itself does not connect and can be run safely outside market hours.
 The runner subscribes to:
 
 - underlying: `NIFTY`
-- selected contract: `market.selected_contract_symbol`
+- selected contract: `market.selected_contract_symbol` in the current ingress-only smoke path
+
+Operational note:
+
+- runtime contract selection should come from normalized option-chain records
+- static `market.selected_contract_symbol` should remain a smoke-test override, not the main operational path
+- OI must be present for selected-contract candidates; missing OI is a hard selection failure
 
 The FYERS adapter converts the normalized TFIS option symbol into FYERS format
 internally. S23 still consumes only normalized TFIS events.

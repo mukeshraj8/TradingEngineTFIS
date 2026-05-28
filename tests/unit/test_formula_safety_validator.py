@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import time
 
-from tfis.domain.enums import MonthlyStatus, OptionType, Segment
-from tfis.domain.strategy_rule import StrategyRule
+from tfis.domain.enums import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment
+from tfis.domain.strategy_rule import StrategyExpiryPolicy, StrategyRule
 from tfis.formulas import validate_strategy_rule_formula_safety
 
 
@@ -13,6 +13,10 @@ def _option_rule(*, entry_formula: str, stoploss_formula: str) -> StrategyRule:
         unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D",
         symbol="NIFTY",
         segment=Segment.OPTIONS_SELL,
+        expiry_policy=StrategyExpiryPolicy(
+            expiry_type=ExpiryType.WEEKLY,
+            rollover_policy=RolloverPolicy.T_MINUS_1,
+        ),
         allowed_monthly_statuses=(MonthlyStatus.BULL,),
         option_type=OptionType.CALL,
         entry_time=time(9, 24, 59),
@@ -102,6 +106,10 @@ def test_non_options_strategy_does_not_enforce_opt_rule() -> None:
         unique_code="NIFTY_FUT_TEST",
         symbol="NIFTY",
         segment=Segment.FUTURES,
+        expiry_policy=StrategyExpiryPolicy(
+            expiry_type=ExpiryType.WEEKLY,
+            rollover_policy=RolloverPolicy.T_MINUS_1,
+        ),
         allowed_monthly_statuses=(MonthlyStatus.BULL,),
         option_type=None,
         entry_time=time(9, 24, 59),

@@ -35,6 +35,9 @@ def test_strategy_folder_loads_s23_with_parameters() -> None:
 
     assert rule.strategy_code == "S23"
     assert rule.unique_code == "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    assert rule.expiry_policy.expiry_type.value == "WEEKLY"
+    assert rule.expiry_policy.rollover_policy.value == "T_MINUS_1"
+    assert rule.expiry_policy.no_carry_past_expiry is True
     assert rule.parameters == {
         "strike_buffer_pct": 5.0,
         "ideal_premium_pct": 1.20,

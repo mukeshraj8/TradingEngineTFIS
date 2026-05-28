@@ -3,6 +3,8 @@ unique_code: NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT
 symbol: NIFTY
 segment: OPTIONS_SELL
 expiry_type: WEEKLY
+rollover_policy: T_MINUS_1
+no_carry_past_expiry: true
 allowed_monthly_statuses:
   - BEAR
   - BEAR_CF

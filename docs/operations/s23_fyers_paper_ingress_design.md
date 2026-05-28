@@ -75,6 +75,30 @@ The broker adapter currently supplies only market-data events:
 Prelude files are rejected if they try to smuggle broker-owned market-data
 events into the runner.
 
+Paper-only update:
+
+- TFIS now has a normalized-runtime prelude builder in
+  `src/tfis/paper/live_prelude.py`
+- TFIS also now has an offline generated-prelude dry-run command in
+  `scripts/run_s23_live_prelude_dry_run.py`
+- it can generate the S23 paper prelude from deterministic strategy inputs,
+  option-chain records, carry-forward state, and expiry governance
+- it does not yet replace the FYERS ingress runner with a full socket or
+  session orchestrator
+- static selected-contract config remains a smoke override only
+
+Snapshot-preflight bridge:
+
+- TFIS now also has a one-shot FYERS snapshot collector in
+  `src/tfis/paper/fyers_snapshot_collector.py`
+- the collector fetches normalized underlying and option-chain snapshots only
+- it can optionally build generated S23 paper prelude artifacts from those
+  collected inputs plus a deterministic runtime fixture
+- it does not start the FYERS socket loop
+- it does not run lifecycle execution
+- it does not place broker orders
+- it still fails closed when option-chain OI is missing
+
 ## Broker Adapter Contract
 
 The generic adapter interface currently exposes:
@@ -247,8 +271,9 @@ S23 logic should not change.
 
 - the first broker-backed ingress path still relies on a normalized prelude for
   non-broker planning context
-- selected-contract determination is still external to the broker adapter for
-  the first rollout
+- selected-contract determination is now available in the paper-only prelude
+  builder from normalized option-chain inputs, but it is still external to the
+  FYERS broker adapter and live socket orchestration path for the first rollout
 - this first runner stops at `ORDER_PLANNED`, `NO_TRADE`, or `ABORTED`
 - no live-like fill or lifecycle is enabled by default through this entrypoint
 - no broker order-routing path exists

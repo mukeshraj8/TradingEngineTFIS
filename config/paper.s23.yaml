@@ -30,6 +30,9 @@ paper:
 market:
   underlying_symbol: NIFTY
   weekly_expiry: 2026-05-12
+  # Smoke-test override only.
+  # Operational paper selection should come from normalized option-chain records
+  # plus strategy/trade-plan inputs, with OI validation enforced.
   selected_contract_symbol: NIFTY_20260512_25000_PE
 
 costs:

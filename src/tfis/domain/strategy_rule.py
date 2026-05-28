@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import time
 from math import isfinite
 
-from .enums import MonthlyStatus, OptionType, Segment
+from .enums import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment
 
 
 def _require_text(name: str, value: str) -> str:
@@ -33,11 +33,30 @@ def _normalize_parameters(parameters: dict[str, float] | None) -> dict[str, floa
 
 
 @dataclass(frozen=True, slots=True)
+class StrategyExpiryPolicy:
+    expiry_type: ExpiryType
+    rollover_policy: RolloverPolicy
+    forced_close_time: time | None = None
+    no_carry_past_expiry: bool = True
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.expiry_type, ExpiryType):
+            raise TypeError("expiry_type must be an ExpiryType value")
+        if not isinstance(self.rollover_policy, RolloverPolicy):
+            raise TypeError("rollover_policy must be a RolloverPolicy value")
+        if self.forced_close_time is not None and not isinstance(self.forced_close_time, time):
+            raise TypeError("forced_close_time must be a datetime.time instance")
+        if not isinstance(self.no_carry_past_expiry, bool):
+            raise TypeError("no_carry_past_expiry must be a bool")
+
+
+@dataclass(frozen=True, slots=True)
 class StrategyRule:
     strategy_code: str
     unique_code: str
     symbol: str
     segment: Segment
+    expiry_policy: StrategyExpiryPolicy
     allowed_monthly_statuses: tuple[MonthlyStatus, ...]
     option_type: OptionType | None
     entry_time: time
@@ -57,6 +76,8 @@ class StrategyRule:
         object.__setattr__(self, "strategy_code", _require_text("strategy_code", self.strategy_code))
         object.__setattr__(self, "unique_code", _require_text("unique_code", self.unique_code))
         object.__setattr__(self, "symbol", _require_text("symbol", self.symbol))
+        if not isinstance(self.expiry_policy, StrategyExpiryPolicy):
+            raise TypeError("expiry_policy must be a StrategyExpiryPolicy instance")
 
         if not self.allowed_monthly_statuses:
             raise ValueError("allowed_monthly_statuses must not be empty")

@@ -690,7 +690,125 @@ If the session ends at `ORDER_PLANNED`, that means:
 - selected contract selection worked
 - safety checks passed
 
-## 15. FYERS Market-Data Ingress
+## 15. Run A Generated-Live-Prelude Dry Run
+
+### What this is for
+
+This path proves that TFIS can build the S23 paper prelude from deterministic
+runtime inputs and then feed the existing ingress-only orchestrator without any
+broker, socket, or live network dependency.
+
+It answers:
+
+- "Can TFIS generate the normalized S23 planning prelude itself and still
+  reach `ORDER_PLANNED`, `NO_TRADE`, or `ABORTED` deterministically?"
+
+### Command
+
+```powershell
+python scripts/run_s23_live_prelude_dry_run.py `
+  --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
+  --config config/paper.s23.yaml `
+  --runtime-fixture <runtime_fixture.json> `
+  --market-events-jsonl <normalized_market_events.jsonl> `
+  --artifact-root tmp/s23_generated_live_prelude_dry_runs `
+  --session-id s23-generated-live-prelude-dry-run
+```
+
+Optional explicit smoke override:
+
+```powershell
+python scripts/run_s23_live_prelude_dry_run.py `
+  --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
+  --config config/paper.s23.yaml `
+  --runtime-fixture <runtime_fixture.json> `
+  --market-events-jsonl <normalized_market_events.jsonl> `
+  --enable-smoke-override
+```
+
+### What this run should create
+
+Useful outputs:
+
+- `generated_live_prelude_events.jsonl`
+- `generated_live_prelude_combined_events.jsonl`
+- `generated_live_prelude_provenance.json`
+- the standard session review and dry-run summary artifacts
+
+### Safety note
+
+- this remains fully offline and deterministic
+- no FYERS socket orchestration runs here
+- no broker order is placed
+- static selected-contract config is used only when the explicit smoke-override
+  flag is supplied
+
+## 16. Run A FYERS Snapshot Preflight
+
+### What this is for
+
+This path is the bridge between the offline generated-prelude dry run and the
+future FYERS socket/session orchestrator.
+
+It answers:
+
+- "Can TFIS collect one-shot FYERS-backed normalized snapshot inputs, keep OI
+  validation strict, and optionally build the S23 paper prelude without
+  starting a stream?"
+
+### Preflight-only command
+
+```powershell
+python scripts/run_s23_fyers_snapshot_preflight.py `
+  --preflight-only `
+  --config config/paper.s23.yaml `
+  --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
+  --artifact-root tmp/s23_fyers_snapshot_preflight `
+  --session-id s23-fyers-snapshot-preflight
+```
+
+### Collect snapshot inputs and build a generated prelude
+
+```powershell
+python scripts/run_s23_fyers_snapshot_preflight.py `
+  --dry-run-build-prelude `
+  --config config/paper.s23.yaml `
+  --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
+  --runtime-fixture <runtime_fixture.json> `
+  --artifact-root tmp/s23_fyers_snapshot_preflight `
+  --session-id s23-fyers-snapshot-preflight-build
+```
+
+Optional explicit smoke override:
+
+```powershell
+python scripts/run_s23_fyers_snapshot_preflight.py `
+  --dry-run-build-prelude `
+  --config config/paper.s23.yaml `
+  --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
+  --runtime-fixture <runtime_fixture.json> `
+  --enable-smoke-override
+```
+
+### What this run should create
+
+Useful outputs:
+
+- `normalized_underlying_snapshot.json`
+- `normalized_option_chain_snapshot.json`
+- `snapshot_preflight_summary.json`
+- `generated_live_prelude_events.jsonl` when `--dry-run-build-prelude` is used
+- `generated_live_prelude_provenance.json` when `--dry-run-build-prelude` is used
+
+### Safety note
+
+- this does not start the FYERS socket loop
+- this does not execute paper lifecycle handling
+- this does not place broker orders
+- strict option-chain OI validation still applies
+- static selected-contract config remains an explicit smoke override only
+
+## 17. FYERS Market-Data Ingress
 
 ### What this is for
 
@@ -702,7 +820,7 @@ Important:
 - TFIS still consumes only normalized TFIS events
 - no order placement is allowed
 
-### 15.1 Safe preflight
+### 17.1 Safe preflight
 
 #### What this is for
 

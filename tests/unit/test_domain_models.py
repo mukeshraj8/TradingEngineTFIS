@@ -4,14 +4,16 @@ from datetime import time
 
 import pytest
 
-from tfis.domain import InstrumentRef, MarketLevels, StrategyRule, TradePlan
-from tfis.domain.enums import MonthlyStatus, OptionType, RoundingMode, Segment
+from tfis.domain import InstrumentRef, MarketLevels, StrategyExpiryPolicy, StrategyRule, TradePlan
+from tfis.domain.enums import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, RoundingMode, Segment
 
 
 def test_enums_expose_expected_members() -> None:
     assert Segment.FUTURES.value == "FUTURES"
+    assert ExpiryType.WEEKLY.value == "WEEKLY"
     assert MonthlyStatus.BULL_CF.value == "BULL_CF"
     assert OptionType.PUT.value == "PUT"
+    assert RolloverPolicy.T_MINUS_1.value == "T_MINUS_1"
     assert RoundingMode.NEAREST.value == "NEAREST"
 
 
@@ -54,6 +56,10 @@ def test_strategy_rule_creation_for_options() -> None:
         unique_code="TFIS_A_01",
         symbol="NIFTY",
         segment=Segment.OPTIONS_BUY,
+        expiry_policy=StrategyExpiryPolicy(
+            expiry_type=ExpiryType.WEEKLY,
+            rollover_policy=RolloverPolicy.T_MINUS_1,
+        ),
         allowed_monthly_statuses=(MonthlyStatus.BULL, MonthlyStatus.BULL_CF),
         option_type=OptionType.CALL,
         entry_time=time(9, 20),
@@ -71,6 +77,7 @@ def test_strategy_rule_creation_for_options() -> None:
 
     assert rule.option_type is OptionType.CALL
     assert rule.allowed_monthly_statuses == (MonthlyStatus.BULL, MonthlyStatus.BULL_CF)
+    assert rule.expiry_policy.expiry_type is ExpiryType.WEEKLY
 
 
 
@@ -81,6 +88,10 @@ def test_strategy_rule_rejects_missing_option_type_for_option_segment() -> None:
             unique_code="TFIS_A_01",
             symbol="NIFTY",
             segment=Segment.OPTIONS_BUY,
+            expiry_policy=StrategyExpiryPolicy(
+                expiry_type=ExpiryType.WEEKLY,
+                rollover_policy=RolloverPolicy.T_MINUS_1,
+            ),
             allowed_monthly_statuses=(MonthlyStatus.BULL,),
             option_type=None,
             entry_time=time(9, 20),
@@ -105,6 +116,10 @@ def test_strategy_rule_rejects_empty_monthly_statuses() -> None:
             unique_code="TFIS_B_01",
             symbol="NIFTY",
             segment=Segment.FUTURES,
+            expiry_policy=StrategyExpiryPolicy(
+                expiry_type=ExpiryType.WEEKLY,
+                rollover_policy=RolloverPolicy.T_MINUS_1,
+            ),
             allowed_monthly_statuses=(),
             option_type=None,
             entry_time=time(9, 20),

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import yaml
 
-from tfis.domain.enums import MonthlyStatus, OptionType, Segment
-from tfis.domain.strategy_rule import StrategyRule
+from tfis.domain.enums import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment
+from tfis.domain.strategy_rule import StrategyExpiryPolicy, StrategyRule
 
 
 def _load_yaml(path: str | Path) -> dict:
@@ -67,12 +67,22 @@ def load_strategy_rule(path: str | Path) -> StrategyRule:
 
     option_type_raw = data.get("option_type")
     option_type = OptionType(option_type_raw) if option_type_raw else None
+    forced_close_time_raw = data.get("forced_close_time")
+    forced_close_time = (
+        _parse_time(forced_close_time_raw) if forced_close_time_raw else None
+    )
 
     return StrategyRule(
         strategy_code=data["strategy_code"],
         unique_code=data["unique_code"],
         symbol=data["symbol"],
         segment=Segment(data["segment"]),
+        expiry_policy=StrategyExpiryPolicy(
+            expiry_type=ExpiryType(data["expiry_type"]),
+            rollover_policy=RolloverPolicy(data.get("rollover_policy", "T_MINUS_1")),
+            forced_close_time=forced_close_time,
+            no_carry_past_expiry=bool(data.get("no_carry_past_expiry", True)),
+        ),
         allowed_monthly_statuses=tuple(
             MonthlyStatus(item) for item in data["allowed_monthly_statuses"]
         ),

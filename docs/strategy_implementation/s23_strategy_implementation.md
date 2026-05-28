@@ -515,24 +515,30 @@ Required option-chain fields:
 Selection logic:
 
 1. Keep only rows at the request timestamp.
-2. Keep only rows matching branch option type.
-3. Keep only strikes within the computed strike range.
-4. Keep only contracts with:
-   - `oi >= minimum_oi`
+2. Keep only rows matching the intended underlying and expiry.
+3. Keep only rows matching branch option type.
+4. Keep only strikes within the computed strike range.
 5. Keep only contracts with:
+   - `oi >= minimum_oi`
+6. Keep only contracts with:
    - `ltp >= minimum_premium`
-6. Among remaining contracts, choose the minimum by this tuple:
+7. Among remaining contracts, choose the minimum by this tuple:
    - `abs(ltp - ideal_premium)`
-   - `bid_ask_spread`
    - `-oi`
-   - `abs(strike - midpoint_of_range)`
+   - `strike`
+   - `symbol`
 
 Interpretation:
 
 - first preference is premium closeness to the ideal premium
-- tighter bid/ask spread wins ties
-- higher OI wins further ties
-- strike closest to the center of the computed range wins last ties
+- higher OI wins ties
+- deterministic strike and symbol ordering break any remaining ties
+
+Operational note:
+
+- static `selected_contract_symbol` config may still exist for smoke or replay overrides
+- operational paper selection should use normalized option-chain records with OI
+- if OI is missing for otherwise-eligible candidates, selection must fail safely
 
 If no candidate survives any step:
 
