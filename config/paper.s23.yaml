@@ -1,8 +1,15 @@
+# S23 FYERS live-paper ingress config.
+# For a real market-hours run:
+# - remove or comment broker.payload_fixture_path
+# - export FYERS_APP_ID and FYERS_ACCESS_TOKEN
+# - keep this file paper-only and ingress-only
 source_mode: broker_fyers_live_paper_ingress
 
 broker:
   provider: fyers
   timezone: Asia/Kolkata
+  # Leave this set for deterministic smoke tests.
+  # Remove it for a real FYERS market-data-only run.
   payload_fixture_path: ../tests/fixtures/paper/fyers_market_data_payloads.json
   capture_stream_events: false
 

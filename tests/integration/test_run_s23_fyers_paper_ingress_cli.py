@@ -164,4 +164,8 @@ def test_run_s23_fyers_paper_ingress_cli_preflight_only_writes_outputs(
     assert payload["preflight_status"] == "WARNING"
     assert payload["can_run"] is True
     assert payload["will_connect_to_broker"] is False
+    assert payload["artifact_root_writable"] is True
+    assert payload["ingress_only_mode_confirmed"] is True
+    assert payload["fill_simulation_enabled"] is False
+    assert payload["lifecycle_simulation_enabled"] is False
     assert "Preflight only never connects to FYERS" in markdown

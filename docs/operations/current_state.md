@@ -6,7 +6,7 @@ change in a meaningful way.
 
 ## Current Focus
 
-- enforce a safe real FYERS ingress-only operator path for S23 with a strict local preflight gate, then broaden broker-backed multi-session evidence before enabling any controlled broker-backed fill or lifecycle rehearsal
+- resolve the TradingEngine-capture `oi` blocker or keep those captures limited to the market-data leg, while continuing to broaden broker-backed S23 ingress-only evidence before enabling any controlled live-like fill or lifecycle rehearsal
 
 ## Implemented Systems
 
@@ -61,6 +61,8 @@ change in a meaningful way.
 - FYERS market-data adapter as the first concrete broker-backed ingress adapter
 - broker-backed normalized event persistence through `broker_health.json`, `normalized_events.jsonl`, and `ingress_summary.json`
 - S23 FYERS live-paper preflight-only safety gate and operator runbook
+- read-only TradingEngine capture-session audit and market-event adapter prototype for S23 dry runs
+- TradingEngine capture plus TFIS prelude ingress-only dry-run suite for S23
 
 ## Current Architecture Flow
 
@@ -115,6 +117,17 @@ Current broker-backed ingress path:
 -> paper intent shell only by default
 -> `ORDER_PLANNED` / `NO_TRADE` / `ABORTED`
 
+Current TradingEngine capture ingress path:
+
+`ticks_context.csv` + `NIFTY50_option_quotes_YYYYMMDD.csv`
+-> `tradingengine_capture_adapter.py`
+-> normalized TFIS market-event JSONL
+-> TFIS prelude JSONL
+-> `S23TradingEngineCaptureIngressSuiteRunner`
+-> `S23PaperIngressDryRunRunner`
+-> paper intent shell only by default
+-> `ORDER_PLANNED` / `NO_TRADE` / `ABORTED`
+
 Current notes:
 
 - monthly status can now drive branch selection in historical mode
@@ -130,8 +143,14 @@ Current notes:
 - the paper orchestrator now applies explicit pre-planning guardrails for global paper disable, S23 paper disable, manual operator abort, stale data, missing chain or selected-contract inputs, session terminality, and one-plan-per-session enforcement, and those guardrail decisions now flow into audit events and persisted terminal summaries
 - `src/tfis/brokers/base.py` and `src/tfis/brokers/fyers.py` now add the first broker-agnostic market-data boundary, with order placement explicitly blocked and S23 consuming only normalized TFIS events
 - `src/tfis/paper/live_ingress.py` and `scripts/run_s23_fyers_paper_ingress.py` now combine normalized non-broker prelude events with FYERS-backed normalized market-data events, then reuse the existing ingress-only paper runner so S23 logic stays broker-agnostic
-- the same FYERS ingress runner now also supports `--preflight-only`, which validates credentials, paper-only scope, kill-switch posture, selected-contract configuration, and required prelude snapshots without connecting to FYERS
+- the same FYERS ingress runner now also supports `--preflight-only`, which validates credentials, paper-only scope, ingress-only mode, kill-switch posture, selected-contract configuration, required prelude snapshots, artifact-root writability, valid broker timezone, and real-run session-date alignment without connecting to FYERS
 - the first broker-backed ingress path persists `broker_health.json`, `normalized_events.jsonl`, `ingress_summary.json`, `selected_contract_audit.json`, `paper_session_review.md`, and `no_trade_or_order_plan_summary.json` while still stopping at planning by default
+- `src/tfis/paper/tradingengine_capture_adapter.py` plus `scripts/convert_tradingengine_capture_to_tfis_ingress.py` now provide a read-only bridge from TradingEngine `ticks_context.csv` plus `NIFTY50_option_quotes_YYYYMMDD.csv` into TFIS normalized market-event JSONL, while intentionally requiring TFIS-side prelude inputs for calendar, monthly status, paper config, costs, and workbook-backed trade plans
+- the TradingEngine capture audit found that several dates do cover `09:15`, `ORPT`, and `RC`, but the raw captures do not reliably embed the selected contract at RC and do not contain standalone monthly-status or trade-plan artifacts, so they are suitable for the S23 market-data leg only, not for standalone end-to-end TFIS sessions
+- `src/tfis/paper/tradingengine_capture_ingress_suite.py` plus `scripts/run_s23_tradingengine_capture_ingress_suite.py` now pair those converted market events with TFIS validation preludes and run ingress-only dry runs across multiple captured dates without writing anything back into `D:\TradingData`
+- the first real paired TradingEngine-capture ingress suite now exists under `D:/TradingEngineTFIS/tmp/s23_tradingengine_capture_dry_runs`; it processed `2026-05-15`, `2026-05-20`, `2026-05-22`, `2026-05-25`, `2026-05-26`, and `2026-05-27` with `0` stale events, `0` timezone mismatches, `0` missing chains, `0` missing selected contracts, and `0.0s` ORPT / RC lag, but every session still ended `ABORTED` with `missing_contract_oi`
+- that suite establishes a clear boundary: current TradingEngine captures are good enough for the underlying and option-quote timing leg, but the raw option quote archives still carry blank `oi` at decision time, which makes the paired ingress path operationally `NO_GO` until an OI-enrichment source or an explicitly approved validation policy change exists
+- the follow-up OI audit in `docs/operations/s23_tradingengine_capture_oi_audit.md` confirmed that the six audited option quote archives contain `0` non-blank `oi` rows overall and `0` non-blank `oi` rows in the RC windows, while the only alternate OI-bearing source found (`option_positioning` in `captures/sessions/*/events.jsonl`) is a near-spot summary that is not selected-contract-safe for S23 validation
 - the paper artifact layer can now be sealed into a deterministic replay bundle manifest with stable hashes, terminal-state checks, and readback summaries so `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED` sessions can be reconstructed without rerunning execution logic
 - `src/tfis/paper/review.py` and `scripts/review_paper_session.py` now add the first operator-facing review surface over those persisted artifacts and replay bundles, including terminal state, guardrails, selected-contract details, audit timeline, provenance, freshness, bundle validation, and an explicit no-execution disclaimer
 - `src/tfis/paper/execution_journal.py` now turns an `ORDER_PLANNED` S23 paper session into a deterministic intent-only handoff shell with `paper_order_intent.json`, `execution_journal.jsonl`, and `execution_summary.json`, while `NO_TRADE` and `ABORTED` sessions now emit explicit skipped-intent summaries instead of pretending any order or fill occurred
@@ -196,12 +215,12 @@ Current notes:
 - futures rollover lifecycle
 - monthly option buying
 - fuller strike-availability realism and broader contract-specific archive coverage
-- raw TradingEngine or NiftyTradingEngine capture-format adapters
+- broader multi-date TradingEngine capture normalization beyond the new read-only market-event adapter prototype
 - broad multi-broker live runtime beyond the current market-data-only FYERS ingress foundation
 
 ## Current Quality Snapshot
 
-- tests passing: `414`
+- tests passing: `426`
 - `python scripts/validate_project.py`: passing
 
 ## Operational Coordination Discipline

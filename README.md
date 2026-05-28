@@ -1,12 +1,13 @@
 # TradingEngineTFIS
 
 TFIS is a clean Python project for workbook-backed, config-driven trading
-research around the `S23` weekly NIFTY options-selling family.
+research and bounded paper-trading simulation around the `S23` weekly NIFTY
+options-selling family.
 
 This repository is intentionally separate from `TradingEngine` and
 `TradingEngineProd`. It focuses on deterministic offline validation, auditable
-historical research, and safe paper-trading readiness foundations without
-pulling in broker or live-runtime code.
+historical research, safe paper-trading foundations, and broker-agnostic
+market-data ingress. It does not place live orders.
 
 ## Current Position
 
@@ -22,11 +23,16 @@ Current status:
   `10 / 10` with `0` fallback
 - same-day paper fill and lifecycle simulation now exist for S23 in bounded
   paper mode
-- normalized live-paper ingress-only dry runs and operator close-out policy now
-  exist
+- normalized live-paper ingress-only dry runs, operator close-out policy, and
+  broker-agnostic market-data ingress now exist
+- FYERS is the first market-data adapter, but order placement remains blocked
+- TradingEngine capture conversion and ingress-only pairing now exist, but that
+  path is currently `NO_GO` for ingress acceptance because selected-contract
+  `oi` is unavailable at decision time
 - current operational disposition is:
+  - archive-backed paper lifecycle validation: `LIMITED_GO`
   - ingress-only validation: `LIMITED_GO`
-  - broad live-paper rollout: `NO-GO`
+  - broad live-paper rollout: `NO_GO`
 
 The center of gravity has shifted from formula correctness to operational
 readiness, ingress confidence, and broader real/archive data coverage.
@@ -43,12 +49,13 @@ Current scope:
 - option-chain selection realism
 - contract-specific lifecycle realism
 - S23-only paper-trading simulation and operator workflow scaffolding
+- broker-agnostic market-data adapters and ingress-only paper dry runs
 
 Explicitly out of scope for the current implementation:
 
-- broker integrations
 - real-money live trading
-- broker-connected paper runtime
+- broker order placement
+- broker-connected fill or lifecycle execution
 - non-S23 strategy expansion
 - unsupported workbook-path inference
 
@@ -69,7 +76,8 @@ The intended workflow remains:
 - Runtime uses normalized artifacts, not direct fragile Excel access.
 - Strategy, rule, market-data, lifecycle, and scheduler modules remain
   broker-agnostic.
-- No direct broker SDK imports are allowed in TFIS core.
+- S23 must consume only normalized TFIS events, never raw broker payloads.
+- No direct broker SDK imports are allowed in TFIS core strategy logic.
 - Unsupported workbook paths must be blocked explicitly, not guessed.
 - Reference materials and neighboring engine artifacts are evidence, not
   automatic executable specs.
@@ -93,7 +101,14 @@ Implemented and stable today:
 - contract-specific lifecycle pricing with explicit provenance
 - expiry-day lifecycle review and no-rollover governance for S23 options
 - bounded apples-to-apples comparison reporting across historical modes
-- read-only shared captured-data adapter for normalized CSV roots
+- broker-agnostic live-paper ingress foundation with FYERS as the first
+  market-data adapter
+- explicit FYERS ingress preflight-only safety path and market-hours runbook
+- read-only TradingEngine capture-session audit, market-event converter, and
+  paired TFIS-prelude ingress-only suite
+- TradingEngine capture OI audit proving the current raw-capture ingress path
+  is `NO_GO` for acceptance because selected-contract `oi` is missing at
+  decision time
 - S23 paper schema, validation, orchestrator, persistent artifacts, replay
   bundles, review surfaces, order-intent journaling, and guardrails
 - S23 paper fillless execution shell through
@@ -115,18 +130,17 @@ Implemented and stable today:
   - `PARTIAL_MATCH`
   - `MISMATCH`
   - `UNCOMPARABLE`
-- first archive-backed S23 lifecycle pilot suite with a current recommendation
-  of `LIMITED_GO`
-- first normalized live-paper ingress-only dry run and broadened ingress suite
-  with explicit `PASS / WARNING / NO_GO` operator classification
+- archive-backed S23 lifecycle pilot suite with a current recommendation of
+  `LIMITED_GO`
+- normalized live-paper ingress-only dry runs and broadened ingress suite with
+  explicit `PASS / WARNING / NO_GO` operator classification
 
 Blocked or intentionally deferred:
 
 - workbook-unconfirmed next-day continuation logic from `AB6 OS!190:191`
 - unsupported current-day FSL / TRP paths that do not have confirmed workbook
   rows
-- raw capture-format adapters beyond normalized CSV roots
-- broker connectivity and real order placement
+- broker order placement and real-money execution
 - next-day continuation
 - multi-position handling
 - non-S23 live-paper expansion
@@ -161,8 +175,8 @@ Lifecycle realism is now measurable instead of implicit:
 
 - deterministic fixture-backed lifecycle coverage is `100.0%`
 - normalized apples-to-apples comparison for lifecycle-source impact is in place
-- the current matched comparison isolates one small believable lifecycle-source
-  P&L delta rather than broad uncontrolled divergence
+- the matched comparison isolates small believable lifecycle-source deltas
+  instead of broad uncontrolled divergence
 
 That means the remaining realism gap is primarily broader archive depth, not
 core S23 logic quality.
@@ -173,7 +187,7 @@ Current readiness disposition:
 
 - archive-backed same-day lifecycle pilot suite: `LIMITED_GO`
 - ingress-only operator close-out gate: `LIMITED_GO`
-- broad live-paper rollout: `NO-GO`
+- broad live-paper rollout: `NO_GO`
 
 What now exists in paper mode:
 
@@ -184,14 +198,17 @@ What now exists in paper mode:
 - same-day paper fill/no-fill simulation
 - same-day paper lifecycle simulation and paper P&L summaries
 - paper-vs-historical planning and lifecycle parity comparison
-- ingress-only dry-run validation with explicit timing/freshness metrics
+- ingress-only dry-run validation with explicit timing and freshness metrics
 - operator close-out policy for `PASS`, `WARNING`, and `NO_GO`
+- broker-backed normalized ingress via FYERS market-data mapping
+- TradingEngine capture-derived market-event conversion and ingress-only suite
+- capture-path OI evidence and acceptance blocker audit
 
 What is still intentionally blocking broad rollout:
 
 - broader multi-date ingress-only evidence
 - controlled live-like rehearsal evidence beyond the current archive-derived set
-- broker/API integration remains disabled
+- broker order-routing remains disabled
 - next-day continuation remains unsupported
 
 The core paper-mode docs now include:
@@ -201,6 +218,8 @@ The core paper-mode docs now include:
 - [S23 Paper Trading Readiness Audit](docs/operations/s23_paper_trading_readiness_audit.md)
 - [S23 Operator Close-Out Policy](docs/operations/s23_operator_closeout_policy.md)
 - [S23 Paper Trading MVP v1 Design](docs/operations/s23_paper_trading_mvp_v1_design.md)
+- [S23 FYERS Ingress Live Runbook](docs/operations/s23_fyers_ingress_live_runbook.md)
+- [TFIS Manual Operator Guide](docs/operations/tfis_manual_operator_guide.md)
 
 ## Strategy Configuration Layout
 
@@ -235,12 +254,16 @@ Key operations and S23 docs:
 - [S23 Paper Trading Readiness Audit](docs/operations/s23_paper_trading_readiness_audit.md)
 - [S23 Operator Close-Out Policy](docs/operations/s23_operator_closeout_policy.md)
 - [S23 Paper Trading MVP v1 Design](docs/operations/s23_paper_trading_mvp_v1_design.md)
+- [S23 FYERS Ingress Live Runbook](docs/operations/s23_fyers_ingress_live_runbook.md)
+- [S23 TradingEngine Capture Adapter Audit](docs/operations/s23_tradingengine_capture_adapter_audit.md)
+- [S23 TradingEngine Capture OI Audit](docs/operations/s23_tradingengine_capture_oi_audit.md)
+- [TFIS Manual Operator Guide](docs/operations/tfis_manual_operator_guide.md)
 
 ## Quality Snapshot
 
 Current repo health:
 
-- tests passing: `397`
+- tests passing: `426`
 - `python scripts/validate_project.py`: passed
 
 ## Representative Commands
@@ -271,28 +294,52 @@ Mode comparison:
 python scripts/compare_backtest_reports.py --report base=tmp/S23_historical_backtest_costed.json --report monthly_status=tmp/S23_historical_monthly_status_backtest.json --report recalculation=tmp/S23_historical_monthly_status_recalc_backtest.json --report current_day_fsl_trp=tmp/S23_historical_current_day_fsl_trp_backtest.json --report option_chain=tmp/S23_historical_monthly_status_recalc_chain_backtest.json --report contract_specific_lifecycle=tmp/S23_historical_monthly_status_recalc_chain_contract_backtest.json --max-trades 200 --timeout-seconds 10 --out tmp/S23_mode_comparison.json --markdown-out tmp/S23_mode_comparison.md
 ```
 
-Paper-mode ingress-only dry run:
+Paper review and parity:
+
+```powershell
+python scripts/review_paper_session.py --session-dir tmp/s23_live_paper_dry_runs/2026-05-08/s23-archive-ingress-dry-run --out-json tmp/paper_session_review.json --out-md tmp/paper_session_review.md
+
+python scripts/compare_paper_to_historical.py --session-dir tmp/s23_paper_pilots/2026-05-08/s23-archive-lifecycle-parity-pilot --historical-report tmp/s23_paper_pilots/2026-05-08/s23-archive-lifecycle-parity-pilot/historical_expectation.json --out-json tmp/paper_vs_historical.json --out-md tmp/paper_vs_historical.md
+```
+
+Ingress-only dry run from normalized JSONL:
 
 ```powershell
 python scripts/run_s23_paper_ingress_dry_run.py --events-jsonl tests/fixtures/paper/s23_archive_ingress_dry_run.jsonl --artifact-root tmp/s23_live_paper_dry_runs --session-id s23-archive-ingress-dry-run
+```
 
-python scripts/review_paper_session.py --session-dir tmp/s23_live_paper_dry_runs/2026-05-08/s23-archive-ingress-dry-run --out-json tmp/paper_session_review.json --out-md tmp/paper_session_review.md
+FYERS preflight and live ingress-only safety run:
+
+```powershell
+python scripts/run_s23_fyers_paper_ingress.py --config config/paper.s23.yaml --prelude-jsonl tests/fixtures/paper/s23_fyers_prelude.jsonl --artifact-root tmp/s23_fyers_paper_ingress --session-id s23-fyers-preflight --preflight-only --out-json tmp/s23_fyers_paper_ingress/preflight.json --out-md tmp/s23_fyers_paper_ingress/preflight.md
+
+python scripts/run_s23_fyers_paper_ingress.py --config config/paper.s23.yaml --prelude-jsonl <today-normalized-prelude.jsonl> --artifact-root tmp/s23_fyers_paper_ingress --session-id s23-fyers-live-ingress
+```
+
+TradingEngine capture conversion and ingress-only suite:
+
+```powershell
+python scripts/convert_tradingengine_capture_to_tfis_ingress.py --data-root D:\TradingData --session-date 2026-05-27 --out-root tmp/s23_tradingengine_capture_adapter/2026-05-27
+
+python scripts/run_s23_tradingengine_capture_ingress_suite.py --data-root D:\TradingData --dates 2026-05-15,2026-05-20,2026-05-22,2026-05-25,2026-05-26,2026-05-27 --out-root tmp/s23_tradingengine_capture_dry_runs
 ```
 
 ## Next Recommended Priorities
 
-- broaden multi-date normalized ingress-only validation before enabling any
-  controlled live-like fill/lifecycle rehearsal
-- turn the current ingress `LIMITED_GO` into a broader controlled-paper decision
-  using repeated archive/replay sessions
+- decide whether TradingEngine captures can be enriched with reliable
+  selected-contract `oi` before treating that path as ingress-acceptance
+  evidence
+- broaden broker-backed multi-date ingress-only validation before enabling any
+  controlled live-like fill or lifecycle rehearsal
+- run the first real local FYERS market-hours ingress-only session under the
+  preflight runbook
 - widen real/archive contract-specific coverage beyond the current deterministic
   fixture and single-date ingress baselines
-- raw shared capture-format adapters beyond normalized CSV roots
 
 ## Still Intentionally Pending
 
 - workbook-unconfirmed next-day continuation logic
 - broader real/archive contract-specific coverage beyond the current fixture set
-- raw shared capture-format adapters beyond normalized CSV roots
-- broker adapters
-- live runtime
+- broker order-routing and real-money execution
+- next-day continuation
+- multi-position paper/live runtime

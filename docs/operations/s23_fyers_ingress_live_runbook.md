@@ -31,6 +31,14 @@ Optional:
 If `broker.payload_fixture_path` is present in the config, the runner stays in
 fixture mode and preflight returns `WARNING` instead of a live-data `PASS`.
 
+Recommended local PowerShell setup before a real run:
+
+```powershell
+$env:FYERS_APP_ID = "<your-app-id>"
+$env:FYERS_ACCESS_TOKEN = "<your-access-token>"
+$env:FYERS_CLIENT_ID = "<optional-client-id>"
+```
+
 ## Required Config
 
 Primary config:
@@ -49,6 +57,8 @@ Mandatory safety fields:
 - `paper.kill_switch_enabled: true`
 - `paper.session_kill_switch_active: false`
 - `paper.no_live_orders_allowed: true`
+- `paper.allow_recalculation: false` for the first real ingress-only run
+- `source_mode: broker_fyers_live_paper_ingress`
 
 Mandatory market fields:
 
@@ -119,6 +129,18 @@ Selected-contract quote requirements:
 - selected contract freshness must stay within the configured quote-age limit
 - missing selected contract is `NO_GO`
 
+## Checklist Before Any Real Run
+
+- market is open and this is an active trading day
+- `broker.payload_fixture_path` is removed or commented out
+- `FYERS_APP_ID` and `FYERS_ACCESS_TOKEN` are present in the shell
+- prelude JSONL was generated for today
+- `paper.strategy_code` is still `S23`
+- `paper.mode` is still `paper`
+- `paper.no_live_orders_allowed` is still `true`
+- `paper.session_kill_switch_active` is still `false`
+- artifact root path is writable
+
 ## Preflight Command
 
 Safe local preflight:
@@ -147,6 +169,12 @@ What preflight checks:
 - session kill switch is not already active
 - selected contract symbol is configured
 - required prelude events and snapshots exist
+- source mode is still ingress-only
+- artifact root is writable
+- broker timezone is valid
+- for a real run, prelude session date matches the local broker date
+- fill simulation is disabled
+- lifecycle simulation is disabled
 
 What preflight does not do:
 
@@ -154,6 +182,26 @@ What preflight does not do:
 - it does not place orders
 - it does not simulate fills
 - it does not run lifecycle monitoring
+
+## Fixture-Backed Smoke Test
+
+Use this before the first real run to verify the local command path:
+
+```powershell
+python scripts/run_s23_fyers_paper_ingress.py `
+  --config config/paper.s23.yaml `
+  --prelude-jsonl tests/fixtures/paper/s23_fyers_prelude.jsonl `
+  --artifact-root tmp/s23_fyers_paper_ingress `
+  --session-id s23-fyers-fixture-smoke `
+  --out-json tmp/s23_fyers_paper_ingress/fixture_smoke.json `
+  --out-md tmp/s23_fyers_paper_ingress/fixture_smoke.md
+```
+
+Expected result:
+
+- fixture-backed `WARNING` is acceptable for preflight
+- ingress run reaches `ORDER_PLANNED`, `NO_TRADE`, or `ABORTED`
+- no order, fill, or lifecycle artifacts are produced
 
 ## Real Ingress-Only Command
 
@@ -172,6 +220,33 @@ This path must remain ingress-only:
 - no fills
 - no lifecycle
 - no broker order placement
+
+## Output Checklist
+
+Required session artifacts for the first real run:
+
+- `broker_health.json`
+- `normalized_events.jsonl`
+- `ingress_summary.json`
+- `selected_contract_audit.json`
+- `paper_session_review.md`
+- `no_trade_or_order_plan_summary.json`
+
+Required reused paper-shell artifacts:
+
+- `session_manifest.json`
+- `decision_summary.json`
+- `audit_events.jsonl`
+
+Must not exist for the first ingress-only run:
+
+- `paper_fill.json`
+- `paper_no_fill.json`
+- `paper_position.json`
+- `paper_exit.json`
+- `paper_pnl_summary.json`
+- `lifecycle_events.jsonl`
+- any broker order artifact
 
 ## Expected Output Artifacts
 
@@ -201,11 +276,17 @@ From the reused paper shell:
 - all mandatory safety flags valid
 - required prelude events and snapshots present
 - selected contract configured
+- artifact root writable
+- valid broker timezone
+- prelude session date matches the local broker date
+- ingress-only mode confirmed
+- fill and lifecycle remain disabled
 
 ### Preflight WARNING
 
 - payload fixture mode is still enabled
-- or session date differs from the local operator date
+
+- or this is an intentional local smoke-test rehearsal rather than a real run
 
 Warnings require operator review before treating the run as live-like.
 
@@ -222,6 +303,10 @@ Warnings require operator review before treating the run as live-like.
 - selected contract missing
 - required snapshots missing
 - invalid prelude event types
+- invalid timezone
+- artifact root not writable
+- real-run session date mismatch
+- any non-ingress-only source mode
 
 ## Runtime Close-Out Criteria
 
@@ -237,6 +322,7 @@ Current ingress-only thresholds:
   - zero missing selected contracts
   - zero timezone mismatches
   - `ORPT` / `RC` lag `<= 2.5s`
+  - no fill or lifecycle artifacts created
 - `WARNING`
   - hard safety checks still pass
   - `ORPT` / `RC` lag `> 2.5s` and `<= 5.0s`
@@ -247,6 +333,7 @@ Current ingress-only thresholds:
   - selected contract missing
   - stale market data
   - `ORPT` / `RC` lag `> 5.0s`
+  - any fill or lifecycle artifact exists
 
 ## Manual Review Required
 

@@ -5,7 +5,7 @@ from dataclasses import dataclass, fields, is_dataclass
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
 
@@ -299,6 +299,8 @@ class S23LivePaperIngressPreflightSummary:
     config_path: str
     prelude_path: str
     expected_session_directory: str
+    artifact_root: str
+    artifact_root_writable: bool
     strategy_code: str
     symbol: str
     contract_cycle: str
@@ -315,6 +317,9 @@ class S23LivePaperIngressPreflightSummary:
     credentials_present: bool
     uses_payload_fixture: bool
     will_connect_to_broker: bool
+    ingress_only_mode_confirmed: bool
+    fill_simulation_enabled: bool
+    lifecycle_simulation_enabled: bool
     preflight_status: str
     can_run: bool
     issues: tuple[S23LivePaperIngressPreflightIssue, ...]
@@ -620,6 +625,8 @@ class S23BrokerPaperIngressRunner:
             "",
             "## Scope Checks",
             "",
+            f"- artifact root: `{summary.artifact_root}`",
+            f"- artifact root writable: `{str(summary.artifact_root_writable).lower()}`",
             f"- strategy: `{summary.strategy_code}`",
             f"- symbol: `{summary.symbol}`",
             f"- contract cycle: `{summary.contract_cycle}`",
@@ -628,6 +635,9 @@ class S23BrokerPaperIngressRunner:
             f"- no live orders allowed: `{str(summary.no_live_orders_allowed).lower()}`",
             f"- kill switch enabled: `{str(summary.kill_switch_enabled).lower()}`",
             f"- session kill switch active: `{str(summary.session_kill_switch_active).lower()}`",
+            f"- ingress-only mode confirmed: `{str(summary.ingress_only_mode_confirmed).lower()}`",
+            f"- fill simulation enabled: `{str(summary.fill_simulation_enabled).lower()}`",
+            f"- lifecycle simulation enabled: `{str(summary.lifecycle_simulation_enabled).lower()}`",
             "",
             "## Market Inputs",
             "",
@@ -775,9 +785,18 @@ class S23BrokerPaperIngressRunner:
             session_date=session_date,
             adapter_supplied=adapter_supplied,
         )
-        current_local_date = datetime.now(ZoneInfo(config.broker.timezone)).date()
+        timezone_info = self._resolve_timezone(config.broker.timezone)
+        current_local_date = (
+            datetime.now(timezone_info).date()
+            if timezone_info is not None
+            else datetime.now().date()
+        )
         effective_session_date = session_date or current_local_date
-        required_labels = self._required_snapshot_labels(config, effective_session_date)
+        required_labels = (
+            self._required_snapshot_labels(config, effective_session_date)
+            if timezone_info is not None
+            else ()
+        )
         present_labels = tuple(
             snapshot.value
             for snapshot in self._present_snapshot_labels(prelude_events)
@@ -792,6 +811,15 @@ class S23BrokerPaperIngressRunner:
         expected_session_directory = (
             self._artifact_root / effective_session_date.isoformat() / resolved_session_id
         )
+        artifact_root_writable = self._path_writable(expected_session_directory)
+        if not artifact_root_writable:
+            issues = (
+                *issues,
+                self._issue(
+                    "artifact_root_not_writable",
+                    f"Artifact root is not writable for session output: {expected_session_directory}",
+                ),
+            )
         preflight_status = self._derive_preflight_status(issues)
         return S23LivePaperIngressPreflightSummary(
             artifact_version=_ARTIFACT_VERSION,
@@ -805,6 +833,8 @@ class S23BrokerPaperIngressRunner:
             config_path=str(Path(config_path)),
             prelude_path=str(Path(prelude_jsonl)),
             expected_session_directory=str(expected_session_directory),
+            artifact_root=str(self._artifact_root),
+            artifact_root_writable=artifact_root_writable,
             strategy_code=config.paper.strategy_code,
             symbol=config.paper.symbol,
             contract_cycle=config.paper.contract_cycle,
@@ -826,6 +856,11 @@ class S23BrokerPaperIngressRunner:
             will_connect_to_broker=(
                 adapter_supplied or config.broker.payload_fixture_path is None
             ),
+            ingress_only_mode_confirmed=(
+                config.source_mode == "broker_fyers_live_paper_ingress"
+            ),
+            fill_simulation_enabled=False,
+            lifecycle_simulation_enabled=False,
             preflight_status=preflight_status,
             can_run=preflight_status != "NO_GO",
             issues=issues,
@@ -845,11 +880,33 @@ class S23BrokerPaperIngressRunner:
         adapter_supplied: bool = False,
     ) -> tuple[S23LivePaperIngressPreflightIssue, ...]:
         issues: list[S23LivePaperIngressPreflightIssue] = []
+        timezone_info = self._resolve_timezone(config.broker.timezone)
+        if timezone_info is None:
+            issues.append(
+                self._issue(
+                    "invalid_broker_timezone",
+                    f"Live-paper ingress requires a valid broker.timezone. Received: {config.broker.timezone}",
+                )
+            )
         if config.broker.provider != "fyers":
             issues.append(
                 self._issue(
                     "unsupported_broker_provider",
                     "Live-paper ingress preflight currently supports broker.provider=fyers only.",
+                )
+            )
+        if config.source_mode != "broker_fyers_live_paper_ingress":
+            issues.append(
+                self._issue(
+                    "unsupported_source_mode",
+                    "Live-paper ingress preflight requires source_mode=broker_fyers_live_paper_ingress.",
+                )
+            )
+        if config.paper.allow_recalculation:
+            issues.append(
+                self._issue(
+                    "recalculation_disabled_for_live_ingress",
+                    "The first real FYERS ingress-only run requires allow_recalculation=false.",
                 )
             )
         if not config.paper.no_live_orders_allowed:
@@ -948,14 +1005,17 @@ class S23BrokerPaperIngressRunner:
                 )
             )
 
-        if session_date is not None:
-            local_date = datetime.now(ZoneInfo(config.broker.timezone)).date()
-            if config.broker.payload_fixture_path is None and session_date != local_date:
+        if session_date is not None and timezone_info is not None:
+            local_date = datetime.now(timezone_info).date()
+            if (
+                config.broker.payload_fixture_path is None
+                and not adapter_supplied
+                and session_date != local_date
+            ):
                 issues.append(
                     self._issue(
                         "session_date_mismatch_with_local_clock",
                         "Prelude session_date does not match the local operator date in the broker timezone.",
-                        severity="WARNING",
                     )
                 )
         issues.extend(
@@ -1121,6 +1181,22 @@ class S23BrokerPaperIngressRunner:
             message=message,
             severity=severity,
         )
+
+    def _resolve_timezone(self, timezone_name: str) -> ZoneInfo | None:
+        try:
+            return ZoneInfo(timezone_name)
+        except ZoneInfoNotFoundError:
+            return None
+
+    def _path_writable(self, expected_session_directory: Path) -> bool:
+        temp_path = expected_session_directory / ".preflight_write_test.tmp"
+        try:
+            expected_session_directory.mkdir(parents=True, exist_ok=True)
+            temp_path.write_text("preflight-ok", encoding="utf-8")
+            temp_path.unlink(missing_ok=True)
+            return True
+        except OSError:
+            return False
 
     def _sort_events(self, events: tuple[PaperEvent, ...]) -> tuple[PaperEvent, ...]:
         return tuple(

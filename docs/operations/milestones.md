@@ -42,12 +42,14 @@
 - a broker-agnostic live-paper ingress foundation is now implemented, with `src/tfis/brokers/base.py` defining the adapter boundary, `src/tfis/brokers/fyers.py` providing the first FYERS market-data adapter, and `src/tfis/paper/live_ingress.py` reusing the normalized S23 paper ingress path without exposing S23 to raw broker payloads
 - the first broker-backed S23 ingress runner now persists `broker_health.json`, `normalized_events.jsonl`, `ingress_summary.json`, and `no_trade_or_order_plan_summary.json`, while still blocking any broker order placement and stopping at planning by default
 - the FYERS ingress runner now also has a strict `--preflight-only` mode plus a dedicated live runbook, so a local operator can validate credentials, paper-only scope, kill-switch posture, and required prelude snapshots before any broker connection attempt
+- a read-only TradingEngine capture adapter audit plus prototype now exists, proving that `ticks_context.csv` and `NIFTY50_option_quotes_YYYYMMDD.csv` can feed the S23 market-data leg as normalized TFIS events while still requiring TFIS-side prelude inputs for monthly status and workbook trade plans
+- a paired TradingEngine capture plus TFIS prelude ingress-only suite now exists, and the first six real-date run showed that the capture timing path is operationally sound but still `NO_GO` because the raw option quote archives carry blank `oi` at decision time
 - read-only shared captured-data adapter is available for normalized CSV roots
 - comparison reporting across historical backtest modes is available as a read-only reporting tool
 - S23 mode comparison reporting is now bounded, deterministic, and summary-based rather than relying on unbounded raw JSON comparison
 - S23 mode comparison now records input-dataset paths, cost settings, and apples-to-apples status; the earlier row-183 `current_day_fsl_trp` exit flip did not reproduce after rerunning all six modes on one shared dataset set
 - quality snapshot:
-  - tests passing: `414`
+  - tests passing: `426`
   - `python scripts/validate_project.py`: passed
 
 ## Completed
@@ -114,11 +116,14 @@
 - S23 Paper Trading MVP v1 Phase 2 same-day lifecycle loop implemented
 - broker-agnostic live-paper ingress foundation implemented with FYERS as the first market-data adapter
 - S23 FYERS live-paper preflight-only safety gate and local runbook implemented
+- read-only TradingEngine capture audit and market-event adapter prototype implemented for one-session S23 dry-run inputs
+- TradingEngine capture plus TFIS prelude ingress-only suite implemented and exercised across six real captured dates; all six sessions ended `ABORTED` with `missing_contract_oi`, confirming that this path is currently limited by raw option-quote OI completeness rather than by timing or selected-contract discovery
 
 ## Next Recommended Priorities
 
 - run the first real local FYERS market-data-only ingress session under the new preflight runbook during market hours
 - broaden the broker-backed S23 ingress-only validation set across more normalized archive and replay sessions
+- decide whether TradingEngine option-quote captures can be enriched with reliable OI before using them for ingress-only acceptance
 - run the first tightly controlled broker-backed live-like fill and same-day lifecycle rehearsal only after ingress thresholds stay green
 - broader real/archive contract-specific coverage pilot
 - raw shared capture-format adapters beyond normalized CSV roots
@@ -128,6 +133,7 @@
 - tighter same-day S23 paper lifecycle parity policy and operator close-out rules
 - first real local FYERS market-data-only ingress session under operator sign-off
 - fuller strike-availability realism and broader contract-specific archive coverage
+- OI-enriched TradingEngine capture path if we want those sessions to qualify for ingress-only acceptance rather than market-data-leg validation only
 - raw shared capture-format adapters beyond normalized CSV roots
 - futures rollover lifecycle module
 - monthly option buying engine

@@ -267,6 +267,10 @@ def test_valid_mock_config_passes_preflight_with_warning(tmp_path: Path) -> None
     assert summary.can_run is True
     assert summary.preflight_status == "WARNING"
     assert summary.uses_payload_fixture is True
+    assert summary.ingress_only_mode_confirmed is True
+    assert summary.fill_simulation_enabled is False
+    assert summary.lifecycle_simulation_enabled is False
+    assert summary.artifact_root_writable is True
     assert any(issue.code == "payload_fixture_mode_enabled" for issue in summary.issues)
 
 
@@ -289,6 +293,46 @@ def test_preflight_only_does_not_build_or_connect_broker(
     )
 
     assert summary.can_run is True
+
+
+def test_preflight_fails_for_non_ingress_only_source_mode(tmp_path: Path) -> None:
+    config_path = _write_config(
+        tmp_path,
+        broker_overrides=None,
+    )
+    config_payload = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config_payload["source_mode"] = "broker_fyers_live_fill_mode"
+    config_path.write_text(
+        yaml.safe_dump(config_payload, sort_keys=False),
+        encoding="utf-8",
+    )
+    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+
+    summary = runner.preflight(
+        config_path=config_path,
+        prelude_jsonl=PRELUDE_PATH,
+        session_id="preflight-wrong-source-mode",
+    )
+
+    assert summary.preflight_status == "NO_GO"
+    assert any(issue.code == "unsupported_source_mode" for issue in summary.issues)
+
+
+def test_preflight_fails_when_artifact_root_is_not_writable(tmp_path: Path) -> None:
+    config_path = _write_config(tmp_path)
+    blocked_root = tmp_path / "artifact-root-file"
+    blocked_root.write_text("not-a-directory", encoding="utf-8")
+    runner = S23BrokerPaperIngressRunner(artifact_root=blocked_root)
+
+    summary = runner.preflight(
+        config_path=config_path,
+        prelude_jsonl=PRELUDE_PATH,
+        session_id="preflight-unwritable-artifact-root",
+    )
+
+    assert summary.preflight_status == "NO_GO"
+    assert summary.artifact_root_writable is False
+    assert any(issue.code == "artifact_root_not_writable" for issue in summary.issues)
 
 
 def test_live_broker_ingress_reaches_order_planned_and_persists_artifacts(
