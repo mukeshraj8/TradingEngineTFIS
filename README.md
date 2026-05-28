@@ -10,19 +10,26 @@ pulling in broker or live-runtime code.
 
 ## Current Position
 
-S23 is now in a mature offline state:
+S23 is now mature as a workbook-backed offline research system and has a
+substantial paper-trading MVP foundation.
 
-- workbook-backed strategy logic is stable
-- historical backtest and comparison tooling are strong
+Current status:
+
+- workbook-backed S23 strategy logic is stable
+- historical backtest, mode comparison, and provenance tooling are strong
 - option-chain and contract-specific lifecycle realism are in place
-- current deterministic fixture coverage for selected-contract lifecycle is
+- deterministic fixture-backed selected-contract lifecycle coverage is
   `10 / 10` with `0` fallback
-- paper contract and validation scaffolding now exist, but paper trading is
-  still explicitly `NO-GO` until session orchestration, journaling, failure
-  handling, operator controls, and replay artifacts are implemented
+- same-day paper fill and lifecycle simulation now exist for S23 in bounded
+  paper mode
+- normalized live-paper ingress-only dry runs and operator close-out policy now
+  exist
+- current operational disposition is:
+  - ingress-only validation: `LIMITED_GO`
+  - broad live-paper rollout: `NO-GO`
 
-The center of gravity has shifted from formula correctness to runtime readiness
-and broader real/archive data coverage.
+The center of gravity has shifted from formula correctness to operational
+readiness, ingress confidence, and broader real/archive data coverage.
 
 ## Scope
 
@@ -35,13 +42,13 @@ Current scope:
 - workbook-backed S23 recalculation and current-day overlays
 - option-chain selection realism
 - contract-specific lifecycle realism
-- audit-first paper-trading readiness planning
+- S23-only paper-trading simulation and operator workflow scaffolding
 
 Explicitly out of scope for the current implementation:
 
 - broker integrations
 - real-money live trading
-- production paper runtime loop
+- broker-connected paper runtime
 - non-S23 strategy expansion
 - unsupported workbook-path inference
 
@@ -87,6 +94,31 @@ Implemented and stable today:
 - expiry-day lifecycle review and no-rollover governance for S23 options
 - bounded apples-to-apples comparison reporting across historical modes
 - read-only shared captured-data adapter for normalized CSV roots
+- S23 paper schema, validation, orchestrator, persistent artifacts, replay
+  bundles, review surfaces, order-intent journaling, and guardrails
+- S23 paper fillless execution shell through
+  `PAPER_EXECUTION_HANDOFF_READY`
+- S23 paper Phase 1 fill simulation through:
+  - `PAPER_ORDER_PENDING`
+  - `PAPER_ORDER_FILLED`
+  - `PAPER_ORDER_NOT_FILLED`
+  - `PAPER_FILL_ABORTED`
+- S23 paper Phase 2 same-day lifecycle through:
+  - `PAPER_POSITION_OPEN`
+  - `PAPER_EXIT_PENDING`
+  - `PAPER_POSITION_CLOSED`
+  - `PAPER_EOD_SQUARE_OFF`
+  - `PAPER_LIFECYCLE_ABORTED`
+- lifecycle-aware paper-vs-historical parity comparison with:
+  - `MATCH`
+  - `MATCH_WITH_ACCEPTABLE_DRIFT`
+  - `PARTIAL_MATCH`
+  - `MISMATCH`
+  - `UNCOMPARABLE`
+- first archive-backed S23 lifecycle pilot suite with a current recommendation
+  of `LIMITED_GO`
+- first normalized live-paper ingress-only dry run and broadened ingress suite
+  with explicit `PASS / WARNING / NO_GO` operator classification
 
 Blocked or intentionally deferred:
 
@@ -94,7 +126,10 @@ Blocked or intentionally deferred:
 - unsupported current-day FSL / TRP paths that do not have confirmed workbook
   rows
 - raw capture-format adapters beyond normalized CSV roots
-- paper and live runtime execution layers
+- broker connectivity and real order placement
+- next-day continuation
+- multi-position handling
+- non-S23 live-paper expansion
 
 ## Historical Research Capabilities
 
@@ -134,21 +169,38 @@ core S23 logic quality.
 
 ## Paper-Trading Readiness
 
-Current readiness disposition: `NO-GO`
+Current readiness disposition:
 
-Paper trading is intentionally blocked until TFIS has:
+- archive-backed same-day lifecycle pilot suite: `LIMITED_GO`
+- ingress-only operator close-out gate: `LIMITED_GO`
+- broad live-paper rollout: `NO-GO`
 
-- an S23-only session state machine runner
-- persistent session manifests and paper decision journals
-- operator-visible warnings and kill-switch behavior
-- replayability from paper sessions back to expected S23 logic
-- failure-handling around stale, partial, or missing critical paper inputs
+What now exists in paper mode:
 
-The paper-mode blueprint docs now exist:
+- normalized paper-event schema and validation
+- deterministic S23 session orchestrator
+- persistent manifests, audit trails, replay bundles, and review summaries
+- order-intent, arming, dispatch, and final no-fill handoff shell
+- same-day paper fill/no-fill simulation
+- same-day paper lifecycle simulation and paper P&L summaries
+- paper-vs-historical planning and lifecycle parity comparison
+- ingress-only dry-run validation with explicit timing/freshness metrics
+- operator close-out policy for `PASS`, `WARNING`, and `NO_GO`
+
+What is still intentionally blocking broad rollout:
+
+- broader multi-date ingress-only evidence
+- controlled live-like rehearsal evidence beyond the current archive-derived set
+- broker/API integration remains disabled
+- next-day continuation remains unsupported
+
+The core paper-mode docs now include:
 
 - [S23 Live-Paper Data Contract](docs/operations/s23_live_paper_data_contract.md)
 - [S23 Paper Session State Machine](docs/operations/s23_paper_session_state_machine.md)
 - [S23 Paper Trading Readiness Audit](docs/operations/s23_paper_trading_readiness_audit.md)
+- [S23 Operator Close-Out Policy](docs/operations/s23_operator_closeout_policy.md)
+- [S23 Paper Trading MVP v1 Design](docs/operations/s23_paper_trading_mvp_v1_design.md)
 
 ## Strategy Configuration Layout
 
@@ -180,12 +232,15 @@ Key operations and S23 docs:
 - [S23 Contract Archive Ingestion Plan](docs/strategy/s23_contract_archive_ingestion_plan.md)
 - [S23 Live-Paper Data Contract](docs/operations/s23_live_paper_data_contract.md)
 - [S23 Paper Session State Machine](docs/operations/s23_paper_session_state_machine.md)
+- [S23 Paper Trading Readiness Audit](docs/operations/s23_paper_trading_readiness_audit.md)
+- [S23 Operator Close-Out Policy](docs/operations/s23_operator_closeout_policy.md)
+- [S23 Paper Trading MVP v1 Design](docs/operations/s23_paper_trading_mvp_v1_design.md)
 
 ## Quality Snapshot
 
 Current repo health:
 
-- tests passing: `281`
+- tests passing: `397`
 - `python scripts/validate_project.py`: passed
 
 ## Representative Commands
@@ -216,12 +271,22 @@ Mode comparison:
 python scripts/compare_backtest_reports.py --report base=tmp/S23_historical_backtest_costed.json --report monthly_status=tmp/S23_historical_monthly_status_backtest.json --report recalculation=tmp/S23_historical_monthly_status_recalc_backtest.json --report current_day_fsl_trp=tmp/S23_historical_current_day_fsl_trp_backtest.json --report option_chain=tmp/S23_historical_monthly_status_recalc_chain_backtest.json --report contract_specific_lifecycle=tmp/S23_historical_monthly_status_recalc_chain_contract_backtest.json --max-trades 200 --timeout-seconds 10 --out tmp/S23_mode_comparison.json --markdown-out tmp/S23_mode_comparison.md
 ```
 
+Paper-mode ingress-only dry run:
+
+```powershell
+python scripts/run_s23_paper_ingress_dry_run.py --events-jsonl tests/fixtures/paper/s23_archive_ingress_dry_run.jsonl --artifact-root tmp/s23_live_paper_dry_runs --session-id s23-archive-ingress-dry-run
+
+python scripts/review_paper_session.py --session-dir tmp/s23_live_paper_dry_runs/2026-05-08/s23-archive-ingress-dry-run --out-json tmp/paper_session_review.json --out-md tmp/paper_session_review.md
+```
+
 ## Next Recommended Priorities
 
-- S23 paper-session orchestrator skeleton and transition runner
-- S23 paper execution journaling and operator-facing session artifacts
-- S23 paper failure-handling and kill-switch guardrails
-- broader real/archive contract-specific coverage pilot
+- broaden multi-date normalized ingress-only validation before enabling any
+  controlled live-like fill/lifecycle rehearsal
+- turn the current ingress `LIMITED_GO` into a broader controlled-paper decision
+  using repeated archive/replay sessions
+- widen real/archive contract-specific coverage beyond the current deterministic
+  fixture and single-date ingress baselines
 - raw shared capture-format adapters beyond normalized CSV roots
 
 ## Still Intentionally Pending
@@ -230,5 +295,4 @@ python scripts/compare_backtest_reports.py --report base=tmp/S23_historical_back
 - broader real/archive contract-specific coverage beyond the current fixture set
 - raw shared capture-format adapters beyond normalized CSV roots
 - broker adapters
-- paper runtime
 - live runtime

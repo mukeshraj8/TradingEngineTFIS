@@ -10,16 +10,29 @@ This folder contains the TFIS design, governance, importer, and operations docum
 - workbook cross-check, formula safety, and registry governance layers are in place
 - branch selection is available for folder-based monthly-status strategy variants
 - offline historical lifecycle backtesting is in place with EOD policies, cost/slippage assumptions, rupee P&L, and equity/drawdown reporting
-- monthly-status support now includes thresholds, a diagnostic decision table, a deterministic status engine, a CLI report, manual review scenarios, an opt-in historical branch-selection mode, and an opt-in S23 recalculation path with optional spot intraday sourcing
-- historical backtests can now also opt into workbook-backed S23 current-day `FSL / TRP missed / not-missed` handling for the confirmed `AB6 OS` rows `183-188`
-- historical backtests can now opt into offline option-chain contract selection realism without changing the default path
-- historical backtests can now also opt into contract-specific lifecycle pricing when symbol-keyed intraday option bars exist for the selected contract; the current fixture-backed archive now covers all 10 selected-contract evaluations with no fallback
-- historical backtests can now review expiry-day full-exit compliance from selected contract expiry metadata
-- a read-only shared captured-data adapter is now available for normalized CSV roots
-- a bounded read-only comparison tool is now available for generated historical backtest mode reports
+- monthly-status support includes thresholds, a deterministic status engine, branch selection, an opt-in S23 recalculation path, and workbook-backed current-day `FSL / TRP` handling
+- historical backtests can opt into option-chain selection realism and contract-specific lifecycle pricing; the deterministic fixture-backed selected-contract archive currently covers all 10 selected-contract evaluations with no fallback
+- historical backtests can review expiry-day full-exit compliance from selected contract expiry metadata
+- a read-only shared captured-data adapter is available for normalized CSV roots
+- a bounded comparison tool is available for generated historical backtest mode reports
+- S23 paper mode now includes:
+  - schema and validation
+  - deterministic session orchestration
+  - persistent session artifacts
+  - replay bundles and review surfaces
+  - order-intent and execution-journal shell
+  - no-fill execution handoff boundary
+  - same-day paper fill/no-fill simulation
+  - same-day paper lifecycle and paper P&L summaries
+  - lifecycle-aware paper-vs-historical parity comparison
+  - ingress-only dry-run validation and operator close-out policy
+- current operational paper status:
+  - archive-backed lifecycle validation: `LIMITED_GO`
+  - ingress-only validation: `LIMITED_GO`
+  - broad live-paper rollout: `NO-GO`
 - reference materials are indexed with review workflow and archive-governance guidance
 - current quality snapshot:
-  - tests passing: `281`
+  - tests passing: `397`
   - `python scripts/validate_project.py`: passed
 
 ## Architecture
@@ -63,7 +76,9 @@ This folder contains the TFIS design, governance, importer, and operations docum
 - [open_questions.md](operations/open_questions.md)
 - [project_rulebook.md](operations/project_rulebook.md)
 - [s23_live_paper_data_contract.md](operations/s23_live_paper_data_contract.md)
+- [s23_operator_closeout_policy.md](operations/s23_operator_closeout_policy.md)
 - [s23_paper_session_state_machine.md](operations/s23_paper_session_state_machine.md)
+- [s23_paper_trading_mvp_v1_design.md](operations/s23_paper_trading_mvp_v1_design.md)
 - [s23_paper_trading_readiness_audit.md](operations/s23_paper_trading_readiness_audit.md)
 
 ## Still Pending
@@ -74,4 +89,4 @@ This folder contains the TFIS design, governance, importer, and operations docum
 - fuller strike-availability simulation and broader contract-specific archive coverage
 - raw shared capture-format adapters beyond normalized CSV roots
 - broker adapters
-- paper and live runtime execution layers
+- broad live-paper rollout and broker-connected execution
