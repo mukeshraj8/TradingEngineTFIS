@@ -25,6 +25,10 @@ Current status:
   paper mode
 - normalized live-paper ingress-only dry runs, operator close-out policy, and
   broker-agnostic market-data ingress now exist
+- S23 carry-forward position state, expiry governance, and runtime contract
+  selection now exist in the paper stack
+- generated S23 live-prelude dry runs and FYERS snapshot preflight now exist as
+  deterministic/operator-safe readiness bridges
 - FYERS is the first market-data adapter, but order placement remains blocked
 - TradingEngine capture conversion and ingress-only pairing now exist, but that
   path is currently `NO_GO` for ingress acceptance because selected-contract
@@ -99,11 +103,14 @@ Implemented and stable today:
 - option-chain contract selection realism with spread, OI, and premium-aware
   ranking
 - contract-specific lifecycle pricing with explicit provenance
-- expiry-day lifecycle review and no-rollover governance for S23 options
+- expiry-safe carry-forward governance and no-carry-past-expiry enforcement for
+  S23 options
 - bounded apples-to-apples comparison reporting across historical modes
 - broker-agnostic live-paper ingress foundation with FYERS as the first
   market-data adapter
 - explicit FYERS ingress preflight-only safety path and market-hours runbook
+- generated-live-prelude dry run and FYERS snapshot-preflight bridge for paper
+  live-readiness without socket orchestration
 - read-only TradingEngine capture-session audit, market-event converter, and
   paired TFIS-prelude ingress-only suite
 - TradingEngine capture OI audit proving the current raw-capture ingress path
@@ -202,6 +209,12 @@ What now exists in paper mode:
 - ingress-only dry-run validation with explicit timing and freshness metrics
 - operator close-out policy for `PASS`, `WARNING`, and `NO_GO`
 - broker-backed normalized ingress via FYERS market-data mapping
+- persisted carry-forward position state with expiry-governance checks
+- runtime selected-contract discovery from normalized option-chain records with
+  strict OI validation
+- generated paper prelude builder from normalized runtime inputs
+- FYERS snapshot-preflight collector as the bridge between deterministic dry
+  runs and future socket orchestration
 - TradingEngine capture-derived market-event conversion and ingress-only suite
 - capture-path OI evidence and acceptance blocker audit
 
@@ -313,6 +326,20 @@ Ingress-only dry run from normalized JSONL:
 python scripts/run_s23_paper_ingress_dry_run.py --events-jsonl tests/fixtures/paper/s23_archive_ingress_dry_run.jsonl --artifact-root tmp/s23_live_paper_dry_runs --session-id s23-archive-ingress-dry-run
 ```
 
+Generated S23 live-prelude dry run:
+
+```powershell
+python scripts/run_s23_live_prelude_dry_run.py --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT --config config/paper.s23.yaml --runtime-fixture <runtime_fixture.json> --market-events-jsonl <normalized_market_events.jsonl> --artifact-root tmp/s23_generated_live_prelude_dry_runs --session-id s23-generated-live-prelude-dry-run
+```
+
+FYERS snapshot preflight and optional generated-prelude build:
+
+```powershell
+python scripts/run_s23_fyers_snapshot_preflight.py --preflight-only --config config/paper.s23.yaml --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT --artifact-root tmp/s23_fyers_snapshot_preflight --session-id s23-fyers-snapshot-preflight
+
+python scripts/run_s23_fyers_snapshot_preflight.py --dry-run-build-prelude --config config/paper.s23.yaml --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT --runtime-fixture <runtime_fixture.json> --artifact-root tmp/s23_fyers_snapshot_preflight --session-id s23-fyers-snapshot-preflight-build
+```
+
 FYERS preflight and live ingress-only safety run:
 
 ```powershell
@@ -331,6 +358,8 @@ python scripts/run_s23_tradingengine_capture_ingress_suite.py --data-root D:\Tra
 
 ## Next Recommended Priorities
 
+- prove collected FYERS snapshot inputs across more dates before enabling any
+  socket-driven session orchestration
 - decide whether TradingEngine captures can be enriched with reliable
   selected-contract `oi` before treating that path as ingress-acceptance
   evidence
@@ -343,7 +372,9 @@ python scripts/run_s23_tradingengine_capture_ingress_suite.py --data-root D:\Tra
 
 ## Still Intentionally Pending
 
-- multi-session carry-forward runtime and expiry-aware rollover
+- full multi-session carry-forward runtime and expiry-aware rollover execution
+- next-expiry contract rollover execution
+- FYERS socket/session orchestration
 - broader real/archive contract-specific coverage beyond the current fixture set
 - broker order-routing and real-money execution
 - multi-position paper/live runtime
