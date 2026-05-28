@@ -258,7 +258,7 @@ def test_missing_0915_snapshot_with_current_day_overlay_reaches_no_trade() -> No
     assert result.latest_guardrail_decision.code == "missing_snapshot_0915"
 
 
-def test_unsupported_continuation_reaches_aborted() -> None:
+def test_requested_multi_session_continuation_reaches_aborted_in_current_runtime() -> None:
     orchestrator = S23PaperSessionOrchestrator()
     events = (
         _calendar_context(),

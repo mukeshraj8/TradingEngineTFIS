@@ -1,0 +1,23 @@
+1) Carry-forward semantics
+- `carry_forward_allowed: true` should be treated as strategy permission for
+  cross-session carry-forward when the rule set allows it.
+- S23 and most TFIS option-selling strategies are carry-forward strategies.
+- The current lack of next-day paper simulation is a runtime implementation gap,
+  not a business rule.
+- No option position may be carried beyond expiry.
+- Expiry-near behavior must follow explicit strategy and instrument-specific
+  `T-1` or `T-2` rollover rules.
+  
+2) 
+- rows `190-191` were audited and do **not** currently provide a trusted
+  numeric continuation rule in the implemented scope
+  
+  
+3)The naming convention may be improved. The first one does not have BULLin the name if we compare it with others.
+`NIFTY_OP_SELL_WK_DIFF_2D_3D` |
+`NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT` 
+`NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL`
+`NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT` 
+
+
+4)

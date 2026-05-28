@@ -137,11 +137,12 @@ Implemented and stable today:
 
 Blocked or intentionally deferred:
 
-- workbook-unconfirmed next-day continuation logic from `AB6 OS!190:191`
+- runtime implementation of workbook-backed multi-session carry-forward and
+  expiry-aware rollover behavior, including interpretation of `AB6 OS!190:191`
 - unsupported current-day FSL / TRP paths that do not have confirmed workbook
   rows
 - broker order placement and real-money execution
-- next-day continuation
+- multi-session carry-forward runtime
 - multi-position handling
 - non-S23 live-paper expansion
 
@@ -209,11 +210,14 @@ What is still intentionally blocking broad rollout:
 - broader multi-date ingress-only evidence
 - controlled live-like rehearsal evidence beyond the current archive-derived set
 - broker order-routing remains disabled
-- next-day continuation remains unsupported
+- multi-session carry-forward and expiry-aware next-contract handling remain
+  unimplemented in the current paper runtime
+- no broker execution is allowed
 
 The core paper-mode docs now include:
 
 - [S23 Live-Paper Data Contract](docs/operations/s23_live_paper_data_contract.md)
+- [S23 Carry-Forward Runtime Gap](docs/operations/s23_carry_forward_runtime_gap.md)
 - [S23 Paper Session State Machine](docs/operations/s23_paper_session_state_machine.md)
 - [S23 Paper Trading Readiness Audit](docs/operations/s23_paper_trading_readiness_audit.md)
 - [S23 Operator Close-Out Policy](docs/operations/s23_operator_closeout_policy.md)
@@ -249,6 +253,7 @@ Key operations and S23 docs:
 - [Project Rulebook](docs/operations/project_rulebook.md)
 - [S23 Gap Recalculation Design](docs/strategy/s23_gap_recalculation_design.md)
 - [S23 Contract Archive Ingestion Plan](docs/strategy/s23_contract_archive_ingestion_plan.md)
+- [S23 Strategy Implementation](docs/strategy_implementation/s23_strategy_implementation.md)
 - [S23 Live-Paper Data Contract](docs/operations/s23_live_paper_data_contract.md)
 - [S23 Paper Session State Machine](docs/operations/s23_paper_session_state_machine.md)
 - [S23 Paper Trading Readiness Audit](docs/operations/s23_paper_trading_readiness_audit.md)
@@ -338,8 +343,7 @@ python scripts/run_s23_tradingengine_capture_ingress_suite.py --data-root D:\Tra
 
 ## Still Intentionally Pending
 
-- workbook-unconfirmed next-day continuation logic
+- multi-session carry-forward runtime and expiry-aware rollover
 - broader real/archive contract-specific coverage beyond the current fixture set
 - broker order-routing and real-money execution
-- next-day continuation
 - multi-position paper/live runtime

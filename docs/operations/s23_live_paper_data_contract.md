@@ -22,8 +22,11 @@ The first supported paper-trading scope should remain deliberately narrow:
 - symbol: `NIFTY`
 - segment: weekly options sell
 - mode: paper only
-- continuation: disabled until numeric workbook-backed next-day rules exist
-- EOD policy: same-day square-off only for the first rollout
+- strategy semantics: carry-forward is valid before expiry when the strategy
+  and instrument rules allow it
+- current runtime limitation: multi-session carry-forward is not yet implemented
+- EOD policy for the current runtime: same-day square-off only for the first
+  rollout until expiry-safe carry-forward and rollover handling exist
 
 Anything outside that scope should emit `NO_TRADE` or `ABORTED`, not a best
 effort guess.
@@ -197,7 +200,7 @@ Required fields:
 | --- | --- |
 | `strategy_code` | Must identify S23. |
 | `paper_mode_enabled` | Must be `true`. |
-| `same_day_square_off_only` | Must be `true` for the first rollout. |
+| `same_day_square_off_only` | Must be `true` for the first rollout of the current same-day paper runtime. This is a runtime guardrail, not a strategy rule. |
 | `allow_recalculation` | Whether ORPT recalculation is enabled for the session. |
 | `allow_current_day_fsl_trp` | Whether the current-day overlay is enabled. |
 | `kill_switch_enabled` | Must be explicit. |
@@ -262,11 +265,27 @@ The session must emit `NO_TRADE` or `ABORTED` for:
 - missing required `09:15`, ORPT, or RC snapshots for an enabled overlay
 - monthly status `UNKNOWN`
 - unsupported workbook branch
-- unsupported next-day continuation
+- requested multi-session continuation in the current same-day paper runtime
 - invalid bid/ask spread or missing required price fields
 - low OI or failed liquidity validation
 - duplicate or late events that make the sequence ambiguous
 - data source mismatch inside one paper session
+
+## Carry-Forward Semantics
+
+The business semantics for S23 and similar TFIS option-selling strategies are:
+
+- `carry_forward_allowed: true` means the strategy may carry positions across
+  sessions when its rule set permits it
+- no option position may ever be carried beyond its expiry
+- expiry-near behavior must follow explicit strategy and instrument rollover
+  policy such as `T-1` or `T-2` selection of the next-expiry instrument
+- OI validation must remain enforced for selected-contract decisions and must
+  not be weakened to enable continuation
+
+This document therefore treats carry-forward as strategy-valid, while the
+current paper runtime still stops at same-day square-off because the required
+multi-session orchestration is not yet implemented.
 
 ## Mapping To Current TFIS Runtime Concepts
 

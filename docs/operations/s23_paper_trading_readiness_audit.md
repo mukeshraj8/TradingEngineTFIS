@@ -94,8 +94,9 @@ Recent pilot baseline:
 - no finalized live-paper data contract
 - no live-paper ORPT / RC scheduler contract
 - current-day FSL / TRP paper flow is orchestrated in deterministic dry-run form, but not yet exercised over a broader live-paper ingress set
-- next-day continuation remains unsupported because workbook rows `190-191`
-  are still process-only in inspected ranges
+- multi-session carry-forward and expiry-aware next-contract handling remain
+  unimplemented in the current paper runtime; workbook rows `190-191` do not by
+  themselves complete the required continuation-stoploss modeling
 
 ### Medium
 
@@ -114,8 +115,9 @@ Keep the initial operational scope explicit:
 - weekly options only
 - paper mode only
 - no real money
-- same-day only
-- no next-day continuation until workbook evidence changes
+- current paper rollout remains same-day only
+- multi-session carry-forward and expiry-aware rollover remain runtime gaps, not
+  strategy prohibitions
 
 ### 2. Operationalize the ingress close-out policy across more than one suite date
 
@@ -200,7 +202,7 @@ met, plus:
 4. operator dashboard or equivalent close-out visibility is stable
 5. repeated live-paper ingress-only dry runs succeed cleanly on normalized inputs
 6. quote-quality and stale-data handling are validated operationally
-7. unsupported continuation logic remains explicitly disabled
+7. current runtime guards for unimplemented multi-session continuation remain explicitly enabled
 
 Current live-money disposition: `NO-GO`
 

@@ -53,7 +53,7 @@ Mandatory safety fields:
 - `paper.contract_cycle: WEEKLY`
 - `paper.mode: paper`
 - `paper.paper_mode_enabled: true`
-- `paper.same_day_square_off_only: true`
+- `paper.same_day_square_off_only: true` for the current same-day ingress-only rollout
 - `paper.kill_switch_enabled: true`
 - `paper.session_kill_switch_active: false`
 - `paper.no_live_orders_allowed: true`
@@ -328,7 +328,7 @@ Current ingress-only thresholds:
   - `ORPT` / `RC` lag `> 2.5s` and `<= 5.0s`
 - `NO_GO`
   - timezone mismatch
-  - unsupported continuation
+  - requested multi-session continuation in the current same-day runtime
   - chain missing at decision time
   - selected contract missing
   - stale market data

@@ -36,7 +36,8 @@ _PHASE2_LIFECYCLE_DISCLAIMER = (
 )
 _SAME_DAY_ONLY_STATEMENT = (
     "This parity policy applies only to same-day S23 paper lifecycle sessions. "
-    "Next-day continuation is unsupported and any carry-style outcome is a no-go."
+    "Strategy-level carry-forward may be valid, but this comparison path does "
+    "not yet support multi-session carry-forward outcomes."
 )
 _ACCEPTABLE_FILL_PRICE_DRIFT_POINTS = 2.0
 _ACCEPTABLE_EXIT_PRICE_DRIFT_POINTS = 2.0

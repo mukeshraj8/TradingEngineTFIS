@@ -976,7 +976,7 @@ class S23BrokerPaperIngressRunner:
             issues.append(
                 self._issue(
                     "same_day_only_disabled",
-                    "Live-paper ingress requires same_day_square_off_only=true.",
+                    "The current FYERS paper-ingress rollout still requires same_day_square_off_only=true until multi-session carry-forward handling is implemented.",
                 )
             )
         if not config.market.selected_contract_symbol:

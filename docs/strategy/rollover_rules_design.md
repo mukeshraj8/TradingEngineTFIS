@@ -2,8 +2,8 @@
 
 ## Scope
 
-Rollover should be implemented as a separate lifecycle module later, but only
-for future-based strategies.
+Rollover and carry-forward handling should be implemented as a separate
+lifecycle module later.
 
 It should not be folded into:
 
@@ -11,14 +11,14 @@ It should not be folded into:
 - target formula logic
 - stoploss formula logic
 
-It is not applicable to:
+For TFIS option strategies, we need to distinguish:
 
-- option selling strategies
-- option buying strategies
-- the S23 option-selling family
+- carry-forward of an open position across sessions before expiry
+- mandatory close-out before expiry
+- entry into the next expiry contract under strategy-specific rules
 
-For TFIS option strategies, any exit ends that position. A later trade must be
-a fresh calculation and a fresh position, not a rollover.
+S23 and similar option-selling strategies may carry forward open positions.
+What must remain forbidden is carrying the same option position beyond expiry.
 
 ## Reference Timing Windows
 
@@ -46,22 +46,26 @@ Expected lifecycle sequence from the provided materials:
 3. carry or take the same position in the next contract where applicable
 4. place the cancelled order in the next contract where applicable
 
-These steps are future-strategy only. They do not apply to options in TFIS.
+These steps are relevant to carry-forward-capable strategies, including option
+strategies, but the exact option-policy details must stay strategy- and
+instrument-specific.
 
 ## Special Handling Notes
 
 - Option selling:
-  - no partial target concept
-  - the whole lot is booked on target
-  - no rollover after target, stoploss, or expiry-day exit
+  - no partial target concept unless the strategy explicitly defines one
+  - the whole lot is booked on target unless the strategy says otherwise
+  - open positions may carry forward before expiry when the strategy allows it
+  - positions must be squared off before expiry according to strategy-specific
+    T-1 / T-2 handling
 - Option buying:
-  - no rollover
-  - any new trade after exit is a fresh calculation and fresh position
+  - strategy-specific carry-forward policy still needs explicit modeling
 - S23 option selling:
-  - full exit on target
-  - full exit on stoploss
-  - full expiry-day exit or square-off
-  - no carry to the next option contract
+  - carry-forward is strategy-valid
+  - full exit on target still closes the position
+  - full exit on stoploss still closes the position
+  - expiry handling must force exit before expiry
+  - next-expiry handling should follow strategy-specific T-1 / T-2 rules
 
 Future strategies may still need:
 
@@ -73,8 +77,9 @@ Future strategies may still need:
 
 Option strategies:
 
-- not applicable for TFIS option selling
-- not applicable for TFIS option buying
+- exact carry-forward monitoring state across sessions
+- exact expiry-trigger timing by strategy and instrument
+- exact next-expiry entry rules after mandatory close-out
 
 Future strategies only:
 
@@ -96,7 +101,8 @@ deferred until:
 
 Confirmed TFIS governance:
 
-- rollover should not be added to S23
-- rollover should not be added to option selling
-- rollover should not be added to option buying
-- future rollover belongs to a separate future-strategy family
+- carry-forward and expiry handling should not be hidden inside entry, target,
+  or stoploss formulas
+- option strategies need explicit lifecycle handling rather than blanket
+  same-day assumptions
+- futures still need their own separate rollover policy

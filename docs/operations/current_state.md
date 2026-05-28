@@ -256,7 +256,7 @@ Current notes:
 - `src/tfis/paper/orchestrator.py` now layers a deterministic S23 paper-session orchestrator on top of that contract foundation, rejecting stale, duplicate, and out-of-order events and stopping cleanly at `ORDER_PLANNED`, `NO_TRADE`, or `ABORTED` without simulating any paper fills.
 - `src/tfis/paper/artifacts.py` now persists deterministic terminal planning artifacts under a paper-session folder, including the session manifest, audit trail, decision summary, selected contract details, and terminal no-trade or abort summaries without claiming any execution or fills.
 - `src/tfis/paper/guardrails.py` now adds deterministic kill-switch and failure-handling decisions before planning, including explicit codes, messages, blocking source metadata, and operator-action hints for both in-memory audit and persisted terminal summaries.
-- `docs/operations/s23_operator_closeout_policy.md` now codifies ingress-only session acceptance as `PASS`, `WARNING`, or `NO_GO`, including hard blockers for timezone mismatch, unsupported continuation, missing chain or selected contract, stale data, and ORPT / RC lag beyond `5.0s`.
+- `docs/operations/s23_operator_closeout_policy.md` now codifies ingress-only session acceptance as `PASS`, `WARNING`, or `NO_GO`, including hard blockers for timezone mismatch, requested multi-session continuation in the current same-day runtime, missing chain or selected contract, stale data, and ORPT / RC lag beyond `5.0s`.
 - `docs/operations/s23_fyers_ingress_live_runbook.md` now defines the first local real-FYERS operator path, including environment requirements, the role of the normalized prelude JSONL, the `--preflight-only` command, and the `PASS` / `WARNING` / `NO_GO` interpretation for safe ingress-only runs.
 - the broadened ingress-only suite under `D:/TradingEngineTFIS/tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1` now provides the first aggregate operational baseline: `5` sessions, `4 PASS`, `1 WARNING`, `0 NO_GO`, `80.0%` pass rate, `100.0%` selected-contract availability, and a current rollout recommendation of `LIMITED_GO`
 - `src/tfis/paper/replay_bundle.py` now builds and validates deterministic replay-bundle manifests from persisted paper-session folders, including stable file hashes, terminal-state checks, and readback summaries for `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED` outcomes.
@@ -280,7 +280,8 @@ Current notes:
 - Row `184` is no longer treated as a blocker; TFIS preserves the mixed
   Call/Put evidence as a resolved workbook clarification in audit output
   instead of silently normalizing it away.
-- S23 option-selling rollover is now explicitly classified as not applicable:
-  target, stoploss, or expiry-day exit closes the whole position, and any later
-  trade must be a fresh calculation rather than a carried option rollover.
+- S23 and similar option-selling strategies should be treated as
+  carry-forward-capable before expiry, but the current TFIS paper runtime still
+  stops at same-day execution and does not yet implement multi-session
+  carry-forward or strategy-specific T-1 / T-2 expiry handling.
 - Expiry-day review is now explicitly visible in historical reports when option-chain expiry metadata is available, which makes S23 no-rollover governance easier to verify without changing the core lifecycle mechanics.

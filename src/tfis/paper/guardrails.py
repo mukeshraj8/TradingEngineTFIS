@@ -911,7 +911,7 @@ class S23PaperGuardrailEvaluator:
         if code == "selected_contract_stale_before_execution":
             return "Refresh the selected-contract quote before marking the S23 intent ready for any future execution shell."
         if code == "unsupported_continuation_path":
-            return "Keep same-day square-off enabled for the first S23 paper rollout."
+            return "Keep same-day square-off enabled until the paper runtime supports multi-session carry-forward and expiry-aware continuation handling."
         if code == "monthly_status_unknown":
             return "Wait for a non-UNKNOWN monthly status before planning S23."
         if code == "holiday_session_blocked":

@@ -16,8 +16,8 @@ The first supported paper-session scope should remain:
 - `NIFTY` only
 - weekly options only
 - paper mode only
-- same-day square-off only
-- no next-day continuation
+- current paper runtime uses same-day square-off only
+- multi-session carry-forward is not yet implemented in this runtime
 
 If the session encounters a condition outside that scope, it should transition
 to `NO_TRADE` or `ABORTED`.
@@ -120,13 +120,14 @@ The first runtime scaffold is now implemented under `src/tfis/paper/`:
   - `lifecycle_events.jsonl`
   - `paper_exit.json`
   - `paper_pnl_summary.json`
-  - while still blocking next-day continuation and multi-position handling
+  - while still lacking multi-session carry-forward and multi-position handling
 
 States beyond `ORDER_PLANNED` remain blueprint-only for actual execution,
 fills beyond the current same-day paper slice, and broker connectivity. The
 current scaffold now includes pre-execution arming controls, fill or no-fill
 simulation, and a first same-day paper lifecycle loop, but still no live
-broker integration, no next-day continuation, and no multi-position runtime.
+broker integration, no multi-session carry-forward runtime, and no
+multi-position runtime.
 
 ## Session Phases
 
@@ -170,7 +171,7 @@ The paper session should move through these high-level phases:
 | Transition trigger | all mandatory pre-open controls loaded |
 | Validation checks | not a holiday, same-day square-off policy explicit, kill-switch state known |
 | Audit event emitted | `PRE_MARKET_READY` |
-| Failure / no-trade condition | holiday -> `NO_TRADE`; kill-switch engaged, paper mode disabled, unsupported continuation, or malformed config -> `ABORTED` |
+| Failure / no-trade condition | holiday -> `NO_TRADE`; kill-switch engaged, paper mode disabled, requested multi-session continuation in the current same-day runtime, or malformed config -> `ABORTED` |
 
 ### `WAITING_FOR_0915`
 
@@ -210,7 +211,7 @@ The paper session should move through these high-level phases:
 | Transition trigger | all data needed to produce one deterministic S23 paper decision is present |
 | Validation checks | quote freshness, OI and spread guards, selected contract present, no source mismatch |
 | Audit event emitted | `DECISION_READY` |
-| Failure / no-trade condition | stale quote or missing selected contract -> `NO_TRADE`; unsupported next-day continuation and integrity failures -> `ABORTED` |
+| Failure / no-trade condition | stale quote or missing selected contract -> `NO_TRADE`; requested multi-session continuation in the current same-day runtime and integrity failures -> `ABORTED` |
 
 ### `ORDER_PLANNED`
 
@@ -258,7 +259,7 @@ The paper session should move through these high-level phases:
 | --- | --- |
 | Required inputs | filled paper order, selected contract lifecycle source, active target / stoploss / FSL fields |
 | Transition trigger | `PAPER_ORDER_FILLED` is accepted and active position begins |
-| Validation checks | selected contract lifecycle source must be explicit, unsupported continuation must remain disabled |
+| Validation checks | selected contract lifecycle source must be explicit, and the current runtime must still enforce its same-day-only lifecycle limit |
 | Audit event emitted | `PAPER_POSITION_OPENED` |
 | Failure / no-trade condition | invalid lifecycle source, missing bar stream, malformed active position state |
 
@@ -286,11 +287,11 @@ The paper session should move through these high-level phases:
 
 | Category | Definition |
 | --- | --- |
-| Required inputs | open paper position near market close, explicit same-day square-off policy |
+| Required inputs | open paper position near market close, explicit current-runtime same-day square-off policy |
 | Transition trigger | session reaches EOD cutoff with an open paper position |
-| Validation checks | initial rollout must square off rather than continue next day |
+| Validation checks | current runtime must square off rather than continue into the next session |
 | Audit event emitted | `EOD_SQUARE_OFF_TRIGGERED` |
-| Failure / no-trade condition | missing EOD quote or bar, unsupported next-day carry path requested |
+| Failure / no-trade condition | missing EOD quote or bar, or requested multi-session carry-forward in the current runtime |
 
 ### `SESSION_COMPLETE`
 
@@ -332,7 +333,7 @@ The state machine should explicitly reject or abort on:
 - missing required `09:15`, ORPT, or RC snapshot for an enabled path
 - monthly status `UNKNOWN`
 - unsupported workbook branch
-- unsupported next-day continuation
+- requested multi-session carry-forward in the current same-day paper runtime
 - failed spread, liquidity, or OI guardrails
 - timezone or clock mismatch
 - duplicate or late events that invalidate ordering
@@ -378,8 +379,11 @@ Minimum per-event audit fields:
 - `AB6 OS!Z183:Z186` entry overrides should be visible in operator audit as
   original entry versus overridden entry.
 - Unsupported workbook paths must remain blocked, not silently substituted.
-- Rows `190-191` remain process-only; the initial paper rollout should not
-  allow next-day continuation based on those notes.
+- Rows `190-191` remain process-only for runtime implementation purposes; they
+  must not be treated as permission to improvise continuation logic, but S23
+  itself remains a carry-forward strategy family that needs explicit
+  multi-session implementation with expiry-safe exits and T-1/T-2 rollover
+  handling.
 
 ## Current Safe Implementation Boundary
 

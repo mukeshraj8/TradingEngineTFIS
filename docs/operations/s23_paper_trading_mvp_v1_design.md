@@ -35,7 +35,7 @@ Current status:
   - `paper_exit.json`
   - `paper_pnl_summary.json`
 - still no broker connectivity
-- still no next-day continuation
+- still no multi-session carry-forward runtime
 - still no multi-position runtime
 
 The next implementation phase should convert the completed archive-backed pilot
@@ -75,8 +75,8 @@ The first supported runtime remains tightly constrained:
 - weekly options only
 - paper mode only
 - one planned order per session max
-- same-day square-off only
-- no next-day continuation
+- current paper runtime uses same-day square-off only
+- multi-session carry-forward remains a runtime gap
 - no broker API
 - no real order placement
 - no real-money flow
@@ -90,7 +90,7 @@ This MVP v1 design does not include:
 - real order placement
 - partial fills
 - multi-order scaling
-- next-day carry
+- implementation of multi-session carry-forward
 - position averaging
 - multiple strategy sessions in one loop
 
@@ -117,7 +117,8 @@ The MVP v1 fill simulator should begin only after those controls pass.
 - only one simulated entry attempt per session
 - only one open position at a time
 - no generic strategy fallback once contract selection is frozen
-- no next-day continuation under any condition
+- the current runtime must not continue positions into the next session until
+  multi-session carry-forward is implemented
 - if data quality is not good enough for a safe same-day simulation, end the
   session as `NO_FILL`, `BLOCKED`, or `ABORTED` rather than inventing a result
 
@@ -257,10 +258,10 @@ The first lifecycle loop should support only:
 
 The first lifecycle loop must reject:
 
-- next-day continuation
+- multi-session carry-forward in the current same-day runtime
 - partial exits
 - multi-leg recovery logic
-- rollover
+- automatic rollover behavior that is not explicitly strategy-implemented
 
 ### Monitoring Source
 
@@ -275,7 +276,7 @@ The source used for each lifecycle decision must be recorded.
 
 First rollout should enforce:
 
-- same-day square-off only
+- same-day square-off only in the current runtime
 
 If a paper position remains open near cutoff:
 
@@ -406,7 +407,7 @@ Should include:
 - duplicate open-position prevention
 - duplicate exit prevention
 - missing lifecycle bars
-- unsupported continuation hard block
+- current-runtime continuation hard block
 - manual kill-switch during open position
 - EOD forced square-off requirement
 

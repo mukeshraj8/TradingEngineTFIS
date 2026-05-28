@@ -71,6 +71,10 @@ operations documentation.
 - [strategy_config_layout.md](strategy/strategy_config_layout.md)
 - [strategy_relevance_and_data_governance.md](strategy/strategy_relevance_and_data_governance.md)
 
+## Strategy Implementation
+
+- [s23_strategy_implementation.md](strategy_implementation/s23_strategy_implementation.md)
+
 ## Importers
 
 - [formula_normalization_rules.md](importers/formula_normalization_rules.md)
@@ -91,6 +95,7 @@ operations documentation.
 - [open_questions.md](operations/open_questions.md)
 - [project_rulebook.md](operations/project_rulebook.md)
 - [s23_live_paper_data_contract.md](operations/s23_live_paper_data_contract.md)
+- [s23_carry_forward_runtime_gap.md](operations/s23_carry_forward_runtime_gap.md)
 - [s23_operator_closeout_policy.md](operations/s23_operator_closeout_policy.md)
 - [s23_paper_session_state_machine.md](operations/s23_paper_session_state_machine.md)
 - [s23_paper_trading_mvp_v1_design.md](operations/s23_paper_trading_mvp_v1_design.md)
@@ -116,7 +121,7 @@ If you are getting oriented manually, start here:
 
 - broader real/archive contract-specific coverage beyond the current fixture set
 - broker order-routing and real-money execution
-- next-day continuation support
+- multi-session carry-forward and expiry-aware rollover runtime support
 - multi-position paper/live runtime
 - broader raw capture ingestion beyond the current read-only TradingEngine
   market-event adapter

@@ -184,7 +184,7 @@ The first broker-backed ingress layer must fail closed when:
 - required option chain is missing
 - selected contract quote is missing
 - timezone is unsupported or mismatched
-- unsupported continuation is requested
+- multi-session continuation is requested in the current same-day runtime
 - any broker order-placement function is attempted
 
 The local preflight must also fail closed when:

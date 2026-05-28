@@ -217,7 +217,7 @@ def test_monthly_status_unknown_fails_as_no_trade() -> None:
     assert "monthly_status_unknown" in result.no_trade_reasons
 
 
-def test_unsupported_continuation_path_is_blocked() -> None:
+def test_current_same_day_runtime_blocks_multi_session_continuation() -> None:
     validator = S23PaperContractValidator()
 
     result = validator.validate_session_readiness(

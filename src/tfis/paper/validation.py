@@ -177,7 +177,7 @@ class S23PaperContractValidator:
             issues.append(
                 self._issue(
                     "unsupported_continuation_path",
-                    "Next-day continuation is blocked for the first S23 paper rollout.",
+                    "Strategy-level carry-forward may be valid, but the current S23 paper runtime still requires same-day square-off until multi-session carry-forward handling is implemented.",
                     PaperReadinessStatus.ABORTED,
                     field_name="same_day_square_off_only",
                     event_type=PaperEventType.PAPER_SESSION_CONFIG,

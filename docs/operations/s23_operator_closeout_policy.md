@@ -11,7 +11,7 @@ Scope:
 - NIFTY only
 - weekly options only
 - paper mode only
-- same-day only
+- current ingress-only paper rollout is same-day only
 - ingress and decision orchestration only
 - no broker API
 - no real orders
@@ -87,7 +87,7 @@ Hard blockers:
 - any required artifact is missing or corrupt
 - any timezone mismatch
 - unsupported branch
-- unsupported continuation
+- requested multi-session continuation in the current same-day runtime
 - selected contract missing at decision time
 - selected contract not present in option chain
 - selected contract quote not fresh at finalize
