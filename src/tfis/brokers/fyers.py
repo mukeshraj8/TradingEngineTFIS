@@ -3,13 +3,13 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any, Callable
 from zoneinfo import ZoneInfo
 
 from tfis.domain.enums import OptionType
-from tfis.paper.models import (
+from tfis.normalized_events import (
     CalendarContextEvent,
     EventEnvelope,
     OptionChainContract,
@@ -28,6 +28,7 @@ from .base import (
     BrokerHealthEvent,
     BrokerNormalizationError,
     NormalizedBrokerEvent,
+    UnderlyingHistoryBar,
 )
 
 
@@ -250,6 +251,43 @@ class FyersBrokerAdapter(BrokerAdapter):
             raw_symbol=raw_symbol,
             session_date=session_date,
             quote_kind="selected_contract",
+        )
+
+    def get_underlying_bars(
+        self,
+        symbol: str,
+        *,
+        session_date: date,
+        from_time: time,
+        to_time: time,
+        interval_minutes: int = 1,
+    ) -> tuple[UnderlyingHistoryBar, ...]:
+        raw_symbol = self._to_fyers_underlying_symbol(symbol)
+        if self._payloads:
+            payload = (
+                self._payloads.get("underlying_history_bars")
+                or self._payloads.get("underlying_bars")
+            )
+        else:
+            if self._client is None:
+                raise BrokerConnectionError("Fyers client is not connected.")
+            payload = self._client.history(
+                {
+                    "symbol": raw_symbol,
+                    "resolution": str(interval_minutes),
+                    "date_format": "1",
+                    "range_from": session_date.isoformat(),
+                    "range_to": session_date.isoformat(),
+                    "cont_flag": "1",
+                }
+            )
+        return self._normalize_underlying_history_payload(
+            payload,
+            raw_symbol=raw_symbol,
+            session_date=session_date,
+            from_time=from_time,
+            to_time=to_time,
+            interval_minutes=interval_minutes,
         )
 
     def stream_ticks(self) -> tuple[NormalizedBrokerEvent, ...]:
@@ -491,9 +529,17 @@ class FyersBrokerAdapter(BrokerAdapter):
                 or raw_contract.get("n")
                 or ""
             )
+            if not raw_option_symbol:
+                continue
+            try:
+                normalized_symbol = self.normalize_option_symbol(raw_option_symbol)
+            except BrokerNormalizationError:
+                # Live FYERS option-chain responses can include the underlying/index
+                # row alongside actual option contracts. Ignore non-option entries.
+                continue
             contracts.append(
                 OptionChainContract(
-                    symbol=self.normalize_option_symbol(raw_option_symbol),
+                    symbol=normalized_symbol,
                     option_type=self._optional_option_type(
                         raw_contract.get("option_type") or raw_option_symbol[-2:]
                     ),
@@ -562,6 +608,76 @@ class FyersBrokerAdapter(BrokerAdapter):
             bar_end=self._read_datetime(payload.get("bar_end")),
             volume=self._optional_float(payload.get("volume")),
         )
+
+    def _normalize_underlying_history_payload(
+        self,
+        payload: dict[str, Any] | list[dict[str, Any]] | None,
+        *,
+        raw_symbol: str,
+        session_date: date,
+        from_time: time,
+        to_time: time,
+        interval_minutes: int,
+    ) -> tuple[UnderlyingHistoryBar, ...]:
+        if payload is None:
+            raise BrokerNormalizationError("Missing FYERS underlying history payload.")
+        candles = self._extract_history_candles(payload)
+        if not candles:
+            raise BrokerNormalizationError("FYERS underlying history payload returned no candles.")
+
+        day_start = datetime.combine(session_date, time(0, 0), tzinfo=self._tzinfo)
+        from_dt = datetime.combine(session_date, from_time, tzinfo=self._tzinfo)
+        to_dt = datetime.combine(session_date, to_time, tzinfo=self._tzinfo)
+        bars: list[UnderlyingHistoryBar] = []
+        normalized_symbol = self.normalize_underlying_symbol(raw_symbol)
+        source_id = (
+            str(payload.get("source_id"))
+            if isinstance(payload, dict) and payload.get("source_id")
+            else "fyers:underlying_history"
+        )
+        interval_delta = timedelta(minutes=max(1, int(interval_minutes)))
+        for candle in candles:
+            if not isinstance(candle, (list, tuple)) or len(candle) < 6:
+                raise BrokerNormalizationError("FYERS history candle must contain at least 6 values.")
+            epoch = int(candle[0])
+            bar_start = datetime.fromtimestamp(epoch, tz=self._tzinfo)
+            if bar_start.date() != session_date:
+                continue
+            bar_end = bar_start + interval_delta - timedelta(seconds=1)
+            if bar_end < from_dt or bar_start > to_dt:
+                continue
+            bars.append(
+                UnderlyingHistoryBar(
+                    symbol=normalized_symbol,
+                    bar_start=bar_start,
+                    bar_end=bar_end,
+                    open=self._optional_float(candle[1]),
+                    high=self._optional_float(candle[2]),
+                    low=self._optional_float(candle[3]),
+                    close=self._optional_float(candle[4]),
+                    volume=self._optional_float(candle[5]),
+                    source_id=source_id,
+                )
+            )
+        if not bars:
+            raise BrokerNormalizationError(
+                "No underlying history candles matched the requested TFIS session window."
+            )
+        return tuple(sorted(bars, key=lambda item: (item.bar_start, item.bar_end)))
+
+    def _extract_history_candles(
+        self,
+        payload: dict[str, Any] | list[dict[str, Any]],
+    ) -> list[Any]:
+        if isinstance(payload, dict):
+            if "candles" in payload and isinstance(payload.get("candles"), list):
+                return list(payload.get("candles") or [])
+            data = payload.get("data")
+            if isinstance(data, dict) and isinstance(data.get("candles"), list):
+                return list(data.get("candles") or [])
+        if isinstance(payload, list):
+            return list(payload)
+        raise BrokerNormalizationError("Unsupported FYERS history payload shape.")
 
     def _extract_single_quote_record(
         self,

@@ -1,0 +1,57 @@
+# S23 FYERS connection / snapshot test config.
+# Purpose:
+# - real FYERS credential + connectivity check
+# - one-shot normalized snapshot collection only
+# - paper mode only
+# - no socket loop
+# - no broker orders
+#
+# Notes for 2026-05-28:
+# - NSE is closed on 2026-05-28 (Bakri Id).
+# - This file is intended for connection/data-access validation.
+# - The configured weekly_expiry uses the next weekly chain expected after the
+#   holiday-shifted expiry week.
+source_mode: broker_fyers_live_paper_ingress
+
+broker:
+  provider: fyers
+  timezone: Asia/Kolkata
+  capture_stream_events: false
+
+paper:
+  strategy_code: S23
+  symbol: NIFTY
+  contract_cycle: WEEKLY
+  mode: paper
+  operator_id: fyers-connect-test
+  paper_mode_enabled: true
+  same_day_square_off_only: true
+  allow_recalculation: false
+  allow_current_day_fsl_trp: true
+  kill_switch_enabled: true
+  session_kill_switch_active: false
+  no_live_orders_allowed: true
+
+market:
+  underlying_symbol: NIFTY
+  # Use the next weekly chain for connection/snapshot validation after the
+  # 2026-05-28 market holiday.
+  weekly_expiry: 2026-06-04
+  # Snapshot preflight does not require a static selected contract.
+  # Keep this blank to avoid implying it is an operational path.
+  selected_contract_symbol: ""
+
+costs:
+  brokerage_per_lot: 20.0
+  slippage_entry_points: 1.0
+  slippage_exit_points: 1.0
+  spread_buffer_policy: bid_ask_guard
+  version_label: paper-cost-v1
+
+thresholds:
+  max_quote_age_seconds: 5.0
+  max_timing_drift_seconds: 5.0
+  max_stale_events: 0
+  max_missing_chains: 0
+  required_selected_contract_availability_ratio: 1.0
+  max_no_trade_rate: 0.0

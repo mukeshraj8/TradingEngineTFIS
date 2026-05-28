@@ -14,6 +14,7 @@ from tfis.brokers.fyers import FyersBrokerAdapter, FyersCredentials
 from tfis.domain import ExpiryType, MarketLevels, StrategyRule
 from tfis.domain.enums import MonthlyStatus
 from tfis.importers import load_strategy_rule
+from tfis.market_data import UnderlyingHistoryBar
 from tfis.monthly_status import MonthlyStatusResult
 
 from .expiry_governance import DeterministicExpiryCalendar, S23PaperExpiryGovernance
@@ -102,11 +103,14 @@ class S23FyersSnapshotArtifactSet:
     session_directory: Path
     summary_path: Path
     normalized_underlying_snapshot_path: Path
+    normalized_underlying_bars_path: Path
     normalized_option_chain_snapshot_path: Path
     summary: S23FyersSnapshotPreflightSummary
     generated_prelude_events_path: Path | None = None
     generated_prelude_provenance_path: Path | None = None
     generated_governance_events_path: Path | None = None
+    collected_inputs: S23CollectedSnapshotInputs | None = None
+    prelude_result: S23PaperLivePreludeResult | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,6 +118,7 @@ class S23CollectedSnapshotInputs:
     session_context: S23PaperPreludeSessionContext
     strategy_rule: StrategyRule
     underlying_quote: UnderlyingQuoteEvent
+    underlying_bars: tuple[UnderlyingHistoryBar, ...]
     option_chain_snapshot: OptionChainSnapshotEvent
     expiry_governance: S23PaperExpiryGovernance
     weekly_expiry: date
@@ -192,6 +197,7 @@ class S23FyersSnapshotCollector:
         )
 
         underlying_quote: UnderlyingQuoteEvent
+        underlying_bars: tuple[UnderlyingHistoryBar, ...]
         option_chain_snapshot: OptionChainSnapshotEvent
         prelude_result: S23PaperLivePreludeResult | None = None
         try:
@@ -199,6 +205,13 @@ class S23FyersSnapshotCollector:
             underlying_quote = active_adapter.get_underlying_quote(
                 config.market.underlying_symbol,
                 session_date=session_context.session_date,
+            )
+            underlying_bars = active_adapter.get_underlying_bars(
+                config.market.underlying_symbol,
+                session_date=session_context.session_date,
+                from_time=time(9, 14),
+                to_time=time(9, 30),
+                interval_minutes=1,
             )
             option_chain_snapshot = active_adapter.get_option_chain(
                 config.market.underlying_symbol,
@@ -223,6 +236,9 @@ class S23FyersSnapshotCollector:
         normalized_underlying_snapshot_path = (
             session_directory / "normalized_underlying_snapshot.json"
         )
+        normalized_underlying_bars_path = (
+            session_directory / "normalized_underlying_bars.json"
+        )
         normalized_option_chain_snapshot_path = (
             session_directory / "normalized_option_chain_snapshot.json"
         )
@@ -234,6 +250,14 @@ class S23FyersSnapshotCollector:
         self._write_json(
             normalized_underlying_snapshot_path,
             self._serialize_event(underlying_quote),
+        )
+        self._write_json(
+            normalized_underlying_bars_path,
+            {
+                "session_date": session_context.session_date.isoformat(),
+                "symbol": underlying_quote.symbol,
+                "bars": [self._serialize_history_bar(bar) for bar in underlying_bars],
+            },
         )
         self._write_json(
             normalized_option_chain_snapshot_path,
@@ -383,11 +407,22 @@ class S23FyersSnapshotCollector:
             session_directory=session_directory,
             summary_path=summary_path,
             normalized_underlying_snapshot_path=normalized_underlying_snapshot_path,
+            normalized_underlying_bars_path=normalized_underlying_bars_path,
             normalized_option_chain_snapshot_path=normalized_option_chain_snapshot_path,
             summary=summary,
             generated_prelude_events_path=generated_prelude_events_path,
             generated_prelude_provenance_path=generated_prelude_provenance_path,
             generated_governance_events_path=generated_governance_events_path,
+            collected_inputs=S23CollectedSnapshotInputs(
+                session_context=session_context,
+                strategy_rule=strategy,
+                underlying_quote=underlying_quote,
+                underlying_bars=underlying_bars,
+                option_chain_snapshot=option_chain_snapshot,
+                expiry_governance=governance,
+                weekly_expiry=weekly_expiry,
+            ),
+            prelude_result=prelude_result,
         )
 
     def _collect_preflight_issues(
@@ -726,6 +761,9 @@ class S23FyersSnapshotCollector:
         body.pop("envelope", None)
         payload["payload"] = body
         return payload
+
+    def _serialize_history_bar(self, bar: UnderlyingHistoryBar) -> dict[str, Any]:
+        return self._normalize(bar)
 
     def _write_json(self, path: Path, payload: Any) -> None:
         self._atomic_write_text(

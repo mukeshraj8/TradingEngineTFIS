@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 import pytest
 import yaml
 
+from tfis.market_data import UnderlyingHistoryBar
 from tfis.paper import (
     OptionChainContract,
     OptionChainSnapshotEvent,
@@ -39,6 +40,7 @@ class _CountingFakeBrokerAdapter:
         self,
         *,
         underlying=None,
+        underlying_bars=None,
         option_chain=None,
     ) -> None:
         loader = S23NormalizedPaperEventLoader()
@@ -46,11 +48,47 @@ class _CountingFakeBrokerAdapter:
         self._underlying = underlying or next(
             event for event in events if event.envelope.event_type is PaperEventType.UNDERLYING_QUOTE
         )
+        self._underlying_bars = underlying_bars or (
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(8, 9, 14),
+                bar_end=_ts(8, 9, 14, 59),
+                open=22410.0,
+                high=22425.0,
+                low=22395.0,
+                close=22420.0,
+                volume=100.0,
+                source_id="unit-test-bars",
+            ),
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(8, 9, 24),
+                bar_end=_ts(8, 9, 24, 59),
+                open=22420.0,
+                high=22455.0,
+                low=22400.0,
+                close=22448.0,
+                volume=120.0,
+                source_id="unit-test-bars",
+            ),
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(8, 9, 29),
+                bar_end=_ts(8, 9, 29, 59),
+                open=22448.0,
+                high=22462.0,
+                low=22435.0,
+                close=22440.0,
+                volume=140.0,
+                source_id="unit-test-bars",
+            ),
+        )
         self._chain = option_chain or next(
             event for event in events if event.envelope.event_type is PaperEventType.OPTION_CHAIN_SNAPSHOT
         )
         self.connected = False
         self.get_underlying_quote_calls = 0
+        self.get_underlying_bars_calls = 0
         self.get_option_chain_calls = 0
         self.get_option_quote_calls = 0
         self.stream_ticks_calls = 0
@@ -68,6 +106,18 @@ class _CountingFakeBrokerAdapter:
     def get_underlying_quote(self, symbol: str, *, session_date: date):
         self.get_underlying_quote_calls += 1
         return self._underlying
+
+    def get_underlying_bars(
+        self,
+        symbol: str,
+        *,
+        session_date: date,
+        from_time,
+        to_time,
+        interval_minutes: int = 1,
+    ):
+        self.get_underlying_bars_calls += 1
+        return self._underlying_bars
 
     def get_option_chain(self, symbol: str, expiry: date, *, session_date: date):
         self.get_option_chain_calls += 1
@@ -287,9 +337,11 @@ def test_successful_snapshot_collection(tmp_path: Path) -> None:
 
     assert artifact_set.summary.preflight_status == "READY"
     assert artifact_set.normalized_underlying_snapshot_path.exists()
+    assert artifact_set.normalized_underlying_bars_path.exists()
     assert artifact_set.normalized_option_chain_snapshot_path.exists()
     assert artifact_set.summary_path.exists()
     assert adapter.get_underlying_quote_calls == 1
+    assert adapter.get_underlying_bars_calls == 1
     assert adapter.get_option_chain_calls == 1
     assert adapter.get_option_quote_calls == 0
     assert adapter.stream_ticks_calls == 0

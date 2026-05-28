@@ -37,6 +37,9 @@ operations documentation.
   - ingress-only dry-run validation and operator close-out policy
 - broker-agnostic market-data ingress is now implemented with FYERS as the
   first adapter, while order placement remains blocked
+- TFIS-native supervised S23 live-decision derivation now exists over
+  normalized FYERS snapshots, morning checkpoint bars, strict OI validation,
+  and TFIS reference packets
 - TradingEngine capture-session audit, read-only market-event conversion, and
   paired TFIS-prelude ingress-only validation now exist
 - TradingEngine captures are currently usable for the market-data leg only; the
@@ -96,6 +99,7 @@ operations documentation.
 - [project_rulebook.md](operations/project_rulebook.md)
 - [s23_live_paper_data_contract.md](operations/s23_live_paper_data_contract.md)
 - [s23_carry_forward_runtime_gap.md](operations/s23_carry_forward_runtime_gap.md)
+- [s23_live_decision_runtime_design.md](operations/s23_live_decision_runtime_design.md)
 - [s23_operator_closeout_policy.md](operations/s23_operator_closeout_policy.md)
 - [s23_paper_session_state_machine.md](operations/s23_paper_session_state_machine.md)
 - [s23_paper_trading_mvp_v1_design.md](operations/s23_paper_trading_mvp_v1_design.md)

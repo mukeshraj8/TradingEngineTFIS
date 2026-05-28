@@ -1,0 +1,33 @@
+{
+  "instrument_group": "NIFTY",
+  "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+  "monthly_status_levels": {
+    "PMH": 24900.0,
+    "PML": 24000.0,
+    "CMH": 24750.0,
+    "CML": 23950.0,
+    "PWH": 24680.0,
+    "PWL": 23840.0,
+    "CWH": 24550.0,
+    "CWL": 23820.0
+  },
+  "market_reference_levels": {
+    "d2hh": 24680.0,
+    "d2ll": 23820.0,
+    "d3hh": 24875.0,
+    "d3ll": 23790.0,
+    "d4hh": 24920.0,
+    "d4ll": 23740.0
+  },
+  "option_reference_values": {
+    "OPT_PRV_2DHH": 242.0,
+    "OPT_PRV_3DLL": 230.0
+  },
+  "lots": 1,
+  "quantity": 75,
+  "source_workbook_rule": "AB6_OS_Z186",
+  "workbook_row_number": 186,
+  "fsl_price": 258.94,
+  "monthly_status_source": "tfis_reference_packet",
+  "monthly_status_threshold_version": "v1"
+}

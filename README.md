@@ -29,6 +29,9 @@ Current status:
   selection now exist in the paper stack
 - generated S23 live-prelude dry runs and FYERS snapshot preflight now exist as
   deterministic/operator-safe readiness bridges
+- TFIS-native live decision derivation now exists for supervised S23 paper
+  checks using normalized FYERS snapshots, TFIS checkpoint bars, strict OI
+  validation, and a TFIS reference packet
 - FYERS is the first market-data adapter, but order placement remains blocked
 - TradingEngine capture conversion and ingress-only pairing now exist, but that
   path is currently `NO_GO` for ingress acceptance because selected-contract
@@ -111,6 +114,9 @@ Implemented and stable today:
 - explicit FYERS ingress preflight-only safety path and market-hours runbook
 - generated-live-prelude dry run and FYERS snapshot-preflight bridge for paper
   live-readiness without socket orchestration
+- TFIS-native live decision check that derives `09:15`, `ORPT`, and `RC`
+  checkpoints from normalized underlying bars, classifies monthly status, and
+  writes a paper trade-decision summary without placing any order
 - read-only TradingEngine capture-session audit, market-event converter, and
   paired TFIS-prelude ingress-only suite
 - TradingEngine capture OI audit proving the current raw-capture ingress path
@@ -215,6 +221,9 @@ What now exists in paper mode:
 - generated paper prelude builder from normalized runtime inputs
 - FYERS snapshot-preflight collector as the bridge between deterministic dry
   runs and future socket orchestration
+- TFIS-native runtime-input derivation from normalized underlying bars plus a
+  TFIS reference packet
+- paper trade-decision summary artifacts for supervised live decision review
 - TradingEngine capture-derived market-event conversion and ingress-only suite
 - capture-path OI evidence and acceptance blocker audit
 
@@ -340,6 +349,32 @@ python scripts/run_s23_fyers_snapshot_preflight.py --preflight-only --config con
 python scripts/run_s23_fyers_snapshot_preflight.py --dry-run-build-prelude --config config/paper.s23.yaml --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT --runtime-fixture <runtime_fixture.json> --artifact-root tmp/s23_fyers_snapshot_preflight --session-id s23-fyers-snapshot-preflight-build
 ```
 
+TFIS-native live decision check from real FYERS snapshots plus a TFIS reference
+packet:
+
+```powershell
+python scripts/run_s23_fyers_live_decision_check.py --config config/paper.s23.fyers_connect_test.yaml --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT --reference-packet config/reference_packets/s23_bear_put_live_decision_reference.json --artifact-root tmp/s23_fyers_live_decision --session-id s23-fyers-live-decision
+```
+
+This supervised paper-only path now:
+
+- refreshes FYERS auth through the existing TradingEngineProd automation when
+  requested
+- collects one-shot normalized NIFTY quote, option-chain snapshot, and morning
+  underlying bars
+- derives TFIS checkpoint snapshots for `09:15`, `ORPT`, and `RC`
+- classifies monthly status from a TFIS reference packet
+- builds the S23 paper prelude and trade-decision summary with strict OI
+  validation still enforced
+- writes `trade_decision_summary.json` and `trade_decision_summary.md`
+
+It still does **not**:
+
+- start a continuous FYERS socket/session loop
+- execute lifecycle management
+- place broker orders
+- remove the need for a TFIS reference packet for historical/reference levels
+
 FYERS preflight and live ingress-only safety run:
 
 ```powershell
@@ -360,6 +395,8 @@ python scripts/run_s23_tradingengine_capture_ingress_suite.py --data-root D:\Tra
 
 - prove collected FYERS snapshot inputs across more dates before enabling any
   socket-driven session orchestration
+- replace the current TFIS reference-packet input with fully TFIS-native
+  sourcing for monthly-status and prior-session reference levels
 - decide whether TradingEngine captures can be enriched with reliable
   selected-contract `oi` before treating that path as ingress-acceptance
   evidence
@@ -374,6 +411,8 @@ python scripts/run_s23_tradingengine_capture_ingress_suite.py --data-root D:\Tra
 
 - full multi-session carry-forward runtime and expiry-aware rollover execution
 - next-expiry contract rollover execution
+- fully TFIS-native historical/reference sourcing without the current decision
+  reference packet
 - FYERS socket/session orchestration
 - broader real/archive contract-specific coverage beyond the current fixture set
 - broker order-routing and real-money execution

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import date
+import json
+from datetime import date, time
 from pathlib import Path
 
 import pytest
@@ -46,6 +47,13 @@ def test_fyers_adapter_normalizes_market_payloads() -> None:
         date(2026, 5, 12),
         session_date=date(2026, 5, 8),
     )
+    bars = adapter.get_underlying_bars(
+        "NIFTY",
+        session_date=date(2026, 5, 8),
+        from_time=time(9, 14),
+        to_time=time(9, 30),
+        interval_minutes=1,
+    )
     selected = adapter.get_option_quote(
         "NIFTY_20260512_25000_PE",
         session_date=date(2026, 5, 8),
@@ -55,12 +63,38 @@ def test_fyers_adapter_normalizes_market_payloads() -> None:
     assert health.connection_state is BrokerConnectionState.CONNECTED
     assert underlying.envelope.event_type is PaperEventType.UNDERLYING_QUOTE
     assert underlying.symbol == "NIFTY"
+    assert len(bars) == 3
+    assert bars[0].symbol == "NIFTY"
     assert chain.underlying_symbol == "NIFTY"
     assert chain.contracts[0].symbol == "NIFTY_20260512_25000_PE"
     assert selected.symbol == "NIFTY_20260512_25000_PE"
     assert selected.option_type is OptionType.PUT
     assert len(stream_events) == 1
     assert stream_events[0].envelope.event_type is PaperEventType.SELECTED_CONTRACT_BAR
+
+
+def test_fyers_adapter_skips_underlying_rows_in_option_chain(tmp_path: Path) -> None:
+    payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    payload["option_chain"]["optionsChain"] = [
+        {
+            "symbol": "NSE:NIFTY50-INDEX",
+            "ltp": 22440.0,
+        },
+        *payload["option_chain"]["optionsChain"],
+    ]
+    fixture_path = tmp_path / "fyers_market_data_payloads_mixed_chain.json"
+    fixture_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    adapter = FyersBrokerAdapter.from_payload_file(fixture_path)
+    adapter.connect()
+    chain = adapter.get_option_chain(
+        "NIFTY",
+        date(2026, 5, 12),
+        session_date=date(2026, 5, 8),
+    )
+
+    assert len(chain.contracts) == 1
+    assert chain.contracts[0].symbol == "NIFTY_20260512_25000_PE"
 
 
 def test_fyers_adapter_blocks_order_placement() -> None:

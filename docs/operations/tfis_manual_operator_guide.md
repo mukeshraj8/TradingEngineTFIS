@@ -808,7 +808,46 @@ Useful outputs:
 - strict option-chain OI validation still applies
 - static selected-contract config remains an explicit smoke override only
 
-## 17. FYERS Market-Data Ingress
+## 17. Run A TFIS-Native Live Decision Check
+
+### What this is for
+
+This is the first TFIS-native supervised live-paper decision path.
+
+It answers:
+
+- "Can TFIS collect one-shot live FYERS market inputs, derive `09:15`, `ORPT`,
+  and `RC`, classify monthly status, select the contract with strict OI
+  validation, and write a paper decision summary?"
+
+### Command
+
+```powershell
+python scripts/run_s23_fyers_live_decision_check.py `
+  --config config/paper.s23.fyers_connect_test.yaml `
+  --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
+  --reference-packet config/reference_packets/s23_bear_put_live_decision_reference.json `
+  --artifact-root tmp/s23_fyers_live_decision `
+  --session-id s23-fyers-live-decision
+```
+
+### Useful outputs
+
+- `normalized_underlying_snapshot.json`
+- `normalized_underlying_bars.json`
+- `normalized_option_chain_snapshot.json`
+- `trade_decision_summary.json`
+- `trade_decision_summary.md`
+
+### What this still does not do
+
+- it does not start a socket/session loop
+- it does not execute paper lifecycle handling
+- it does not place broker orders
+- it still depends on a TFIS reference packet for monthly-status and prior-day
+  reference levels
+
+## 18. FYERS Market-Data Ingress
 
 ### What this is for
 

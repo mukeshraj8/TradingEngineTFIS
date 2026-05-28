@@ -1,0 +1,66 @@
+{
+  "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+  "session_date": "2026-05-28",
+  "timezone": "Asia/Kolkata",
+  "generated_at": "2026-05-28T09:30:03+05:30",
+  "weekly_expiry": "2026-06-04",
+  "monthly_status_result": {
+    "status": "BEAR",
+    "trigger_name": "BEAR_A_THRESHOLD",
+    "threshold_value": 23850.0,
+    "reversal_dominated": false,
+    "notes": "Live smoke fixture for generated S23 paper prelude validation."
+  },
+  "market_levels": {
+    "d2hh": 24680.0,
+    "d2ll": 23820.0,
+    "d3hh": 24875.0,
+    "d3ll": 23790.0,
+    "d4hh": 24920.0,
+    "d4ll": 23740.0,
+    "current_day_high": 23925.0,
+    "current_day_low": 23880.0
+  },
+  "runtime_values": {
+    "ENTRY": 212.75,
+    "OPT_PRV_2DHH": 242.0,
+    "OPT_PRV_3DLL": 230.0
+  },
+  "snapshots": [
+    {
+      "snapshot_label": "0915",
+      "open": 23895.0,
+      "high": 23910.0,
+      "low": 23882.0,
+      "close": 23902.0,
+      "bar_start": "2026-05-28T09:14:00+05:30",
+      "bar_end": "2026-05-28T09:15:00+05:30",
+      "complete": true
+    },
+    {
+      "snapshot_label": "ORPT",
+      "open": 23902.0,
+      "high": 23918.0,
+      "low": 23890.0,
+      "close": 23912.0,
+      "bar_start": "2026-05-28T09:23:59+05:30",
+      "bar_end": "2026-05-28T09:24:59+05:30",
+      "complete": true
+    },
+    {
+      "snapshot_label": "RC",
+      "open": 23912.0,
+      "high": 23920.0,
+      "low": 23896.0,
+      "close": 23907.0,
+      "bar_start": "2026-05-28T09:28:59+05:30",
+      "bar_end": "2026-05-28T09:29:59+05:30",
+      "complete": true
+    }
+  ],
+  "lots": 1,
+  "quantity": 75,
+  "source_workbook_rule": "AB6_OS_Z186",
+  "workbook_row_number": 186,
+  "fsl_price": 258.94
+}

@@ -30,6 +30,14 @@
       }
     ]
   },
+  "underlying_history_bars": {
+    "source_id": "fyers:history:nifty",
+    "candles": [
+      [1778211840, 22410.0, 22425.0, 22395.0, 22420.0, 100],
+      [1778212440, 22420.0, 22455.0, 22400.0, 22448.0, 120],
+      [1778212740, 22448.0, 22462.0, 22435.0, 22440.0, 140]
+    ]
+  },
   "option_chain": {
     "source_id": "fyers:option_chain:nifty",
     "captured_at": "2026-05-08T09:30:02+05:30",

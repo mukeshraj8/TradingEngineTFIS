@@ -6,7 +6,9 @@ change in a meaningful way.
 
 ## Current Focus
 
-- resolve the TradingEngine-capture `oi` blocker or keep those captures limited to the market-data leg, while continuing to broaden broker-backed S23 ingress-only evidence before enabling any controlled live-like fill or lifecycle rehearsal
+- keep live S23 decisioning inside TFIS by broadening TFIS-native snapshot,
+  checkpoint, monthly-status, and contract-selection evidence before adding any
+  continuous socket/session orchestrator
 
 ## Implemented Systems
 
@@ -61,6 +63,10 @@ change in a meaningful way.
 - FYERS market-data adapter as the first concrete broker-backed ingress adapter
 - broker-backed normalized event persistence through `broker_health.json`, `normalized_events.jsonl`, and `ingress_summary.json`
 - S23 FYERS live-paper preflight-only safety gate and operator runbook
+- TFIS-native S23 runtime-input derivation from normalized underlying morning
+  bars and TFIS reference packets
+- TFIS-native supervised live decision builder that writes
+  `trade_decision_summary.json` and `trade_decision_summary.md`
 - read-only TradingEngine capture-session audit and market-event adapter prototype for S23 dry runs
 - TradingEngine capture plus TFIS prelude ingress-only dry-run suite for S23
 
@@ -117,6 +123,18 @@ Current broker-backed ingress path:
 -> paper intent shell only by default
 -> `ORDER_PLANNED` / `NO_TRADE` / `ABORTED`
 
+Current supervised live decision path:
+
+`BrokerAdapter`
+-> normalized underlying quote
+-> normalized underlying morning bars
+-> normalized option-chain snapshot
+-> `S23RuntimeInputDeriver`
+-> TFIS checkpoint snapshots + monthly status + runtime aliases
+-> `S23PaperLivePreludeBuilder`
+-> `S23PaperLiveDecisionBuilder`
+-> `trade_decision_summary.json` / `trade_decision_summary.md`
+
 Current TradingEngine capture ingress path:
 
 `ticks_context.csv` + `NIFTY50_option_quotes_YYYYMMDD.csv`
@@ -141,6 +159,17 @@ Current notes:
 - selected contract metadata can now optionally drive lifecycle simulation through symbol-keyed contract intraday bars
 - if contract-specific intraday bars are unavailable for the selected symbol, TFIS falls back to the generic option intraday series and now records explicit provenance including selected symbol, bar counts, fallback reason, and the lifecycle data source actually used
 - the paper orchestrator now applies explicit pre-planning guardrails for global paper disable, S23 paper disable, manual operator abort, stale data, missing chain or selected-contract inputs, session terminality, and one-plan-per-session enforcement, and those guardrail decisions now flow into audit events and persisted terminal summaries
+- TFIS can now derive `09:15`, `ORPT`, and `RC` checkpoints from normalized
+  one-minute underlying bars instead of depending on prebuilt prelude
+  snapshots
+- TFIS can now classify monthly status inside the supervised live decision path
+  when the required historical/reference levels are supplied through a TFIS
+  reference packet
+- the supervised decision path now produces paper decision artifacts with the
+  selected contract, premium, OI, entry, target, stoploss, and workbook
+  provenance visible for operator review
+- the supervised decision path remains bounded: no continuous socket loop, no
+  lifecycle execution, and no broker orders
 - `src/tfis/brokers/base.py` and `src/tfis/brokers/fyers.py` now add the first broker-agnostic market-data boundary, with order placement explicitly blocked and S23 consuming only normalized TFIS events
 - `src/tfis/paper/live_ingress.py` and `scripts/run_s23_fyers_paper_ingress.py` now combine normalized non-broker prelude events with FYERS-backed normalized market-data events, then reuse the existing ingress-only paper runner so S23 logic stays broker-agnostic
 - the same FYERS ingress runner now also supports `--preflight-only`, which validates credentials, paper-only scope, ingress-only mode, kill-switch posture, selected-contract configuration, required prelude snapshots, artifact-root writability, valid broker timezone, and real-run session-date alignment without connecting to FYERS
@@ -217,6 +246,8 @@ Current notes:
 - fuller strike-availability realism and broader contract-specific archive coverage
 - broader multi-date TradingEngine capture normalization beyond the new read-only market-event adapter prototype
 - broad multi-broker live runtime beyond the current market-data-only FYERS ingress foundation
+- fully TFIS-native sourcing for monthly-status and prior-session reference
+  levels without the current decision reference packet
 
 ## Current Quality Snapshot
 

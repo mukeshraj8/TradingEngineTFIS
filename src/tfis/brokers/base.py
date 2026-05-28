@@ -2,16 +2,19 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from datetime import datetime, date
+from datetime import date, datetime, time
 from enum import Enum
+from typing import Any, TYPE_CHECKING
+from tfis.market_data import UnderlyingHistoryBar
 
-from tfis.paper.models import (
-    CalendarContextEvent,
-    OptionChainSnapshotEvent,
-    SelectedContractBarEvent,
-    SelectedContractQuoteEvent,
-    UnderlyingQuoteEvent,
-)
+if TYPE_CHECKING:
+    from tfis.paper.models import (
+        CalendarContextEvent,
+        OptionChainSnapshotEvent,
+        SelectedContractBarEvent,
+        SelectedContractQuoteEvent,
+        UnderlyingQuoteEvent,
+    )
 
 
 class BrokerAdapterError(RuntimeError):
@@ -58,13 +61,7 @@ class BrokerHealthEvent:
     diagnostics: tuple[str, ...] = ()
 
 
-NormalizedBrokerEvent = (
-    UnderlyingQuoteEvent
-    | OptionChainSnapshotEvent
-    | SelectedContractQuoteEvent
-    | SelectedContractBarEvent
-    | CalendarContextEvent
-)
+NormalizedBrokerEvent = Any
 
 
 class BrokerAdapter(ABC):
@@ -111,6 +108,18 @@ class BrokerAdapter(ABC):
         session_date: date,
     ) -> SelectedContractQuoteEvent:
         """Fetch one normalized selected-contract quote."""
+
+    @abstractmethod
+    def get_underlying_bars(
+        self,
+        symbol: str,
+        *,
+        session_date: date,
+        from_time: time,
+        to_time: time,
+        interval_minutes: int = 1,
+    ) -> tuple[UnderlyingHistoryBar, ...]:
+        """Fetch a bounded normalized set of underlying history bars."""
 
     @abstractmethod
     def stream_ticks(self) -> tuple[NormalizedBrokerEvent, ...]:
