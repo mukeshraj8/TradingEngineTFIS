@@ -55,7 +55,7 @@ def test_core_modules_do_not_reference_forbidden_broker_terms() -> None:
     assert not violations, "\n".join(violations)
 
 
-def test_strategy_evaluator_does_not_import_from_tfis_broker() -> None:
+def test_strategy_evaluator_does_not_import_from_tfis_broker_layers() -> None:
     strategy_evaluator = ROOT / "src" / "tfis" / "strategy" / "strategy_evaluator.py"
     content = strategy_evaluator.read_text(encoding="utf-8")
 
@@ -65,5 +65,13 @@ def test_strategy_evaluator_does_not_import_from_tfis_broker() -> None:
     )
     assert "import tfis.broker" not in content, (
         "Forbidden term 'import tfis.broker' found in "
+        f"{strategy_evaluator.relative_to(ROOT)}"
+    )
+    assert "from tfis.brokers" not in content, (
+        "Forbidden term 'from tfis.brokers' found in "
+        f"{strategy_evaluator.relative_to(ROOT)}"
+    )
+    assert "import tfis.brokers" not in content, (
+        "Forbidden term 'import tfis.brokers' found in "
         f"{strategy_evaluator.relative_to(ROOT)}"
     )

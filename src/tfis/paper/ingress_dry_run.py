@@ -767,10 +767,13 @@ class S23PaperIngressDryRunRunner:
                 "",
                 f"- {summary.explicit_disclaimer}",
                 "- Same-day only.",
-                "- No broker API was used.",
                 "- No real order was placed.",
             ]
         )
+        if summary.source_mode.startswith("broker_"):
+            lines.append(f"- Broker market-data source used: `{summary.source_mode}`.")
+        else:
+            lines.append("- No broker API was used.")
         return "\n".join(lines) + "\n"
 
     def _build_selected_contract_audit(

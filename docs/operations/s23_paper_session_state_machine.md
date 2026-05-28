@@ -101,6 +101,10 @@ The first runtime scaffold is now implemented under `src/tfis/paper/`:
   drives the orchestrator only through `ORDER_PLANNED`, `NO_TRADE`, or
   `ABORTED`, builds the intent shell, and persists review plus ingress-health
   summaries without starting any fill or lifecycle execution
+- `src/tfis/brokers/base.py`, `src/tfis/brokers/fyers.py`, and
+  `src/tfis/paper/live_ingress.py` now add the first broker-backed ingress path,
+  where broker market data is normalized before it reaches the paper engine and
+  the runtime still stops at planning by default
 - `lifecycle.py` now implements the first same-day lifecycle slice through:
   - `PAPER_POSITION_OPEN`
   - `PAPER_EXIT_PENDING`

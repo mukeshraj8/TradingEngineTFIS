@@ -6,7 +6,7 @@ change in a meaningful way.
 
 ## Current Focus
 
-- use the new S23 operator close-out policy and broadened ingress-only suite as the final ingress gate, then expand from the current single-date archive-derived validation set into broader multi-date normalized ingress evidence before any controlled live-like paper fill or lifecycle rollout
+- enforce a safe real FYERS ingress-only operator path for S23 with a strict local preflight gate, then broaden broker-backed multi-session evidence before enabling any controlled broker-backed fill or lifecycle rehearsal
 
 ## Implemented Systems
 
@@ -57,6 +57,10 @@ change in a meaningful way.
 - first normalized live-paper ingress-only S23 dry run over deterministic archive-export JSONL
 - S23 operator close-out policy for ingress-only validation
 - broadened multi-session S23 ingress-only dry-run suite with aggregate PASS / WARNING / NO_GO close-out metrics
+- broker-agnostic live-paper ingress foundation for S23 paper mode
+- FYERS market-data adapter as the first concrete broker-backed ingress adapter
+- broker-backed normalized event persistence through `broker_health.json`, `normalized_events.jsonl`, and `ingress_summary.json`
+- S23 FYERS live-paper preflight-only safety gate and operator runbook
 
 ## Current Architecture Flow
 
@@ -100,6 +104,17 @@ Current paper-foundation path:
 -> explicit `PAPER_POSITION_OPEN` / `PAPER_EXIT_PENDING` / `PAPER_POSITION_CLOSED` / `PAPER_EOD_SQUARE_OFF` / `PAPER_LIFECYCLE_ABORTED` statuses
 -> lifecycle-aware review summaries and paper-vs-historical parity summaries
 
+Current broker-backed ingress path:
+
+`BrokerAdapter`
+-> broker-normalized TFIS market events
+-> normalized non-broker prelude events
+-> `S23BrokerPaperIngressRunner`
+-> `S23PaperIngressDryRunRunner`
+-> `S23PaperSessionOrchestrator`
+-> paper intent shell only by default
+-> `ORDER_PLANNED` / `NO_TRADE` / `ABORTED`
+
 Current notes:
 
 - monthly status can now drive branch selection in historical mode
@@ -113,6 +128,10 @@ Current notes:
 - selected contract metadata can now optionally drive lifecycle simulation through symbol-keyed contract intraday bars
 - if contract-specific intraday bars are unavailable for the selected symbol, TFIS falls back to the generic option intraday series and now records explicit provenance including selected symbol, bar counts, fallback reason, and the lifecycle data source actually used
 - the paper orchestrator now applies explicit pre-planning guardrails for global paper disable, S23 paper disable, manual operator abort, stale data, missing chain or selected-contract inputs, session terminality, and one-plan-per-session enforcement, and those guardrail decisions now flow into audit events and persisted terminal summaries
+- `src/tfis/brokers/base.py` and `src/tfis/brokers/fyers.py` now add the first broker-agnostic market-data boundary, with order placement explicitly blocked and S23 consuming only normalized TFIS events
+- `src/tfis/paper/live_ingress.py` and `scripts/run_s23_fyers_paper_ingress.py` now combine normalized non-broker prelude events with FYERS-backed normalized market-data events, then reuse the existing ingress-only paper runner so S23 logic stays broker-agnostic
+- the same FYERS ingress runner now also supports `--preflight-only`, which validates credentials, paper-only scope, kill-switch posture, selected-contract configuration, and required prelude snapshots without connecting to FYERS
+- the first broker-backed ingress path persists `broker_health.json`, `normalized_events.jsonl`, `ingress_summary.json`, `selected_contract_audit.json`, `paper_session_review.md`, and `no_trade_or_order_plan_summary.json` while still stopping at planning by default
 - the paper artifact layer can now be sealed into a deterministic replay bundle manifest with stable hashes, terminal-state checks, and readback summaries so `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED` sessions can be reconstructed without rerunning execution logic
 - `src/tfis/paper/review.py` and `scripts/review_paper_session.py` now add the first operator-facing review surface over those persisted artifacts and replay bundles, including terminal state, guardrails, selected-contract details, audit timeline, provenance, freshness, bundle validation, and an explicit no-execution disclaimer
 - `src/tfis/paper/execution_journal.py` now turns an `ORDER_PLANNED` S23 paper session into a deterministic intent-only handoff shell with `paper_order_intent.json`, `execution_journal.jsonl`, and `execution_summary.json`, while `NO_TRADE` and `ABORTED` sessions now emit explicit skipped-intent summaries instead of pretending any order or fill occurred
@@ -178,13 +197,11 @@ Current notes:
 - monthly option buying
 - fuller strike-availability realism and broader contract-specific archive coverage
 - raw TradingEngine or NiftyTradingEngine capture-format adapters
-- live runtime
-- paper runtime
-- broker adapters
+- broad multi-broker live runtime beyond the current market-data-only FYERS ingress foundation
 
 ## Current Quality Snapshot
 
-- tests passing: `391`
+- tests passing: `414`
 - `python scripts/validate_project.py`: passing
 
 ## Operational Coordination Discipline
@@ -221,6 +238,7 @@ Current notes:
 - `src/tfis/paper/artifacts.py` now persists deterministic terminal planning artifacts under a paper-session folder, including the session manifest, audit trail, decision summary, selected contract details, and terminal no-trade or abort summaries without claiming any execution or fills.
 - `src/tfis/paper/guardrails.py` now adds deterministic kill-switch and failure-handling decisions before planning, including explicit codes, messages, blocking source metadata, and operator-action hints for both in-memory audit and persisted terminal summaries.
 - `docs/operations/s23_operator_closeout_policy.md` now codifies ingress-only session acceptance as `PASS`, `WARNING`, or `NO_GO`, including hard blockers for timezone mismatch, unsupported continuation, missing chain or selected contract, stale data, and ORPT / RC lag beyond `5.0s`.
+- `docs/operations/s23_fyers_ingress_live_runbook.md` now defines the first local real-FYERS operator path, including environment requirements, the role of the normalized prelude JSONL, the `--preflight-only` command, and the `PASS` / `WARNING` / `NO_GO` interpretation for safe ingress-only runs.
 - the broadened ingress-only suite under `D:/TradingEngineTFIS/tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1` now provides the first aggregate operational baseline: `5` sessions, `4 PASS`, `1 WARNING`, `0 NO_GO`, `80.0%` pass rate, `100.0%` selected-contract availability, and a current rollout recommendation of `LIMITED_GO`
 - `src/tfis/paper/replay_bundle.py` now builds and validates deterministic replay-bundle manifests from persisted paper-session folders, including stable file hashes, terminal-state checks, and readback summaries for `ORDER_PLANNED`, `NO_TRADE`, and `ABORTED` outcomes.
 - `src/tfis/paper/review.py` and `scripts/review_paper_session.py` now turn those artifacts and replay bundles into deterministic operator-facing JSON and Markdown review summaries without implying any execution, fills, or lifecycle monitoring.

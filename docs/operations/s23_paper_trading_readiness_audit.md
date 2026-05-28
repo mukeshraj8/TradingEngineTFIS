@@ -49,6 +49,13 @@ Recent pilot baseline:
 - the first broadened ingress-only suite now exists under
   `D:/TradingEngineTFIS/tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1`
 - that suite returned `4 PASS`, `1 WARNING`, and `0 NO_GO`, with an aggregate recommendation of `LIMITED_GO`
+- a broker-agnostic live-paper ingress foundation now exists under
+  `src/tfis/brokers/` and `src/tfis/paper/live_ingress.py`, with FYERS as the
+  first market-data adapter and explicit no-order safety
+- a strict local FYERS ingress preflight path now also exists via
+  `scripts/run_s23_fyers_paper_ingress.py --preflight-only`, and the operator
+  procedure is now documented in
+  `docs/operations/s23_fyers_ingress_live_runbook.md`
 - S23 paper remains `NO-GO` for broad live-paper rollout until multi-date ingress evidence exists and the close-out policy is enforced operationally beyond this first archive-derived suite
 
 ## Readiness Checklist
@@ -56,8 +63,8 @@ Recent pilot baseline:
 | Area | Current Status | Risk | Current Position | Required Tasks |
 | --- | --- | --- | --- | --- |
 | 1. S23 configuration completeness | READY | Medium | All four branches exist, workbook-backed logic is traced, registry/governance exists, monthly-status routing exists. | Freeze the paper-trading strategy set to S23 only and keep config promotion controlled. |
-| 2. Live/paper input data requirements | PARTIAL | High | Historical CSV contracts are clear, one deterministic normalized archive-export JSONL dry run now exists under `tmp/s23_live_paper_dry_runs/2026-05-08/s23-archive-ingress-dry-run`, and one broadened archive-derived ingress suite now exists under `tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1`. Live-paper source contracts are still not finalized beyond this first safe normalized source family. | Broaden the ingress suite across multiple dates and source shapes, then decide whether append-style normalized CSV, replayed normalized session feed, or a larger normalized archive export set is the operational default. |
-| 3. Option-chain live selection readiness | PARTIAL | High | Offline option-chain selection logic exists with OI, premium, and spread-aware tie-breaking. No live-paper chain ingestion path is finalized. | Specify live-paper chain refresh cadence, stale-chain handling, expiry metadata requirements, and selected-contract provenance rules. |
+| 2. Live/paper input data requirements | PARTIAL | High | Historical CSV contracts are clear, one deterministic normalized archive-export JSONL dry run now exists under `tmp/s23_live_paper_dry_runs/2026-05-08/s23-archive-ingress-dry-run`, one broadened archive-derived ingress suite now exists under `tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1`, a broker-agnostic live-paper ingress runner now exists for normalized prelude events plus broker market data, and a strict FYERS preflight gate now exists for local operator runs. Live-paper source contracts are still not finalized beyond this first safe normalized source family. | Broaden the ingress suite across multiple dates and source shapes, then decide whether append-style normalized CSV, replayed normalized session feed, or a larger normalized archive export set is the operational default. |
+| 3. Option-chain live selection readiness | PARTIAL | High | Offline option-chain selection logic exists with OI, premium, and spread-aware tie-breaking. A first live-paper chain ingestion path now exists through the FYERS market-data adapter, but broader source validation and cadence policy are still pending. | Specify live-paper chain refresh cadence, stale-chain handling, expiry metadata requirements, and selected-contract provenance rules. |
 | 4. ORPT timing handling | PARTIAL | High | ORPT behavior is workbook-backed in historical mode. No live-paper scheduler/clock contract is defined yet. | Define exact session clock behavior at `09:24:59`, delayed-start policy, and what happens if inputs arrive late or out of order. |
 | 5. Missed-entry recalculation handling | PARTIAL | High | Historical ORPT missed-entry detection and recalculation exist. No live-paper orchestration path exists. | Define how live-paper mode detects missed entry, snapshots ORPT data, schedules RC recalculation, and preserves audit. |
 | 6. Current-day FSL / TRP handling | PARTIAL | High | Historical workbook-backed rows `183-188` exist and are tested. No paper-runtime timing flow exists. | Define whether paper mode will support current-day FSL / TRP from day one and how required `09:15`, ORPT, and RC snapshots are captured. |
@@ -70,7 +77,7 @@ Recent pilot baseline:
 | 13. Position-open / EOD handling | PARTIAL | High | Historical EOD policies exist. Workbook rows `190-191` remain process-only and do not give numeric next-day continuation logic. | Choose an explicit paper-mode policy: either same-day square-off only for initial rollout or block next-day continuation until workbook evidence exists. |
 | 14. Logging and audit reports | PARTIAL | Medium | Historical reports are strong. TFIS now persists session manifests, audit trails, terminal summaries, replay-bundle manifests, operator review outputs, an execution-journal intent shell, later execution-arm or execution-block summaries, fillless dispatch summaries, final handoff summaries, Phase 1 fill/no-fill artifacts, Phase 2 paper position / exit / P&L artifacts, and lifecycle-aware paper-vs-historical comparison summaries. | Add an end-of-session operator close-out report and define which lifecycle deviations should escalate to paper-runtime NO-GO. |
 | 15. Dashboard / operator visibility | PARTIAL | Medium | TFIS now has operator-facing JSON and Markdown review summaries over persisted paper-session artifacts, replay bundles, execution-journal intent shells, execution-shell readiness outcomes, fillless dispatch-only outcomes, final handoff outcomes, Phase 1 fill/no-fill outcomes, and Phase 2 same-day lifecycle / P&L outcomes. | Add an operator-facing close-out surface and explicit lifecycle warning severity model. |
-| 16. Failure handling | PARTIAL | Critical | TFIS now has explicit pre-planning guardrails plus post-planning intent-shell controls, later execution-shell arming controls, fillless dispatch-only guardrails, final no-fill handoff guardrails, Phase 1 fill guardrails, and a first lifecycle-time shell for missing lifecycle data, conservative same-bar conflict handling, explicit EOD square-off, and lifecycle abort visibility. | Harden stale-data, manual-kill, and parity-escalation policy during the open-position phase before any broader paper rollout. |
+| 16. Failure handling | PARTIAL | Critical | TFIS now has explicit pre-planning guardrails plus post-planning intent-shell controls, later execution-shell arming controls, fillless dispatch-only guardrails, final no-fill handoff guardrails, Phase 1 fill guardrails, a first lifecycle-time shell for missing lifecycle data, conservative same-bar conflict handling, explicit EOD square-off, lifecycle abort visibility, and a no-connect FYERS preflight that fails closed on missing credentials or unsafe scope. | Harden stale-data, manual-kill, and parity-escalation policy during the open-position phase before any broader paper rollout. |
 | 17. Replayability | PARTIAL | Medium | TFIS now has persisted paper-session artifacts, deterministic replay-bundle manifests with file hashes and terminal-state checks, operator-facing review summaries over those bundles, an execution-journal intent shell, later execution-shell readiness outcomes, fillless dispatch-only outcomes, final handoff outcomes, Phase 1 fill/no-fill artifacts, Phase 2 same-day lifecycle artifacts, and a deterministic paper-vs-historical comparison runner that now understands planning parity plus execution, dispatch, handoff, fill, and lifecycle outcome status. | Define acceptable lifecycle drift and which lifecycle mismatches should block paper-runtime readiness. |
 | 18. Kill-switch / no-trade guardrails | PARTIAL | High | TFIS now has deterministic pre-planning kill-switch controls plus post-planning intent-shell, pre-execution-shell, fillless dispatch-shell, final handoff-shell, Phase 1 fill-shell guardrails, and a first same-day lifecycle shell that can abort or conservatively close based on lifecycle-time data quality. | Refine manual lifecycle kill-switch policy and preserve every later guardrail trigger in operator close-out artifacts. |
 
@@ -116,7 +123,19 @@ Keep the close-out policy in
 `docs/operations/s23_operator_closeout_policy.md` as the governing rule set, then
 apply it to a broader set of normalized ingress sessions.
 
-### 3. Broaden the first live-paper data-ingress-only dry run
+### 3. Use the new preflight runbook for the first real local FYERS ingress-only session
+
+Before any broader live-like rehearsal, use
+`docs/operations/s23_fyers_ingress_live_runbook.md` and
+`scripts/run_s23_fyers_paper_ingress.py --preflight-only` to verify:
+
+- credentials are present
+- paper-only scope is enforced
+- kill-switch posture is safe
+- required prelude events are complete
+- selected-contract configuration is ready
+
+### 4. Broaden the first live-paper data-ingress-only dry run
 
 Exercise:
 
@@ -128,7 +147,7 @@ Exercise:
 across more than one normalized session source shape, still without broker
 connectivity, real orders, or live-money flow.
 
-### 4. Add an operator close-out surface
+### 5. Add an operator close-out surface
 
 The persisted paper artifacts and replay bundles are strong enough now that the
 next operational surface should summarize:
@@ -139,7 +158,7 @@ next operational surface should summarize:
 - blocker codes
 - operator action required
 
-### 5. Keep same-day lifecycle scope fixed while broadening evidence
+### 6. Keep same-day lifecycle scope fixed while broadening evidence
 
 Do not add next-day continuation or extra strategy behavior yet. Broaden:
 
@@ -189,9 +208,10 @@ Current live-money disposition: `NO-GO`
 
 The best next implementation direction is still not more S23 formula work.
 
-The best next direction is to keep the new operator close-out policy fixed and
-broaden the normalized live-paper ingress-only evidence across more than one
-archive-derived suite date.
+The best next direction is to keep the new operator close-out policy fixed,
+keep the new broker-backed ingress foundation market-data-only, and broaden the
+normalized live-paper ingress-only evidence across more than one archive-derived
+suite date.
 
 That means the immediate next build steps should focus on:
 

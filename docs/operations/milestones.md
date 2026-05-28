@@ -39,12 +39,15 @@
 - S23 Paper Trading MVP v1 fill simulator and lifecycle-loop design is now documented, so the no-fill shell has a reviewed implementation target instead of an open-ended future phase
 - S23 Paper Trading MVP v1 Phase 1 fill simulator is now implemented, so the paper shell can record deterministic `filled`, `not filled`, or `aborted` outcomes without yet opening a paper position
 - S23 Paper Trading MVP v1 Phase 2 same-day lifecycle loop is now implemented, so a filled paper order can now open a paper-only position, close on target or stoploss, square off at EOD, or abort explicitly on lifecycle-time data failure
+- a broker-agnostic live-paper ingress foundation is now implemented, with `src/tfis/brokers/base.py` defining the adapter boundary, `src/tfis/brokers/fyers.py` providing the first FYERS market-data adapter, and `src/tfis/paper/live_ingress.py` reusing the normalized S23 paper ingress path without exposing S23 to raw broker payloads
+- the first broker-backed S23 ingress runner now persists `broker_health.json`, `normalized_events.jsonl`, `ingress_summary.json`, and `no_trade_or_order_plan_summary.json`, while still blocking any broker order placement and stopping at planning by default
+- the FYERS ingress runner now also has a strict `--preflight-only` mode plus a dedicated live runbook, so a local operator can validate credentials, paper-only scope, kill-switch posture, and required prelude snapshots before any broker connection attempt
 - read-only shared captured-data adapter is available for normalized CSV roots
 - comparison reporting across historical backtest modes is available as a read-only reporting tool
 - S23 mode comparison reporting is now bounded, deterministic, and summary-based rather than relying on unbounded raw JSON comparison
 - S23 mode comparison now records input-dataset paths, cost settings, and apples-to-apples status; the earlier row-183 `current_day_fsl_trp` exit flip did not reproduce after rerunning all six modes on one shared dataset set
 - quality snapshot:
-  - tests passing: `384`
+  - tests passing: `414`
   - `python scripts/validate_project.py`: passed
 
 ## Completed
@@ -109,26 +112,28 @@
 - S23 Paper Trading MVP v1 fill simulator and lifecycle-loop design documented
 - S23 Paper Trading MVP v1 Phase 1 fill simulator implemented
 - S23 Paper Trading MVP v1 Phase 2 same-day lifecycle loop implemented
+- broker-agnostic live-paper ingress foundation implemented with FYERS as the first market-data adapter
+- S23 FYERS live-paper preflight-only safety gate and local runbook implemented
 
 ## Next Recommended Priorities
 
-- harden same-day S23 paper lifecycle parity and acceptable drift policy
-- extend paper-vs-historical replay comparison into the future fill-simulator phase
+- run the first real local FYERS market-data-only ingress session under the new preflight runbook during market hours
+- broaden the broker-backed S23 ingress-only validation set across more normalized archive and replay sessions
+- run the first tightly controlled broker-backed live-like fill and same-day lifecycle rehearsal only after ingress thresholds stay green
 - broader real/archive contract-specific coverage pilot
 - raw shared capture-format adapters beyond normalized CSV roots
 
 ## Explicitly Pending
 
 - tighter same-day S23 paper lifecycle parity policy and operator close-out rules
+- first real local FYERS market-data-only ingress session under operator sign-off
 - fuller strike-availability realism and broader contract-specific archive coverage
 - raw shared capture-format adapters beyond normalized CSV roots
 - futures rollover lifecycle module
 - monthly option buying engine
-- broker adapters
-- paper runtime
-- live runtime
+- broad multi-broker live runtime beyond the current market-data-only FYERS adapter
 
 ## Notes
 
 - The current project is strong on offline rule validation, workbook tracing, and structural backtesting.
-- Production-grade runtime behavior is intentionally deferred until the remaining governance, paper-session orchestration, failure handling, and market-data layers are clarified.
+- Production-grade runtime behavior is intentionally deferred until broader broker-backed ingress evidence, operator close-out enforcement, and controlled live-like paper rehearsals are clarified.
