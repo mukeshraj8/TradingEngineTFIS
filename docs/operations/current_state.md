@@ -67,6 +67,8 @@ change in a meaningful way.
   bars and TFIS reference packets
 - TFIS-native supervised live decision builder that writes
   `trade_decision_summary.json` and `trade_decision_summary.md`
+- TFIS-native `09:16` supervised decision runner and
+  `trade_decision_explainer.md` artifact for operator cross-checks
 - read-only TradingEngine capture-session audit and market-event adapter prototype for S23 dry runs
 - TradingEngine capture plus TFIS prelude ingress-only dry-run suite for S23
 

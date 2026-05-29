@@ -260,6 +260,30 @@ def test_runtime_derivation_and_live_decision_build() -> None:
     assert result.summary.stoploss_price == pytest.approx(258.94)
     assert result.derived_runtime_inputs.market_levels.current_day_high == 23920.0
     assert result.derived_runtime_inputs.market_levels.current_day_low == 23882.0
+    assert result.explanation["monthly_status"]["status"] == "BEAR"
+    assert result.explanation["contract_selection"]["selected_contract_symbol"] == "NIFTY_20260604_23750_PE"
+    assert result.explanation["formula_evaluation"][0]["name"] == "start_strike"
+    assert "ROUND_UP" in result.explanation["formula_evaluation"][0]["resolved_formula"]
+
+
+def test_live_decision_builder_writes_explainer_artifacts(tmp_path) -> None:
+    builder = S23PaperLiveDecisionBuilder()
+    result = builder.build(
+        strategy_rule=_strategy_rule(),
+        reference_packet=_reference_packet(),
+        collected_inputs=_collected_inputs(),
+    )
+
+    summary_json, summary_md = builder.write_artifacts(result, output_dir=tmp_path)
+
+    assert summary_json.exists()
+    assert summary_md.exists()
+    explainer_json = tmp_path / "trade_decision_explainer.json"
+    explainer_md = tmp_path / "trade_decision_explainer.md"
+    assert explainer_json.exists()
+    assert explainer_md.exists()
+    assert "S23 Trade Decision Explainer" in explainer_md.read_text(encoding="utf-8")
+    assert '"contract_selection"' in explainer_json.read_text(encoding="utf-8")
 
 
 def test_missing_required_option_reference_fails_closed() -> None:

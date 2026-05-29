@@ -32,6 +32,8 @@ Current status:
 - TFIS-native live decision derivation now exists for supervised S23 paper
   checks using normalized FYERS snapshots, TFIS checkpoint bars, strict OI
   validation, and a TFIS reference packet
+- a scheduled `09:16` supervised decision runner and a step-by-step trade
+  decision explainer now exist for operator cross-checks during live market
 - FYERS is the first market-data adapter, but order placement remains blocked
 - TradingEngine capture conversion and ingress-only pairing now exist, but that
   path is currently `NO_GO` for ingress acceptance because selected-contract
@@ -374,6 +376,31 @@ It still does **not**:
 - execute lifecycle management
 - place broker orders
 - remove the need for a TFIS reference packet for historical/reference levels
+
+Scheduled `09:16` supervised decision run with explainer artifacts:
+
+```powershell
+python scripts/run_s23_fyers_0916_supervised_decision.py --config config/paper.s23.fyers_connect_test.yaml --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT --reference-packet config/reference_packets/s23_bear_put_live_decision_reference.json --artifact-root tmp/s23_fyers_0916_supervised_decision --session-id-prefix s23-fyers-0916-supervised-decision
+```
+
+This path waits until `09:16` local time, then:
+
+- collects one-shot FYERS-backed normalized market inputs
+- derives `09:15`, `ORPT`, and `RC`
+- builds the supervised paper decision
+- writes both `trade_decision_summary.md` and
+  `trade_decision_explainer.md`
+
+The explainer artifact shows:
+
+- NIFTY spot value used
+- checkpoint OHLC values
+- prior-day and current-day reference levels such as `PRV_2DHH`, `PRV_3DHH`,
+  `CDHH`, and `CDLL`
+- option reference values such as `OPT_PRV_2DHH` and `OPT_PRV_3DLL`
+- resolved strategy formulas and final numeric outputs
+- contract selection thresholds, candidate rejection reasons, and final
+  selected contract
 
 FYERS preflight and live ingress-only safety run:
 
