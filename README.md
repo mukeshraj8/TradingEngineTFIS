@@ -32,8 +32,9 @@ Current status:
 - TFIS-native live decision derivation now exists for supervised S23 paper
   checks using normalized FYERS snapshots, TFIS checkpoint bars, strict OI
   validation, and a TFIS reference packet
-- a scheduled `09:16` supervised decision runner and a step-by-step trade
-  decision explainer now exist for operator cross-checks during live market
+- a scheduled morning supervised decision runner for `09:16`, `09:25`, and
+  `09:30` plus a step-by-step trade decision explainer now exist for operator
+  cross-checks during live market
 - FYERS is the first market-data adapter, but order placement remains blocked
 - TradingEngine capture conversion and ingress-only pairing now exist, but that
   path is currently `NO_GO` for ingress acceptance because selected-contract
@@ -377,28 +378,28 @@ It still does **not**:
 - place broker orders
 - remove the need for a TFIS reference packet for historical/reference levels
 
-Scheduled `09:16` supervised decision run with explainer artifacts:
+Scheduled morning supervised decision run with explainer artifacts:
 
 ```powershell
-python scripts/run_s23_fyers_0916_supervised_decision.py --config config/paper.s23.fyers_connect_test.yaml --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT --reference-packet config/reference_packets/s23_bear_put_live_decision_reference.json --artifact-root tmp/s23_fyers_0916_supervised_decision --session-id-prefix s23-fyers-0916-supervised-decision
+python scripts/run_s23_fyers_0916_supervised_decision.py --config config/paper.s23.fyers_connect_test.yaml --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT --reference-packet config/reference_packets/s23_bear_put_live_decision_reference.json --artifact-root tmp/s23_fyers_morning_supervised_decision --session-id-prefix s23-fyers-morning-supervised-decision
 ```
 
-This path waits until `09:16` local time, then:
+This path waits for the three morning checkpoints and explains what TFIS knows
+at each stage:
 
-- collects one-shot FYERS-backed normalized market inputs
-- derives `09:15`, `ORPT`, and `RC`
-- builds the supervised paper decision
-- writes both `trade_decision_summary.md` and
-  `trade_decision_explainer.md`
+- `09:16`: collects the opening snapshot and explains the `09:15` logic
+- `09:25`: collects the ORPT snapshot and explains the added ORPT context
+- `09:30`: collects the RC snapshot, finalizes the supervised paper decision,
+  and writes both `trade_decision_summary.md` and `trade_decision_explainer.md`
 
 The explainer artifact shows:
 
-- NIFTY spot value used
-- checkpoint OHLC values
+- NIFTY spot value used at `09:16`, `09:25`, and `09:30`
+- checkpoint OHLC values and whether each checkpoint is available yet
 - prior-day and current-day reference levels such as `PRV_2DHH`, `PRV_3DHH`,
   `CDHH`, and `CDLL`
 - option reference values such as `OPT_PRV_2DHH` and `OPT_PRV_3DLL`
-- resolved strategy formulas and final numeric outputs
+- resolved strategy formulas and provisional/final numeric outputs at each stage
 - contract selection thresholds, candidate rejection reasons, and final
   selected contract
 

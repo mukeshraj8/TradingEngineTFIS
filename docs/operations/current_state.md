@@ -67,8 +67,9 @@ change in a meaningful way.
   bars and TFIS reference packets
 - TFIS-native supervised live decision builder that writes
   `trade_decision_summary.json` and `trade_decision_summary.md`
-- TFIS-native `09:16` supervised decision runner and
-  `trade_decision_explainer.md` artifact for operator cross-checks
+- TFIS-native morning supervised decision runner that captures `09:16`,
+  `09:25`, and `09:30`, plus `trade_decision_explainer.md` for operator
+  cross-checks
 - read-only TradingEngine capture-session audit and market-event adapter prototype for S23 dry runs
 - TradingEngine capture plus TFIS prelude ingress-only dry-run suite for S23
 
@@ -170,6 +171,10 @@ Current notes:
 - the supervised decision path now produces paper decision artifacts with the
   selected contract, premium, OI, entry, target, stoploss, and workbook
   provenance visible for operator review
+- the new morning explainer now shows what TFIS knows at `09:16`, `09:25`, and
+  `09:30`, including available checkpoints, prior-day reference values,
+  current-day high/low so far, option aliases, and provisional formula
+  evaluations before the final RC-stage decision is allowed
 - the supervised decision path remains bounded: no continuous socket loop, no
   lifecycle execution, and no broker orders
 - `src/tfis/brokers/base.py` and `src/tfis/brokers/fyers.py` now add the first broker-agnostic market-data boundary, with order placement explicitly blocked and S23 consuming only normalized TFIS events

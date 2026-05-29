@@ -849,15 +849,15 @@ python scripts/run_s23_fyers_live_decision_check.py `
 - it still depends on a TFIS reference packet for monthly-status and prior-day
   reference levels
 
-## 18. Run The 09:16 Supervised Decision Capture
+## 18. Run The Morning Supervised Decision Capture
 
 ### What this is for
 
 This is the operator-friendly live-market command for S23 decision visibility.
 
-It waits until `09:16`, captures the required supervised snapshot inputs, and
-writes both the decision summary and a line-by-line explainer so you can cross
-check the strategy manually.
+It waits for `09:16`, `09:25`, and `09:30`, captures the required supervised
+snapshot inputs at each stage, and writes both the final decision summary and a
+line-by-line explainer so you can cross-check the strategy manually.
 
 ### Command
 
@@ -866,8 +866,8 @@ python scripts/run_s23_fyers_0916_supervised_decision.py `
   --config config/paper.s23.fyers_connect_test.yaml `
   --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
   --reference-packet config/reference_packets/s23_bear_put_live_decision_reference.json `
-  --artifact-root tmp/s23_fyers_0916_supervised_decision `
-  --session-id-prefix s23-fyers-0916-supervised-decision
+  --artifact-root tmp/s23_fyers_morning_supervised_decision `
+  --session-id-prefix s23-fyers-morning-supervised-decision
 ```
 
 ### What to open first
@@ -879,13 +879,14 @@ Open:
 
 ### What the explainer shows
 
-- NIFTY spot value used for the decision
-- the derived `09:15`, `ORPT`, and `RC` checkpoint bars
+- NIFTY spot value used at `09:16`, `09:25`, and `09:30`
+- the derived `09:15`, `ORPT`, and `RC` checkpoint bars, plus whether each
+  checkpoint is already available at that stage
 - monthly-status levels and the current price used to classify status
 - prior-session reference levels such as `PRV_2DHH`, `PRV_3DHH`, `PRV_3DLL`
 - derived current-day levels such as `CDHH` and `CDLL`
 - option reference values such as `OPT_PRV_2DHH` and `OPT_PRV_3DLL`
-- each formula used for:
+- provisional and final formulas used for:
   - start strike
   - end strike
   - ideal premium
@@ -897,10 +898,9 @@ Open:
 
 ### Safety note
 
-- this is still one-shot and supervised
-- this does not start a socket loop
-- this does not execute lifecycle handling
-- this does not place broker orders
+- this is still supervised and bounded
+- it does not start a continuous socket/session loop
+- it does not execute lifecycle logic or place broker orders
 
 ## 19. FYERS Market-Data Ingress
 

@@ -44,6 +44,17 @@ python scripts/run_s23_fyers_live_decision_check.py `
   --session-id s23-fyers-live-decision
 ```
 
+Current morning operator command:
+
+```powershell
+python scripts/run_s23_fyers_0916_supervised_decision.py `
+  --config config/paper.s23.fyers_connect_test.yaml `
+  --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
+  --reference-packet config/reference_packets/s23_bear_put_live_decision_reference.json `
+  --artifact-root tmp/s23_fyers_morning_supervised_decision `
+  --session-id-prefix s23-fyers-morning-supervised-decision
+```
+
 ## What TFIS Derives Today
 
 From normalized quote + morning bars + option chain, TFIS now derives:
@@ -58,6 +69,9 @@ From normalized quote + morning bars + option chain, TFIS now derives:
 - S23 paper prelude events
 - selected contract with strict OI enforcement
 - paper trade decision summary
+- a three-stage operator explainer that shows what TFIS knows at `09:16`,
+  `09:25`, and `09:30`, while keeping final trade formation blocked until `RC`
+  is available
 
 ## What The Reference Packet Still Provides
 
