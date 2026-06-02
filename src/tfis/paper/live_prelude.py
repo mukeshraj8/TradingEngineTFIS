@@ -94,6 +94,7 @@ class S23PaperLivePreludeRequest:
     carry_forward_position: S23PaperPositionState | None = None
     smoke_override_enabled: bool = False
     smoke_override_selected_contract_symbol: str | None = None
+    allow_branch_pinned_unknown_monthly_status: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -237,7 +238,14 @@ class S23PaperLivePreludeBuilder:
                 "UNSUPPORTED_OPTION_CHAIN_UNDERLYING",
                 "Only NIFTY option-chain snapshots are supported.",
             )
-        if request.monthly_status_result.status not in rule.allowed_monthly_statuses:
+        if (
+            request.monthly_status_result.status not in rule.allowed_monthly_statuses
+            and not (
+                request.allow_branch_pinned_unknown_monthly_status
+                and request.monthly_status_result.status.value == "UNKNOWN"
+                and self._branches_match(request.strategy_branch, rule.unique_code)
+            )
+        ):
             raise S23LivePreludeError(
                 "MONTHLY_STATUS_BRANCH_MISMATCH",
                 "Selected branch is not eligible for the supplied monthly status.",
@@ -247,6 +255,16 @@ class S23PaperLivePreludeBuilder:
                 "INVALID_POSITION_SIZING",
                 "Prelude generation requires positive lots and quantity.",
             )
+
+    @staticmethod
+    def _branches_match(left: str, right: str) -> bool:
+        normalized_left = left.strip().upper()
+        normalized_right = right.strip().upper()
+        return (
+            normalized_left == normalized_right
+            or normalized_left.endswith(normalized_right)
+            or normalized_right.endswith(normalized_left)
+        )
 
     def _validate_workbook_path(self, request: S23PaperLivePreludeRequest) -> None:
         blocked_by_rule = False

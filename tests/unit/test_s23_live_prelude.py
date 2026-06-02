@@ -289,6 +289,25 @@ def test_missing_oi_fails_safely() -> None:
     assert exc_info.value.code == PaperContractSelectionFailureCode.MISSING_CONTRACT_OI.value
 
 
+def test_branch_pinned_unknown_monthly_status_override_is_explicit() -> None:
+    with pytest.raises(S23LivePreludeError) as exc_info:
+        S23PaperLivePreludeBuilder().build(
+            _request(monthly_status_result=_monthly_status_result(MonthlyStatus.UNKNOWN))
+        )
+
+    assert exc_info.value.code == "MONTHLY_STATUS_BRANCH_MISMATCH"
+
+    result = S23PaperLivePreludeBuilder().build(
+        _request(
+            monthly_status_result=_monthly_status_result(MonthlyStatus.UNKNOWN),
+            allow_branch_pinned_unknown_monthly_status=True,
+        )
+    )
+
+    assert result.trade_plan_event is not None
+    assert result.selected_contract_event is not None
+
+
 def test_explicit_smoke_override_only_applies_when_enabled_and_is_provenance_tagged() -> None:
     builder = S23PaperLivePreludeBuilder()
 

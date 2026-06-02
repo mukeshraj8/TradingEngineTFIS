@@ -124,6 +124,11 @@ from .runtime_input_derivation import (
     S23RuntimeInputDeriver,
     load_s23_decision_reference_packet,
 )
+from .live_reference_derivation import (
+    S23LiveReferenceDerivationError,
+    S23LiveReferenceDerivationResult,
+    S23LiveReferenceDeriver,
+)
 from .live_decision import (
     S23PaperLiveDecisionBuilder,
     S23PaperLiveDecisionError,
@@ -153,6 +158,11 @@ from .live_decision_timeline_runner import (
     S23MorningDecisionStageRun,
     default_morning_decision_checkpoints,
     run_s23_morning_supervised_decision,
+)
+from .live_decision_task import (
+    S23MorningSupervisedTaskSpec,
+    build_s23_morning_runner_arguments,
+    build_s23_morning_wrapper_command,
 )
 from .models import (
     CalendarContextEvent,
@@ -315,6 +325,9 @@ __all__ = [
     "S23DecisionReferencePacket",
     "S23DerivedRuntimeInputs",
     "S23LiveDecisionRunResult",
+    "S23LiveReferenceDerivationError",
+    "S23LiveReferenceDerivationResult",
+    "S23LiveReferenceDeriver",
     "S23LiveDecisionScheduleError",
     "S23LiveDecisionTimelineBuilder",
     "S23LiveDecisionTimelineCheckpoint",
@@ -325,6 +338,7 @@ __all__ = [
     "S23MorningDecisionCheckpoint",
     "S23MorningDecisionRunResult",
     "S23MorningDecisionStageRun",
+    "S23MorningSupervisedTaskSpec",
     "S23MonthlyStatusReferencePacket",
     "S23PaperLivePreludeBuilder",
     "S23PaperLiveDecisionBuilder",
@@ -379,6 +393,8 @@ __all__ = [
     "compare_paper_session_to_historical",
     "build_capture_audit",
     "default_morning_decision_checkpoints",
+    "build_s23_morning_runner_arguments",
+    "build_s23_morning_wrapper_command",
     "compute_schedule_delay_seconds",
     "convert_capture_to_normalized_market_events",
     "discover_context_session_dir",

@@ -12,7 +12,6 @@ if str(SRC_ROOT) not in sys.path:
 
 from tfis.paper import (
     S23FyersSnapshotCollectorError,
-    S23PaperLiveDecisionError,
     run_s23_morning_supervised_decision,
 )
 
@@ -70,7 +69,7 @@ def main(argv: list[str] | None = None) -> int:
             timezone_name=args.timezone,
             if_past=args.if_past,
         )
-    except (S23FyersSnapshotCollectorError, S23PaperLiveDecisionError, RuntimeError) as exc:
+    except (S23FyersSnapshotCollectorError, RuntimeError) as exc:
         code = getattr(exc, "code", "MORNING_SUPERVISED_DECISION_FAILED")
         print(f"ERROR [{code}]: {exc}", file=sys.stderr)
         return 1

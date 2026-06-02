@@ -72,6 +72,26 @@ class _FakeBrokerAdapter(BrokerAdapter):
     def get_underlying_quote(self, symbol: str, *, session_date: date):
         return self._underlying
 
+    def get_underlying_bars(
+        self,
+        symbol: str,
+        *,
+        session_date: date,
+        from_time,
+        to_time,
+        interval_minutes: int = 1,
+    ):
+        return ()
+
+    def get_underlying_daily_bars(
+        self,
+        symbol: str,
+        *,
+        session_date: date,
+        lookback_days: int = 90,
+    ):
+        return ()
+
     def get_option_chain(self, symbol: str, expiry: date, *, session_date: date):
         return self._chain
 

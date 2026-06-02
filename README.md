@@ -403,6 +403,28 @@ The explainer artifact shows:
 - contract selection thresholds, candidate rejection reasons, and final
   selected contract
 
+One-time Windows scheduled-task registration for automatic daily launch before
+`09:16`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supervised_task.ps1
+```
+
+This registers a daily task at `09:14` so the TFIS morning runner is already
+alive before `09:16`. Without this registration step, no automatic live-market
+snapshot will happen unless you launch the morning runner manually yourself.
+
+To verify that the task is actually present and inspect the last-run details:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check_s23_fyers_morning_supervised_task.ps1
+```
+
+The TFIS wrapper also clears proxy environment variables before launching and
+writes launch diagnostics under:
+
+- `tmp/s23_fyers_morning_supervised_decision/_task_launch_logs`
+
 FYERS preflight and live ingress-only safety run:
 
 ```powershell

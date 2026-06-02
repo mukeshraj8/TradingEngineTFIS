@@ -11,6 +11,10 @@ from tfis.domain import StrategyRule
 from tfis.formulas import FormulaEngine
 
 from .fyers_snapshot_collector import S23CollectedSnapshotInputs
+from .live_reference_derivation import (
+    S23LiveReferenceDerivationResult,
+    S23LiveReferenceDeriver,
+)
 from .live_prelude import (
     S23PaperLivePreludeBuilder,
     S23PaperLivePreludeRequest,
@@ -84,6 +88,40 @@ class S23PaperLiveDecisionResult:
                     "reversal_dominated": self.derived_runtime_inputs.monthly_status_result.reversal_dominated,
                     "notes": self.derived_runtime_inputs.monthly_status_result.notes,
                 },
+                "monthly_status_resolution": {
+                    "lookback_used": self.derived_runtime_inputs.monthly_status_resolution.lookback_used,
+                    "reason": self.derived_runtime_inputs.monthly_status_resolution.reason,
+                    "checked_lookback_windows": self.derived_runtime_inputs.monthly_status_resolution.checked_lookback_windows,
+                    "trace": [
+                        {
+                            "lookback_index": item.lookback_index,
+                            "window_label": item.window_label,
+                            "reference_timestamp": item.reference_timestamp.isoformat(),
+                            "context_month_label": item.context_month_label,
+                            "context_week_label": item.context_week_label,
+                            "PMH": item.PMH,
+                            "PML": item.PML,
+                            "CMH": item.CMH,
+                            "CML": item.CML,
+                            "PWH": item.PWH,
+                            "PWL": item.PWL,
+                            "CWH": item.CWH,
+                            "CWL": item.CWL,
+                            "current_price": item.current_price,
+                            "status": item.status.value,
+                            "normalized_status": (
+                                item.normalized_status.value
+                                if item.normalized_status is not None
+                                else None
+                            ),
+                            "trigger_name": item.trigger_name,
+                            "threshold_value": item.threshold_value,
+                            "notes": item.notes,
+                            "used_for_resolution": item.used_for_resolution,
+                        }
+                        for item in self.derived_runtime_inputs.monthly_status_resolution.trace
+                    ],
+                },
                 "market_levels": asdict(self.derived_runtime_inputs.market_levels),
                 "runtime_values": dict(self.derived_runtime_inputs.runtime_values),
                 "checkpoint_labels": list(self.derived_runtime_inputs.checkpoint_labels),
@@ -99,9 +137,11 @@ class S23PaperLiveDecisionBuilder:
         *,
         runtime_input_deriver: S23RuntimeInputDeriver | None = None,
         prelude_builder: S23PaperLivePreludeBuilder | None = None,
+        live_reference_deriver: S23LiveReferenceDeriver | None = None,
     ) -> None:
         self._runtime_input_deriver = runtime_input_deriver or S23RuntimeInputDeriver()
         self._prelude_builder = prelude_builder or S23PaperLivePreludeBuilder()
+        self._live_reference_deriver = live_reference_deriver or S23LiveReferenceDeriver()
 
     def build(
         self,
@@ -112,18 +152,25 @@ class S23PaperLiveDecisionBuilder:
         carry_forward_position: S23PaperPositionState | None = None,
         smoke_override_enabled: bool = False,
         smoke_override_selected_contract_symbol: str | None = None,
+        allow_branch_pinned_unknown_monthly_status: bool = False,
     ) -> S23PaperLiveDecisionResult:
+        reference_derivation = self._live_reference_deriver.derive(
+            base_reference_packet=reference_packet,
+            collected_inputs=collected_inputs,
+        )
+        effective_reference_packet = reference_derivation.effective_reference_packet
         derived_inputs = self._runtime_input_deriver.derive(
             strategy_rule=strategy_rule,
-            reference_packet=reference_packet,
+            reference_packet=effective_reference_packet,
             underlying_quote=collected_inputs.underlying_quote,
             underlying_bars=collected_inputs.underlying_bars,
+            daily_bars=collected_inputs.daily_bars,
             session_context=collected_inputs.session_context,
         )
         prelude_result = self._prelude_builder.build(
             S23PaperLivePreludeRequest(
                 strategy_rule=strategy_rule,
-                strategy_branch=reference_packet.strategy_branch or strategy_rule.unique_code,
+                strategy_branch=effective_reference_packet.strategy_branch or strategy_rule.unique_code,
                 monthly_status_result=derived_inputs.monthly_status_result,
                 market_levels=derived_inputs.market_levels,
                 runtime_values=derived_inputs.runtime_values,
@@ -131,32 +178,35 @@ class S23PaperLiveDecisionBuilder:
                 snapshots=derived_inputs.snapshots,
                 session_context=collected_inputs.session_context,
                 expiry_governance=collected_inputs.expiry_governance,
-                lots=reference_packet.lots,
-                quantity=reference_packet.quantity,
-                monthly_status_reference_date=reference_packet.monthly_status_reference_date,
-                monthly_status_source=reference_packet.monthly_status_source,
-                monthly_status_threshold_version=reference_packet.monthly_status_threshold_version,
-                source_workbook_rule=reference_packet.source_workbook_rule,
-                workbook_row_number=reference_packet.workbook_row_number,
-                fsl_price=reference_packet.fsl_price,
+                lots=effective_reference_packet.lots,
+                quantity=effective_reference_packet.quantity,
+                monthly_status_reference_date=effective_reference_packet.monthly_status_reference_date,
+                monthly_status_source=effective_reference_packet.monthly_status_source,
+                monthly_status_threshold_version=effective_reference_packet.monthly_status_threshold_version,
+                source_workbook_rule=effective_reference_packet.source_workbook_rule,
+                workbook_row_number=effective_reference_packet.workbook_row_number,
+                fsl_price=effective_reference_packet.fsl_price,
                 carry_forward_position=carry_forward_position,
                 smoke_override_enabled=smoke_override_enabled,
                 smoke_override_selected_contract_symbol=smoke_override_selected_contract_symbol,
+                allow_branch_pinned_unknown_monthly_status=allow_branch_pinned_unknown_monthly_status,
             )
         )
         summary = self._build_summary(
             strategy_rule=strategy_rule,
-            reference_packet=reference_packet,
+            reference_packet=effective_reference_packet,
             derived_inputs=derived_inputs,
             prelude_result=prelude_result,
+            allow_branch_pinned_unknown_monthly_status=allow_branch_pinned_unknown_monthly_status,
         )
         explanation = self._build_explanation(
             strategy_rule=strategy_rule,
-            reference_packet=reference_packet,
+            reference_packet=effective_reference_packet,
             derived_inputs=derived_inputs,
             prelude_result=prelude_result,
             collected_inputs=collected_inputs,
             summary=summary,
+            reference_derivation=reference_derivation,
         )
         return S23PaperLiveDecisionResult(
             derived_runtime_inputs=derived_inputs,
@@ -270,9 +320,33 @@ class S23PaperLiveDecisionBuilder:
                 "",
                 "## Monthly Status",
                 f"- Current Price Used: `{explanation['monthly_status']['current_price']}`",
+                f"- Source: `{explanation['monthly_status']['source']}`",
                 f"- Trigger: `{explanation['monthly_status']['trigger_name']}`",
                 f"- Result: `{explanation['monthly_status']['status']}`",
                 f"- Notes: `{explanation['monthly_status']['notes']}`",
+                f"- Lookback Used: `{explanation['monthly_status']['lookback_used']}`",
+                f"- Resolution Reason: `{explanation['monthly_status']['resolution_reason']}`",
+                "",
+                "### Monthly Status Trace",
+            ]
+        )
+        for trace_item in explanation["monthly_status"].get("trace", ()):
+            lines.append(
+                f"- `{trace_item['window_label']}` "
+                f"({trace_item['context_month_label']} / {trace_item['context_week_label']}) "
+                f"@ `{trace_item['reference_timestamp']}` -> "
+                f"base=`{trace_item['status']}` normalized=`{trace_item['normalized_status']}` "
+                f"via `{trace_item['trigger_name']}` (used=`{trace_item['used_for_resolution']}`)"
+            )
+            lines.append(
+                f"  Levels: PMH `{trace_item['PMH']}`, PML `{trace_item['PML']}`, "
+                f"CMH `{trace_item['CMH']}`, CML `{trace_item['CML']}`, "
+                f"PWH `{trace_item['PWH']}`, PWL `{trace_item['PWL']}`, "
+                f"CWH `{trace_item['CWH']}`, CWL `{trace_item['CWL']}`, "
+                f"close `{trace_item['current_price']}`"
+            )
+        lines.extend(
+            [
                 "",
                 "## Reference Levels",
             ]
@@ -336,6 +410,7 @@ class S23PaperLiveDecisionBuilder:
         reference_packet: S23DecisionReferencePacket,
         derived_inputs: S23DerivedRuntimeInputs,
         prelude_result: S23PaperLivePreludeResult,
+        allow_branch_pinned_unknown_monthly_status: bool,
     ) -> S23PaperTradeDecisionSummary:
         contract_selection = prelude_result.contract_selection
         selected_contract = prelude_result.selected_contract_event
@@ -360,6 +435,10 @@ class S23PaperLiveDecisionBuilder:
             notes.append("Fresh entry planning was skipped because an open carry-forward position exists.")
         if prelude_result.contract_selection is not None and prelude_result.contract_selection.failure_code is not None:
             notes.append("Contract selection failed closed.")
+        if allow_branch_pinned_unknown_monthly_status and derived_inputs.monthly_status_result.status.value == "UNKNOWN":
+            notes.append(
+                "Branch-pinned supervised analysis override allowed decision generation while the current TFIS monthly-status engine remained UNKNOWN."
+            )
         return S23PaperTradeDecisionSummary(
             status="READY" if selected_contract is not None or prelude_result.mode is S23PaperPreludeMode.CARRY_FORWARD_RESUME else "NO_GO",
             session_date=prelude_result.calendar_context_event.envelope.session_date,
@@ -418,6 +497,7 @@ class S23PaperLiveDecisionBuilder:
         prelude_result: S23PaperLivePreludeResult,
         collected_inputs: S23CollectedSnapshotInputs,
         summary: S23PaperTradeDecisionSummary,
+        reference_derivation: S23LiveReferenceDerivationResult,
     ) -> dict[str, Any]:
         formula_items = self._build_formula_explanations(
             strategy_rule=strategy_rule,
@@ -441,11 +521,44 @@ class S23PaperLiveDecisionBuilder:
                 for snapshot in derived_inputs.snapshots
             ],
             "monthly_status": {
-                "current_price": collected_inputs.underlying_quote.ltp,
+                "current_price": self._monthly_status_price_used(derived_inputs),
                 "status": derived_inputs.monthly_status_result.status.value,
                 "trigger_name": derived_inputs.monthly_status_result.trigger_name,
                 "notes": derived_inputs.monthly_status_result.notes,
+                "lookback_used": derived_inputs.monthly_status_resolution.lookback_used,
+                "resolution_reason": derived_inputs.monthly_status_resolution.reason,
+                "checked_lookback_windows": derived_inputs.monthly_status_resolution.checked_lookback_windows,
+                "trace": [
+                    {
+                        "lookback_index": item.lookback_index,
+                        "window_label": item.window_label,
+                        "reference_timestamp": item.reference_timestamp.isoformat(),
+                        "context_month_label": item.context_month_label,
+                        "context_week_label": item.context_week_label,
+                        "PMH": item.PMH,
+                        "PML": item.PML,
+                        "CMH": item.CMH,
+                        "CML": item.CML,
+                        "PWH": item.PWH,
+                        "PWL": item.PWL,
+                        "CWH": item.CWH,
+                        "CWL": item.CWL,
+                        "current_price": item.current_price,
+                        "status": item.status.value,
+                        "normalized_status": (
+                            item.normalized_status.value
+                            if item.normalized_status is not None
+                            else None
+                        ),
+                        "trigger_name": item.trigger_name,
+                        "threshold_value": item.threshold_value,
+                        "notes": item.notes,
+                        "used_for_resolution": item.used_for_resolution,
+                    }
+                    for item in derived_inputs.monthly_status_resolution.trace
+                ],
                 "reference_levels": asdict(reference_packet.monthly_status_levels),
+                "source": reference_packet.monthly_status_source,
             },
             "market_reference_values": self._build_market_reference_values(
                 reference_packet=reference_packet,
@@ -494,7 +607,24 @@ class S23PaperLiveDecisionBuilder:
                 "source_workbook_rule": summary.source_workbook_rule,
                 "workbook_row_number": summary.workbook_row_number,
             },
+            "live_reference_derivation": {
+                "current_day_high_used": reference_derivation.current_day_high_used,
+                "current_day_low_used": reference_derivation.current_day_low_used,
+            },
         }
+
+    def _monthly_status_price_used(
+        self,
+        derived_inputs: S23DerivedRuntimeInputs,
+    ) -> float | None:
+        latest_snapshot = max(
+            derived_inputs.snapshots,
+            key=lambda item: item.bar_end,
+            default=None,
+        )
+        if latest_snapshot is None:
+            return None
+        return latest_snapshot.close
 
     def _build_market_reference_values(
         self,
@@ -510,7 +640,7 @@ class S23PaperLiveDecisionBuilder:
             source = (
                 "derived_from_checkpoints"
                 if alias in {"CDHH", "CDLL"}
-                else "tfis_reference_packet"
+                else "tfis_live_daily_history"
             )
             values[alias] = {"value": value, "source": source}
         return values

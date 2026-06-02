@@ -44,13 +44,19 @@ def prepare_fyers_env_from_tradingengine(
     _require_exists(token_path, "TradingEngine token_store.json")
     _require_exists(refresh_script, "TradingEngine FYERS token refresh script")
 
+    _clear_proxy_environment()
+
     if not skip_refresh:
         refresh_python = te_python if te_python.exists() else Path(sys.executable)
+        refresh_env = os.environ.copy()
+        for key in _PROXY_ENV_KEYS:
+            refresh_env.pop(key, None)
         result = subprocess.run(
             [str(refresh_python), str(refresh_script)],
             cwd=str(te_root),
             check=False,
             text=True,
+            env=refresh_env,
         )
         if result.returncode != 0:
             raise RuntimeError("TradingEngine FYERS token refresh failed.")
@@ -69,6 +75,21 @@ def prepare_fyers_env_from_tradingengine(
     os.environ["FYERS_ACCESS_TOKEN"] = access_token
     if client_id:
         os.environ["FYERS_CLIENT_ID"] = client_id
+
+
+_PROXY_ENV_KEYS = (
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "http_proxy",
+    "https_proxy",
+    "ALL_PROXY",
+    "all_proxy",
+)
+
+
+def _clear_proxy_environment() -> None:
+    for key in _PROXY_ENV_KEYS:
+        os.environ.pop(key, None)
 
 
 def run_s23_live_decision_check(
@@ -112,6 +133,7 @@ def run_s23_live_decision_check(
         smoke_override_selected_contract_symbol=(
             ingress_config.market.selected_contract_symbol if enable_smoke_override else None
         ),
+        allow_branch_pinned_unknown_monthly_status=True,
     )
     decision_summary_json, decision_summary_markdown = decision_builder.write_artifacts(
         decision,

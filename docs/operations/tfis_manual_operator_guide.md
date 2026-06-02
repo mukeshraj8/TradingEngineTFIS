@@ -870,6 +870,35 @@ python scripts/run_s23_fyers_0916_supervised_decision.py `
   --session-id-prefix s23-fyers-morning-supervised-decision
 ```
 
+### Make it automatic every day
+
+The command above only runs if you start it yourself. If you want TFIS to start
+automatically before market, register the Windows task once:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supervised_task.ps1
+```
+
+That task starts at `09:14` and launches the TFIS morning runner, which then:
+
+- waits for `09:16`
+- captures the opening snapshot
+- waits for `09:25`
+- captures ORPT
+- waits for `09:30`
+- captures RC and writes the final decision summary
+
+To verify that the scheduled task is actually present on the machine:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/check_s23_fyers_morning_supervised_task.ps1
+```
+
+The wrapper clears proxy environment variables before launching the Python
+runner and writes launch diagnostics under:
+
+- `tmp/s23_fyers_morning_supervised_decision/_task_launch_logs`
+
 ### What to open first
 
 Open:

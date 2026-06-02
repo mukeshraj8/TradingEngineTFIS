@@ -7,7 +7,13 @@ from pathlib import Path
 
 from tfis.backtest.csv_loader import BacktestCsvError
 from tfis.market_structure.ohlc import OhlcBar
-from tfis.monthly_status import MonthlyStatusEngine, MonthlyStatusReferenceLevels, MonthlyStatusResult
+from tfis.monthly_status import (
+    MonthlyStatusEngine,
+    MonthlyStatusLookbackResolver,
+    MonthlyStatusLookbackWindow,
+    MonthlyStatusReferenceLevels,
+    MonthlyStatusResult,
+)
 from tfis.strategy import StrategyBranchSelector
 
 
@@ -55,87 +61,34 @@ def build_monthly_status_context(
 ) -> MonthlyStatusContextComputation:
     sorted_monthly = sorted(monthly_bars, key=lambda bar: bar.timestamp)
     sorted_weekly = sorted(weekly_bars, key=lambda bar: bar.timestamp)
-    eligible_monthly = [
-        bar for bar in sorted_monthly if bar.timestamp <= current_timestamp
-    ]
-    eligible_weekly = [bar for bar in sorted_weekly if bar.timestamp <= current_timestamp]
-    previous_month_candidates = [
-        bar
-        for bar in eligible_monthly
-        if (bar.timestamp.year, bar.timestamp.month)
-        < (current_timestamp.year, current_timestamp.month)
-    ]
-    current_month_bars = [
-        bar
-        for bar in eligible_monthly
-        if bar.timestamp.year == current_timestamp.year
-        and bar.timestamp.month == current_timestamp.month
-    ]
-    if not previous_month_candidates:
+    try:
+        levels = _build_levels_for_timestamp(
+            current_timestamp=current_timestamp,
+            monthly_bars=sorted_monthly,
+            weekly_bars=sorted_weekly,
+        )
+    except ValueError as exc:
         return MonthlyStatusContextComputation(
             timestamp=current_timestamp,
             context=None,
             skip=HistoricalMonthlyStatusSkip(
                 timestamp=current_timestamp,
-                reason="insufficient completed monthly data",
+                reason=str(exc),
             ),
         )
-    if not current_month_bars:
-        return MonthlyStatusContextComputation(
-            timestamp=current_timestamp,
-            context=None,
-            skip=HistoricalMonthlyStatusSkip(
-                timestamp=current_timestamp,
-                reason="missing current month reference bars",
-            ),
-        )
-    previous_month = previous_month_candidates[-1]
-    current_year, current_week, _ = current_timestamp.isocalendar()
-    previous_week_candidates = [
-        bar
-        for bar in eligible_weekly
-        if (bar.timestamp.isocalendar().year, bar.timestamp.isocalendar().week)
-        < (current_year, current_week)
-    ]
-    current_week_bars = [
-        bar
-        for bar in eligible_weekly
-        if _same_iso_week(bar.timestamp, current_timestamp)
-    ]
-    if not previous_week_candidates:
-        return MonthlyStatusContextComputation(
-            timestamp=current_timestamp,
-            context=None,
-            skip=HistoricalMonthlyStatusSkip(
-                timestamp=current_timestamp,
-                reason="insufficient completed weekly data",
-            ),
-        )
-    if not current_week_bars:
-        return MonthlyStatusContextComputation(
-            timestamp=current_timestamp,
-            context=None,
-            skip=HistoricalMonthlyStatusSkip(
-                timestamp=current_timestamp,
-                reason="missing current week reference bars",
-            ),
-        )
-    previous_week = previous_week_candidates[-1]
-
-    levels = MonthlyStatusReferenceLevels(
-        PMH=previous_month.high,
-        PML=previous_month.low,
-        CMH=max(bar.high for bar in current_month_bars),
-        CML=min(bar.low for bar in current_month_bars),
-        PWH=previous_week.high,
-        PWL=previous_week.low,
-        CWH=max(bar.high for bar in current_week_bars),
-        CWL=min(bar.low for bar in current_week_bars),
-        current_price=eligible_monthly[-1].close,
-    )
     engine = monthly_status_engine or MonthlyStatusEngine()
+    resolver = MonthlyStatusLookbackResolver(monthly_status_engine=engine)
     selector = branch_selector or StrategyBranchSelector()
-    status_result = engine.classify(instrument_group, levels)
+    status_result = resolver.resolve(
+        instrument_group,
+        levels,
+        current_reference_timestamp=current_timestamp,
+        lookback_windows=_build_lookback_windows(
+            current_timestamp=current_timestamp,
+            monthly_bars=sorted_monthly,
+            weekly_bars=sorted_weekly,
+        ),
+    ).resolved_result
     strategy_root_path = Path(strategy_root)
     strategy_paths = [
         path for path in strategy_root_path.iterdir() if path.is_dir()
@@ -232,3 +185,96 @@ def _same_iso_week(timestamp: datetime, current_timestamp: datetime) -> bool:
     left = timestamp.isocalendar()
     right = current_timestamp.isocalendar()
     return left.year == right.year and left.week == right.week
+
+
+def _build_levels_for_timestamp(
+    *,
+    current_timestamp: datetime,
+    monthly_bars: list[OhlcBar],
+    weekly_bars: list[OhlcBar],
+) -> MonthlyStatusReferenceLevels:
+    eligible_monthly = [bar for bar in monthly_bars if bar.timestamp <= current_timestamp]
+    eligible_weekly = [bar for bar in weekly_bars if bar.timestamp <= current_timestamp]
+    previous_month_candidates = [
+        bar
+        for bar in eligible_monthly
+        if (bar.timestamp.year, bar.timestamp.month)
+        < (current_timestamp.year, current_timestamp.month)
+    ]
+    current_month_bars = [
+        bar
+        for bar in eligible_monthly
+        if bar.timestamp.year == current_timestamp.year
+        and bar.timestamp.month == current_timestamp.month
+    ]
+    if not previous_month_candidates:
+        raise ValueError("insufficient completed monthly data")
+    if not current_month_bars:
+        raise ValueError("missing current month reference bars")
+    previous_month = previous_month_candidates[-1]
+    current_year, current_week, _ = current_timestamp.isocalendar()
+    previous_week_candidates = [
+        bar
+        for bar in eligible_weekly
+        if (bar.timestamp.isocalendar().year, bar.timestamp.isocalendar().week)
+        < (current_year, current_week)
+    ]
+    current_week_bars = [
+        bar
+        for bar in eligible_weekly
+        if _same_iso_week(bar.timestamp, current_timestamp)
+    ]
+    if not previous_week_candidates:
+        raise ValueError("insufficient completed weekly data")
+    if not current_week_bars:
+        raise ValueError("missing current week reference bars")
+    previous_week = previous_week_candidates[-1]
+    return MonthlyStatusReferenceLevels(
+        PMH=previous_month.high,
+        PML=previous_month.low,
+        CMH=max(bar.high for bar in current_month_bars),
+        CML=min(bar.low for bar in current_month_bars),
+        PWH=previous_week.high,
+        PWL=previous_week.low,
+        CWH=max(bar.high for bar in current_week_bars),
+        CWL=min(bar.low for bar in current_week_bars),
+        current_price=eligible_monthly[-1].close,
+    )
+
+
+def _build_lookback_windows(
+    *,
+    current_timestamp: datetime,
+    monthly_bars: list[OhlcBar],
+    weekly_bars: list[OhlcBar],
+) -> tuple[MonthlyStatusLookbackWindow, ...]:
+    candidate_timestamps = sorted(
+        {
+            bar.timestamp
+            for bar in monthly_bars
+            if bar.timestamp < current_timestamp
+        },
+        reverse=True,
+    )
+    windows: list[MonthlyStatusLookbackWindow] = []
+    for index, timestamp in enumerate(candidate_timestamps, start=1):
+        try:
+            levels = _build_levels_for_timestamp(
+                current_timestamp=timestamp,
+                monthly_bars=monthly_bars,
+                weekly_bars=weekly_bars,
+            )
+        except ValueError:
+            continue
+        windows.append(
+            MonthlyStatusLookbackWindow(
+                window_label=f"lookback_{index}",
+                reference_timestamp=timestamp,
+                context_month_label=f"{timestamp.year:04d}-{timestamp.month:02d}",
+                context_week_label=(
+                    f"{timestamp.isocalendar().year:04d}-W{timestamp.isocalendar().week:02d}"
+                ),
+                levels=levels,
+            )
+        )
+    return tuple(windows)

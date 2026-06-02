@@ -122,6 +122,16 @@ class BrokerAdapter(ABC):
         """Fetch a bounded normalized set of underlying history bars."""
 
     @abstractmethod
+    def get_underlying_daily_bars(
+        self,
+        symbol: str,
+        *,
+        session_date: date,
+        lookback_days: int = 90,
+    ) -> tuple[UnderlyingHistoryBar, ...]:
+        """Fetch normalized daily bars ending at the requested TFIS session date."""
+
+    @abstractmethod
     def stream_ticks(self) -> tuple[NormalizedBrokerEvent, ...]:
         """Return a bounded normalized event batch from the live stream."""
 

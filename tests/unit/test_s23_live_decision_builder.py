@@ -138,6 +138,137 @@ def _underlying_bars(day: int = 28) -> tuple[UnderlyingHistoryBar, ...]:
     )
 
 
+def _underlying_bars_live_shape(day: int = 28) -> tuple[UnderlyingHistoryBar, ...]:
+    return (
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=_ts(day, 9, 15),
+            bar_end=_ts(day, 9, 15, 59),
+            open=23895.0,
+            high=23910.0,
+            low=23882.0,
+            close=23902.0,
+            volume=100.0,
+            source_id="hist",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=_ts(day, 9, 24),
+            bar_end=_ts(day, 9, 24, 59),
+            open=23902.0,
+            high=23918.0,
+            low=23890.0,
+            close=23912.0,
+            volume=120.0,
+            source_id="hist",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=_ts(day, 9, 29),
+            bar_end=_ts(day, 9, 29, 59),
+            open=23912.0,
+            high=23920.0,
+            low=23896.0,
+            close=23907.0,
+            volume=140.0,
+            source_id="hist",
+        ),
+    )
+
+
+def _daily_bars(day: int = 28) -> tuple[UnderlyingHistoryBar, ...]:
+    return (
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 4, 29, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 4, 29, 15, 29, 59, tzinfo=IST),
+            open=24840.0,
+            high=24900.0,
+            low=24690.0,
+            close=24720.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 4, 30, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 4, 30, 15, 29, 59, tzinfo=IST),
+            open=24720.0,
+            high=24810.0,
+            low=24580.0,
+            close=24610.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 20, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 20, 15, 29, 59, tzinfo=IST),
+            open=24610.0,
+            high=24680.0,
+            low=24490.0,
+            close=24530.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 21, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 21, 15, 29, 59, tzinfo=IST),
+            open=24530.0,
+            high=24620.0,
+            low=24390.0,
+            close=24440.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 22, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 22, 15, 29, 59, tzinfo=IST),
+            open=24440.0,
+            high=24510.0,
+            low=24220.0,
+            close=24310.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 26, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 26, 15, 29, 59, tzinfo=IST),
+            open=24310.0,
+            high=24410.0,
+            low=24180.0,
+            close=24240.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 27, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 27, 15, 29, 59, tzinfo=IST),
+            open=24240.0,
+            high=24380.0,
+            low=24010.0,
+            close=24120.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, day, 9, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, day, 15, 29, 59, tzinfo=IST),
+            open=23900.0,
+            high=23920.0,
+            low=23760.0,
+            close=23780.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+    )
+
+
 def _option_chain(day: int = 28) -> OptionChainSnapshotEvent:
     return OptionChainSnapshotEvent(
         envelope=EventEnvelope(
@@ -231,6 +362,24 @@ def _collected_inputs(day: int = 28) -> S23CollectedSnapshotInputs:
         strategy_rule=_strategy_rule(),
         underlying_quote=_underlying_quote(day),
         underlying_bars=_underlying_bars(day),
+        daily_bars=_daily_bars(day),
+        option_chain_snapshot=_option_chain(day),
+        expiry_governance=S23PaperExpiryGovernance(
+            DeterministicExpiryCalendar(
+                explicit_expiries={(ExpiryType.WEEKLY, date(2026, 5, day)): date(2026, 6, 4)}
+            )
+        ),
+        weekly_expiry=date(2026, 6, 4),
+    )
+
+
+def _collected_inputs_live_shape(day: int = 28) -> S23CollectedSnapshotInputs:
+    return S23CollectedSnapshotInputs(
+        session_context=_session_context(day),
+        strategy_rule=_strategy_rule(),
+        underlying_quote=_underlying_quote(day),
+        underlying_bars=_underlying_bars_live_shape(day),
+        daily_bars=_daily_bars(day),
         option_chain_snapshot=_option_chain(day),
         expiry_governance=S23PaperExpiryGovernance(
             DeterministicExpiryCalendar(
@@ -249,7 +398,7 @@ def test_runtime_derivation_and_live_decision_build() -> None:
     )
 
     assert result.summary.status == "READY"
-    assert result.summary.monthly_status == "BEAR"
+    assert result.summary.monthly_status == "BEAR_CF"
     assert result.summary.required_market_aliases == ("PRV_3DHH",)
     assert result.summary.required_option_aliases == ("OPT_PRV_2DHH", "OPT_PRV_3DLL")
     assert result.summary.checkpoint_labels == ("0915", "ORPT", "RC")
@@ -260,10 +409,66 @@ def test_runtime_derivation_and_live_decision_build() -> None:
     assert result.summary.stoploss_price == pytest.approx(258.94)
     assert result.derived_runtime_inputs.market_levels.current_day_high == 23920.0
     assert result.derived_runtime_inputs.market_levels.current_day_low == 23882.0
-    assert result.explanation["monthly_status"]["status"] == "BEAR"
+    assert result.explanation["monthly_status"]["status"] == "BEAR_CF"
+    assert result.explanation["monthly_status"]["lookback_used"] is False
+    assert result.explanation["monthly_status"]["trace"][0]["window_label"] == "current"
+    assert result.explanation["monthly_status"]["source"] == "tfis_live_daily_history"
     assert result.explanation["contract_selection"]["selected_contract_symbol"] == "NIFTY_20260604_23750_PE"
     assert result.explanation["formula_evaluation"][0]["name"] == "start_strike"
     assert "ROUND_UP" in result.explanation["formula_evaluation"][0]["resolved_formula"]
+
+
+def test_runtime_derivation_accepts_live_fyers_0915_bar_shape() -> None:
+    result = S23PaperLiveDecisionBuilder().build(
+        strategy_rule=_strategy_rule(),
+        reference_packet=_reference_packet(),
+        collected_inputs=_collected_inputs_live_shape(),
+    )
+
+    assert result.summary.status == "READY"
+    assert result.summary.checkpoint_labels == ("0915", "ORPT", "RC")
+    assert result.summary.selected_contract_symbol == "NIFTY_20260604_23750_PE"
+
+
+def test_live_reference_derivation_overrides_stale_packet_levels() -> None:
+    packet = _reference_packet()
+    stale_packet = S23DecisionReferencePacket(
+        instrument_group=packet.instrument_group,
+        strategy_branch=packet.strategy_branch,
+        monthly_status_levels=S23MonthlyStatusReferencePacket(
+            PMH=26000.0,
+            PML=25000.0,
+            CMH=25800.0,
+            CML=24950.0,
+            PWH=25750.0,
+            PWL=24920.0,
+            CWH=25680.0,
+            CWL=24890.0,
+        ),
+        market_reference_levels=S23MarketReferencePacket(
+            d2hh=26010.0,
+            d2ll=25020.0,
+            d3hh=26020.0,
+            d3ll=25010.0,
+            d4hh=26030.0,
+            d4ll=25000.0,
+        ),
+        option_reference_values=packet.option_reference_values,
+        lots=packet.lots,
+        quantity=packet.quantity,
+        source_workbook_rule=packet.source_workbook_rule,
+        workbook_row_number=packet.workbook_row_number,
+        fsl_price=packet.fsl_price,
+    )
+
+    result = S23PaperLiveDecisionBuilder().build(
+        strategy_rule=_strategy_rule(),
+        reference_packet=stale_packet,
+        collected_inputs=_collected_inputs(),
+    )
+
+    assert result.summary.monthly_status == "BEAR_CF"
+    assert result.summary.market_levels["d3hh"] == 24510.0
 
 
 def test_live_decision_builder_writes_explainer_artifacts(tmp_path) -> None:

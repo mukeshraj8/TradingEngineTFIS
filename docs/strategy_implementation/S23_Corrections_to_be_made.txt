@@ -1,12 +1,9 @@
-1) Carry-forward semantics
-- `carry_forward_allowed: true` should be treated as strategy permission for
-  cross-session carry-forward when the rule set allows it.
-- S23 and most TFIS option-selling strategies are carry-forward strategies.
-- The current lack of next-day paper simulation is a runtime implementation gap,
-  not a business rule.
-- No option position may be carried beyond expiry.
-- Expiry-near behavior must follow explicit strategy and instrument-specific
-  `T-1` or `T-2` rollover rules.
+1) The document says -
+- `carry_forward_allowed: true` exists in config as workbook-derived metadata
+- TFIS does **not** currently treat that as permission to simulate S23 next-day
+  option carry-forward
+  
+Correction: No, this is not correct. S23 and all option selling strategies are based on carry-forward. Infact almost all of the strategies work on carry forward. We have to fix this rule. We only need to be careful when we encounter expiry. We square off the position based on the rules so we do not carry position post expiry at any cost. Most of the strategies are written in such a way that we trade next expiry instruments when an expiry is near. We follow T-1 or T-2 rule which depends on the strategy and the instrument.
   
 2) 
 - rows `190-191` were audited and do **not** currently provide a trusted
@@ -20,4 +17,125 @@
 `NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT` 
 
 
-4)
+4)Monthly Status Calculation:
+
+	Check Your Monthly Status					
+	Bullish	PMH + x%				
+	Bearish	PML - x%				
+						
+		x%	Bullish	Bearish		
+Futures, Spot / Equity	Stocks	2.50%	PMH + 2.5%	PML - 2.5%		
+Futures, Spot / Equity	Index - Nifty and Banknifty	0.75%	PMH + 0.75%	PML - 0.75%		
+Futures, Spot / Equity	Currency	0.15%	PMH + 0.15%	PML - 0.15%		
+Futures	Gold	0.50%	PMH + 0.50%	PML - 0.50%		
+Futures	Silver	0.70%	PMH + 0.70%	PML - 0.70%		
+Futures	Crude Oil	2.00%	PMH + 2%	PML - 2%		
+Futures	Natural Gas	2.00%	PMH + 2%	PML - 2%		
+
+For Futures Strategy either Index, Stocks, Currency, Gold, Silver, Crude Oil, Natural Gas
+You will Check Futures Graph
+
+For Options Selling Strategy either Index, Stocks, Currency
+You will Check Spot / Equity Graph
+
+For Stock Options Buying Strategy
+You will Check Spot / Equity Graph
+
+
+5)
+	Rollover					
+	There Will Be No Rollover In Equity Bcoz There You are the owner of the stock					
+						
+	rollover is for futures & Options Only					
+						
+	Options BUY/SELL					
+For Stock & Index Options	Rollover Time 2.30 pm to 3.00 pm					
+For Curr Options	Rollover Time 4.00 pm to 4.30 pm					
+	Cancel all the pending order in the current  contract					
+	Exit the open position (if any) at cmp -- Market Order					
+	Start From Rule No. 1 From Next Day					
+						
+	Futures					
+For Index Futures	Rollover Time 10 am		Expiry Day			
+For Stock	Rollover Time 10 am		Expiry - 1 Day			
+For Curr Futures	Rollover Time 10 am		Expiry - 1 Day			
+For Comm Futures	Rollover Time 10 am		Expiry - 5 Day			
+						
+	Cancel all the pending order in the current  contract					
+	Exit the open position (if any) at cmp -- Market Order					
+	Take The Same Position In the Next Contract					
+	Place The cancelled Order in the next contract					
+
+
+6)
+Implemented the monthly-status UNKNOWN lookback resolver without changing threshold formulas or broker/socket behavior.
+
+**Changed files**
+- [config/monthly_status_runtime.yaml](/d:/TradingEngineTFIS/config/monthly_status_runtime.yaml)
+- [src/tfis/monthly_status/lookback.py](/d:/TradingEngineTFIS/src/tfis/monthly_status/lookback.py)
+- [src/tfis/monthly_status/__init__.py](/d:/TradingEngineTFIS/src/tfis/monthly_status/__init__.py)
+- [src/tfis/backtest/monthly_status_context.py](/d:/TradingEngineTFIS/src/tfis/backtest/monthly_status_context.py)
+- [src/tfis/paper/runtime_input_derivation.py](/d:/TradingEngineTFIS/src/tfis/paper/runtime_input_derivation.py)
+- [src/tfis/paper/live_decision.py](/d:/TradingEngineTFIS/src/tfis/paper/live_decision.py)
+- [src/tfis/paper/live_decision_timeline.py](/d:/TradingEngineTFIS/src/tfis/paper/live_decision_timeline.py)
+- [tests/unit/test_monthly_status_lookback.py](/d:/TradingEngineTFIS/tests/unit/test_monthly_status_lookback.py)
+- [tests/unit/test_s23_live_decision_builder.py](/d:/TradingEngineTFIS/tests/unit/test_s23_live_decision_builder.py)
+- [tests/unit/test_s23_live_decision_timeline.py](/d:/TradingEngineTFIS/tests/unit/test_s23_live_decision_timeline.py)
+
+What changed:
+- The existing `MonthlyStatusEngine` is still the base threshold-only classifier.
+- A new `MonthlyStatusLookbackResolver` now sits on top of it.
+- If the current window is `UNKNOWN`, TFIS replays the same threshold rules over prior historical windows.
+- Lookback normalization follows your rule:
+  - previous `BULL` or `BULL_CF` resolves current to `BULL`
+  - previous `BEAR` or `BEAR_CF` resolves current to `BEAR`
+- Safe limit is configurable with `max_monthly_status_lookback_windows`, default `6`.
+- Live supervised decision flow and historical monthly-status context now use this resolver.
+- The live decision explanation and morning timeline now include explicit monthly-status trace output.
+
+**Tests added**
+- current resolves directly, no lookback used
+- current `UNKNOWN`, previous `BULL` resolves to `BULL`
+- current `UNKNOWN`, previous `BEAR` resolves to `BEAR`
+- current `UNKNOWN`, previous `BULL_CF` resolves to `BULL`
+- current `UNKNOWN`, previous `BEAR_CF` resolves to `BEAR`
+- current and previous `UNKNOWN`, previous-to-previous resolves
+- unresolved after max lookback remains `UNKNOWN`
+- `2026-05-29` live-value regression fixture remains `UNKNOWN` after the safe lookback limit
+
+**2026-05-29 before/after**
+Current engine only:
+- current window at `09:30` = `UNKNOWN`
+- trigger = `NO_TRIGGER`
+
+Candidate thresholds:
+- `BULL_A_THRESHOLD = 24786.21275` -> false
+- `BEAR_A_THRESHOLD = 22016.180875` -> false
+- `BULL_CF_B_THRESHOLD = 24972.109345625` -> false
+- `BEAR_CF_B_THRESHOLD = 21851.0595184375` -> false
+- `REVERSAL_BULL_C_THRESHOLD = 24125.9347` -> false
+- `REVERSAL_BEAR_C_THRESHOLD = 23282.12435` -> false
+
+After lookback resolver using today’s FYERS-backed daily-history artifact [normalized_underlying_daily_bars.json](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/2026-05-29/s23-fyers-morning-supervised-decision-0930-2026-05-29/normalized_underlying_daily_bars.json):
+- current `2026-05-29` -> `UNKNOWN`
+- `lookback_1` `2026-05-27` -> `UNKNOWN`
+- `lookback_2` `2026-05-26` -> `UNKNOWN`
+- `lookback_3` `2026-05-25` -> `UNKNOWN`
+- `lookback_4` `2026-05-22` -> `UNKNOWN`
+- `lookback_5` `2026-05-21` -> `UNKNOWN`
+- `lookback_6` `2026-05-20` -> `UNKNOWN`
+
+Resolved result for today:
+- still `UNKNOWN`
+- reason: no directional historical window resolved within the safe lookback limit
+
+So the earlier stale-input bug is fixed, the new lookback rule is implemented, and today’s `UNKNOWN` is now more strongly evidenced rather than less.
+
+**Validation**
+- Targeted monthly-status and live-decision tests: `17 passed`
+- `python scripts/validate_project.py`: passed
+- `python scripts/validate_strategy_configs.py`: passed
+
+Broader live-decision/snapshot suites hit the existing Windows `tmp_path` permission issue during pytest temp-dir setup/cleanup. The logic-focused tests passed; the remaining errors were environment-related, not monthly-status assertion failures.
+
+No broker behavior changed. No live socket behavior changed.

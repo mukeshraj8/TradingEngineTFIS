@@ -140,6 +140,99 @@ def _underlying_bars(day: int = 28) -> tuple[UnderlyingHistoryBar, ...]:
     )
 
 
+def _daily_bars(day: int = 28) -> tuple[UnderlyingHistoryBar, ...]:
+    return (
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 4, 29, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 4, 29, 15, 29, 59, tzinfo=IST),
+            open=24840.0,
+            high=24900.0,
+            low=24690.0,
+            close=24720.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 4, 30, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 4, 30, 15, 29, 59, tzinfo=IST),
+            open=24720.0,
+            high=24810.0,
+            low=24580.0,
+            close=24610.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 20, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 20, 15, 29, 59, tzinfo=IST),
+            open=24610.0,
+            high=24680.0,
+            low=24490.0,
+            close=24530.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 21, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 21, 15, 29, 59, tzinfo=IST),
+            open=24530.0,
+            high=24620.0,
+            low=24390.0,
+            close=24440.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 22, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 22, 15, 29, 59, tzinfo=IST),
+            open=24440.0,
+            high=24510.0,
+            low=24220.0,
+            close=24310.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 26, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 26, 15, 29, 59, tzinfo=IST),
+            open=24310.0,
+            high=24410.0,
+            low=24180.0,
+            close=24240.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, 27, 15, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, 27, 15, 29, 59, tzinfo=IST),
+            open=24240.0,
+            high=24380.0,
+            low=24010.0,
+            close=24120.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+        UnderlyingHistoryBar(
+            symbol="NIFTY",
+            bar_start=datetime(2026, 5, day, 9, 15, tzinfo=IST),
+            bar_end=datetime(2026, 5, day, 15, 29, 59, tzinfo=IST),
+            open=23900.0,
+            high=23920.0,
+            low=23760.0,
+            close=23780.0,
+            volume=1000.0,
+            source_id="daily",
+        ),
+    )
+
+
 def _option_chain(day: int = 28) -> OptionChainSnapshotEvent:
     return OptionChainSnapshotEvent(
         envelope=EventEnvelope(
@@ -222,6 +315,7 @@ def _collected_inputs(day: int = 28, *, generated_at: datetime | None = None) ->
         strategy_rule=_strategy_rule(),
         underlying_quote=_underlying_quote(day),
         underlying_bars=_underlying_bars(day),
+        daily_bars=_daily_bars(day),
         option_chain_snapshot=_option_chain(day),
         expiry_governance=S23PaperExpiryGovernance(
             DeterministicExpiryCalendar(
@@ -283,6 +377,8 @@ def test_timeline_builder_marks_0916_as_partial() -> None:
     assert stage.can_finalize_trade_decision is False
     assert stage.current_day_high_so_far == 23910.0
     assert stage.current_day_low_so_far == 23882.0
+    assert stage.monthly_status_lookback_used is False
+    assert stage.monthly_status_trace[0]["window_label"] == "current"
     assert stage.provisional_formula_evaluation[0]["name"] == "start_strike"
     assert stage.decision_summary is None
 
@@ -303,6 +399,33 @@ def test_timeline_builder_marks_0930_as_finalizable() -> None:
     assert stage.decision_summary is not None
     assert stage.decision_summary["selected_contract_symbol"] == "NIFTY_20260604_23750_PE"
     assert stage.decision_summary["planned_entry_price"] == 212.75
+
+
+def test_timeline_builder_recovers_final_decision_from_live_references() -> None:
+    mismatch_inputs = _collected_inputs(day=29)
+    mismatch_inputs = S23CollectedSnapshotInputs(
+        session_context=mismatch_inputs.session_context,
+        strategy_rule=mismatch_inputs.strategy_rule,
+        underlying_quote=_underlying_quote(29, ltp=23917.3),
+        underlying_bars=mismatch_inputs.underlying_bars,
+        daily_bars=mismatch_inputs.daily_bars,
+        option_chain_snapshot=mismatch_inputs.option_chain_snapshot,
+        expiry_governance=mismatch_inputs.expiry_governance,
+        weekly_expiry=mismatch_inputs.weekly_expiry,
+    )
+    stage_build = S23LiveDecisionTimelineBuilder().build_stage(
+        stage_name="RC Snapshot",
+        stage_time=time(9, 30),
+        strategy_rule=_strategy_rule(),
+        reference_packet=_reference_packet(),
+        collected_inputs=mismatch_inputs,
+    )
+
+    stage = stage_build.stage
+    assert stage.can_finalize_trade_decision is True
+    assert stage.decision_summary is not None
+    assert stage.decision_summary["monthly_status"] == "BEAR_CF"
+    assert stage.decision_failure_code is None
 
 
 def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_path: Path) -> None:

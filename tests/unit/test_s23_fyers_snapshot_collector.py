@@ -41,6 +41,7 @@ class _CountingFakeBrokerAdapter:
         *,
         underlying=None,
         underlying_bars=None,
+        daily_bars=None,
         option_chain=None,
     ) -> None:
         loader = S23NormalizedPaperEventLoader()
@@ -86,9 +87,78 @@ class _CountingFakeBrokerAdapter:
         self._chain = option_chain or next(
             event for event in events if event.envelope.event_type is PaperEventType.OPTION_CHAIN_SNAPSHOT
         )
+        self._daily_bars = daily_bars or (
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(2, 15, 15),
+                bar_end=_ts(2, 15, 29, 59),
+                open=22620.0,
+                high=22680.0,
+                low=22510.0,
+                close=22560.0,
+                volume=1000.0,
+                source_id="unit-test-daily-bars",
+            ),
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(3, 15, 15),
+                bar_end=_ts(3, 15, 29, 59),
+                open=22560.0,
+                high=22610.0,
+                low=22420.0,
+                close=22480.0,
+                volume=1000.0,
+                source_id="unit-test-daily-bars",
+            ),
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(4, 15, 15),
+                bar_end=_ts(4, 15, 29, 59),
+                open=22480.0,
+                high=22520.0,
+                low=22360.0,
+                close=22410.0,
+                volume=1000.0,
+                source_id="unit-test-daily-bars",
+            ),
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(5, 15, 15),
+                bar_end=_ts(5, 15, 29, 59),
+                open=22410.0,
+                high=22480.0,
+                low=22310.0,
+                close=22390.0,
+                volume=1000.0,
+                source_id="unit-test-daily-bars",
+            ),
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(6, 15, 15),
+                bar_end=_ts(6, 15, 29, 59),
+                open=22390.0,
+                high=22430.0,
+                low=22290.0,
+                close=22340.0,
+                volume=1000.0,
+                source_id="unit-test-daily-bars",
+            ),
+            UnderlyingHistoryBar(
+                symbol="NIFTY",
+                bar_start=_ts(8, 9, 15),
+                bar_end=_ts(8, 15, 29, 59),
+                open=22410.0,
+                high=22462.0,
+                low=22395.0,
+                close=22440.0,
+                volume=1000.0,
+                source_id="unit-test-daily-bars",
+            ),
+        )
         self.connected = False
         self.get_underlying_quote_calls = 0
         self.get_underlying_bars_calls = 0
+        self.get_underlying_daily_bars_calls = 0
         self.get_option_chain_calls = 0
         self.get_option_quote_calls = 0
         self.stream_ticks_calls = 0
@@ -118,6 +188,16 @@ class _CountingFakeBrokerAdapter:
     ):
         self.get_underlying_bars_calls += 1
         return self._underlying_bars
+
+    def get_underlying_daily_bars(
+        self,
+        symbol: str,
+        *,
+        session_date: date,
+        lookback_days: int = 90,
+    ):
+        self.get_underlying_daily_bars_calls += 1
+        return self._daily_bars
 
     def get_option_chain(self, symbol: str, expiry: date, *, session_date: date):
         self.get_option_chain_calls += 1
@@ -338,10 +418,12 @@ def test_successful_snapshot_collection(tmp_path: Path) -> None:
     assert artifact_set.summary.preflight_status == "READY"
     assert artifact_set.normalized_underlying_snapshot_path.exists()
     assert artifact_set.normalized_underlying_bars_path.exists()
+    assert artifact_set.normalized_underlying_daily_bars_path.exists()
     assert artifact_set.normalized_option_chain_snapshot_path.exists()
     assert artifact_set.summary_path.exists()
     assert adapter.get_underlying_quote_calls == 1
     assert adapter.get_underlying_bars_calls == 1
+    assert adapter.get_underlying_daily_bars_calls == 1
     assert adapter.get_option_chain_calls == 1
     assert adapter.get_option_quote_calls == 0
     assert adapter.stream_ticks_calls == 0

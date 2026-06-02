@@ -250,6 +250,7 @@ def _artifact(sample_dir: Path, *, at: datetime, symbol: str, premium: float, oi
         summary_path=sample_dir / "summary.json",
         normalized_underlying_snapshot_path=sample_dir / "underlying.json",
         normalized_underlying_bars_path=sample_dir / "underlying_bars.json",
+        normalized_underlying_daily_bars_path=sample_dir / "underlying_daily_bars.json",
         normalized_option_chain_snapshot_path=sample_dir / "chain.json",
         summary=S23FyersSnapshotPreflightSummary(
             artifact_version=1,
@@ -292,6 +293,7 @@ def _artifact(sample_dir: Path, *, at: datetime, symbol: str, premium: float, oi
             strategy_rule=_strategy(),
             underlying_quote=quote,
             underlying_bars=(),
+            daily_bars=(),
             option_chain_snapshot=chain,
             expiry_governance=governance,
             weekly_expiry=date(2026, 5, 12),

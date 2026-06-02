@@ -148,6 +148,7 @@ def run_s23_morning_supervised_decision(
             smoke_override_selected_contract_symbol=(
                 ingress_config.market.selected_contract_symbol if enable_smoke_override else None
             ),
+            allow_branch_pinned_unknown_monthly_status=True,
         )
         timeline_stages.append(stage_build.stage)
         stage_runs.append(

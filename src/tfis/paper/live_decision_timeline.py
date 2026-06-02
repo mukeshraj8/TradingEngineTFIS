@@ -3,22 +3,38 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import asdict, dataclass
-from datetime import date, time
+from datetime import date, datetime, time
 from pathlib import Path
 from typing import Any
 
 from tfis.domain import MarketLevels, StrategyRule
 from tfis.formulas import FormulaEngine
-from tfis.monthly_status import MonthlyStatusEngine, MonthlyStatusReferenceLevels
+from tfis.market_data import UnderlyingHistoryBar
+from tfis.monthly_status import (
+    MonthlyStatusHistoricalBar,
+    MonthlyStatusEngine,
+    MonthlyStatusLookbackResolver,
+    MonthlyStatusLookbackWindow,
+    MonthlyStatusReferenceLevels,
+    MonthlyStatusResolutionResult,
+    build_monthly_weekly_context_lookback_windows,
+)
 
 from .fyers_snapshot_collector import S23CollectedSnapshotInputs
-from .live_decision import S23PaperLiveDecisionBuilder, S23PaperLiveDecisionResult
+from .live_reference_derivation import S23LiveReferenceDeriver
+from .live_decision import (
+    S23PaperLiveDecisionBuilder,
+    S23PaperLiveDecisionError,
+    S23PaperLiveDecisionResult,
+)
+from .live_prelude import S23LivePreludeError
 from .position_state import S23PaperPositionState
 from .runtime_input_derivation import S23DecisionReferencePacket
 
 
 _CHECKPOINT_LABELS = {
     time(9, 14): "0915",
+    time(9, 15): "0915",
     time(9, 24): "ORPT",
     time(9, 29): "RC",
 }
@@ -49,15 +65,21 @@ class S23LiveDecisionTimelineStage:
     checkpoint_observations: tuple[S23LiveDecisionTimelineCheckpoint, ...]
     current_day_high_so_far: float | None
     current_day_low_so_far: float | None
+    monthly_status_price_used: float | None
     monthly_status: str
     monthly_status_trigger: str
     monthly_status_notes: str
+    monthly_status_lookback_used: bool
+    monthly_status_resolution_reason: str
+    monthly_status_trace: tuple[dict[str, Any], ...]
     can_finalize_trade_decision: bool
     market_reference_values: dict[str, Any]
     option_reference_values: dict[str, Any]
     provisional_formula_evaluation: tuple[dict[str, Any], ...]
     decision_summary: dict[str, Any] | None
     decision_explanation: dict[str, Any] | None
+    decision_failure_code: str | None
+    decision_failure_message: str | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,9 +102,18 @@ class S23LiveDecisionTimelineBuilder:
         *,
         decision_builder: S23PaperLiveDecisionBuilder | None = None,
         monthly_status_engine: MonthlyStatusEngine | None = None,
+        monthly_status_lookback_resolver: MonthlyStatusLookbackResolver | None = None,
+        live_reference_deriver: S23LiveReferenceDeriver | None = None,
     ) -> None:
         self._decision_builder = decision_builder or S23PaperLiveDecisionBuilder()
         self._monthly_status_engine = monthly_status_engine or MonthlyStatusEngine()
+        self._monthly_status_lookback_resolver = (
+            monthly_status_lookback_resolver
+            or MonthlyStatusLookbackResolver(
+                monthly_status_engine=self._monthly_status_engine
+            )
+        )
+        self._live_reference_deriver = live_reference_deriver or S23LiveReferenceDeriver()
 
     def build_stage(
         self,
@@ -95,7 +126,12 @@ class S23LiveDecisionTimelineBuilder:
         carry_forward_position: S23PaperPositionState | None = None,
         smoke_override_enabled: bool = False,
         smoke_override_selected_contract_symbol: str | None = None,
+        allow_branch_pinned_unknown_monthly_status: bool = False,
     ) -> S23LiveDecisionTimelineStageBuild:
+        effective_reference_packet = self._live_reference_deriver.derive(
+            base_reference_packet=reference_packet,
+            collected_inputs=collected_inputs,
+        ).effective_reference_packet
         checkpoint_observations = self._checkpoint_observations(
             collected_inputs=collected_inputs,
             stage_time=stage_time,
@@ -106,19 +142,28 @@ class S23LiveDecisionTimelineBuilder:
         waiting_for = tuple(
             label for label in _STAGE_CHECKPOINT_REQUIREMENTS if label not in available_labels
         )
+        monthly_status_price = self._stage_monthly_status_price(
+            checkpoint_observations,
+            fallback_price=collected_inputs.underlying_quote.ltp,
+        )
         monthly_status = self._classify_monthly_status(
-            reference_packet=reference_packet,
-            current_price=collected_inputs.underlying_quote.ltp,
+            reference_packet=effective_reference_packet,
+            current_price=monthly_status_price,
+            current_reference_timestamp=self._stage_reference_timestamp(
+                checkpoint_observations,
+                fallback_timestamp=collected_inputs.session_context.generated_at,
+            ),
+            daily_bars=collected_inputs.daily_bars,
         )
         current_day_high_so_far, current_day_low_so_far = self._current_day_levels_so_far(
             checkpoint_observations
         )
         stage_market_levels = self._stage_market_levels(
-            reference_packet=reference_packet,
+            reference_packet=effective_reference_packet,
             current_day_high_so_far=current_day_high_so_far,
             current_day_low_so_far=current_day_low_so_far,
         )
-        stage_runtime_values = self._stage_runtime_values(reference_packet)
+        stage_runtime_values = self._stage_runtime_values(effective_reference_packet)
         provisional_formula_evaluation = self._build_formula_explanations(
             strategy_rule=strategy_rule,
             market_levels=stage_market_levels,
@@ -127,15 +172,22 @@ class S23LiveDecisionTimelineBuilder:
 
         can_finalize = not waiting_for
         decision: S23PaperLiveDecisionResult | None = None
+        decision_failure_code: str | None = None
+        decision_failure_message: str | None = None
         if can_finalize:
-            decision = self._decision_builder.build(
-                strategy_rule=strategy_rule,
-                reference_packet=reference_packet,
-                collected_inputs=collected_inputs,
-                carry_forward_position=carry_forward_position,
-                smoke_override_enabled=smoke_override_enabled,
-                smoke_override_selected_contract_symbol=smoke_override_selected_contract_symbol,
-            )
+            try:
+                decision = self._decision_builder.build(
+                    strategy_rule=strategy_rule,
+                    reference_packet=effective_reference_packet,
+                    collected_inputs=collected_inputs,
+                    carry_forward_position=carry_forward_position,
+                    smoke_override_enabled=smoke_override_enabled,
+                    smoke_override_selected_contract_symbol=smoke_override_selected_contract_symbol,
+                    allow_branch_pinned_unknown_monthly_status=allow_branch_pinned_unknown_monthly_status,
+                )
+            except (S23PaperLiveDecisionError, S23LivePreludeError) as exc:
+                decision_failure_code = getattr(exc, "code", "LIVE_DECISION_FAILED")
+                decision_failure_message = str(exc)
 
         stage = S23LiveDecisionTimelineStage(
             stage_name=stage_name,
@@ -147,22 +199,56 @@ class S23LiveDecisionTimelineBuilder:
             checkpoint_observations=checkpoint_observations,
             current_day_high_so_far=current_day_high_so_far,
             current_day_low_so_far=current_day_low_so_far,
-            monthly_status=monthly_status.status.value,
-            monthly_status_trigger=monthly_status.trigger_name,
-            monthly_status_notes=monthly_status.notes,
+            monthly_status_price_used=monthly_status_price,
+            monthly_status=monthly_status.resolved_result.status.value,
+            monthly_status_trigger=monthly_status.resolved_result.trigger_name,
+            monthly_status_notes=monthly_status.resolved_result.notes,
+            monthly_status_lookback_used=monthly_status.lookback_used,
+            monthly_status_resolution_reason=monthly_status.reason,
+            monthly_status_trace=tuple(
+                {
+                    "lookback_index": item.lookback_index,
+                    "window_label": item.window_label,
+                    "reference_timestamp": item.reference_timestamp.isoformat(),
+                    "context_month_label": item.context_month_label,
+                    "context_week_label": item.context_week_label,
+                    "PMH": item.PMH,
+                    "PML": item.PML,
+                    "CMH": item.CMH,
+                    "CML": item.CML,
+                    "PWH": item.PWH,
+                    "PWL": item.PWL,
+                    "CWH": item.CWH,
+                    "CWL": item.CWL,
+                    "current_price": item.current_price,
+                    "status": item.status.value,
+                    "normalized_status": (
+                        item.normalized_status.value
+                        if item.normalized_status is not None
+                        else None
+                    ),
+                    "trigger_name": item.trigger_name,
+                    "threshold_value": item.threshold_value,
+                    "notes": item.notes,
+                    "used_for_resolution": item.used_for_resolution,
+                }
+                for item in monthly_status.trace
+            ),
             can_finalize_trade_decision=can_finalize,
             market_reference_values=self._reference_values(
-                reference_packet=reference_packet,
+                reference_packet=effective_reference_packet,
                 current_day_high_so_far=current_day_high_so_far,
                 current_day_low_so_far=current_day_low_so_far,
             ),
             option_reference_values={
                 key: {"value": value, "source": "tfis_reference_packet"}
-                for key, value in sorted(reference_packet.option_reference_values.items())
+                for key, value in sorted(effective_reference_packet.option_reference_values.items())
             },
             provisional_formula_evaluation=provisional_formula_evaluation,
             decision_summary=asdict(decision.summary) if decision is not None else None,
             decision_explanation=decision.explanation if decision is not None else None,
+            decision_failure_code=decision_failure_code,
+            decision_failure_message=decision_failure_message,
         )
         return S23LiveDecisionTimelineStageBuild(
             stage=stage,
@@ -230,8 +316,11 @@ class S23LiveDecisionTimelineBuilder:
                     f"- Waiting For: `{', '.join(stage.waiting_for_checkpoint_labels) or 'none'}`",
                     f"- Current Day High So Far (`CDHH`): `{stage.current_day_high_so_far}`",
                     f"- Current Day Low So Far (`CDLL`): `{stage.current_day_low_so_far}`",
+                    f"- Monthly Status Price Used: `{stage.monthly_status_price_used}`",
                     f"- Monthly Status: `{stage.monthly_status}` via `{stage.monthly_status_trigger}`",
                     f"- Monthly Status Notes: `{stage.monthly_status_notes}`",
+                    f"- Monthly Status Lookback Used: `{stage.monthly_status_lookback_used}`",
+                    f"- Monthly Status Resolution Reason: `{stage.monthly_status_resolution_reason}`",
                     f"- Can Finalize Trade Decision: `{stage.can_finalize_trade_decision}`",
                     "",
                     "### Snapshot Logic",
@@ -242,6 +331,22 @@ class S23LiveDecisionTimelineBuilder:
                 lines.append(
                     f"- `{checkpoint.label}` from `{checkpoint.bar_start}` to `{checkpoint.bar_end}`: "
                     f"open `{checkpoint.open}`, high `{checkpoint.high}`, low `{checkpoint.low}`, close `{checkpoint.close}` -> {inclusion}"
+                )
+            lines.extend(["", "### Monthly Status Trace"])
+            for trace_item in stage.monthly_status_trace:
+                lines.append(
+                    f"- `{trace_item['window_label']}` "
+                    f"({trace_item['context_month_label']} / {trace_item['context_week_label']}) "
+                    f"@ `{trace_item['reference_timestamp']}` -> "
+                    f"base=`{trace_item['status']}` normalized=`{trace_item['normalized_status']}` "
+                    f"via `{trace_item['trigger_name']}` (used=`{trace_item['used_for_resolution']}`)"
+                )
+                lines.append(
+                    f"  Levels: PMH `{trace_item['PMH']}`, PML `{trace_item['PML']}`, "
+                    f"CMH `{trace_item['CMH']}`, CML `{trace_item['CML']}`, "
+                    f"PWH `{trace_item['PWH']}`, PWL `{trace_item['PWL']}`, "
+                    f"CWH `{trace_item['CWH']}`, CWL `{trace_item['CWL']}`, "
+                    f"close `{trace_item['current_price']}`"
                 )
             lines.extend(["", "### Market Reference Values"])
             for alias, payload in stage.market_reference_values.items():
@@ -274,6 +379,15 @@ class S23LiveDecisionTimelineBuilder:
                         f"- Target: `{stage.decision_summary.get('target_price')}`",
                         f"- Stoploss: `{stage.decision_summary.get('stoploss_price')}`",
                         f"- Selection Reason: `{stage.decision_summary.get('contract_selection_reason')}`",
+                    ]
+                )
+            elif stage.decision_failure_code is not None:
+                lines.extend(
+                    [
+                        "",
+                        "### Final Decision At This Stage",
+                        f"- Final decision could not be produced: `{stage.decision_failure_code}`",
+                        f"- Reason: `{stage.decision_failure_message}`",
                     ]
                 )
             else:
@@ -329,7 +443,9 @@ class S23LiveDecisionTimelineBuilder:
         *,
         reference_packet: S23DecisionReferencePacket,
         current_price: float | None,
-    ):
+        current_reference_timestamp: datetime,
+        daily_bars: tuple[UnderlyingHistoryBar, ...],
+    ) -> MonthlyStatusResolutionResult:
         levels = MonthlyStatusReferenceLevels(
             PMH=reference_packet.monthly_status_levels.PMH,
             PML=reference_packet.monthly_status_levels.PML,
@@ -341,9 +457,60 @@ class S23LiveDecisionTimelineBuilder:
             CWL=reference_packet.monthly_status_levels.CWL,
             current_price=float(current_price or 0.0),
         )
-        return self._monthly_status_engine.classify(
+        return self._monthly_status_lookback_resolver.resolve(
             reference_packet.instrument_group.strip().lower(),
             levels,
+            current_reference_timestamp=current_reference_timestamp,
+            lookback_windows=self._build_live_lookback_windows(
+                daily_bars=daily_bars,
+                current_reference_timestamp=current_reference_timestamp,
+            ),
+        )
+
+    @staticmethod
+    def _stage_monthly_status_price(
+        checkpoint_observations: tuple[S23LiveDecisionTimelineCheckpoint, ...],
+        *,
+        fallback_price: float | None,
+    ) -> float | None:
+        included = [item for item in checkpoint_observations if item.included_in_stage]
+        if included:
+            latest = max(included, key=lambda item: item.bar_end)
+            if latest.close is not None:
+                return float(latest.close)
+        return fallback_price
+
+    @staticmethod
+    def _stage_reference_timestamp(
+        checkpoint_observations: tuple[S23LiveDecisionTimelineCheckpoint, ...],
+        *,
+        fallback_timestamp: datetime,
+    ) -> datetime:
+        included = [item for item in checkpoint_observations if item.included_in_stage]
+        if included:
+            latest = max(included, key=lambda item: item.bar_end)
+            return datetime.fromisoformat(latest.bar_end)
+        return fallback_timestamp
+
+    def _build_live_lookback_windows(
+        self,
+        *,
+        daily_bars: tuple[UnderlyingHistoryBar, ...],
+        current_reference_timestamp: datetime,
+    ) -> tuple[MonthlyStatusLookbackWindow, ...]:
+        historical_bars = tuple(
+            MonthlyStatusHistoricalBar(
+                timestamp=bar.bar_end,
+                high=float(bar.high),
+                low=float(bar.low),
+                close=float(bar.close),
+            )
+            for bar in daily_bars
+            if None not in (bar.high, bar.low, bar.close)
+        )
+        return build_monthly_weekly_context_lookback_windows(
+            historical_bars=historical_bars,
+            current_reference_timestamp=current_reference_timestamp,
         )
 
     @staticmethod
@@ -384,27 +551,27 @@ class S23LiveDecisionTimelineBuilder:
         return {
             "PRV_2DHH": {
                 "value": reference_packet.market_reference_levels.d2hh,
-                "source": "tfis_reference_packet",
+                "source": "tfis_live_daily_history",
             },
             "PRV_2DLL": {
                 "value": reference_packet.market_reference_levels.d2ll,
-                "source": "tfis_reference_packet",
+                "source": "tfis_live_daily_history",
             },
             "PRV_3DHH": {
                 "value": reference_packet.market_reference_levels.d3hh,
-                "source": "tfis_reference_packet",
+                "source": "tfis_live_daily_history",
             },
             "PRV_3DLL": {
                 "value": reference_packet.market_reference_levels.d3ll,
-                "source": "tfis_reference_packet",
+                "source": "tfis_live_daily_history",
             },
             "PRV_4DHH": {
                 "value": reference_packet.market_reference_levels.d4hh,
-                "source": "tfis_reference_packet",
+                "source": "tfis_live_daily_history",
             },
             "PRV_4DLL": {
                 "value": reference_packet.market_reference_levels.d4ll,
-                "source": "tfis_reference_packet",
+                "source": "tfis_live_daily_history",
             },
             "CDHH": {
                 "value": current_day_high_so_far,

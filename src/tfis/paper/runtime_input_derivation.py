@@ -11,9 +11,14 @@ from tfis.domain import MarketLevels, StrategyRule
 from tfis.formulas import FormulaEngine
 from tfis.market_data import UnderlyingHistoryBar
 from tfis.monthly_status import (
+    MonthlyStatusHistoricalBar,
     MonthlyStatusEngine,
+    MonthlyStatusLookbackResolver,
+    MonthlyStatusLookbackWindow,
     MonthlyStatusReferenceLevels,
+    MonthlyStatusResolutionResult,
     MonthlyStatusResult,
+    build_monthly_weekly_context_lookback_windows,
 )
 
 from .live_prelude import (
@@ -74,6 +79,7 @@ class S23DecisionReferencePacket:
 @dataclass(frozen=True, slots=True)
 class S23DerivedRuntimeInputs:
     monthly_status_result: MonthlyStatusResult
+    monthly_status_resolution: MonthlyStatusResolutionResult
     market_levels: MarketLevels
     runtime_values: dict[str, float]
     snapshots: tuple[S23PaperSnapshotInput, ...]
@@ -84,17 +90,24 @@ class S23DerivedRuntimeInputs:
 
 _FORMULA_TOKEN_PATTERN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 _CHECKPOINT_CANDLE_STARTS = {
-    SnapshotLabel.AT_0915: time(9, 14),
-    SnapshotLabel.ORPT: time(9, 24),
-    SnapshotLabel.RC: time(9, 29),
+    SnapshotLabel.AT_0915: (time(9, 14), time(9, 15)),
+    SnapshotLabel.ORPT: (time(9, 24),),
+    SnapshotLabel.RC: (time(9, 29),),
 }
 class S23RuntimeInputDeriver:
     def __init__(
         self,
         *,
         monthly_status_engine: MonthlyStatusEngine | None = None,
+        monthly_status_lookback_resolver: MonthlyStatusLookbackResolver | None = None,
     ) -> None:
         self._monthly_status_engine = monthly_status_engine or MonthlyStatusEngine()
+        self._monthly_status_lookback_resolver = (
+            monthly_status_lookback_resolver
+            or MonthlyStatusLookbackResolver(
+                monthly_status_engine=self._monthly_status_engine
+            )
+        )
 
     def derive(
         self,
@@ -103,6 +116,7 @@ class S23RuntimeInputDeriver:
         reference_packet: S23DecisionReferencePacket,
         underlying_quote: UnderlyingQuoteEvent,
         underlying_bars: tuple[UnderlyingHistoryBar, ...],
+        daily_bars: tuple[UnderlyingHistoryBar, ...] | None,
         session_context: S23PaperPreludeSessionContext,
     ) -> S23DerivedRuntimeInputs:
         self._validate_scope(strategy_rule, reference_packet, session_context, underlying_quote)
@@ -126,12 +140,20 @@ class S23RuntimeInputDeriver:
             market_levels=market_levels,
             runtime_values=runtime_values,
         )
-        monthly_status_result = self._classify_monthly_status(
+        monthly_status_price = self._resolve_monthly_status_price(
+            snapshots=snapshots,
+            fallback_price=underlying_quote.ltp,
+        )
+        monthly_status_resolution = self._classify_monthly_status(
             reference_packet=reference_packet,
-            current_price=underlying_quote.ltp,
+            current_price=monthly_status_price,
+            daily_bars=daily_bars or (),
+            session_context=session_context,
+            snapshots=snapshots,
         )
         return S23DerivedRuntimeInputs(
-            monthly_status_result=monthly_status_result,
+            monthly_status_result=monthly_status_resolution.resolved_result,
+            monthly_status_resolution=monthly_status_resolution,
             market_levels=market_levels,
             runtime_values=runtime_values,
             snapshots=snapshots,
@@ -183,7 +205,10 @@ class S23RuntimeInputDeriver:
         *,
         reference_packet: S23DecisionReferencePacket,
         current_price: float | None,
-    ) -> MonthlyStatusResult:
+        daily_bars: tuple[UnderlyingHistoryBar, ...],
+        session_context: S23PaperPreludeSessionContext,
+        snapshots: tuple[S23PaperSnapshotInput, ...],
+    ) -> MonthlyStatusResolutionResult:
         if current_price is None:
             raise S23RuntimeInputDerivationError(
                 "MISSING_CURRENT_PRICE",
@@ -200,10 +225,19 @@ class S23RuntimeInputDeriver:
             CWL=reference_packet.monthly_status_levels.CWL,
             current_price=float(current_price),
         )
+        reference_timestamp = self._resolve_monthly_status_timestamp(
+            session_context=session_context,
+            snapshots=snapshots,
+        )
         try:
-            return self._monthly_status_engine.classify(
+            return self._monthly_status_lookback_resolver.resolve(
                 reference_packet.instrument_group.strip().lower(),
                 levels,
+                current_reference_timestamp=reference_timestamp,
+                lookback_windows=self._build_live_lookback_windows(
+                    daily_bars=daily_bars,
+                    current_reference_timestamp=reference_timestamp,
+                ),
             )
         except KeyError as exc:
             raise S23RuntimeInputDerivationError(
@@ -229,8 +263,12 @@ class S23RuntimeInputDeriver:
         }
         snapshots: list[S23PaperSnapshotInput] = []
         missing_labels: list[str] = []
-        for label, candle_start in _CHECKPOINT_CANDLE_STARTS.items():
-            bar = bar_index.get(candle_start)
+        for label, candle_starts in _CHECKPOINT_CANDLE_STARTS.items():
+            bar = None
+            for candle_start in candle_starts:
+                bar = bar_index.get(candle_start)
+                if bar is not None:
+                    break
             if bar is None:
                 missing_labels.append(label.value)
                 continue
@@ -349,6 +387,49 @@ class S23RuntimeInputDeriver:
                 if token in FormulaEngine.OPTION_ALIAS_NAMES:
                     required.add(token)
         return tuple(sorted(required))
+
+    def _resolve_monthly_status_price(
+        self,
+        *,
+        snapshots: tuple[S23PaperSnapshotInput, ...],
+        fallback_price: float | None,
+    ) -> float | None:
+        latest_snapshot = max(snapshots, key=lambda item: item.bar_end, default=None)
+        if latest_snapshot is not None and latest_snapshot.close is not None:
+            return float(latest_snapshot.close)
+        return fallback_price
+
+    def _resolve_monthly_status_timestamp(
+        self,
+        *,
+        session_context: S23PaperPreludeSessionContext,
+        snapshots: tuple[S23PaperSnapshotInput, ...],
+    ) -> datetime:
+        latest_snapshot = max(snapshots, key=lambda item: item.bar_end, default=None)
+        if latest_snapshot is not None:
+            return latest_snapshot.bar_end
+        return session_context.generated_at
+
+    def _build_live_lookback_windows(
+        self,
+        *,
+        daily_bars: tuple[UnderlyingHistoryBar, ...],
+        current_reference_timestamp: datetime,
+    ) -> tuple[MonthlyStatusLookbackWindow, ...]:
+        historical_bars = tuple(
+            MonthlyStatusHistoricalBar(
+                timestamp=bar.bar_end,
+                high=float(bar.high),
+                low=float(bar.low),
+                close=float(bar.close),
+            )
+            for bar in daily_bars
+            if None not in (bar.high, bar.low, bar.close)
+        )
+        return build_monthly_weekly_context_lookback_windows(
+            historical_bars=historical_bars,
+            current_reference_timestamp=current_reference_timestamp,
+        )
 
     @staticmethod
     def _rule_formulas(strategy_rule: StrategyRule) -> tuple[str, ...]:

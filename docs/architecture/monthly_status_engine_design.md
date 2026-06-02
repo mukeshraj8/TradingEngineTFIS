@@ -102,6 +102,35 @@ This keeps two separate but related artifacts:
 - status engine:
   - final priority-based status selection
 
+## UNKNOWN Lookback Resolution
+
+When the threshold-only current monthly-status context remains `UNKNOWN`, TFIS
+may replay the same monthly-status rules on prior historical contexts.
+
+This lookback is monthly/weekly-context based, not daily-candle based.
+
+For live and replay use, each lookback step must be built from a complete
+historical context containing:
+
+- previous month high / low
+- current month high / low for that context
+- previous week high / low
+- current week high / low for that context
+- the checkpoint close used as `current_price`
+
+The expected sequence is:
+
+1. current month/week context
+2. previous month/week context
+3. previous-to-previous month/week context
+
+up to the configured safe lookback limit.
+
+Normalization remains directional only:
+
+- `BULL` or `BULL_CF` resolves to `BULL`
+- `BEAR` or `BEAR_CF` resolves to `BEAR`
+
 ## Still Pending
 
 The current engine intentionally does not implement:

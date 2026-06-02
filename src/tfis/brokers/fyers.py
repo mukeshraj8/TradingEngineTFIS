@@ -290,6 +290,39 @@ class FyersBrokerAdapter(BrokerAdapter):
             interval_minutes=interval_minutes,
         )
 
+    def get_underlying_daily_bars(
+        self,
+        symbol: str,
+        *,
+        session_date: date,
+        lookback_days: int = 90,
+    ) -> tuple[UnderlyingHistoryBar, ...]:
+        raw_symbol = self._to_fyers_underlying_symbol(symbol)
+        if self._payloads:
+            payload = (
+                self._payloads.get("underlying_daily_bars")
+                or self._payloads.get("daily_bars")
+            )
+        else:
+            if self._client is None:
+                raise BrokerConnectionError("Fyers client is not connected.")
+            range_from = session_date - timedelta(days=max(1, int(lookback_days)))
+            payload = self._client.history(
+                {
+                    "symbol": raw_symbol,
+                    "resolution": "D",
+                    "date_format": "1",
+                    "range_from": range_from.isoformat(),
+                    "range_to": session_date.isoformat(),
+                    "cont_flag": "1",
+                }
+            )
+        return self._normalize_daily_history_payload(
+            payload,
+            raw_symbol=raw_symbol,
+            session_date=session_date,
+        )
+
     def stream_ticks(self) -> tuple[NormalizedBrokerEvent, ...]:
         if self._payloads:
             stream_payloads = self._payloads.get("stream_ticks", ())
@@ -662,6 +695,54 @@ class FyersBrokerAdapter(BrokerAdapter):
         if not bars:
             raise BrokerNormalizationError(
                 "No underlying history candles matched the requested TFIS session window."
+            )
+        return tuple(sorted(bars, key=lambda item: (item.bar_start, item.bar_end)))
+
+    def _normalize_daily_history_payload(
+        self,
+        payload: dict[str, Any] | list[dict[str, Any]] | None,
+        *,
+        raw_symbol: str,
+        session_date: date,
+    ) -> tuple[UnderlyingHistoryBar, ...]:
+        if payload is None:
+            raise BrokerNormalizationError("Missing FYERS daily history payload.")
+        candles = self._extract_history_candles(payload)
+        if not candles:
+            raise BrokerNormalizationError("FYERS daily history payload returned no candles.")
+
+        normalized_symbol = self.normalize_underlying_symbol(raw_symbol)
+        source_id = (
+            str(payload.get("source_id"))
+            if isinstance(payload, dict) and payload.get("source_id")
+            else "fyers:underlying_daily_history"
+        )
+        bars: list[UnderlyingHistoryBar] = []
+        for candle in candles:
+            if not isinstance(candle, (list, tuple)) or len(candle) < 6:
+                raise BrokerNormalizationError("FYERS daily history candle must contain at least 6 values.")
+            epoch = int(candle[0])
+            bar_start = datetime.fromtimestamp(epoch, tz=self._tzinfo)
+            bar_date = bar_start.date()
+            if bar_date > session_date:
+                continue
+            bar_end = datetime.combine(bar_date, time(15, 29, 59), tzinfo=self._tzinfo)
+            bars.append(
+                UnderlyingHistoryBar(
+                    symbol=normalized_symbol,
+                    bar_start=bar_start,
+                    bar_end=bar_end,
+                    open=self._optional_float(candle[1]),
+                    high=self._optional_float(candle[2]),
+                    low=self._optional_float(candle[3]),
+                    close=self._optional_float(candle[4]),
+                    volume=self._optional_float(candle[5]),
+                    source_id=source_id,
+                )
+            )
+        if not bars:
+            raise BrokerNormalizationError(
+                "No daily history candles matched the requested TFIS session window."
             )
         return tuple(sorted(bars, key=lambda item: (item.bar_start, item.bar_end)))
 
