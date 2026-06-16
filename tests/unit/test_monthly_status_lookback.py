@@ -54,7 +54,7 @@ def _levels_for_status(status: str) -> MonthlyStatusReferenceLevels:
         return MonthlyStatusReferenceLevels(
             PMH=100.0,
             PML=90.0,
-            CMH=101.0,
+            CMH=101.6,
             CML=89.0,
             PWH=105.0,
             PWL=85.0,
@@ -67,7 +67,7 @@ def _levels_for_status(status: str) -> MonthlyStatusReferenceLevels:
             PMH=100.0,
             PML=90.0,
             CMH=101.0,
-            CML=89.0,
+            CML=88.5,
             PWH=105.0,
             PWL=85.0,
             CWH=104.0,
@@ -109,6 +109,7 @@ def test_current_resolves_directly_without_lookback() -> None:
     assert result.resolved_result.status == MonthlyStatus.BULL
     assert result.lookback_used is False
     assert result.checked_lookback_windows == 0
+    assert result.borrowed_window_result is None
     assert len(result.trace) == 1
     assert result.trace[0].used_for_resolution is True
     assert result.trace[0].context_month_label == "2026-05"
@@ -124,6 +125,8 @@ def test_unknown_previous_bull_resolves_current_to_bull() -> None:
 
     assert result.resolved_result.status == MonthlyStatus.BULL
     assert result.lookback_used is True
+    assert result.borrowed_window_result is not None
+    assert result.borrowed_window_result.status == MonthlyStatus.BULL
     assert result.trace[1].window_label == "lookback_1"
     assert result.trace[1].used_for_resolution is True
 
@@ -148,7 +151,7 @@ def test_unknown_previous_bull_cf_resolves_current_to_bull() -> None:
         lookback_windows=(_window(1, "BULL_CF"),),
     )
 
-    assert result.resolved_result.status == MonthlyStatus.BULL
+    assert result.resolved_result.status == MonthlyStatus.BULL_CF
     assert result.lookback_used is True
 
 
@@ -160,7 +163,7 @@ def test_unknown_previous_bear_cf_resolves_current_to_bear() -> None:
         lookback_windows=(_window(1, "BEAR_CF"),),
     )
 
-    assert result.resolved_result.status == MonthlyStatus.BEAR
+    assert result.resolved_result.status == MonthlyStatus.BEAR_CF
     assert result.lookback_used is True
 
 
@@ -189,8 +192,149 @@ def test_unresolved_after_max_lookback_remains_unknown() -> None:
 
     assert result.resolved_result.status == MonthlyStatus.UNKNOWN
     assert result.lookback_used is False
+    assert result.borrowed_window_result is None
     assert result.checked_lookback_windows == 1
-    assert result.reason.startswith("Current monthly/weekly context remained UNKNOWN")
+    assert result.reason.startswith("Current month remained UNKNOWN")
+
+
+def test_bearish_reverses_to_bullish_from_weekly_trigger() -> None:
+    current = MonthlyStatusReferenceLevels(
+        PMH=100.0,
+        PML=90.0,
+        CMH=100.5,
+        CML=89.5,
+        PWH=100.0,
+        PWL=92.0,
+        CWH=101.0,
+        CWL=93.0,
+        current_price=101.2,
+    )
+    result = _resolver().resolve(
+        "nifty",
+        current,
+        current_reference_timestamp=datetime(2026, 6, 3, 9, 29, 59),
+        lookback_windows=(_window(1, "BEAR"),),
+    )
+
+    assert result.borrowed_window_result is not None
+    assert result.borrowed_window_result.status == MonthlyStatus.BEAR
+    assert result.resolved_result.status == MonthlyStatus.BULL
+    assert result.resolved_result.trigger_name == "LOOKBACK::REVERSAL_BULL_C_THRESHOLD"
+
+
+def test_bearish_confirmed_does_not_reverse_from_weekly_trigger_only() -> None:
+    current = MonthlyStatusReferenceLevels(
+        PMH=110.0,
+        PML=90.0,
+        CMH=100.5,
+        CML=89.5,
+        PWH=100.0,
+        PWL=92.0,
+        CWH=101.0,
+        CWL=93.0,
+        current_price=101.2,
+    )
+    result = _resolver().resolve(
+        "nifty",
+        current,
+        current_reference_timestamp=datetime(2026, 6, 3, 9, 29, 59),
+        lookback_windows=(_window(1, "BEAR_CF"),),
+    )
+
+    assert result.borrowed_window_result is not None
+    assert result.borrowed_window_result.status == MonthlyStatus.BEAR_CF
+    assert result.resolved_result.status == MonthlyStatus.BEAR_CF
+
+
+def test_bearish_confirmed_reverses_to_bullish_from_monthly_threshold() -> None:
+    current = MonthlyStatusReferenceLevels(
+        PMH=100.0,
+        PML=90.0,
+        CMH=100.5,
+        CML=89.5,
+        PWH=100.0,
+        PWL=92.0,
+        CWH=101.0,
+        CWL=93.0,
+        current_price=100.8,
+    )
+    result = _resolver().resolve(
+        "nifty",
+        current,
+        current_reference_timestamp=datetime(2026, 6, 3, 9, 29, 59),
+        lookback_windows=(_window(1, "BEAR_CF"),),
+    )
+
+    assert result.resolved_result.status == MonthlyStatus.BULL
+    assert result.resolved_result.trigger_name == "LOOKBACK::BULL_A_THRESHOLD"
+
+
+def test_bullish_reverses_to_bearish_from_weekly_trigger() -> None:
+    current = MonthlyStatusReferenceLevels(
+        PMH=100.0,
+        PML=90.0,
+        CMH=100.5,
+        CML=89.5,
+        PWH=100.0,
+        PWL=95.0,
+        CWH=101.0,
+        CWL=94.0,
+        current_price=93.8,
+    )
+    result = _resolver().resolve(
+        "nifty",
+        current,
+        current_reference_timestamp=datetime(2026, 6, 3, 9, 29, 59),
+        lookback_windows=(_window(1, "BULL"),),
+    )
+
+    assert result.resolved_result.status == MonthlyStatus.BEAR
+    assert result.resolved_result.trigger_name == "LOOKBACK::REVERSAL_BEAR_C_THRESHOLD"
+
+
+def test_bullish_confirmed_does_not_reverse_from_weekly_trigger_only() -> None:
+    current = MonthlyStatusReferenceLevels(
+        PMH=100.0,
+        PML=90.0,
+        CMH=100.5,
+        CML=89.5,
+        PWH=100.0,
+        PWL=95.0,
+        CWH=101.0,
+        CWL=94.0,
+        current_price=93.8,
+    )
+    result = _resolver().resolve(
+        "nifty",
+        current,
+        current_reference_timestamp=datetime(2026, 6, 3, 9, 29, 59),
+        lookback_windows=(_window(1, "BULL_CF"),),
+    )
+
+    assert result.resolved_result.status == MonthlyStatus.BULL_CF
+
+
+def test_bullish_confirmed_reverses_to_bearish_from_monthly_threshold() -> None:
+    current = MonthlyStatusReferenceLevels(
+        PMH=100.0,
+        PML=90.0,
+        CMH=100.5,
+        CML=89.5,
+        PWH=100.0,
+        PWL=95.0,
+        CWH=101.0,
+        CWL=94.0,
+        current_price=89.2,
+    )
+    result = _resolver().resolve(
+        "nifty",
+        current,
+        current_reference_timestamp=datetime(2026, 6, 3, 9, 29, 59),
+        lookback_windows=(_window(1, "BULL_CF"),),
+    )
+
+    assert result.resolved_result.status == MonthlyStatus.BEAR
+    assert result.resolved_result.trigger_name == "LOOKBACK::BEAR_A_THRESHOLD"
 
 
 def test_current_unknown_previous_monthly_weekly_context_resolves_bull() -> None:
@@ -476,3 +620,83 @@ def test_2026_05_29_live_monthly_weekly_context_trace_remains_unknown_after_safe
         "2026-05",
         "2026-04",
     ]
+
+
+def test_2026_06_03_documented_example_resolves_bearish_confirmed() -> None:
+    current_levels = MonthlyStatusReferenceLevels(
+        PMH=24482.10,
+        PML=23262.55,
+        CMH=23733.70,
+        CML=23229.15,
+        PWH=23717.40,
+        PWL=23229.15,
+        CWH=23633.40,
+        CWL=23229.15,
+        current_price=23483.55,
+    )
+    lookback_windows = (
+        MonthlyStatusLookbackWindow(
+            window_label="lookback_1",
+            reference_timestamp=datetime(2026, 5, 31, 15, 29, 59),
+            context_month_label="2026-05",
+            context_week_label="2026-W22",
+            levels=MonthlyStatusReferenceLevels(
+                PMH=24601.70,
+                PML=22182.55,
+                CMH=24482.10,
+                CML=23262.55,
+                PWH=24089.80,
+                PWL=23317.10,
+                CWH=24089.80,
+                CWL=23858.25,
+                current_price=23893.40,
+            ),
+        ),
+        MonthlyStatusLookbackWindow(
+            window_label="lookback_2",
+            reference_timestamp=datetime(2026, 4, 30, 15, 29, 59),
+            context_month_label="2026-04",
+            context_week_label="2026-W18",
+            levels=MonthlyStatusReferenceLevels(
+                PMH=24989.35,
+                PML=22283.85,
+                CMH=24601.70,
+                CML=22182.55,
+                PWH=23997.45,
+                PWL=23262.55,
+                CWH=24089.80,
+                CWL=23858.25,
+                current_price=23913.70,
+            ),
+        ),
+        MonthlyStatusLookbackWindow(
+            window_label="lookback_3",
+            reference_timestamp=datetime(2026, 3, 31, 15, 29, 59),
+            context_month_label="2026-03",
+            context_week_label="2026-W14",
+            levels=MonthlyStatusReferenceLevels(
+                PMH=26341.20,
+                PML=24571.75,
+                CMH=24989.35,
+                CML=22283.85,
+                PWH=25710.00,
+                PWL=24571.75,
+                CWH=24989.35,
+                CWL=22283.85,
+                current_price=22283.85,
+            ),
+        ),
+    )
+
+    result = _resolver(limit=6).resolve(
+        "nifty",
+        current_levels,
+        current_reference_timestamp=datetime(2026, 6, 3, 9, 29, 59),
+        lookback_windows=lookback_windows,
+    )
+
+    assert result.current_window_result.status == MonthlyStatus.UNKNOWN
+    assert result.borrowed_window_result is not None
+    assert result.borrowed_window_result.status == MonthlyStatus.BEAR_CF
+    assert result.resolved_result.status == MonthlyStatus.BEAR_CF
+    assert result.checked_lookback_windows == 3

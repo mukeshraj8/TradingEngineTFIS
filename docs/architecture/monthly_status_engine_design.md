@@ -3,70 +3,142 @@
 ## Current Status
 
 - `StrategyBranchSelector` already exists and filters folder-based strategies by `MonthlyStatus`.
-- `MonthlyStatusEngine` is now implemented for the currently confirmed threshold rules.
-- `MonthlyStatus` can still be supplied externally or manually where needed.
-- gap-up / gap-down behavior remains separate and is not part of the current engine.
-
-## Implemented Deterministic Rules
-
-The current engine classifies these statuses:
-
-- `BULL`
-- `BULL_CF`
-- `BEAR`
-- `BEAR_CF`
-- `UNKNOWN`
-
-Confirmed derived values:
-
-- `bullish_value = PMH + a%`
-- `bearish_value = PML - a%`
-
-Confirmed trigger rules:
-
-- `BULL`
-  - `current_price >= PMH + a%`
-- `BEAR`
-  - `current_price <= PML - a%`
-- `BULL_CF`
-  - `current_price >= bullish_value + b%`
-- `BEAR_CF`
-  - `current_price <= bearish_value - b%`
-- reversal bullish
-  - `current_price >= MAX(PWH, CWH) + c%`
-- reversal bearish
-  - `current_price <= MIN(PWL, CWL) - c%`
-
-Priority order:
-
-1. reversal bearish -> `BEAR`
-2. reversal bullish -> `BULL`
-3. `BEAR_CF`
-4. `BULL_CF`
-5. `BEAR`
-6. `BULL`
-7. `UNKNOWN`
-
-If reversal and continuation conflict, reversal dominates.
-
-The current engine does not require monthly close confirmation.
+- `MonthlyStatusEngine` now follows the clarified classroom / workbook-aligned two-layer flow:
+  - direct monthly structure
+  - then current-price transition rules from the effective monthly state
+- `MonthlyStatusLookbackResolver` now borrows prior **monthly/weekly contexts**, not prior trading-day anchors.
+- gap-up / gap-down behavior remains separate and is still not implemented in this layer.
 
 ## Inputs
 
-The deterministic engine currently depends on:
+The engine uses these reference values:
 
-- reference levels:
-  - `PMH`
-  - `PML`
-  - `CMH`
-  - `CML`
-  - `PWH`
-  - `PWL`
-  - `CWH`
-  - `CWL`
-  - `current_price`
-- configured thresholds from:
-  - `config/monthly_status_thresholds.yaml`
+- `PMH` = Previous Month High
+- `PML` = Previous Month Low
+- `CMH` = Current Month High
+- `CML` = Current Month Low
+- `PWH` = Previous Week High
+- `PWL` = Previous Week Low
+- `CWH` = Current Week High
+- `CWL` = Current Week Low
+- `current_price` = checkpoint close / current spot used for the day
+
+Configured thresholds come from:
+
+- `config/monthly_status_thresholds.yaml`
+
+For NIFTY / BANKNIFTY today this means:
+
+- `a = 0.75%`
+- `b = 0.75%`
+- `c = 0.15%`
+
+## Layer 1: Direct Monthly Structure
+
+Direct monthly status is determined from current-month extremes versus previous-month
+extremes.
+
+Derived values:
+
+- `bullish_value = PMH + a%`
+- `bearish_value = PML - a%`
+- `bullish_confirmed_value = bullish_value + b%`
+- `bearish_confirmed_value = bearish_value - b%`
+
+Direct monthly structure rules:
+
+- `BULL`
+  - `CMH >= bullish_value`
+- `BULL_CF`
+  - `CMH >= bullish_confirmed_value`
+- `BEAR`
+  - `CML <= bearish_value`
+- `BEAR_CF`
+  - `CML <= bearish_confirmed_value`
+- `UNKNOWN`
+  - no decisive monthly threshold is breached
+
+When the current month breaches both bullish and bearish directions in the same
+window, TFIS treats that as ambiguous monthly structure and only resolves directly
+if the current price clearly sits beyond one side’s monthly threshold. Otherwise it
+remains `UNKNOWN`.
+
+## Layer 2: UNKNOWN Borrowing
+
+If the current month remains `UNKNOWN`, TFIS borrows from prior historical
+month/week contexts.
+
+This lookback is:
+
+- month/week-context based
+- not previous-trading-day based
+
+Expected sequence:
+
+1. current month/week context
+2. previous month/week context
+3. previous-to-previous month/week context
+
+up to:
+
+- `max_monthly_status_lookback_windows`
+
+Borrowing preserves the actual historical monthly state:
+
+- `BULL` stays `BULL`
+- `BULL_CF` stays `BULL_CF`
+- `BEAR` stays `BEAR`
+- `BEAR_CF` stays `BEAR_CF`
+
+If no historical context resolves within the safe limit, the result remains
+`UNKNOWN`.
+
+## Layer 3: Current-Price Transitions From Effective State
+
+Once an effective monthly status exists, TFIS applies the current day’s price
+transition rules.
+
+### If effective state is `BULL`
+
+- remain `BULL` by default
+- become `BULL_CF` if:
+  - `current_price >= bullish_confirmed_value`
+- reverse to `BEAR` if:
+  - `current_price <= min(PWL, CWL) - c%`
+
+### If effective state is `BULL_CF`
+
+- remain `BULL_CF` by default
+- reverse to `BEAR` if:
+  - `current_price <= bearish_value`
+
+### If effective state is `BEAR`
+
+- remain `BEAR` by default
+- become `BEAR_CF` if:
+  - `current_price <= bearish_confirmed_value`
+- reverse to `BULL` if:
+  - `current_price >= max(PWH, CWH) + c%`
+
+### If effective state is `BEAR_CF`
+
+- remain `BEAR_CF` by default
+- reverse to `BULL` if:
+  - `current_price >= bullish_value`
+
+## Important Distinction
+
+Weekly reversal checks apply only to the non-confirmed states:
+
+- `BULL` -> weekly bearish reversal via `min(PWL, CWL) - c%`
+- `BEAR` -> weekly bullish reversal via `max(PWH, CWH) + c%`
+
+Confirmed states reverse only on the stronger monthly threshold:
+
+- `BULL_CF` -> `BEAR` via `PML - a%`
+- `BEAR_CF` -> `BULL` via `PMH + a%`
+
+This is the key behavior that corrected the earlier TFIS implementation.
 
 ## Engine Output
 
@@ -81,86 +153,45 @@ Current output model:
 - `candidates`
 - `notes`
 
-Current engine interface:
+Current resolver output:
 
-`MonthlyStatusEngine.classify(instrument_group, levels) -> MonthlyStatusResult`
+`MonthlyStatusResolutionResult`
 
-The `candidates` field preserves the underlying monthly-status decision-table
-rows for auditability.
+- `current_window_result`
+- `borrowed_window_result`
+- `resolved_result`
+- `trace`
+- `lookback_used`
+- `reason`
+- `checked_lookback_windows`
 
-## Relationship To The Decision Table
+## Trace Output
 
-The decision table remains a diagnostic layer that exposes all candidate rows.
+Each trace entry includes:
 
-The engine now consumes those candidate rows plus the confirmed threshold
-derivations to produce a final deterministic classification.
-
-This keeps two separate but related artifacts:
-
-- decision table:
-  - transparent candidate visibility
-- status engine:
-  - final priority-based status selection
-
-## UNKNOWN Lookback Resolution
-
-When the threshold-only current monthly-status context remains `UNKNOWN`, TFIS
-may replay the same monthly-status rules on prior historical contexts.
-
-This lookback is monthly/weekly-context based, not daily-candle based.
-
-For live and replay use, each lookback step must be built from a complete
-historical context containing:
-
-- previous month high / low
-- current month high / low for that context
-- previous week high / low
-- current week high / low for that context
-- the checkpoint close used as `current_price`
-
-The expected sequence is:
-
-1. current month/week context
-2. previous month/week context
-3. previous-to-previous month/week context
-
-up to the configured safe lookback limit.
-
-Normalization remains directional only:
-
-- `BULL` or `BULL_CF` resolves to `BULL`
-- `BEAR` or `BEAR_CF` resolves to `BEAR`
-
-## Still Pending
-
-The current engine intentionally does not implement:
-
-- gap-up / gap-down overlays
-- monthly close confirmation
-- prior-status persistence
-- carry-forward state logic
-- rollover effects on monthly status
-- any mandatory backtest coupling beyond consumers optionally using the engine output
-
-An integration path now exists from:
-
-- `MonthlyStatusEngine.classify(...)`
-- to `StrategyBranchSelector.select(...)`
-
-An opt-in historical backtest integration path now exists:
-
-- backtests may provide monthly and weekly reference CSVs
-- the engine may classify status per historical step
-- eligible branch folders may then be selected from a strategy root
-
-Default backtest behavior still remains manual and unchanged:
-
-- `--strategy-path` continues to run one explicitly chosen strategy folder
-- monthly-status-driven branch selection is enabled only when its dedicated CLI flags are supplied
+- `lookback_index`
+- `window_label`
+- `reference_timestamp`
+- `context_month_label`
+- `context_week_label`
+- `PMH`
+- `PML`
+- `CMH`
+- `CML`
+- `PWH`
+- `PWL`
+- `CWH`
+- `CWL`
+- `current_price`
+- base monthly-status result
+- normalized / borrowed status
+- trigger metadata
+- whether that window was used for resolution
 
 ## Safety Principles
 
-- Do not infer more monthly-status logic than the confirmed threshold rules support.
-- Keep completed monthly and weekly reference semantics explicit.
-- Keep reason and audit evidence visible through candidate rows and selected trigger metadata.
+- Do not infer more monthly-status logic than the confirmed classroom/workbook rules support.
+- Keep direct monthly structure separate from borrowed-state current-price transitions.
+- Keep historical borrowing month/week-context based.
+- Keep weekly reversal logic limited to non-confirmed states.
 - Treat gap logic as a separate overlay until explicitly confirmed.

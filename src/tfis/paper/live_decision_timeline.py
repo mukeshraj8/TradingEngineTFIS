@@ -297,6 +297,86 @@ class S23LiveDecisionTimelineBuilder:
         md_path.write_text(self.render_markdown(result), encoding="utf-8")
         return json_path, md_path
 
+    def write_stage_artifacts(
+        self,
+        *,
+        session_date: date,
+        strategy_code: str,
+        strategy_branch: str,
+        stage: S23LiveDecisionTimelineStage,
+        output_dir: str | Path,
+    ) -> tuple[Path, Path, Path, Path]:
+        target = Path(output_dir)
+        target.mkdir(parents=True, exist_ok=True)
+        stage_suffix = stage.stage_time.replace(":", "")
+        stage_json_path = target / f"trade_decision_explainer_stage_{stage_suffix}.json"
+        stage_md_path = target / f"trade_decision_explainer_stage_{stage_suffix}.md"
+        monthly_status_json_path = target / f"monthly_status_stage_{stage_suffix}.json"
+        monthly_status_md_path = target / f"monthly_status_stage_{stage_suffix}.md"
+        stage_json_path.write_text(
+            json.dumps(
+                {
+                    "session_date": session_date.isoformat(),
+                    "strategy_code": strategy_code,
+                    "strategy_branch": strategy_branch,
+                    "stage": asdict(stage),
+                },
+                indent=2,
+                sort_keys=True,
+                default=str,
+            ),
+            encoding="utf-8",
+        )
+        stage_md_path.write_text(
+            self.render_stage_markdown(
+                session_date=session_date,
+                strategy_code=strategy_code,
+                strategy_branch=strategy_branch,
+                stage=stage,
+            ),
+            encoding="utf-8",
+        )
+        monthly_status_json_path.write_text(
+            json.dumps(
+                {
+                    "session_date": session_date.isoformat(),
+                    "strategy_code": strategy_code,
+                    "strategy_branch": strategy_branch,
+                    "stage_name": stage.stage_name,
+                    "stage_time": stage.stage_time,
+                    "captured_at": stage.captured_at,
+                    "monthly_status": {
+                        "price_used": stage.monthly_status_price_used,
+                        "status": stage.monthly_status,
+                        "trigger_name": stage.monthly_status_trigger,
+                        "notes": stage.monthly_status_notes,
+                        "lookback_used": stage.monthly_status_lookback_used,
+                        "resolution_reason": stage.monthly_status_resolution_reason,
+                        "trace": list(stage.monthly_status_trace),
+                    },
+                },
+                indent=2,
+                sort_keys=True,
+                default=str,
+            ),
+            encoding="utf-8",
+        )
+        monthly_status_md_path.write_text(
+            self.render_stage_monthly_status_markdown(
+                session_date=session_date,
+                strategy_code=strategy_code,
+                strategy_branch=strategy_branch,
+                stage=stage,
+            ),
+            encoding="utf-8",
+        )
+        return (
+            stage_json_path,
+            stage_md_path,
+            monthly_status_json_path,
+            monthly_status_md_path,
+        )
+
     def render_markdown(self, result: S23LiveDecisionTimelineResult) -> str:
         lines = [
             "# S23 Trade Decision Explainer",
@@ -306,99 +386,161 @@ class S23LiveDecisionTimelineBuilder:
             "- This report explains what TFIS knows at `09:16`, `09:25`, and `09:30`, and it only finalizes the trade once all required checkpoints are available.",
         ]
         for stage in result.stages:
+            lines.extend(["", *self._render_stage_lines(stage)])
+        return "\n".join(lines) + "\n"
+
+    def render_stage_markdown(
+        self,
+        *,
+        session_date: date,
+        strategy_code: str,
+        strategy_branch: str,
+        stage: S23LiveDecisionTimelineStage,
+    ) -> str:
+        lines = [
+            "# S23 Trade Decision Stage Explainer",
+            "",
+            f"- Session Date: `{session_date.isoformat()}`",
+            f"- Strategy: `{strategy_code}` / `{strategy_branch}`",
+            f"- Stage: `{stage.stage_name}` at `{stage.stage_time}`",
+            "- This report is written immediately after the stage completes so monthly status can be checked without waiting for later checkpoints.",
+            "",
+            *self._render_stage_lines(stage),
+        ]
+        return "\n".join(lines) + "\n"
+
+    def render_stage_monthly_status_markdown(
+        self,
+        *,
+        session_date: date,
+        strategy_code: str,
+        strategy_branch: str,
+        stage: S23LiveDecisionTimelineStage,
+    ) -> str:
+        lines = [
+            "# S23 Monthly Status Stage Summary",
+            "",
+            f"- Session Date: `{session_date.isoformat()}`",
+            f"- Strategy: `{strategy_code}` / `{strategy_branch}`",
+            f"- Stage: `{stage.stage_name}` at `{stage.stage_time}`",
+            f"- Captured At: `{stage.captured_at}`",
+            f"- Monthly Status Price Used: `{stage.monthly_status_price_used}`",
+            f"- Monthly Status: `{stage.monthly_status}` via `{stage.monthly_status_trigger}`",
+            f"- Monthly Status Notes: `{stage.monthly_status_notes}`",
+            f"- Monthly Status Lookback Used: `{stage.monthly_status_lookback_used}`",
+            f"- Monthly Status Resolution Reason: `{stage.monthly_status_resolution_reason}`",
+            "",
+            "## Trace",
+        ]
+        for trace_item in stage.monthly_status_trace:
+            lines.append(
+                f"- `{trace_item['window_label']}` "
+                f"({trace_item['context_month_label']} / {trace_item['context_week_label']}) "
+                f"@ `{trace_item['reference_timestamp']}` -> "
+                f"base=`{trace_item['status']}` normalized=`{trace_item['normalized_status']}` "
+                f"via `{trace_item['trigger_name']}`"
+            )
+            lines.append(
+                f"  Levels: PMH `{trace_item['PMH']}`, PML `{trace_item['PML']}`, "
+                f"CMH `{trace_item['CMH']}`, CML `{trace_item['CML']}`, "
+                f"PWH `{trace_item['PWH']}`, PWL `{trace_item['PWL']}`, "
+                f"CWH `{trace_item['CWH']}`, CWL `{trace_item['CWL']}`, "
+                f"close `{trace_item['current_price']}`"
+            )
+        return "\n".join(lines) + "\n"
+
+    @staticmethod
+    def _render_stage_lines(stage: S23LiveDecisionTimelineStage) -> list[str]:
+        lines = [
+            f"## {stage.stage_name} ({stage.stage_time})",
+            f"- Captured At: `{stage.captured_at}`",
+            f"- NIFTY Spot Used: `{stage.underlying_spot_value}`",
+            f"- Available Checkpoints: `{', '.join(stage.available_checkpoint_labels) or 'none'}`",
+            f"- Waiting For: `{', '.join(stage.waiting_for_checkpoint_labels) or 'none'}`",
+            f"- Current Day High So Far (`CDHH`): `{stage.current_day_high_so_far}`",
+            f"- Current Day Low So Far (`CDLL`): `{stage.current_day_low_so_far}`",
+            f"- Monthly Status Price Used: `{stage.monthly_status_price_used}`",
+            f"- Monthly Status: `{stage.monthly_status}` via `{stage.monthly_status_trigger}`",
+            f"- Monthly Status Notes: `{stage.monthly_status_notes}`",
+            f"- Monthly Status Lookback Used: `{stage.monthly_status_lookback_used}`",
+            f"- Monthly Status Resolution Reason: `{stage.monthly_status_resolution_reason}`",
+            f"- Can Finalize Trade Decision: `{stage.can_finalize_trade_decision}`",
+            "",
+            "### Snapshot Logic",
+        ]
+        for checkpoint in stage.checkpoint_observations:
+            inclusion = "used at this stage" if checkpoint.included_in_stage else "not available yet"
+            lines.append(
+                f"- `{checkpoint.label}` from `{checkpoint.bar_start}` to `{checkpoint.bar_end}`: "
+                f"open `{checkpoint.open}`, high `{checkpoint.high}`, low `{checkpoint.low}`, close `{checkpoint.close}` -> {inclusion}"
+            )
+        lines.extend(["", "### Monthly Status Trace"])
+        for trace_item in stage.monthly_status_trace:
+            lines.append(
+                f"- `{trace_item['window_label']}` "
+                f"({trace_item['context_month_label']} / {trace_item['context_week_label']}) "
+                f"@ `{trace_item['reference_timestamp']}` -> "
+                f"base=`{trace_item['status']}` normalized=`{trace_item['normalized_status']}` "
+                f"via `{trace_item['trigger_name']}` (used=`{trace_item['used_for_resolution']}`)"
+            )
+            lines.append(
+                f"  Levels: PMH `{trace_item['PMH']}`, PML `{trace_item['PML']}`, "
+                f"CMH `{trace_item['CMH']}`, CML `{trace_item['CML']}`, "
+                f"PWH `{trace_item['PWH']}`, PWL `{trace_item['PWL']}`, "
+                f"CWH `{trace_item['CWH']}`, CWL `{trace_item['CWL']}`, "
+                f"close `{trace_item['current_price']}`"
+            )
+        lines.extend(["", "### Market Reference Values"])
+        for alias, payload in stage.market_reference_values.items():
+            lines.append(f"- `{alias}` = `{payload['value']}` from `{payload['source']}`")
+        lines.extend(["", "### Option Reference Values"])
+        for alias, payload in stage.option_reference_values.items():
+            lines.append(f"- `{alias}` = `{payload['value']}` from `{payload['source']}`")
+        lines.extend(["", "### Provisional Formula Evaluation"])
+        for item in stage.provisional_formula_evaluation:
+            lines.extend(
+                [
+                    f"- `{item['name']}`",
+                    f"  Formula: `{item['formula']}`",
+                    f"  Resolved: `{item['resolved_formula']}`",
+                    f"  Result: `{item['result']}`",
+                ]
+            )
+        if stage.decision_summary is not None:
             lines.extend(
                 [
                     "",
-                    f"## {stage.stage_name} ({stage.stage_time})",
-                    f"- Captured At: `{stage.captured_at}`",
-                    f"- NIFTY Spot Used: `{stage.underlying_spot_value}`",
-                    f"- Available Checkpoints: `{', '.join(stage.available_checkpoint_labels) or 'none'}`",
-                    f"- Waiting For: `{', '.join(stage.waiting_for_checkpoint_labels) or 'none'}`",
-                    f"- Current Day High So Far (`CDHH`): `{stage.current_day_high_so_far}`",
-                    f"- Current Day Low So Far (`CDLL`): `{stage.current_day_low_so_far}`",
-                    f"- Monthly Status Price Used: `{stage.monthly_status_price_used}`",
-                    f"- Monthly Status: `{stage.monthly_status}` via `{stage.monthly_status_trigger}`",
-                    f"- Monthly Status Notes: `{stage.monthly_status_notes}`",
-                    f"- Monthly Status Lookback Used: `{stage.monthly_status_lookback_used}`",
-                    f"- Monthly Status Resolution Reason: `{stage.monthly_status_resolution_reason}`",
-                    f"- Can Finalize Trade Decision: `{stage.can_finalize_trade_decision}`",
-                    "",
-                    "### Snapshot Logic",
+                    "### Final Decision At This Stage",
+                    f"- Selected Contract: `{stage.decision_summary.get('selected_contract_symbol')}`",
+                    f"- Expiry: `{stage.decision_summary.get('selected_contract_expiry')}`",
+                    f"- Strike: `{stage.decision_summary.get('selected_contract_strike')}`",
+                    f"- Option Type: `{stage.decision_summary.get('selected_contract_option_type')}`",
+                    f"- Premium: `{stage.decision_summary.get('selected_contract_ltp')}`",
+                    f"- OI: `{stage.decision_summary.get('selected_contract_oi')}`",
+                    f"- Entry: `{stage.decision_summary.get('planned_entry_price')}`",
+                    f"- Target: `{stage.decision_summary.get('target_price')}`",
+                    f"- Stoploss: `{stage.decision_summary.get('stoploss_price')}`",
+                    f"- Selection Reason: `{stage.decision_summary.get('contract_selection_reason')}`",
                 ]
             )
-            for checkpoint in stage.checkpoint_observations:
-                inclusion = "used at this stage" if checkpoint.included_in_stage else "not available yet"
-                lines.append(
-                    f"- `{checkpoint.label}` from `{checkpoint.bar_start}` to `{checkpoint.bar_end}`: "
-                    f"open `{checkpoint.open}`, high `{checkpoint.high}`, low `{checkpoint.low}`, close `{checkpoint.close}` -> {inclusion}"
-                )
-            lines.extend(["", "### Monthly Status Trace"])
-            for trace_item in stage.monthly_status_trace:
-                lines.append(
-                    f"- `{trace_item['window_label']}` "
-                    f"({trace_item['context_month_label']} / {trace_item['context_week_label']}) "
-                    f"@ `{trace_item['reference_timestamp']}` -> "
-                    f"base=`{trace_item['status']}` normalized=`{trace_item['normalized_status']}` "
-                    f"via `{trace_item['trigger_name']}` (used=`{trace_item['used_for_resolution']}`)"
-                )
-                lines.append(
-                    f"  Levels: PMH `{trace_item['PMH']}`, PML `{trace_item['PML']}`, "
-                    f"CMH `{trace_item['CMH']}`, CML `{trace_item['CML']}`, "
-                    f"PWH `{trace_item['PWH']}`, PWL `{trace_item['PWL']}`, "
-                    f"CWH `{trace_item['CWH']}`, CWL `{trace_item['CWL']}`, "
-                    f"close `{trace_item['current_price']}`"
-                )
-            lines.extend(["", "### Market Reference Values"])
-            for alias, payload in stage.market_reference_values.items():
-                lines.append(f"- `{alias}` = `{payload['value']}` from `{payload['source']}`")
-            lines.extend(["", "### Option Reference Values"])
-            for alias, payload in stage.option_reference_values.items():
-                lines.append(f"- `{alias}` = `{payload['value']}` from `{payload['source']}`")
-            lines.extend(["", "### Provisional Formula Evaluation"])
-            for item in stage.provisional_formula_evaluation:
-                lines.extend(
-                    [
-                        f"- `{item['name']}`",
-                        f"  Formula: `{item['formula']}`",
-                        f"  Resolved: `{item['resolved_formula']}`",
-                        f"  Result: `{item['result']}`",
-                    ]
-                )
-            if stage.decision_summary is not None:
-                lines.extend(
-                    [
-                        "",
-                        "### Final Decision At This Stage",
-                        f"- Selected Contract: `{stage.decision_summary.get('selected_contract_symbol')}`",
-                        f"- Expiry: `{stage.decision_summary.get('selected_contract_expiry')}`",
-                        f"- Strike: `{stage.decision_summary.get('selected_contract_strike')}`",
-                        f"- Option Type: `{stage.decision_summary.get('selected_contract_option_type')}`",
-                        f"- Premium: `{stage.decision_summary.get('selected_contract_ltp')}`",
-                        f"- OI: `{stage.decision_summary.get('selected_contract_oi')}`",
-                        f"- Entry: `{stage.decision_summary.get('planned_entry_price')}`",
-                        f"- Target: `{stage.decision_summary.get('target_price')}`",
-                        f"- Stoploss: `{stage.decision_summary.get('stoploss_price')}`",
-                        f"- Selection Reason: `{stage.decision_summary.get('contract_selection_reason')}`",
-                    ]
-                )
-            elif stage.decision_failure_code is not None:
-                lines.extend(
-                    [
-                        "",
-                        "### Final Decision At This Stage",
-                        f"- Final decision could not be produced: `{stage.decision_failure_code}`",
-                        f"- Reason: `{stage.decision_failure_message}`",
-                    ]
-                )
-            else:
-                lines.extend(
-                    [
-                        "",
-                        "### Final Decision At This Stage",
-                        "- TFIS does not finalize the trade yet because later checkpoint data is still pending.",
-                    ]
-                )
-        return "\n".join(lines) + "\n"
+        elif stage.decision_failure_code is not None:
+            lines.extend(
+                [
+                    "",
+                    "### Final Decision At This Stage",
+                    f"- Final decision could not be produced: `{stage.decision_failure_code}`",
+                    f"- Reason: `{stage.decision_failure_message}`",
+                ]
+            )
+        else:
+            lines.extend(
+                [
+                    "",
+                    "### Final Decision At This Stage",
+                    "- TFIS does not finalize the trade yet because later checkpoint data is still pending.",
+                ]
+            )
+        return lines
 
     def _checkpoint_observations(
         self,

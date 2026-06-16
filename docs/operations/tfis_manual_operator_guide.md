@@ -882,9 +882,9 @@ powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supe
 That task starts at `09:14` and launches the TFIS morning runner, which then:
 
 - waits for `09:16`
-- captures the opening snapshot
+- captures the opening snapshot and immediately writes stage artifacts
 - waits for `09:25`
-- captures ORPT
+- captures ORPT and immediately writes stage artifacts
 - waits for `09:30`
 - captures RC and writes the final decision summary
 
@@ -901,10 +901,46 @@ runner and writes launch diagnostics under:
 
 ### What to open first
 
-Open:
+Open first if you are checking during the run:
+
+- `monthly_status_stage_0916.md`
+- `trade_decision_explainer_stage_0916.md`
+
+Open after the full sequence is complete:
 
 - `trade_decision_summary.md`
 - `trade_decision_explainer.md`
+
+### Dashboard option
+
+If you want a web view instead of opening individual files, build the TFIS
+operator dashboard:
+
+```powershell
+python scripts/build_operator_dashboard.py --output-root tmp/operator_dashboard
+```
+
+Serve it locally:
+
+```powershell
+python scripts/serve_operator_dashboard.py --output-root tmp/operator_dashboard --port 8765
+```
+
+Then open:
+
+- `http://127.0.0.1:8765/index.html`
+
+The first version gives you:
+
+- a strategy index page
+- an `S23` page
+- latest session status
+- `09:16`, `09:25`, and `09:30` stage cards
+- monthly status, OI readiness, and raw artifact links per stage
+
+If the morning supervised runner is active, TFIS rebuilds the dashboard after
+each completed stage automatically. That means the `09:16`, `09:25`, and
+`09:30` cards should appear on the page without any manual rebuild command.
 
 ### What the explainer shows
 

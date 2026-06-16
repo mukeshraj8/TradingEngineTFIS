@@ -383,6 +383,37 @@ def test_timeline_builder_marks_0916_as_partial() -> None:
     assert stage.decision_summary is None
 
 
+def test_timeline_builder_writes_stage_monthly_status_artifacts(tmp_path: Path) -> None:
+    builder = S23LiveDecisionTimelineBuilder()
+    stage_build = builder.build_stage(
+        stage_name="Opening Snapshot",
+        stage_time=time(9, 16),
+        strategy_rule=_strategy_rule(),
+        reference_packet=_reference_packet(),
+        collected_inputs=_collected_inputs(),
+    )
+
+    (
+        stage_json,
+        stage_markdown,
+        monthly_status_json,
+        monthly_status_markdown,
+    ) = builder.write_stage_artifacts(
+        session_date=date(2026, 5, 28),
+        strategy_code="S23",
+        strategy_branch="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+        stage=stage_build.stage,
+        output_dir=tmp_path,
+    )
+
+    assert stage_json.exists()
+    assert stage_markdown.exists()
+    assert monthly_status_json.exists()
+    assert monthly_status_markdown.exists()
+    assert "Monthly Status: `BEAR_CF`" in monthly_status_markdown.read_text(encoding="utf-8")
+    assert "window_label" in monthly_status_json.read_text(encoding="utf-8")
+
+
 def test_timeline_builder_marks_0930_as_finalizable() -> None:
     stage_build = S23LiveDecisionTimelineBuilder().build_stage(
         stage_name="RC Snapshot",
@@ -479,6 +510,7 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
         strategy_path="strategy",
         reference_packet_path="reference.json",
         artifact_root=tmp_path,
+        dashboard_output_root=tmp_path / "dashboard",
         session_id_prefix="timeline-test",
         skip_refresh=True,
         now_provider=lambda: next(now_values),
@@ -489,8 +521,14 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
     assert result.stage_runs[0].stage.waiting_for_checkpoint_labels == ("ORPT", "RC")
     assert result.stage_runs[1].stage.waiting_for_checkpoint_labels == ("RC",)
     assert result.stage_runs[2].stage.waiting_for_checkpoint_labels == ()
+    assert Path(result.stage_runs[0].monthly_status_markdown).exists()
+    assert Path(result.stage_runs[0].stage_explainer_markdown).exists()
+    assert "Monthly Status" in Path(result.stage_runs[0].monthly_status_markdown).read_text(encoding="utf-8")
+    assert "Opening Snapshot" in Path(result.stage_runs[0].stage_explainer_markdown).read_text(encoding="utf-8")
     assert result.final_summary_markdown is not None
     assert result.timeline_markdown.exists()
+    assert (tmp_path / "dashboard" / "index.html").exists()
+    assert (tmp_path / "dashboard" / "strategies" / "S23" / "index.html").exists()
     assert "09:16" in result.timeline_markdown.read_text(encoding="utf-8")
     assert "09:25" in result.timeline_markdown.read_text(encoding="utf-8")
     assert "09:30" in result.timeline_markdown.read_text(encoding="utf-8")

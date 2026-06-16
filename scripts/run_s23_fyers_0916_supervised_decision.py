@@ -44,6 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--strategy-path", default=str(DEFAULT_STRATEGY))
     parser.add_argument("--reference-packet", default=str(DEFAULT_REFERENCE_PACKET))
     parser.add_argument("--artifact-root", default="tmp/s23_fyers_morning_supervised_decision")
+    parser.add_argument("--dashboard-output-root", default="tmp/operator_dashboard")
     parser.add_argument("--session-id-prefix", default="s23-fyers-morning-supervised-decision")
     parser.add_argument("--carry-forward-state-dir")
     parser.add_argument("--enable-smoke-override", action="store_true")
@@ -62,6 +63,7 @@ def main(argv: list[str] | None = None) -> int:
             strategy_path=args.strategy_path,
             reference_packet_path=args.reference_packet,
             artifact_root=args.artifact_root,
+            dashboard_output_root=args.dashboard_output_root,
             session_id_prefix=args.session_id_prefix,
             carry_forward_state_dir=args.carry_forward_state_dir,
             enable_smoke_override=args.enable_smoke_override,

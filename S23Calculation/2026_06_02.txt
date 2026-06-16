@@ -1,0 +1,78 @@
+Here’s today’s actual TFIS snapshot and calculation picture for **June 2, 2026**.
+
+**Run status**
+- The auto job did start at `09:14:02`.
+- Launch log: [start_s23_fyers_morning_supervised_decision_20260602_091402.log](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/_task_launch_logs/start_s23_fyers_morning_supervised_decision_20260602_091402.log)
+
+**09:16 stage**
+Artifacts:
+- [normalized_underlying_snapshot.json](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/2026-06-02/s23-fyers-morning-supervised-decision-0916-2026-06-02/normalized_underlying_snapshot.json)
+- [normalized_underlying_bars.json](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/2026-06-02/s23-fyers-morning-supervised-decision-0916-2026-06-02/normalized_underlying_bars.json)
+- [normalized_option_chain_snapshot.json](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/2026-06-02/s23-fyers-morning-supervised-decision-0916-2026-06-02/normalized_option_chain_snapshot.json)
+- [snapshot_preflight_summary.json](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/2026-06-02/s23-fyers-morning-supervised-decision-0916-2026-06-02/snapshot_preflight_summary.json)
+
+Values used:
+- underlying quote captured at `09:16:01`: `23250.95`
+- `09:15` bar:
+  - open `23229.15`
+  - high `23286.9`
+  - low `23229.15`
+  - close `23255.65`
+
+Current TFIS stage calculation at `09:16`:
+- available checkpoints: `0915`
+- monthly-status price used: `23255.65`
+- current day high so far: `23286.9`
+- current day low so far: `23229.15`
+- monthly status: `UNKNOWN`
+- trigger: `NO_TRIGGER`
+
+Readiness:
+- option chain collected: `true`
+- option chain contracts: `42`
+- complete OI: `true`
+
+**09:25 stage**
+Artifacts:
+- [normalized_underlying_bars.json](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/2026-06-02/s23-fyers-morning-supervised-decision-0925-2026-06-02/normalized_underlying_bars.json)
+- [normalized_option_chain_snapshot.json](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/2026-06-02/s23-fyers-morning-supervised-decision-0925-2026-06-02/normalized_option_chain_snapshot.json)
+- [snapshot_preflight_summary.json](/d:/TradingEngineTFIS/tmp/s23_fyers_morning_supervised_decision/2026-06-02/s23-fyers-morning-supervised-decision-0925-2026-06-02/snapshot_preflight_summary.json)
+
+Checkpoint bar used for ORPT:
+- `09:24` bar close: `23281.6`
+
+Current TFIS stage calculation at `09:25`:
+- available checkpoints: `0915`, `ORPT`
+- monthly-status price used: `23281.6`
+- current day high so far: `23286.9`
+- current day low so far: `23229.15`
+- monthly status: `UNKNOWN`
+- trigger: `NO_TRIGGER`
+
+Readiness:
+- option chain collected: `true`
+- option chain contracts: `42`
+- complete OI: `true`
+
+**Important cross-check**
+Current TFIS stage logic derives `CDHH/CDLL` from the checkpoint bars it includes at that stage, not from every minute bar between them. So at `09:25`, TFIS still reports `CDHH = 23286.9` from the `09:15` checkpoint bar, even though the full minute stream before `09:25` briefly traded a bit higher. That’s a meaningful design detail for the dashboard and possibly for future logic refinement.
+
+**What is missing today**
+- I do not see a completed `09:30` / final combined artifact for `2026-06-02`.
+- So there is no final `trade_decision_summary.md` for today yet.
+
+So today’s confirmed picture is:
+- `09:15` snapshot taken
+- `09:25` snapshot taken
+- both stages had clean option-chain/OI readiness
+- monthly status remained `UNKNOWN` at both stages
+- no final `09:30` trade summary is available yet
+
+This is enough to start the dashboard work properly, because we now know the exact operator-visible objects we need:
+- stage cards for `09:16`, `09:25`, `09:30`
+- checkpoint OHLC
+- monthly-status result and trace
+- option-chain readiness and OI completeness
+- later final decision block when available
+
+I’ll start the dashboard work next with a read-only artifact-backed structure so `S23` gets its own page and future strategies can fit into the same layout cleanly.

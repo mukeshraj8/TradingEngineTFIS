@@ -392,6 +392,16 @@ at each stage:
 - `09:30`: collects the RC snapshot, finalizes the supervised paper decision,
   and writes both `trade_decision_summary.md` and `trade_decision_explainer.md`
 
+As soon as each checkpoint finishes, TFIS now also writes immediate stage files
+so monthly status can be checked without waiting for `09:30`:
+
+- `trade_decision_explainer_stage_0916.md`
+- `monthly_status_stage_0916.md`
+- `trade_decision_explainer_stage_0925.md`
+- `monthly_status_stage_0925.md`
+- `trade_decision_explainer_stage_0930.md`
+- `monthly_status_stage_0930.md`
+
 The explainer artifact shows:
 
 - NIFTY spot value used at `09:16`, `09:25`, and `09:30`
@@ -402,6 +412,33 @@ The explainer artifact shows:
 - resolved strategy formulas and provisional/final numeric outputs at each stage
 - contract selection thresholds, candidate rejection reasons, and final
   selected contract
+
+Build the operator dashboard from TFIS artifacts:
+
+```powershell
+python scripts/build_operator_dashboard.py --output-root tmp/operator_dashboard
+```
+
+Serve the dashboard locally:
+
+```powershell
+python scripts/serve_operator_dashboard.py --output-root tmp/operator_dashboard --port 8765
+```
+
+The first dashboard version is read-only and artifact-backed. It currently
+includes:
+
+- a strategy index page
+- an `S23` strategy page
+- latest session status
+- stage cards for `09:16`, `09:25`, and `09:30`
+- monthly-status visibility per stage
+- option-chain readiness and OI completeness
+- links to raw TFIS artifacts for cross-checking
+
+During the morning supervised run, TFIS now rebuilds this dashboard
+automatically after each completed stage, so the `09:16`, `09:25`, and
+`09:30` views appear without any manual rebuild step.
 
 One-time Windows scheduled-task registration for automatic daily launch before
 `09:16`:

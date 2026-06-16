@@ -79,6 +79,7 @@ class MonthlyStatusResolutionTraceEntry:
 @dataclass(frozen=True, slots=True)
 class MonthlyStatusResolutionResult:
     current_window_result: MonthlyStatusResult
+    borrowed_window_result: MonthlyStatusResult | None
     resolved_result: MonthlyStatusResult
     trace: tuple[MonthlyStatusResolutionTraceEntry, ...]
     lookback_used: bool
@@ -141,12 +142,18 @@ class MonthlyStatusLookbackResolver:
             )
         ]
         if current_result.status is not MonthlyStatus.UNKNOWN:
+            transitioned = self._monthly_status_engine.apply_current_price_transitions(
+                instrument_group,
+                current_levels,
+                effective_status=current_result.status,
+            )
             return MonthlyStatusResolutionResult(
                 current_window_result=current_result,
-                resolved_result=current_result,
+                borrowed_window_result=None,
+                resolved_result=transitioned,
                 trace=tuple(trace_entries),
                 lookback_used=False,
-                reason="Current window resolved directly from threshold rules.",
+                reason="Current month resolved directly from monthly structure rules.",
                 checked_lookback_windows=0,
             )
 
@@ -188,41 +195,46 @@ class MonthlyStatusLookbackResolver:
             )
             if normalized is None:
                 continue
-            resolved_result = MonthlyStatusResult(
-                status=normalized,
-                trigger_name=f"LOOKBACK::{lookback_result.trigger_name}",
-                threshold_value=lookback_result.threshold_value,
-                reversal_dominated=lookback_result.reversal_dominated,
-                candidates=list(current_result.candidates),
-                notes=(
-                    "Current window remained UNKNOWN; resolved from "
-                    f"{window.window_label} "
-                    f"({window.context_month_label} / {window.context_week_label}) at "
-                    f"{window.reference_timestamp.isoformat()} "
-                    f"where the historical window classified as "
-                    f"{lookback_result.status.value}."
-                ),
+            transitioned = self._monthly_status_engine.apply_current_price_transitions(
+                instrument_group,
+                current_levels,
+                effective_status=normalized,
             )
             return MonthlyStatusResolutionResult(
                 current_window_result=current_result,
-                resolved_result=resolved_result,
+                borrowed_window_result=lookback_result,
+                resolved_result=MonthlyStatusResult(
+                    status=transitioned.status,
+                    trigger_name=f"LOOKBACK::{transitioned.trigger_name}",
+                    threshold_value=transitioned.threshold_value,
+                    reversal_dominated=transitioned.reversal_dominated,
+                    candidates=list(transitioned.candidates),
+                    notes=(
+                        "Current month remained UNKNOWN, so TFIS borrowed the "
+                        f"monthly status from {window.window_label} "
+                        f"({window.context_month_label} / {window.context_week_label}) "
+                        f"where the historical context classified as "
+                        f"{lookback_result.status.value}, then applied today's "
+                        "current-price transition rules."
+                    ),
+                ),
                 trace=tuple(trace_entries),
                 lookback_used=True,
                 reason=(
-                    "Resolved from prior window because the current threshold-only "
-                    "monthly/weekly context was UNKNOWN."
+                    "Resolved from prior month/week context because the current "
+                    "month's direct monthly structure was UNKNOWN."
                 ),
                 checked_lookback_windows=checked,
             )
 
         return MonthlyStatusResolutionResult(
             current_window_result=current_result,
+            borrowed_window_result=None,
             resolved_result=current_result,
             trace=tuple(trace_entries),
             lookback_used=False,
             reason=(
-                "Current monthly/weekly context remained UNKNOWN and no directional "
-                "historical monthly/weekly context resolved within the safe "
+                "Current month remained UNKNOWN and no historical monthly/weekly context resolved within the safe "
                 "lookback limit."
             ),
             checked_lookback_windows=checked,
@@ -232,11 +244,9 @@ class MonthlyStatusLookbackResolver:
     def _normalize_lookback_status(
         status: MonthlyStatus,
     ) -> MonthlyStatus | None:
-        if status in {MonthlyStatus.BULL, MonthlyStatus.BULL_CF}:
-            return MonthlyStatus.BULL
-        if status in {MonthlyStatus.BEAR, MonthlyStatus.BEAR_CF}:
-            return MonthlyStatus.BEAR
-        return None
+        if status is MonthlyStatus.UNKNOWN:
+            return None
+        return status
 
 
 @dataclass(frozen=True, slots=True)
@@ -255,21 +265,21 @@ def build_monthly_weekly_context_lookback_windows(
     bars = tuple(sorted(historical_bars, key=lambda item: item.timestamp))
     if not bars:
         return ()
-    current_context_key = _context_key(current_reference_timestamp)
-    candidate_contexts = {
-        _context_key(bar.timestamp)
+    current_month_key = (current_reference_timestamp.year, current_reference_timestamp.month)
+    candidate_months = {
+        (bar.timestamp.year, bar.timestamp.month)
         for bar in bars
         if bar.timestamp < current_reference_timestamp
-        and _context_key(bar.timestamp) != current_context_key
+        and (bar.timestamp.year, bar.timestamp.month) != current_month_key
     }
-    ordered_contexts = sorted(
-        candidate_contexts,
-        key=lambda key: _context_anchor_timestamp(bars, key),
+    ordered_months = sorted(
+        candidate_months,
+        key=lambda key: _month_anchor_timestamp(bars, key),
         reverse=True,
     )
     windows: list[MonthlyStatusLookbackWindow] = []
-    for index, context_key in enumerate(ordered_contexts, start=1):
-        anchor_timestamp = _context_anchor_timestamp(bars, context_key)
+    for index, month_key in enumerate(ordered_months, start=1):
+        anchor_timestamp = _month_anchor_timestamp(bars, month_key)
         levels = _build_levels_for_context_anchor(
             historical_bars=bars,
             anchor_timestamp=anchor_timestamp,
@@ -298,7 +308,6 @@ def _build_levels_for_context_anchor(
     )
     if not eligible:
         return None
-    anchor_context = _context_key(anchor_timestamp)
     current_month_bars = tuple(
         bar
         for bar in eligible
@@ -339,12 +348,9 @@ def _build_levels_for_context_anchor(
     previous_week_bars = tuple(
         bar for bar in eligible if _iso_week_key(bar.timestamp) == previous_week_key
     )
-    anchor_bars = tuple(
-        bar for bar in eligible if _context_key(bar.timestamp) == anchor_context
-    )
-    if not previous_month_bars or not previous_week_bars or not anchor_bars:
+    if not previous_month_bars or not previous_week_bars:
         return None
-    anchor_bar = max(anchor_bars, key=lambda item: item.timestamp)
+    anchor_bar = max(current_month_bars, key=lambda item: item.timestamp)
     return MonthlyStatusReferenceLevels(
         PMH=max(bar.high for bar in previous_month_bars),
         PML=min(bar.low for bar in previous_month_bars),
@@ -358,21 +364,14 @@ def _build_levels_for_context_anchor(
     )
 
 
-def _context_anchor_timestamp(
+def _month_anchor_timestamp(
     historical_bars: tuple[MonthlyStatusHistoricalBar, ...],
-    context_key: tuple[tuple[int, int], tuple[int, int]],
+    month_key: tuple[int, int],
 ) -> datetime:
     return max(
         bar.timestamp
         for bar in historical_bars
-        if _context_key(bar.timestamp) == context_key
-    )
-
-
-def _context_key(timestamp: datetime) -> tuple[tuple[int, int], tuple[int, int]]:
-    return (
-        (timestamp.year, timestamp.month),
-        _iso_week_key(timestamp),
+        if (bar.timestamp.year, bar.timestamp.month) == month_key
     )
 
 

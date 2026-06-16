@@ -13,6 +13,8 @@ param(
     [string]$CarryForwardStateDir
 )
 
+$ErrorActionPreference = "Stop"
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 Set-Location $repoRoot
@@ -63,7 +65,16 @@ Write-LaunchLog "Python executable: $pythonExe"
 Write-LaunchLog "ArtifactRoot: $ArtifactRoot"
 Write-LaunchLog "SessionIdPrefix: $SessionIdPrefix"
 
-& $pythonExe @args
-$exitCode = $LASTEXITCODE
-Write-LaunchLog "Wrapper finished with exit code $exitCode."
-exit $exitCode
+try {
+    & $pythonExe @args 2>&1 | ForEach-Object {
+        Write-LaunchLog ("PYTHON: {0}" -f $_)
+        Write-Output $_
+    }
+    $exitCode = $LASTEXITCODE
+    Write-LaunchLog "Wrapper finished with exit code $exitCode."
+    exit $exitCode
+}
+catch {
+    Write-LaunchLog ("Wrapper failed: {0}" -f $_.Exception.Message)
+    throw
+}

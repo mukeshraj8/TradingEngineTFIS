@@ -219,7 +219,7 @@ class S23FyersSnapshotCollector:
             daily_bars = active_adapter.get_underlying_daily_bars(
                 config.market.underlying_symbol,
                 session_date=session_context.session_date,
-                lookback_days=90,
+                lookback_days=180,
             )
             option_chain_snapshot = active_adapter.get_option_chain(
                 config.market.underlying_symbol,

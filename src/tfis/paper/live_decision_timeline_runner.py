@@ -41,6 +41,10 @@ class S23MorningDecisionStageRun:
     delay_seconds: float
     schedule_note: str
     snapshot_session_directory: str
+    stage_explainer_json: str
+    stage_explainer_markdown: str
+    monthly_status_json: str
+    monthly_status_markdown: str
     stage: S23LiveDecisionTimelineStage
 
 
@@ -76,6 +80,7 @@ def run_s23_morning_supervised_decision(
     skip_refresh: bool = False,
     timezone_name: str = "Asia/Kolkata",
     if_past: str = "run_now",
+    dashboard_output_root: str | Path | None = "tmp/operator_dashboard",
     now_provider: Callable[[], datetime] | None = None,
     sleeper: Callable[[float], None] | None = None,
 ) -> S23MorningDecisionRunResult:
@@ -97,6 +102,12 @@ def run_s23_morning_supervised_decision(
     collector = S23FyersSnapshotCollector(artifact_root=artifact_root)
     decision_builder = S23PaperLiveDecisionBuilder()
     timeline_builder = S23LiveDecisionTimelineBuilder(decision_builder=decision_builder)
+    dashboard_builder = _build_dashboard_builder(
+        artifact_root=artifact_root,
+        strategy_path=strategy_path,
+        reference_packet_path=reference_packet_path,
+        session_id_prefix=session_id_prefix,
+    )
     carry_forward_position = (
         S23PaperPositionStateStore().load_state(carry_forward_state_dir)
         if carry_forward_state_dir is not None
@@ -151,6 +162,21 @@ def run_s23_morning_supervised_decision(
             allow_branch_pinned_unknown_monthly_status=True,
         )
         timeline_stages.append(stage_build.stage)
+        if session_directory is None:
+            session_directory = snapshot_artifacts.session_directory.parent / f"{session_id_prefix}-{trigger_time.strftime('%Y-%m-%d')}"
+            session_directory.mkdir(parents=True, exist_ok=True)
+        (
+            stage_explainer_json,
+            stage_explainer_markdown,
+            monthly_status_json,
+            monthly_status_markdown,
+        ) = timeline_builder.write_stage_artifacts(
+            session_date=snapshot_artifacts.summary.session_date,
+            strategy_code=strategy_rule.strategy_code,
+            strategy_branch=reference_packet.strategy_branch or strategy_rule.unique_code,
+            stage=stage_build.stage,
+            output_dir=session_directory,
+        )
         stage_runs.append(
             S23MorningDecisionStageRun(
                 checkpoint=checkpoint,
@@ -159,17 +185,22 @@ def run_s23_morning_supervised_decision(
                 delay_seconds=delay_seconds,
                 schedule_note=note,
                 snapshot_session_directory=str(snapshot_artifacts.session_directory),
+                stage_explainer_json=str(stage_explainer_json),
+                stage_explainer_markdown=str(stage_explainer_markdown),
+                monthly_status_json=str(monthly_status_json),
+                monthly_status_markdown=str(monthly_status_markdown),
                 stage=stage_build.stage,
             )
         )
-        if session_directory is None:
-            session_directory = snapshot_artifacts.session_directory.parent / f"{session_id_prefix}-{trigger_time.strftime('%Y-%m-%d')}"
-            session_directory.mkdir(parents=True, exist_ok=True)
         if stage_build.decision_result is not None:
             final_summary_json, final_summary_markdown = decision_builder.write_artifacts(
                 stage_build.decision_result,
                 output_dir=session_directory,
             )
+        _rebuild_dashboard(
+            dashboard_builder=dashboard_builder,
+            dashboard_output_root=dashboard_output_root,
+        )
         last_snapshot_artifacts = snapshot_artifacts
 
     if session_directory is None or last_snapshot_artifacts is None:
@@ -206,6 +237,10 @@ def run_s23_morning_supervised_decision(
                         "delay_seconds": stage_run.delay_seconds,
                         "schedule_note": stage_run.schedule_note,
                         "snapshot_session_directory": stage_run.snapshot_session_directory,
+                        "stage_explainer_json": stage_run.stage_explainer_json,
+                        "stage_explainer_markdown": stage_run.stage_explainer_markdown,
+                        "monthly_status_json": stage_run.monthly_status_json,
+                        "monthly_status_markdown": stage_run.monthly_status_markdown,
                         "can_finalize_trade_decision": stage_run.stage.can_finalize_trade_decision,
                     }
                     for stage_run in stage_runs
@@ -215,6 +250,10 @@ def run_s23_morning_supervised_decision(
             sort_keys=True,
         ),
         encoding="utf-8",
+    )
+    _rebuild_dashboard(
+        dashboard_builder=dashboard_builder,
+        dashboard_output_root=dashboard_output_root,
     )
     return S23MorningDecisionRunResult(
         session_directory=session_directory,
@@ -233,3 +272,37 @@ __all__ = [
     "default_morning_decision_checkpoints",
     "run_s23_morning_supervised_decision",
 ]
+
+
+def _build_dashboard_builder(
+    *,
+    artifact_root: str | Path,
+    strategy_path: str | Path,
+    reference_packet_path: str | Path,
+    session_id_prefix: str,
+) -> object:
+    from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
+
+    strategy_rule = load_strategy_rule(strategy_path)
+    return TfisOperatorDashboardBuilder(
+        strategy_configs=(
+            StrategyDashboardConfig(
+                strategy_code=strategy_rule.strategy_code,
+                display_name=f"{strategy_rule.strategy_code} Operator Dashboard",
+                artifact_root=Path(artifact_root),
+                strategy_path=Path(strategy_path),
+                reference_packet_path=Path(reference_packet_path),
+                session_id_prefix=session_id_prefix,
+            ),
+        )
+    )
+
+
+def _rebuild_dashboard(
+    *,
+    dashboard_builder: object,
+    dashboard_output_root: str | Path | None,
+) -> None:
+    if dashboard_output_root is None:
+        return
+    dashboard_builder.build(output_root=Path(dashboard_output_root))
