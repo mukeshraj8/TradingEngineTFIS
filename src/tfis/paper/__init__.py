@@ -137,7 +137,8 @@ from .live_decision import (
 )
 from .live_decision_runner import (
     S23LiveDecisionRunResult,
-    prepare_fyers_env_from_tradingengine,
+    prepare_fyers_env_from_tfis,
+    prepare_fyers_env_from_tfis_auth,
     run_s23_live_decision_check,
 )
 from .live_decision_schedule import (
@@ -401,7 +402,8 @@ __all__ = [
     "infer_option_quotes_path",
     "load_s23_decision_reference_packet",
     "normalize_tradingengine_option_symbol",
-    "prepare_fyers_env_from_tradingengine",
+    "prepare_fyers_env_from_tfis",
+    "prepare_fyers_env_from_tfis_auth",
     "render_paper_historical_comparison_json",
     "render_paper_historical_comparison_markdown",
     "render_audit_json",

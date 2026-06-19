@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass, fields, is_dataclass
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -169,6 +169,7 @@ class S23FyersSnapshotCollector:
         issues = self._collect_preflight_issues(
             config=config,
             strategy=strategy,
+            session_date=session_context.session_date,
             dry_run_build_prelude=dry_run_build_prelude,
             runtime_fixture=runtime_fixture,
             adapter_supplied=adapter is not None,
@@ -451,6 +452,7 @@ class S23FyersSnapshotCollector:
         *,
         config: S23LivePaperIngressConfig,
         strategy: StrategyRule,
+        session_date: date,
         dry_run_build_prelude: bool,
         runtime_fixture: dict[str, Any] | None,
         adapter_supplied: bool,
@@ -547,6 +549,23 @@ class S23FyersSnapshotCollector:
                     "Snapshot preflight requires an option strategy with option_type.",
                 )
             )
+        if (
+            runtime_fixture is None
+            and strategy.symbol == "NIFTY"
+            and strategy.expiry_policy.expiry_type is ExpiryType.WEEKLY
+            and config.market.weekly_expiry < session_date
+        ):
+            resolved_expiry = self._resolve_live_nifty_weekly_expiry(session_date)
+            issues.append(
+                self._issue(
+                    "configured_weekly_expiry_stale",
+                    "Configured market.weekly_expiry "
+                    f"{config.market.weekly_expiry.isoformat()} is before session date "
+                    f"{session_date.isoformat()}; live snapshot collection will use "
+                    f"{resolved_expiry.isoformat()} for S23/NIFTY weekly expiry.",
+                    severity="WARNING",
+                )
+            )
         if dry_run_build_prelude and runtime_fixture is None:
             issues.append(
                 self._issue(
@@ -614,7 +633,13 @@ class S23FyersSnapshotCollector:
             self._optional_date(runtime_fixture.get("weekly_expiry"))
             if runtime_fixture is not None
             else None
-        ) or config.market.weekly_expiry
+        )
+        if weekly_expiry is None:
+            weekly_expiry = self._resolve_configured_weekly_expiry(
+                config=config,
+                strategy=strategy,
+                session_date=session_date,
+            )
         explicit_expiries = {
             (strategy.expiry_policy.expiry_type, session_date): weekly_expiry,
         }
@@ -622,6 +647,35 @@ class S23FyersSnapshotCollector:
             DeterministicExpiryCalendar(explicit_expiries=explicit_expiries)
         )
         return governance, weekly_expiry
+
+    def _resolve_configured_weekly_expiry(
+        self,
+        *,
+        config: S23LivePaperIngressConfig,
+        strategy: StrategyRule,
+        session_date: date,
+    ) -> date:
+        configured_expiry = config.market.weekly_expiry
+        if configured_expiry >= session_date:
+            return configured_expiry
+        if (
+            strategy.symbol == "NIFTY"
+            and strategy.expiry_policy.expiry_type is ExpiryType.WEEKLY
+        ):
+            return self._resolve_live_nifty_weekly_expiry(session_date)
+        raise S23FyersSnapshotCollectorError(
+            "STALE_WEEKLY_EXPIRY",
+            "Configured market.weekly_expiry "
+            f"{configured_expiry.isoformat()} is before session date "
+            f"{session_date.isoformat()}.",
+        )
+
+    @staticmethod
+    def _resolve_live_nifty_weekly_expiry(session_date: date) -> date:
+        cursor = session_date
+        while cursor.weekday() != 1:
+            cursor += timedelta(days=1)
+        return cursor
 
     def _validate_normalized_snapshot(
         self,

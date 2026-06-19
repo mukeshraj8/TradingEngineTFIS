@@ -1,0 +1,26 @@
+# Core configuration & utilities
+
+PyYAML
+python-dotenv
+
+# Data handling
+
+pandas
+numpy
+pyarrow                   # Parquet read/write for tick archive (consolidated daily storage)
+pandas_market_calendars   # NSE trading calendar — holiday detection without manual maintenance
+
+# Logging (optional but useful later)
+
+loguru
+
+
+fyers-apiv3
+pyzmq
+pynput
+redis
+
+NseKit
+pyotp          # TOTP generation for headless FYERS token refresh
+pytest
+pytest_cov

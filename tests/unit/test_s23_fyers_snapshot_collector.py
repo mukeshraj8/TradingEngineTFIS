@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -160,6 +160,7 @@ class _CountingFakeBrokerAdapter:
         self.get_underlying_bars_calls = 0
         self.get_underlying_daily_bars_calls = 0
         self.get_option_chain_calls = 0
+        self.requested_option_chain_expiries: list[date] = []
         self.get_option_quote_calls = 0
         self.stream_ticks_calls = 0
         self.order_api_calls = 0
@@ -201,7 +202,15 @@ class _CountingFakeBrokerAdapter:
 
     def get_option_chain(self, symbol: str, expiry: date, *, session_date: date):
         self.get_option_chain_calls += 1
-        return self._chain
+        self.requested_option_chain_expiries.append(expiry)
+        return replace(
+            self._chain,
+            expiry=expiry,
+            contracts=tuple(
+                replace(contract, expiry=expiry)
+                for contract in self._chain.contracts
+            ),
+        )
 
     def get_option_quote(self, option_symbol: str, *, session_date: date):
         self.get_option_quote_calls += 1
@@ -416,6 +425,15 @@ def test_successful_snapshot_collection(tmp_path: Path) -> None:
     )
 
     assert artifact_set.summary.preflight_status == "READY"
+    expected_expiry = artifact_set.summary.session_date
+    while expected_expiry.weekday() != 1:
+        expected_expiry += timedelta(days=1)
+    assert artifact_set.summary.weekly_expiry == expected_expiry
+    assert adapter.requested_option_chain_expiries == [expected_expiry]
+    assert any(
+        issue.code == "configured_weekly_expiry_stale"
+        for issue in artifact_set.summary.issues
+    )
     assert artifact_set.normalized_underlying_snapshot_path.exists()
     assert artifact_set.normalized_underlying_bars_path.exists()
     assert artifact_set.normalized_underlying_daily_bars_path.exists()

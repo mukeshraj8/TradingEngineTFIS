@@ -1,7 +1,7 @@
 param(
     [string]$TaskName = "TFIS S23 Morning Supervised Decision",
-    [string]$RunTime = "09:14",
-    [string]$TradingEngineRoot = "D:\TradingEngineProd",
+    [string]$RunTime = "09:08",
+    [string]$TfisRoot,
     [string]$Config = "config/paper.s23.fyers_connect_test.yaml",
     [string]$StrategyPath = "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
     [string]$ReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json",
@@ -9,7 +9,7 @@ param(
     [string]$SessionIdPrefix = "s23-fyers-morning-supervised-decision",
     [string]$Timezone = "Asia/Kolkata",
     [ValidateSet("run_now", "abort")]
-    [string]$IfPast = "run_now",
+    [string]$IfPast = "abort",
     [switch]$SkipRefresh,
     [switch]$EnableSmokeOverride,
     [string]$CarryForwardStateDir
@@ -18,12 +18,15 @@ param(
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 $wrapperPath = Join-Path $repoRoot "scripts\start_s23_fyers_morning_supervised_decision.ps1"
+if (-not $TfisRoot) {
+    $TfisRoot = $repoRoot
+}
 
 if (-not (Test-Path $wrapperPath)) {
     throw "Missing wrapper script: $wrapperPath"
 }
 
-$defaultTradingEngineRoot = "D:\TradingEngineProd"
+$defaultTfisRoot = $repoRoot
 $defaultConfig = "config/paper.s23.fyers_connect_test.yaml"
 $defaultStrategyPath = "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
 $defaultReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json"
@@ -33,15 +36,15 @@ $defaultTimezone = "Asia/Kolkata"
 $defaultIfPast = "run_now"
 
 $actionParts = @(
-    "powershell.exe",
+    "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe",
     "-NoProfile",
     "-ExecutionPolicy", "Bypass",
     "-File", ('"{0}"' -f $wrapperPath)
 )
 
-if ($TradingEngineRoot -ne $defaultTradingEngineRoot) {
-    $actionParts += "-TradingEngineRoot"
-    $actionParts += ('"{0}"' -f $TradingEngineRoot)
+if ($TfisRoot -ne $defaultTfisRoot) {
+    $actionParts += "-TfisRoot"
+    $actionParts += ('"{0}"' -f $TfisRoot)
 }
 if ($Config -ne $defaultConfig) {
     $actionParts += "-Config"
@@ -85,8 +88,7 @@ if ($CarryForwardStateDir) {
 
 $taskAction = $actionParts -join " "
 
-$taskStartDate = (Get-Date).ToString("MM/dd/yyyy")
-schtasks /Create /F /SC DAILY /ST $RunTime /SD $taskStartDate /TN $TaskName /TR $taskAction
+schtasks /Create /F /SC DAILY /ST $RunTime /TN $TaskName /TR $taskAction
 if ($LASTEXITCODE -ne 0) {
     throw "schtasks failed with exit code $LASTEXITCODE"
 }

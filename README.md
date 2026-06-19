@@ -4,8 +4,7 @@ TFIS is a clean Python project for workbook-backed, config-driven trading
 research and bounded paper-trading simulation around the `S23` weekly NIFTY
 options-selling family.
 
-This repository is intentionally separate from `TradingEngine` and
-`TradingEngineProd`. It focuses on deterministic offline validation, auditable
+This repository is intentionally standalone. It focuses on deterministic offline validation, auditable
 historical research, safe paper-trading foundations, and broker-agnostic
 market-data ingress. It does not place live orders.
 
@@ -81,7 +80,7 @@ The intended workflow remains:
 
 ## Core Architecture Rules
 
-- TFIS stays separate from `TradingEngine` and `TradingEngineProd`.
+- TFIS stays standalone and does not depend on sibling trading-engine repos.
 - Excel is the source specification for workbook-backed rules.
 - Runtime uses normalized artifacts, not direct fragile Excel access.
 - Strategy, rule, market-data, lifecycle, and scheduler modules remain
@@ -361,8 +360,8 @@ python scripts/run_s23_fyers_live_decision_check.py --config config/paper.s23.fy
 
 This supervised paper-only path now:
 
-- refreshes FYERS auth through the existing TradingEngineProd automation when
-  requested
+- refreshes FYERS auth through TFIS-owned automation and writes only to
+  `D:\TradingEngineTFIS\data\token_store.json`
 - collects one-shot normalized NIFTY quote, option-chain snapshot, and morning
   underlying bars
 - derives TFIS checkpoint snapshots for `09:15`, `ORPT`, and `RC`
@@ -447,9 +446,12 @@ One-time Windows scheduled-task registration for automatic daily launch before
 powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supervised_task.ps1
 ```
 
-This registers a daily task at `09:14` so the TFIS morning runner is already
-alive before `09:16`. Without this registration step, no automatic live-market
-snapshot will happen unless you launch the morning runner manually yourself.
+This registers a daily task at `09:08` so the TFIS morning runner has time to
+refresh FYERS auth and be alive before `09:16`. The scheduled task uses
+`-IfPast abort`, so a delayed start will fail loudly instead of writing a late
+artifact that looks like the `09:16` snapshot. Without this registration step,
+no automatic live-market snapshot will happen unless you launch the morning
+runner manually yourself.
 
 To verify that the task is actually present and inspect the last-run details:
 

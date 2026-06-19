@@ -8,7 +8,7 @@
 
 ## What TFIS Is Not
 
-- Not a copy of `TradingEngine` or `TradingEngineProd`.
+- Not a copy of any sibling trading-engine repository.
 - Not a replay-certification or evidence-heavy platform.
 - Not a broker-specific live trading implementation.
 - Not a place to hardwire Fyers, Zerodha, Angel, or Upstox into core logic.

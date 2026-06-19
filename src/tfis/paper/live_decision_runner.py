@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-import json
-import os
-import subprocess
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from tfis.brokers.fyers_token import prepare_fyers_env_from_tfis as _prepare_fyers_env_from_tfis_auth
 from tfis.importers import load_strategy_rule
 
 from .fyers_snapshot_collector import (
@@ -28,73 +25,25 @@ class S23LiveDecisionRunResult:
     decision_explainer_markdown: Path
 
 
-def prepare_fyers_env_from_tradingengine(
+def prepare_fyers_env_from_tfis(
     *,
-    tradingengine_root: str | Path,
+    tfis_root: str | Path | None = None,
     skip_refresh: bool = False,
 ) -> None:
-    te_root = Path(tradingengine_root)
-    env_path = te_root / ".env"
-    token_path = te_root / "data" / "token_store.json"
-    refresh_script = te_root / "scripts" / "fyers_token_refresh.py"
-    te_python = te_root / ".venv" / "Scripts" / "python.exe"
-
-    _require_exists(te_root, "TradingEngine root")
-    _require_exists(env_path, "TradingEngine .env")
-    _require_exists(token_path, "TradingEngine token_store.json")
-    _require_exists(refresh_script, "TradingEngine FYERS token refresh script")
-
-    _clear_proxy_environment()
-
-    if not skip_refresh:
-        refresh_python = te_python if te_python.exists() else Path(sys.executable)
-        refresh_env = os.environ.copy()
-        for key in _PROXY_ENV_KEYS:
-            refresh_env.pop(key, None)
-        result = subprocess.run(
-            [str(refresh_python), str(refresh_script)],
-            cwd=str(te_root),
-            check=False,
-            text=True,
-            env=refresh_env,
-        )
-        if result.returncode != 0:
-            raise RuntimeError("TradingEngine FYERS token refresh failed.")
-
-    env_values = _read_env_file(env_path)
-    token_payload = json.loads(token_path.read_text(encoding="utf-8"))
-    app_id = str(env_values.get("FYERS_APP_ID") or "").strip()
-    access_token = str(token_payload.get("access_token") or "").strip()
-    client_id = str(env_values.get("FYERS_CLIENT_ID") or "").strip()
-    if not app_id or not access_token:
-        raise RuntimeError(
-            "Need FYERS_APP_ID in TradingEngineProd .env and access_token in token_store.json."
-        )
-
-    os.environ["FYERS_APP_ID"] = app_id
-    os.environ["FYERS_ACCESS_TOKEN"] = access_token
-    if client_id:
-        os.environ["FYERS_CLIENT_ID"] = client_id
+    prepare_fyers_env_from_tfis_auth(tfis_root=tfis_root, skip_refresh=skip_refresh)
 
 
-_PROXY_ENV_KEYS = (
-    "HTTP_PROXY",
-    "HTTPS_PROXY",
-    "http_proxy",
-    "https_proxy",
-    "ALL_PROXY",
-    "all_proxy",
-)
-
-
-def _clear_proxy_environment() -> None:
-    for key in _PROXY_ENV_KEYS:
-        os.environ.pop(key, None)
+def prepare_fyers_env_from_tfis_auth(
+    *,
+    tfis_root: str | Path | None = None,
+    skip_refresh: bool = False,
+) -> None:
+    _prepare_fyers_env_from_tfis_auth(tfis_root=tfis_root, skip_refresh=skip_refresh)
 
 
 def run_s23_live_decision_check(
     *,
-    tradingengine_root: str | Path,
+    tfis_root: str | Path | None = None,
     config_path: str | Path,
     strategy_path: str | Path,
     reference_packet_path: str | Path,
@@ -104,8 +53,8 @@ def run_s23_live_decision_check(
     enable_smoke_override: bool = False,
     skip_refresh: bool = False,
 ) -> S23LiveDecisionRunResult:
-    prepare_fyers_env_from_tradingengine(
-        tradingengine_root=tradingengine_root,
+    prepare_fyers_env_from_tfis_auth(
+        tfis_root=tfis_root,
         skip_refresh=skip_refresh,
     )
     _require_exists(Path(reference_packet_path), "TFIS reference packet")
@@ -153,19 +102,9 @@ def _require_exists(path: Path, label: str) -> None:
         raise SystemExit(f"Missing {label}: {path}")
 
 
-def _read_env_file(path: Path) -> dict[str, str]:
-    values: dict[str, str] = {}
-    for raw_line in path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        values[key.strip()] = value.strip().strip('"').strip("'")
-    return values
-
-
 __all__ = [
     "S23LiveDecisionRunResult",
-    "prepare_fyers_env_from_tradingengine",
+    "prepare_fyers_env_from_tfis",
+    "prepare_fyers_env_from_tfis_auth",
     "run_s23_live_decision_check",
 ]

@@ -11,7 +11,7 @@ from tfis.importers import load_strategy_rule
 from .fyers_snapshot_collector import S23FyersSnapshotArtifactSet, S23FyersSnapshotCollector
 from .live_decision import S23PaperLiveDecisionBuilder
 from .live_ingress import S23LivePaperIngressConfig
-from .live_decision_runner import prepare_fyers_env_from_tradingengine
+from .live_decision_runner import prepare_fyers_env_from_tfis_auth
 from .live_decision_schedule import build_schedule_note, compute_schedule_delay_seconds
 from .live_decision_timeline import (
     S23LiveDecisionTimelineBuilder,
@@ -68,7 +68,7 @@ def default_morning_decision_checkpoints() -> tuple[S23MorningDecisionCheckpoint
 
 def run_s23_morning_supervised_decision(
     *,
-    tradingengine_root: str | Path,
+    tfis_root: str | Path | None = None,
     config_path: str | Path,
     strategy_path: str | Path,
     reference_packet_path: str | Path,
@@ -92,10 +92,7 @@ def run_s23_morning_supervised_decision(
     sleep_fn = sleeper or time_module.sleep
     stage_checkpoints = checkpoints or default_morning_decision_checkpoints()
 
-    prepare_fyers_env_from_tradingengine(
-        tradingengine_root=tradingengine_root,
-        skip_refresh=skip_refresh,
-    )
+    prepare_fyers_env_from_tfis_auth(tfis_root=tfis_root, skip_refresh=skip_refresh)
     strategy_rule = load_strategy_rule(strategy_path)
     ingress_config = S23LivePaperIngressConfig.from_yaml(config_path)
     reference_packet = load_s23_decision_reference_packet(reference_packet_path)

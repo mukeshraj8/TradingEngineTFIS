@@ -879,7 +879,10 @@ automatically before market, register the Windows task once:
 powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supervised_task.ps1
 ```
 
-That task starts at `09:14` and launches the TFIS morning runner, which then:
+That task starts at `09:08` and launches the TFIS morning runner early enough
+to refresh FYERS auth before the first checkpoint. It uses `-IfPast abort`, so
+if startup is delayed past a checkpoint, TFIS fails loudly instead of writing a
+late artifact that looks like an on-time snapshot. The runner then:
 
 - waits for `09:16`
 - captures the opening snapshot and immediately writes stage artifacts

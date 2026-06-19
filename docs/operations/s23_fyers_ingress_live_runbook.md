@@ -22,22 +22,24 @@ Scope:
 Required environment variables for real FYERS data:
 
 - `FYERS_APP_ID`
-- `FYERS_ACCESS_TOKEN`
+- `FYERS_APP_SECRET`
+- `FYERS_CLIENT_ID`
+- `FYERS_PIN`
+- `FYERS_TOTP_SECRET`
 
 Optional:
 
-- `FYERS_CLIENT_ID`
+- `FYERS_REDIRECT_URI`
 
 If `broker.payload_fixture_path` is present in the config, the runner stays in
 fixture mode and preflight returns `WARNING` instead of a live-data `PASS`.
 
-Recommended local PowerShell setup before a real run:
+Recommended local setup before a real run:
 
-```powershell
-$env:FYERS_APP_ID = "<your-app-id>"
-$env:FYERS_ACCESS_TOKEN = "<your-access-token>"
-$env:FYERS_CLIENT_ID = "<optional-client-id>"
-```
+- Put the FYERS credential variables in `D:\TradingEngineTFIS\.env`.
+- Run `python scripts/fyers_token_refresh.py`.
+- The token is written to `D:\TradingEngineTFIS\data\token_store.json`.
+- TFIS owns its broker token store locally and must not depend on sibling repo auth artifacts.
 
 ## Required Config
 

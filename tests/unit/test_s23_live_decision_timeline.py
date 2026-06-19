@@ -492,7 +492,7 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
         )
     )
 
-    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_fyers_env_from_tradingengine", lambda **kwargs: None)
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_fyers_env_from_tfis_auth", lambda **kwargs: None)
     monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.load_strategy_rule", lambda path: _strategy_rule())
     monkeypatch.setattr(
         "tfis.paper.live_decision_timeline_runner.load_s23_decision_reference_packet",
@@ -505,7 +505,7 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
     monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.S23FyersSnapshotCollector", FakeCollector)
 
     result = run_s23_morning_supervised_decision(
-        tradingengine_root="D:/TradingEngineProd",
+        tfis_root="D:/TradingEngineTFIS",
         config_path="config.yaml",
         strategy_path="strategy",
         reference_packet_path="reference.json",

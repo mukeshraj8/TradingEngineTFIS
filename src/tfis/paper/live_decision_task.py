@@ -9,7 +9,7 @@ import sys
 class S23MorningSupervisedTaskSpec:
     task_name: str
     repo_root: Path
-    tradingengine_root: Path
+    tfis_root: Path
     config_path: Path
     strategy_path: Path
     reference_packet_path: Path
@@ -30,8 +30,8 @@ def build_s23_morning_runner_arguments(
     args: list[str] = [
         str(spec.python_executable),
         str(script_path),
-        "--tradingengine-root",
-        str(spec.tradingengine_root),
+        "--tfis-root",
+        str(spec.tfis_root),
         "--config",
         str(spec.config_path),
         "--strategy-path",
@@ -62,7 +62,7 @@ def build_s23_morning_wrapper_command(
     wrapper_path = spec.repo_root / "scripts" / "start_s23_fyers_morning_supervised_decision.ps1"
     command = (
         f'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{wrapper_path}" '
-        f'-TradingEngineRoot "{spec.tradingengine_root}" '
+        f'-TfisRoot "{spec.tfis_root}" '
         f'-Config "{spec.config_path}" '
         f'-StrategyPath "{spec.strategy_path}" '
         f'-ReferencePacket "{spec.reference_packet_path}" '

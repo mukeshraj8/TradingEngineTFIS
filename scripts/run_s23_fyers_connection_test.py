@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -15,10 +14,10 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
+from tfis.brokers.fyers_token import FyersTokenRefreshError, prepare_fyers_env_from_tfis
 from tfis.paper import S23FyersSnapshotCollector, S23FyersSnapshotCollectorError
 
 
-DEFAULT_TRADINGENGINE_ROOT = Path(r"D:\TradingEngineProd")
 DEFAULT_CONFIG = REPO_ROOT / "config" / "paper.s23.fyers_connect_test.yaml"
 DEFAULT_STRATEGY = (
     REPO_ROOT
@@ -33,14 +32,14 @@ DEFAULT_STRATEGY = (
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Refresh FYERS auth via TradingEngine automation and run a one-shot "
+            "Refresh TFIS-owned FYERS auth and run a one-shot "
             "TFIS S23 paper snapshot connection test."
         )
     )
     parser.add_argument(
-        "--tradingengine-root",
-        default=str(DEFAULT_TRADINGENGINE_ROOT),
-        help="Path to the existing TradingEngine project that owns FYERS auth automation.",
+        "--tfis-root",
+        default=str(REPO_ROOT),
+        help="TFIS repo root that owns .env and data/token_store.json.",
     )
     parser.add_argument(
         "--config",
@@ -87,7 +86,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--skip-refresh",
         action="store_true",
-        help="Use the existing TradingEngine token_store.json without refreshing the token first.",
+        help="Use the existing TFIS data/token_store.json without refreshing the token first.",
     )
     return parser
 
@@ -96,50 +95,14 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    te_root = Path(args.tradingengine_root)
-    env_path = te_root / ".env"
-    token_path = te_root / "data" / "token_store.json"
-    refresh_script = te_root / "scripts" / "fyers_token_refresh.py"
-    te_python = te_root / ".venv" / "Scripts" / "python.exe"
-
-    _require_exists(te_root, "TradingEngine root")
-    _require_exists(env_path, "TradingEngine .env")
-    _require_exists(token_path, "TradingEngine token_store.json")
-    _require_exists(refresh_script, "TradingEngine FYERS token refresh script")
-
-    if not args.skip_refresh:
-        refresh_python = te_python if te_python.exists() else Path(sys.executable)
-        result = subprocess.run(
-            [str(refresh_python), str(refresh_script)],
-            cwd=str(te_root),
-            check=False,
-            text=True,
+    try:
+        auth = prepare_fyers_env_from_tfis(
+            tfis_root=args.tfis_root,
+            skip_refresh=args.skip_refresh,
         )
-        if result.returncode != 0:
-            print(
-                "ERROR: TradingEngine FYERS token refresh failed. "
-                "Fix that first before testing TFIS connectivity.",
-                file=sys.stderr,
-            )
-            return result.returncode
-
-    env_values = _read_env_file(env_path)
-    token_payload = json.loads(token_path.read_text(encoding="utf-8"))
-    access_token = str(token_payload.get("access_token") or "").strip()
-    app_id = str(env_values.get("FYERS_APP_ID") or "").strip()
-    client_id = str(env_values.get("FYERS_CLIENT_ID") or "").strip()
-    if not app_id or not access_token:
-        print(
-            "ERROR: TradingEngine auth artifacts are incomplete. "
-            "Need FYERS_APP_ID in .env and access_token in token_store.json.",
-            file=sys.stderr,
-        )
+    except FyersTokenRefreshError as exc:
+        print(f"ERROR: TFIS FYERS auth failed: {exc}", file=sys.stderr)
         return 1
-
-    os.environ["FYERS_APP_ID"] = app_id
-    os.environ["FYERS_ACCESS_TOKEN"] = access_token
-    if client_id:
-        os.environ["FYERS_CLIENT_ID"] = client_id
 
     collector = S23FyersSnapshotCollector(artifact_root=args.artifact_root)
     runtime_fixture_path = args.runtime_fixture
@@ -182,8 +145,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"Generated governance events: {artifact_set.generated_governance_events_path}")
     summary_json_path, summary_md_path = _write_operator_summary(
         artifact_set=artifact_set,
-        tradingengine_root=te_root,
-        token_path=token_path,
+        tfis_root=Path(args.tfis_root),
+        token_path=auth.token_store,
         dry_run_build_prelude=args.dry_run_build_prelude,
     )
     print(f"Operator summary (JSON): {summary_json_path}")
@@ -246,7 +209,7 @@ def _prepare_runtime_fixture_for_current_session(
 def _write_operator_summary(
     *,
     artifact_set,
-    tradingengine_root: Path,
+    tfis_root: Path,
     token_path: Path,
     dry_run_build_prelude: bool,
 ) -> tuple[Path, Path]:
@@ -302,7 +265,7 @@ def _write_operator_summary(
         "selection_reason": selection_reason,
         "selection_failure_code": selection_failure_code,
         "token_source": str(token_path),
-        "tradingengine_root": str(tradingengine_root),
+        "tfis_root": str(tfis_root),
         "snapshot_summary_path": str(artifact_set.summary_path),
         "normalized_underlying_snapshot_path": str(artifact_set.normalized_underlying_snapshot_path),
         "normalized_option_chain_snapshot_path": str(artifact_set.normalized_option_chain_snapshot_path),
@@ -394,7 +357,7 @@ def _write_operator_summary(
             "- No lifecycle execution was performed.",
             "",
             "## Credential Source",
-            f"- TradingEngine Root: `{tradingengine_root}`",
+            f"- TFIS Root: `{tfis_root}`",
             f"- Token Store: `{token_path}`",
         ]
     )

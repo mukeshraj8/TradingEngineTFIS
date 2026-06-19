@@ -5,8 +5,8 @@ for S23 paper trading.
 
 ## Purpose
 
-TFIS must own live market decisioning. `TradingEngineProd` may help with
-credential refresh automation or later replay evidence, but TFIS itself must be
+TFIS must own live market decisioning, credential refresh, and paper-decision
+artifacts without depending on sibling trading-engine repositories. It must be
 able to:
 
 - collect normalized market inputs

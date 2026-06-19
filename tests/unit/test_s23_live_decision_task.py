@@ -13,7 +13,7 @@ def _spec() -> S23MorningSupervisedTaskSpec:
     return S23MorningSupervisedTaskSpec(
         task_name="TFIS S23 Morning Supervised Decision",
         repo_root=Path("D:/TradingEngineTFIS"),
-        tradingengine_root=Path("D:/TradingEngineProd"),
+        tfis_root=Path("D:/TradingEngineTFIS"),
         config_path=Path("config/paper.s23.fyers_connect_test.yaml"),
         strategy_path=Path("config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"),
         reference_packet_path=Path("config/reference_packets/s23_bear_put_live_decision_reference.json"),
@@ -30,8 +30,8 @@ def test_build_runner_arguments_includes_required_paths() -> None:
 
     assert args[0].endswith("python.exe") or args[0].endswith("python")
     assert args[1].endswith("scripts\\run_s23_fyers_0916_supervised_decision.py")
-    assert "--tradingengine-root" in args
-    assert "D:\\TradingEngineProd" in args
+    assert "--tfis-root" in args
+    assert "D:\\TradingEngineTFIS" in args
     assert "--skip-refresh" in args
 
 
@@ -41,7 +41,7 @@ def test_build_wrapper_command_targets_wrapper_script() -> None:
     command = build_s23_morning_wrapper_command(spec)
 
     assert "start_s23_fyers_morning_supervised_decision.ps1" in command
-    assert "-TradingEngineRoot \"D:\\TradingEngineProd\"" in command
+    assert "-TfisRoot \"D:\\TradingEngineTFIS\"" in command
     assert "-SessionIdPrefix \"s23-fyers-morning-supervised-decision\"" in command
     assert " -SkipRefresh" in command
 
@@ -50,7 +50,7 @@ def test_build_wrapper_command_includes_optional_flags() -> None:
     spec = S23MorningSupervisedTaskSpec(
         task_name="TFIS S23 Morning Supervised Decision",
         repo_root=Path("D:/TradingEngineTFIS"),
-        tradingengine_root=Path("D:/TradingEngineProd"),
+        tfis_root=Path("D:/TradingEngineTFIS"),
         config_path=Path("config/paper.s23.fyers_connect_test.yaml"),
         strategy_path=Path("config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"),
         reference_packet_path=Path("config/reference_packets/s23_bear_put_live_decision_reference.json"),

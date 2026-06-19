@@ -1,5 +1,5 @@
 param(
-    [string]$TradingEngineRoot = "D:\TradingEngineProd",
+    [string]$TfisRoot,
     [string]$Config = "config/paper.s23.fyers_connect_test.yaml",
     [string]$StrategyPath = "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
     [string]$ReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json",
@@ -18,6 +18,9 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 Set-Location $repoRoot
+if (-not $TfisRoot) {
+    $TfisRoot = $repoRoot
+}
 
 Remove-Item Env:HTTP_PROXY,Env:HTTPS_PROXY,Env:http_proxy,Env:https_proxy,Env:ALL_PROXY,Env:all_proxy -ErrorAction SilentlyContinue
 
@@ -39,7 +42,7 @@ if (-not (Test-Path $pythonExe)) {
 
 $args = @(
     (Join-Path $repoRoot "scripts\run_s23_fyers_0916_supervised_decision.py"),
-    "--tradingengine-root", $TradingEngineRoot,
+    "--tfis-root", $TfisRoot,
     "--config", $Config,
     "--strategy-path", $StrategyPath,
     "--reference-packet", $ReferencePacket,
@@ -62,6 +65,7 @@ if ($CarryForwardStateDir) {
 
 Write-LaunchLog "Starting TFIS S23 morning supervised decision wrapper."
 Write-LaunchLog "Python executable: $pythonExe"
+Write-LaunchLog "TfisRoot: $TfisRoot"
 Write-LaunchLog "ArtifactRoot: $ArtifactRoot"
 Write-LaunchLog "SessionIdPrefix: $SessionIdPrefix"
 

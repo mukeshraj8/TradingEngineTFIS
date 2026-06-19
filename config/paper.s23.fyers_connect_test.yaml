@@ -6,11 +6,10 @@
 # - no socket loop
 # - no broker orders
 #
-# Notes for 2026-05-28:
-# - NSE is closed on 2026-05-28 (Bakri Id).
+# Notes:
 # - This file is intended for connection/data-access validation.
-# - The configured weekly_expiry uses the next weekly chain expected after the
-#   holiday-shifted expiry week.
+# - The FYERS snapshot collector guards against stale weekly_expiry values for
+#   S23/NIFTY by resolving the active weekly expiry for the session date.
 source_mode: broker_fyers_live_paper_ingress
 
 broker:
@@ -34,9 +33,7 @@ paper:
 
 market:
   underlying_symbol: NIFTY
-  # Use the next weekly chain for connection/snapshot validation after the
-  # 2026-05-28 market holiday.
-  weekly_expiry: 2026-06-04
+  weekly_expiry: 2026-06-16
   # Snapshot preflight does not require a static selected contract.
   # Keep this blank to avoid implying it is an operational path.
   selected_contract_symbol: ""

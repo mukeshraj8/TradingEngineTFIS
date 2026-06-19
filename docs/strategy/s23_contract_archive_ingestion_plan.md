@@ -83,11 +83,9 @@ Implication:
 - they need symbol-aware aggregation and normalization before TFIS should use
   them for contract lifecycle simulation
 
-### TradingEngineProd trade ledger / archive references
+### External trade ledger / archive references
 
-Observed file:
-
-- `D:\TradingEngineProd\docs\trade_ledger_2026-05-01_to_2026-05-31.csv`
+Observed external ledgers can contain selected option symbols such as:
 
 Observed symbol examples:
 
@@ -96,8 +94,8 @@ Observed symbol examples:
 
 Implication:
 
-- neighboring engine ecosystems already track real selected option symbols
-- the symbol format differs from TFIS normalized contract symbols
+- imported ledgers may track real selected option symbols
+- the source symbol format can differ from TFIS normalized contract symbols
 - ledger files are useful for provenance and pilot selection, but they are not
   themselves a contract-specific intraday OHLC source
 

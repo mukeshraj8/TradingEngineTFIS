@@ -17,7 +17,6 @@ from tfis.paper import (
 )
 
 
-DEFAULT_TRADINGENGINE_ROOT = Path(r"D:\TradingEngineProd")
 DEFAULT_CONFIG = REPO_ROOT / "config" / "paper.s23.fyers_connect_test.yaml"
 DEFAULT_REFERENCE_PACKET = (
     REPO_ROOT / "config" / "reference_packets" / "s23_bear_put_live_decision_reference.json"
@@ -35,11 +34,11 @@ DEFAULT_STRATEGY = (
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Refresh FYERS auth via TradingEngine automation, collect normalized TFIS "
+            "Refresh TFIS-owned FYERS auth, collect normalized TFIS "
             "market inputs, and build a paper-only S23 decision summary."
         )
     )
-    parser.add_argument("--tradingengine-root", default=str(DEFAULT_TRADINGENGINE_ROOT))
+    parser.add_argument("--tfis-root", default=str(REPO_ROOT))
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
     parser.add_argument("--strategy-path", default=str(DEFAULT_STRATEGY))
     parser.add_argument("--reference-packet", default=str(DEFAULT_REFERENCE_PACKET))
@@ -55,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         result = run_s23_live_decision_check(
-            tradingengine_root=args.tradingengine_root,
+            tfis_root=args.tfis_root,
             config_path=args.config,
             strategy_path=args.strategy_path,
             reference_packet_path=args.reference_packet,

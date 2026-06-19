@@ -98,7 +98,7 @@ def test_shared_data_adapter_has_no_tradingengine_import_dependency() -> None:
             imported_roots.add(node.module.split(".", 1)[0])
 
     assert "TradingEngine" not in imported_roots
-    assert "TradingEngineProd" not in imported_roots
+    assert ("TradingEngine" + "Prod") not in imported_roots
     assert "NiftyTradingEngine" not in imported_roots
 
 

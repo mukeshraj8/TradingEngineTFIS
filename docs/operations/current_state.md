@@ -177,6 +177,9 @@ Current notes:
   evaluations before the final RC-stage decision is allowed
 - the supervised decision path remains bounded: no continuous socket loop, no
   lifecycle execution, and no broker orders
+- FYERS auth is now TFIS-owned: the refresh helper reads
+  `D:\TradingEngineTFIS\.env` and writes only
+  `D:\TradingEngineTFIS\data\token_store.json` during scheduled morning snapshots
 - `src/tfis/brokers/base.py` and `src/tfis/brokers/fyers.py` now add the first broker-agnostic market-data boundary, with order placement explicitly blocked and S23 consuming only normalized TFIS events
 - `src/tfis/paper/live_ingress.py` and `scripts/run_s23_fyers_paper_ingress.py` now combine normalized non-broker prelude events with FYERS-backed normalized market-data events, then reuse the existing ingress-only paper runner so S23 logic stays broker-agnostic
 - the same FYERS ingress runner now also supports `--preflight-only`, which validates credentials, paper-only scope, ingress-only mode, kill-switch posture, selected-contract configuration, required prelude snapshots, artifact-root writability, valid broker timezone, and real-run session-date alignment without connecting to FYERS

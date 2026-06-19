@@ -404,8 +404,8 @@ def test_summarize_backtest_report_collects_mode_warnings() -> None:
 
 
 def test_compare_backtest_reports_cli_writes_json_and_markdown() -> None:
-    out_path = Path("D:/TradingEngineProd/tmp_pytest_compare/comparison.json")
-    markdown_path = Path("D:/TradingEngineProd/tmp_pytest_compare/comparison.md")
+    out_path = Path("D:/TradingEngineTFIS/tmp_pytest_compare/comparison.json")
+    markdown_path = Path("D:/TradingEngineTFIS/tmp_pytest_compare/comparison.md")
     module = _load_compare_script_module()
     argv = [
         "compare_backtest_reports.py",

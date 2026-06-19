@@ -21,8 +21,8 @@ def _load_compare_script_module():
 
 
 def test_compare_backtest_reports_cli_uses_small_fixture_reports() -> None:
-    out_path = Path("D:/TradingEngineProd/tmp_pytest_compare/comparison.json")
-    markdown_path = Path("D:/TradingEngineProd/tmp_pytest_compare/comparison.md")
+    out_path = Path("D:/TradingEngineTFIS/tmp_pytest_compare/comparison.json")
+    markdown_path = Path("D:/TradingEngineTFIS/tmp_pytest_compare/comparison.md")
 
     module = _load_compare_script_module()
     argv = [
