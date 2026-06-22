@@ -10,7 +10,8 @@ param(
     [string]$IfPast = "run_now",
     [switch]$SkipRefresh,
     [switch]$EnableSmokeOverride,
-    [string]$CarryForwardStateDir
+    [string]$CarryForwardStateDir,
+    [switch]$DisablePositionWatch
 )
 
 $ErrorActionPreference = "Stop"
@@ -75,6 +76,72 @@ try {
         Write-Output $_
     }
     $exitCode = $LASTEXITCODE
+    Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."
+    if (($exitCode -eq 0) -and (-not $DisablePositionWatch)) {
+        $artifactRootPath = Join-Path $repoRoot $ArtifactRoot
+        $metadata = Get-ChildItem -Path $artifactRootPath -Recurse -Filter "scheduled_run_metadata.json" -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+        if ($metadata) {
+            $metadataJson = Get-Content -Path $metadata.FullName -Raw | ConvertFrom-Json
+            $statePaths = @()
+            if ($metadataJson.branch_position_state_json) {
+                $metadataJson.branch_position_state_json.PSObject.Properties | ForEach-Object {
+                    if ($_.Value) {
+                        $statePaths += [string]$_.Value
+                    }
+                }
+            }
+            if ($statePaths.Count -eq 1) {
+                $stateDir = Split-Path -Parent $statePaths[0]
+                Write-LaunchLog "Starting S23 paper position watch for state directory: $stateDir"
+                & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
+                    --tfis-root $TfisRoot `
+                    --config $Config `
+                    --state-dir $stateDir `
+                    --timezone $Timezone 2>&1 | ForEach-Object {
+                        Write-LaunchLog ("WATCH: {0}" -f $_)
+                        Write-Output $_
+                    }
+                $exitCode = $LASTEXITCODE
+                Write-LaunchLog "S23 paper position watch finished with exit code $exitCode."
+            }
+            elseif ($statePaths.Count -gt 1) {
+                Write-LaunchLog "Multiple S23 paper position states were produced; automatic watch skipped so the operator can choose the branch."
+            }
+            else {
+                Write-LaunchLog "No new S23 paper position state was produced; attempting latest-open-state discovery under $ArtifactRoot."
+                & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
+                    --tfis-root $TfisRoot `
+                    --config $Config `
+                    --state-search-root $ArtifactRoot `
+                    --timezone $Timezone `
+                    --no-open-ok 2>&1 | ForEach-Object {
+                        Write-LaunchLog ("WATCH: {0}" -f $_)
+                        Write-Output $_
+                    }
+                $exitCode = $LASTEXITCODE
+                Write-LaunchLog "S23 paper position watch discovery run finished with exit code $exitCode."
+            }
+        }
+        else {
+            Write-LaunchLog "No scheduled_run_metadata.json found under $artifactRootPath; attempting latest-open-state discovery."
+            & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
+                --tfis-root $TfisRoot `
+                --config $Config `
+                --state-search-root $ArtifactRoot `
+                --timezone $Timezone `
+                --no-open-ok 2>&1 | ForEach-Object {
+                    Write-LaunchLog ("WATCH: {0}" -f $_)
+                    Write-Output $_
+                }
+            $exitCode = $LASTEXITCODE
+            Write-LaunchLog "S23 paper position watch discovery run finished with exit code $exitCode."
+        }
+    }
+    elseif ($DisablePositionWatch) {
+        Write-LaunchLog "Position watch disabled by switch."
+    }
     Write-LaunchLog "Wrapper finished with exit code $exitCode."
     exit $exitCode
 }

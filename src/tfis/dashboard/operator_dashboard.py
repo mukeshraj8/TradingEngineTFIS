@@ -95,6 +95,35 @@ class DashboardSessionSummary:
 
 
 @dataclass(frozen=True, slots=True)
+class DashboardTradeLedgerRow:
+    event_timestamp: datetime | None
+    event_type: str
+    trade_id: str
+    strategy_id: str
+    strategy_code: str
+    strategy_branch: str
+    selected_contract_symbol: str
+    side: str
+    lots: int | None
+    quantity: int | None
+    entry_price: float | None
+    exit_price: float | None
+    target_price: float | None
+    stoploss_price: float | None
+    gross_points: float | None
+    gross_pnl: float | None
+    lifecycle_status: str
+    manager_status: str
+    reason_code: str
+    message: str
+    fresh_entry_required: bool
+    reverse_entry_required: bool
+    rollover_required: bool
+    state_directory: Path | None
+    raw_artifact_links: dict[str, str]
+
+
+@dataclass(frozen=True, slots=True)
 class DashboardBuildResult:
     output_root: Path
     index_html: Path
@@ -925,6 +954,8 @@ class TfisOperatorDashboardBuilder:
     ) -> str:
         latest = sessions[0] if sessions else None
         latest_block = self._render_latest_session_block(latest=latest, page_path=page_path) if latest else "<p>No session artifacts found yet.</p>"
+        trade_rows = self._collect_trade_ledger_rows(config)
+        trades_block = self._render_trade_ledger_section(rows=trade_rows, page_path=page_path)
         history_rows = "\n".join(self._render_session_history_row(session, page_path=page_path) for session in sessions) or "<tr><td colspan=\"5\">No sessions found.</td></tr>"
         body = "\n".join(
             [
@@ -940,6 +971,10 @@ class TfisOperatorDashboardBuilder:
                 latest_block,
                 "</section>",
                 "<section>",
+                "<h2>Trades Taken</h2>",
+                trades_block,
+                "</section>",
+                "<section>",
                 "<h2>Session History</h2>",
                 "<table><thead><tr><th>Date</th><th>Status</th><th>Monthly Status</th><th>Contract</th><th>Artifacts</th></tr></thead><tbody>",
                 history_rows,
@@ -948,6 +983,166 @@ class TfisOperatorDashboardBuilder:
             ]
         )
         return self._render_page(title=config.display_name, body=body)
+
+    def _collect_trade_ledger_rows(
+        self,
+        config: StrategyDashboardConfig,
+    ) -> list[DashboardTradeLedgerRow]:
+        candidate_paths: set[Path] = set()
+        if config.artifact_root.exists():
+            candidate_paths.update(config.artifact_root.rglob("paper_trade_ledger.jsonl"))
+        global_ledger = self._repo_root / "tmp" / "paper_trade_ledger" / f"{config.strategy_code.lower()}_paper_trade_ledger.jsonl"
+        if global_ledger.exists():
+            candidate_paths.add(global_ledger)
+
+        rows: list[DashboardTradeLedgerRow] = []
+        seen: set[tuple[str, str, str, str, str]] = set()
+        for ledger_path in sorted(candidate_paths):
+            for raw in self._iter_jsonl_dicts(ledger_path):
+                strategy_code = str(raw.get("strategy_code") or "")
+                if strategy_code and strategy_code.upper() != config.strategy_code.upper():
+                    continue
+                event_timestamp_raw = str(raw.get("event_timestamp") or "")
+                event_type = str(raw.get("event_type") or "n/a")
+                trade_id = str(raw.get("trade_id") or raw.get("selected_contract_symbol") or "n/a")
+                manager_status = str(raw.get("manager_status") or "n/a")
+                reason_code = str(raw.get("reason_code") or "n/a")
+                state_directory = self._path_or_none(raw.get("state_directory"))
+                if state_directory is not None and not (state_directory / "paper_position_state.json").exists():
+                    continue
+                if state_directory is not None and not self._is_relative_to(
+                    state_directory,
+                    config.artifact_root,
+                ):
+                    continue
+                identity = (
+                    trade_id,
+                    event_timestamp_raw,
+                    event_type,
+                    manager_status,
+                    reason_code,
+                )
+                if identity in seen:
+                    continue
+                seen.add(identity)
+                rows.append(
+                    DashboardTradeLedgerRow(
+                        event_timestamp=self._parse_datetime(event_timestamp_raw),
+                        event_type=event_type,
+                        trade_id=trade_id,
+                        strategy_id=str(raw.get("strategy_id") or "n/a"),
+                        strategy_code=str(raw.get("strategy_code") or config.strategy_code),
+                        strategy_branch=str(raw.get("strategy_branch") or "n/a"),
+                        selected_contract_symbol=str(raw.get("selected_contract_symbol") or "n/a"),
+                        side=str(raw.get("side") or "n/a"),
+                        lots=self._int_or_none(raw.get("lots")),
+                        quantity=self._int_or_none(raw.get("quantity")),
+                        entry_price=self._float_or_none(raw.get("entry_price")),
+                        exit_price=self._float_or_none(raw.get("exit_price")),
+                        target_price=self._float_or_none(raw.get("target_price")),
+                        stoploss_price=self._float_or_none(raw.get("stoploss_price")),
+                        gross_points=self._float_or_none(raw.get("gross_points")),
+                        gross_pnl=self._float_or_none(raw.get("gross_pnl")),
+                        lifecycle_status=str(raw.get("lifecycle_status") or "n/a"),
+                        manager_status=manager_status,
+                        reason_code=reason_code,
+                        message=str(raw.get("message") or ""),
+                        fresh_entry_required=bool(raw.get("fresh_entry_required")),
+                        reverse_entry_required=bool(raw.get("reverse_entry_required")),
+                        rollover_required=bool(raw.get("rollover_required")),
+                        state_directory=state_directory,
+                        raw_artifact_links=self._trade_artifact_links(
+                            ledger_path=ledger_path,
+                            state_directory=state_directory,
+                        ),
+                    )
+                )
+        return sorted(
+            rows,
+            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+            reverse=True,
+        )
+
+    def _render_trade_ledger_section(
+        self,
+        *,
+        rows: list[DashboardTradeLedgerRow],
+        page_path: Path,
+    ) -> str:
+        if not rows:
+            return '<div class="empty-panel">No paper trades have been recorded yet.</div>'
+
+        latest_by_trade: dict[str, DashboardTradeLedgerRow] = {}
+        for row in reversed(rows):
+            latest_by_trade[row.trade_id] = row
+        latest_rows = list(latest_by_trade.values())
+        open_count = sum(
+            1
+            for row in latest_rows
+            if "OPEN" in row.lifecycle_status.upper()
+            or row.manager_status.upper() in {"PAPER_POSITION_OPENED", "PAPER_POSITION_HELD"}
+        )
+        action_required_count = sum(1 for row in latest_rows if self._trade_action_required(row))
+        closed_count = sum(1 for row in latest_rows if "CLOSED" in row.lifecycle_status.upper() or row.event_type.upper() == "CLOSE")
+        header = "\n".join(
+            [
+                '<div class="session-summary summary-shell trade-summary">',
+                '<div class="summary-grid">',
+                self._summary_metric("Unique Trades", str(len(latest_rows))),
+                self._summary_metric("Open Positions", str(open_count)),
+                self._summary_metric("Action Required", str(action_required_count)),
+                self._summary_metric("Closed Trades", str(closed_count)),
+                "</div>",
+                "</div>",
+            ]
+        )
+        event_rows = "\n".join(self._render_trade_ledger_row(row, page_path=page_path) for row in rows[:80])
+        return "\n".join(
+            [
+                header,
+                '<table class="trade-table">',
+                "<thead><tr><th>Time</th><th>Event</th><th>Strategy</th><th>Contract</th><th>Side / Qty</th><th>Entry</th><th>Exit</th><th>Target / SL</th><th>P&L</th><th>Status</th><th>Manage</th></tr></thead>",
+                f"<tbody>{event_rows}</tbody>",
+                "</table>",
+            ]
+        )
+
+    def _render_trade_ledger_row(self, row: DashboardTradeLedgerRow, *, page_path: Path) -> str:
+        event_time = row.event_timestamp.isoformat(sep=" ", timespec="seconds") if row.event_timestamp else "n/a"
+        action_flags = []
+        if row.fresh_entry_required:
+            action_flags.append("Fresh Entry")
+        if row.reverse_entry_required:
+            action_flags.append("Reverse Entry")
+        if row.rollover_required:
+            action_flags.append("Rollover")
+        action_text = ", ".join(action_flags)
+        status_parts = [
+            self._badge(row.lifecycle_status),
+            self._badge(row.manager_status),
+        ]
+        if action_text:
+            status_parts.append(self._badge(action_text))
+        reason = html.escape(row.reason_code)
+        if row.message:
+            reason = f"{reason}<br><span class=\"muted-text\">{html.escape(row.message)}</span>"
+        return "\n".join(
+            [
+                "<tr>",
+                f"<td>{html.escape(event_time)}</td>",
+                f"<td>{self._badge(row.event_type)}</td>",
+                f"<td>{html.escape(row.strategy_id)}<br><span class=\"muted-text\">{html.escape(row.strategy_branch)}</span></td>",
+                f"<td>{html.escape(row.selected_contract_symbol)}<br><span class=\"muted-text\">{html.escape(row.trade_id)}</span></td>",
+                f"<td>{html.escape(row.side)}<br>{self._fmt_number(row.lots, integer=True)} lots / {self._fmt_number(row.quantity, integer=True)}</td>",
+                f"<td>{self._fmt_number(row.entry_price)}</td>",
+                f"<td>{self._fmt_number(row.exit_price)}</td>",
+                f"<td>{self._fmt_number(row.target_price)} / {self._fmt_number(row.stoploss_price)}</td>",
+                f"<td>{self._fmt_number(row.gross_points)} pts<br>{self._fmt_number(row.gross_pnl)}</td>",
+                f"<td>{' '.join(status_parts)}<br>{reason}</td>",
+                f"<td><div class=\"artifact-links trade-links\">{self._render_links(row.raw_artifact_links, page_path=page_path)}</div></td>",
+                "</tr>",
+            ]
+        )
 
     def _render_latest_session_block(self, *, latest: DashboardSessionSummary, page_path: Path) -> str:
         stage_cards = "\n".join(self._render_stage_card(stage, page_path=page_path) for stage in latest.stages)
@@ -1116,9 +1311,109 @@ class TfisOperatorDashboardBuilder:
             try:
                 href = "/" + path.relative_to(self._repo_root).as_posix()
             except ValueError:
-                href = os.path.relpath(path, start=page_path.parent.resolve()).replace("\\", "/")
+                try:
+                    href = os.path.relpath(path, start=page_path.parent.resolve()).replace("\\", "/")
+                except ValueError:
+                    href = path.as_uri()
             parts.append(f'<a href="{html.escape(href)}">{html.escape(label)}</a>')
         return " ".join(parts) if parts else "<span>n/a</span>"
+
+    def _trade_artifact_links(
+        self,
+        *,
+        ledger_path: Path,
+        state_directory: Path | None,
+    ) -> dict[str, str]:
+        links = {"Ledger": str(ledger_path)}
+        if state_directory is None:
+            return links
+        known_artifacts = {
+            "State": "paper_position_state.json",
+            "Manager Summary": "paper_position_manager_summary.json",
+            "State Events": "paper_position_state_events.jsonl",
+            "Manager Events": "paper_position_manager_events.jsonl",
+        }
+        for label, filename in known_artifacts.items():
+            artifact_path = state_directory / filename
+            if artifact_path.exists():
+                links[label] = str(artifact_path)
+        return links
+
+    @staticmethod
+    def _iter_jsonl_dicts(path: Path) -> list[dict[str, Any]]:
+        rows: list[dict[str, Any]] = []
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            return rows
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            try:
+                loaded = json.loads(stripped)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(loaded, dict):
+                rows.append(loaded)
+        return rows
+
+    @staticmethod
+    def _path_or_none(value: Any) -> Path | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        return Path(text) if text else None
+
+    @staticmethod
+    def _is_relative_to(path: Path, parent: Path) -> bool:
+        try:
+            path.resolve().relative_to(parent.resolve())
+        except ValueError:
+            return False
+        return True
+
+    @staticmethod
+    def _parse_datetime(value: Any) -> datetime | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        if not text:
+            return None
+        if text.endswith("Z"):
+            text = f"{text[:-1]}+00:00"
+        try:
+            return datetime.fromisoformat(text)
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _float_or_none(value: Any) -> float | None:
+        if value is None:
+            return None
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _int_or_none(value: Any) -> int | None:
+        if value is None:
+            return None
+        try:
+            return int(float(value))
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _trade_action_required(row: DashboardTradeLedgerRow) -> bool:
+        manager_status = row.manager_status.upper()
+        return (
+            row.fresh_entry_required
+            or row.reverse_entry_required
+            or row.rollover_required
+            or "REQUIRED" in manager_status
+        )
 
     def _render_monthly_status_calculator_page(
         self,
@@ -1795,6 +2090,12 @@ calculateStrikes();
                 "    .artifact-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; font-size: 0.9rem; }",
                 "    .artifact-links a { padding: 6px 10px; border-radius: 999px; background: #f4ecdf; border: 1px solid #e4d6c1; }",
                 "    .top-links { margin-top: 16px; }",
+                "    .trade-summary { margin-bottom: 14px; }",
+                "    .trade-table { display: block; overflow-x: auto; font-size: 0.9rem; }",
+                "    .trade-table thead, .trade-table tbody { display: table; width: 100%; }",
+                "    .trade-links { margin-top: 0; min-width: 180px; }",
+                "    .muted-text { color: var(--muted); font-size: 0.82rem; word-break: break-word; }",
+                "    .empty-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; color: var(--muted); }",
                 "    .tool-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }",
                 "    .tool-link, button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--accent); background: var(--accent); color: white; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; font: inherit; }",
                 "    .tool-link:hover, button:hover { text-decoration: none; filter: brightness(0.95); }",

@@ -94,6 +94,42 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     (final_dir / "trade_decision_summary.md").write_text("# summary\n", encoding="utf-8")
     (final_dir / "trade_decision_explainer.md").write_text("# explainer\n", encoding="utf-8")
     (final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (final_dir / "paper_position_state.json").write_text("{}", encoding="utf-8")
+    (final_dir / "paper_position_manager_summary.json").write_text("{}", encoding="utf-8")
+    (final_dir / "paper_position_state_events.jsonl").write_text("{}\n", encoding="utf-8")
+    (final_dir / "paper_trade_ledger.jsonl").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "event_timestamp": "2026-06-10T09:30:00+05:30",
+                "event_type": "OPEN",
+                "trade_id": "S23-NIFTY_20260602_23800_PE-20260610T093000",
+                "strategy_id": "S23:BEAR_PUT",
+                "strategy_code": "S23",
+                "strategy_branch": "BEAR_PUT",
+                "symbol": "NIFTY",
+                "option_type": "PUT",
+                "selected_contract_symbol": "NIFTY_20260602_23800_PE",
+                "expiry_date": "2026-06-02",
+                "side": "SELL",
+                "lots": 1,
+                "quantity": 65,
+                "entry_date": "2026-06-10",
+                "entry_timestamp": "2026-06-10T09:30:00+05:30",
+                "entry_price": 194.25,
+                "target_price": 77.70,
+                "stoploss_price": 242.0,
+                "session_date": "2026-06-10",
+                "lifecycle_status": "OPEN",
+                "manager_status": "PAPER_POSITION_OPENED",
+                "reason_code": "POSITION_OPENED",
+                "message": "Paper position opened from final decision.",
+                "state_directory": str(final_dir),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     result = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(artifact_root),)).build(
         output_root=tmp_path / "dashboard"
@@ -110,6 +146,11 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Run Status" in strategy_html
     assert "Final Contract" in strategy_html
     assert "NIFTY_20260602_23800_PE" in strategy_html
+    assert "Trades Taken" in strategy_html
+    assert "PAPER_POSITION_OPENED" in strategy_html
+    assert "paper_position_state.json" in strategy_html
+    assert "paper_position_manager_summary.json" in strategy_html
+    assert "paper_trade_ledger.jsonl" in strategy_html
     assert "Monthly Status Calculator" in index_html
     assert "Monthly Status Calculator" in strategy_html
     assert "CalculateStrikes" in manual_calculator_html

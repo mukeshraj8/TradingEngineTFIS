@@ -65,6 +65,22 @@ from .position_state import (
     S23PaperPositionStateStatus,
     S23PaperPositionStateStore,
 )
+from .position_manager import (
+    S23PaperPositionManager,
+    S23PaperPositionManagerError,
+    S23PaperPositionManagerEvent,
+    S23PaperPositionManagerResult,
+    S23PaperPositionManagerStatus,
+)
+from .position_discovery import (
+    S23OpenPaperPositionCandidate,
+    S23OpenPaperPositionDiscovery,
+)
+from .trade_ledger import (
+    S23PaperTradeLedgerEventType,
+    S23PaperTradeLedgerRow,
+    S23PaperTradeLedgerStore,
+)
 from .guardrails import (
     PaperGuardrailDecision,
     S23PaperGuardrailEvaluator,
@@ -357,6 +373,16 @@ __all__ = [
     "S23PaperPositionStateEventType",
     "S23PaperPositionStateStatus",
     "S23PaperPositionStateStore",
+    "S23PaperPositionManager",
+    "S23PaperPositionManagerError",
+    "S23PaperPositionManagerEvent",
+    "S23PaperPositionManagerResult",
+    "S23PaperPositionManagerStatus",
+    "S23OpenPaperPositionCandidate",
+    "S23OpenPaperPositionDiscovery",
+    "S23PaperTradeLedgerEventType",
+    "S23PaperTradeLedgerRow",
+    "S23PaperTradeLedgerStore",
     "S23PaperReplayBundleFile",
     "S23PaperReplayBundleManager",
     "S23PaperReplayBundleManifest",

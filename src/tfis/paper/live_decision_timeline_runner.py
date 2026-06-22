@@ -18,6 +18,7 @@ from .live_decision_timeline import (
     S23LiveDecisionTimelineResult,
     S23LiveDecisionTimelineStage,
 )
+from .position_manager import S23PaperPositionManager
 from .position_state import S23PaperPositionStateStore
 from .runtime_input_derivation import load_s23_decision_reference_packet
 
@@ -59,6 +60,7 @@ class S23MorningDecisionRunResult:
     stage_runs: tuple[S23MorningDecisionStageRun, ...]
     branch_final_summary_json: dict[str, str] = field(default_factory=dict)
     branch_final_summary_markdown: dict[str, str] = field(default_factory=dict)
+    branch_position_state_json: dict[str, str] = field(default_factory=dict)
 
 
 def default_morning_decision_checkpoints() -> tuple[S23MorningDecisionCheckpoint, ...]:
@@ -125,10 +127,12 @@ def run_s23_morning_supervised_decision(
     final_summary_markdown: Path | None = None
     branch_final_summary_json: dict[str, str] = {}
     branch_final_summary_markdown: dict[str, str] = {}
+    branch_position_state_json: dict[str, str] = {}
     stage_runs: list[S23MorningDecisionStageRun] = []
     timeline_stages_by_branch: dict[str, list[S23LiveDecisionTimelineStage]] = {
         rule.unique_code: [] for rule in strategy_rules
     }
+    final_decisions_by_branch = {}
     last_snapshot_artifacts: S23FyersSnapshotArtifactSet | None = None
 
     for checkpoint in stage_checkpoints:
@@ -216,6 +220,7 @@ def run_s23_morning_supervised_decision(
                 )
             )
             if stage_build.decision_result is not None:
+                final_decisions_by_branch[strategy_branch] = stage_build.decision_result
                 summary_json, summary_markdown = decision_builder.write_artifacts(
                     stage_build.decision_result,
                     output_dir=output_dir,
@@ -256,6 +261,34 @@ def run_s23_morning_supervised_decision(
         if primary_timeline_json is None:
             primary_timeline_json = timeline_json
             primary_timeline_markdown = timeline_markdown
+        decision_result = final_decisions_by_branch.get(strategy_branch)
+        if (
+            decision_result is not None
+            and decision_result.summary.status == "READY"
+            and decision_result.summary.selected_contract_symbol
+            and decision_result.summary.planned_entry_price is not None
+        ):
+            opened_at = (
+                datetime.fromisoformat(stage_runs[-1].trigger_time)
+                if stage_runs
+                else datetime.combine(decision_result.summary.session_date, time(9, 30))
+            )
+            provenance_source_ids = tuple(
+                item
+                for item in (
+                    branch_final_summary_json.get(strategy_branch),
+                    str(timeline_json),
+                )
+                if item
+            )
+            position_result = S23PaperPositionManager().open_from_live_decision(
+                output_dir,
+                strategy_rule=strategy_rule,
+                decision=decision_result,
+                opened_at=opened_at,
+                provenance_source_ids=provenance_source_ids,
+            )
+            branch_position_state_json[strategy_branch] = str(position_result.state_path)
     assert primary_timeline_json is not None
     assert primary_timeline_markdown is not None
     metadata_path = session_directory / "scheduled_run_metadata.json"
@@ -271,6 +304,7 @@ def run_s23_morning_supervised_decision(
                 "final_summary_markdown": str(final_summary_markdown) if final_summary_markdown is not None else None,
                 "branch_final_summary_json": branch_final_summary_json,
                 "branch_final_summary_markdown": branch_final_summary_markdown,
+                "branch_position_state_json": branch_position_state_json,
                 "stages": [
                     {
                         "strategy_branch": stage_run.strategy_branch,
@@ -309,6 +343,7 @@ def run_s23_morning_supervised_decision(
         stage_runs=tuple(stage_runs),
         branch_final_summary_json=branch_final_summary_json,
         branch_final_summary_markdown=branch_final_summary_markdown,
+        branch_position_state_json=branch_position_state_json,
     )
 
 

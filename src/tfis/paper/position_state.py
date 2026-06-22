@@ -25,16 +25,23 @@ class S23PaperPositionStateStatus(str, Enum):
     PAPER_POSITION_OPEN = "PAPER_POSITION_OPEN"
     PAPER_POSITION_CARRIED_FORWARD = "PAPER_POSITION_CARRIED_FORWARD"
     PAPER_POSITION_RESUMED = "PAPER_POSITION_RESUMED"
+    PAPER_POSITION_CLOSED = "PAPER_POSITION_CLOSED"
+    PAPER_ROLLOVER_REQUIRED = "PAPER_ROLLOVER_REQUIRED"
+    PAPER_REVERSE_ENTRY_REQUIRED = "PAPER_REVERSE_ENTRY_REQUIRED"
+    PAPER_FRESH_ENTRY_REQUIRED = "PAPER_FRESH_ENTRY_REQUIRED"
 
 
 class S23PaperPositionStateEventType(str, Enum):
     PAPER_POSITION_CARRIED_FORWARD = "PAPER_POSITION_CARRIED_FORWARD"
     PAPER_POSITION_RESUMED = "PAPER_POSITION_RESUMED"
+    PAPER_POSITION_CLOSED = "PAPER_POSITION_CLOSED"
     PAPER_POSITION_STATE_INVALID = "PAPER_POSITION_STATE_INVALID"
     PAPER_EXPIRY_FORCE_CLOSE_REQUIRED = "PAPER_EXPIRY_FORCE_CLOSE_REQUIRED"
     PAPER_EXPIRY_FORCE_CLOSED = "PAPER_EXPIRY_FORCE_CLOSED"
     PAPER_NEXT_EXPIRY_REQUIRED = "PAPER_NEXT_EXPIRY_REQUIRED"
     PAPER_ROLLOVER_POLICY_APPLIED = "PAPER_ROLLOVER_POLICY_APPLIED"
+    PAPER_REVERSE_ENTRY_REQUIRED = "PAPER_REVERSE_ENTRY_REQUIRED"
+    PAPER_FRESH_ENTRY_REQUIRED = "PAPER_FRESH_ENTRY_REQUIRED"
 
 
 @dataclass(frozen=True, slots=True)
@@ -453,6 +460,171 @@ class S23PaperPositionStateStore:
                 provenance_source_ids=provenance_source_ids,
             ),
         )
+
+    def mark_position_closed(
+        self,
+        session_directory: str | Path,
+        *,
+        session_date: date,
+        closed_at: datetime,
+        reason_code: str,
+        message: str,
+        reverse_entry_required: bool = False,
+        fresh_entry_required: bool = False,
+        provenance_source_ids: tuple[str, ...] = (),
+    ) -> S23PaperPositionState:
+        state = self.load_state(session_directory)
+        session_dir = Path(session_directory)
+        lifecycle_status = (
+            S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED
+            if reverse_entry_required
+            else (
+                S23PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED
+                if fresh_entry_required
+                else S23PaperPositionStateStatus.PAPER_POSITION_CLOSED
+            )
+        )
+        updated_state = S23PaperPositionState(
+            artifact_version=state.artifact_version,
+            strategy_code=state.strategy_code,
+            unique_code=state.unique_code,
+            symbol=state.symbol,
+            option_type=state.option_type,
+            selected_contract_symbol=state.selected_contract_symbol,
+            expiry_date=state.expiry_date,
+            expiry_policy=state.expiry_policy,
+            entry_date=state.entry_date,
+            entry_timestamp=state.entry_timestamp,
+            entry_price=state.entry_price,
+            lots=state.lots,
+            quantity=state.quantity,
+            side=state.side,
+            target_price=state.target_price,
+            stoploss_price=state.stoploss_price,
+            fsl_price=state.fsl_price,
+            trp_price=state.trp_price,
+            carry_forward_allowed=False,
+            no_carry_past_expiry=state.no_carry_past_expiry,
+            lifecycle_status=lifecycle_status,
+            last_updated_timestamp=closed_at,
+            provenance_source_ids=self._merge_provenance(
+                state.provenance_source_ids,
+                provenance_source_ids,
+            ),
+        )
+        self.save_state(session_dir, updated_state)
+        self._append_event(
+            session_dir,
+            S23PaperPositionStateEvent(
+                timestamp=closed_at,
+                event_type=S23PaperPositionStateEventType.PAPER_POSITION_CLOSED,
+                strategy_code=updated_state.strategy_code,
+                unique_code=updated_state.unique_code,
+                selected_contract_symbol=updated_state.selected_contract_symbol,
+                lifecycle_status=updated_state.lifecycle_status,
+                session_date=session_date,
+                reason_code=reason_code,
+                message=message,
+                provenance_source_ids=provenance_source_ids,
+            ),
+        )
+        if reverse_entry_required:
+            self._append_event(
+                session_dir,
+                S23PaperPositionStateEvent(
+                    timestamp=closed_at,
+                    event_type=S23PaperPositionStateEventType.PAPER_REVERSE_ENTRY_REQUIRED,
+                    strategy_code=updated_state.strategy_code,
+                    unique_code=updated_state.unique_code,
+                    selected_contract_symbol=updated_state.selected_contract_symbol,
+                    lifecycle_status=updated_state.lifecycle_status,
+                    session_date=session_date,
+                    reason_code="reverse_entry_after_stoploss_required",
+                    message=(
+                        "Stoploss closed the paper position; a fresh opposite-direction "
+                        "S23 decision must be calculated before any reverse paper entry."
+                    ),
+                    provenance_source_ids=provenance_source_ids,
+                ),
+            )
+        if fresh_entry_required:
+            self._append_event(
+                session_dir,
+                S23PaperPositionStateEvent(
+                    timestamp=closed_at,
+                    event_type=S23PaperPositionStateEventType.PAPER_FRESH_ENTRY_REQUIRED,
+                    strategy_code=updated_state.strategy_code,
+                    unique_code=updated_state.unique_code,
+                    selected_contract_symbol=updated_state.selected_contract_symbol,
+                    lifecycle_status=updated_state.lifecycle_status,
+                    session_date=session_date,
+                    reason_code="fresh_entry_after_target_required",
+                    message=(
+                        "Target closed the paper position; a fresh S23 decision "
+                        "must be calculated from current market, OI, premium, and "
+                        "expiry data before any new paper entry."
+                    ),
+                    provenance_source_ids=provenance_source_ids,
+                ),
+            )
+        return updated_state
+
+    def mark_rollover_required(
+        self,
+        session_directory: str | Path,
+        *,
+        session_date: date,
+        marked_at: datetime,
+        message: str,
+        provenance_source_ids: tuple[str, ...] = (),
+    ) -> S23PaperPositionState:
+        state = self.load_state(session_directory)
+        session_dir = Path(session_directory)
+        updated_state = S23PaperPositionState(
+            artifact_version=state.artifact_version,
+            strategy_code=state.strategy_code,
+            unique_code=state.unique_code,
+            symbol=state.symbol,
+            option_type=state.option_type,
+            selected_contract_symbol=state.selected_contract_symbol,
+            expiry_date=state.expiry_date,
+            expiry_policy=state.expiry_policy,
+            entry_date=state.entry_date,
+            entry_timestamp=state.entry_timestamp,
+            entry_price=state.entry_price,
+            lots=state.lots,
+            quantity=state.quantity,
+            side=state.side,
+            target_price=state.target_price,
+            stoploss_price=state.stoploss_price,
+            fsl_price=state.fsl_price,
+            trp_price=state.trp_price,
+            carry_forward_allowed=False,
+            no_carry_past_expiry=state.no_carry_past_expiry,
+            lifecycle_status=S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
+            last_updated_timestamp=marked_at,
+            provenance_source_ids=self._merge_provenance(
+                state.provenance_source_ids,
+                provenance_source_ids,
+            ),
+        )
+        self.save_state(session_dir, updated_state)
+        self._append_event(
+            session_dir,
+            S23PaperPositionStateEvent(
+                timestamp=marked_at,
+                event_type=S23PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED,
+                strategy_code=updated_state.strategy_code,
+                unique_code=updated_state.unique_code,
+                selected_contract_symbol=updated_state.selected_contract_symbol,
+                lifecycle_status=updated_state.lifecycle_status,
+                session_date=session_date,
+                reason_code="rollover_required",
+                message=message,
+                provenance_source_ids=provenance_source_ids,
+            ),
+        )
+        return updated_state
 
     def _append_invalid_state_event(
         self,
