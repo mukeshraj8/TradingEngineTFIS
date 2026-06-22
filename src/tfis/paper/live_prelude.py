@@ -303,17 +303,41 @@ class S23PaperLivePreludeBuilder:
         if request.smoke_override_enabled and request.smoke_override_selected_contract_symbol:
             return self._select_smoke_override_contract(request, trade_plan)
 
+        near_expiry = request.expiry_governance.resolve_expiry_date(
+            request.strategy_rule,
+            request.session_context.session_date,
+        )
+        fallback_expiries = self._fallback_expiries_from_snapshot(
+            request.option_chain_snapshot,
+            near_expiry=near_expiry,
+        )
         selection_request = S23PaperContractSelectionRequest(
             underlying_symbol=request.strategy_rule.symbol,
-            expiry_date=request.option_chain_snapshot.expiry,
+            expiry_date=near_expiry,
             option_type=request.strategy_rule.option_type or OptionType.PUT,
             start_strike=float(trade_plan.start_strike or 0),
             end_strike=float(trade_plan.end_strike or 0),
             ideal_premium=float(trade_plan.ideal_premium or 0),
             minimum_premium=float(trade_plan.minimum_premium or 0),
             minimum_oi=float(request.strategy_rule.minimum_oi),
+            fallback_expiry_dates=fallback_expiries,
         )
         return self._contract_selector.select(selection_request, request.option_chain_snapshot)
+
+    @staticmethod
+    def _fallback_expiries_from_snapshot(
+        option_chain_snapshot: OptionChainSnapshotEvent,
+        *,
+        near_expiry,
+    ):
+        later_expiries = sorted(
+            {
+                contract.expiry
+                for contract in option_chain_snapshot.contracts
+                if contract.expiry is not None and contract.expiry > near_expiry
+            }
+        )
+        return tuple(later_expiries[:1])
 
     def _select_smoke_override_contract(
         self,

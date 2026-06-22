@@ -28,13 +28,14 @@ def _contract(
     option_type: OptionType = OptionType.CALL,
     timestamp: datetime = datetime(2026, 5, 18, 15, 30),
     symbol: str = "NIFTY_TEST",
+    expiry: date = date(2026, 5, 28),
 ) -> OptionChainContract:
     return OptionChainContract(
         timestamp=timestamp,
         symbol=symbol,
         option_type=option_type,
         strike=strike,
-        expiry=date(2026, 5, 28),
+        expiry=expiry,
         bid=bid,
         ask=ask,
         ltp=ltp,
@@ -52,6 +53,7 @@ def _request(
     minimum_premium: float = 197.55,
     minimum_oi: int = 500,
     timestamp: datetime = datetime(2026, 5, 18, 15, 30),
+    expiry_dates: tuple[date, ...] = (),
 ) -> OptionSelectionRequest:
     return OptionSelectionRequest(
         option_type=option_type,
@@ -61,6 +63,7 @@ def _request(
         minimum_premium=minimum_premium,
         minimum_oi=minimum_oi,
         timestamp=timestamp,
+        expiry_dates=expiry_dates,
     )
 
 
@@ -72,7 +75,7 @@ def test_option_chain_csv_fixture_loads() -> None:
     assert contracts[0].option_type in {OptionType.CALL, OptionType.PUT}
 
 
-def test_selects_closest_premium_inside_range() -> None:
+def test_selects_first_minimum_premium_in_reverse_rule_order() -> None:
     selector = OptionChainSelector()
     result = selector.select(
         _request(),
@@ -84,7 +87,10 @@ def test_selects_closest_premium_inside_range() -> None:
 
     assert result.selected is True
     assert result.selected_contract is not None
-    assert result.selected_contract.strike == 22100
+    assert result.selected_contract.strike == 22000
+    assert result.selection_reason == (
+        "Selected first strike meeting minimum premium in reverse rule-sheet search order."
+    )
 
 
 def test_rejects_low_oi_contracts() -> None:
@@ -113,6 +119,42 @@ def test_rejects_contracts_below_minimum_premium() -> None:
 
     assert result.selected is False
     assert result.selection_reason == "No option-chain contracts meet minimum_premium 250.00"
+
+
+def test_falls_back_to_next_expiry_when_near_expiry_fails() -> None:
+    selector = OptionChainSelector()
+    result = selector.select(
+        _request(
+            expiry_dates=(date(2026, 5, 28), date(2026, 6, 4)),
+            minimum_premium=250.0,
+        ),
+        [
+            _contract(
+                strike=22100,
+                ltp=245.0,
+                bid=243.0,
+                ask=247.0,
+                oi=900,
+                symbol="NIFTY_20260528_22100_CE",
+                expiry=date(2026, 5, 28),
+            ),
+            _contract(
+                strike=22100,
+                ltp=265.0,
+                bid=263.0,
+                ask=267.0,
+                oi=900,
+                symbol="NIFTY_20260604_22100_CE",
+                expiry=date(2026, 6, 4),
+            ),
+        ],
+    )
+
+    assert result.selected is True
+    assert result.selected_contract is not None
+    assert result.selected_contract.symbol == "NIFTY_20260604_22100_CE"
+    assert result.attempted_expiries == (date(2026, 5, 28), date(2026, 6, 4))
+    assert "Near expiry 2026-05-28 failed" in result.selection_reason
 
 
 def test_handles_descending_strike_ranges() -> None:

@@ -264,6 +264,38 @@ def test_fresh_session_prelude_generation() -> None:
     ]
 
 
+def test_fresh_session_falls_back_to_next_weekly_expiry_when_near_weekly_fails() -> None:
+    result = S23PaperLivePreludeBuilder().build(
+        _request(
+            option_chain_snapshot=_option_chain_snapshot(
+                _option_chain_contract(
+                    symbol="NIFTY_20260529_22400_PE",
+                    strike=22400.0,
+                    ltp=200.0,
+                    oi=100.0,
+                    expiry=date(2026, 5, 29),
+                ),
+                _option_chain_contract(
+                    symbol="NIFTY_20260605_22400_PE",
+                    strike=22400.0,
+                    ltp=200.0,
+                    oi=1200.0,
+                    expiry=date(2026, 6, 5),
+                ),
+            )
+        )
+    )
+
+    assert result.selected_contract_event is not None
+    assert result.selected_contract_event.symbol == "NIFTY_20260605_22400_PE"
+    assert result.contract_selection is not None
+    assert result.contract_selection.attempted_expiries == (
+        date(2026, 5, 29),
+        date(2026, 6, 5),
+    )
+    assert "Near expiry 2026-05-29 failed" in result.contract_selection.selection_reason
+
+
 def test_missing_option_chain_fails_safely() -> None:
     with pytest.raises(S23LivePreludeError) as exc_info:
         S23PaperLivePreludeBuilder().build(_request(option_chain_snapshot=None))

@@ -1354,6 +1354,9 @@ class HistoricalBacktestRunner:
             ),
             "selection_reason": result.selection_reason,
             "candidate_count": result.candidate_count,
+            "attempted_expiries": [
+                expiry.isoformat() for expiry in result.attempted_expiries
+            ],
         }
 
     def _recalculation_result_to_dict(self, result) -> dict[str, object]:

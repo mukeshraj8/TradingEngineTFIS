@@ -50,6 +50,7 @@ class StrategyEvaluator:
             runtime_values=inputs,
             parameters=rule.parameters,
         )
+        inputs["ENTRY"] = entry_price
         target_price = self._formula_engine.evaluate(
             rule.target_formula,
             market_levels=market_levels,

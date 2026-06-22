@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, datetime, time
 from pathlib import Path
 from types import SimpleNamespace
@@ -532,3 +533,94 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
     assert "09:16" in result.timeline_markdown.read_text(encoding="utf-8")
     assert "09:25" in result.timeline_markdown.read_text(encoding="utf-8")
     assert "09:30" in result.timeline_markdown.read_text(encoding="utf-8")
+
+
+def test_morning_supervised_runner_fans_out_shared_snapshots_to_multiple_branches(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    call_index = {"value": 0}
+
+    class FakeCollector:
+        def __init__(self, *, artifact_root, prelude_builder=None, position_state_store=None) -> None:
+            self._artifact_root = Path(artifact_root)
+
+        def collect_from_files(self, **kwargs):
+            idx = call_index["value"]
+            call_index["value"] += 1
+            session_id = kwargs["session_id"]
+            stage_dir = self._artifact_root / date(2026, 5, 28).isoformat() / session_id
+            stage_dir.mkdir(parents=True, exist_ok=True)
+            generated_minutes = (16, 25, 30)
+            return SimpleNamespace(
+                session_directory=stage_dir,
+                collected_inputs=_collected_inputs(
+                    generated_at=_ts(28, 9, generated_minutes[idx], 0)
+                ),
+                summary=_summary(),
+            )
+
+    def fake_strategy_rule(path):
+        base = _strategy_rule()
+        suffix = Path(str(path)).name.upper()
+        if suffix == "BRANCH_CALL":
+            return replace(
+                base,
+                unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                option_type=OptionType.CALL,
+            )
+        return base
+
+    now_values = iter(
+        (
+            _ts(28, 9, 16, 0),
+            _ts(28, 9, 16, 0),
+            _ts(28, 9, 25, 0),
+            _ts(28, 9, 25, 0),
+            _ts(28, 9, 30, 0),
+            _ts(28, 9, 30, 0),
+        )
+    )
+
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_fyers_env_from_tfis_auth", lambda **kwargs: None)
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.load_strategy_rule", fake_strategy_rule)
+    monkeypatch.setattr(
+        "tfis.paper.live_decision_timeline_runner.load_s23_decision_reference_packet",
+        lambda path: _reference_packet(),
+    )
+    monkeypatch.setattr(
+        "tfis.paper.live_decision_timeline_runner.S23LivePaperIngressConfig.from_yaml",
+        lambda path: SimpleNamespace(market=SimpleNamespace(selected_contract_symbol="NIFTY_20260604_23750_PE")),
+    )
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.S23FyersSnapshotCollector", FakeCollector)
+
+    result = run_s23_morning_supervised_decision(
+        tfis_root="D:/TradingEngineTFIS",
+        config_path="config.yaml",
+        strategy_path="branch_put",
+        strategy_paths=("branch_put", "branch_call"),
+        reference_packet_path="reference.json",
+        artifact_root=tmp_path,
+        dashboard_output_root=None,
+        session_id_prefix="timeline-test",
+        skip_refresh=True,
+        now_provider=lambda: next(now_values),
+        sleeper=lambda seconds: None,
+    )
+
+    assert call_index["value"] == 3
+    assert len(result.stage_runs) == 6
+    assert {
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+    } == {stage.strategy_branch for stage in result.stage_runs}
+    assert (
+        result.session_directory
+        / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+        / "trade_decision_explainer.md"
+    ).exists()
+    assert (
+        result.session_directory
+        / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+        / "trade_decision_explainer.md"
+    ).exists()

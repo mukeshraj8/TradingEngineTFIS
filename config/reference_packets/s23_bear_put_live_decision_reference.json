@@ -21,10 +21,12 @@
   },
   "option_reference_values": {
     "OPT_PRV_2DHH": 242.0,
+    "OPT_PRV_2DLL": 210.0,
+    "OPT_PRV_3DHH": 220.0,
     "OPT_PRV_3DLL": 230.0
   },
   "lots": 1,
-  "quantity": 75,
+  "quantity": 65,
   "source_workbook_rule": "AB6_OS_Z186",
   "workbook_row_number": 186,
   "fsl_price": 258.94,

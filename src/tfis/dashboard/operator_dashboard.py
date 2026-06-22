@@ -73,6 +73,10 @@ class DashboardStageSummary:
     planned_entry_price: float | None
     target_price: float | None
     stoploss_price: float | None
+    decision_failure_code: str | None
+    decision_failure_message: str | None
+    formula_values: dict[str, Any]
+    candidate_rows: tuple[dict[str, Any], ...]
     raw_artifact_links: dict[str, str]
 
 
@@ -96,6 +100,8 @@ class DashboardBuildResult:
     index_html: Path
     manifest_json: Path
     strategy_pages: dict[str, Path]
+    tool_pages: dict[str, Path]
+    review_data_pages: dict[str, Path]
 
 
 class TfisOperatorDashboardBuilder:
@@ -126,6 +132,9 @@ class TfisOperatorDashboardBuilder:
             )
             strategy_pages[config.strategy_code] = page_path
 
+        review_data_pages = self._write_review_data_pages(target, summaries)
+        tool_pages = self._write_tool_pages(target, review_data_pages=review_data_pages)
+
         index_html = target / "index.html"
         index_html.write_text(
             self._render_index_page(
@@ -150,6 +159,14 @@ class TfisOperatorDashboardBuilder:
                         }
                         for config, sessions in zip(self._strategy_configs, summaries, strict=False)
                     ],
+                    "tools": {
+                        name: str(path.relative_to(target))
+                        for name, path in sorted(tool_pages.items())
+                    },
+                    "review_data": {
+                        name: str(path.relative_to(target))
+                        for name, path in sorted(review_data_pages.items())
+                    },
                 },
                 indent=2,
                 sort_keys=True,
@@ -162,7 +179,207 @@ class TfisOperatorDashboardBuilder:
             index_html=index_html,
             manifest_json=manifest_json,
             strategy_pages=strategy_pages,
+            tool_pages=tool_pages,
+            review_data_pages=review_data_pages,
         )
+
+    def _write_tool_pages(
+        self,
+        output_root: Path,
+        *,
+        review_data_pages: dict[str, Path],
+    ) -> dict[str, Path]:
+        manual_dir = output_root / "tools" / "s23-manual-calculator"
+        manual_dir.mkdir(parents=True, exist_ok=True)
+        manual_path = manual_dir / "index.html"
+        manual_path.write_text(
+            self._render_s23_manual_calculator_page(),
+            encoding="utf-8",
+        )
+        monthly_dir = output_root / "tools" / "monthly-status-calculator"
+        monthly_dir.mkdir(parents=True, exist_ok=True)
+        monthly_path = monthly_dir / "index.html"
+        monthly_path.write_text(
+            self._render_monthly_status_calculator_page(
+                monthly_index_path=review_data_pages.get("monthly_status_index")
+            ),
+            encoding="utf-8",
+        )
+        return {
+            "monthly_status_calculator": monthly_path,
+            "s23_manual_calculator": manual_path,
+        }
+
+    def _write_review_data_pages(
+        self,
+        output_root: Path,
+        summaries_by_strategy: list[list[DashboardSessionSummary]],
+    ) -> dict[str, Path]:
+        review_root = output_root / "data" / "review"
+        monthly_root = review_root / "monthly-status"
+        strategy_root = review_root / "strategies"
+        monthly_root.mkdir(parents=True, exist_ok=True)
+        strategy_root.mkdir(parents=True, exist_ok=True)
+        written: dict[str, Path] = {}
+        monthly_index: dict[str, str] = {}
+        strategy_indexes: dict[str, dict[str, str]] = {}
+
+        for sessions in summaries_by_strategy:
+            for session in sessions:
+                monthly_payload = self._build_monthly_status_review_payload(session)
+                if monthly_payload is not None:
+                    monthly_path = monthly_root / f"{session.session_date.isoformat()}.json"
+                    monthly_path.write_text(
+                        json.dumps(monthly_payload, indent=2, sort_keys=True, default=str),
+                        encoding="utf-8",
+                    )
+                    monthly_index[session.session_date.isoformat()] = str(
+                        monthly_path.relative_to(output_root).as_posix()
+                    )
+                    written[f"monthly_status_{session.session_date.isoformat()}"] = monthly_path
+
+                strategy_payload = self._build_strategy_review_payload(session)
+                if strategy_payload is not None:
+                    strategy_dir = strategy_root / session.strategy_code
+                    strategy_dir.mkdir(parents=True, exist_ok=True)
+                    strategy_path = strategy_dir / f"{session.session_date.isoformat()}.json"
+                    strategy_path.write_text(
+                        json.dumps(strategy_payload, indent=2, sort_keys=True, default=str),
+                        encoding="utf-8",
+                    )
+                    strategy_indexes.setdefault(session.strategy_code, {})[
+                        session.session_date.isoformat()
+                    ] = str(strategy_path.relative_to(output_root).as_posix())
+                    written[
+                        f"strategy_{session.strategy_code}_{session.session_date.isoformat()}"
+                    ] = strategy_path
+
+        monthly_index_path = monthly_root / "index.json"
+        monthly_index_path.write_text(
+            json.dumps(
+                {
+                    "artifact_version": 1,
+                    "kind": "monthly_status_review_index",
+                    "dates": monthly_index,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+            encoding="utf-8",
+        )
+        written["monthly_status_index"] = monthly_index_path
+
+        for strategy_code, date_map in strategy_indexes.items():
+            index_path = strategy_root / strategy_code / "index.json"
+            index_path.write_text(
+                json.dumps(
+                    {
+                        "artifact_version": 1,
+                        "kind": "strategy_review_index",
+                        "strategy_code": strategy_code,
+                        "dates": date_map,
+                    },
+                    indent=2,
+                    sort_keys=True,
+                ),
+                encoding="utf-8",
+            )
+            written[f"strategy_{strategy_code}_index"] = index_path
+
+        return written
+
+    def _build_monthly_status_review_payload(
+        self,
+        session: DashboardSessionSummary,
+    ) -> dict[str, Any] | None:
+        for stage in reversed(session.stages):
+            link = stage.raw_artifact_links.get("monthly_status_stage.json")
+            if not link:
+                continue
+            path = Path(link)
+            if not path.exists():
+                continue
+            payload = self._read_json(path)
+            monthly = payload.get("monthly_status", {}) if isinstance(payload, dict) else {}
+            trace = monthly.get("trace", []) if isinstance(monthly, dict) else []
+            trace_item = None
+            for item in trace:
+                if isinstance(item, dict) and item.get("used_for_resolution"):
+                    trace_item = item
+                    break
+            if trace_item is None and trace:
+                trace_item = trace[0] if isinstance(trace[0], dict) else None
+            levels = {
+                key: trace_item.get(key) if isinstance(trace_item, dict) else None
+                for key in ("PMH", "PML", "CMH", "CML", "PWH", "PWL", "CWH", "CWL", "current_price")
+            }
+            return {
+                "artifact_version": 1,
+                "kind": "monthly_status_review_data",
+                "session_date": session.session_date.isoformat(),
+                "symbol": "NIFTY" if session.strategy_code == "S23" else session.strategy_code,
+                "instrument_group": "nifty" if session.strategy_code == "S23" else None,
+                "price_source": "captured_strategy_snapshot",
+                "strategy_code": session.strategy_code,
+                "source_artifact": str(path),
+                "monthly_status": {
+                    "status": monthly.get("status"),
+                    "trigger_name": monthly.get("trigger_name"),
+                    "price_used": monthly.get("price_used"),
+                    "resolution_reason": monthly.get("resolution_reason"),
+                    "lookback_used": monthly.get("lookback_used"),
+                    "notes": monthly.get("notes"),
+                },
+                "levels": levels,
+                "trace": trace,
+            }
+        return None
+
+    def _build_strategy_review_payload(
+        self,
+        session: DashboardSessionSummary,
+    ) -> dict[str, Any] | None:
+        for stage in reversed(session.stages):
+            link = stage.raw_artifact_links.get("normalized_option_chain_snapshot.json")
+            if not link:
+                continue
+            path = Path(link)
+            if not path.exists():
+                continue
+            payload = self._read_json(path)
+            body = payload.get("payload", payload) if isinstance(payload, dict) else {}
+            contracts = body.get("contracts", []) if isinstance(body, dict) else []
+            rows = []
+            for item in contracts:
+                if not isinstance(item, dict):
+                    continue
+                option_type = str(item.get("option_type") or "").upper()
+                if option_type not in {"CE", "PE", "CALL", "PUT"}:
+                    continue
+                rows.append(
+                    {
+                        "symbol": item.get("symbol"),
+                        "option_type": "CE" if option_type == "CALL" else "PE" if option_type == "PUT" else option_type,
+                        "strike": item.get("strike"),
+                        "expiry": item.get("expiry"),
+                        "premium": item.get("ltp"),
+                        "oi": item.get("oi"),
+                        "bid": item.get("bid"),
+                        "ask": item.get("ask"),
+                        "volume": item.get("volume"),
+                    }
+                )
+            return {
+                "artifact_version": 1,
+                "kind": "strategy_review_data",
+                "strategy_code": session.strategy_code,
+                "session_date": session.session_date.isoformat(),
+                "source_artifact": str(path),
+                "underlying_symbol": body.get("underlying_symbol"),
+                "expiry": body.get("expiry"),
+                "contracts": rows,
+            }
+        return None
 
     def _collect_strategy_sessions(
         self,
@@ -186,10 +403,21 @@ class TfisOperatorDashboardBuilder:
     ) -> DashboardSessionSummary:
         session_date = date.fromisoformat(day_dir.name)
         final_session_dir = self._find_final_session_dir(config=config, day_dir=day_dir)
+        final_artifact_dir = self._resolve_final_artifact_dir(
+            config=config,
+            final_session_dir=final_session_dir,
+        )
         stage_dirs = self._find_stage_dirs(config=config, day_dir=day_dir)
         session_complete = bool(
             final_session_dir is not None
             and (final_session_dir / "scheduled_run_metadata.json").exists()
+        )
+        final_summary_exists = bool(
+            final_artifact_dir is not None
+            and (final_artifact_dir / "trade_decision_summary.json").exists()
+        )
+        prefer_reconstruction = not session_complete or (
+            session_complete and not final_summary_exists
         )
         stage_summaries = tuple(
             self._build_stage_summary(
@@ -197,12 +425,12 @@ class TfisOperatorDashboardBuilder:
                 session_date=session_date,
                 day_dir=day_dir,
                 stage_dir=stage_dir,
-                final_session_dir=final_session_dir,
-                prefer_reconstruction=not session_complete,
+                final_session_dir=final_artifact_dir,
+                prefer_reconstruction=prefer_reconstruction,
             )
             for stage_dir in sorted(stage_dirs, key=lambda item: _STAGE_ORDER.get(self._extract_stage_key(item.name), 99))
         )
-        final_summary = self._read_json(final_session_dir / "trade_decision_summary.json") if final_session_dir and (final_session_dir / "trade_decision_summary.json").exists() else None
+        final_summary = self._read_json(final_artifact_dir / "trade_decision_summary.json") if final_artifact_dir and (final_artifact_dir / "trade_decision_summary.json").exists() else None
         final_summary_view = final_summary.get("summary", final_summary) if isinstance(final_summary, dict) else None
         final_decision_status = final_summary_view.get("status") if isinstance(final_summary_view, dict) else None
         final_monthly_status = final_summary_view.get("monthly_status") if isinstance(final_summary_view, dict) else None
@@ -212,8 +440,20 @@ class TfisOperatorDashboardBuilder:
             final_monthly_status = latest_stage.monthly_status
         if final_selected_contract_symbol is None and latest_stage is not None:
             final_selected_contract_symbol = latest_stage.selected_contract_symbol
+        latest_failure_code = latest_stage.decision_failure_code if latest_stage is not None else None
         if final_decision_status:
             session_status = final_decision_status
+        elif (
+            session_complete
+            and latest_stage is not None
+            and latest_stage.can_finalize_trade_decision
+            and latest_stage.selected_contract_symbol
+        ):
+            session_status = "READY"
+            final_decision_status = session_status
+        elif session_complete and latest_stage is not None and latest_stage.can_finalize_trade_decision:
+            session_status = "NO_GO" if latest_failure_code else "COMPLETE"
+            final_decision_status = session_status
         elif stage_summaries:
             session_status = "IN_PROGRESS"
         else:
@@ -224,6 +464,11 @@ class TfisOperatorDashboardBuilder:
                 file_path = final_session_dir / filename
                 if file_path.exists():
                     raw_links[filename] = str(file_path)
+        if final_artifact_dir is not None and final_artifact_dir != final_session_dir:
+            for filename in ("trade_decision_summary.md", "trade_decision_explainer.md"):
+                file_path = final_artifact_dir / filename
+                if file_path.exists():
+                    raw_links[f"{final_artifact_dir.name}/{filename}"] = str(file_path)
         return DashboardSessionSummary(
             session_date=session_date,
             strategy_code=config.strategy_code,
@@ -263,6 +508,7 @@ class TfisOperatorDashboardBuilder:
         snapshot_summary = self._read_json(stage_dir / "snapshot_preflight_summary.json")
         option_chain_contract_count = snapshot_summary.get("option_chain_contract_count")
         option_chain_complete_oi = snapshot_summary.get("option_chain_has_complete_oi")
+        strategy_rule = load_strategy_rule(config.strategy_path)
 
         if (
             not prefer_reconstruction
@@ -274,6 +520,7 @@ class TfisOperatorDashboardBuilder:
             monthly_status_payload = self._read_json(monthly_status_stage_json)
             stage_payload = self._read_json(stage_explainer_json)["stage"]
             decision_summary = stage_payload.get("decision_summary") or {}
+            formula_values = self._formula_values(stage_payload)
             return DashboardStageSummary(
                 stage_key=stage_key,
                 stage_name=stage_payload["stage_name"],
@@ -294,6 +541,15 @@ class TfisOperatorDashboardBuilder:
                 planned_entry_price=decision_summary.get("planned_entry_price"),
                 target_price=decision_summary.get("target_price"),
                 stoploss_price=decision_summary.get("stoploss_price"),
+                decision_failure_code=stage_payload.get("decision_failure_code"),
+                decision_failure_message=stage_payload.get("decision_failure_message"),
+                formula_values=formula_values,
+                candidate_rows=self._candidate_rows(
+                    strategy_rule=strategy_rule,
+                    stage_dir=stage_dir,
+                    formula_values=formula_values,
+                    selected_contract_symbol=decision_summary.get("selected_contract_symbol"),
+                ),
                 raw_artifact_links={
                     "snapshot_preflight_summary.json": str(stage_dir / "snapshot_preflight_summary.json"),
                     "normalized_underlying_bars.json": str(stage_dir / "normalized_underlying_bars.json"),
@@ -310,6 +566,12 @@ class TfisOperatorDashboardBuilder:
             stage_key=stage_key,
         )
         decision_summary = stage.decision_summary or {}
+        stage_payload = {
+            "provisional_formula_evaluation": list(stage.provisional_formula_evaluation),
+            "decision_failure_code": stage.decision_failure_code,
+            "decision_failure_message": stage.decision_failure_message,
+        }
+        formula_values = self._formula_values(stage_payload)
         return DashboardStageSummary(
             stage_key=stage_key,
             stage_name=stage.stage_name,
@@ -330,12 +592,134 @@ class TfisOperatorDashboardBuilder:
             planned_entry_price=decision_summary.get("planned_entry_price"),
             target_price=decision_summary.get("target_price"),
             stoploss_price=decision_summary.get("stoploss_price"),
+            decision_failure_code=stage.decision_failure_code,
+            decision_failure_message=stage.decision_failure_message,
+            formula_values=formula_values,
+            candidate_rows=self._candidate_rows(
+                strategy_rule=strategy_rule,
+                stage_dir=stage_dir,
+                formula_values=formula_values,
+                selected_contract_symbol=decision_summary.get("selected_contract_symbol"),
+            ),
             raw_artifact_links={
                 "snapshot_preflight_summary.json": str(stage_dir / "snapshot_preflight_summary.json"),
                 "normalized_underlying_bars.json": str(stage_dir / "normalized_underlying_bars.json"),
                 "normalized_option_chain_snapshot.json": str(stage_dir / "normalized_option_chain_snapshot.json"),
+                **(
+                    {
+                        "monthly_status_stage.json": str(monthly_status_stage_json),
+                    }
+                    if monthly_status_stage_json is not None
+                    and monthly_status_stage_json.exists()
+                    else {}
+                ),
             },
         )
+
+    @staticmethod
+    def _resolve_final_artifact_dir(
+        *,
+        config: StrategyDashboardConfig,
+        final_session_dir: Path | None,
+    ) -> Path | None:
+        if final_session_dir is None:
+            return None
+        try:
+            strategy_rule = load_strategy_rule(config.strategy_path)
+        except Exception:
+            return final_session_dir
+        branch_dir = final_session_dir / strategy_rule.unique_code
+        if branch_dir.exists():
+            return branch_dir
+        return final_session_dir
+
+    @staticmethod
+    def _formula_values(stage_payload: dict[str, Any]) -> dict[str, Any]:
+        values: dict[str, Any] = {}
+        for item in stage_payload.get("provisional_formula_evaluation", ()):
+            if isinstance(item, dict) and item.get("name"):
+                values[str(item["name"])] = {
+                    "result": item.get("result"),
+                    "formula": item.get("formula"),
+                    "resolved_formula": item.get("resolved_formula"),
+                }
+        return values
+
+    def _candidate_rows(
+        self,
+        *,
+        strategy_rule: Any,
+        stage_dir: Path,
+        formula_values: dict[str, Any],
+        selected_contract_symbol: str | None,
+    ) -> tuple[dict[str, Any], ...]:
+        start = self._formula_result(formula_values, "start_strike")
+        end = self._formula_result(formula_values, "end_strike")
+        minimum_premium = self._formula_result(formula_values, "minimum_premium")
+        ideal_premium = self._formula_result(formula_values, "ideal_premium")
+        if None in (start, end, minimum_premium):
+            return ()
+        chain_path = stage_dir / "normalized_option_chain_snapshot.json"
+        if not chain_path.exists():
+            return ()
+        payload = self._read_json(chain_path)
+        contracts = payload.get("payload", {}).get("contracts", [])
+        lower = min(float(start), float(end))
+        upper = max(float(start), float(end))
+        option_type = strategy_rule.option_type.value if strategy_rule.option_type else ""
+        rows: list[dict[str, Any]] = []
+        for contract in contracts:
+            if not isinstance(contract, dict):
+                continue
+            if str(contract.get("option_type")) != option_type:
+                continue
+            strike = contract.get("strike")
+            if strike is None or not (lower <= float(strike) <= upper):
+                continue
+            premium = contract.get("ltp")
+            oi = contract.get("oi")
+            reasons: list[str] = []
+            if premium is None or float(premium) < float(minimum_premium):
+                reasons.append("premium below minimum")
+            if oi is None or float(oi) < float(strategy_rule.minimum_oi):
+                reasons.append("OI below minimum")
+            rows.append(
+                {
+                    "symbol": contract.get("symbol"),
+                    "strike": strike,
+                    "option_type": option_type,
+                    "premium": premium,
+                    "oi": oi,
+                    "premium_distance": (
+                        abs(float(premium) - float(ideal_premium))
+                        if premium is not None and ideal_premium is not None
+                        else None
+                    ),
+                    "status": (
+                        "SELECTED"
+                        if selected_contract_symbol and contract.get("symbol") == selected_contract_symbol
+                        else "PASS"
+                        if not reasons
+                        else "REJECTED"
+                    ),
+                    "reason": ", ".join(reasons) if reasons else "qualified",
+                }
+            )
+        rows.sort(
+            key=lambda item: (
+                0 if item["status"] == "SELECTED" else 1 if item["status"] == "PASS" else 2,
+                item["premium_distance"] if item["premium_distance"] is not None else 999999,
+                item["strike"] if item["strike"] is not None else 999999,
+            )
+        )
+        return tuple(rows[:12])
+
+    @staticmethod
+    def _formula_result(formula_values: dict[str, Any], name: str) -> float | None:
+        item = formula_values.get(name)
+        if not isinstance(item, dict) or item.get("result") is None:
+            return None
+        return float(item["result"])
 
     def _reconstruct_stage_from_snapshot_dir(
         self,
@@ -522,6 +906,7 @@ class TfisOperatorDashboardBuilder:
                     "<div class=\"eyebrow\">Operator View</div>",
                     "<h1>TFIS Operator Dashboard</h1>",
                     "<p>Read-only, artifact-backed strategy pages for morning decision visibility across strategies and sessions.</p>",
+                    '<div class="tool-strip"><a class="tool-link" href="tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
                     "</header>",
                     "<section class=\"grid\">",
                     *(cards if cards else ["<p>No strategy data found.</p>"]),
@@ -548,6 +933,7 @@ class TfisOperatorDashboardBuilder:
                 f"<div class=\"eyebrow\">Strategy {html.escape(config.strategy_code)}</div>",
                 f"<h1>{html.escape(config.display_name)}</h1>",
                 f"<p>Operator page for {html.escape(config.strategy_code)}. Each stage is rendered from TFIS artifacts and reconstructed stage logic when stage-level explainers are not yet available.</p>",
+                '<div class="tool-strip"><a class="tool-link" href="../../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
                 "</header>",
                 "<section>",
                 "<h2>Latest Session</h2>",
@@ -611,8 +997,100 @@ class TfisOperatorDashboardBuilder:
                 self._summary_metric("Target", self._fmt_number(stage.target_price)),
                 self._summary_metric("Stoploss", self._fmt_number(stage.stoploss_price)),
                 "</div>",
+                self._render_stage_formula_panel(stage),
+                self._render_stage_candidate_panel(stage),
                 f"<div class=\"artifact-links\">{self._render_links(stage.raw_artifact_links, page_path=page_path)}</div>",
                 "</article>",
+            ]
+        )
+
+    def _render_stage_formula_panel(self, stage: DashboardStageSummary) -> str:
+        def result(name: str) -> str:
+            item = stage.formula_values.get(name)
+            if not isinstance(item, dict):
+                return "n/a"
+            return self._fmt_number(item.get("result"))
+
+        selected_candidate = next(
+            (
+                item
+                for item in stage.candidate_rows
+                if str(item.get("status") or "").upper() == "SELECTED"
+            ),
+            None,
+        )
+        final_strike = (
+            self._fmt_number(selected_candidate.get("strike"))
+            if selected_candidate is not None
+            else "n/a"
+        )
+        final_premium = (
+            self._fmt_number(selected_candidate.get("premium"))
+            if selected_candidate is not None
+            else "n/a"
+        )
+        final_oi = (
+            self._fmt_number(selected_candidate.get("oi"), integer=True)
+            if selected_candidate is not None
+            else "n/a"
+        )
+        final_contract = stage.selected_contract_symbol or (
+            str(selected_candidate.get("symbol"))
+            if selected_candidate is not None and selected_candidate.get("symbol")
+            else "n/a"
+        )
+        failure = ""
+        if stage.decision_failure_code:
+            failure = (
+                "<div class=\"error-box compact-error\">"
+                f"{html.escape(stage.decision_failure_code)}: "
+                f"{html.escape(stage.decision_failure_message or '')}"
+                "</div>"
+            )
+        return "\n".join(
+            [
+                '<div class="formula-panel">',
+                "<h4>Calculated Strike Inputs</h4>",
+                '<div class="summary-grid">',
+                self._summary_metric("Start Strike", result("start_strike")),
+                self._summary_metric("End Strike", result("end_strike")),
+                self._summary_metric("Ideal Premium", result("ideal_premium")),
+                self._summary_metric("Minimum Premium", result("minimum_premium")),
+                self._summary_metric("Final Strike", final_strike),
+                self._summary_metric("Final Contract", html.escape(final_contract)),
+                self._summary_metric("Final Premium", final_premium),
+                self._summary_metric("Final OI", final_oi),
+                "</div>",
+                failure,
+                "</div>",
+            ]
+        )
+
+    def _render_stage_candidate_panel(self, stage: DashboardStageSummary) -> str:
+        if not stage.candidate_rows:
+            return ""
+        rows = "\n".join(
+            [
+                "<tr>"
+                f"<td>{html.escape(str(item.get('strike') or 'n/a'))}</td>"
+                f"<td>{html.escape(str(item.get('option_type') or 'n/a'))}</td>"
+                f"<td>{html.escape(self._fmt_number(item.get('premium')))}</td>"
+                f"<td>{html.escape(self._fmt_number(item.get('oi'), integer=True))}</td>"
+                f"<td>{self._badge(str(item.get('status') or 'n/a'))}</td>"
+                f"<td>{html.escape(str(item.get('reason') or ''))}</td>"
+                "</tr>"
+                for item in stage.candidate_rows
+            ]
+        )
+        return "\n".join(
+            [
+                '<div class="candidate-panel">',
+                "<h4>Strike Qualification</h4>",
+                '<table class="candidate-table">',
+                "<thead><tr><th>Strike</th><th>Side</th><th>Premium</th><th>OI</th><th>Status</th><th>Reason</th></tr></thead>",
+                f"<tbody>{rows}</tbody>",
+                "</table>",
+                "</div>",
             ]
         )
 
@@ -641,6 +1119,634 @@ class TfisOperatorDashboardBuilder:
                 href = os.path.relpath(path, start=page_path.parent.resolve()).replace("\\", "/")
             parts.append(f'<a href="{html.escape(href)}">{html.escape(label)}</a>')
         return " ".join(parts) if parts else "<span>n/a</span>"
+
+    def _render_monthly_status_calculator_page(
+        self,
+        *,
+        monthly_index_path: Path | None,
+    ) -> str:
+        body = r"""
+<nav><a href="../../index.html">Back to dashboard</a></nav>
+<header class="hero">
+  <div class="eyebrow">Review Mode</div>
+  <h1>Monthly Status Calculator</h1>
+  <p>Enter or load monthly-status reference levels by date, then calculate the status and explanation without mixing it with strategy option-chain data.</p>
+</header>
+<main class="calculator-shell">
+  <section class="calc-panel">
+    <h2>Monthly Status Inputs</h2>
+    <div class="form-grid">
+      <label>Review Date<input id="monthlyReviewDate" type="date"></label>
+      <label>Instrument<select id="monthlyInstrument"></select></label>
+      <label>Price Source<select id="monthlyPriceSource"><option value="spot">Spot</option><option value="futures_continuous">Futures Continuous</option></select></label>
+      <label>Instrument Group<select id="instrumentGroup"><option value="nifty">NIFTY</option><option value="banknifty">BANKNIFTY</option><option value="stock">Stock</option><option value="currency">Currency</option><option value="gold">Gold</option><option value="silver">Silver</option><option value="crude_oil">Crude Oil</option><option value="natural_gas">Natural Gas</option></select></label>
+      <label>Effective Status<select id="effectiveStatus"><option value="UNKNOWN">UNKNOWN</option><option value="BULL">BULL</option><option value="BULL_CF">BULL_CF</option><option value="BEAR">BEAR</option><option value="BEAR_CF">BEAR_CF</option></select></label>
+      <label>Current Price<input id="currentPrice" type="number" step="0.05" value="0"></label>
+      <label>PMH<input id="PMH" type="number" step="0.05" value="0"></label>
+      <label>PML<input id="PML" type="number" step="0.05" value="0"></label>
+      <label>CMH<input id="CMH" type="number" step="0.05" value="0"></label>
+      <label>CML<input id="CML" type="number" step="0.05" value="0"></label>
+      <label>PWH<input id="PWH" type="number" step="0.05" value="0"></label>
+      <label>PWL<input id="PWL" type="number" step="0.05" value="0"></label>
+      <label>CWH<input id="CWH" type="number" step="0.05" value="0"></label>
+      <label>CWL<input id="CWL" type="number" step="0.05" value="0"></label>
+    </div>
+    <div class="form-actions">
+      <button type="button" id="fetchMonthlyData">Fetch Captured Monthly Data</button>
+      <button type="button" id="fetchCurrentMonthlyData">Fetch Current Monthly Data</button>
+      <button type="button" id="getMonthlyStatus">GetMonthlyStatus</button>
+    </div>
+    <div id="monthlyFetchStatus" class="result-summary"></div>
+  </section>
+  <section class="calc-panel output-panel">
+    <h2>Monthly Status Result</h2>
+    <div id="monthlyResultSummary" class="result-summary"></div>
+    <ol id="monthlyCalculationSteps" class="trace-list"></ol>
+  </section>
+</main>
+<script>
+const THRESHOLDS = {
+  nifty: { a: 0.75, b: 0.75, c: 0.15 },
+  banknifty: { a: 0.75, b: 0.75, c: 0.15 },
+  stock: { a: 2.50, b: 2.00, c: 1.00 },
+  currency: { a: 0.15, b: 0.05, c: 0.05 },
+  gold: { a: 0.50, b: 0.50, c: 0.12 },
+  silver: { a: 0.70, b: 0.70, c: 0.15 },
+  crude_oil: { a: 2.00, b: 1.50, c: 0.30 },
+  natural_gas: { a: 2.00, b: 2.00, c: 0.50 }
+};
+const FALLBACK_INSTRUMENTS = [
+  { symbol: "NIFTY", label: "NIFTY", instrument_group: "nifty" },
+  { symbol: "BANKNIFTY", label: "BANKNIFTY", instrument_group: "banknifty" },
+  { symbol: "VOLTAS", label: "VOLTAS", instrument_group: "stock" },
+  { symbol: "INFY", label: "INFY", instrument_group: "stock" },
+  { symbol: "TATACHEM", label: "TATACHEM", instrument_group: "stock" },
+  { symbol: "ESCORTS", label: "ESCORTS", instrument_group: "stock" },
+  { symbol: "ADANIENT", label: "ADANIENT", instrument_group: "stock" },
+  { symbol: "CANFINHOME", label: "CANFINHOME", instrument_group: "stock" },
+  { symbol: "APOLLOTYRE", label: "APOLLOTYRE", instrument_group: "stock" },
+  { symbol: "HINDALCO", label: "HINDALCO", instrument_group: "stock" },
+  { symbol: "INDIGO", label: "INDIGO", instrument_group: "stock" },
+  { symbol: "RAMCOCEM", label: "RAMCOCEM", instrument_group: "stock" },
+  { symbol: "TATACOMM", label: "TATACOMM", instrument_group: "stock" },
+  { symbol: "ICICIPRULI", label: "ICICIPRULI", instrument_group: "stock" },
+  { symbol: "ITC", label: "ITC", instrument_group: "stock" },
+  { symbol: "TATACONSUM", label: "TATACONSUM", instrument_group: "stock" },
+  { symbol: "BAJAJFINSV", label: "BAJAJFINSV", instrument_group: "stock" },
+  { symbol: "TATAMOTORS", label: "TATAMOTORS", instrument_group: "stock" },
+  { symbol: "DLF", label: "DLF", instrument_group: "stock" },
+  { symbol: "AMBUJACEM", label: "AMBUJACEM", instrument_group: "stock" },
+  { symbol: "JINDALSTEL", label: "JINDALSTEL", instrument_group: "stock" },
+  { symbol: "BAJFINANCE", label: "BAJFINANCE", instrument_group: "stock" },
+  { symbol: "TVSMOTOR", label: "TVSMOTOR", instrument_group: "stock" },
+  { symbol: "GLENMARK", label: "GLENMARK", instrument_group: "stock" },
+  { symbol: "TORNTPHARM", label: "TORNTPHARM", instrument_group: "stock" },
+  { symbol: "M&M", label: "M&M", instrument_group: "stock" },
+  { symbol: "SRF", label: "SRF", instrument_group: "stock" },
+  { symbol: "CUMMINSIND", label: "CUMMINSIND", instrument_group: "stock" },
+  { symbol: "AUROPHARMA", label: "AUROPHARMA", instrument_group: "stock" },
+  { symbol: "JSWSTEEL", label: "JSWSTEEL", instrument_group: "stock" },
+  { symbol: "TITAN", label: "TITAN", instrument_group: "stock" },
+  { symbol: "CHOLAFIN", label: "CHOLAFIN", instrument_group: "stock" }
+];
+let monthlyInstrumentRegistry = { instruments: FALLBACK_INSTRUMENTS, default_symbol: "NIFTY", default_price_source: "spot" };
+function text(id) { return document.getElementById(id).value.trim(); }
+function value(id) {
+  const number = Number(document.getElementById(id).value);
+  if (!Number.isFinite(number)) throw new Error(`${id} must be numeric`);
+  return number;
+}
+function fmt(number) { return Number.isFinite(number) ? number.toFixed(2).replace(/\.00$/, "") : "n/a"; }
+function setMonthlyDefaultDate() { if (!text("monthlyReviewDate")) document.getElementById("monthlyReviewDate").value = new Date().toISOString().slice(0, 10); }
+function pctAbove(base, pct) { return base * (1 + pct / 100); }
+function pctBelow(base, pct) { return base * (1 - pct / 100); }
+function levels() {
+  return { PMH: value("PMH"), PML: value("PML"), CMH: value("CMH"), CML: value("CML"), PWH: value("PWH"), PWL: value("PWL"), CWH: value("CWH"), CWL: value("CWL"), currentPrice: value("currentPrice") };
+}
+function classifyMonthlyStructure(group, l) {
+  const t = THRESHOLDS[group];
+  const bull = pctAbove(l.PMH, t.a);
+  const bear = pctBelow(l.PML, t.a);
+  const bullCf = pctAbove(bull, t.b);
+  const bearCf = pctBelow(bear, t.b);
+  if (l.CMH >= bullCf && !(l.CML <= bearCf)) return { status: "BULL_CF", trigger: "BULL_CF_B_THRESHOLD", threshold: bullCf, notes: "CMH breached bullish confirmation threshold." };
+  if (l.CML <= bearCf && !(l.CMH >= bullCf)) return { status: "BEAR_CF", trigger: "BEAR_CF_B_THRESHOLD", threshold: bearCf, notes: "CML breached bearish confirmation threshold." };
+  if (l.CMH >= bull && !(l.CML <= bear)) return { status: "BULL", trigger: "BULL_A_THRESHOLD", threshold: bull, notes: "CMH breached PMH plus a-percent." };
+  if (l.CML <= bear && !(l.CMH >= bull)) return { status: "BEAR", trigger: "BEAR_A_THRESHOLD", threshold: bear, notes: "CML breached PML minus a-percent." };
+  return { status: "UNKNOWN", trigger: "NO_MONTHLY_TRIGGER", threshold: NaN, notes: "No direct monthly threshold was decisively breached." };
+}
+function applyCurrentPriceTransition(group, l, effectiveStatus) {
+  const t = THRESHOLDS[group];
+  const bull = pctAbove(l.PMH, t.a);
+  const bear = pctBelow(l.PML, t.a);
+  const bullCf = pctAbove(bull, t.b);
+  const bearCf = pctBelow(bear, t.b);
+  const reversalBull = pctAbove(Math.max(l.PWH, l.CWH), t.c);
+  const reversalBear = pctBelow(Math.min(l.PWL, l.CWL), t.c);
+  const p = l.currentPrice;
+  if (effectiveStatus === "UNKNOWN") return classifyMonthlyStructure(group, l);
+  if (effectiveStatus === "BULL") {
+    if (p >= bullCf) return { status: "BULL_CF", trigger: "BULL_CF_B_THRESHOLD", threshold: bullCf, notes: "BULL advanced to BULL_CF by current price." };
+    if (p <= reversalBear) return { status: "BEAR", trigger: "REVERSAL_BEAR_C_THRESHOLD", threshold: reversalBear, notes: "BULL reversed to BEAR using MIN(PWL, CWL) minus c-percent." };
+    return { status: "BULL", trigger: "BULL_CONTINUES", threshold: bull, notes: "Effective BULL continues." };
+  }
+  if (effectiveStatus === "BULL_CF") {
+    if (p <= bear) return { status: "BEAR", trigger: "BEAR_A_THRESHOLD", threshold: bear, notes: "BULL_CF reversed to BEAR by PML minus a-percent." };
+    return { status: "BULL_CF", trigger: "BULL_CF_CONTINUES", threshold: bullCf, notes: "Effective BULL_CF continues." };
+  }
+  if (effectiveStatus === "BEAR") {
+    if (p <= bearCf) return { status: "BEAR_CF", trigger: "BEAR_CF_B_THRESHOLD", threshold: bearCf, notes: "BEAR advanced to BEAR_CF by current price." };
+    if (p >= reversalBull) return { status: "BULL", trigger: "REVERSAL_BULL_C_THRESHOLD", threshold: reversalBull, notes: "BEAR reversed to BULL using MAX(PWH, CWH) plus c-percent." };
+    return { status: "BEAR", trigger: "BEAR_CONTINUES", threshold: bear, notes: "Effective BEAR continues." };
+  }
+  if (effectiveStatus === "BEAR_CF") {
+    if (p >= bull) return { status: "BULL", trigger: "BULL_A_THRESHOLD", threshold: bull, notes: "BEAR_CF reversed to BULL by PMH plus a-percent." };
+    return { status: "BEAR_CF", trigger: "BEAR_CF_CONTINUES", threshold: bearCf, notes: "Effective BEAR_CF continues." };
+  }
+  return classifyMonthlyStructure(group, l);
+}
+function calculateMonthlyStatus() {
+  const group = text("instrumentGroup");
+  const l = levels();
+  const result = applyCurrentPriceTransition(group, l, text("effectiveStatus"));
+  const t = THRESHOLDS[group];
+  const bull = pctAbove(l.PMH, t.a);
+  const bear = pctBelow(l.PML, t.a);
+  const bullCf = pctAbove(bull, t.b);
+  const bearCf = pctBelow(bear, t.b);
+  const reversalBull = pctAbove(Math.max(l.PWH, l.CWH), t.c);
+  const reversalBear = pctBelow(Math.min(l.PWL, l.CWL), t.c);
+  document.getElementById("monthlyResultSummary").innerHTML = `<div class="summary-grid"><div class="metric"><span>Status</span><div class="value">${result.status}</div></div><div class="metric"><span>Trigger</span><div class="value">${result.trigger}</div></div><div class="metric"><span>Threshold</span><div class="value">${fmt(result.threshold)}</div></div><div class="metric"><span>Date</span><div class="value">${text("monthlyReviewDate") || "manual"}</div></div></div>`;
+  const steps = [
+    `Thresholds for ${group}: a=${t.a}%, b=${t.b}%, c=${t.c}%.`,
+    `Bull threshold = PMH ${fmt(l.PMH)} + a% = ${fmt(bull)}; Bull CF = ${fmt(bullCf)}.`,
+    `Bear threshold = PML ${fmt(l.PML)} - a% = ${fmt(bear)}; Bear CF = ${fmt(bearCf)}.`,
+    `Reversal bull = MAX(PWH ${fmt(l.PWH)}, CWH ${fmt(l.CWH)}) + c% = ${fmt(reversalBull)}.`,
+    `Reversal bear = MIN(PWL ${fmt(l.PWL)}, CWL ${fmt(l.CWL)}) - c% = ${fmt(reversalBear)}.`,
+    `Current price ${fmt(l.currentPrice)} with effective status ${text("effectiveStatus")} produced ${result.status}: ${result.notes}`
+  ];
+  document.getElementById("monthlyCalculationSteps").innerHTML = steps.map(step => `<li>${step}</li>`).join("");
+}
+async function fetchJson(path) {
+  const response = await fetch(path, { cache: "no-store" });
+  if (!response.ok) throw new Error(`Unable to load ${path}: HTTP ${response.status}`);
+  return response.json();
+}
+function applyInstrumentRegistry(registry) {
+  monthlyInstrumentRegistry = registry && Array.isArray(registry.instruments) ? registry : monthlyInstrumentRegistry;
+  const select = document.getElementById("monthlyInstrument");
+  select.innerHTML = monthlyInstrumentRegistry.instruments.map(item => `<option value="${item.symbol}">${item.label || item.symbol}</option>`).join("");
+  const defaultSymbol = monthlyInstrumentRegistry.default_symbol || "NIFTY";
+  select.value = defaultSymbol;
+  if (select.value !== defaultSymbol) {
+    const defaultItem = monthlyInstrumentRegistry.instruments.find(item => item.symbol === defaultSymbol);
+    if (defaultItem) {
+      select.insertAdjacentHTML("afterbegin", `<option value="${defaultItem.symbol}">${defaultItem.label || defaultItem.symbol}</option>`);
+      select.value = defaultSymbol;
+    }
+  }
+  document.getElementById("monthlyPriceSource").value = monthlyInstrumentRegistry.default_price_source || "spot";
+  applySelectedInstrumentGroup();
+}
+async function initInstrumentRegistry() {
+  try {
+    applyInstrumentRegistry(await fetchJson("/api/monthly-status/instruments"));
+  } catch (error) {
+    applyInstrumentRegistry(monthlyInstrumentRegistry);
+  }
+}
+function selectedInstrument() {
+  const symbol = text("monthlyInstrument");
+  return (monthlyInstrumentRegistry.instruments || []).find(item => item.symbol === symbol) || { symbol, instrument_group: text("instrumentGroup") };
+}
+function applySelectedInstrumentGroup() {
+  const instrument = selectedInstrument();
+  if (instrument.instrument_group) document.getElementById("instrumentGroup").value = instrument.instrument_group;
+}
+function assertCapturedPayloadMatchesSelection(payload) {
+  const selected = selectedInstrument();
+  const payloadSymbol = String(payload.symbol || "").toUpperCase();
+  const selectedSymbol = String(selected.symbol || text("monthlyInstrument")).toUpperCase();
+  if (payloadSymbol && selectedSymbol && payloadSymbol !== selectedSymbol) {
+    throw new Error(`Captured monthly data is for ${payloadSymbol}, but selected instrument is ${selectedSymbol}. No captured monthly data is available for ${selectedSymbol} on this date.`);
+  }
+  const payloadGroup = String(payload.instrument_group || "").toLowerCase();
+  const selectedGroup = String(selected.instrument_group || text("instrumentGroup")).toLowerCase();
+  if (payloadGroup && selectedGroup && payloadGroup !== selectedGroup) {
+    throw new Error(`Captured monthly data group is ${payloadGroup}, but selected group is ${selectedGroup}.`);
+  }
+}
+function applyMonthlyPayload(payload) {
+  const l = payload.levels || {};
+  for (const key of ["PMH", "PML", "CMH", "CML", "PWH", "PWL", "CWH", "CWL"]) {
+    if (l[key] !== null && l[key] !== undefined) document.getElementById(key).value = l[key];
+  }
+  if (l.current_price !== null && l.current_price !== undefined) document.getElementById("currentPrice").value = l.current_price;
+  if (payload.instrument_group) document.getElementById("instrumentGroup").value = payload.instrument_group;
+  if (payload.symbol) document.getElementById("monthlyInstrument").value = payload.symbol;
+  if (payload.price_source) document.getElementById("monthlyPriceSource").value = payload.price_source;
+}
+function renderBackendMonthlyResult(payload) {
+  const status = payload.monthly_status || {};
+  const threshold = status.threshold === null || status.threshold === undefined ? Number.NaN : Number(status.threshold);
+  document.getElementById("monthlyResultSummary").innerHTML = `<div class="summary-grid"><div class="metric"><span>Status</span><div class="value">${status.status || "n/a"}</div></div><div class="metric"><span>Trigger</span><div class="value">${status.trigger || "n/a"}</div></div><div class="metric"><span>Threshold</span><div class="value">${fmt(threshold)}</div></div><div class="metric"><span>Date</span><div class="value">${payload.as_of || text("monthlyReviewDate") || "manual"}</div></div></div>`;
+  const steps = payload.steps || [];
+  document.getElementById("monthlyCalculationSteps").innerHTML = steps.map(step => `<li>${step}</li>`).join("");
+}
+async function fetchCurrentMonthlyData() {
+  setMonthlyDefaultDate();
+  applySelectedInstrumentGroup();
+  const params = new URLSearchParams({
+    symbol: text("monthlyInstrument"),
+    price_source: text("monthlyPriceSource"),
+    as_of: text("monthlyReviewDate"),
+    effective_status: text("effectiveStatus")
+  });
+  const response = await fetch(`/api/monthly-status/current?${params.toString()}`, { cache: "no-store" });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error || `Unable to fetch current monthly data: HTTP ${response.status}`);
+  applyMonthlyPayload(payload);
+  renderBackendMonthlyResult(payload);
+  document.getElementById("monthlyFetchStatus").innerHTML = `<div class="metric"><span>Current Data</span><div class="value">Loaded ${payload.bar_count || 0} ${payload.price_source || ""} daily candles for ${payload.symbol || ""} through ${payload.last_bar_date || payload.as_of || ""}.</div></div>`;
+}
+async function fetchCapturedMonthlyData(options = {}) {
+  setMonthlyDefaultDate();
+  const index = await fetchJson("../../data/review/monthly-status/index.json");
+  const dates = index.dates || {};
+  let date = text("monthlyReviewDate");
+  if (!dates[date]) {
+    const availableDates = Object.keys(dates).sort();
+    if (!availableDates.length) throw new Error("No captured monthly-status data found yet. Run a snapshot/decision stage first.");
+    date = availableDates[availableDates.length - 1];
+    document.getElementById("monthlyReviewDate").value = date;
+  }
+  const dataPath = dates[date];
+  const payload = await fetchJson(`../../${dataPath}`);
+  assertCapturedPayloadMatchesSelection(payload);
+  applyMonthlyPayload(payload);
+  if (payload.monthly_status && payload.monthly_status.status) document.getElementById("effectiveStatus").value = payload.monthly_status.status;
+  const prefix = options.prefix ? `${options.prefix} ` : "";
+  document.getElementById("monthlyFetchStatus").innerHTML = `<div class="metric"><span>Captured Data</span><div class="value">${prefix}Loaded monthly-status data for ${date} from ${payload.source_artifact || "review data"}.</div></div>`;
+  calculateMonthlyStatus();
+}
+document.getElementById("fetchMonthlyData").addEventListener("click", async () => { try { await fetchCapturedMonthlyData(); } catch (error) { document.getElementById("monthlyFetchStatus").innerHTML = `<div class="error-box">${error.message}</div>`; } });
+document.getElementById("fetchCurrentMonthlyData").addEventListener("click", async () => {
+  try {
+    await fetchCurrentMonthlyData();
+  } catch (error) {
+    try {
+      await fetchCapturedMonthlyData({ prefix: `Live FYERS current fetch failed (${error.message});` });
+    } catch (fallbackError) {
+      document.getElementById("monthlyFetchStatus").innerHTML = `<div class="error-box">Live FYERS current fetch failed: ${error.message}. ${fallbackError.message}</div>`;
+    }
+  }
+});
+document.getElementById("getMonthlyStatus").addEventListener("click", () => { try { calculateMonthlyStatus(); } catch (error) { document.getElementById("monthlyResultSummary").innerHTML = `<div class="error-box">${error.message}</div>`; } });
+document.getElementById("monthlyInstrument").addEventListener("change", applySelectedInstrumentGroup);
+setMonthlyDefaultDate();
+initInstrumentRegistry().then(() => calculateMonthlyStatus()).catch(() => calculateMonthlyStatus());
+</script>
+"""
+        return self._render_page(title="Monthly Status Calculator", body=body)
+
+    def _render_s23_manual_calculator_page(self) -> str:
+        body = r"""
+<nav><a href="../../index.html">Back to dashboard</a></nav>
+<header class="hero">
+  <div class="eyebrow">Review Mode</div>
+  <h1>S23 Manual Calculator</h1>
+  <p>Enter reference levels, calculate eligible strikes, add premium/OI values, and review the final S23 entry, target, stoploss, and strike selection.</p>
+</header>
+<main class="calculator-shell">
+  <section class="calc-panel">
+    <h2>Manual Inputs</h2>
+    <div id="s23-calculator-form">
+      <div class="form-grid">
+        <label>Monthly Group<select id="monthlyGroup"><option value="bullish">Bullish / Bullish Confirmed</option><option value="bearish">Bearish / Bearish Confirmed</option></select></label>
+        <label>Option Side<select id="optionSide"><option value="CE">CE Sell Call</option><option value="PE">PE Sell Put</option></select></label>
+        <label>Strike Step<input id="strikeStep" type="number" step="50" value="50"></label>
+        <label>NIFTY Lot Size<input id="lotSize" type="number" step="1" value="65"></label>
+        <label>Minimum OI Lots<input id="minOiLots" type="number" step="1" value="500"></label>
+        <label>Near Contract Label<input id="nearLabel" value="near"></label>
+        <label>Next Contract Label<input id="nextLabel" value="next"></label>
+        <label>Review Date<input id="reviewDate" type="date"></label>
+      </div>
+
+      <h3>Spot References</h3>
+      <div class="form-grid">
+        <label>PRV 2DHH<input id="d2hh" type="number" step="0.05" value="24108.20"></label>
+        <label>PRV 2DLL<input id="d2ll" type="number" step="0.05" value="23888.20"></label>
+        <label>PRV 3DHH<input id="d3hh" type="number" step="0.05" value="24108.20"></label>
+        <label>PRV 3DLL<input id="d3ll" type="number" step="0.05" value="23817.80"></label>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="calculateStrikes">CalculateStrikes</button>
+        <button type="button" id="fetchS23Data">Fetch Captured Premium/OI</button>
+      </div>
+      <div id="fetchStatus" class="result-summary"></div>
+    </div>
+  </section>
+
+  <section class="calc-panel output-panel">
+    <h2>Eligible Strikes</h2>
+    <div id="strikeSummary" class="result-summary"></div>
+    <div class="two-column-output">
+      <div>
+        <h3>Eligible CE Strikes</h3>
+        <div id="ceStrikeRows" class="strike-editor"></div>
+      </div>
+      <div>
+        <h3>Eligible PE Strikes</h3>
+        <div id="peStrikeRows" class="strike-editor"></div>
+      </div>
+    </div>
+    <div id="finalStrikeSummary" class="result-summary"></div>
+  </section>
+
+  <section class="calc-panel output-panel">
+      <h3>Option Reference Premiums</h3>
+      <div class="form-grid">
+        <label>OPT PRV 2DHH<input id="opt2dhh" type="number" step="0.05" value="242"></label>
+        <label>OPT PRV 2DLL<input id="opt2dll" type="number" step="0.05" value="210"></label>
+        <label>OPT PRV 3DHH<input id="opt3dhh" type="number" step="0.05" value="220"></label>
+        <label>OPT PRV 3DLL<input id="opt3dll" type="number" step="0.05" value="230"></label>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="calculateRisk">Calculate</button>
+        <button type="button" id="loadBearPut">Load Bear PE Sample</button>
+        <button type="button" id="loadBullCall">Load Bull CE Sample</button>
+      </div>
+    <h2>Calculated Result</h2>
+    <div id="resultSummary" class="result-summary"></div>
+    <ol id="calculationSteps" class="trace-list"></ol>
+  </section>
+</main>
+<script>
+const BRANCHES = {
+  bullish: {
+    CE: { trade: "Sell Call", spotRef: "d3ll", entryRef: "opt3dll", slRef: "opt2dhh", slBuffer: 1.07, direction: "down" },
+    PE: { trade: "Sell Put", spotRef: "d2ll", entryRef: "opt2dll", slRef: "opt3dhh", slBuffer: 1.10, direction: "up" }
+  },
+  bearish: {
+    CE: { trade: "Sell Call", spotRef: "d2ll", entryRef: "opt2dll", slRef: "opt3dhh", slBuffer: 1.10, direction: "down" },
+    PE: { trade: "Sell Put", spotRef: "d3hh", entryRef: "opt3dhh", slRef: "opt2dhh", slBuffer: 1.07, direction: "up" }
+  }
+};
+
+function number(id) {
+  const value = Number(document.getElementById(id).value);
+  if (!Number.isFinite(value)) throw new Error(`${id} must be a number`);
+  return value;
+}
+function text(id) { return document.getElementById(id).value.trim(); }
+function setDefaultDate() { if (!text("reviewDate")) document.getElementById("reviewDate").value = new Date().toISOString().slice(0, 10); }
+function roundDown(value, step) { return Math.floor(value / step) * step; }
+function roundUp(value, step) { return Math.ceil(value / step) * step; }
+function fmt(value) { return Number.isFinite(value) ? value.toFixed(2).replace(/\.00$/, "") : "n/a"; }
+function branchLabel(group, side) {
+  return `${group === "bullish" ? "Bullish / Bullish Confirmed" : "Bearish / Bearish Confirmed"} ${side}`;
+}
+function refs() {
+  return {
+    d2hh: number("d2hh"), d2ll: number("d2ll"), d3hh: number("d3hh"), d3ll: number("d3ll"),
+    opt2dhh: number("opt2dhh"), opt2dll: number("opt2dll"), opt3dhh: number("opt3dhh"), opt3dll: number("opt3dll")
+  };
+}
+function strikePlan(group, side) {
+  const branch = BRANCHES[group][side];
+  const step = number("strikeStep");
+  const ref = refs()[branch.spotRef];
+  const start = branch.direction === "down" ? roundDown(ref * 1.05, step) : roundUp(ref * 0.95, step);
+  const end = branch.direction === "down" ? roundDown(ref, step) - step : roundUp(ref, step) + step;
+  const low = Math.min(start, end);
+  const high = Math.max(start, end);
+  const strikes = [];
+  if (start > end) {
+    for (let strike = start; strike >= end; strike -= step) strikes.push(strike);
+  } else {
+    for (let strike = start; strike <= end; strike += step) strikes.push(strike);
+  }
+  return { group, side, branch, ref, start, end, low, high, strikes, idealPremium: ref * 0.012, minimumPremium: ref * 0.009 };
+}
+function inputValue(selector) {
+  const element = document.querySelector(selector);
+  if (!element) return Number.NaN;
+  return Number(element.value);
+}
+function renderStrikeRows(targetId, plan) {
+  const target = document.getElementById(targetId);
+  target.innerHTML = `
+    <div class="strike-row strike-row-header">
+      <span>Strike</span><span>Near Premium</span><span>Near OI</span><span>Next Premium</span><span>Next OI</span>
+    </div>
+    ${plan.strikes.map((strike, index) => `
+      <div class="strike-row" data-side="${plan.side}" data-strike="${strike}">
+        <span class="strike-value">${fmt(strike)}</span>
+        <input data-role="near-premium" type="number" step="0.05" value="${index === 0 ? fmt(plan.idealPremium) : ""}">
+        <input data-role="near-oi" type="number" step="1" value="">
+        <input data-role="next-premium" type="number" step="0.05" value="">
+        <input data-role="next-oi" type="number" step="1" value="">
+      </div>`).join("")}`;
+}
+function readStrikeRows(side) {
+  return [...document.querySelectorAll(`.strike-row[data-side="${side}"]`)].map(row => ({
+    side,
+    strike: Number(row.dataset.strike),
+    nearPremium: Number(row.querySelector('[data-role="near-premium"]').value),
+    nearOi: Number(row.querySelector('[data-role="near-oi"]').value),
+    nextPremium: Number(row.querySelector('[data-role="next-premium"]').value),
+    nextOi: Number(row.querySelector('[data-role="next-oi"]').value)
+  }));
+}
+function rowQualified(row, contract, plan, minOiContracts) {
+  const premium = contract === "near" ? row.nearPremium : row.nextPremium;
+  const oi = contract === "near" ? row.nearOi : row.nextOi;
+  if (!Number.isFinite(premium) || !Number.isFinite(oi)) return false;
+  return oi >= minOiContracts && premium >= plan.minimumPremium;
+}
+function selectFromRows(rows, plan, minOiContracts) {
+  const nearRows = rows.filter(row => rowQualified(row, "near", plan, minOiContracts));
+  const nearIdeal = nearRows.find(row => row.nearPremium >= plan.idealPremium);
+  if (nearIdeal) return { row: nearIdeal, contract: text("nearLabel") || "near", premium: nearIdeal.nearPremium, oi: nearIdeal.nearOi, reason: "Near contract ideal premium qualified." };
+  if (nearRows.length) {
+    const row = [...nearRows].reverse()[0];
+    return { row, contract: text("nearLabel") || "near", premium: row.nearPremium, oi: row.nearOi, reason: "Near contract minimum premium fallback qualified." };
+  }
+  const nextRows = rows.filter(row => rowQualified(row, "next", plan, minOiContracts));
+  const nextIdeal = nextRows.find(row => row.nextPremium >= plan.idealPremium);
+  if (nextIdeal) return { row: nextIdeal, contract: text("nextLabel") || "next", premium: nextIdeal.nextPremium, oi: nextIdeal.nextOi, reason: "Near contract failed; next contract ideal premium qualified." };
+  if (nextRows.length) {
+    const row = [...nextRows].reverse()[0];
+    return { row, contract: text("nextLabel") || "next", premium: row.nextPremium, oi: row.nextOi, reason: "Near contract failed; next contract minimum premium fallback qualified." };
+  }
+  return { row: null, contract: "", premium: Number.NaN, oi: Number.NaN, reason: "No near or next contract row met minimum OI and minimum premium." };
+}
+function calculateStrikes() {
+  const group = text("monthlyGroup");
+  const cePlan = strikePlan(group, "CE");
+  const pePlan = strikePlan(group, "PE");
+  renderStrikeRows("ceStrikeRows", cePlan);
+  renderStrikeRows("peStrikeRows", pePlan);
+  document.getElementById("strikeSummary").innerHTML = `
+    <div class="summary-grid">
+      <div class="metric"><span>CE Range</span><div class="value">${fmt(cePlan.start)} -> ${fmt(cePlan.end)}</div></div>
+      <div class="metric"><span>CE Ideal / Min</span><div class="value">${fmt(cePlan.idealPremium)} / ${fmt(cePlan.minimumPremium)}</div></div>
+      <div class="metric"><span>PE Range</span><div class="value">${fmt(pePlan.start)} -> ${fmt(pePlan.end)}</div></div>
+      <div class="metric"><span>PE Ideal / Min</span><div class="value">${fmt(pePlan.idealPremium)} / ${fmt(pePlan.minimumPremium)}</div></div>
+    </div>`;
+  updateFinalStrikes();
+}
+async function fetchJson(path) {
+  const response = await fetch(path, { cache: "no-store" });
+  if (!response.ok) throw new Error(`Unable to load ${path}: HTTP ${response.status}`);
+  return response.json();
+}
+function applyCapturedS23Data(payload) {
+  const expiries = [...new Set((payload.contracts || []).map(row => row.expiry).filter(Boolean))].sort();
+  const nearExpiry = expiries[0];
+  const nextExpiry = expiries[1];
+  let applied = 0;
+  for (const side of ["CE", "PE"]) {
+    for (const row of document.querySelectorAll(`.strike-row[data-side="${side}"]`)) {
+      const strike = Number(row.dataset.strike);
+      const near = (payload.contracts || []).find(item => item.option_type === side && Number(item.strike) === strike && item.expiry === nearExpiry);
+      const next = (payload.contracts || []).find(item => item.option_type === side && Number(item.strike) === strike && item.expiry === nextExpiry);
+      if (near) {
+        row.querySelector('[data-role="near-premium"]').value = near.premium ?? "";
+        row.querySelector('[data-role="near-oi"]').value = near.oi ?? "";
+        applied += 1;
+      }
+      if (next) {
+        row.querySelector('[data-role="next-premium"]').value = next.premium ?? "";
+        row.querySelector('[data-role="next-oi"]').value = next.oi ?? "";
+        applied += 1;
+      }
+    }
+  }
+  updateFinalStrikes();
+  return { applied, nearExpiry, nextExpiry };
+}
+async function fetchCapturedS23Data() {
+  setDefaultDate();
+  calculateStrikes();
+  const date = text("reviewDate");
+  const index = await fetchJson("../../data/review/strategies/S23/index.json");
+  const dataPath = index.dates && index.dates[date];
+  if (!dataPath) throw new Error(`No captured S23 review data found for ${date}. Run a snapshot for that date first.`);
+  const payload = await fetchJson(`../../${dataPath}`);
+  const result = applyCapturedS23Data(payload);
+  document.getElementById("fetchStatus").innerHTML = `<div class="metric"><span>Captured Data</span><div class="value">Loaded ${result.applied} values for ${date}. Near expiry: ${result.nearExpiry || "n/a"}; next expiry: ${result.nextExpiry || "n/a"}.</div></div>`;
+}
+function updateFinalStrikes() {
+  const group = text("monthlyGroup");
+  const minOiContracts = number("minOiLots") * number("lotSize");
+  const cePlan = strikePlan(group, "CE");
+  const pePlan = strikePlan(group, "PE");
+  const ce = selectFromRows(readStrikeRows("CE"), cePlan, minOiContracts);
+  const pe = selectFromRows(readStrikeRows("PE"), pePlan, minOiContracts);
+  document.getElementById("finalStrikeSummary").innerHTML = `
+    <div class="summary-grid">
+      <div class="metric"><span>Final CE Strike</span><div class="value">${ce.row ? `${fmt(ce.row.strike)} ${ce.contract}` : "No qualified CE"}</div></div>
+      <div class="metric"><span>CE Reason</span><div class="value">${ce.reason}</div></div>
+      <div class="metric"><span>Final PE Strike</span><div class="value">${pe.row ? `${fmt(pe.row.strike)} ${pe.contract}` : "No qualified PE"}</div></div>
+      <div class="metric"><span>PE Reason</span><div class="value">${pe.reason}</div></div>
+    </div>`;
+  return { CE: ce, PE: pe };
+}
+function riskForSide(group, side, selectedBySide) {
+  const plan = strikePlan(group, side);
+  const branch = plan.branch;
+  const refValues = refs();
+  const selected = selectedBySide[side];
+  const entryReference = refValues[branch.entryRef];
+  const entry = entryReference * 0.925;
+  const target = entry * 0.40;
+  const percentSl = entry * 1.60;
+  const structureReference = refValues[branch.slRef];
+  const structureSl = structureReference * branch.slBuffer;
+  const stoploss = Math.min(percentSl, structureSl);
+  return {
+    side,
+    plan,
+    branch,
+    selected,
+    entryReference,
+    entry,
+    target,
+    percentSl,
+    structureReference,
+    structureSl,
+    stoploss,
+    status: selected.row ? "READY" : "NO ORDER"
+  };
+}
+function riskRowHtml(result, activeSide) {
+  const selected = result.selected;
+  const strike = selected.row ? fmt(selected.row.strike) : "n/a";
+  const contract = selected.row ? selected.contract : "n/a";
+  const premium = selected.row ? fmt(selected.premium) : "n/a";
+  const oi = selected.row ? fmt(selected.oi) : "n/a";
+  const active = result.side === activeSide ? " active-risk-row" : "";
+  return `<tr class="${active}">
+    <td>${result.side}</td>
+    <td>${result.branch.trade}</td>
+    <td>${result.branch.spotRef.toUpperCase()}</td>
+    <td>${fmt(result.plan.start)} -> ${fmt(result.plan.end)}</td>
+    <td>${strike}</td>
+    <td>${contract}</td>
+    <td>${premium}</td>
+    <td>${oi}</td>
+    <td>${result.branch.entryRef.toUpperCase()} = ${fmt(result.entryReference)}</td>
+    <td>${fmt(result.entry)}</td>
+    <td>${fmt(result.target)}</td>
+    <td>${result.branch.slRef.toUpperCase()} = ${fmt(result.structureReference)}</td>
+    <td>${fmt(result.stoploss)}</td>
+    <td>${result.status}</td>
+  </tr>`;
+}
+function calculate() {
+  const group = text("monthlyGroup");
+  const selectedBySide = updateFinalStrikes();
+  const activeSide = text("optionSide");
+  const ce = riskForSide(group, "CE", selectedBySide);
+  const pe = riskForSide(group, "PE", selectedBySide);
+  const minOiContracts = number("minOiLots") * number("lotSize");
+
+  const summary = document.getElementById("resultSummary");
+  summary.innerHTML = `
+    <table class="risk-table">
+      <thead>
+        <tr>
+          <th>Side</th><th>Trade</th><th>Spot Ref</th><th>Strike Range</th><th>Final Strike</th><th>Contract</th><th>Premium</th><th>OI</th><th>Entry Ref</th><th>Entry</th><th>Target</th><th>SL Ref</th><th>Final SL</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${riskRowHtml(ce, activeSide)}
+        ${riskRowHtml(pe, activeSide)}
+      </tbody>
+    </table>`;
+  const steps = [
+    `${branchLabel(group, "CE")}: spot ref ${ce.branch.spotRef.toUpperCase()} = ${fmt(ce.plan.ref)}, range ${fmt(ce.plan.start)} -> ${fmt(ce.plan.end)}, final strike ${ce.selected.row ? fmt(ce.selected.row.strike) : "not selected"}; ${ce.selected.reason}`,
+    `${branchLabel(group, "PE")}: spot ref ${pe.branch.spotRef.toUpperCase()} = ${fmt(pe.plan.ref)}, range ${fmt(pe.plan.start)} -> ${fmt(pe.plan.end)}, final strike ${pe.selected.row ? fmt(pe.selected.row.strike) : "not selected"}; ${pe.selected.reason}`,
+    `Minimum OI = ${fmt(number("minOiLots"))} lots * ${fmt(number("lotSize"))} = ${fmt(minOiContracts)} contracts. Manual OI fields are used on this static review page.`,
+    `CE final calculation: entry = ${ce.branch.entryRef.toUpperCase()} ${fmt(ce.entryReference)} * 0.925 = ${fmt(ce.entry)}; target = ${fmt(ce.target)}; SL = min(entry * 1.60 = ${fmt(ce.percentSl)}, ${ce.branch.slRef.toUpperCase()} * ${fmt(ce.branch.slBuffer)} = ${fmt(ce.structureSl)}) = ${fmt(ce.stoploss)}.`,
+    `PE final calculation: entry = ${pe.branch.entryRef.toUpperCase()} ${fmt(pe.entryReference)} * 0.925 = ${fmt(pe.entry)}; target = ${fmt(pe.target)}; SL = min(entry * 1.60 = ${fmt(pe.percentSl)}, ${pe.branch.slRef.toUpperCase()} * ${fmt(pe.branch.slBuffer)} = ${fmt(pe.structureSl)}) = ${fmt(pe.stoploss)}.`
+  ];
+  document.getElementById("calculationSteps").innerHTML = steps.map(stepText => `<li>${stepText}</li>`).join("");
+}
+document.getElementById("calculateStrikes").addEventListener("click", () => { try { calculateStrikes(); } catch (error) { document.getElementById("strikeSummary").innerHTML = `<div class="error-box">${error.message}</div>`; } });
+document.getElementById("fetchS23Data").addEventListener("click", async () => { try { await fetchCapturedS23Data(); } catch (error) { document.getElementById("fetchStatus").innerHTML = `<div class="error-box">${error.message}</div>`; } });
+document.getElementById("calculateRisk").addEventListener("click", () => { try { calculate(); } catch (error) { document.getElementById("resultSummary").innerHTML = `<div class="error-box">${error.message}</div>`; } });
+document.addEventListener("input", event => { if (event.target.closest(".strike-editor")) updateFinalStrikes(); });
+document.getElementById("loadBearPut").addEventListener("click", () => { document.getElementById("monthlyGroup").value = "bearish"; document.getElementById("optionSide").value = "PE"; calculateStrikes(); });
+document.getElementById("loadBullCall").addEventListener("click", () => { document.getElementById("monthlyGroup").value = "bullish"; document.getElementById("optionSide").value = "CE"; calculateStrikes(); });
+setDefaultDate();
+calculateStrikes();
+</script>
+"""
+        return self._render_page(title="S23 Manual Calculator", body=body)
 
     @staticmethod
     def _render_page(*, title: str, body: str) -> str:
@@ -675,19 +1781,50 @@ class TfisOperatorDashboardBuilder:
                 "    .stage-topline { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }",
                 "    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }",
                 "    .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em; border: 1px solid currentColor; }",
-                "    .badge-ready, .badge-pass, .badge-bull, .badge-bear, .badge-bull_cf, .badge-bear_cf, .badge-yes { color: var(--good); background: rgba(33,110,57,0.09); }",
+                "    .badge-ready, .badge-pass, .badge-selected, .badge-bull, .badge-bear, .badge-bull_cf, .badge-bear_cf, .badge-yes { color: var(--good); background: rgba(33,110,57,0.09); }",
                 "    .badge-in_progress, .badge-unknown, .badge-no_trigger, .badge-n_a, .badge-none { color: var(--unknown); background: rgba(91,95,151,0.1); }",
                 "    .badge-warning, .badge-pending { color: var(--pending); background: rgba(148,98,0,0.1); }",
-                "    .badge-no_go, .badge-failed, .badge-no { color: var(--bad); background: rgba(154,52,18,0.1); }",
+                "    .badge-no_go, .badge-failed, .badge-rejected, .badge-no { color: var(--bad); background: rgba(154,52,18,0.1); }",
                 "    .focus-panel { margin: 14px 0; padding: 14px 16px; border-radius: 16px; background: linear-gradient(180deg, #fffaf2, #f8f0e4); border: 1px solid #e9dcc7; }",
                 "    .focus-panel p { margin: 0 0 10px; } .focus-panel p:last-child { margin-bottom: 0; }",
+                "    .formula-panel, .candidate-panel { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e1d3bd; }",
+                "    .formula-panel h4, .candidate-panel h4 { margin: 0 0 10px; font-size: 1rem; }",
+                "    .candidate-table { display: block; overflow-x: auto; font-size: 0.88rem; }",
+                "    .candidate-table thead, .candidate-table tbody { display: table; width: 100%; }",
+                "    .compact-error { margin-top: 10px; }",
                 "    .artifact-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; font-size: 0.9rem; }",
                 "    .artifact-links a { padding: 6px 10px; border-radius: 999px; background: #f4ecdf; border: 1px solid #e4d6c1; }",
                 "    .top-links { margin-top: 16px; }",
+                "    .tool-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }",
+                "    .tool-link, button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--accent); background: var(--accent); color: white; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; font: inherit; }",
+                "    .tool-link:hover, button:hover { text-decoration: none; filter: brightness(0.95); }",
+                "    button[type='button'] { background: #fff8ef; color: var(--accent); }",
+                "    .calculator-shell { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 24px 40px; }",
+                "    .calc-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; box-shadow: 0 16px 32px rgba(47,39,22,0.07); }",
+                "    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 14px; }",
+                "    label { display: grid; gap: 6px; color: var(--muted); font-weight: 700; font-size: 0.88rem; }",
+                "    input, select, textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; padding: 9px 10px; background: #fffaf2; color: var(--ink); font: inherit; }",
+                "    textarea { min-height: 150px; resize: vertical; font-family: Consolas, 'Courier New', monospace; font-size: 0.88rem; }",
+                "    .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }",
+                "    .two-column-output { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 18px; margin: 12px 0 18px; }",
+                "    .strike-editor { display: grid; gap: 6px; }",
+                "    .strike-row { display: grid; grid-template-columns: 92px repeat(4, minmax(92px, 1fr)); gap: 8px; align-items: center; padding: 8px; border: 1px solid #eadcc9; border-radius: 10px; background: #fff8ef; }",
+                "    .strike-row-header { background: #f4eadb; color: var(--muted); font-size: 0.78rem; font-weight: 700; }",
+                "    .strike-row input { padding: 7px 8px; border-radius: 8px; }",
+                "    .strike-value { font-weight: 700; }",
+                "    .result-summary { margin-bottom: 16px; }",
+                "    .trace-list { display: grid; gap: 8px; padding-left: 22px; }",
+                "    .trace-list li { padding: 8px 10px; background: #fff8ef; border: 1px solid #eadcc9; border-radius: 10px; }",
+                "    .error-box { padding: 12px; border: 1px solid var(--bad); color: var(--bad); background: rgba(154,52,18,0.08); border-radius: 10px; }",
                 "    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }",
                 "    th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }",
                 "    th { background: #f4eadb; }",
-                "    @media (max-width: 720px) { .hero, section, nav { padding-left: 18px; padding-right: 18px; } }",
+                "    .risk-table { display: block; overflow-x: auto; white-space: nowrap; }",
+                "    .risk-table tbody, .risk-table thead { display: table; width: 100%; }",
+                "    .active-risk-row td { background: rgba(15,94,89,0.08); }",
+                "    @media (max-width: 980px) { .two-column-output { grid-template-columns: 1fr; } }",
+                "    @media (max-width: 720px) { .strike-row { grid-template-columns: 1fr 1fr; } .strike-row-header { display: none; } }",
+                "    @media (max-width: 720px) { .hero, section, nav, .calculator-shell { padding-left: 18px; padding-right: 18px; } }",
                 "  </style>",
                 "</head>",
                 "<body>",

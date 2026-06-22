@@ -323,6 +323,55 @@ class FyersBrokerAdapter(BrokerAdapter):
             session_date=session_date,
         )
 
+    def get_daily_bars_for_symbol(
+        self,
+        *,
+        raw_symbol: str,
+        normalized_symbol: str,
+        session_date: date,
+        lookback_days: int = 180,
+        continuous: bool = False,
+    ) -> tuple[UnderlyingHistoryBar, ...]:
+        """Fetch daily bars for a configured FYERS symbol.
+
+        This is intentionally symbol-config driven so monthly-status tooling can
+        support indices, equities, and configured continuous-futures symbols
+        without forcing them through the S23/NIFTY-only underlying normalizer.
+        """
+
+        cleaned_raw_symbol = str(raw_symbol).strip()
+        cleaned_normalized_symbol = str(normalized_symbol).strip().upper()
+        if not cleaned_raw_symbol:
+            raise BrokerNormalizationError("raw_symbol must be configured.")
+        if not cleaned_normalized_symbol:
+            raise BrokerNormalizationError("normalized_symbol must be configured.")
+        if self._payloads:
+            payload = (
+                self._payloads.get("monthly_status_daily_bars")
+                or self._payloads.get("underlying_daily_bars")
+                or self._payloads.get("daily_bars")
+            )
+        else:
+            if self._client is None:
+                raise BrokerConnectionError("Fyers client is not connected.")
+            range_from = session_date - timedelta(days=max(1, int(lookback_days)))
+            payload = self._client.history(
+                {
+                    "symbol": cleaned_raw_symbol,
+                    "resolution": "D",
+                    "date_format": "1",
+                    "range_from": range_from.isoformat(),
+                    "range_to": session_date.isoformat(),
+                    "cont_flag": "1" if continuous else "0",
+                }
+            )
+        return self._normalize_daily_history_payload(
+            payload,
+            raw_symbol=cleaned_raw_symbol,
+            session_date=session_date,
+            normalized_symbol=cleaned_normalized_symbol,
+        )
+
     def stream_ticks(self) -> tuple[NormalizedBrokerEvent, ...]:
         if self._payloads:
             stream_payloads = self._payloads.get("stream_ticks", ())
@@ -704,6 +753,7 @@ class FyersBrokerAdapter(BrokerAdapter):
         *,
         raw_symbol: str,
         session_date: date,
+        normalized_symbol: str | None = None,
     ) -> tuple[UnderlyingHistoryBar, ...]:
         if payload is None:
             raise BrokerNormalizationError("Missing FYERS daily history payload.")
@@ -711,7 +761,7 @@ class FyersBrokerAdapter(BrokerAdapter):
         if not candles:
             raise BrokerNormalizationError("FYERS daily history payload returned no candles.")
 
-        normalized_symbol = self.normalize_underlying_symbol(raw_symbol)
+        normalized_bar_symbol = normalized_symbol or self.normalize_underlying_symbol(raw_symbol)
         source_id = (
             str(payload.get("source_id"))
             if isinstance(payload, dict) and payload.get("source_id")
@@ -729,7 +779,7 @@ class FyersBrokerAdapter(BrokerAdapter):
             bar_end = datetime.combine(bar_date, time(15, 29, 59), tzinfo=self._tzinfo)
             bars.append(
                 UnderlyingHistoryBar(
-                    symbol=normalized_symbol,
+                    symbol=normalized_bar_symbol,
                     bar_start=bar_start,
                     bar_end=bar_end,
                     open=self._optional_float(candle[1]),
@@ -751,6 +801,13 @@ class FyersBrokerAdapter(BrokerAdapter):
         payload: dict[str, Any] | list[dict[str, Any]],
     ) -> list[Any]:
         if isinstance(payload, dict):
+            if str(payload.get("s") or "").lower() == "error":
+                code = payload.get("code")
+                message = payload.get("message") or payload.get("errmsg") or payload
+                raise BrokerNormalizationError(
+                    f"FYERS history request failed"
+                    f"{f' [{code}]' if code is not None else ''}: {message}"
+                )
             if "candles" in payload and isinstance(payload.get("candles"), list):
                 return list(payload.get("candles") or [])
             data = payload.get("data")

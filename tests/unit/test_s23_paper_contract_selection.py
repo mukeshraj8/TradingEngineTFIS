@@ -211,6 +211,40 @@ def test_rejects_premium_below_minimum() -> None:
     assert result.rejected_candidate_counts["minimum_premium_not_met"] == 1
 
 
+def test_falls_back_to_next_weekly_expiry_when_near_weekly_fails() -> None:
+    selector = S23PaperContractSelector()
+
+    result = selector.select(
+        _request(
+            expiry_date=date(2026, 5, 28),
+            fallback_expiry_dates=(date(2026, 6, 4),),
+            minimum_premium=220.0,
+        ),
+        _snapshot(
+            _contract(
+                symbol="NIFTY_20260528_22400_PE",
+                strike=22400.0,
+                ltp=210.0,
+                oi=1200.0,
+                expiry=date(2026, 5, 28),
+            ),
+            _contract(
+                symbol="NIFTY_20260604_22400_PE",
+                strike=22400.0,
+                ltp=225.0,
+                oi=1200.0,
+                expiry=date(2026, 6, 4),
+            ),
+        ),
+    )
+
+    assert result.selected is True
+    assert result.selected_contract_symbol == "NIFTY_20260604_22400_PE"
+    assert result.expiry_date == date(2026, 6, 4)
+    assert result.attempted_expiries == (date(2026, 5, 28), date(2026, 6, 4))
+    assert "Near expiry 2026-05-28 failed" in result.selection_reason
+
+
 def test_uses_deterministic_tie_breaking() -> None:
     selector = S23PaperContractSelector()
 

@@ -1,0 +1,202 @@
+default_symbol: NIFTY
+default_price_source: spot
+price_sources:
+  spot:
+    label: Spot
+    description: Use cash/index daily candles.
+  futures_continuous:
+    label: Futures Continuous
+    description: Use FYERS continuous futures daily candles with cont_flag=1.
+instruments:
+  NIFTY:
+    label: NIFTY
+    instrument_group: nifty
+    spot_symbol: NSE:NIFTY50-INDEX
+    futures_continuous_symbol: null
+    lot_size: 65
+  BANKNIFTY:
+    label: BANKNIFTY
+    instrument_group: banknifty
+    spot_symbol: NSE:NIFTYBANK-INDEX
+    futures_continuous_symbol: null
+    lot_size: null
+  VOLTAS:
+    label: VOLTAS
+    instrument_group: stock
+    spot_symbol: NSE:VOLTAS-EQ
+    futures_continuous_symbol: null
+    lot_size: 600
+  INFY:
+    label: INFY
+    instrument_group: stock
+    spot_symbol: NSE:INFY-EQ
+    futures_continuous_symbol: null
+    lot_size: 400
+  TATACHEM:
+    label: TATACHEM
+    instrument_group: stock
+    spot_symbol: NSE:TATACHEM-EQ
+    futures_continuous_symbol: null
+    lot_size: 550
+  ESCORTS:
+    label: ESCORTS
+    instrument_group: stock
+    spot_symbol: NSE:ESCORTS-EQ
+    futures_continuous_symbol: null
+    lot_size: 275
+  ADANIENT:
+    label: ADANIENT
+    instrument_group: stock
+    spot_symbol: NSE:ADANIENT-EQ
+    futures_continuous_symbol: null
+    lot_size: 300
+  CANFINHOME:
+    label: CANFINHOME
+    instrument_group: stock
+    spot_symbol: NSE:CANFINHOME-EQ
+    futures_continuous_symbol: null
+    lot_size: 975
+  APOLLOTYRE:
+    label: APOLLOTYRE
+    instrument_group: stock
+    spot_symbol: NSE:APOLLOTYRE-EQ
+    futures_continuous_symbol: null
+    lot_size: 1700
+  HINDALCO:
+    label: HINDALCO
+    instrument_group: stock
+    spot_symbol: NSE:HINDALCO-EQ
+    futures_continuous_symbol: null
+    lot_size: 1400
+  INDIGO:
+    label: INDIGO
+    instrument_group: stock
+    spot_symbol: NSE:INDIGO-EQ
+    futures_continuous_symbol: null
+    lot_size: 300
+  RAMCOCEM:
+    label: RAMCOCEM
+    instrument_group: stock
+    spot_symbol: NSE:RAMCOCEM-EQ
+    futures_continuous_symbol: null
+    lot_size: 850
+  TATACOMM:
+    label: TATACOMM
+    instrument_group: stock
+    spot_symbol: NSE:TATACOMM-EQ
+    futures_continuous_symbol: null
+    lot_size: 500
+  ICICIPRULI:
+    label: ICICIPRULI
+    instrument_group: stock
+    spot_symbol: NSE:ICICIPRULI-EQ
+    futures_continuous_symbol: null
+    lot_size: 1500
+  ITC:
+    label: ITC
+    instrument_group: stock
+    spot_symbol: NSE:ITC-EQ
+    futures_continuous_symbol: null
+    lot_size: 1600
+  TATACONSUM:
+    label: TATACONSUM
+    instrument_group: stock
+    spot_symbol: NSE:TATACONSUM-EQ
+    futures_continuous_symbol: null
+    lot_size: 900
+  BAJAJFINSV:
+    label: BAJAJFINSV
+    instrument_group: stock
+    spot_symbol: NSE:BAJAJFINSV-EQ
+    futures_continuous_symbol: null
+    lot_size: 500
+  TATAMOTORS:
+    label: TATAMOTORS
+    instrument_group: stock
+    spot_symbol: NSE:TATAMOTORS-EQ
+    futures_continuous_symbol: null
+    lot_size: 1425
+  DLF:
+    label: DLF
+    instrument_group: stock
+    spot_symbol: NSE:DLF-EQ
+    futures_continuous_symbol: null
+    lot_size: 1650
+  AMBUJACEM:
+    label: AMBUJACEM
+    instrument_group: stock
+    spot_symbol: NSE:AMBUJACEM-EQ
+    futures_continuous_symbol: null
+    lot_size: 1800
+  JINDALSTEL:
+    label: JINDALSTEL
+    instrument_group: stock
+    spot_symbol: NSE:JINDALSTEL-EQ
+    futures_continuous_symbol: null
+    lot_size: 1250
+  BAJFINANCE:
+    label: BAJFINANCE
+    instrument_group: stock
+    spot_symbol: NSE:BAJFINANCE-EQ
+    futures_continuous_symbol: null
+    lot_size: 125
+  TVSMOTOR:
+    label: TVSMOTOR
+    instrument_group: stock
+    spot_symbol: NSE:TVSMOTOR-EQ
+    futures_continuous_symbol: null
+    lot_size: 700
+  GLENMARK:
+    label: GLENMARK
+    instrument_group: stock
+    spot_symbol: NSE:GLENMARK-EQ
+    futures_continuous_symbol: null
+    lot_size: 1450
+  TORNTPHARM:
+    label: TORNTPHARM
+    instrument_group: stock
+    spot_symbol: NSE:TORNTPHARM-EQ
+    futures_continuous_symbol: null
+    lot_size: 500
+  M&M:
+    label: M&M
+    instrument_group: stock
+    spot_symbol: NSE:M&M-EQ
+    futures_continuous_symbol: null
+    lot_size: 700
+  SRF:
+    label: SRF
+    instrument_group: stock
+    spot_symbol: NSE:SRF-EQ
+    futures_continuous_symbol: null
+    lot_size: 375
+  CUMMINSIND:
+    label: CUMMINSIND
+    instrument_group: stock
+    spot_symbol: NSE:CUMMINSIND-EQ
+    futures_continuous_symbol: null
+    lot_size: 600
+  AUROPHARMA:
+    label: AUROPHARMA
+    instrument_group: stock
+    spot_symbol: NSE:AUROPHARMA-EQ
+    futures_continuous_symbol: null
+    lot_size: 1100
+  JSWSTEEL:
+    label: JSWSTEEL
+    instrument_group: stock
+    spot_symbol: NSE:JSWSTEEL-EQ
+    futures_continuous_symbol: null
+    lot_size: 1350
+  TITAN:
+    label: TITAN
+    instrument_group: stock
+    spot_symbol: NSE:TITAN-EQ
+    futures_continuous_symbol: null
+    lot_size: 375
+  CHOLAFIN:
+    label: CHOLAFIN
+    instrument_group: stock
+    spot_symbol: NSE:CHOLAFIN-EQ
+    futures_continuous_symbol: null
+    lot_size: 1250

@@ -1,5 +1,5 @@
 start_strike_formula: "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)"
-end_strike_formula: "ROUND_DOWN(PRV_3DLL) - 1"
+end_strike_formula: "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)"
 ideal_premium_formula: "PRV_3DLL * PARAM(ideal_premium_pct)%"
 minimum_premium_formula: "PRV_3DLL * PARAM(minimum_premium_pct)%"
 entry_formula: "OPT_PRV_3DLL - PARAM(entry_discount_pct)%"

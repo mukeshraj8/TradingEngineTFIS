@@ -29,6 +29,7 @@ class S23PaperContractSelectionRequest:
     ideal_premium: float
     minimum_premium: float
     minimum_oi: float
+    fallback_expiry_dates: tuple[date, ...] = ()
 
     @classmethod
     def from_strategy_and_trade_plan(
@@ -91,6 +92,7 @@ class S23PaperContractSelectionResult:
     rejected_candidate_counts: dict[str, int]
     ranking: S23PaperContractSelectionRanking | None = None
     selected_contract: OptionChainContract | None = None
+    attempted_expiries: tuple[date, ...] = ()
 
 
 class S23PaperContractSelector:
@@ -106,6 +108,76 @@ class S23PaperContractSelector:
                 rejected_candidate_counts={},
             )
 
+        expiry_dates = self._expiry_search_order(request)
+        failed_results: list[S23PaperContractSelectionResult] = []
+        for expiry_date in expiry_dates:
+            result = self._select_for_expiry(
+                request,
+                option_chain_snapshot,
+                expiry_date=expiry_date,
+            )
+            if result.selected:
+                if expiry_date != expiry_dates[0]:
+                    return S23PaperContractSelectionResult(
+                        selected=True,
+                        failure_code=None,
+                        selection_reason=(
+                            result.selection_reason
+                            + f" Near expiry {expiry_dates[0].isoformat()} failed; "
+                            + f"selected fallback expiry {expiry_date.isoformat()}."
+                        ),
+                        selected_contract_symbol=result.selected_contract_symbol,
+                        expiry_date=result.expiry_date,
+                        strike=result.strike,
+                        option_type=result.option_type,
+                        premium_used=result.premium_used,
+                        oi_used=result.oi_used,
+                        ranked_candidate_count=result.ranked_candidate_count,
+                        rejected_candidate_counts=result.rejected_candidate_counts,
+                        ranking=result.ranking,
+                        selected_contract=result.selected_contract,
+                        attempted_expiries=expiry_dates,
+                    )
+                return S23PaperContractSelectionResult(
+                    selected=True,
+                    failure_code=None,
+                    selection_reason=result.selection_reason,
+                    selected_contract_symbol=result.selected_contract_symbol,
+                    expiry_date=result.expiry_date,
+                    strike=result.strike,
+                    option_type=result.option_type,
+                    premium_used=result.premium_used,
+                    oi_used=result.oi_used,
+                    ranked_candidate_count=result.ranked_candidate_count,
+                    rejected_candidate_counts=result.rejected_candidate_counts,
+                    ranking=result.ranking,
+                    selected_contract=result.selected_contract,
+                    attempted_expiries=expiry_dates,
+                )
+            failed_results.append(result)
+
+        if len(failed_results) == 1:
+            return failed_results[0]
+
+        merged_rejected: dict[str, int] = {}
+        for result in failed_results:
+            for reason, count in result.rejected_candidate_counts.items():
+                merged_rejected[reason] = merged_rejected.get(reason, 0) + count
+        return self._failure(
+            failure_code=failed_results[-1].failure_code
+            or PaperContractSelectionFailureCode.NO_CONTRACT_SELECTED,
+            selection_reason="; ".join(result.selection_reason for result in failed_results),
+            rejected_candidate_counts=merged_rejected,
+            attempted_expiries=expiry_dates,
+        )
+
+    def _select_for_expiry(
+        self,
+        request: S23PaperContractSelectionRequest,
+        option_chain_snapshot: OptionChainSnapshotEvent,
+        *,
+        expiry_date: date,
+    ) -> S23PaperContractSelectionResult:
         rejected: dict[str, int] = {}
         strike_filtered = False
         missing_oi_seen = False
@@ -117,7 +189,7 @@ class S23PaperContractSelector:
             if option_chain_snapshot.underlying_symbol != request.underlying_symbol:
                 self._bump(rejected, "underlying_mismatch")
                 continue
-            if contract.expiry != request.expiry_date:
+            if contract.expiry != expiry_date:
                 self._bump(rejected, "expiry_mismatch")
                 continue
             if contract.option_type is not request.option_type:
@@ -182,15 +254,29 @@ class S23PaperContractSelector:
                 rejected_candidate_counts=rejected,
             )
 
-        selected = min(
+        ideal_search_order = self._ordered_by_search_direction(
             candidates,
-            key=lambda contract: (
-                abs(contract.ltp - request.ideal_premium),
-                -float(contract.oi or 0.0),
-                float(contract.strike or 0.0),
-                contract.symbol,
-            ),
+            start_strike=request.start_strike,
+            end_strike=request.end_strike,
         )
+        selected = None
+        selection_reason = ""
+        for contract in ideal_search_order:
+            if contract.ltp >= request.ideal_premium:
+                selected = contract
+                selection_reason = (
+                    "Selected first strike meeting ideal premium in rule-sheet search order."
+                )
+                break
+        if selected is None:
+            selected = next(
+                contract
+                for contract in reversed(ideal_search_order)
+                if contract.ltp >= request.minimum_premium
+            )
+            selection_reason = (
+                "Selected first strike meeting minimum premium in reverse rule-sheet search order."
+            )
         ranking = S23PaperContractSelectionRanking(
             premium_distance=abs(float(selected.ltp) - request.ideal_premium),
             oi_used=float(selected.oi or 0.0),
@@ -200,7 +286,7 @@ class S23PaperContractSelector:
         return S23PaperContractSelectionResult(
             selected=True,
             failure_code=None,
-            selection_reason="Selected contract closest to ideal premium while satisfying OI filters.",
+            selection_reason=selection_reason,
             selected_contract_symbol=selected.symbol,
             expiry_date=selected.expiry,
             strike=selected.strike,
@@ -211,6 +297,7 @@ class S23PaperContractSelector:
             rejected_candidate_counts=rejected,
             ranking=ranking,
             selected_contract=selected,
+            attempted_expiries=(expiry_date,),
         )
 
     def _failure(
@@ -219,6 +306,7 @@ class S23PaperContractSelector:
         failure_code: PaperContractSelectionFailureCode,
         selection_reason: str,
         rejected_candidate_counts: dict[str, int],
+        attempted_expiries: tuple[date, ...] = (),
     ) -> S23PaperContractSelectionResult:
         return S23PaperContractSelectionResult(
             selected=False,
@@ -234,8 +322,32 @@ class S23PaperContractSelector:
             rejected_candidate_counts=dict(sorted(rejected_candidate_counts.items())),
             ranking=None,
             selected_contract=None,
+            attempted_expiries=attempted_expiries,
         )
+
+    @staticmethod
+    def _expiry_search_order(
+        request: S23PaperContractSelectionRequest,
+    ) -> tuple[date, ...]:
+        ordered: list[date] = []
+        for expiry_date in (request.expiry_date, *request.fallback_expiry_dates):
+            if expiry_date not in ordered:
+                ordered.append(expiry_date)
+        return tuple(ordered)
 
     @staticmethod
     def _bump(rejected: dict[str, int], reason: str) -> None:
         rejected[reason] = rejected.get(reason, 0) + 1
+
+    @staticmethod
+    def _ordered_by_search_direction(
+        contracts: list[OptionChainContract],
+        *,
+        start_strike: float,
+        end_strike: float,
+    ) -> list[OptionChainContract]:
+        return sorted(
+            contracts,
+            key=lambda contract: float(contract.strike or 0.0),
+            reverse=start_strike > end_strike,
+        )

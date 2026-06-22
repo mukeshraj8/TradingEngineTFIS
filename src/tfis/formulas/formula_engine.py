@@ -136,6 +136,14 @@ class _FormulaParser:
         if name in {"ROUND_UP", "ROUND_DOWN"}:
             value = self._parse_expression()
             self._expect("RPAREN")
+            strike_step = self._parameters.get("strike_step")
+            if strike_step is not None and float(strike_step) > 0:
+                step = float(strike_step)
+                return (
+                    float(math.ceil(value / step) * step)
+                    if name == "ROUND_UP"
+                    else float(math.floor(value / step) * step)
+                )
             return (
                 float(math.ceil(value))
                 if name == "ROUND_UP"

@@ -20,14 +20,13 @@ DEFAULT_CONFIG = REPO_ROOT / "config" / "paper.s23.fyers_connect_test.yaml"
 DEFAULT_REFERENCE_PACKET = (
     REPO_ROOT / "config" / "reference_packets" / "s23_bear_put_live_decision_reference.json"
 )
-DEFAULT_STRATEGY = (
-    REPO_ROOT
-    / "config"
-    / "strategies"
-    / "options_sell"
-    / "nifty"
-    / "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+DEFAULT_STRATEGIES = (
+    "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+    "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+    "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+    "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
 )
+DEFAULT_STRATEGY_ROOT = REPO_ROOT / "config" / "strategies" / "options_sell" / "nifty"
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -40,7 +39,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--tfis-root", default=str(REPO_ROOT))
     parser.add_argument("--config", default=str(DEFAULT_CONFIG))
-    parser.add_argument("--strategy-path", default=str(DEFAULT_STRATEGY))
+    parser.add_argument(
+        "--strategy-path",
+        action="append",
+        default=None,
+        help=(
+            "S23 strategy folder to evaluate. Repeat for multiple branches. "
+            "Defaults to all configured NIFTY S23 CE/PE branches."
+        ),
+    )
     parser.add_argument("--reference-packet", default=str(DEFAULT_REFERENCE_PACKET))
     parser.add_argument("--artifact-root", default="tmp/s23_fyers_morning_supervised_decision")
     parser.add_argument("--dashboard-output-root", default="tmp/operator_dashboard")
@@ -55,11 +62,20 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    strategy_paths = tuple(
+        Path(item)
+        for item in (
+            args.strategy_path
+            if args.strategy_path is not None
+            else [str(DEFAULT_STRATEGY_ROOT / name) for name in DEFAULT_STRATEGIES]
+        )
+    )
     try:
         result = run_s23_morning_supervised_decision(
             tfis_root=args.tfis_root,
             config_path=args.config,
-            strategy_path=args.strategy_path,
+            strategy_path=strategy_paths[0],
+            strategy_paths=strategy_paths,
             reference_packet_path=args.reference_packet,
             artifact_root=args.artifact_root,
             dashboard_output_root=args.dashboard_output_root,
@@ -77,6 +93,9 @@ def main(argv: list[str] | None = None) -> int:
     print("Scheduled morning supervised S23 decision run succeeded.")
     print(f"Session directory: {result.session_directory}")
     print(f"Decision explainer: {result.timeline_markdown}")
+    if result.branch_final_summary_markdown:
+        for branch, path in sorted(result.branch_final_summary_markdown.items()):
+            print(f"Final decision summary [{branch}]: {path}")
     if result.final_summary_markdown is not None:
         print(f"Final decision summary: {result.final_summary_markdown}")
     return 0

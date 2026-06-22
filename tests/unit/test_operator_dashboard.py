@@ -101,6 +101,8 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
 
     index_html = result.index_html.read_text(encoding="utf-8")
     strategy_html = result.strategy_pages["S23"].read_text(encoding="utf-8")
+    manual_calculator_html = result.tool_pages["s23_manual_calculator"].read_text(encoding="utf-8")
+    monthly_calculator_html = result.tool_pages["monthly_status_calculator"].read_text(encoding="utf-8")
     manifest = json.loads(result.manifest_json.read_text(encoding="utf-8"))
 
     assert "TFIS Operator Dashboard" in index_html
@@ -108,7 +110,28 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Run Status" in strategy_html
     assert "Final Contract" in strategy_html
     assert "NIFTY_20260602_23800_PE" in strategy_html
+    assert "Monthly Status Calculator" in index_html
+    assert "Monthly Status Calculator" in strategy_html
+    assert "CalculateStrikes" in manual_calculator_html
+    assert "Review Date" in manual_calculator_html
+    assert "Fetch Captured Premium/OI" in manual_calculator_html
+    assert "Eligible CE Strikes" in manual_calculator_html
+    assert "Eligible PE Strikes" in manual_calculator_html
+    assert "<th>Side</th><th>Trade</th>" in manual_calculator_html
+    assert "CE final calculation" in manual_calculator_html
+    assert "PE final calculation" in manual_calculator_html
+    assert "GetMonthlyStatus" in monthly_calculator_html
+    assert "Fetch Captured Monthly Data" in monthly_calculator_html
+    assert "PMH" in monthly_calculator_html
+    assert "CWH" in monthly_calculator_html
     assert manifest["strategies"][0]["sessions"][0]["final_decision_status"] == "READY"
+    assert "monthly_status_index" in manifest["review_data"]
+    assert "strategy_S23_index" in manifest["review_data"]
+    monthly_index = json.loads(result.review_data_pages["monthly_status_index"].read_text(encoding="utf-8"))
+    monthly_payload_path = result.output_root / monthly_index["dates"]["2026-06-10"]
+    monthly_payload = json.loads(monthly_payload_path.read_text(encoding="utf-8"))
+    assert monthly_payload["symbol"] == "NIFTY"
+    assert monthly_payload["instrument_group"] == "nifty"
 
 
 def test_dashboard_reconstructs_stage_from_snapshot_dir(tmp_path: Path) -> None:

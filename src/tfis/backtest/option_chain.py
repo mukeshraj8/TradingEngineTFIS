@@ -62,6 +62,7 @@ class OptionSelectionRequest:
     minimum_premium: float
     minimum_oi: int
     timestamp: datetime
+    expiry_dates: tuple[date, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,6 +71,7 @@ class OptionSelectionResult:
     selected_contract: OptionChainContract | None
     selection_reason: str
     candidate_count: int
+    attempted_expiries: tuple[date, ...] = ()
 
 
 class OptionChainSelector:
@@ -107,6 +109,80 @@ class OptionChainSelector:
                 ),
                 candidate_count=0,
             )
+
+        expiry_dates = request.expiry_dates or tuple(
+            sorted({contract.expiry for contract in type_matches})[:2]
+        )
+        if not expiry_dates:
+            return OptionSelectionResult(
+                selected=False,
+                selected_contract=None,
+                selection_reason="No option-chain expiries found for selection.",
+                candidate_count=0,
+            )
+
+        failed_results: list[OptionSelectionResult] = []
+        for expiry_date in expiry_dates:
+            expiry_matches = [
+                contract for contract in type_matches if contract.expiry == expiry_date
+            ]
+            if not expiry_matches:
+                failed_results.append(
+                    OptionSelectionResult(
+                        selected=False,
+                        selected_contract=None,
+                        selection_reason=(
+                            "No option-chain contracts found for expiry "
+                            f"{expiry_date.isoformat()}"
+                        ),
+                        candidate_count=0,
+                        attempted_expiries=(expiry_date,),
+                    )
+                )
+                continue
+
+            result = self._select_within_expiry(request, expiry_matches)
+            if result.selected:
+                if expiry_date != expiry_dates[0]:
+                    return OptionSelectionResult(
+                        selected=True,
+                        selected_contract=result.selected_contract,
+                        selection_reason=(
+                            result.selection_reason
+                            + f" Near expiry {expiry_dates[0].isoformat()} failed; "
+                            + f"selected fallback expiry {expiry_date.isoformat()}."
+                        ),
+                        candidate_count=result.candidate_count,
+                        attempted_expiries=expiry_dates,
+                    )
+                return OptionSelectionResult(
+                    selected=True,
+                    selected_contract=result.selected_contract,
+                    selection_reason=result.selection_reason,
+                    candidate_count=result.candidate_count,
+                    attempted_expiries=expiry_dates,
+                )
+            failed_results.append(result)
+
+        primary_failure = failed_results[0]
+        if len(failed_results) == 1:
+            return primary_failure
+        return OptionSelectionResult(
+            selected=False,
+            selected_contract=None,
+            selection_reason="; ".join(
+                f"Expiry {expiry_date.isoformat()}: {result.selection_reason}"
+                for expiry_date, result in zip(expiry_dates, failed_results)
+            ),
+            candidate_count=sum(result.candidate_count for result in failed_results),
+            attempted_expiries=expiry_dates,
+        )
+
+    def _select_within_expiry(
+        self,
+        request: OptionSelectionRequest,
+        type_matches: list[OptionChainContract],
+    ) -> OptionSelectionResult:
 
         lower_strike = min(request.start_strike, request.end_strike)
         upper_strike = max(request.start_strike, request.end_strike)
@@ -156,21 +232,43 @@ class OptionChainSelector:
                 candidate_count=0,
             )
 
-        midpoint = (request.start_strike + request.end_strike) / 2.0
-        selected_contract = min(
+        ideal_search_order = self._ordered_by_search_direction(
             premium_matches,
-            key=lambda contract: (
-                abs(contract.ltp - request.ideal_premium),
-                contract.bid_ask_spread,
-                -contract.oi,
-                abs(contract.strike - midpoint),
-            ),
+            start_strike=request.start_strike,
+            end_strike=request.end_strike,
+        )
+        for contract in ideal_search_order:
+            if contract.ltp >= request.ideal_premium:
+                return OptionSelectionResult(
+                    selected=True,
+                    selected_contract=contract,
+                    selection_reason="Selected first strike meeting ideal premium in rule-sheet search order.",
+                    candidate_count=len(premium_matches),
+                )
+
+        selected_contract = next(
+            contract
+            for contract in reversed(ideal_search_order)
+            if contract.ltp >= request.minimum_premium
         )
         return OptionSelectionResult(
             selected=True,
             selected_contract=selected_contract,
-            selection_reason="Selected contract closest to ideal premium.",
+            selection_reason="Selected first strike meeting minimum premium in reverse rule-sheet search order.",
             candidate_count=len(premium_matches),
+        )
+
+    @staticmethod
+    def _ordered_by_search_direction(
+        contracts: list[OptionChainContract],
+        *,
+        start_strike: int,
+        end_strike: int,
+    ) -> list[OptionChainContract]:
+        return sorted(
+            contracts,
+            key=lambda contract: contract.strike,
+            reverse=start_strike > end_strike,
         )
 
 

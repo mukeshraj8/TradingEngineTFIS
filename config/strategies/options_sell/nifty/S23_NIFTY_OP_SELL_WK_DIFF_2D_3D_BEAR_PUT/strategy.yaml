@@ -11,5 +11,5 @@ allowed_monthly_statuses:
 option_type: PUT
 entry_time: "09:24:59"
 recalculation_time: "09:29:59"
-minimum_oi: 500
+minimum_oi: 32500
 carry_forward_allowed: true

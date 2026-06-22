@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, time
 from pathlib import Path
 from typing import Callable
@@ -35,6 +35,7 @@ class S23MorningDecisionCheckpoint:
 
 @dataclass(frozen=True, slots=True)
 class S23MorningDecisionStageRun:
+    strategy_branch: str
     checkpoint: S23MorningDecisionCheckpoint
     initial_check_time: str
     trigger_time: str
@@ -56,6 +57,8 @@ class S23MorningDecisionRunResult:
     final_summary_json: Path | None
     final_summary_markdown: Path | None
     stage_runs: tuple[S23MorningDecisionStageRun, ...]
+    branch_final_summary_json: dict[str, str] = field(default_factory=dict)
+    branch_final_summary_markdown: dict[str, str] = field(default_factory=dict)
 
 
 def default_morning_decision_checkpoints() -> tuple[S23MorningDecisionCheckpoint, ...]:
@@ -71,6 +74,7 @@ def run_s23_morning_supervised_decision(
     tfis_root: str | Path | None = None,
     config_path: str | Path,
     strategy_path: str | Path,
+    strategy_paths: tuple[str | Path, ...] | None = None,
     reference_packet_path: str | Path,
     artifact_root: str | Path,
     session_id_prefix: str,
@@ -93,15 +97,20 @@ def run_s23_morning_supervised_decision(
     stage_checkpoints = checkpoints or default_morning_decision_checkpoints()
 
     prepare_fyers_env_from_tfis_auth(tfis_root=tfis_root, skip_refresh=skip_refresh)
-    strategy_rule = load_strategy_rule(strategy_path)
+    selected_strategy_paths = tuple(strategy_paths or (strategy_path,))
+    if not selected_strategy_paths:
+        raise RuntimeError("At least one S23 strategy path is required.")
+    strategy_rules = tuple(load_strategy_rule(path) for path in selected_strategy_paths)
+    primary_strategy_rule = strategy_rules[0]
+    primary_strategy_path = selected_strategy_paths[0]
     ingress_config = S23LivePaperIngressConfig.from_yaml(config_path)
-    reference_packet = load_s23_decision_reference_packet(reference_packet_path)
+    base_reference_packet = load_s23_decision_reference_packet(reference_packet_path)
     collector = S23FyersSnapshotCollector(artifact_root=artifact_root)
     decision_builder = S23PaperLiveDecisionBuilder()
     timeline_builder = S23LiveDecisionTimelineBuilder(decision_builder=decision_builder)
     dashboard_builder = _build_dashboard_builder(
         artifact_root=artifact_root,
-        strategy_path=strategy_path,
+        strategy_path=primary_strategy_path,
         reference_packet_path=reference_packet_path,
         session_id_prefix=session_id_prefix,
     )
@@ -114,8 +123,12 @@ def run_s23_morning_supervised_decision(
     session_directory: Path | None = None
     final_summary_json: Path | None = None
     final_summary_markdown: Path | None = None
+    branch_final_summary_json: dict[str, str] = {}
+    branch_final_summary_markdown: dict[str, str] = {}
     stage_runs: list[S23MorningDecisionStageRun] = []
-    timeline_stages: list[S23LiveDecisionTimelineStage] = []
+    timeline_stages_by_branch: dict[str, list[S23LiveDecisionTimelineStage]] = {
+        rule.unique_code: [] for rule in strategy_rules
+    }
     last_snapshot_artifacts: S23FyersSnapshotArtifactSet | None = None
 
     for checkpoint in stage_checkpoints:
@@ -138,62 +151,80 @@ def run_s23_morning_supervised_decision(
         session_id = f"{session_id_prefix}-{checkpoint.target_hour:02d}{checkpoint.target_minute:02d}-{trigger_time.strftime('%Y-%m-%d')}"
         snapshot_artifacts = collector.collect_from_files(
             config_path=config_path,
-            strategy_path=strategy_path,
+            strategy_path=primary_strategy_path,
             carry_forward_state_dir=carry_forward_state_dir,
             session_id=session_id,
             adapter=None,
         )
         if snapshot_artifacts.collected_inputs is None:
             raise RuntimeError("Snapshot collector did not return collected inputs.")
-        stage_build = timeline_builder.build_stage(
-            stage_name=checkpoint.stage_name,
-            stage_time=checkpoint.stage_time,
-            strategy_rule=strategy_rule,
-            reference_packet=reference_packet,
-            collected_inputs=snapshot_artifacts.collected_inputs,
-            carry_forward_position=carry_forward_position,
-            smoke_override_enabled=enable_smoke_override,
-            smoke_override_selected_contract_symbol=(
-                ingress_config.market.selected_contract_symbol if enable_smoke_override else None
-            ),
-            allow_branch_pinned_unknown_monthly_status=True,
-        )
-        timeline_stages.append(stage_build.stage)
         if session_directory is None:
             session_directory = snapshot_artifacts.session_directory.parent / f"{session_id_prefix}-{trigger_time.strftime('%Y-%m-%d')}"
             session_directory.mkdir(parents=True, exist_ok=True)
-        (
-            stage_explainer_json,
-            stage_explainer_markdown,
-            monthly_status_json,
-            monthly_status_markdown,
-        ) = timeline_builder.write_stage_artifacts(
-            session_date=snapshot_artifacts.summary.session_date,
-            strategy_code=strategy_rule.strategy_code,
-            strategy_branch=reference_packet.strategy_branch or strategy_rule.unique_code,
-            stage=stage_build.stage,
-            output_dir=session_directory,
-        )
-        stage_runs.append(
-            S23MorningDecisionStageRun(
-                checkpoint=checkpoint,
-                initial_check_time=now.isoformat(),
-                trigger_time=trigger_time.isoformat(),
-                delay_seconds=delay_seconds,
-                schedule_note=note,
-                snapshot_session_directory=str(snapshot_artifacts.session_directory),
-                stage_explainer_json=str(stage_explainer_json),
-                stage_explainer_markdown=str(stage_explainer_markdown),
-                monthly_status_json=str(monthly_status_json),
-                monthly_status_markdown=str(monthly_status_markdown),
+
+        for strategy_rule in strategy_rules:
+            strategy_branch = strategy_rule.unique_code
+            reference_packet = replace(
+                base_reference_packet,
+                strategy_branch=strategy_branch,
+            )
+            stage_build = timeline_builder.build_stage(
+                stage_name=checkpoint.stage_name,
+                stage_time=checkpoint.stage_time,
+                strategy_rule=strategy_rule,
+                reference_packet=reference_packet,
+                collected_inputs=snapshot_artifacts.collected_inputs,
+                carry_forward_position=carry_forward_position,
+                smoke_override_enabled=enable_smoke_override,
+                smoke_override_selected_contract_symbol=(
+                    ingress_config.market.selected_contract_symbol if enable_smoke_override else None
+                ),
+                allow_branch_pinned_unknown_monthly_status=True,
+            )
+            timeline_stages_by_branch[strategy_branch].append(stage_build.stage)
+            output_dir = (
+                session_directory
+                if len(strategy_rules) == 1
+                else session_directory / strategy_branch
+            )
+            (
+                stage_explainer_json,
+                stage_explainer_markdown,
+                monthly_status_json,
+                monthly_status_markdown,
+            ) = timeline_builder.write_stage_artifacts(
+                session_date=snapshot_artifacts.summary.session_date,
+                strategy_code=strategy_rule.strategy_code,
+                strategy_branch=strategy_branch,
                 stage=stage_build.stage,
+                output_dir=output_dir,
             )
-        )
-        if stage_build.decision_result is not None:
-            final_summary_json, final_summary_markdown = decision_builder.write_artifacts(
-                stage_build.decision_result,
-                output_dir=session_directory,
+            stage_runs.append(
+                S23MorningDecisionStageRun(
+                    strategy_branch=strategy_branch,
+                    checkpoint=checkpoint,
+                    initial_check_time=now.isoformat(),
+                    trigger_time=trigger_time.isoformat(),
+                    delay_seconds=delay_seconds,
+                    schedule_note=note,
+                    snapshot_session_directory=str(snapshot_artifacts.session_directory),
+                    stage_explainer_json=str(stage_explainer_json),
+                    stage_explainer_markdown=str(stage_explainer_markdown),
+                    monthly_status_json=str(monthly_status_json),
+                    monthly_status_markdown=str(monthly_status_markdown),
+                    stage=stage_build.stage,
+                )
             )
+            if stage_build.decision_result is not None:
+                summary_json, summary_markdown = decision_builder.write_artifacts(
+                    stage_build.decision_result,
+                    output_dir=output_dir,
+                )
+                branch_final_summary_json[strategy_branch] = str(summary_json)
+                branch_final_summary_markdown[strategy_branch] = str(summary_markdown)
+                if final_summary_json is None:
+                    final_summary_json = summary_json
+                    final_summary_markdown = summary_markdown
         _rebuild_dashboard(
             dashboard_builder=dashboard_builder,
             dashboard_output_root=dashboard_output_root,
@@ -203,16 +234,30 @@ def run_s23_morning_supervised_decision(
     if session_directory is None or last_snapshot_artifacts is None:
         raise RuntimeError("Morning supervised decision run did not capture any stages.")
 
-    timeline_result = timeline_builder.build_timeline(
-        session_date=last_snapshot_artifacts.summary.session_date,
-        strategy_rule=strategy_rule,
-        strategy_branch=reference_packet.strategy_branch or strategy_rule.unique_code,
-        stages=tuple(timeline_stages),
-    )
-    timeline_json, timeline_markdown = timeline_builder.write_artifacts(
-        timeline_result,
-        output_dir=session_directory,
-    )
+    primary_timeline_json: Path | None = None
+    primary_timeline_markdown: Path | None = None
+    for strategy_rule in strategy_rules:
+        strategy_branch = strategy_rule.unique_code
+        timeline_result = timeline_builder.build_timeline(
+            session_date=last_snapshot_artifacts.summary.session_date,
+            strategy_rule=strategy_rule,
+            strategy_branch=strategy_branch,
+            stages=tuple(timeline_stages_by_branch[strategy_branch]),
+        )
+        output_dir = (
+            session_directory
+            if len(strategy_rules) == 1
+            else session_directory / strategy_branch
+        )
+        timeline_json, timeline_markdown = timeline_builder.write_artifacts(
+            timeline_result,
+            output_dir=output_dir,
+        )
+        if primary_timeline_json is None:
+            primary_timeline_json = timeline_json
+            primary_timeline_markdown = timeline_markdown
+    assert primary_timeline_json is not None
+    assert primary_timeline_markdown is not None
     metadata_path = session_directory / "scheduled_run_metadata.json"
     metadata_path.write_text(
         json.dumps(
@@ -220,12 +265,15 @@ def run_s23_morning_supervised_decision(
                 "timezone": timezone_name,
                 "if_past": if_past,
                 "session_directory": str(session_directory),
-                "timeline_json": str(timeline_json),
-                "timeline_markdown": str(timeline_markdown),
+                "timeline_json": str(primary_timeline_json),
+                "timeline_markdown": str(primary_timeline_markdown),
                 "final_summary_json": str(final_summary_json) if final_summary_json is not None else None,
                 "final_summary_markdown": str(final_summary_markdown) if final_summary_markdown is not None else None,
+                "branch_final_summary_json": branch_final_summary_json,
+                "branch_final_summary_markdown": branch_final_summary_markdown,
                 "stages": [
                     {
+                        "strategy_branch": stage_run.strategy_branch,
                         "stage_name": stage_run.checkpoint.stage_name,
                         "target_hour": stage_run.checkpoint.target_hour,
                         "target_minute": stage_run.checkpoint.target_minute,
@@ -254,11 +302,13 @@ def run_s23_morning_supervised_decision(
     )
     return S23MorningDecisionRunResult(
         session_directory=session_directory,
-        timeline_json=timeline_json,
-        timeline_markdown=timeline_markdown,
+        timeline_json=primary_timeline_json,
+        timeline_markdown=primary_timeline_markdown,
         final_summary_json=final_summary_json,
         final_summary_markdown=final_summary_markdown,
         stage_runs=tuple(stage_runs),
+        branch_final_summary_json=branch_final_summary_json,
+        branch_final_summary_markdown=branch_final_summary_markdown,
     )
 
 
