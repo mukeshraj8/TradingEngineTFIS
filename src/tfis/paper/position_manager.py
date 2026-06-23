@@ -19,6 +19,7 @@ from .position_state import (
     S23PaperPositionStateStore,
 )
 from .trade_ledger import S23PaperTradeLedgerEventType, S23PaperTradeLedgerStore
+from .live_state_store import NullS23PaperLiveStateStore, S23PaperLiveStateStore
 
 
 _ARTIFACT_VERSION = 1
@@ -88,10 +89,12 @@ class S23PaperPositionManager:
         *,
         state_store: S23PaperPositionStateStore | None = None,
         ledger_store: S23PaperTradeLedgerStore | None = None,
+        live_state_store: S23PaperLiveStateStore | None = None,
         slippage_exit_points: float = 0.0,
     ) -> None:
         self._state_store = state_store or S23PaperPositionStateStore()
         self._ledger_store = ledger_store or S23PaperTradeLedgerStore()
+        self._live_state_store = live_state_store or NullS23PaperLiveStateStore()
         self._slippage_exit_points = float(slippage_exit_points)
 
     def open_from_live_decision(
@@ -667,6 +670,28 @@ class S23PaperPositionManager:
             state_directory=session_directory,
         )
         self._ledger_store.append(session_directory, ledger_row)
+        trade_id = self._ledger_store.trade_id_for_state(state)
+        live_payload = {
+            "artifact_version": _ARTIFACT_VERSION,
+            "trade_id": trade_id,
+            "state": self._normalize(state),
+            "manager_event": self._normalize(event),
+            "ledger_row": self._normalize(ledger_row),
+            "state_path": str(state_path),
+            "manager_events_path": str(events_path),
+            "manager_summary_path": str(summary_path),
+            "state_directory": str(session_directory),
+        }
+        self._live_state_store.mirror_position_state(
+            session_date=session_date,
+            trade_id=trade_id,
+            payload=live_payload,
+        )
+        self._live_state_store.mirror_trade_event(
+            session_date=session_date,
+            trade_id=trade_id,
+            payload=live_payload,
+        )
         return result
 
     @staticmethod

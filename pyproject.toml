@@ -12,6 +12,7 @@ dependencies = [
   "pyyaml",
   "pandas",
   "openpyxl",
+  "redis",
 ]
 
 [project.optional-dependencies]

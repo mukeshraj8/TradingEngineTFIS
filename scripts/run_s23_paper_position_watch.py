@@ -22,6 +22,9 @@ from tfis.paper import (
     S23PaperPositionManager,
     S23PaperPositionManagerStatus,
     S23PaperPositionStateStore,
+    S23PaperTradeLedgerStore,
+    build_s23_paper_live_state_store_from_yaml,
+    s23_live_state_owner_id,
 )
 from tfis.paper.live_ingress import S23LivePaperIngressConfig
 from tfis.paper.models import SelectedContractBarEvent, SelectedContractQuoteEvent
@@ -95,10 +98,20 @@ def main(argv: list[str] | None = None) -> int:
         print("No open S23 paper position state found; nothing to watch.")
         return 0
     state = S23PaperPositionStateStore().load_state(state_dir)
+    live_state_store = build_s23_paper_live_state_store_from_yaml(args.config)
+    trade_id = S23PaperTradeLedgerStore.trade_id_for_state(state)
+    owner_id = s23_live_state_owner_id()
+    lock_ttl_seconds = max(30, int(args.poll_seconds * 6))
+    if not live_state_store.acquire_trade_lock(
+        trade_id=trade_id,
+        owner_id=owner_id,
+        ttl_seconds=lock_ttl_seconds,
+    ):
+        raise RuntimeError(f"Another S23 paper watcher already owns {trade_id}.")
 
-    prepare_fyers_env_from_tfis(tfis_root=args.tfis_root, skip_refresh=args.skip_refresh)
     adapter = FyersBrokerAdapter(source_timezone=timezone_name)
     manager = S23PaperPositionManager(
+        live_state_store=live_state_store,
         slippage_exit_points=config.costs.slippage_exit_points or 0.0,
     )
     expiry_governance = S23PaperExpiryGovernance(DeterministicExpiryCalendar())
@@ -109,6 +122,7 @@ def main(argv: list[str] | None = None) -> int:
 
     iterations = 0
     try:
+        prepare_fyers_env_from_tfis(tfis_root=args.tfis_root, skip_refresh=args.skip_refresh)
         adapter.connect()
         adapter.subscribe_symbols((state.selected_contract_symbol,))
         while True:
@@ -127,6 +141,23 @@ def main(argv: list[str] | None = None) -> int:
                 expiry_governance=expiry_governance,
                 allow_reverse_on_stoploss=args.allow_reverse_on_stoploss,
                 provenance_source_ids=("s23_paper_position_watch",),
+            )
+            live_state_store.set_watch_heartbeat(
+                session_date=session_date,
+                trade_id=trade_id,
+                payload={
+                    "trade_id": trade_id,
+                    "owner_id": owner_id,
+                    "timestamp": evaluated_at.isoformat(),
+                    "status": result.status.value,
+                    "selected_contract_symbol": state.selected_contract_symbol,
+                    "state_directory": str(state_dir),
+                },
+            )
+            live_state_store.acquire_trade_lock(
+                trade_id=trade_id,
+                owner_id=owner_id,
+                ttl_seconds=lock_ttl_seconds,
             )
             print(
                 f"{evaluated_at.isoformat()} {result.status.value} "
@@ -149,6 +180,7 @@ def main(argv: list[str] | None = None) -> int:
             adapter.disconnect()
         except Exception:
             pass
+        live_state_store.release_trade_lock(trade_id=trade_id, owner_id=owner_id)
 
 
 def _fetch_selected_contract_events(

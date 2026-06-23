@@ -21,6 +21,7 @@ from tfis.normalized_events import (
 )
 from tfis.paper import (
     DeterministicExpiryCalendar,
+    InMemoryS23PaperLiveStateStore,
     S23OpenPaperPositionDiscovery,
     S23PaperExpiryGovernance,
     S23PaperPositionManager,
@@ -32,7 +33,8 @@ from tfis.paper.live_decision import S23PaperTradeDecisionSummary
 
 
 def test_opens_ready_decision_as_multi_day_position(tmp_path: Path) -> None:
-    manager = _manager(tmp_path)
+    live_state_store = InMemoryS23PaperLiveStateStore()
+    manager = _manager(tmp_path, live_state_store=live_state_store)
     result = manager.open_from_live_decision(
         tmp_path,
         strategy_rule=_strategy_rule(),
@@ -47,6 +49,12 @@ def test_opens_ready_decision_as_multi_day_position(tmp_path: Path) -> None:
     ledger_rows = _session_ledger_rows(tmp_path)
     assert ledger_rows[-1]["event_type"] == "OPEN"
     assert ledger_rows[-1]["strategy_id"] == "S23:S23_NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    trade_id = "S23-S23_NIFTY_OP_SELL_WK_DIFF_2D_3D-NIFTY_20260625_24150_PE-20260622T093100"
+    assert (
+        "tfis:paper:session:2026-06-22:strategy:s23:state:"
+        f"open_position:{trade_id}"
+    ) in live_state_store.values
+    assert "tfis:paper:session:2026-06-22:strategy:s23:series:trade_events" in live_state_store.lists
 
 
 def test_holds_position_for_next_day_when_no_exit_hit(tmp_path: Path) -> None:
@@ -187,9 +195,14 @@ def test_discovers_latest_open_position(tmp_path: Path) -> None:
     assert candidate.state_directory == newer_dir
 
 
-def _manager(tmp_path: Path) -> S23PaperPositionManager:
+def _manager(
+    tmp_path: Path,
+    *,
+    live_state_store=None,
+) -> S23PaperPositionManager:
     return S23PaperPositionManager(
-        ledger_store=S23PaperTradeLedgerStore(global_ledger_root=tmp_path / "_ledger")
+        ledger_store=S23PaperTradeLedgerStore(global_ledger_root=tmp_path / "_ledger"),
+        live_state_store=live_state_store,
     )
 
 

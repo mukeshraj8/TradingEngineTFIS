@@ -18,6 +18,7 @@ from .live_decision_timeline import (
     S23LiveDecisionTimelineResult,
     S23LiveDecisionTimelineStage,
 )
+from .live_state_store import build_s23_paper_live_state_store_from_yaml
 from .position_manager import S23PaperPositionManager
 from .position_state import S23PaperPositionStateStore
 from .runtime_input_derivation import load_s23_decision_reference_packet
@@ -97,6 +98,7 @@ def run_s23_morning_supervised_decision(
     now_fn = now_provider or (lambda: datetime.now(timezone))
     sleep_fn = sleeper or time_module.sleep
     stage_checkpoints = checkpoints or default_morning_decision_checkpoints()
+    live_state_store = build_s23_paper_live_state_store_from_yaml(config_path)
 
     prepare_fyers_env_from_tfis_auth(tfis_root=tfis_root, skip_refresh=skip_refresh)
     selected_strategy_paths = tuple(strategy_paths or (strategy_path,))
@@ -281,7 +283,9 @@ def run_s23_morning_supervised_decision(
                 )
                 if item
             )
-            position_result = S23PaperPositionManager().open_from_live_decision(
+            position_result = S23PaperPositionManager(
+                live_state_store=live_state_store,
+            ).open_from_live_decision(
                 output_dir,
                 strategy_rule=strategy_rule,
                 decision=decision_result,

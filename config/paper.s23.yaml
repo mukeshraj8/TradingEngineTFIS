@@ -5,6 +5,20 @@
 # - keep this file paper-only and ingress-only
 source_mode: broker_fyers_live_paper_ingress
 
+storage:
+  live_state:
+    enabled: true
+    provider: redis
+    namespace: tfis
+    environment: paper
+    strategy_id: s23
+    ttl_hours: 168
+    series_maxlen: 1000
+  redis:
+    host: localhost
+    port: 6379
+    db: 1
+
 broker:
   provider: fyers
   timezone: Asia/Kolkata
