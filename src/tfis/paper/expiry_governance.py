@@ -107,6 +107,7 @@ class S23PaperExpiryGovernance:
             position.expiry_policy,
             session_date,
             current_expiry=position.expiry_date,
+            position=position,
         ):
             return False
         return True
@@ -127,6 +128,7 @@ class S23PaperExpiryGovernance:
             position.expiry_policy,
             session_date,
             current_expiry=position.expiry_date,
+            position=position,
         ):
             if position.expiry_policy.forced_close_time is None:
                 return True
@@ -144,6 +146,7 @@ class S23PaperExpiryGovernance:
             policy,
             session_date,
             current_expiry=current_expiry,
+            position=strategy if isinstance(strategy, S23PaperPositionState) else None,
         )
 
     def evaluate_position(
@@ -231,7 +234,10 @@ class S23PaperExpiryGovernance:
         session_date: date,
         *,
         current_expiry: date,
+        position: S23PaperPositionState | None = None,
     ) -> bool:
+        if position is not None and self._position_may_continue_to_expiry(position):
+            return False
         if session_date >= current_expiry:
             return True
         trading_days_until_expiry = self._calendar.trading_days_until(
@@ -239,6 +245,15 @@ class S23PaperExpiryGovernance:
             current_expiry,
         )
         return trading_days_until_expiry <= self._rollover_threshold(policy.rollover_policy)
+
+    def _position_may_continue_to_expiry(self, position: S23PaperPositionState) -> bool:
+        trading_days_from_entry_to_expiry = self._calendar.trading_days_until(
+            position.entry_date,
+            position.expiry_date,
+        )
+        return trading_days_from_entry_to_expiry >= (
+            self._rollover_threshold(position.expiry_policy.rollover_policy) + 1
+        )
 
     @staticmethod
     def _rollover_threshold(policy: RolloverPolicy) -> int:

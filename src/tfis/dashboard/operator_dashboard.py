@@ -107,6 +107,9 @@ class DashboardTradeLedgerRow:
     lots: int | None
     quantity: int | None
     entry_price: float | None
+    current_price: float | None
+    current_bid: float | None
+    current_ask: float | None
     exit_price: float | None
     target_price: float | None
     stoploss_price: float | None
@@ -980,6 +983,7 @@ class TfisOperatorDashboardBuilder:
                 history_rows,
                 "</tbody></table>",
                 "</section>",
+                "<script>setTimeout(function(){ window.location.reload(); }, 10000);</script>",
             ]
         )
         return self._render_page(title=config.display_name, body=body)
@@ -1038,6 +1042,9 @@ class TfisOperatorDashboardBuilder:
                         lots=self._int_or_none(raw.get("lots")),
                         quantity=self._int_or_none(raw.get("quantity")),
                         entry_price=self._float_or_none(raw.get("entry_price")),
+                        current_price=self._float_or_none(raw.get("current_price")),
+                        current_bid=self._float_or_none(raw.get("current_bid")),
+                        current_ask=self._float_or_none(raw.get("current_ask")),
                         exit_price=self._float_or_none(raw.get("exit_price")),
                         target_price=self._float_or_none(raw.get("target_price")),
                         stoploss_price=self._float_or_none(raw.get("stoploss_price")),
@@ -1053,6 +1060,80 @@ class TfisOperatorDashboardBuilder:
                         state_directory=state_directory,
                         raw_artifact_links=self._trade_artifact_links(
                             ledger_path=ledger_path,
+                            state_directory=state_directory,
+                        ),
+                    )
+                )
+        if config.artifact_root.exists():
+            for order_path in sorted(config.artifact_root.rglob("paper_order_state.json")):
+                try:
+                    raw = self._read_json(order_path)
+                except (OSError, json.JSONDecodeError):
+                    continue
+                status = str(raw.get("status") or "")
+                if status not in {
+                    "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                    "PAPER_ORDER_NOT_FILLED",
+                }:
+                    continue
+                state_directory = order_path.parent
+                if not self._is_relative_to(state_directory, config.artifact_root):
+                    continue
+                strategy_code = str(raw.get("strategy_code") or config.strategy_code)
+                if strategy_code.upper() != config.strategy_code.upper():
+                    continue
+                order_timestamp = str(raw.get("last_updated_timestamp") or raw.get("order_timestamp") or "")
+                selected_contract = str(raw.get("selected_contract_symbol") or "n/a")
+                strategy_branch = str(raw.get("strategy_branch") or "n/a")
+                trade_id = (
+                    f"{strategy_code}-{strategy_branch}-{selected_contract}-"
+                    f"ORDER-{str(raw.get('order_timestamp') or order_timestamp).replace(':', '').replace('-', '')}"
+                )
+                identity = (
+                    trade_id,
+                    order_timestamp,
+                    "ORDER_WAITING",
+                    status,
+                    str(raw.get("last_reason_code") or "paper_order_waiting_for_entry_trigger"),
+                )
+                if identity in seen:
+                    continue
+                seen.add(identity)
+                rows.append(
+                    DashboardTradeLedgerRow(
+                        event_timestamp=self._parse_datetime(order_timestamp),
+                        event_type="ORDER_WAITING",
+                        trade_id=trade_id,
+                        strategy_id=f"{strategy_code}:{strategy_branch}",
+                        strategy_code=strategy_code,
+                        strategy_branch=strategy_branch,
+                        selected_contract_symbol=selected_contract,
+                        side=str(raw.get("order_side") or "SELL"),
+                        lots=self._int_or_none(raw.get("lots")),
+                        quantity=self._int_or_none(raw.get("quantity")),
+                        entry_price=self._float_or_none(raw.get("planned_entry_price")),
+                        current_price=self._float_or_none(raw.get("last_market_price")),
+                        current_bid=self._float_or_none(raw.get("last_market_bid")),
+                        current_ask=self._float_or_none(raw.get("last_market_ask")),
+                        exit_price=None,
+                        target_price=self._float_or_none(raw.get("target_price")),
+                        stoploss_price=self._float_or_none(raw.get("stoploss_price")),
+                        gross_points=None,
+                        gross_pnl=None,
+                        lifecycle_status=(
+                            "ORDER_NOT_FILLED"
+                            if status == "PAPER_ORDER_NOT_FILLED"
+                            else "ORDER_WAITING_FOR_TRIGGER"
+                        ),
+                        manager_status=status,
+                        reason_code=str(raw.get("last_reason_code") or "paper_order_waiting_for_entry_trigger"),
+                        message=str(raw.get("last_message") or "Waiting for selected option premium to reach entry."),
+                        fresh_entry_required=False,
+                        reverse_entry_required=False,
+                        rollover_required=False,
+                        state_directory=state_directory,
+                        raw_artifact_links=self._trade_artifact_links(
+                            ledger_path=None,
                             state_directory=state_directory,
                         ),
                     )
@@ -1101,7 +1182,7 @@ class TfisOperatorDashboardBuilder:
             [
                 header,
                 '<table class="trade-table">',
-                "<thead><tr><th>Time</th><th>Event</th><th>Strategy</th><th>Contract</th><th>Side / Qty</th><th>Entry</th><th>Exit</th><th>Target / SL</th><th>P&L</th><th>Status</th><th>Manage</th></tr></thead>",
+                "<thead><tr><th class=\"trade-time\">Time</th><th class=\"trade-event\">Event</th><th class=\"trade-strategy\">Strategy</th><th class=\"trade-contract\">Contract</th><th class=\"trade-side\">Side / Qty</th><th class=\"trade-number\">Entry</th><th class=\"trade-number\">Current</th><th class=\"trade-number\">Exit</th><th class=\"trade-number\">Target / SL</th><th class=\"trade-number\">P&L</th><th class=\"trade-status\">Status</th><th class=\"trade-manage\">Manage</th></tr></thead>",
                 f"<tbody>{event_rows}</tbody>",
                 "</table>",
             ]
@@ -1117,10 +1198,12 @@ class TfisOperatorDashboardBuilder:
         if row.rollover_required:
             action_flags.append("Rollover")
         action_text = ", ".join(action_flags)
-        status_parts = [
-            self._badge(row.lifecycle_status),
-            self._badge(row.manager_status),
-        ]
+        status_labels = []
+        for label in (row.lifecycle_status, row.manager_status):
+            normalized = self._normalize_trade_status_label(label)
+            if normalized and normalized not in status_labels:
+                status_labels.append(normalized)
+        status_parts = [self._badge(label) for label in status_labels]
         if action_text:
             status_parts.append(self._badge(action_text))
         reason = html.escape(row.reason_code)
@@ -1129,17 +1212,18 @@ class TfisOperatorDashboardBuilder:
         return "\n".join(
             [
                 "<tr>",
-                f"<td>{html.escape(event_time)}</td>",
-                f"<td>{self._badge(row.event_type)}</td>",
-                f"<td>{html.escape(row.strategy_id)}<br><span class=\"muted-text\">{html.escape(row.strategy_branch)}</span></td>",
-                f"<td>{html.escape(row.selected_contract_symbol)}<br><span class=\"muted-text\">{html.escape(row.trade_id)}</span></td>",
-                f"<td>{html.escape(row.side)}<br>{self._fmt_number(row.lots, integer=True)} lots / {self._fmt_number(row.quantity, integer=True)}</td>",
-                f"<td>{self._fmt_number(row.entry_price)}</td>",
-                f"<td>{self._fmt_number(row.exit_price)}</td>",
-                f"<td>{self._fmt_number(row.target_price)} / {self._fmt_number(row.stoploss_price)}</td>",
-                f"<td>{self._fmt_number(row.gross_points)} pts<br>{self._fmt_number(row.gross_pnl)}</td>",
-                f"<td>{' '.join(status_parts)}<br>{reason}</td>",
-                f"<td><div class=\"artifact-links trade-links\">{self._render_links(row.raw_artifact_links, page_path=page_path)}</div></td>",
+                f"<td class=\"trade-time\">{html.escape(event_time)}</td>",
+                f"<td class=\"trade-event\">{self._badge(row.event_type)}</td>",
+                f"<td class=\"trade-strategy\"><strong>{html.escape(row.strategy_id)}</strong><br><span class=\"muted-text code-text\">{html.escape(row.strategy_branch)}</span></td>",
+                f"<td class=\"trade-contract\"><strong>{html.escape(row.selected_contract_symbol)}</strong><br><span class=\"muted-text code-text\">{html.escape(row.trade_id)}</span></td>",
+                f"<td class=\"trade-side\"><strong>{html.escape(row.side)}</strong><br>{self._fmt_number(row.lots, integer=True)} lots / {self._fmt_number(row.quantity, integer=True)}</td>",
+                f"<td class=\"trade-number\">{self._fmt_number(row.entry_price)}</td>",
+                f"<td class=\"trade-number\">{self._fmt_number(row.current_price)}<br><span class=\"muted-text\">{self._fmt_number(row.current_bid)} / {self._fmt_number(row.current_ask)}</span></td>",
+                f"<td class=\"trade-number\">{self._fmt_number(row.exit_price)}</td>",
+                f"<td class=\"trade-number\">{self._fmt_number(row.target_price)}<br><span class=\"muted-text\">/ {self._fmt_number(row.stoploss_price)}</span></td>",
+                f"<td class=\"trade-number\">{self._fmt_number(row.gross_points)} pts<br><span class=\"muted-text\">{self._fmt_number(row.gross_pnl)}</span></td>",
+                f"<td class=\"trade-status\"><div class=\"status-badges\">{' '.join(status_parts)}</div><div class=\"trade-reason\">{reason}</div></td>",
+                f"<td class=\"trade-manage\"><div class=\"artifact-links trade-links\">{self._render_links(row.raw_artifact_links, page_path=page_path)}</div></td>",
                 "</tr>",
             ]
         )
@@ -1321,13 +1405,15 @@ class TfisOperatorDashboardBuilder:
     def _trade_artifact_links(
         self,
         *,
-        ledger_path: Path,
+        ledger_path: Path | None,
         state_directory: Path | None,
     ) -> dict[str, str]:
-        links = {"Ledger": str(ledger_path)}
+        links = {"Ledger": str(ledger_path)} if ledger_path is not None else {}
         if state_directory is None:
             return links
         known_artifacts = {
+            "Order State": "paper_order_state.json",
+            "Order Events": "paper_order_events.jsonl",
             "State": "paper_position_state.json",
             "Manager Summary": "paper_position_manager_summary.json",
             "State Events": "paper_position_state_events.jsonl",
@@ -1414,6 +1500,17 @@ class TfisOperatorDashboardBuilder:
             or row.rollover_required
             or "REQUIRED" in manager_status
         )
+
+    @staticmethod
+    def _normalize_trade_status_label(label: str) -> str:
+        value = str(label or "").strip()
+        if value in {"", "n/a"}:
+            return ""
+        if value == "PAPER_ORDER_WAITING_FOR_TRIGGER":
+            return "ORDER_WAITING_FOR_TRIGGER"
+        if value == "PAPER_ORDER_NOT_FILLED":
+            return "ORDER_NOT_FILLED"
+        return value
 
     def _render_monthly_status_calculator_page(
         self,
@@ -2091,9 +2188,23 @@ calculateStrikes();
                 "    .artifact-links a { padding: 6px 10px; border-radius: 999px; background: #f4ecdf; border: 1px solid #e4d6c1; }",
                 "    .top-links { margin-top: 16px; }",
                 "    .trade-summary { margin-bottom: 14px; }",
-                "    .trade-table { display: block; overflow-x: auto; font-size: 0.9rem; }",
-                "    .trade-table thead, .trade-table tbody { display: table; width: 100%; }",
-                "    .trade-links { margin-top: 0; min-width: 180px; }",
+                "    .trade-table { display: table; table-layout: fixed; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.84rem; line-height: 1.28; }",
+                "    .trade-table th, .trade-table td { padding: 10px 12px; }",
+                "    .trade-table th { color: #3f493f; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }",
+                "    .trade-table .badge { padding: 4px 8px; font-size: 0.68rem; line-height: 1; white-space: nowrap; }",
+                "    .trade-time { width: 105px; white-space: normal; }",
+                "    .trade-event { width: 64px; text-align: center; }",
+                "    .trade-strategy { width: 205px; }",
+                "    .trade-contract { width: 285px; }",
+                "    .trade-side { width: 82px; }",
+                "    .trade-number { width: 78px; text-align: right; font-variant-numeric: tabular-nums; }",
+                "    .trade-status { width: 260px; }",
+                "    .trade-manage { width: 230px; }",
+                "    .trade-links { margin-top: 0; min-width: 0; gap: 6px; }",
+                "    .trade-links a { padding: 5px 9px; }",
+                "    .status-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }",
+                "    .trade-reason { color: var(--ink); font-size: 0.78rem; }",
+                "    .code-text { font-family: Consolas, 'Courier New', monospace; overflow-wrap: anywhere; }",
                 "    .muted-text { color: var(--muted); font-size: 0.82rem; word-break: break-word; }",
                 "    .empty-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; color: var(--muted); }",
                 "    .tool-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }",

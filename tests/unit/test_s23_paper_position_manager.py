@@ -23,6 +23,8 @@ from tfis.paper import (
     DeterministicExpiryCalendar,
     InMemoryS23PaperLiveStateStore,
     S23OpenPaperPositionDiscovery,
+    S23PaperOrderStateStore,
+    S23PaperOrderStatus,
     S23PaperExpiryGovernance,
     S23PaperPositionManager,
     S23PaperPositionManagerStatus,
@@ -57,6 +59,120 @@ def test_opens_ready_decision_as_multi_day_position(tmp_path: Path) -> None:
     assert "tfis:paper:session:2026-06-22:strategy:s23:series:trade_events" in live_state_store.lists
 
 
+def test_ready_decision_creates_waiting_order_before_position(tmp_path: Path) -> None:
+    store = S23PaperOrderStateStore()
+
+    order_state, state_path, events_path = store.create_waiting_order_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(),
+        created_at=datetime(2026, 6, 22, 9, 30),
+    )
+
+    assert order_state.status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
+    assert order_state.trigger_rule == "SELL_TRIGGER_WHEN_PREMIUM_AT_OR_BELOW_ENTRY"
+    assert state_path == tmp_path / "paper_order_state.json"
+    assert events_path == tmp_path / "paper_order_events.jsonl"
+    assert not (tmp_path / "paper_position_state.json").exists()
+
+
+def test_quote_above_entry_keeps_order_waiting_and_does_not_open_position(tmp_path: Path) -> None:
+    store = S23PaperOrderStateStore()
+    store.create_waiting_order_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(),
+        created_at=datetime(2026, 6, 22, 9, 30),
+    )
+
+    order_state, event, _state_path, _events_path = store.evaluate_waiting_order(
+        tmp_path,
+        market_events=(
+            _quote(
+                session_date=date(2026, 6, 22),
+                effective_timestamp=datetime(2026, 6, 22, 9, 31),
+                bid=238,
+                ask=240,
+                ltp=239,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 22, 9, 31),
+    )
+
+    assert order_state.status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
+    assert event.reason_code == "paper_order_waiting_quote_above_entry"
+    assert order_state.fill_price is None
+    assert not (tmp_path / "paper_position_state.json").exists()
+
+
+def test_quote_at_entry_fills_order_then_opens_position(tmp_path: Path) -> None:
+    store = S23PaperOrderStateStore()
+    manager = _manager(tmp_path)
+    store.create_waiting_order_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(),
+        created_at=datetime(2026, 6, 22, 9, 30),
+    )
+    order_state, event, _state_path, _events_path = store.evaluate_waiting_order(
+        tmp_path,
+        market_events=(
+            _quote(
+                session_date=date(2026, 6, 22),
+                effective_timestamp=datetime(2026, 6, 22, 9, 37),
+                bid=193.75,
+                ask=195,
+                ltp=194.25,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 22, 9, 37),
+    )
+
+    result = manager.open_from_filled_order(tmp_path, order_state=order_state)
+
+    assert event.reason_code == "paper_order_filled_from_quote_entry_trigger"
+    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_OPENED
+    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_OPEN
+    assert result.state.entry_price == 193.75
+    assert result.state.entry_timestamp == datetime(2026, 6, 22, 9, 37)
+
+
+def test_waiting_order_can_be_marked_not_filled_at_cutoff(tmp_path: Path) -> None:
+    store = S23PaperOrderStateStore()
+    store.create_waiting_order_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(),
+        created_at=datetime(2026, 6, 22, 9, 30),
+    )
+    store.evaluate_waiting_order(
+        tmp_path,
+        market_events=(
+            _quote(
+                session_date=date(2026, 6, 22),
+                effective_timestamp=datetime(2026, 6, 22, 15, 20),
+                bid=238,
+                ask=240,
+                ltp=239,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 22, 15, 20),
+    )
+
+    order_state, event, _state_path, _events_path = store.mark_not_filled(
+        tmp_path,
+        marked_at=datetime(2026, 6, 22, 15, 30),
+        reason_code="paper_order_not_triggered_by_watch_cutoff",
+        message="Entry was not triggered before the paper watch cutoff.",
+    )
+
+    assert order_state.status is S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED
+    assert event.reason_code == "paper_order_not_triggered_by_watch_cutoff"
+    assert order_state.last_market_price == 239
+    assert order_state.fill_price is None
+    assert not (tmp_path / "paper_position_state.json").exists()
+
+
 def test_holds_position_for_next_day_when_no_exit_hit(tmp_path: Path) -> None:
     manager = _manager(tmp_path)
     manager.open_from_live_decision(
@@ -82,6 +198,12 @@ def test_holds_position_for_next_day_when_no_exit_hit(tmp_path: Path) -> None:
 
     assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD
     assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_OPEN
+    assert result.event.current_price == 150
+    assert result.event.source_kind == "selected_contract_bar"
+    ledger_rows = _session_ledger_rows(tmp_path)
+    assert ledger_rows[-1]["current_price"] == 150
+    assert ledger_rows[-1]["gross_points"] == 44.25
+    assert ledger_rows[-1]["gross_pnl"] == 3318.75
 
 
 def test_target_hit_requires_fresh_recalculated_entry(tmp_path: Path) -> None:
@@ -150,7 +272,7 @@ def test_closes_on_stoploss_and_requires_fresh_reverse_decision(tmp_path: Path) 
     assert _session_ledger_rows(tmp_path)[-1]["reverse_entry_required"] is True
 
 
-def test_rollover_window_marks_next_expiry_required(tmp_path: Path) -> None:
+def test_existing_position_opened_before_rollover_window_holds_on_t_minus_1(tmp_path: Path) -> None:
     manager = _manager(tmp_path)
     manager.open_from_live_decision(
         tmp_path,
@@ -162,15 +284,83 @@ def test_rollover_window_marks_next_expiry_required(tmp_path: Path) -> None:
     result = manager.process_session(
         tmp_path,
         session_date=date(2026, 6, 24),
-        market_events=(),
+        market_events=(
+            _bar(
+                session_date=date(2026, 6, 24),
+                high=210,
+                low=120,
+                close=150,
+            ),
+        ),
         evaluated_at=datetime(2026, 6, 24, 9, 20),
         expiry_governance=S23PaperExpiryGovernance(DeterministicExpiryCalendar()),
     )
 
-    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_ROLLOVER_REQUIRED
-    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED
-    assert result.event.rollover_required is True
-    assert _session_ledger_rows(tmp_path)[-1]["rollover_required"] is True
+    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD
+    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_OPEN
+    assert result.event.rollover_required is False
+    assert _session_ledger_rows(tmp_path)[-1]["event_type"] == "HOLD"
+
+
+def test_expiry_day_noon_force_closes_if_target_or_stoploss_not_hit(tmp_path: Path) -> None:
+    manager = _manager(tmp_path)
+    manager.open_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(selected_contract_expiry="2026-06-25"),
+        opened_at=datetime(2026, 6, 22, 9, 31),
+    )
+
+    result = manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 25),
+        market_events=(
+            _bar(
+                session_date=date(2026, 6, 25),
+                high=210,
+                low=120,
+                close=150,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 25, 12, 0),
+        expiry_governance=S23PaperExpiryGovernance(DeterministicExpiryCalendar()),
+    )
+
+    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED
+    assert result.event.reason_code == "expiry_force_close"
+    assert result.event.exit_price == 150.0
+    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_CLOSED
+    assert _session_ledger_rows(tmp_path)[-1]["event_type"] == "CLOSE"
+
+
+def test_expiry_day_target_hit_wins_before_noon_force_close(tmp_path: Path) -> None:
+    manager = _manager(tmp_path)
+    manager.open_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(selected_contract_expiry="2026-06-25"),
+        opened_at=datetime(2026, 6, 22, 9, 31),
+    )
+
+    result = manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 25),
+        market_events=(
+            _quote(
+                session_date=date(2026, 6, 25),
+                effective_timestamp=datetime(2026, 6, 25, 11, 50),
+                bid=78,
+                ask=79,
+                ltp=78.5,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 25, 12, 0),
+        expiry_governance=S23PaperExpiryGovernance(DeterministicExpiryCalendar()),
+    )
+
+    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_FRESH_ENTRY_REQUIRED
+    assert result.event.reason_code == "target_hit"
+    assert result.event.exit_price == 80
 
 
 def test_discovers_latest_open_position(tmp_path: Path) -> None:
@@ -222,7 +412,7 @@ def _strategy_rule() -> StrategyRule:
         expiry_policy=StrategyExpiryPolicy(
             expiry_type=ExpiryType.WEEKLY,
             rollover_policy=RolloverPolicy.T_MINUS_1,
-            forced_close_time=time(15, 15),
+            forced_close_time=time(12, 0),
             no_carry_past_expiry=True,
         ),
         allowed_monthly_statuses=(MonthlyStatus.BEAR,),

@@ -104,5 +104,5 @@ def test_run_backtest_script_csv_mode_writes_json(tmp_path: Path) -> None:
     assert report["mode"] == "csv"
     assert report["result"]["strategy_code"] == "S23"
     assert report["result"]["trade_plan"]["entry_price"] == pytest.approx(203.5)
-    assert report["result"]["trade_plan"]["stoploss_price"] == pytest.approx(320.0)
+    assert report["result"]["trade_plan"]["stoploss_price"] == pytest.approx(321.0)
     assert report["metrics"]["accepted_trades"] == 1

@@ -16,7 +16,7 @@ def test_nifty_price_above_bull_trigger_but_below_bull_cf_is_bull() -> None:
             PMH=100.0,
             PML=90.0,
             CMH=101.0,
-            CML=89.0,
+                CML=91.0,
             PWH=105.0,
             PWL=85.0,
             CWH=104.0,
@@ -37,8 +37,8 @@ def test_nifty_price_above_bull_cf_threshold_is_bull_cf() -> None:
         MonthlyStatusReferenceLevels(
             PMH=100.0,
             PML=90.0,
-            CMH=101.0,
-            CML=89.0,
+                CMH=101.6,
+                CML=91.0,
             PWH=105.0,
             PWL=85.0,
             CWH=104.0,
@@ -59,7 +59,7 @@ def test_nifty_price_below_bear_trigger_but_above_bear_cf_is_bear() -> None:
         MonthlyStatusReferenceLevels(
             PMH=100.0,
             PML=90.0,
-            CMH=101.0,
+                CMH=100.0,
             CML=89.0,
             PWH=105.0,
             PWL=85.0,
@@ -81,8 +81,8 @@ def test_nifty_price_below_bear_cf_threshold_is_bear_cf() -> None:
         MonthlyStatusReferenceLevels(
             PMH=100.0,
             PML=90.0,
-            CMH=101.0,
-            CML=89.0,
+                CMH=100.0,
+                CML=88.5,
             PWH=105.0,
             PWL=85.0,
             CWH=104.0,
@@ -97,8 +97,8 @@ def test_nifty_price_below_bear_cf_threshold_is_bear_cf() -> None:
     assert result.reversal_dominated is False
 
 
-def test_reversal_bearish_dominates_bull_cf_if_both_are_true() -> None:
-    result = MonthlyStatusEngine().classify(
+def test_effective_bull_reverses_to_bear_on_weekly_c_threshold() -> None:
+    result = MonthlyStatusEngine().apply_current_price_transitions(
         "nifty",
         MonthlyStatusReferenceLevels(
             PMH=100.0,
@@ -109,18 +109,19 @@ def test_reversal_bearish_dominates_bull_cf_if_both_are_true() -> None:
             PWL=104.0,
             CWH=109.0,
             CWL=103.0,
-            current_price=102.0,
-        ),
+                current_price=102.0,
+            ),
+        effective_status=MonthlyStatus.BULL,
     )
 
     assert result.status == MonthlyStatus.BEAR
     assert result.trigger_name == "REVERSAL_BEAR_C_THRESHOLD"
     assert result.reversal_dominated is True
-    assert "dominates bullish continuation" in result.notes
+    assert "reversed to bearish" in result.notes
 
 
-def test_reversal_bullish_dominates_bear_cf_if_both_are_true() -> None:
-    result = MonthlyStatusEngine().classify(
+def test_effective_bear_reverses_to_bull_on_weekly_c_threshold() -> None:
+    result = MonthlyStatusEngine().apply_current_price_transitions(
         "nifty",
         MonthlyStatusReferenceLevels(
             PMH=100.0,
@@ -131,14 +132,15 @@ def test_reversal_bullish_dominates_bear_cf_if_both_are_true() -> None:
             PWL=70.0,
             CWH=88.0,
             CWL=71.0,
-            current_price=88.5,
-        ),
+                current_price=88.5,
+            ),
+        effective_status=MonthlyStatus.BEAR,
     )
 
     assert result.status == MonthlyStatus.BULL
     assert result.trigger_name == "REVERSAL_BULL_C_THRESHOLD"
     assert result.reversal_dominated is True
-    assert "dominates bearish continuation" in result.notes
+    assert "reversed to bullish" in result.notes
 
 
 def test_unknown_when_no_trigger_is_met() -> None:
@@ -158,7 +160,7 @@ def test_unknown_when_no_trigger_is_met() -> None:
     )
 
     assert result.status == MonthlyStatus.UNKNOWN
-    assert result.trigger_name == "NO_TRIGGER"
+    assert result.trigger_name == "NO_MONTHLY_TRIGGER"
     assert result.threshold_value is None
     assert result.reversal_dominated is False
 
@@ -169,8 +171,8 @@ def test_stock_thresholds_produce_expected_status() -> None:
         MonthlyStatusReferenceLevels(
             PMH=200.0,
             PML=180.0,
-            CMH=202.0,
-            CML=179.0,
+                CMH=209.5,
+                CML=181.0,
             PWH=215.0,
             PWL=160.0,
             CWH=214.0,

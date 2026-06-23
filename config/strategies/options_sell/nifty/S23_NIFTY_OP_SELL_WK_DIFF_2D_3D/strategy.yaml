@@ -4,6 +4,7 @@ symbol: NIFTY
 segment: OPTIONS_SELL
 expiry_type: WEEKLY
 rollover_policy: T_MINUS_1
+forced_close_time: "12:00:00"
 no_carry_past_expiry: true
 allowed_monthly_statuses:
   - BULL

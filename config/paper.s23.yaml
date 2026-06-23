@@ -34,7 +34,7 @@ paper:
   mode: paper
   operator_id: fyers-paper-ingress
   paper_mode_enabled: true
-  same_day_square_off_only: true
+  same_day_square_off_only: false
   allow_recalculation: false
   allow_current_day_fsl_trp: true
   kill_switch_enabled: true

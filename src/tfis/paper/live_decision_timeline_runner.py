@@ -18,8 +18,7 @@ from .live_decision_timeline import (
     S23LiveDecisionTimelineResult,
     S23LiveDecisionTimelineStage,
 )
-from .live_state_store import build_s23_paper_live_state_store_from_yaml
-from .position_manager import S23PaperPositionManager
+from .order_state import S23PaperOrderStateStore
 from .position_state import S23PaperPositionStateStore
 from .runtime_input_derivation import load_s23_decision_reference_packet
 
@@ -61,6 +60,7 @@ class S23MorningDecisionRunResult:
     stage_runs: tuple[S23MorningDecisionStageRun, ...]
     branch_final_summary_json: dict[str, str] = field(default_factory=dict)
     branch_final_summary_markdown: dict[str, str] = field(default_factory=dict)
+    branch_order_state_json: dict[str, str] = field(default_factory=dict)
     branch_position_state_json: dict[str, str] = field(default_factory=dict)
 
 
@@ -98,8 +98,6 @@ def run_s23_morning_supervised_decision(
     now_fn = now_provider or (lambda: datetime.now(timezone))
     sleep_fn = sleeper or time_module.sleep
     stage_checkpoints = checkpoints or default_morning_decision_checkpoints()
-    live_state_store = build_s23_paper_live_state_store_from_yaml(config_path)
-
     prepare_fyers_env_from_tfis_auth(tfis_root=tfis_root, skip_refresh=skip_refresh)
     selected_strategy_paths = tuple(strategy_paths or (strategy_path,))
     if not selected_strategy_paths:
@@ -129,6 +127,7 @@ def run_s23_morning_supervised_decision(
     final_summary_markdown: Path | None = None
     branch_final_summary_json: dict[str, str] = {}
     branch_final_summary_markdown: dict[str, str] = {}
+    branch_order_state_json: dict[str, str] = {}
     branch_position_state_json: dict[str, str] = {}
     stage_runs: list[S23MorningDecisionStageRun] = []
     timeline_stages_by_branch: dict[str, list[S23LiveDecisionTimelineStage]] = {
@@ -283,16 +282,14 @@ def run_s23_morning_supervised_decision(
                 )
                 if item
             )
-            position_result = S23PaperPositionManager(
-                live_state_store=live_state_store,
-            ).open_from_live_decision(
+            _order_state, order_state_path, _order_events_path = S23PaperOrderStateStore().create_waiting_order_from_live_decision(
                 output_dir,
                 strategy_rule=strategy_rule,
                 decision=decision_result,
-                opened_at=opened_at,
+                created_at=opened_at,
                 provenance_source_ids=provenance_source_ids,
             )
-            branch_position_state_json[strategy_branch] = str(position_result.state_path)
+            branch_order_state_json[strategy_branch] = str(order_state_path)
     assert primary_timeline_json is not None
     assert primary_timeline_markdown is not None
     metadata_path = session_directory / "scheduled_run_metadata.json"
@@ -308,6 +305,7 @@ def run_s23_morning_supervised_decision(
                 "final_summary_markdown": str(final_summary_markdown) if final_summary_markdown is not None else None,
                 "branch_final_summary_json": branch_final_summary_json,
                 "branch_final_summary_markdown": branch_final_summary_markdown,
+                "branch_order_state_json": branch_order_state_json,
                 "branch_position_state_json": branch_position_state_json,
                 "stages": [
                     {
@@ -347,6 +345,7 @@ def run_s23_morning_supervised_decision(
         stage_runs=tuple(stage_runs),
         branch_final_summary_json=branch_final_summary_json,
         branch_final_summary_markdown=branch_final_summary_markdown,
+        branch_order_state_json=branch_order_state_json,
         branch_position_state_json=branch_position_state_json,
     )
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from datetime import time
 from pathlib import Path
-
 import pytest
 
 from tfis.domain.market_levels import MarketLevels
@@ -37,9 +37,11 @@ def test_strategy_folder_loads_s23_with_parameters() -> None:
     assert rule.unique_code == "NIFTY_OP_SELL_WK_DIFF_2D_3D"
     assert rule.expiry_policy.expiry_type.value == "WEEKLY"
     assert rule.expiry_policy.rollover_policy.value == "T_MINUS_1"
+    assert rule.expiry_policy.forced_close_time == time(12, 0)
     assert rule.expiry_policy.no_carry_past_expiry is True
     assert rule.parameters == {
         "strike_buffer_pct": 5.0,
+        "strike_step": 50.0,
         "ideal_premium_pct": 1.20,
         "minimum_premium_pct": 0.90,
         "entry_discount_pct": 7.5,
@@ -79,12 +81,12 @@ def test_strategy_evaluator_folder_s23_uses_excel_premium_semantics() -> None:
     )
 
     assert plan.start_strike == 23100
-    assert plan.end_strike == 21999
+    assert plan.end_strike == 21950
     assert plan.ideal_premium == pytest.approx(264.0)
     assert plan.minimum_premium == pytest.approx(198.0)
     assert plan.entry_price == pytest.approx(203.5)
-    assert plan.target_price == pytest.approx(80.0)
-    assert plan.stoploss_price == pytest.approx(320.0)
+    assert plan.target_price == pytest.approx(81.4)
+    assert plan.stoploss_price == pytest.approx(321.0)
 
 
 def test_strategy_evaluator_legacy_s23_keeps_compatibility_premium_behavior() -> None:

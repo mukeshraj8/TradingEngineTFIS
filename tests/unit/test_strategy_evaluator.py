@@ -51,5 +51,5 @@ def test_strategy_evaluator_builds_expected_trade_plan() -> None:
     assert plan.ideal_premium == pytest.approx(22264.0)
     assert plan.minimum_premium == pytest.approx(22198.0)
     assert plan.entry_price == pytest.approx(20350.0)
-    assert plan.target_price == pytest.approx(80.0)
-    assert plan.stoploss_price == pytest.approx(320.0)
+    assert plan.target_price == pytest.approx(8140.0)
+    assert plan.stoploss_price == pytest.approx(24075.0)

@@ -32,6 +32,9 @@ def _build_valid_folder_strategy(base_dir: Path) -> Path:
                 "unique_code: NIFTY_OP_SELL_WK_DIFF_2D_3D",
                 "symbol: NIFTY",
                 "segment: OPTIONS_SELL",
+                "expiry_type: WEEKLY",
+                "rollover_policy: T_MINUS_1",
+                "no_carry_past_expiry: true",
                 "allowed_monthly_statuses:",
                 "  - BULL",
                 "option_type: CALL",
@@ -47,12 +50,12 @@ def _build_valid_folder_strategy(base_dir: Path) -> Path:
         "\n".join(
             [
                 'start_strike_formula: "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)"',
-                'end_strike_formula: "ROUND_DOWN(PRV_3DLL) - 1"',
+                'end_strike_formula: "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)"',
                 'ideal_premium_formula: "PRV_3DLL * PARAM(ideal_premium_pct)%"',
                 'minimum_premium_formula: "PRV_3DLL * PARAM(minimum_premium_pct)%"',
-                'entry_formula: "PRV_3DLL - PARAM(entry_discount_pct)%"',
+                'entry_formula: "OPT_PRV_3DLL - PARAM(entry_discount_pct)%"',
                 'target_formula: "ENTRY - PARAM(target_pct)%"',
-                'stoploss_formula: "MIN(ENTRY + PARAM(sl_entry_pct)%, PRV_2DHH + PARAM(sl_reference_pct)%)"',
+                'stoploss_formula: "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)"',
             ]
         ),
     )
@@ -61,6 +64,7 @@ def _build_valid_folder_strategy(base_dir: Path) -> Path:
         "\n".join(
             [
                 "strike_buffer_pct: 5.0",
+                "strike_step: 50.0",
                 "ideal_premium_pct: 1.2",
                 "minimum_premium_pct: 0.9",
                 "entry_discount_pct: 7.5",
@@ -133,6 +137,9 @@ def test_legacy_yaml_still_allowed_and_identified(tmp_path: Path) -> None:
                 "unique_code: NIFTY_OP_SELL_WK_DIFF_2D_3D",
                 "symbol: NIFTY",
                 "segment: OPTIONS_SELL",
+                "expiry_type: WEEKLY",
+                "rollover_policy: T_MINUS_1",
+                "no_carry_past_expiry: true",
                 "allowed_monthly_statuses:",
                 "  - BULL",
                 "option_type: CALL",

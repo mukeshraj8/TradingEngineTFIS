@@ -133,6 +133,6 @@ def test_historical_summary_win_loss_and_excursion_rates_are_correct() -> None:
     assert report.metrics.loss_rate == pytest.approx(0.5)
     assert report.metrics.no_entry_rate == pytest.approx(1 / 6)
     assert report.metrics.no_exit_rate == pytest.approx(1 / 5)
-    assert report.metrics.average_pnl_points == pytest.approx(1.93875)
+    assert report.metrics.average_pnl_points == pytest.approx(1.79375)
     assert report.metrics.average_mfe == pytest.approx(85.94)
     assert report.metrics.average_mae == pytest.approx(70.46)

@@ -217,7 +217,7 @@ def test_monthly_status_unknown_fails_as_no_trade() -> None:
     assert "monthly_status_unknown" in result.no_trade_reasons
 
 
-def test_current_same_day_runtime_blocks_multi_session_continuation() -> None:
+def test_multi_session_continuation_config_is_allowed() -> None:
     validator = S23PaperContractValidator()
 
     result = validator.validate_session_readiness(
@@ -232,8 +232,8 @@ def test_current_same_day_runtime_blocks_multi_session_continuation() -> None:
         now=_ts(9, 25, 10),
     )
 
-    assert result.readiness_status is PaperReadinessStatus.ABORTED
-    assert "unsupported_continuation_path" in result.abort_reasons
+    assert result.readiness_status is PaperReadinessStatus.READY
+    assert "unsupported_continuation_path" not in result.abort_reasons
 
 
 def test_stale_data_produces_validation_failure() -> None:

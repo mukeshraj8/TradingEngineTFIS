@@ -1,7 +1,12 @@
 param(
     [string]$TfisRoot,
     [string]$Config = "config/paper.s23.fyers_connect_test.yaml",
-    [string]$StrategyPath = "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+    [string[]]$StrategyPath = @(
+        "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+        "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+    ),
     [string]$ReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json",
     [string]$ArtifactRoot = "tmp/s23_fyers_morning_supervised_decision",
     [string]$SessionIdPrefix = "s23-fyers-morning-supervised-decision",
@@ -45,13 +50,19 @@ $args = @(
     (Join-Path $repoRoot "scripts\run_s23_fyers_0916_supervised_decision.py"),
     "--tfis-root", $TfisRoot,
     "--config", $Config,
-    "--strategy-path", $StrategyPath,
     "--reference-packet", $ReferencePacket,
     "--artifact-root", $ArtifactRoot,
     "--session-id-prefix", $SessionIdPrefix,
     "--timezone", $Timezone,
     "--if-past", $IfPast
 )
+
+foreach ($strategy in $StrategyPath) {
+    if ($strategy) {
+        $args += "--strategy-path"
+        $args += $strategy
+    }
+}
 
 if ($SkipRefresh) {
     $args += "--skip-refresh"
@@ -85,10 +96,18 @@ try {
         if ($metadata) {
             $metadataJson = Get-Content -Path $metadata.FullName -Raw | ConvertFrom-Json
             $statePaths = @()
+            $orderPaths = @()
             if ($metadataJson.branch_position_state_json) {
                 $metadataJson.branch_position_state_json.PSObject.Properties | ForEach-Object {
                     if ($_.Value) {
                         $statePaths += [string]$_.Value
+                    }
+                }
+            }
+            if ($metadataJson.branch_order_state_json) {
+                $metadataJson.branch_order_state_json.PSObject.Properties | ForEach-Object {
+                    if ($_.Value) {
+                        $orderPaths += [string]$_.Value
                     }
                 }
             }
@@ -106,11 +125,28 @@ try {
                 $exitCode = $LASTEXITCODE
                 Write-LaunchLog "S23 paper position watch finished with exit code $exitCode."
             }
+            elseif ($orderPaths.Count -eq 1) {
+                $orderDir = Split-Path -Parent $orderPaths[0]
+                Write-LaunchLog "Starting S23 paper position watch for order directory: $orderDir"
+                & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
+                    --tfis-root $TfisRoot `
+                    --config $Config `
+                    --order-dir $orderDir `
+                    --timezone $Timezone 2>&1 | ForEach-Object {
+                        Write-LaunchLog ("WATCH: {0}" -f $_)
+                        Write-Output $_
+                    }
+                $exitCode = $LASTEXITCODE
+                Write-LaunchLog "S23 paper order/position watch finished with exit code $exitCode."
+            }
             elseif ($statePaths.Count -gt 1) {
                 Write-LaunchLog "Multiple S23 paper position states were produced; automatic watch skipped so the operator can choose the branch."
             }
+            elseif ($orderPaths.Count -gt 1) {
+                Write-LaunchLog "Multiple S23 paper orders were produced; automatic watch skipped so the operator can choose the branch."
+            }
             else {
-                Write-LaunchLog "No new S23 paper position state was produced; attempting latest-open-state discovery under $ArtifactRoot."
+                Write-LaunchLog "No new S23 paper position/order state was produced; attempting latest state discovery under $ArtifactRoot."
                 & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
                     --tfis-root $TfisRoot `
                     --config $Config `

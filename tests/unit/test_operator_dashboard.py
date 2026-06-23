@@ -130,6 +130,46 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+    pending_dir = day_dir / "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    pending_dir.mkdir()
+    (pending_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "symbol": "NIFTY",
+                "selected_contract_symbol": "NIFTY_20260602_23850_CE",
+                "selected_contract_expiry": "2026-06-02",
+                "selected_contract_option_type": "CALL",
+                "selected_contract_strike": 23850,
+                "expiry_type": "WEEKLY",
+                "rollover_policy": "T_MINUS_1",
+                "forced_close_time": "15:15:00",
+                "no_carry_past_expiry": True,
+                "order_side": "SELL",
+                "trigger_rule": "SELL_TRIGGER_WHEN_PREMIUM_AT_OR_BELOW_ENTRY",
+                "entry_date": "2026-06-10",
+                "order_timestamp": "2026-06-10T09:30:00+05:30",
+                "planned_entry_price": 194.25,
+                "target_price": 77.7,
+                "stoploss_price": 242.0,
+                "fsl_price": 258.94,
+                "lots": 1,
+                "quantity": 65,
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "last_updated_timestamp": "2026-06-10T09:31:00+05:30",
+                "last_market_price": 239.0,
+                "last_market_bid": 238.5,
+                "last_market_ask": 239.5,
+                "last_reason_code": "paper_order_waiting_quote_above_entry",
+                "last_message": "Selected option premium is still above entry; the paper sell order remains waiting.",
+                "provenance_source_ids": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (pending_dir / "paper_order_events.jsonl").write_text("{}\n", encoding="utf-8")
 
     result = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(artifact_root),)).build(
         output_root=tmp_path / "dashboard"
@@ -147,7 +187,13 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Final Contract" in strategy_html
     assert "NIFTY_20260602_23800_PE" in strategy_html
     assert "Trades Taken" in strategy_html
+    assert "Current" in strategy_html
+    assert "239" in strategy_html
+    assert "238.50 / 239.50" in strategy_html
     assert "PAPER_POSITION_OPENED" in strategy_html
+    assert "ORDER_WAITING" in strategy_html
+    assert "paper_order_state.json" in strategy_html
+    assert strategy_html.count("ORDER_WAITING_FOR_TRIGGER") == 1
     assert "paper_position_state.json" in strategy_html
     assert "paper_position_manager_summary.json" in strategy_html
     assert "paper_trade_ledger.jsonl" in strategy_html

@@ -54,6 +54,8 @@ def _position_state(
     *,
     rollover_policy: RolloverPolicy,
     expiry_date: date = date(2026, 5, 28),
+    entry_date: date = date(2026, 5, 26),
+    forced_close_time: time | None = None,
 ):
     store = S23PaperPositionStateStore()
     return store.create_open_position_state(
@@ -65,10 +67,10 @@ def _position_state(
         expiry_date=expiry_date,
         expiry_type=ExpiryType.WEEKLY,
         rollover_policy=rollover_policy,
-        forced_close_time=None,
+        forced_close_time=forced_close_time,
         no_carry_past_expiry=True,
-        entry_date=date(2026, 5, 26),
-        entry_timestamp=_ts(26),
+        entry_date=entry_date,
+        entry_timestamp=_ts(entry_date.day),
         entry_price=199.5,
         lots=2,
         quantity=100,
@@ -95,7 +97,7 @@ def test_normal_non_expiry_carry_forward_allowed() -> None:
     assert governance.must_force_close(position, date(2026, 5, 26), time(10, 0)) is False
 
 
-def test_t_minus_1_policy_blocks_current_expiry_continuation_one_trading_day_before_expiry() -> None:
+def test_position_opened_by_t_minus_2_can_continue_through_t_minus_1() -> None:
     governance = S23PaperExpiryGovernance(_calendar())
     position = _position_state(rollover_policy=RolloverPolicy.T_MINUS_1)
 
@@ -105,26 +107,47 @@ def test_t_minus_1_policy_blocks_current_expiry_continuation_one_trading_day_bef
         current_time=time(10, 0),
     )
 
-    assert decision.can_carry_forward is False
+    assert decision.can_carry_forward is True
+    assert decision.should_select_next_expiry is False
+    assert decision.must_force_close is False
+    assert S23PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED not in decision.event_types
+
+
+def test_position_opened_inside_rollover_window_still_requires_next_expiry() -> None:
+    governance = S23PaperExpiryGovernance(_calendar())
+    position = _position_state(
+        rollover_policy=RolloverPolicy.T_MINUS_1,
+        entry_date=date(2026, 5, 27),
+    )
+
+    decision = governance.evaluate_position(
+        position,
+        session_date=date(2026, 5, 27),
+        current_time=time(10, 0),
+    )
+
+    assert governance.can_carry_forward(position, date(2026, 5, 27)) is False
     assert decision.should_select_next_expiry is True
     assert decision.must_force_close is True
-    assert S23PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED in decision.event_types
 
 
-def test_t_minus_2_policy_blocks_current_expiry_continuation_two_trading_days_before_expiry() -> None:
+def test_strategy_t_minus_2_policy_still_requests_next_expiry_two_days_before_expiry() -> None:
     governance = S23PaperExpiryGovernance(_calendar())
-    position = _position_state(rollover_policy=RolloverPolicy.T_MINUS_2)
+    strategy = _strategy(rollover_policy=RolloverPolicy.T_MINUS_2)
 
-    assert governance.can_carry_forward(position, date(2026, 5, 26)) is False
-    assert governance.should_select_next_expiry(position, date(2026, 5, 26)) is True
+    assert governance.should_select_next_expiry(strategy, date(2026, 5, 26)) is True
 
 
-def test_expiry_day_carry_forward_rejected() -> None:
+def test_expiry_day_force_close_uses_configured_noon_time() -> None:
     governance = S23PaperExpiryGovernance(_calendar())
-    position = _position_state(rollover_policy=RolloverPolicy.T_MINUS_1)
+    position = _position_state(
+        rollover_policy=RolloverPolicy.T_MINUS_1,
+        forced_close_time=time(12, 0),
+    )
 
     assert governance.can_carry_forward(position, date(2026, 5, 28)) is False
-    assert governance.must_force_close(position, date(2026, 5, 28), time(9, 20)) is True
+    assert governance.must_force_close(position, date(2026, 5, 28), time(11, 59)) is False
+    assert governance.must_force_close(position, date(2026, 5, 28), time(12, 0)) is True
 
 
 def test_post_expiry_resume_rejected(tmp_path) -> None:

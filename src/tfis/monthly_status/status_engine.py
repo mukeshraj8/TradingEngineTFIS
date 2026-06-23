@@ -227,19 +227,6 @@ class MonthlyStatusEngine:
         price = levels.current_price
 
         if effective_status is MonthlyStatus.BULL:
-            if price >= bull_cf_threshold:
-                return self._build_result(
-                    status=MonthlyStatus.BULL_CF,
-                    trigger_name="BULL_CF_B_THRESHOLD",
-                    threshold_value=bull_cf_threshold,
-                    reversal_dominated=False,
-                    candidates=candidates,
-                    notes=(
-                        "Effective bullish monthly status advanced to bullish "
-                        "confirmed because current price crossed the bullish "
-                        "confirmation threshold."
-                    ),
-                )
             if price <= reversal_bear_threshold:
                 return self._build_result(
                     status=MonthlyStatus.BEAR,
@@ -251,6 +238,19 @@ class MonthlyStatusEngine:
                         "Effective bullish monthly status reversed to bearish "
                         "because current price broke below MIN(PWL, CWL) by "
                         "c-percent."
+                    ),
+                )
+            if price >= bull_cf_threshold:
+                return self._build_result(
+                    status=MonthlyStatus.BULL_CF,
+                    trigger_name="BULL_CF_B_THRESHOLD",
+                    threshold_value=bull_cf_threshold,
+                    reversal_dominated=False,
+                    candidates=candidates,
+                    notes=(
+                        "Effective bullish monthly status advanced to bullish "
+                        "confirmed because current price crossed the bullish "
+                        "confirmation threshold."
                     ),
                 )
             return self._build_result(
@@ -289,19 +289,6 @@ class MonthlyStatusEngine:
             )
 
         if effective_status is MonthlyStatus.BEAR:
-            if price <= bear_cf_threshold:
-                return self._build_result(
-                    status=MonthlyStatus.BEAR_CF,
-                    trigger_name="BEAR_CF_B_THRESHOLD",
-                    threshold_value=bear_cf_threshold,
-                    reversal_dominated=False,
-                    candidates=candidates,
-                    notes=(
-                        "Effective bearish monthly status advanced to bearish "
-                        "confirmed because current price crossed the bearish "
-                        "confirmation threshold."
-                    ),
-                )
             if price >= reversal_bull_threshold:
                 return self._build_result(
                     status=MonthlyStatus.BULL,
@@ -313,6 +300,19 @@ class MonthlyStatusEngine:
                         "Effective bearish monthly status reversed to bullish "
                         "because current price broke above MAX(PWH, CWH) by "
                         "c-percent."
+                    ),
+                )
+            if price <= bear_cf_threshold:
+                return self._build_result(
+                    status=MonthlyStatus.BEAR_CF,
+                    trigger_name="BEAR_CF_B_THRESHOLD",
+                    threshold_value=bear_cf_threshold,
+                    reversal_dominated=False,
+                    candidates=candidates,
+                    notes=(
+                        "Effective bearish monthly status advanced to bearish "
+                        "confirmed because current price crossed the bearish "
+                        "confirmation threshold."
                     ),
                 )
             return self._build_result(

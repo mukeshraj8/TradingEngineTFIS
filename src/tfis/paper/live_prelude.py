@@ -307,13 +307,44 @@ class S23PaperLivePreludeBuilder:
             request.strategy_rule,
             request.session_context.session_date,
         )
-        fallback_expiries = self._fallback_expiries_from_snapshot(
+        later_expiries = self._fallback_expiries_from_snapshot(
             request.option_chain_snapshot,
             near_expiry=near_expiry,
         )
+        if request.expiry_governance.should_select_next_expiry(
+            request.strategy_rule,
+            request.session_context.session_date,
+        ):
+            # Fresh entries inside the rollover window must not use the current weekly expiry.
+            if not later_expiries:
+                return S23PaperContractSelectionResult(
+                    selected=False,
+                    failure_code=PaperContractSelectionFailureCode.NO_CONTRACT_SELECTED,
+                    selection_reason=(
+                        "Fresh S23 entries inside the rollover window must use the next "
+                        f"weekly expiry, but no expiry after {near_expiry.isoformat()} "
+                        "was present in the option-chain snapshot."
+                    ),
+                    selected_contract_symbol=None,
+                    expiry_date=None,
+                    strike=None,
+                    option_type=None,
+                    premium_used=None,
+                    oi_used=None,
+                    ranked_candidate_count=0,
+                    rejected_candidate_counts={"next_expiry_missing": 1},
+                    attempted_expiries=(near_expiry,),
+                )
+            primary_expiry = later_expiries[0]
+            fallback_expiries = tuple(
+                expiry for expiry in later_expiries[1:] if expiry != primary_expiry
+            )
+        else:
+            primary_expiry = near_expiry
+            fallback_expiries = later_expiries
         selection_request = S23PaperContractSelectionRequest(
             underlying_symbol=request.strategy_rule.symbol,
-            expiry_date=near_expiry,
+            expiry_date=primary_expiry,
             option_type=request.strategy_rule.option_type or OptionType.PUT,
             start_strike=float(trade_plan.start_strike or 0),
             end_strike=float(trade_plan.end_strike or 0),

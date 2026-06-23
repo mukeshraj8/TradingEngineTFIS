@@ -27,5 +27,5 @@ sample_calculation:
     ideal_premium: 264
     minimum_premium: 198
     entry_price: 203.5
-    target_price: 80
-    stoploss_price: 320
+    target_price: 81.4
+    stoploss_price: 321

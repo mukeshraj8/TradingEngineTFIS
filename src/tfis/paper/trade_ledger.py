@@ -53,6 +53,9 @@ class S23PaperTradeLedgerRow:
     reason_code: str
     message: str
     exit_timestamp: datetime | None = None
+    current_price: float | None = None
+    current_bid: float | None = None
+    current_ask: float | None = None
     exit_price: float | None = None
     gross_points: float | None = None
     gross_pnl: float | None = None
@@ -103,6 +106,9 @@ class S23PaperTradeLedgerStore:
         reason_code: str,
         message: str,
         exit_timestamp: datetime | None = None,
+        current_price: float | None = None,
+        current_bid: float | None = None,
+        current_ask: float | None = None,
         exit_price: float | None = None,
         source_kind: str | None = None,
         source_id: str | None = None,
@@ -114,9 +120,10 @@ class S23PaperTradeLedgerStore:
     ) -> S23PaperTradeLedgerRow:
         gross_points = None
         gross_pnl = None
-        if exit_price is not None:
+        pnl_reference_price = exit_price if exit_price is not None else current_price
+        if pnl_reference_price is not None:
             # S23 is currently option-selling paper mode: lower exit premium is profit.
-            gross_points = float(state.entry_price) - float(exit_price)
+            gross_points = float(state.entry_price) - float(pnl_reference_price)
             gross_pnl = gross_points * state.quantity
         return S23PaperTradeLedgerRow(
             artifact_version=_ARTIFACT_VERSION,
@@ -146,6 +153,9 @@ class S23PaperTradeLedgerStore:
             reason_code=reason_code,
             message=message,
             exit_timestamp=exit_timestamp,
+            current_price=current_price,
+            current_bid=current_bid,
+            current_ask=current_ask,
             exit_price=exit_price,
             gross_points=gross_points,
             gross_pnl=gross_pnl,

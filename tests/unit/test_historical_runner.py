@@ -121,21 +121,21 @@ def test_historical_runner_with_intraday_lifecycle_computes_trade_metrics() -> N
     assert report.metrics.no_exit == 1
     assert report.metrics.eod_square_off == 0
     assert report.metrics.carry_forward_pending == 0
-    assert report.metrics.total_pnl_points == pytest.approx(7.755)
-    assert report.metrics.total_gross_pnl_points == pytest.approx(7.755)
+    assert report.metrics.total_pnl_points == pytest.approx(7.175)
+    assert report.metrics.total_gross_pnl_points == pytest.approx(7.175)
     assert report.metrics.total_cost_points == pytest.approx(0.0)
-    assert report.metrics.total_net_pnl_points == pytest.approx(7.755)
-    assert report.metrics.total_gross_pnl_rupees == pytest.approx(387.75)
+    assert report.metrics.total_net_pnl_points == pytest.approx(7.175)
+    assert report.metrics.total_gross_pnl_rupees == pytest.approx(358.75)
     assert report.metrics.total_cost_rupees == pytest.approx(0.0)
-    assert report.metrics.total_net_pnl_rupees == pytest.approx(387.75)
-    assert report.metrics.final_net_pnl_rupees == pytest.approx(387.75)
+    assert report.metrics.total_net_pnl_rupees == pytest.approx(358.75)
+    assert report.metrics.final_net_pnl_rupees == pytest.approx(358.75)
     assert report.metrics.max_drawdown_rupees == pytest.approx(11684.75)
     assert report.metrics.max_drawdown_points == pytest.approx(233.695)
-    assert report.metrics.best_trade_net_rupees == pytest.approx(6175.0)
+    assert report.metrics.best_trade_net_rupees == pytest.approx(6105.0)
     assert report.metrics.worst_trade_net_rupees == pytest.approx(-5846.0)
-    assert report.metrics.average_pnl_points == pytest.approx(1.93875)
-    assert report.metrics.average_net_pnl_points == pytest.approx(1.93875)
-    assert report.metrics.average_net_pnl_rupees == pytest.approx(96.9375)
+    assert report.metrics.average_pnl_points == pytest.approx(1.79375)
+    assert report.metrics.average_net_pnl_points == pytest.approx(1.79375)
+    assert report.metrics.average_net_pnl_rupees == pytest.approx(89.6875)
     assert report.metrics.average_mfe == pytest.approx(85.94)
     assert report.metrics.average_mae == pytest.approx(70.46)
     assert report.metrics.win_rate == pytest.approx(0.5)
@@ -148,10 +148,10 @@ def test_historical_runner_with_intraday_lifecycle_computes_trade_metrics() -> N
     assert report.evaluations[0].lifecycle_result.exit_timestamp is not None
     assert report.evaluations[0].lifecycle_result.max_favorable_excursion == pytest.approx(122.95)
     assert report.evaluations[0].lifecycle_result.max_adverse_excursion == pytest.approx(7.05)
-    assert report.evaluations[0].lifecycle_result.cumulative_net_pnl_rupees == pytest.approx(5897.5)
+    assert report.evaluations[0].lifecycle_result.cumulative_net_pnl_rupees == pytest.approx(5938.5)
     assert report.evaluations[0].lifecycle_result.drawdown_rupees == pytest.approx(0.0)
     assert report.evaluations[1].lifecycle_result is not None
-    assert report.evaluations[1].lifecycle_result.cumulative_net_pnl_rupees == pytest.approx(51.5)
+    assert report.evaluations[1].lifecycle_result.cumulative_net_pnl_rupees == pytest.approx(92.5)
     assert report.evaluations[1].lifecycle_result.drawdown_rupees == pytest.approx(5846.0)
     assert report.evaluations[2].lifecycle_result is not None
     assert report.evaluations[2].lifecycle_result.exit_reason == "NO_ENTRY"
@@ -159,7 +159,7 @@ def test_historical_runner_with_intraday_lifecycle_computes_trade_metrics() -> N
     assert report.evaluations[2].lifecycle_result.cumulative_net_pnl_rupees is None
     assert report.evaluations[2].lifecycle_result.drawdown_rupees is None
     assert report.evaluations[4].lifecycle_result is not None
-    assert report.evaluations[4].lifecycle_result.cumulative_net_pnl_rupees == pytest.approx(-5787.25)
+    assert report.evaluations[4].lifecycle_result.cumulative_net_pnl_rupees == pytest.approx(-5746.25)
     assert report.evaluations[4].lifecycle_result.drawdown_rupees == pytest.approx(11684.75)
     assert report.evaluations[4].lifecycle_result is not None
     assert report.evaluations[4].lifecycle_result.exit_reason == "STOPLOSS_HIT"
@@ -271,20 +271,20 @@ def test_run_backtest_script_historical_mode_with_lifecycle_writes_json(
     assert report["metrics"]["no_exit"] == 1
     assert report["metrics"]["eod_square_off"] == 0
     assert report["metrics"]["carry_forward_pending"] == 0
-    assert report["metrics"]["total_gross_pnl_points"] == pytest.approx(7.755)
+    assert report["metrics"]["total_gross_pnl_points"] == pytest.approx(7.175)
     assert report["metrics"]["total_cost_points"] == pytest.approx(0.0)
-    assert report["metrics"]["total_net_pnl_points"] == pytest.approx(7.755)
-    assert report["metrics"]["total_gross_pnl_rupees"] == pytest.approx(387.75)
+    assert report["metrics"]["total_net_pnl_points"] == pytest.approx(7.175)
+    assert report["metrics"]["total_gross_pnl_rupees"] == pytest.approx(358.75)
     assert report["metrics"]["total_cost_rupees"] == pytest.approx(0.0)
-    assert report["metrics"]["total_net_pnl_rupees"] == pytest.approx(387.75)
-    assert report["metrics"]["final_net_pnl_rupees"] == pytest.approx(387.75)
+    assert report["metrics"]["total_net_pnl_rupees"] == pytest.approx(358.75)
+    assert report["metrics"]["final_net_pnl_rupees"] == pytest.approx(358.75)
     assert report["metrics"]["max_drawdown_rupees"] == pytest.approx(11684.75)
     assert report["metrics"]["max_drawdown_points"] == pytest.approx(233.695)
-    assert report["metrics"]["best_trade_net_rupees"] == pytest.approx(6175.0)
+    assert report["metrics"]["best_trade_net_rupees"] == pytest.approx(6105.0)
     assert report["metrics"]["worst_trade_net_rupees"] == pytest.approx(-5846.0)
-    assert report["metrics"]["average_pnl_points"] == pytest.approx(1.93875)
-    assert report["metrics"]["average_net_pnl_points"] == pytest.approx(1.93875)
-    assert report["metrics"]["average_net_pnl_rupees"] == pytest.approx(96.9375)
+    assert report["metrics"]["average_pnl_points"] == pytest.approx(1.79375)
+    assert report["metrics"]["average_net_pnl_points"] == pytest.approx(1.79375)
+    assert report["metrics"]["average_net_pnl_rupees"] == pytest.approx(89.6875)
     assert report["metrics"]["average_mfe"] == pytest.approx(85.94)
     assert report["metrics"]["average_mae"] == pytest.approx(70.46)
     assert report["metrics"]["win_rate"] == pytest.approx(0.5)
@@ -292,6 +292,6 @@ def test_run_backtest_script_historical_mode_with_lifecycle_writes_json(
     assert report["evaluations"][0]["lifecycle_result"]["exit_reason"] == "TARGET_HIT"
     assert report["evaluations"][0]["lifecycle_result"]["bars_held"] == 2
     assert report["evaluations"][0]["lifecycle_result"]["quantity"] == 50
-    assert report["evaluations"][0]["lifecycle_result"]["net_pnl_rupees"] == pytest.approx(5897.5)
-    assert report["evaluations"][0]["lifecycle_result"]["cumulative_net_pnl_rupees"] == pytest.approx(5897.5)
+    assert report["evaluations"][0]["lifecycle_result"]["net_pnl_rupees"] == pytest.approx(5938.5)
+    assert report["evaluations"][0]["lifecycle_result"]["cumulative_net_pnl_rupees"] == pytest.approx(5938.5)
     assert report["evaluations"][0]["lifecycle_result"]["drawdown_rupees"] == pytest.approx(0.0)

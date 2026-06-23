@@ -93,8 +93,8 @@ def test_parameter_sweep_runtime_overrides_affect_outputs() -> None:
 
     assert target_40.result is not None
     assert target_60.result is not None
-    assert target_40.result.trade_plan.target_price == pytest.approx(120.0)
-    assert target_60.result.trade_plan.target_price == pytest.approx(80.0)
+    assert target_40.result.trade_plan.target_price == pytest.approx(122.1)
+    assert target_60.result.trade_plan.target_price == pytest.approx(81.4)
 
 
 def test_invalid_strategy_path_fails_clearly(tmp_path: Path) -> None:

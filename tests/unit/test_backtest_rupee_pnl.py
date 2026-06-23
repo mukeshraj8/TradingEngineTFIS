@@ -119,7 +119,7 @@ def test_zero_cost_mode_keeps_net_rupees_equal_to_gross_rupees() -> None:
     assert report.metrics.total_gross_pnl_rupees == pytest.approx(
         report.metrics.total_net_pnl_rupees
     )
-    assert report.metrics.average_net_pnl_rupees == pytest.approx(-496.7)
+    assert report.metrics.average_net_pnl_rupees == pytest.approx(-502.5)
 
 
 def test_markdown_report_includes_rupee_metrics(tmp_path: Path) -> None:

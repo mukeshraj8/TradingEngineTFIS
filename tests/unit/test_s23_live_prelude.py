@@ -296,6 +296,94 @@ def test_fresh_session_falls_back_to_next_weekly_expiry_when_near_weekly_fails()
     assert "Near expiry 2026-05-29 failed" in result.contract_selection.selection_reason
 
 
+def test_fresh_session_uses_next_weekly_expiry_on_t_minus_1_even_when_near_weekly_qualifies() -> None:
+    result = S23PaperLivePreludeBuilder().build(
+        _request(
+            session_context=_session_context(day=28, generated_at=_ts(28, 9, 30, 3)),
+            snapshots=_snapshots(day=28),
+            expiry_governance=_expiry_governance(explicit_expiry_for_day=28),
+            option_chain_snapshot=_option_chain_snapshot(
+                _option_chain_contract(
+                    symbol="NIFTY_20260529_22400_PE",
+                    strike=22400.0,
+                    ltp=200.0,
+                    oi=1200.0,
+                    expiry=date(2026, 5, 29),
+                ),
+                _option_chain_contract(
+                    symbol="NIFTY_20260605_22400_PE",
+                    strike=22400.0,
+                    ltp=205.0,
+                    oi=1300.0,
+                    expiry=date(2026, 6, 5),
+                ),
+                day=28,
+            ),
+        )
+    )
+
+    assert result.selected_contract_event is not None
+    assert result.selected_contract_event.symbol == "NIFTY_20260605_22400_PE"
+    assert result.contract_selection is not None
+    assert result.contract_selection.attempted_expiries == (date(2026, 6, 5),)
+
+
+def test_fresh_session_uses_next_weekly_expiry_on_expiry_day() -> None:
+    result = S23PaperLivePreludeBuilder().build(
+        _request(
+            session_context=_session_context(day=29, generated_at=_ts(29, 9, 30, 3)),
+            snapshots=_snapshots(day=29),
+            expiry_governance=_expiry_governance(explicit_expiry_for_day=29),
+            option_chain_snapshot=_option_chain_snapshot(
+                _option_chain_contract(
+                    symbol="NIFTY_20260529_22400_PE",
+                    strike=22400.0,
+                    ltp=200.0,
+                    oi=1200.0,
+                    expiry=date(2026, 5, 29),
+                ),
+                _option_chain_contract(
+                    symbol="NIFTY_20260605_22400_PE",
+                    strike=22400.0,
+                    ltp=205.0,
+                    oi=1300.0,
+                    expiry=date(2026, 6, 5),
+                ),
+                day=29,
+            ),
+        )
+    )
+
+    assert result.selected_contract_event is not None
+    assert result.selected_contract_event.symbol == "NIFTY_20260605_22400_PE"
+    assert result.contract_selection is not None
+    assert result.contract_selection.attempted_expiries == (date(2026, 6, 5),)
+
+
+def test_fresh_session_fails_inside_rollover_window_when_next_weekly_expiry_missing() -> None:
+    with pytest.raises(S23LivePreludeError) as exc_info:
+        S23PaperLivePreludeBuilder().build(
+            _request(
+                session_context=_session_context(day=28, generated_at=_ts(28, 9, 30, 3)),
+                snapshots=_snapshots(day=28),
+                expiry_governance=_expiry_governance(explicit_expiry_for_day=28),
+                option_chain_snapshot=_option_chain_snapshot(
+                    _option_chain_contract(
+                        symbol="NIFTY_20260529_22400_PE",
+                        strike=22400.0,
+                        ltp=200.0,
+                        oi=1200.0,
+                        expiry=date(2026, 5, 29),
+                    ),
+                    day=28,
+                ),
+            )
+        )
+
+    assert exc_info.value.code == PaperContractSelectionFailureCode.NO_CONTRACT_SELECTED.value
+    assert "must use the next weekly expiry" in str(exc_info.value)
+
+
 def test_missing_option_chain_fails_safely() -> None:
     with pytest.raises(S23LivePreludeError) as exc_info:
         S23PaperLivePreludeBuilder().build(_request(option_chain_snapshot=None))
@@ -363,7 +451,7 @@ def test_explicit_smoke_override_only_applies_when_enabled_and_is_provenance_tag
     )
 
 
-def test_open_carry_forward_position_produces_resume_and_governance_prelude() -> None:
+def test_open_carry_forward_position_produces_resume_without_rollover_on_t_minus_1() -> None:
     result = S23PaperLivePreludeBuilder().build(
         _request(
             carry_forward_position=_open_position_state(),
@@ -379,13 +467,10 @@ def test_open_carry_forward_position_produces_resume_and_governance_prelude() ->
     assert result.selected_contract_event is None
     assert result.resume_event is not None
     assert result.resume_event.event_type is S23PaperPositionStateEventType.PAPER_POSITION_RESUMED
-    assert [event.event_type for event in result.governance_events] == [
-        S23PaperPositionStateEventType.PAPER_ROLLOVER_POLICY_APPLIED,
-        S23PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED,
-    ]
+    assert result.governance_events == ()
 
 
-def test_expiry_near_position_emits_next_expiry_required_and_force_close_required() -> None:
+def test_open_carry_forward_position_on_t_minus_1_does_not_force_close_before_expiry() -> None:
     result = S23PaperLivePreludeBuilder().build(
         _request(
             carry_forward_position=_open_position_state(),
@@ -396,11 +481,7 @@ def test_expiry_near_position_emits_next_expiry_required_and_force_close_require
         )
     )
 
-    assert [event.event_type for event in result.governance_events] == [
-        S23PaperPositionStateEventType.PAPER_ROLLOVER_POLICY_APPLIED,
-        S23PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED,
-        S23PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSE_REQUIRED,
-    ]
+    assert result.governance_events == ()
 
 
 def test_unsupported_workbook_path_still_blocked() -> None:

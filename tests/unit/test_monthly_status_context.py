@@ -29,7 +29,7 @@ def test_monthly_status_context_builds_bull_selection() -> None:
     assert result.skip is None
     assert result.context is not None
     assert result.context.status_result.status.value == "BULL"
-    assert result.context.status_result.trigger_name == "BULL_A_THRESHOLD"
+    assert result.context.status_result.trigger_name == "BULL_CONTINUES"
     assert result.context.selected_branch_unique_codes == [
         "NIFTY_OP_SELL_WK_DIFF_2D_3D",
         "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",

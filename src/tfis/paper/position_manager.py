@@ -8,11 +8,12 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from tfis.domain import OptionType, StrategyRule
+from tfis.domain import ExpiryType, OptionType, RolloverPolicy, StrategyRule
 
 from .expiry_governance import S23PaperExpiryGovernance
 from .live_decision import S23PaperLiveDecisionResult, S23PaperTradeDecisionSummary
 from .models import SelectedContractBarEvent, SelectedContractQuoteEvent
+from .order_state import S23PaperOrderState, S23PaperOrderStatus
 from .position_state import (
     S23PaperPositionState,
     S23PaperPositionStateStatus,
@@ -53,6 +54,9 @@ class S23PaperPositionManagerEvent:
     selected_contract_symbol: str
     reason_code: str
     message: str
+    current_price: float | None = None
+    current_bid: float | None = None
+    current_ask: float | None = None
     exit_price: float | None = None
     source_kind: str | None = None
     source_id: str | None = None
@@ -169,6 +173,105 @@ class S23PaperPositionManager:
             state_path=state_path,
         )
 
+    def open_from_filled_order(
+        self,
+        session_directory: str | Path,
+        *,
+        strategy_rule: StrategyRule | None = None,
+        order_state: S23PaperOrderState,
+        provenance_source_ids: tuple[str, ...] = (),
+    ) -> S23PaperPositionManagerResult:
+        if order_state.status is not S23PaperOrderStatus.PAPER_ORDER_FILLED:
+            raise S23PaperPositionManagerError(
+                "Cannot open paper position from an S23 paper order that is not filled."
+            )
+        if order_state.fill_price is None or order_state.fill_timestamp is None:
+            raise S23PaperPositionManagerError(
+                "Cannot open paper position from filled order without fill price and timestamp."
+            )
+
+        try:
+            option_type = OptionType(order_state.selected_contract_option_type)
+        except ValueError as exc:
+            raise S23PaperPositionManagerError(
+                f"Unsupported selected option type: {order_state.selected_contract_option_type}"
+            ) from exc
+        try:
+            expiry_type = (
+                strategy_rule.expiry_policy.expiry_type
+                if strategy_rule is not None
+                else ExpiryType(order_state.expiry_type)
+            )
+            rollover_policy = (
+                strategy_rule.expiry_policy.rollover_policy
+                if strategy_rule is not None
+                else RolloverPolicy(order_state.rollover_policy)
+            )
+        except ValueError as exc:
+            raise S23PaperPositionManagerError(
+                "Unsupported expiry policy in filled paper order."
+            ) from exc
+        forced_close_time = (
+            strategy_rule.expiry_policy.forced_close_time
+            if strategy_rule is not None
+            else order_state.forced_close_time
+        )
+        no_carry_past_expiry = (
+            strategy_rule.expiry_policy.no_carry_past_expiry
+            if strategy_rule is not None
+            else order_state.no_carry_past_expiry
+        )
+
+        state = self._state_store.create_open_position_state(
+            strategy_code=order_state.strategy_code,
+            unique_code=order_state.strategy_branch,
+            symbol=strategy_rule.symbol if strategy_rule is not None else order_state.symbol,
+            option_type=option_type,
+            selected_contract_symbol=order_state.selected_contract_symbol,
+            expiry_date=order_state.selected_contract_expiry,
+            expiry_type=expiry_type,
+            rollover_policy=rollover_policy,
+            forced_close_time=forced_close_time,
+            no_carry_past_expiry=no_carry_past_expiry,
+            entry_date=order_state.entry_date,
+            entry_timestamp=order_state.fill_timestamp,
+            entry_price=order_state.fill_price,
+            lots=order_state.lots,
+            quantity=order_state.quantity,
+            side=order_state.order_side,
+            target_price=order_state.target_price,
+            stoploss_price=order_state.stoploss_price,
+            fsl_price=order_state.fsl_price,
+            trp_price=None,
+            carry_forward_allowed=True,
+            last_updated_timestamp=order_state.fill_timestamp,
+            provenance_source_ids=provenance_source_ids,
+        )
+        session_dir = Path(session_directory)
+        state_path = self._state_store.save_state(session_dir, state)
+        event = S23PaperPositionManagerEvent(
+            artifact_version=_ARTIFACT_VERSION,
+            timestamp=order_state.fill_timestamp,
+            session_date=order_state.entry_date,
+            status=S23PaperPositionManagerStatus.PAPER_POSITION_OPENED,
+            selected_contract_symbol=state.selected_contract_symbol,
+            reason_code="paper_position_opened_from_filled_order",
+            message="S23 paper order filled; persisted as an open multi-day paper position.",
+            source_kind=order_state.fill_source_kind,
+            source_id=order_state.fill_source_id,
+            source_effective_timestamp=order_state.fill_source_effective_timestamp,
+            target_price=state.target_price,
+            stop_price=self._effective_stop_price(state),
+        )
+        return self._persist_result(
+            session_dir,
+            session_date=order_state.entry_date,
+            status=event.status,
+            state=state,
+            event=event,
+            state_path=state_path,
+        )
+
     def process_session(
         self,
         session_directory: str | Path,
@@ -206,18 +309,19 @@ class S23PaperPositionManager:
                 state_path=session_dir / "paper_position_state.json",
             )
 
+        expiry_decision = None
         if expiry_governance is not None:
-            decision = expiry_governance.evaluate_position(
+            expiry_decision = expiry_governance.evaluate_position(
                 state,
                 session_date=session_date,
                 current_time=evaluated_at.timetz().replace(tzinfo=None),
             )
-            if decision.should_select_next_expiry:
+            if expiry_decision.should_select_next_expiry:
                 state = self._state_store.mark_rollover_required(
                     session_dir,
                     session_date=session_date,
                     marked_at=evaluated_at,
-                    message=decision.message,
+                    message=expiry_decision.message,
                     provenance_source_ids=provenance_source_ids,
                 )
                 event = S23PaperPositionManagerEvent(
@@ -232,30 +336,6 @@ class S23PaperPositionManager:
                         "using the next weekly expiry before continuing paper exposure."
                     ),
                     rollover_required=True,
-                )
-                return self._persist_result(
-                    session_dir,
-                    session_date=session_date,
-                    status=event.status,
-                    state=state,
-                    event=event,
-                    state_path=session_dir / "paper_position_state.json",
-                )
-            if decision.must_force_close:
-                event = self._build_force_close_event(
-                    state=state,
-                    session_date=session_date,
-                    evaluated_at=evaluated_at,
-                    market_events=market_events,
-                    message=decision.message,
-                )
-                state = self._state_store.mark_position_closed(
-                    session_dir,
-                    session_date=session_date,
-                    closed_at=event.timestamp,
-                    reason_code=event.reason_code,
-                    message=event.message,
-                    provenance_source_ids=provenance_source_ids,
                 )
                 return self._persist_result(
                     session_dir,
@@ -293,6 +373,31 @@ class S23PaperPositionManager:
                 state_path=session_dir / "paper_position_state.json",
             )
 
+        if expiry_decision is not None and expiry_decision.must_force_close:
+            event = self._build_force_close_event(
+                state=state,
+                session_date=session_date,
+                evaluated_at=evaluated_at,
+                market_events=market_events,
+                message=expiry_decision.message,
+            )
+            state = self._state_store.mark_position_closed(
+                session_dir,
+                session_date=session_date,
+                closed_at=event.timestamp,
+                reason_code=event.reason_code,
+                message=event.message,
+                provenance_source_ids=provenance_source_ids,
+            )
+            return self._persist_result(
+                session_dir,
+                session_date=session_date,
+                status=event.status,
+                state=state,
+                event=event,
+                state_path=session_dir / "paper_position_state.json",
+            )
+
         if not market_events:
             status = S23PaperPositionManagerStatus.PAPER_POSITION_NO_MARKET_DATA
             reason_code = "missing_selected_contract_market_data"
@@ -307,6 +412,9 @@ class S23PaperPositionManager:
                 "No target, stoploss, FSL, expiry, or rollover condition was hit; "
                 "the paper position remains open for the next session."
             )
+        current_price, current_bid, current_ask, current_kind, current_id, current_timestamp = (
+            self._latest_market_reference(state, market_events)
+        )
         event = S23PaperPositionManagerEvent(
             artifact_version=_ARTIFACT_VERSION,
             timestamp=evaluated_at,
@@ -315,6 +423,12 @@ class S23PaperPositionManager:
             selected_contract_symbol=state.selected_contract_symbol,
             reason_code=reason_code,
             message=message,
+            current_price=current_price,
+            current_bid=current_bid,
+            current_ask=current_ask,
+            source_kind=current_kind,
+            source_id=current_id,
+            source_effective_timestamp=current_timestamp,
             target_price=state.target_price,
             stop_price=self._effective_stop_price(state),
         )
@@ -390,6 +504,9 @@ class S23PaperPositionManager:
                     "position was closed; reverse entry requires a fresh opposite "
                     "S23 decision."
                 ),
+                current_price=float(event.ltp) if event.ltp is not None else None,
+                current_bid=float(event.bid) if event.bid is not None else None,
+                current_ask=float(event.ask) if event.ask is not None else None,
                 exit_price=exit_price,
                 source_kind="selected_contract_quote",
                 source_id=event.envelope.source_id,
@@ -411,6 +528,9 @@ class S23PaperPositionManager:
                     "was closed; a fresh S23 position must be recalculated from "
                     "current market data before any new entry."
                 ),
+                current_price=float(event.ltp) if event.ltp is not None else None,
+                current_bid=float(event.bid) if event.bid is not None else None,
+                current_ask=float(event.ask) if event.ask is not None else None,
                 exit_price=exit_price,
                 source_kind="selected_contract_quote",
                 source_id=event.envelope.source_id,
@@ -457,6 +577,7 @@ class S23PaperPositionManager:
                     "also possible in the same bar, stoploss wins conservatively. "
                     "Reverse entry requires a fresh opposite S23 decision."
                 ),
+                current_price=float(event.close) if event.close is not None else None,
                 exit_price=stop_price + self._slippage_exit_points,
                 source_kind="selected_contract_bar",
                 source_id=event.envelope.source_id,
@@ -477,6 +598,7 @@ class S23PaperPositionManager:
                     "was closed; a fresh S23 position must be recalculated from "
                     "current market data before any new entry."
                 ),
+                current_price=float(event.close) if event.close is not None else None,
                 exit_price=state.target_price + self._slippage_exit_points,
                 source_kind="selected_contract_bar",
                 source_id=event.envelope.source_id,
@@ -508,6 +630,7 @@ class S23PaperPositionManager:
             selected_contract_symbol=state.selected_contract_symbol,
             reason_code="expiry_force_close",
             message=message,
+            current_price=price,
             exit_price=price,
             source_kind=source_kind,
             source_id=source_id,
@@ -542,6 +665,36 @@ class S23PaperPositionManager:
                 )
         return None, None, None, None
 
+    def _latest_market_reference(
+        self,
+        state: S23PaperPositionState,
+        market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
+    ) -> tuple[float | None, float | None, float | None, str | None, str | None, datetime | None]:
+        for event in reversed(self._sorted_market_events(market_events)):
+            if event.symbol != state.selected_contract_symbol:
+                continue
+            if isinstance(event, SelectedContractQuoteEvent):
+                price = event.ltp
+                if price is None:
+                    price = event.bid if event.bid is not None else event.ask
+                return (
+                    float(price) if price is not None else None,
+                    float(event.bid) if event.bid is not None else None,
+                    float(event.ask) if event.ask is not None else None,
+                    "selected_contract_quote",
+                    event.envelope.source_id,
+                    event.envelope.effective_timestamp,
+                )
+            return (
+                float(event.close) if event.close is not None else None,
+                None,
+                None,
+                "selected_contract_bar",
+                event.envelope.source_id,
+                event.envelope.effective_timestamp,
+            )
+        return None, None, None, None, None, None
+
     def _exit_event(
         self,
         *,
@@ -551,6 +704,9 @@ class S23PaperPositionManager:
         selected_contract_symbol: str,
         reason_code: str,
         message: str,
+        current_price: float | None = None,
+        current_bid: float | None = None,
+        current_ask: float | None = None,
         exit_price: float,
         source_kind: str,
         source_id: str,
@@ -568,6 +724,9 @@ class S23PaperPositionManager:
             selected_contract_symbol=selected_contract_symbol,
             reason_code=reason_code,
             message=message,
+            current_price=current_price,
+            current_bid=current_bid,
+            current_ask=current_ask,
             exit_price=exit_price,
             source_kind=source_kind,
             source_id=source_id,
@@ -660,6 +819,9 @@ class S23PaperPositionManager:
                 if event.exit_price is not None
                 else None
             ),
+            current_price=event.current_price,
+            current_bid=event.current_bid,
+            current_ask=event.current_ask,
             exit_price=event.exit_price,
             source_kind=event.source_kind,
             source_id=event.source_id,
