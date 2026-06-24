@@ -1,5 +1,13 @@
 # TradingEngineTFIS
 
+## AI Change Contract
+
+Before making changes, Codex or any other AI coding agent must read
+`AGENTS.md`, which points to the required AI change agreement and project
+rulebook. The agreement preserves the core project objective: TFIS must remain
+broker-agnostic, multi-strategy capable, config-driven, auditable, and isolated
+from sibling trading-engine projects.
+
 TFIS is a clean Python project for workbook-backed, config-driven trading
 research and bounded paper-trading simulation around the `S23` weekly NIFTY
 options-selling family.
