@@ -20,6 +20,9 @@
 - S23 operator dashboard latest-session view now shows a visible calculation
   explanation section with Step 1-8 reasoning and per-leg formula traces from
   the final decision artifacts
+- S23 scheduled startup now launches separate paper watcher processes for every
+  produced paper order or open paper position instead of skipping automatic
+  watching when a two-leg session creates both CE and PE orders
 - strategy and workbook normalization work is established for the S23 family
 - reference materials are now indexed and reviewable through archive metadata
 - deterministic monthly-status classification is implemented for the confirmed threshold rules

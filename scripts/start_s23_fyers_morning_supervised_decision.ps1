@@ -41,6 +41,68 @@ function Write-LaunchLog {
     Add-Content -Path $logPath -Value $line
 }
 
+function Start-S23PaperWatchProcess {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("state", "order", "discover")]
+        [string]$Mode,
+        [string]$WatchDirectory,
+        [string]$SearchRoot
+    )
+
+    $watchScript = Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py"
+    $watchArgs = @(
+        $watchScript,
+        "--tfis-root", $TfisRoot,
+        "--config", $Config,
+        "--skip-refresh",
+        "--timezone", $Timezone
+    )
+    if ($Mode -eq "state") {
+        $watchArgs += "--state-dir"
+        $watchArgs += $WatchDirectory
+    }
+    elseif ($Mode -eq "order") {
+        $watchArgs += "--order-dir"
+        $watchArgs += $WatchDirectory
+    }
+    else {
+        $watchArgs += "--state-search-root"
+        $watchArgs += $SearchRoot
+        $watchArgs += "--no-open-ok"
+    }
+
+    $labelSource = if ($WatchDirectory) { $WatchDirectory } else { $SearchRoot }
+    $safeLabel = (($labelSource -replace '^[A-Za-z]:', '') -replace '[\\/:*?"<>|\s]+', '_').Trim('_')
+    if (-not $safeLabel) {
+        $safeLabel = "discovery"
+    }
+    if ($safeLabel.Length -gt 96) {
+        $safeLabel = $safeLabel.Substring($safeLabel.Length - 96)
+    }
+    $watchStamp = Get-Date -Format "yyyyMMdd_HHmmss"
+    $stdoutPath = Join-Path $logDir "s23_paper_watch_${Mode}_${safeLabel}_${watchStamp}.out.log"
+    $stderrPath = Join-Path $logDir "s23_paper_watch_${Mode}_${safeLabel}_${watchStamp}.err.log"
+
+    $quotedRepoRoot = "'" + ($repoRoot -replace "'", "''") + "'"
+    $quotedPythonExe = "'" + ($pythonExe -replace "'", "''") + "'"
+    $quotedWatchArgs = @($watchArgs | ForEach-Object { "'" + ($_ -replace "'", "''") + "'" })
+    $quotedStdoutPath = "'" + ($stdoutPath -replace "'", "''") + "'"
+    $quotedStderrPath = "'" + ($stderrPath -replace "'", "''") + "'"
+    $watchCommand = "Set-Location $quotedRepoRoot; & $quotedPythonExe $($quotedWatchArgs -join ' ') 2> $quotedStderrPath | Tee-Object -FilePath $quotedStdoutPath -Append"
+
+    $process = Start-Process `
+        -FilePath "powershell.exe" `
+        -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $watchCommand) `
+        -WorkingDirectory $repoRoot `
+        -WindowStyle Normal `
+        -PassThru
+
+    Write-LaunchLog "Started S23 paper watch process PID=$($process.Id), mode=$Mode, directory=$WatchDirectory, searchRoot=$SearchRoot"
+    Write-LaunchLog "S23 paper watch stdout: $stdoutPath"
+    Write-LaunchLog "S23 paper watch stderr: $stderrPath"
+}
+
 $pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
 if (-not (Test-Path $pythonExe)) {
     $pythonExe = "python"
@@ -111,68 +173,30 @@ try {
                     }
                 }
             }
-            if ($statePaths.Count -eq 1) {
-                $stateDir = Split-Path -Parent $statePaths[0]
-                Write-LaunchLog "Starting S23 paper position watch for state directory: $stateDir"
-                & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
-                    --tfis-root $TfisRoot `
-                    --config $Config `
-                    --state-dir $stateDir `
-                    --timezone $Timezone 2>&1 | ForEach-Object {
-                        Write-LaunchLog ("WATCH: {0}" -f $_)
-                        Write-Output $_
-                    }
-                $exitCode = $LASTEXITCODE
-                Write-LaunchLog "S23 paper position watch finished with exit code $exitCode."
+            if ($statePaths.Count -gt 0) {
+                foreach ($statePath in $statePaths) {
+                    $stateDir = Split-Path -Parent $statePath
+                    Write-LaunchLog "Starting S23 paper position watch for state directory: $stateDir"
+                    Start-S23PaperWatchProcess -Mode "state" -WatchDirectory $stateDir
+                }
+                Write-LaunchLog "Started $($statePaths.Count) S23 paper position watch process(es)."
             }
-            elseif ($orderPaths.Count -eq 1) {
-                $orderDir = Split-Path -Parent $orderPaths[0]
-                Write-LaunchLog "Starting S23 paper position watch for order directory: $orderDir"
-                & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
-                    --tfis-root $TfisRoot `
-                    --config $Config `
-                    --order-dir $orderDir `
-                    --timezone $Timezone 2>&1 | ForEach-Object {
-                        Write-LaunchLog ("WATCH: {0}" -f $_)
-                        Write-Output $_
-                    }
-                $exitCode = $LASTEXITCODE
-                Write-LaunchLog "S23 paper order/position watch finished with exit code $exitCode."
-            }
-            elseif ($statePaths.Count -gt 1) {
-                Write-LaunchLog "Multiple S23 paper position states were produced; automatic watch skipped so the operator can choose the branch."
-            }
-            elseif ($orderPaths.Count -gt 1) {
-                Write-LaunchLog "Multiple S23 paper orders were produced; automatic watch skipped so the operator can choose the branch."
+            elseif ($orderPaths.Count -gt 0) {
+                foreach ($orderPath in $orderPaths) {
+                    $orderDir = Split-Path -Parent $orderPath
+                    Write-LaunchLog "Starting S23 paper order watch for order directory: $orderDir"
+                    Start-S23PaperWatchProcess -Mode "order" -WatchDirectory $orderDir
+                }
+                Write-LaunchLog "Started $($orderPaths.Count) S23 paper order watch process(es)."
             }
             else {
                 Write-LaunchLog "No new S23 paper position/order state was produced; attempting latest state discovery under $ArtifactRoot."
-                & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
-                    --tfis-root $TfisRoot `
-                    --config $Config `
-                    --state-search-root $ArtifactRoot `
-                    --timezone $Timezone `
-                    --no-open-ok 2>&1 | ForEach-Object {
-                        Write-LaunchLog ("WATCH: {0}" -f $_)
-                        Write-Output $_
-                    }
-                $exitCode = $LASTEXITCODE
-                Write-LaunchLog "S23 paper position watch discovery run finished with exit code $exitCode."
+                Start-S23PaperWatchProcess -Mode "discover" -SearchRoot $ArtifactRoot
             }
         }
         else {
             Write-LaunchLog "No scheduled_run_metadata.json found under $artifactRootPath; attempting latest-open-state discovery."
-            & $pythonExe (Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py") `
-                --tfis-root $TfisRoot `
-                --config $Config `
-                --state-search-root $ArtifactRoot `
-                --timezone $Timezone `
-                --no-open-ok 2>&1 | ForEach-Object {
-                    Write-LaunchLog ("WATCH: {0}" -f $_)
-                    Write-Output $_
-                }
-            $exitCode = $LASTEXITCODE
-            Write-LaunchLog "S23 paper position watch discovery run finished with exit code $exitCode."
+            Start-S23PaperWatchProcess -Mode "discover" -SearchRoot $ArtifactRoot
         }
     }
     elseif ($DisablePositionWatch) {

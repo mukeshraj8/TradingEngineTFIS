@@ -95,6 +95,10 @@ change in a meaningful way.
 - S23 live session dashboard stage cards now include a rule-sheet step panel
   showing preparation snapshot, monthly status, rule group, strike range,
   near/next search, premium/OI, final weekly option, and entry/target/SL
+- the S23 scheduled startup wrapper now launches one paper watcher process per
+  produced paper order or open paper position, so two-leg sessions can update
+  selected-contract current price, fill status, dashboard rebuilds, and open
+  position P&L independently
 
 ## Current Architecture Flow
 

@@ -168,11 +168,18 @@ def main(argv: list[str] | None = None) -> int:
         while True:
             iterations += 1
             evaluated_at = datetime.now(timezone)
-            events = _fetch_selected_contract_events(
-                adapter=adapter,
-                selected_contract_symbol=watched_symbol,
-                session_date=session_date,
-            )
+            try:
+                events = _fetch_selected_contract_events(
+                    adapter=adapter,
+                    selected_contract_symbol=watched_symbol,
+                    session_date=session_date,
+                )
+            except BrokerAdapterError as exc:
+                print(
+                    f"{evaluated_at.isoformat()} WARNING quote_fetch_failed "
+                    f"{exc}; keeping watcher alive"
+                )
+                events = ()
             if state is None:
                 assert order_dir is not None
                 order_state, order_event, _order_state_path, _order_events_path = order_store.evaluate_waiting_order(
@@ -352,24 +359,53 @@ def _resolve_state_dir(
 
 
 def _rebuild_dashboard(*, output_root: Path, artifact_root: Path) -> None:
-    TfisOperatorDashboardBuilder(
-        strategy_configs=(
-            StrategyDashboardConfig(
-                strategy_code="S23",
-                display_name="S23 Operator Dashboard",
-                artifact_root=REPO_ROOT / artifact_root,
-                strategy_path=(
-                    REPO_ROOT
-                    / "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    resolved_output_root = REPO_ROOT / output_root
+    lock_handle = _acquire_dashboard_build_lock(resolved_output_root)
+    try:
+        TfisOperatorDashboardBuilder(
+            strategy_configs=(
+                StrategyDashboardConfig(
+                    strategy_code="S23",
+                    display_name="S23 Operator Dashboard",
+                    artifact_root=REPO_ROOT / artifact_root,
+                    strategy_path=(
+                        REPO_ROOT
+                        / "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+                    ),
+                    reference_packet_path=(
+                        REPO_ROOT
+                        / "config/reference_packets/s23_bear_put_live_decision_reference.json"
+                    ),
+                    session_id_prefix="s23-fyers-morning-supervised-decision",
                 ),
-                reference_packet_path=(
-                    REPO_ROOT
-                    / "config/reference_packets/s23_bear_put_live_decision_reference.json"
-                ),
-                session_id_prefix="s23-fyers-morning-supervised-decision",
-            ),
-        )
-    ).build(output_root=REPO_ROOT / output_root)
+            )
+        ).build(output_root=resolved_output_root)
+    finally:
+        _release_watch_file_lock(lock_handle)
+
+
+def _acquire_dashboard_build_lock(output_root: Path):
+    lock_path = output_root / ".operator_dashboard_build.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    handle = lock_path.open("a+", encoding="utf-8")
+    try:
+        if os.name == "nt":
+            import msvcrt
+
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        handle.seek(0)
+        handle.truncate()
+        handle.write(f"pid={os.getpid()}\n")
+        handle.flush()
+        return handle
+    except OSError:
+        handle.close()
+        raise
 
 
 def _resolve_order_dir(

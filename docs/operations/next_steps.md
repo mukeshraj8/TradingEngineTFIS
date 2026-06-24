@@ -7,7 +7,11 @@ way.
 ## Immediate Next Priorities
 
 1. Validate S23 live order-watcher/current-price visibility end to end.
-   The live session dashboard and manual/review calculator now show the corrected rule-sheet process and final CE/PE decisions. The remaining operational validation is to prove the watcher updates waiting orders or open positions with current price, fill status, and P&L during market hours without changing strategy rules.
+   The scheduled startup wrapper now starts one paper watcher per produced order
+   or open position, which should let both selected CE/PE legs publish current
+   price, fill status, dashboard rebuilds, and open-position P&L. The remaining
+   operational validation is to prove those updates from live FYERS quotes
+   during market hours without changing strategy rules.
 2. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
 3. Introduce generic strategy-registry execution for enabled strategies.
