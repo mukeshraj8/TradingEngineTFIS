@@ -8,6 +8,7 @@ from zoneinfo import ZoneInfo
 from tfis.domain import MarketLevels, StrategyRule, TradePlan
 from tfis.domain.enums import OptionType
 from tfis.monthly_status import MonthlyStatusResult
+from tfis.rules import validate_s23_strategy_rule_matches_matrix
 from tfis.strategy import StrategyEvaluator
 
 from .contract_selection import (
@@ -226,6 +227,13 @@ class S23PaperLivePreludeBuilder:
         rule = request.strategy_rule
         if rule.strategy_code != "S23":
             raise S23LivePreludeError("UNSUPPORTED_STRATEGY", "Only S23 is supported.")
+        matrix_mismatches = validate_s23_strategy_rule_matches_matrix(rule)
+        if matrix_mismatches:
+            raise S23LivePreludeError(
+                "S23_RULE_MATRIX_MISMATCH",
+                "Loaded S23 strategy rule does not match the corrected rule-sheet matrix: "
+                + "; ".join(matrix_mismatches),
+            )
         if rule.symbol != "NIFTY":
             raise S23LivePreludeError("UNSUPPORTED_SYMBOL", "Only NIFTY is supported.")
         if rule.option_type not in {OptionType.CALL, OptionType.PUT}:

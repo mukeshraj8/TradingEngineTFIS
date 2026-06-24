@@ -48,6 +48,21 @@ _MONTH_TO_FYERS = {
     12: "C",
 }
 _FYERS_TO_MONTH = {value: key for key, value in _MONTH_TO_FYERS.items()}
+_FYERS_MONTH_TEXT_TO_MONTH = {
+    "JAN": 1,
+    "FEB": 2,
+    "MAR": 3,
+    "APR": 4,
+    "MAY": 5,
+    "JUN": 6,
+    "JUL": 7,
+    "AUG": 8,
+    "SEP": 9,
+    "OCT": 10,
+    "NOV": 11,
+    "DEC": 12,
+}
+_FYERS_MONTH_TO_TEXT = {value: key for key, value in _FYERS_MONTH_TEXT_TO_MONTH.items()}
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,7 +136,7 @@ class FyersBrokerAdapter(BrokerAdapter):
         raise BrokerNormalizationError(f"Unsupported FYERS underlying symbol: {symbol}")
 
     @classmethod
-    def normalize_option_symbol(cls, symbol: str) -> str:
+    def normalize_option_symbol(cls, symbol: str, *, expiry_hint: date | None = None) -> str:
         cleaned = symbol.strip().upper()
         if not cleaned.startswith("NSE:NIFTY"):
             raise BrokerNormalizationError(f"Unsupported FYERS option symbol: {symbol}")
@@ -129,15 +144,27 @@ class FyersBrokerAdapter(BrokerAdapter):
         if len(body) < 8 or not (body.endswith("CE") or body.endswith("PE")):
             raise BrokerNormalizationError(f"Malformed FYERS option symbol: {symbol}")
         option_type = body[-2:]
-        strike_text = body[5:-2]
         expiry_id = body[:5]
         yy = int(expiry_id[:2])
-        month_token = expiry_id[2]
-        day = int(expiry_id[3:5])
-        month = _FYERS_TO_MONTH.get(month_token)
-        if month is None:
-            raise BrokerNormalizationError(f"Unsupported FYERS month token: {month_token}")
-        expiry = date(2000 + yy, month, day)
+        month_text = expiry_id[2:5]
+        if month_text.isalpha():
+            month = _FYERS_MONTH_TEXT_TO_MONTH.get(month_text)
+            if month is None:
+                raise BrokerNormalizationError(f"Unsupported FYERS month token: {month_text}")
+            year = 2000 + yy
+            if expiry_hint is not None and expiry_hint.year == year and expiry_hint.month == month:
+                expiry = expiry_hint
+            else:
+                expiry = cls._last_nifty_monthly_expiry(year, month)
+            strike_text = body[5:-2]
+        else:
+            strike_text = body[5:-2]
+            month_token = expiry_id[2]
+            day = int(expiry_id[3:5])
+            month = _FYERS_TO_MONTH.get(month_token)
+            if month is None:
+                raise BrokerNormalizationError(f"Unsupported FYERS month token: {month_token}")
+            expiry = date(2000 + yy, month, day)
         strike = int(strike_text)
         return f"NIFTY_{expiry.isoformat().replace('-', '')}_{strike}_{option_type}"
 
@@ -154,9 +181,19 @@ class FyersBrokerAdapter(BrokerAdapter):
         expiry = date.fromisoformat(
             f"{expiry_text[0:4]}-{expiry_text[4:6]}-{expiry_text[6:8]}"
         )
-        month_token = _MONTH_TO_FYERS[expiry.month]
-        expiry_id = f"{str(expiry.year)[2:]}{month_token}{expiry.day:02d}"
+        if expiry == cls._last_nifty_monthly_expiry(expiry.year, expiry.month):
+            expiry_id = f"{str(expiry.year)[2:]}{_FYERS_MONTH_TO_TEXT[expiry.month]}"
+        else:
+            month_token = _MONTH_TO_FYERS[expiry.month]
+            expiry_id = f"{str(expiry.year)[2:]}{month_token}{expiry.day:02d}"
         return f"NSE:NIFTY{expiry_id}{int(strike_text)}{option_type.upper()}"
+
+    @staticmethod
+    def _last_nifty_monthly_expiry(year: int, month: int) -> date:
+        cursor = date(year, month + 1, 1) - timedelta(days=1) if month < 12 else date(year, 12, 31)
+        while cursor.weekday() != 1:
+            cursor -= timedelta(days=1)
+        return cursor
 
     def connect(self) -> None:
         if self._payloads:
@@ -545,8 +582,8 @@ class FyersBrokerAdapter(BrokerAdapter):
                     values.get("source_latency_ms") or values.get("latency_ms")
                 ),
             )
-        normalized_symbol = self.normalize_option_symbol(symbol)
         expiry = self._optional_date(values.get("expiry") or record.get("expiry"))
+        normalized_symbol = self.normalize_option_symbol(symbol, expiry_hint=expiry)
         strike = self._optional_float(values.get("strike") or values.get("strike_price"))
         option_type = self._optional_option_type(
             values.get("option_type") or record.get("option_type") or symbol[-2:]
@@ -614,7 +651,10 @@ class FyersBrokerAdapter(BrokerAdapter):
             if not raw_option_symbol:
                 continue
             try:
-                normalized_symbol = self.normalize_option_symbol(raw_option_symbol)
+                normalized_symbol = self.normalize_option_symbol(
+                    raw_option_symbol,
+                    expiry_hint=self._optional_date(raw_contract.get("expiry")) or expiry,
+                )
             except BrokerNormalizationError:
                 # Live FYERS option-chain responses can include the underlying/index
                 # row alongside actual option contracts. Ignore non-option entries.

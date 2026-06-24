@@ -8,6 +8,7 @@ import yaml
 from tfis.domain.enums import MonthlyStatus, OptionType
 from tfis.domain.market_levels import MarketLevels
 from tfis.importers import load_strategy_rule, validate_folder_strategy_detailed
+from tfis.rules import S23_LEG_RULES
 from tfis.strategy import StrategyEvaluator
 
 
@@ -58,10 +59,10 @@ BRANCH_CASES = {
             "stoploss_formula": "M166",
         },
         "expected": {
-            "start_strike": 20850,
-            "end_strike": 21950,
-            "ideal_premium": 262.8,
-            "minimum_premium": 197.1,
+            "start_strike": 21400,
+            "end_strike": 22550,
+            "ideal_premium": 270.0,
+            "minimum_premium": 202.5,
             "entry_price": 194.25,
             "target_price": 77.7,
             "stoploss_price": 310.8,
@@ -114,8 +115,8 @@ BRANCH_CASES = {
             "end_strike": 22650,
             "ideal_premium": 271.2,
             "minimum_premium": 203.4,
-            "entry_price": 305.25,
-            "target_price": 122.1,
+            "entry_price": 203.5,
+            "target_price": 81.4,
             "stoploss_price": 321.0,
         },
     },
@@ -158,6 +159,24 @@ def test_all_s23_branch_folders_validate_and_load(folder_name: str) -> None:
     assert rule.strategy_code == "S23"
     assert rule.option_type == case["option_type"]
     assert rule.allowed_monthly_statuses == case["statuses"]
+
+
+@pytest.mark.parametrize("folder_name", sorted(BRANCH_CASES))
+def test_all_s23_branch_folders_match_rule_matrix(folder_name: str) -> None:
+    strategy_path = STRATEGY_ROOT / folder_name
+    rule = load_strategy_rule(strategy_path)
+    matrix_rule = S23_LEG_RULES[rule.unique_code]
+
+    assert rule.option_type == matrix_rule.option_type
+    assert rule.allowed_monthly_statuses == matrix_rule.allowed_monthly_statuses
+    assert rule.start_strike_formula == matrix_rule.start_strike_formula
+    assert rule.end_strike_formula == matrix_rule.end_strike_formula
+    assert rule.ideal_premium_formula == matrix_rule.ideal_premium_formula
+    assert rule.minimum_premium_formula == matrix_rule.minimum_premium_formula
+    assert rule.entry_formula == matrix_rule.entry_formula
+    assert rule.target_formula == matrix_rule.target_formula
+    assert rule.stoploss_formula == matrix_rule.stoploss_formula
+    assert rule.parameters["sl_reference_pct"] == matrix_rule.structure_sl_buffer_pct
 
 
 @pytest.mark.parametrize("folder_name", sorted(BRANCH_CASES))

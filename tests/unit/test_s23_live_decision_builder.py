@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, datetime, time
 from zoneinfo import ZoneInfo
 
@@ -51,7 +52,7 @@ def _strategy_rule() -> StrategyRule:
         entry_time=time(9, 24, 59),
         recalculation_time=time(9, 29, 59),
         start_strike_formula="ROUND_UP(PRV_3DHH - PARAM(strike_buffer_pct)%)",
-        end_strike_formula="ROUND_UP(PRV_3DHH) + 1",
+        end_strike_formula="ROUND_UP(PRV_3DHH) + PARAM(strike_step)",
         ideal_premium_formula="PRV_3DHH * PARAM(ideal_premium_pct)%",
         minimum_premium_formula="PRV_3DHH * PARAM(minimum_premium_pct)%",
         minimum_oi=500,
@@ -61,6 +62,7 @@ def _strategy_rule() -> StrategyRule:
         carry_forward_allowed=True,
         parameters={
             "strike_buffer_pct": 5.0,
+            "strike_step": 50.0,
             "ideal_premium_pct": 1.2,
             "minimum_premium_pct": 0.9,
             "entry_discount_pct": 7.5,
@@ -516,6 +518,21 @@ def test_missing_required_option_reference_fails_closed() -> None:
         )
 
     assert exc_info.value.code == "MISSING_OPTION_REFERENCE_VALUES"
+
+
+def test_live_decision_rejects_s23_rule_that_does_not_match_matrix() -> None:
+    with pytest.raises(S23RuntimeInputDerivationError) as exc_info:
+        S23PaperLiveDecisionBuilder().build(
+            strategy_rule=replace(
+                _strategy_rule(),
+                entry_formula="OPT_PRV_3DHH - PARAM(entry_discount_pct)%",
+            ),
+            reference_packet=_reference_packet(),
+            collected_inputs=_collected_inputs(),
+        )
+
+    assert exc_info.value.code == "S23_RULE_MATRIX_MISMATCH"
+    assert "entry_formula" in str(exc_info.value)
 
 
 def test_carry_forward_mode_emits_governance_summary() -> None:

@@ -3,6 +3,23 @@
 ## Current Snapshot
 
 - offline TFIS architecture and backtest foundation is in place
+- corrected S23 weekly option selling contract is documented and now supersedes
+  older inferred branch mappings
+- corrected S23 four-leg rule matrix is implemented and tested against the
+  branch strategy folders
+- S23 runtime derivation/prelude now validate loaded rules against the corrected
+  matrix before decision generation, with `scripts/validate_s23_rule_matrix.py`
+  available as a direct operator/developer check
+- S23 live session dashboard stage cards now show rule-sheet steps and final
+  weekly option decision context from existing artifacts
+- S23 manual calculator now follows the corrected rule-sheet flow for date,
+  monthly status, CE/PE branch selection, strike qualification, and final
+  entry/target/SL review
+- S23 operator dashboard latest-session summary and manifest now support plural
+  final contracts for two-leg paper-order sessions
+- S23 operator dashboard latest-session view now shows a visible calculation
+  explanation section with Step 1-8 reasoning and per-leg formula traces from
+  the final decision artifacts
 - strategy and workbook normalization work is established for the S23 family
 - reference materials are now indexed and reviewable through archive metadata
 - deterministic monthly-status classification is implemented for the confirmed threshold rules
@@ -121,6 +138,10 @@
 
 ## Next Recommended Priorities
 
+- rewrite the S23 manual calculator around the corrected rule-sheet matrix
+  before adding more runtime behavior
+- keep monthly-status calculation independent and reusable for future enabled
+  strategies
 - run the first real local FYERS market-data-only ingress session under the new preflight runbook during market hours
 - broaden the broker-backed S23 ingress-only validation set across more normalized archive and replay sessions
 - decide whether TradingEngine option-quote captures can be enriched with reliable OI before using them for ingress-only acceptance

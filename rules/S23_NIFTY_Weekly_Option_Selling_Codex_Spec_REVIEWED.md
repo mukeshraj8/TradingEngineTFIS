@@ -45,7 +45,7 @@ This matrix is the highest-priority rule for S23.
 | Monthly Status Group | Option Side | Trade | Spot Reference | Stoploss Structure Reference | Stoploss Buffer |
 |---|---|---|---|---|---|
 | Bullish / Bullish Confirmed | CE | Sell Call | 3DLL | Previous 2DHH | +7% |
-| Bullish / Bullish Confirmed | PE | Sell Put | 2DLL | Previous 3DHH | +10% |
+| Bullish / Bullish Confirmed | PE | Sell Put | 2DHH | Previous 3DHH | +10% |
 | Bearish / Bearish Confirmed | CE | Sell Call | 2DLL | Previous 3DHH | +10% |
 | Bearish / Bearish Confirmed | PE | Sell Put | 3DHH | Previous 2DHH | +7% |
 
@@ -117,7 +117,7 @@ END -> START
 Reference:
 
 ```text
-REF = 2DLL of Spot
+REF = 2DHH of Spot
 ```
 
 Start Strike:
@@ -296,7 +296,7 @@ Branch-specific entry references:
 | Bullish Group | CE | Previous 3DLL option premium - 7.50% |
 | Bullish Group | PE | Previous 2DLL option premium - 7.50% |
 | Bearish Group | CE | Previous 2DLL option premium - 7.50% |
-| Bearish Group | PE | Previous 3DHH option premium - 7.50% |
+| Bearish Group | PE | Previous 3DLL option premium - 7.50% |
 
 ---
 
@@ -464,7 +464,7 @@ branches:
 
     PE:
       trade: SELL_PUT
-      spot_reference: 2DLL
+      spot_reference: 2DHH
       strike_start:
         basis: spot_reference_minus_5_percent
         rounding: up
@@ -506,7 +506,7 @@ branches:
       strike_end:
         basis: spot_reference_plus_1_strike
         rounding: up
-      entry_reference: previous_3DHH_option_premium
+      entry_reference: previous_3DLL_option_premium
       entry_multiplier: 0.925
       target_multiplier: 0.40
       percent_sl_multiplier: 1.60
@@ -531,9 +531,9 @@ premium_rules:
 At minimum, add tests for these scenarios:
 
 1. Bullish CE uses 3DLL, not 2DLL or 2DHH.
-2. Bullish PE uses 2DLL.
+2. Bullish PE uses 2DHH for strike range and previous 2DLL option premium for entry.
 3. Bearish CE uses 2DLL, not 2DHH.
-4. Bearish PE uses 3DHH.
+4. Bearish PE uses 3DHH for strike range and previous 3DLL option premium for entry.
 5. NIFTY lot size 65 produces minimum OI 32,500 contracts.
 6. Target is ENTRY * 0.40.
 7. Entry is previous reference premium * 0.925.

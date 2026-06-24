@@ -97,13 +97,68 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     (final_dir / "paper_position_state.json").write_text("{}", encoding="utf-8")
     (final_dir / "paper_position_manager_summary.json").write_text("{}", encoding="utf-8")
     (final_dir / "paper_position_state_events.jsonl").write_text("{}\n", encoding="utf-8")
-    (final_dir / "paper_trade_ledger.jsonl").write_text(
+    final_ce_dir = final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    final_ce_dir.mkdir()
+    (final_ce_dir / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "READY",
+                    "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                    "selected_contract_symbol": "NIFTY_20260602_23850_CE",
+                    "selected_contract_option_type": "CALL",
+                    "selected_contract_strike": 23850,
+                    "selected_contract_ltp": 239.0,
+                    "selected_contract_oi": 500000,
+                    "planned_entry_price": 194.25,
+                    "target_price": 77.7,
+                    "stoploss_price": 242.0,
+                },
+                "explanation": {
+                    "contract_candidates": [
+                        {
+                            "status": "SELECTED",
+                            "symbol": "NIFTY_20260602_23850_CE",
+                            "strike": 23850,
+                            "ltp": 239.0,
+                            "oi": 500000,
+                            "premium_distance_to_ideal": 1.25,
+                        },
+                        {
+                            "status": "PASSED",
+                            "symbol": "NIFTY_20260602_23900_CE",
+                            "strike": 23900,
+                            "ltp": 224.0,
+                            "oi": 650000,
+                            "premium_distance_to_ideal": 16.25,
+                        },
+                    ]
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (final_ce_dir / "paper_order_state.json").write_text(
         json.dumps(
             {
                 "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260602_23850_CE",
+                "status": "PAPER_ORDER_FILLED",
+                "order_timestamp": "2026-06-10T09:30:00+05:30",
+                "last_updated_timestamp": "2026-06-10T09:31:00+05:30",
+            }
+        ),
+        encoding="utf-8",
+    )
+    trade_id = "S23-NIFTY_20260602_23800_PE-20260610T093000"
+    trade_rows = [
+        {
+                "artifact_version": 1,
                 "event_timestamp": "2026-06-10T09:30:00+05:30",
                 "event_type": "OPEN",
-                "trade_id": "S23-NIFTY_20260602_23800_PE-20260610T093000",
+                "trade_id": trade_id,
                 "strategy_id": "S23:BEAR_PUT",
                 "strategy_code": "S23",
                 "strategy_branch": "BEAR_PUT",
@@ -125,9 +180,40 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
                 "reason_code": "POSITION_OPENED",
                 "message": "Paper position opened from final decision.",
                 "state_directory": str(final_dir),
-            }
-        )
-        + "\n",
+        },
+        {
+                "artifact_version": 1,
+                "event_timestamp": "2026-06-10T09:31:00+05:30",
+                "event_type": "HOLD",
+                "trade_id": trade_id,
+                "strategy_id": "S23:BEAR_PUT",
+                "strategy_code": "S23",
+                "strategy_branch": "BEAR_PUT",
+                "symbol": "NIFTY",
+                "option_type": "PUT",
+                "selected_contract_symbol": "NIFTY_20260602_23800_PE",
+                "expiry_date": "2026-06-02",
+                "side": "SELL",
+                "lots": 1,
+                "quantity": 65,
+                "entry_date": "2026-06-10",
+                "entry_timestamp": "2026-06-10T09:30:00+05:30",
+                "entry_price": 194.25,
+                "current_price": 188.5,
+                "current_bid": 188.0,
+                "current_ask": 189.0,
+                "target_price": 77.70,
+                "stoploss_price": 242.0,
+                "session_date": "2026-06-10",
+                "lifecycle_status": "PAPER_POSITION_OPEN",
+                "manager_status": "PAPER_POSITION_HELD",
+                "reason_code": "no_exit_threshold_hit",
+                "message": "Latest held state.",
+                "state_directory": str(final_dir),
+        },
+    ]
+    (final_dir / "paper_trade_ledger.jsonl").write_text(
+        "\n".join(json.dumps(row) for row in trade_rows) + "\n",
         encoding="utf-8",
     )
     pending_dir = day_dir / "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
@@ -185,15 +271,51 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "2026-06-10" in strategy_html
     assert "Run Status" in strategy_html
     assert "Final Contract" in strategy_html
+    assert "Final Selected S23 Legs" in strategy_html
+    assert '<details class="session-summary summary-shell explanation-panel">' in strategy_html
+    assert "Expand dry-run steps" in strategy_html
+    assert "Calculation Explanation" in strategy_html
+    assert "Step 1 - Preparation" in strategy_html
+    assert "Step 2 - Monthly status" in strategy_html
+    assert "Step 3 - Collect NIFTY spot data" in strategy_html
+    assert "Step 4 - Check strike factor" in strategy_html
+    assert "Step 5a - Decide the strike range" in strategy_html
+    assert "Step 9 - Calculate trade levels" in strategy_html
+    assert "Eligible Strike OI Comparison" in strategy_html
+    assert "650000" in strategy_html
     assert "NIFTY_20260602_23800_PE" in strategy_html
+    assert "NIFTY_20260602_23850_CE" in strategy_html
+    assert "SELL CE" in strategy_html
     assert "Trades Taken" in strategy_html
     assert "Current" in strategy_html
     assert "239" in strategy_html
     assert "238.50 / 239.50" in strategy_html
-    assert "PAPER_POSITION_OPENED" in strategy_html
+    assert "PAPER_POSITION_HELD" in strategy_html
+    assert strategy_html.count(trade_id) == 1
+    assert "188.50" in strategy_html
+    assert "188 / 189" in strategy_html
     assert "ORDER_WAITING" in strategy_html
     assert "paper_order_state.json" in strategy_html
     assert strategy_html.count("ORDER_WAITING_FOR_TRIGGER") == 1
+    assert '<details class="stage-card snapshot-panel">' in strategy_html
+    assert '<summary class="stage-summary">' in strategy_html
+    assert "S23 Rule Sheet Steps" in strategy_html
+    assert "Step 1" in strategy_html
+    assert "Preparation date/time" in strategy_html
+    assert "Step 2" in strategy_html
+    assert "Monthly status" in strategy_html
+    assert "Step 3" in strategy_html
+    assert "Rule group" in strategy_html
+    assert "Step 4" in strategy_html
+    assert "Strike range" in strategy_html
+    assert "Step 5" in strategy_html
+    assert "Near/next contract search" in strategy_html
+    assert "Step 6" in strategy_html
+    assert "Premium and OI" in strategy_html
+    assert "Step 7" in strategy_html
+    assert "Final weekly option" in strategy_html
+    assert "Step 8" in strategy_html
+    assert "Entry / Target / SL" in strategy_html
     assert "paper_position_state.json" in strategy_html
     assert "paper_position_manager_summary.json" in strategy_html
     assert "paper_trade_ledger.jsonl" in strategy_html
@@ -204,6 +326,12 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Fetch Captured Premium/OI" in manual_calculator_html
     assert "Eligible CE Strikes" in manual_calculator_html
     assert "Eligible PE Strikes" in manual_calculator_html
+    assert "Rule Sheet Steps" in manual_calculator_html
+    assert "Manual Review Value" in manual_calculator_html
+    assert "Final CE Premium / OI" in manual_calculator_html
+    assert 'PE: { trade: "Sell Put", spotRef: "d2hh", entryRef: "opt2dll"' in manual_calculator_html
+    assert 'PE: { trade: "Sell Put", spotRef: "d3hh", entryRef: "opt3dll"' in manual_calculator_html
+    assert "optionSide" not in manual_calculator_html
     assert "<th>Side</th><th>Trade</th>" in manual_calculator_html
     assert "CE final calculation" in manual_calculator_html
     assert "PE final calculation" in manual_calculator_html
@@ -212,6 +340,10 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "PMH" in monthly_calculator_html
     assert "CWH" in monthly_calculator_html
     assert manifest["strategies"][0]["sessions"][0]["final_decision_status"] == "READY"
+    assert manifest["strategies"][0]["sessions"][0]["final_selected_contract_symbols"] == [
+        "NIFTY_20260602_23850_CE",
+        "NIFTY_20260602_23800_PE",
+    ]
     assert "monthly_status_index" in manifest["review_data"]
     assert "strategy_S23_index" in manifest["review_data"]
     monthly_index = json.loads(result.review_data_pages["monthly_status_index"].read_text(encoding="utf-8"))

@@ -101,11 +101,15 @@ def main(argv: list[str] | None = None) -> int:
         else datetime.now(timezone).date()
     )
     until_time = _parse_hhmm(args.until)
-    state_dir = _resolve_state_dir(
-        state_dir=args.state_dir,
-        search_roots=tuple(args.state_search_root or ()),
-        default_artifact_root=Path("tmp/s23_fyers_morning_supervised_decision"),
-        no_open_ok=True,
+    state_dir = (
+        None
+        if args.order_dir and not args.state_dir
+        else _resolve_state_dir(
+            state_dir=args.state_dir,
+            search_roots=tuple(args.state_search_root or ()),
+            default_artifact_root=Path("tmp/s23_fyers_morning_supervised_decision"),
+            no_open_ok=True,
+        )
     )
     order_dir = None
     order_state = None

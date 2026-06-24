@@ -6,9 +6,10 @@ change in a meaningful way.
 
 ## Current Focus
 
-- keep live S23 decisioning inside TFIS by broadening TFIS-native snapshot,
-  checkpoint, monthly-status, and contract-selection evidence before adding any
-  continuous socket/session orchestrator
+- correct S23 around the latest rule-sheet process while preserving the TFIS
+  broker-agnostic, multi-strategy architecture contract
+- keep monthly status independent and reusable before rewriting strategy
+  decision/dashboard flow around enabled strategy modules
 
 ## Implemented Systems
 
@@ -72,6 +73,28 @@ change in a meaningful way.
   cross-checks
 - read-only TradingEngine capture-session audit and market-event adapter prototype for S23 dry runs
 - TradingEngine capture plus TFIS prelude ingress-only dry-run suite for S23
+- corrected S23 weekly option selling contract documented under
+  `docs/architecture/s23_weekly_option_selling_engine_contract.md`
+- corrected S23 four-leg rule matrix implemented under
+  `src/tfis/rules/s23_rule_matrix.py` and cross-checked against strategy
+  folders by unit tests
+- S23 operator dashboard and manual calculator now show the corrected
+  rule-sheet step process, including preparation date, monthly-status rule
+  group, CE/PE strike search, final strike/premium/OI, and entry/target/SL
+- S23 latest-session dashboard summary and manifest now expose plural final
+  contracts for two-leg sessions while keeping the legacy single-contract field
+  for compatibility
+- S23 latest-session dashboard now includes a visible calculation explanation
+  section that renders Step 1-8 reasoning from the final decision artifacts,
+  including monthly-status mapping, CE/PE strike ranges, qualification outcome,
+  formula traces, final selections, entry, target, SL, and order status
+- S23 runtime derivation/prelude now fail closed if a loaded strategy rule does
+  not match the corrected rule matrix
+- `scripts/validate_s23_rule_matrix.py` validates configured S23 strategy
+  folders against the corrected matrix
+- S23 live session dashboard stage cards now include a rule-sheet step panel
+  showing preparation snapshot, monthly status, rule group, strike range,
+  near/next search, premium/OI, final weekly option, and entry/target/SL
 
 ## Current Architecture Flow
 
@@ -137,6 +160,17 @@ Current supervised live decision path:
 -> `S23PaperLivePreludeBuilder`
 -> `S23PaperLiveDecisionBuilder`
 -> `trade_decision_summary.json` / `trade_decision_summary.md`
+
+Corrected target architecture for monthly-status strategies:
+
+`StrategyRegistry`
+-> enabled strategy modules
+-> independent `MonthlyStatusService`
+-> strategy-specific rule matrix (`src/tfis/rules/s23_rule_matrix.py` for S23)
+-> normalized broker/data adapter inputs
+-> auditable near/next contract qualification
+-> waiting paper orders
+-> durable ledger and dashboard review
 
 Current TradingEngine capture ingress path:
 

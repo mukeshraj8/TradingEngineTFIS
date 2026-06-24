@@ -48,6 +48,15 @@
 - Runtime consumes normalized YAML/JSON, not raw spreadsheets.
 - Strategy rules stay explicit, typed, and testable.
 - Formula behavior must fail closed on unsupported syntax.
+- Monthly-status based strategies must be implemented as:
+  monthly-status calculation -> strategy rule group -> independent leg
+  qualification -> orders/no-trade reasons.
+- S23 must follow
+  `docs/architecture/s23_weekly_option_selling_engine_contract.md`; do not
+  substitute older inferred branch mappings.
+- Strategy enablement must come from configuration/registry.
+- Generic engine, storage, paper lifecycle, and dashboard infrastructure must
+  not hardcode S23 or FYERS behavior.
 
 ## Safety Rules
 

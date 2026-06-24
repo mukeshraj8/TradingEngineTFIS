@@ -24,10 +24,10 @@ sample_calculation:
   runtime_values:
     ENTRY: 200
   expected:
-    start_strike: 21470
-    end_strike: 22601
+    start_strike: 21500
+    end_strike: 22650
     ideal_premium: 271.2
     minimum_premium: 203.4
     entry_price: 203.5
-    target_price: 80
-    stoploss_price: 320
+    target_price: 81.4
+    stoploss_price: 321

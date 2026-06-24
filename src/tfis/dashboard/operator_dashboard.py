@@ -956,8 +956,16 @@ class TfisOperatorDashboardBuilder:
         page_path: Path,
     ) -> str:
         latest = sessions[0] if sessions else None
-        latest_block = self._render_latest_session_block(latest=latest, page_path=page_path) if latest else "<p>No session artifacts found yet.</p>"
         trade_rows = self._collect_trade_ledger_rows(config)
+        latest_block = (
+            self._render_latest_session_block(
+                latest=latest,
+                trade_rows=trade_rows,
+                page_path=page_path,
+            )
+            if latest
+            else "<p>No session artifacts found yet.</p>"
+        )
         trades_block = self._render_trade_ledger_section(rows=trade_rows, page_path=page_path)
         history_rows = "\n".join(self._render_session_history_row(session, page_path=page_path) for session in sessions) or "<tr><td colspan=\"5\">No sessions found.</td></tr>"
         body = "\n".join(
@@ -1156,7 +1164,11 @@ class TfisOperatorDashboardBuilder:
         latest_by_trade: dict[str, DashboardTradeLedgerRow] = {}
         for row in reversed(rows):
             latest_by_trade[row.trade_id] = row
-        latest_rows = list(latest_by_trade.values())
+        latest_rows = sorted(
+            latest_by_trade.values(),
+            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+            reverse=True,
+        )
         open_count = sum(
             1
             for row in latest_rows
@@ -1177,7 +1189,9 @@ class TfisOperatorDashboardBuilder:
                 "</div>",
             ]
         )
-        event_rows = "\n".join(self._render_trade_ledger_row(row, page_path=page_path) for row in rows[:80])
+        event_rows = "\n".join(
+            self._render_trade_ledger_row(row, page_path=page_path) for row in latest_rows[:80]
+        )
         return "\n".join(
             [
                 header,
@@ -1228,9 +1242,16 @@ class TfisOperatorDashboardBuilder:
             ]
         )
 
-    def _render_latest_session_block(self, *, latest: DashboardSessionSummary, page_path: Path) -> str:
+    def _render_latest_session_block(
+        self,
+        *,
+        latest: DashboardSessionSummary,
+        trade_rows: list[DashboardTradeLedgerRow],
+        page_path: Path,
+    ) -> str:
         stage_cards = "\n".join(self._render_stage_card(stage, page_path=page_path) for stage in latest.stages)
         artifact_links = self._render_links(latest.raw_artifact_links, page_path=page_path)
+        final_contracts = self._final_contract_display(latest=latest, trade_rows=trade_rows)
         return "\n".join(
             [
                 '<div class="session-summary summary-shell">',
@@ -1238,26 +1259,420 @@ class TfisOperatorDashboardBuilder:
                 self._summary_metric("Session Date", latest.session_date.isoformat()),
                 self._summary_metric("Run Status", self._badge(latest.session_status)),
                 self._summary_metric("Final Monthly Status", self._badge(latest.final_monthly_status or "n/a")),
-                self._summary_metric("Final Contract", latest.final_selected_contract_symbol or "n/a"),
+                self._summary_metric("Final Contract", final_contracts),
                 self._summary_metric("Stage Coverage", " / ".join(stage.stage_time for stage in latest.stages) or "n/a"),
                 self._summary_metric("Stage Count", str(len(latest.stages))),
                 "</div>",
                 f"<div class=\"artifact-links top-links\">{artifact_links}</div>",
                 "</div>",
+                self._render_final_leg_panel(latest),
+                self._render_final_explanation_panel(latest),
                 "<div class=\"stage-grid\">",
                 stage_cards or "<p>No stage artifacts found.</p>",
                 "</div>",
             ]
         )
 
+    def _render_final_leg_panel(self, latest: DashboardSessionSummary) -> str:
+        legs = self._session_final_leg_rows(latest)
+        if not legs:
+            return ""
+        rows = "\n".join(
+            "".join(
+                [
+                    "<tr>",
+                    f"<td class=\"text-cell code-cell\">{html.escape(str(item['branch']))}</td>",
+                    f"<td class=\"text-cell contract-cell\"><strong>{html.escape(str(item['contract']))}</strong></td>",
+                    f"<td class=\"text-cell side-cell\">{html.escape(str(item['side']))}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item['strike'])}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item['premium'])}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item['oi'], integer=True)}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item['entry'])}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item['target'])}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item['stoploss'])}</td>",
+                    f"<td class=\"status-cell\">{self._badge(self._normalize_trade_status_label(str(item['order_status'] or 'n/a')) or 'n/a')}</td>",
+                    "</tr>",
+                ]
+            )
+            for item in legs
+        )
+        return "\n".join(
+            [
+                '<div class="session-summary summary-shell final-leg-panel">',
+                '<div class="section-heading"><h3>Final Selected S23 Legs</h3><span>Final CE/PE decisions from the 09:30 run</span></div>',
+                '<table class="candidate-table final-leg-table">',
+                "<thead><tr><th class=\"text-cell\">Branch</th><th class=\"text-cell\">Contract</th><th class=\"text-cell\">Side</th><th class=\"number-cell\">Strike</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Entry</th><th class=\"number-cell\">Target</th><th class=\"number-cell\">SL</th><th class=\"status-cell\">Order Status</th></tr></thead>",
+                f"<tbody>{rows}</tbody>",
+                "</table>",
+                "</div>",
+            ]
+        )
+
+    def _render_final_explanation_panel(self, latest: DashboardSessionSummary) -> str:
+        legs = self._session_final_leg_rows(latest)
+        if not legs:
+            return ""
+        monthly = legs[0].get("monthly") if legs else {}
+        monthly_block = ""
+        if isinstance(monthly, dict) and monthly:
+            status_text = str(monthly.get("status") or "n/a")
+            if status_text.upper().startswith("BULL"):
+                group_text = "bullish S23 group, so TFIS evaluates Bull Call Sell and Bull Put Sell independently"
+            elif status_text.upper().startswith("BEAR"):
+                group_text = "bearish S23 group, so TFIS evaluates Bear Call Sell and Bear Put Sell independently"
+            else:
+                group_text = "no valid S23 trading group because monthly status is not resolved"
+            monthly_block = "\n".join(
+                [
+                    '<div class="focus-panel">',
+                    '<ol class="explanation-list">',
+                    f"<li><strong>Step 1 - Preparation.</strong> Session date is {html.escape(latest.session_date.isoformat())}; final decision uses the completed 09:30 RC snapshot.</li>",
+                    f"<li><strong>Step 2 - Monthly status.</strong> Status is {html.escape(status_text)} via {html.escape(str(monthly.get('trigger_name') or 'n/a'))}. Current price used was {self._fmt_number(monthly.get('current_price'))}. {html.escape(str(monthly.get('resolution_reason') or ''))}</li>",
+                    f"<li><strong>Step 3 - Rule group.</strong> {html.escape(status_text)} maps to the {html.escape(group_text)}.</li>",
+                    "</ol>",
+                    "</div>",
+                ]
+            )
+        else:
+            status_text = latest.final_monthly_status or "n/a"
+            if str(status_text).upper().startswith("BULL"):
+                group_text = "bullish S23 group, so TFIS evaluates Bull Call Sell and Bull Put Sell independently"
+            elif str(status_text).upper().startswith("BEAR"):
+                group_text = "bearish S23 group, so TFIS evaluates Bear Call Sell and Bear Put Sell independently"
+            else:
+                group_text = "no valid S23 trading group because monthly status is not resolved"
+            monthly_block = "\n".join(
+                [
+                    '<div class="focus-panel">',
+                    '<ol class="explanation-list">',
+                    f"<li><strong>Step 1 - Preparation.</strong> Session date is {html.escape(latest.session_date.isoformat())}; final decision uses the completed 09:30 RC snapshot when available.</li>",
+                    f"<li><strong>Step 2 - Monthly status.</strong> Status is {html.escape(str(status_text))}. Detailed monthly trace was not present in this summary artifact.</li>",
+                    f"<li><strong>Step 3 - Rule group.</strong> {html.escape(str(status_text))} maps to the {html.escape(group_text)}.</li>",
+                    "</ol>",
+                    "</div>",
+                ]
+            )
+        leg_blocks = "\n".join(self._render_leg_explanation_card(leg) for leg in legs)
+        return "\n".join(
+            [
+                '<details class="session-summary summary-shell explanation-panel">',
+                '<summary class="explanation-summary"><span>Calculation Explanation</span><small>Expand dry-run steps</small></summary>',
+                monthly_block,
+                '<div class="leg-explanation-grid">',
+                leg_blocks,
+                "</div>",
+                "</details>",
+            ]
+        )
+
+    def _render_leg_explanation_card(self, leg: dict[str, Any]) -> str:
+        formula_rows = ""
+        formulas = leg.get("formula_evaluation")
+        if isinstance(formulas, list):
+            formula_rows = "\n".join(
+                "".join(
+                    [
+                        "<tr>",
+                        f"<td>{html.escape(str(item.get('name') or 'n/a'))}</td>",
+                        f"<td>{html.escape(str(item.get('resolved_formula') or item.get('formula') or 'n/a'))}</td>",
+                        f"<td>{self._fmt_number(item.get('result'))}</td>",
+                        "</tr>",
+                    ]
+                )
+                for item in formulas
+                if isinstance(item, dict)
+            )
+        formula_table = (
+            "\n".join(
+                [
+                    '<table class="candidate-table explanation-table">',
+                    "<thead><tr><th>Calculated Item</th><th>Resolved Formula</th><th>Result</th></tr></thead>",
+                    f"<tbody>{formula_rows}</tbody>",
+                    "</table>",
+                ]
+            )
+            if formula_rows
+            else "<p>No formula trace found.</p>"
+        )
+        eligible_table = self._render_eligible_strike_comparison_table(leg)
+        rejected = leg.get("rejected_counts")
+        rejected_text = "n/a"
+        if isinstance(rejected, dict) and rejected:
+            rejected_text = ", ".join(
+                f"{str(key).replace('_', ' ')}: {self._fmt_number(value, integer=True)}"
+                for key, value in sorted(rejected.items())
+            )
+        ranked = leg.get("ranked_candidates")
+        ranked_text = "n/a"
+        if isinstance(ranked, list) and ranked:
+            first = ranked[0]
+            if isinstance(first, dict):
+                ranked_text = (
+                    f"Rank 1: {first.get('symbol', 'n/a')} at strike {self._fmt_number(first.get('strike'))}, "
+                    f"premium {self._fmt_number(first.get('premium'))}, OI {self._fmt_number(first.get('oi'), integer=True)}, "
+                    f"distance from ideal {self._fmt_number(first.get('premium_distance'))}."
+                )
+        dry_run_steps = self._s23_leg_dry_run_steps(leg)
+        return "\n".join(
+            [
+                '<article class="leg-explanation-card">',
+                f"<h3>{html.escape(str(leg['side']))}: {html.escape(str(leg['contract']))}</h3>",
+                '<ol class="explanation-list">',
+                *(f"<li>{step}</li>" for step in dry_run_steps),
+                f"<li><strong>Search outcome.</strong> {html.escape(str(leg.get('selection_reason') or 'n/a'))} Rejections checked before selection: {html.escape(rejected_text)}.</li>",
+                f"<li><strong>Final decision.</strong> {html.escape(ranked_text)}</li>",
+                "</ol>",
+                eligible_table,
+                formula_table,
+                "</article>",
+            ]
+        )
+
+    def _render_eligible_strike_comparison_table(self, leg: dict[str, Any]) -> str:
+        candidates = leg.get("contract_candidates")
+        if not isinstance(candidates, list):
+            candidates = []
+        rows: list[dict[str, Any]] = []
+        for item in candidates:
+            if not isinstance(item, dict):
+                continue
+            status = str(item.get("status") or "").upper()
+            if status not in {"SELECTED", "PASSED", "PASS"}:
+                continue
+            rows.append(item)
+        if not rows:
+            ranked = leg.get("ranked_candidates")
+            if isinstance(ranked, list):
+                rows = [item for item in ranked if isinstance(item, dict)]
+        if not rows:
+            return ""
+        body = "\n".join(
+            "".join(
+                [
+                    "<tr>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item.get('strike'))}</td>",
+                    f"<td class=\"text-cell contract-cell\"><strong>{html.escape(str(item.get('symbol') or 'n/a'))}</strong></td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item.get('ltp', item.get('premium')))}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item.get('oi'), integer=True)}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item.get('premium_distance_to_ideal', item.get('premium_distance')))}</td>",
+                    f"<td class=\"status-cell\">{self._badge(str(item.get('status') or ('RANK_' + str(item.get('rank_position') or ''))))}</td>",
+                    "</tr>",
+                ]
+            )
+            for item in rows
+        )
+        return "\n".join(
+            [
+                '<div class="eligible-strike-panel">',
+                "<h4>Eligible Strike OI Comparison</h4>",
+                '<table class="candidate-table eligible-strike-table">',
+                "<thead><tr><th class=\"number-cell\">Strike</th><th class=\"text-cell\">Contract</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Distance From Ideal</th><th class=\"status-cell\">Status</th></tr></thead>",
+                f"<tbody>{body}</tbody>",
+                "</table>",
+                "</div>",
+            ]
+        )
+
+    def _s23_leg_dry_run_steps(self, leg: dict[str, Any]) -> list[str]:
+        formula_by_name: dict[str, dict[str, Any]] = {}
+        formulas = leg.get("formula_evaluation")
+        if isinstance(formulas, list):
+            for item in formulas:
+                if isinstance(item, dict) and item.get("name"):
+                    formula_by_name[str(item["name"])] = item
+        side = str(leg.get("side") or "")
+        branch = str(leg.get("branch") or "")
+        is_pe = "PE" in side or "PUT" in branch.upper()
+        start = formula_by_name.get("start_strike", {})
+        end = formula_by_name.get("end_strike", {})
+        ideal = formula_by_name.get("ideal_premium", {})
+        minimum = formula_by_name.get("minimum_premium", {})
+        entry = formula_by_name.get("entry", {})
+        target = formula_by_name.get("target", {})
+        stoploss = formula_by_name.get("stoploss", {})
+        spot_alias = self._spot_reference_alias_for_s23_leg(leg)
+        spot_alias_label = self._s23_spot_alias_label(spot_alias)
+        spot_ref_value = self._s23_reference_value(leg.get("market_refs"), spot_alias)
+        monthly_status = self._s23_leg_monthly_status(leg)
+        strike_step = self._s23_strike_step_from_formula(end) or 50.0
+        direction_text = (
+            "For PE selling, TFIS starts below the spot reference using the 5% buffer, then searches upward toward the reference."
+            if is_pe
+            else "For CE selling, TFIS starts above the spot reference using the 5% buffer, then searches downward toward the reference."
+        )
+        search_text = (
+            f"from {self._fmt_number(leg.get('start_strike'))} up to {self._fmt_number(leg.get('end_strike'))}"
+            if is_pe
+            else f"from {self._fmt_number(leg.get('start_strike'))} down to {self._fmt_number(leg.get('end_strike'))}"
+        )
+        entry_status = self._normalize_trade_status_label(str(leg.get("order_status") or "n/a")) or "n/a"
+        return [
+            (
+                f"<strong>Step 3 - Collect NIFTY spot data.</strong> Monthly status is {html.escape(monthly_status)}, "
+                f"so this {html.escape(side)} rule needs <strong>{html.escape(spot_alias_label)}</strong>. "
+                f"Captured {html.escape(spot_alias)} = {self._fmt_number(spot_ref_value)}."
+            ),
+            (
+                f"<strong>Step 4 - Check strike factor.</strong> NIFTY option strike factor is {self._fmt_number(strike_step, integer=True)}. "
+                f"TFIS rounds the spot reference to this strike grid before calculating start and end strikes."
+            ),
+            (
+                f"<strong>Step 5a - Decide the strike range.</strong> {html.escape(direction_text)} "
+                f"The rule produced start strike {self._fmt_number(leg.get('start_strike'))} using "
+                f"<code>{html.escape(str(start.get('resolved_formula') or 'n/a'))}</code> and end strike "
+                f"{self._fmt_number(leg.get('end_strike'))} using <code>{html.escape(str(end.get('resolved_formula') or 'n/a'))}</code>."
+            ),
+            (
+                f"<strong>Step 6 - Calculate premium and OI filters.</strong> Ideal premium is {html.escape(spot_alias_label)} * 1.20%: "
+                f"<code>{html.escape(str(ideal.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('ideal_premium'))}. "
+                f"Minimum acceptable premium is {html.escape(spot_alias_label)} * 0.90%: "
+                f"<code>{html.escape(str(minimum.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('minimum_premium'))}. "
+                f"Minimum OI is {self._fmt_number(leg.get('minimum_oi'), integer=True)} contracts."
+            ),
+            (
+                f"<strong>Step 7 - Search eligible strikes.</strong> TFIS scans the option chain "
+                f"{search_text}. "
+                f"A strike must have enough OI, meet the premium rule, and be the correct option side."
+            ),
+            (
+                f"<strong>Step 8 - Select final strike.</strong> The selected contract is {html.escape(str(leg.get('contract') or 'n/a'))}: "
+                f"strike {self._fmt_number(leg.get('strike'))}, premium {self._fmt_number(leg.get('premium'))}, "
+                f"OI {self._fmt_number(leg.get('oi'), integer=True)}."
+            ),
+            (
+                f"<strong>Step 9 - Calculate trade levels.</strong> Entry uses <code>{html.escape(str(entry.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('entry'))}; "
+                f"target uses <code>{html.escape(str(target.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('target'))}; "
+                f"SL uses <code>{html.escape(str(stoploss.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('stoploss'))}. "
+                f"Order status is {html.escape(entry_status)}."
+            ),
+        ]
+
+    def _spot_reference_alias_for_s23_leg(self, leg: dict[str, Any]) -> str:
+        aliases = leg.get("required_market_aliases")
+        if isinstance(aliases, list) and aliases:
+            return str(aliases[0])
+        branch = str(leg.get("branch") or "").upper()
+        side = str(leg.get("side") or "").upper()
+        monthly = self._s23_leg_monthly_status(leg).upper()
+        if monthly.startswith("BEAR") and ("CALL" in branch or "CE" in side):
+            return "PRV_2DLL"
+        if monthly.startswith("BEAR") and ("PUT" in branch or "PE" in side):
+            return "PRV_3DHH"
+        if monthly.startswith("BULL") and ("CALL" in branch or "CE" in side):
+            return "PRV_3DLL"
+        if monthly.startswith("BULL") and ("PUT" in branch or "PE" in side):
+            return "PRV_2DHH"
+        return "spot reference"
+
+    @staticmethod
+    def _s23_spot_alias_label(alias: str) -> str:
+        cleaned = str(alias or "").replace("PRV_", "")
+        mapping = {
+            "2DLL": "2DLL of NIFTY spot",
+            "2DHH": "2DHH of NIFTY spot",
+            "3DLL": "3DLL of NIFTY spot",
+            "3DHH": "3DHH of NIFTY spot",
+        }
+        return mapping.get(cleaned, cleaned or "NIFTY spot reference")
+
+    def _s23_reference_value(self, refs: Any, alias: str) -> float | None:
+        if not isinstance(refs, dict):
+            return None
+        raw = refs.get(alias)
+        if isinstance(raw, dict):
+            return self._float_or_none(raw.get("value"))
+        return self._float_or_none(raw)
+
+    def _s23_leg_monthly_status(self, leg: dict[str, Any]) -> str:
+        monthly = leg.get("monthly")
+        if isinstance(monthly, dict) and monthly.get("status"):
+            return str(monthly["status"])
+        return "n/a"
+
+    def _s23_strike_step_from_formula(self, formula: dict[str, Any]) -> float | None:
+        text = str(formula.get("resolved_formula") or "")
+        match = re.search(r"([+-])\s*(\d+(?:\.\d+)?)\s*$", text)
+        if not match:
+            return None
+        return self._float_or_none(match.group(2))
+
+    def _session_final_leg_rows(self, session: DashboardSessionSummary) -> tuple[dict[str, Any], ...]:
+        session_dir = session.session_directory
+        if session_dir is None or not session_dir.exists():
+            return ()
+        rows: list[dict[str, Any]] = []
+        for summary_path in sorted(session_dir.rglob("trade_decision_summary.json")):
+            try:
+                raw_summary = self._read_json(summary_path)
+            except (OSError, json.JSONDecodeError):
+                continue
+            summary = raw_summary.get("summary", raw_summary) if isinstance(raw_summary, dict) else {}
+            if not isinstance(summary, dict):
+                continue
+            contract = str(summary.get("selected_contract_symbol") or "")
+            if not contract or contract == "n/a":
+                continue
+            explanation = raw_summary.get("explanation", {}) if isinstance(raw_summary, dict) else {}
+            if not isinstance(explanation, dict):
+                explanation = {}
+            request = explanation.get("contract_selection_request", {})
+            if not isinstance(request, dict):
+                request = {}
+            thresholds = explanation.get("contract_selection_thresholds", {})
+            if not isinstance(thresholds, dict):
+                thresholds = {}
+            order_status = None
+            order_path = summary_path.parent / "paper_order_state.json"
+            if order_path.exists():
+                try:
+                    raw_order = self._read_json(order_path)
+                except (OSError, json.JSONDecodeError):
+                    raw_order = {}
+                if isinstance(raw_order, dict):
+                    order_status = raw_order.get("status")
+            option_type = str(summary.get("selected_contract_option_type") or "").upper()
+            side = "SELL PE" if option_type in {"PE", "PUT"} else "SELL CE" if option_type in {"CE", "CALL"} else "SELL"
+            rows.append(
+                {
+                    "branch": summary.get("strategy_branch") or summary_path.parent.name,
+                    "contract": contract,
+                    "side": side,
+                    "strike": self._float_or_none(summary.get("selected_contract_strike")),
+                    "premium": self._float_or_none(summary.get("selected_contract_ltp")),
+                    "oi": self._float_or_none(summary.get("selected_contract_oi")),
+                    "entry": self._float_or_none(summary.get("planned_entry_price")),
+                    "target": self._float_or_none(summary.get("target_price")),
+                    "stoploss": self._float_or_none(summary.get("stoploss_price")),
+                    "order_status": order_status or summary.get("status"),
+                    "start_strike": self._float_or_none(request.get("start_strike")),
+                    "end_strike": self._float_or_none(request.get("end_strike")),
+                    "ideal_premium": self._float_or_none(request.get("ideal_premium")),
+                    "minimum_premium": self._float_or_none(request.get("minimum_premium")),
+                    "minimum_oi": self._float_or_none(thresholds.get("minimum_oi")),
+                    "selection_reason": summary.get("contract_selection_reason"),
+                    "required_market_aliases": summary.get("required_market_aliases"),
+                    "ranked_candidates": summary.get("ranked_candidates"),
+                    "rejected_counts": summary.get("rejected_candidate_counts"),
+                    "contract_candidates": explanation.get("contract_candidates"),
+                    "formula_evaluation": explanation.get("formula_evaluation"),
+                    "market_refs": explanation.get("market_reference_values"),
+                    "option_refs": explanation.get("option_reference_values"),
+                    "monthly": explanation.get("monthly_status"),
+                }
+            )
+        return tuple(rows)
+
     def _render_stage_card(self, stage: DashboardStageSummary, *, page_path: Path) -> str:
         return "\n".join(
             [
-                '<article class="stage-card">',
+                '<details class="stage-card snapshot-panel">',
+                '<summary class="stage-summary">',
                 '<div class="stage-topline">',
                 f"<div><div class=\"eyebrow\">{html.escape(stage.stage_time)}</div><h3>{html.escape(stage.stage_name)}</h3></div>",
                 f"<div class=\"badge-row\">{self._badge(stage.snapshot_status)} {self._badge(stage.monthly_status or 'n/a')}</div>",
                 "</div>",
+                "</summary>",
+                '<div class="stage-detail">',
                 '<div class="stage-metrics">',
                 self._summary_metric("Checkpoints", ", ".join(stage.available_checkpoints) or "none"),
                 self._summary_metric("Price Used", self._fmt_number(stage.monthly_status_price_used)),
@@ -1270,6 +1685,7 @@ class TfisOperatorDashboardBuilder:
                 f"<p><strong>Trigger</strong><br>{html.escape(stage.monthly_status_trigger or 'n/a')}</p>",
                 f"<p><strong>Resolution Reason</strong><br>{html.escape(stage.monthly_status_reason or 'n/a')}</p>",
                 "</div>",
+                self._render_s23_rule_step_panel(stage),
                 '<div class="decision-strip">',
                 self._summary_metric("Selected Contract", stage.selected_contract_symbol or "n/a"),
                 self._summary_metric("Entry", self._fmt_number(stage.planned_entry_price)),
@@ -1279,16 +1695,173 @@ class TfisOperatorDashboardBuilder:
                 self._render_stage_formula_panel(stage),
                 self._render_stage_candidate_panel(stage),
                 f"<div class=\"artifact-links\">{self._render_links(stage.raw_artifact_links, page_path=page_path)}</div>",
-                "</article>",
+                "</div>",
+                "</details>",
             ]
         )
 
+    def _final_contract_display(
+        self,
+        *,
+        latest: DashboardSessionSummary,
+        trade_rows: list[DashboardTradeLedgerRow],
+    ) -> str:
+        contracts: list[str] = []
+        for symbol in self._session_final_contract_symbols(latest):
+            if symbol not in contracts:
+                contracts.append(symbol)
+        session_dir = latest.session_directory.resolve() if latest.session_directory is not None else None
+        if not contracts and session_dir is not None:
+            for row in trade_rows:
+                if row.state_directory is None:
+                    continue
+                try:
+                    state_dir = row.state_directory.resolve()
+                except OSError:
+                    continue
+                if not self._is_relative_to(state_dir, session_dir):
+                    continue
+                symbol = row.selected_contract_symbol
+                if symbol and symbol != "n/a" and symbol not in contracts:
+                    contracts.append(symbol)
+        if not contracts and latest.final_selected_contract_symbol:
+            contracts.append(latest.final_selected_contract_symbol)
+        if not contracts:
+            return "n/a"
+        return "<br>".join(html.escape(symbol) for symbol in contracts)
+
+    def _session_final_contract_symbols(self, session: DashboardSessionSummary) -> tuple[str, ...]:
+        contracts: list[str] = []
+        session_dir = session.session_directory
+        if session_dir is not None and session_dir.exists():
+            for order_path in sorted(session_dir.rglob("paper_order_state.json")):
+                try:
+                    raw = self._read_json(order_path)
+                except (OSError, json.JSONDecodeError):
+                    continue
+                symbol = str(raw.get("selected_contract_symbol") or "")
+                if symbol and symbol != "n/a" and symbol not in contracts:
+                    contracts.append(symbol)
+            for summary_path in sorted(session_dir.rglob("trade_decision_summary.json")):
+                try:
+                    raw = self._read_json(summary_path)
+                except (OSError, json.JSONDecodeError):
+                    continue
+                view = raw.get("summary", raw) if isinstance(raw, dict) else {}
+                if not isinstance(view, dict):
+                    continue
+                symbol = str(view.get("selected_contract_symbol") or "")
+                if symbol and symbol != "n/a" and symbol not in contracts:
+                    contracts.append(symbol)
+        if not contracts and session.final_selected_contract_symbol:
+            contracts.append(session.final_selected_contract_symbol)
+        return tuple(contracts)
+
+    def _render_s23_rule_step_panel(self, stage: DashboardStageSummary) -> str:
+        selected_candidate = next(
+            (
+                item
+                for item in stage.candidate_rows
+                if str(item.get("status") or "").upper() == "SELECTED"
+            ),
+            None,
+        )
+        selected_side = (
+            str(selected_candidate.get("option_type") or "n/a")
+            if selected_candidate is not None
+            else "n/a"
+        )
+        selected_strike = (
+            self._fmt_number(selected_candidate.get("strike"))
+            if selected_candidate is not None
+            else "n/a"
+        )
+        selected_premium = (
+            self._fmt_number(selected_candidate.get("premium"))
+            if selected_candidate is not None
+            else "n/a"
+        )
+        selected_oi = (
+            self._fmt_number(selected_candidate.get("oi"), integer=True)
+            if selected_candidate is not None
+            else "n/a"
+        )
+        status_group = self._monthly_status_group(stage.monthly_status)
+        final_decision = (
+            f"{html.escape(stage.selected_contract_symbol)} at strike {selected_strike}"
+            if stage.selected_contract_symbol
+            else "No final contract selected"
+        )
+        if stage.decision_failure_code:
+            final_decision = f"No order: {stage.decision_failure_code}"
+        step_rows = [
+            ("Step 1", "Preparation date/time", f"{html.escape(stage.stage_time)} snapshot"),
+            (
+                "Step 2",
+                "Monthly status",
+                f"{self._badge(stage.monthly_status or 'n/a')} {html.escape(stage.monthly_status_trigger or '')}",
+            ),
+            ("Step 3", "Rule group", html.escape(status_group)),
+            (
+                "Step 4",
+                "Strike range",
+                f"{self._stage_formula_result(stage, 'start_strike')} to {self._stage_formula_result(stage, 'end_strike')}",
+            ),
+            (
+                "Step 5",
+                "Near/next contract search",
+                f"{len(stage.candidate_rows)} candidates reviewed; selected side {html.escape(selected_side)}",
+            ),
+            (
+                "Step 6",
+                "Premium and OI",
+                f"premium {selected_premium}, OI {selected_oi}",
+            ),
+            ("Step 7", "Final weekly option", final_decision),
+            (
+                "Step 8",
+                "Entry / Target / SL",
+                f"{self._fmt_number(stage.planned_entry_price)} / {self._fmt_number(stage.target_price)} / {self._fmt_number(stage.stoploss_price)}",
+            ),
+        ]
+        rows = "\n".join(
+            "<tr>"
+            f"<td>{html.escape(step)}</td>"
+            f"<td>{html.escape(label)}</td>"
+            f"<td>{value}</td>"
+            "</tr>"
+            for step, label, value in step_rows
+        )
+        return "\n".join(
+            [
+                '<div class="rule-step-panel">',
+                "<h4>S23 Rule Sheet Steps</h4>",
+                '<table class="candidate-table rule-step-table">',
+                "<thead><tr><th>Step</th><th>Rule Sheet Item</th><th>Dashboard Value</th></tr></thead>",
+                f"<tbody>{rows}</tbody>",
+                "</table>",
+                "</div>",
+            ]
+        )
+
+    def _stage_formula_result(self, stage: DashboardStageSummary, name: str) -> str:
+        item = stage.formula_values.get(name)
+        if not isinstance(item, dict):
+            return "n/a"
+        return self._fmt_number(item.get("result"))
+
+    @staticmethod
+    def _monthly_status_group(status: str | None) -> str:
+        normalized = (status or "").strip().upper()
+        if normalized in {"BULL", "BULL_CF", "BULLISH", "BULLISH_CONFIRMED"}:
+            return "Bullish group: evaluate CE Sell Call and PE Sell Put"
+        if normalized in {"BEAR", "BEAR_CF", "BEARISH", "BEARISH_CONFIRMED"}:
+            return "Bearish group: evaluate CE Sell Call and PE Sell Put"
+        return "Unknown group: no S23 rule group selected"
+
     def _render_stage_formula_panel(self, stage: DashboardStageSummary) -> str:
         def result(name: str) -> str:
-            item = stage.formula_values.get(name)
-            if not isinstance(item, dict):
-                return "n/a"
-            return self._fmt_number(item.get("result"))
+            return self._stage_formula_result(stage, name)
 
         selected_candidate = next(
             (
@@ -1815,7 +2388,6 @@ initInstrumentRegistry().then(() => calculateMonthlyStatus()).catch(() => calcul
     <div id="s23-calculator-form">
       <div class="form-grid">
         <label>Monthly Group<select id="monthlyGroup"><option value="bullish">Bullish / Bullish Confirmed</option><option value="bearish">Bearish / Bearish Confirmed</option></select></label>
-        <label>Option Side<select id="optionSide"><option value="CE">CE Sell Call</option><option value="PE">PE Sell Put</option></select></label>
         <label>Strike Step<input id="strikeStep" type="number" step="50" value="50"></label>
         <label>NIFTY Lot Size<input id="lotSize" type="number" step="1" value="65"></label>
         <label>Minimum OI Lots<input id="minOiLots" type="number" step="1" value="500"></label>
@@ -1857,6 +2429,11 @@ initInstrumentRegistry().then(() => calculateMonthlyStatus()).catch(() => calcul
   </section>
 
   <section class="calc-panel output-panel">
+    <h2>Rule Sheet Steps</h2>
+    <div id="manualRuleSteps" class="result-summary"></div>
+  </section>
+
+  <section class="calc-panel output-panel">
       <h3>Option Reference Premiums</h3>
       <div class="form-grid">
         <label>OPT PRV 2DHH<input id="opt2dhh" type="number" step="0.05" value="242"></label>
@@ -1879,11 +2456,11 @@ initInstrumentRegistry().then(() => calculateMonthlyStatus()).catch(() => calcul
 const BRANCHES = {
   bullish: {
     CE: { trade: "Sell Call", spotRef: "d3ll", entryRef: "opt3dll", slRef: "opt2dhh", slBuffer: 1.07, direction: "down" },
-    PE: { trade: "Sell Put", spotRef: "d2ll", entryRef: "opt2dll", slRef: "opt3dhh", slBuffer: 1.10, direction: "up" }
+    PE: { trade: "Sell Put", spotRef: "d2hh", entryRef: "opt2dll", slRef: "opt3dhh", slBuffer: 1.10, direction: "up" }
   },
   bearish: {
     CE: { trade: "Sell Call", spotRef: "d2ll", entryRef: "opt2dll", slRef: "opt3dhh", slBuffer: 1.10, direction: "down" },
-    PE: { trade: "Sell Put", spotRef: "d3hh", entryRef: "opt3dhh", slRef: "opt2dhh", slBuffer: 1.07, direction: "up" }
+    PE: { trade: "Sell Put", spotRef: "d3hh", entryRef: "opt3dll", slRef: "opt2dhh", slBuffer: 1.07, direction: "up" }
   }
 };
 
@@ -2041,8 +2618,10 @@ function updateFinalStrikes() {
   document.getElementById("finalStrikeSummary").innerHTML = `
     <div class="summary-grid">
       <div class="metric"><span>Final CE Strike</span><div class="value">${ce.row ? `${fmt(ce.row.strike)} ${ce.contract}` : "No qualified CE"}</div></div>
+      <div class="metric"><span>Final CE Premium / OI</span><div class="value">${ce.row ? `${fmt(ce.premium)} / ${fmt(ce.oi)}` : "n/a"}</div></div>
       <div class="metric"><span>CE Reason</span><div class="value">${ce.reason}</div></div>
       <div class="metric"><span>Final PE Strike</span><div class="value">${pe.row ? `${fmt(pe.row.strike)} ${pe.contract}` : "No qualified PE"}</div></div>
+      <div class="metric"><span>Final PE Premium / OI</span><div class="value">${pe.row ? `${fmt(pe.premium)} / ${fmt(pe.oi)}` : "n/a"}</div></div>
       <div class="metric"><span>PE Reason</span><div class="value">${pe.reason}</div></div>
     </div>`;
   return { CE: ce, PE: pe };
@@ -2074,14 +2653,13 @@ function riskForSide(group, side, selectedBySide) {
     status: selected.row ? "READY" : "NO ORDER"
   };
 }
-function riskRowHtml(result, activeSide) {
+function riskRowHtml(result) {
   const selected = result.selected;
   const strike = selected.row ? fmt(selected.row.strike) : "n/a";
   const contract = selected.row ? selected.contract : "n/a";
   const premium = selected.row ? fmt(selected.premium) : "n/a";
   const oi = selected.row ? fmt(selected.oi) : "n/a";
-  const active = result.side === activeSide ? " active-risk-row" : "";
-  return `<tr class="${active}">
+  return `<tr>
     <td>${result.side}</td>
     <td>${result.branch.trade}</td>
     <td>${result.branch.spotRef.toUpperCase()}</td>
@@ -2101,7 +2679,6 @@ function riskRowHtml(result, activeSide) {
 function calculate() {
   const group = text("monthlyGroup");
   const selectedBySide = updateFinalStrikes();
-  const activeSide = text("optionSide");
   const ce = riskForSide(group, "CE", selectedBySide);
   const pe = riskForSide(group, "PE", selectedBySide);
   const minOiContracts = number("minOiLots") * number("lotSize");
@@ -2115,10 +2692,11 @@ function calculate() {
         </tr>
       </thead>
       <tbody>
-        ${riskRowHtml(ce, activeSide)}
-        ${riskRowHtml(pe, activeSide)}
+        ${riskRowHtml(ce)}
+        ${riskRowHtml(pe)}
       </tbody>
     </table>`;
+  renderManualRuleSteps(group, ce, pe, minOiContracts);
   const steps = [
     `${branchLabel(group, "CE")}: spot ref ${ce.branch.spotRef.toUpperCase()} = ${fmt(ce.plan.ref)}, range ${fmt(ce.plan.start)} -> ${fmt(ce.plan.end)}, final strike ${ce.selected.row ? fmt(ce.selected.row.strike) : "not selected"}; ${ce.selected.reason}`,
     `${branchLabel(group, "PE")}: spot ref ${pe.branch.spotRef.toUpperCase()} = ${fmt(pe.plan.ref)}, range ${fmt(pe.plan.start)} -> ${fmt(pe.plan.end)}, final strike ${pe.selected.row ? fmt(pe.selected.row.strike) : "not selected"}; ${pe.selected.reason}`,
@@ -2128,14 +2706,35 @@ function calculate() {
   ];
   document.getElementById("calculationSteps").innerHTML = steps.map(stepText => `<li>${stepText}</li>`).join("");
 }
+function renderManualRuleSteps(group, ce, pe, minOiContracts) {
+  const groupLabel = group === "bullish" ? "Bullish group: evaluate CE Sell Call and PE Sell Put" : "Bearish group: evaluate CE Sell Call and PE Sell Put";
+  const ceFinal = ce.selected.row ? `${fmt(ce.selected.row.strike)} ${ce.selected.contract}` : "No qualified CE";
+  const peFinal = pe.selected.row ? `${fmt(pe.selected.row.strike)} ${pe.selected.contract}` : "No qualified PE";
+  const rows = [
+    ["Step 1", "Preparation date/time", text("reviewDate") || "today"],
+    ["Step 2", "Monthly status", text("monthlyGroup") === "bullish" ? "BULLISH / BULLISH_CONFIRMED" : "BEARISH / BEARISH_CONFIRMED"],
+    ["Step 3", "Rule group", groupLabel],
+    ["Step 4", "Strike range", `CE ${fmt(ce.plan.start)} -> ${fmt(ce.plan.end)}; PE ${fmt(pe.plan.start)} -> ${fmt(pe.plan.end)}`],
+    ["Step 5", "Near contract search", `${ce.selected.reason}; ${pe.selected.reason}`],
+    ["Step 6", "Minimum OI", `${fmt(number("minOiLots"))} lots * ${fmt(number("lotSize"))} = ${fmt(minOiContracts)} contracts`],
+    ["Step 7", "Final weekly options", `CE: ${ceFinal}; PE: ${peFinal}`],
+    ["Step 8", "Entry / Target / SL", `CE ${fmt(ce.entry)} / ${fmt(ce.target)} / ${fmt(ce.stoploss)}; PE ${fmt(pe.entry)} / ${fmt(pe.target)} / ${fmt(pe.stoploss)}`],
+  ];
+  document.getElementById("manualRuleSteps").innerHTML = `
+    <table class="candidate-table rule-step-table">
+      <thead><tr><th>Step</th><th>Rule Sheet Item</th><th>Manual Review Value</th></tr></thead>
+      <tbody>${rows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join("")}</tbody>
+    </table>`;
+}
 document.getElementById("calculateStrikes").addEventListener("click", () => { try { calculateStrikes(); } catch (error) { document.getElementById("strikeSummary").innerHTML = `<div class="error-box">${error.message}</div>`; } });
 document.getElementById("fetchS23Data").addEventListener("click", async () => { try { await fetchCapturedS23Data(); } catch (error) { document.getElementById("fetchStatus").innerHTML = `<div class="error-box">${error.message}</div>`; } });
 document.getElementById("calculateRisk").addEventListener("click", () => { try { calculate(); } catch (error) { document.getElementById("resultSummary").innerHTML = `<div class="error-box">${error.message}</div>`; } });
 document.addEventListener("input", event => { if (event.target.closest(".strike-editor")) updateFinalStrikes(); });
-document.getElementById("loadBearPut").addEventListener("click", () => { document.getElementById("monthlyGroup").value = "bearish"; document.getElementById("optionSide").value = "PE"; calculateStrikes(); });
-document.getElementById("loadBullCall").addEventListener("click", () => { document.getElementById("monthlyGroup").value = "bullish"; document.getElementById("optionSide").value = "CE"; calculateStrikes(); });
+document.getElementById("loadBearPut").addEventListener("click", () => { document.getElementById("monthlyGroup").value = "bearish"; calculateStrikes(); calculate(); });
+document.getElementById("loadBullCall").addEventListener("click", () => { document.getElementById("monthlyGroup").value = "bullish"; calculateStrikes(); calculate(); });
 setDefaultDate();
 calculateStrikes();
+calculate();
 </script>
 """
         return self._render_page(title="S23 Manual Calculator", body=body)
@@ -2151,41 +2750,86 @@ calculateStrikes();
                 "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
                 f"  <title>{html.escape(title)}</title>",
                 "  <style>",
-                "    :root { --bg: #f5efe3; --card: #fffdf9; --ink: #1a241d; --muted: #617064; --accent: #0f5e59; --accent-2: #ba6b2d; --border: #d8ccb7; --good: #216e39; --bad: #9a3412; --pending: #946200; --unknown: #5b5f97; }",
-                "    body { margin: 0; font-family: Georgia, 'Segoe UI', serif; background: radial-gradient(circle at top left, #fff8ee, #f1e7d4 58%, #efe6d9); color: var(--ink); }",
+                "    :root { --bg: #f6f2ea; --card: #fffdf9; --ink: #17211b; --muted: #607068; --accent: #0f5e59; --accent-2: #8f5a2a; --border: #d8ccb7; --soft-border: #eadfce; --soft-fill: #fff9f0; --good: #216e39; --bad: #9a3412; --pending: #946200; --unknown: #5b5f97; }",
+                "    body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f6f2ea; color: var(--ink); font-size: 14px; line-height: 1.45; }",
                 "    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }",
                 "    .hero { padding: 34px 40px 22px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #fff9ef, #f0e3ca); }",
-                "    .hero h1 { margin: 0 0 8px; font-size: 2.25rem; letter-spacing: -0.02em; }",
+                "    .hero h1 { margin: 0 0 8px; font-size: 2.05rem; letter-spacing: 0; }",
                 "    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; font-weight: 700; margin-bottom: 10px; }",
                 "    nav { padding: 16px 40px 0; }",
                 "    section { padding: 24px 40px; }",
                 "    .grid, .stage-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }",
-                "    .strategy-card, .stage-card, .session-summary { display: block; background: color-mix(in srgb, var(--card) 92%, white); border: 1px solid var(--border); border-radius: 22px; padding: 20px; box-shadow: 0 16px 32px rgba(47, 39, 22, 0.07); }",
+                "    .strategy-card, .stage-card, .session-summary { display: block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 10px 24px rgba(47, 39, 22, 0.06); }",
                 "    .strategy-card { transition: transform 160ms ease, box-shadow 160ms ease; } .strategy-card:hover { transform: translateY(-2px); box-shadow: 0 20px 38px rgba(47, 39, 22, 0.1); text-decoration: none; }",
-                "    .strategy-card h2, .stage-card h3 { margin: 0 0 8px; }",
+                "    .strategy-card h2, .stage-card h3 { margin: 0 0 8px; font-family: Georgia, 'Times New Roman', serif; }",
                 "    .summary-shell { padding: 22px; }",
+                "    .summary-shell + .summary-shell { margin-top: 14px; }",
                 "    .summary-grid, .stage-metrics, .decision-strip { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }",
-                "    .metric { background: #fff8ef; border: 1px solid #eadcc9; border-radius: 16px; padding: 12px 14px; }",
-                "    .metric span { display: block; color: var(--muted); font-size: 0.82rem; margin-bottom: 4px; }",
-                "    .metric strong, .metric .value { font-size: 1rem; font-weight: 700; }",
+                "    .metric { background: var(--soft-fill); border: 1px solid var(--soft-border); border-radius: 8px; padding: 11px 12px; min-width: 0; }",
+                "    .metric span { display: block; color: var(--muted); font-size: 0.76rem; line-height: 1.2; margin-bottom: 6px; font-weight: 700; }",
+                "    .metric strong, .metric .value { font-size: 0.98rem; line-height: 1.25; font-weight: 750; overflow-wrap: anywhere; }",
                 "    .metric-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 8px 0; border-top: 1px dashed #e5d9c8; }",
                 "    .metric-row:first-of-type { border-top: 0; }",
                 "    .stage-topline { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }",
+                "    .snapshot-panel { padding: 0; overflow: hidden; }",
+                "    .stage-summary { display: block; cursor: pointer; list-style: none; padding: 18px 20px; }",
+                "    .stage-summary::-webkit-details-marker { display: none; }",
+                "    .stage-summary .stage-topline::before { content: '▶'; color: var(--accent); font-size: 0.78rem; margin-top: 4px; transition: transform 160ms ease; }",
+                "    .snapshot-panel[open] .stage-summary .stage-topline::before { transform: rotate(90deg); }",
+                "    .stage-detail { padding: 0 20px 20px; border-top: 1px solid var(--soft-border); }",
+                "    .stage-detail .stage-metrics { margin-top: 16px; }",
                 "    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }",
-                "    .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.02em; border: 1px solid currentColor; }",
+                "    .badge { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 4px 9px; font-size: 0.72rem; line-height: 1.15; font-weight: 750; letter-spacing: 0; border: 1px solid currentColor; white-space: nowrap; }",
                 "    .badge-ready, .badge-pass, .badge-selected, .badge-bull, .badge-bear, .badge-bull_cf, .badge-bear_cf, .badge-yes { color: var(--good); background: rgba(33,110,57,0.09); }",
                 "    .badge-in_progress, .badge-unknown, .badge-no_trigger, .badge-n_a, .badge-none { color: var(--unknown); background: rgba(91,95,151,0.1); }",
                 "    .badge-warning, .badge-pending { color: var(--pending); background: rgba(148,98,0,0.1); }",
                 "    .badge-no_go, .badge-failed, .badge-rejected, .badge-no { color: var(--bad); background: rgba(154,52,18,0.1); }",
-                "    .focus-panel { margin: 14px 0; padding: 14px 16px; border-radius: 16px; background: linear-gradient(180deg, #fffaf2, #f8f0e4); border: 1px solid #e9dcc7; }",
+                "    .focus-panel { margin: 14px 0; padding: 14px 16px; border-radius: 8px; background: #fff9f0; border: 1px solid #e9dcc7; }",
                 "    .focus-panel p { margin: 0 0 10px; } .focus-panel p:last-child { margin-bottom: 0; }",
-                "    .formula-panel, .candidate-panel { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e1d3bd; }",
-                "    .formula-panel h4, .candidate-panel h4 { margin: 0 0 10px; font-size: 1rem; }",
-                "    .candidate-table { display: block; overflow-x: auto; font-size: 0.88rem; }",
+                "    .rule-step-panel, .formula-panel, .candidate-panel { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e1d3bd; }",
+                "    .rule-step-panel h4, .formula-panel h4, .candidate-panel h4 { margin: 0 0 10px; font-size: 1rem; }",
+                "    .candidate-table { display: block; overflow-x: auto; font-size: 0.86rem; border-radius: 8px; }",
                 "    .candidate-table thead, .candidate-table tbody { display: table; width: 100%; }",
+                "    .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }",
+                "    .section-heading h3 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; }",
+                "    .section-heading span { color: var(--muted); font-size: 0.82rem; font-weight: 650; }",
+                "    .final-leg-panel { overflow: hidden; }",
+                "    .final-leg-table { display: table; table-layout: fixed; width: 100%; overflow: hidden; font-size: 0.84rem; }",
+                "    .final-leg-table thead, .final-leg-table tbody { display: table-row-group; width: auto; }",
+                "    .final-leg-table thead { display: table-header-group; }",
+                "    .final-leg-table th, .final-leg-table td { padding: 11px 10px; vertical-align: middle; }",
+                "    .final-leg-table th { color: #405047; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; }",
+                "    .final-leg-table tbody tr:nth-child(even) td { background: #fffaf3; }",
+                "    .text-cell { text-align: left; }",
+                "    .number-cell { text-align: right; font-variant-numeric: tabular-nums; }",
+                "    .status-cell { text-align: center; }",
+                "    .code-cell { font-family: Consolas, 'Courier New', monospace; font-size: 0.78rem; overflow-wrap: anywhere; }",
+                "    .contract-cell strong { display: inline-block; font-family: Consolas, 'Courier New', monospace; font-size: 0.82rem; background: #f6efe4; border: 1px solid #e3d6c2; border-radius: 6px; padding: 3px 6px; white-space: nowrap; }",
+                "    .side-cell { font-weight: 800; color: var(--accent); white-space: nowrap; }",
+                "    .final-leg-table .badge { font-size: 0.66rem; padding: 4px 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }",
+                "    .leg-explanation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }",
+                "    .explanation-panel { cursor: default; }",
+                "    .explanation-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; list-style: none; }",
+                "    .explanation-summary::-webkit-details-marker { display: none; }",
+                "    .explanation-summary::before { content: '▶'; color: var(--accent); font-size: 0.82rem; transition: transform 160ms ease; }",
+                "    .explanation-panel[open] .explanation-summary::before { transform: rotate(90deg); }",
+                "    .explanation-summary span { font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; font-weight: 700; }",
+                "    .explanation-summary small { color: var(--muted); font-size: 0.82rem; font-weight: 650; }",
+                "    .explanation-panel[open] .focus-panel { margin-top: 16px; }",
+                "    .leg-explanation-card { border: 1px solid var(--soft-border); border-radius: 8px; background: #fffaf3; padding: 16px; }",
+                "    .leg-explanation-card h3 { margin: 0 0 12px; font-size: 1rem; color: var(--accent); font-family: Georgia, 'Times New Roman', serif; }",
+                "    .eligible-strike-panel { margin: 14px 0; }",
+                "    .eligible-strike-panel h4 { margin: 0 0 8px; font-size: 0.92rem; color: var(--ink); }",
+                "    .eligible-strike-table { font-size: 0.82rem; }",
+                "    .explanation-list { margin: 0; padding-left: 20px; display: grid; gap: 8px; }",
+                "    .explanation-list li { padding-left: 4px; }",
+                "    .explanation-table { margin-top: 14px; }",
+                "    .rule-step-table th, .rule-step-table td { padding: 8px 10px; vertical-align: top; text-align: left; }",
+                "    .rule-step-table td:first-child { width: 70px; font-weight: 700; color: var(--accent); white-space: nowrap; }",
+                "    .rule-step-table td:nth-child(2) { width: 160px; font-weight: 700; }",
                 "    .compact-error { margin-top: 10px; }",
                 "    .artifact-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; font-size: 0.9rem; }",
-                "    .artifact-links a { padding: 6px 10px; border-radius: 999px; background: #f4ecdf; border: 1px solid #e4d6c1; }",
+                "    .artifact-links a { padding: 6px 10px; border-radius: 999px; background: #f4ecdf; border: 1px solid #e4d6c1; font-size: 0.82rem; }",
                 "    .top-links { margin-top: 16px; }",
                 "    .trade-summary { margin-bottom: 14px; }",
                 "    .trade-table { display: table; table-layout: fixed; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.84rem; line-height: 1.28; }",
@@ -2228,9 +2872,10 @@ calculateStrikes();
                 "    .trace-list { display: grid; gap: 8px; padding-left: 22px; }",
                 "    .trace-list li { padding: 8px 10px; background: #fff8ef; border: 1px solid #eadcc9; border-radius: 10px; }",
                 "    .error-box { padding: 12px; border: 1px solid var(--bad); color: var(--bad); background: rgba(154,52,18,0.08); border-radius: 10px; }",
-                "    table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }",
-                "    th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; }",
-                "    th { background: #f4eadb; }",
+                "    table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }",
+                "    th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }",
+                "    th { background: #f2e8d8; color: #405047; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; }",
+                "    tbody tr:last-child td { border-bottom: 0; }",
                 "    .risk-table { display: block; overflow-x: auto; white-space: nowrap; }",
                 "    .risk-table tbody, .risk-table thead { display: table; width: 100%; }",
                 "    .active-risk-row td { background: rgba(15,94,89,0.08); }",
@@ -2246,14 +2891,15 @@ calculateStrikes();
             ]
         )
 
-    @staticmethod
-    def _session_manifest_item(session: DashboardSessionSummary) -> dict[str, Any]:
+    def _session_manifest_item(self, session: DashboardSessionSummary) -> dict[str, Any]:
+        final_contracts = list(self._session_final_contract_symbols(session))
         return {
             "session_date": session.session_date.isoformat(),
             "session_status": session.session_status,
             "final_decision_status": session.final_decision_status,
             "final_monthly_status": session.final_monthly_status,
             "final_selected_contract_symbol": session.final_selected_contract_symbol,
+            "final_selected_contract_symbols": final_contracts,
             "session_directory": str(session.session_directory) if session.session_directory is not None else None,
             "stage_count": len(session.stages),
         }

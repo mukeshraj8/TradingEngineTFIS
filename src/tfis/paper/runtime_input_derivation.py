@@ -20,6 +20,7 @@ from tfis.monthly_status import (
     MonthlyStatusResult,
     build_monthly_weekly_context_lookback_windows,
 )
+from tfis.rules import validate_s23_strategy_rule_matches_matrix
 
 from .live_prelude import (
     S23PaperPreludeSessionContext,
@@ -173,6 +174,13 @@ class S23RuntimeInputDeriver:
             raise S23RuntimeInputDerivationError(
                 "UNSUPPORTED_STRATEGY",
                 "Runtime derivation is currently limited to S23.",
+            )
+        matrix_mismatches = validate_s23_strategy_rule_matches_matrix(strategy_rule)
+        if matrix_mismatches:
+            raise S23RuntimeInputDerivationError(
+                "S23_RULE_MATRIX_MISMATCH",
+                "Loaded S23 strategy rule does not match the corrected rule-sheet matrix: "
+                + "; ".join(matrix_mismatches),
             )
         if strategy_rule.symbol != "NIFTY":
             raise S23RuntimeInputDerivationError(

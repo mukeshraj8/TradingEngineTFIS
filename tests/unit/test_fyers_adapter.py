@@ -36,6 +36,26 @@ def test_fyers_adapter_normalizes_symbols_round_trip() -> None:
     assert FyersBrokerAdapter.normalize_underlying_symbol("NSE:NIFTY50-INDEX") == "NIFTY"
 
 
+def test_fyers_adapter_normalizes_monthly_symbol_with_expiry_hint() -> None:
+    normalized = FyersBrokerAdapter.normalize_option_symbol(
+        "NSE:NIFTY26JUN23850CE",
+        expiry_hint=date(2026, 6, 30),
+    )
+
+    assert normalized == "NIFTY_20260630_23850_CE"
+    assert (
+        FyersBrokerAdapter.to_fyers_option_symbol(normalized)
+        == "NSE:NIFTY26JUN23850CE"
+    )
+
+
+def test_fyers_adapter_normalizes_monthly_symbol_without_hint_to_last_tuesday() -> None:
+    assert (
+        FyersBrokerAdapter.normalize_option_symbol("NSE:NIFTY26JUN23850PE")
+        == "NIFTY_20260630_23850_PE"
+    )
+
+
 def test_fyers_adapter_normalizes_market_payloads() -> None:
     adapter = FyersBrokerAdapter.from_payload_file(FIXTURE_PATH)
 

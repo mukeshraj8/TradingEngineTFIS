@@ -69,6 +69,30 @@ Required rules:
   Extract shared lifecycle/order/dashboard behavior first when it is reusable.
 - Strategy-specific behavior must be named as such.
 - Shared behavior must not contain S23-only assumptions.
+- Enabled/disabled strategy execution must come from strategy registry/config,
+  so adding S21, S23, or any later strategy does not require changing generic
+  engine flow.
+- Strategy dashboards should show the strategy rule process, not merely the
+  final runtime artifact.
+
+## Monthly-Status Driven Strategy Contract
+
+Monthly-status driven strategies are not monthly strategies merely because they
+use monthly status. Monthly status is an independent market-context input.
+
+These strategies must follow this shared flow:
+
+1. calculate monthly status for the selected instrument/date/source through the
+   independent monthly-status service
+2. map the status to the strategy's configured rule group
+3. evaluate each configured strategy leg independently
+4. search near contract first, then next contract only if near fails
+5. produce auditable orders/no-trade reasons with all intermediate values
+
+For S23, which is a NIFTY weekly option selling strategy, the source
+implementation contract is
+`docs/architecture/s23_weekly_option_selling_engine_contract.md`. AI agents must
+not replace that matrix with directional inference or older branch labels.
 
 ## Monthly Status Contract
 
@@ -84,6 +108,9 @@ Required rules:
   strategy option-chain capture.
 - Data source choice, such as spot or futures continuous data, must be explicit
   and configurable.
+- Business display statuses are `BULLISH`, `BULLISH_CONFIRMED`, `BEARISH`, and
+  `BEARISH_CONFIRMED`; `UNKNOWN` is allowed only for incomplete/error cases.
+- Monthly-status results must include step-by-step explanation and provenance.
 
 ## Paper Trading Contract
 
@@ -192,4 +219,3 @@ current live-paper operational path is still S23 plus FYERS first.
 This is acceptable as the first implemented path, but future work should move
 shared paper lifecycle, order state, dashboard, broker resolution, and storage
 concerns toward generic services before adding more strategies.
-
