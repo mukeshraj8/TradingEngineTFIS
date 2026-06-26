@@ -152,6 +152,79 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
         ),
         encoding="utf-8",
     )
+    final_pe_dir = final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+    final_pe_dir.mkdir()
+    (final_pe_dir / "trade_decision_explainer.json").write_text(
+        json.dumps(
+            {
+                "session_date": "2026-06-10",
+                "stages": [
+                    {
+                        "can_finalize_trade_decision": True,
+                        "monthly_status": "BEAR",
+                        "monthly_status_trigger": "BEAR_CONTINUES",
+                        "monthly_status_price_used": 23255.65,
+                        "monthly_status_resolution_reason": "Current month resolved directly from monthly structure rules.",
+                        "decision_failure_code": "MINIMUM_PREMIUM_NOT_MET",
+                        "decision_failure_message": "Option-chain candidates in the strike range do not meet minimum premium.",
+                        "decision_failure_attempted_expiries": ["2026-06-02", "2026-06-09"],
+                        "decision_failure_rejected_counts": {
+                            "minimum_premium_not_met": 12,
+                        },
+                        "decision_summary": None,
+                        "market_reference_values": {
+                            "PRV_3DHH": {"value": 24168.05},
+                        },
+                        "provisional_formula_evaluation": [
+                            {
+                                "name": "start_strike",
+                                "formula": "ROUND_UP(PRV_3DHH - PARAM(strike_buffer_pct)%)",
+                                "resolved_formula": "ROUND_UP(24168.05 - 5.0%)",
+                                "result": 23000.0,
+                            },
+                            {
+                                "name": "end_strike",
+                                "formula": "ROUND_UP(PRV_3DHH) + PARAM(strike_step)",
+                                "resolved_formula": "ROUND_UP(24168.05) + 50.0",
+                                "result": 24250.0,
+                            },
+                            {
+                                "name": "ideal_premium",
+                                "formula": "PRV_3DHH * 1.20%",
+                                "resolved_formula": "24168.05 * 1.2%",
+                                "result": 290.0166,
+                            },
+                            {
+                                "name": "minimum_premium",
+                                "formula": "PRV_3DHH * 0.90%",
+                                "resolved_formula": "24168.05 * 0.9%",
+                                "result": 217.51245,
+                            },
+                            {
+                                "name": "entry",
+                                "formula": "OPT_PRV_3DLL - 7.5%",
+                                "resolved_formula": "230.0 - 7.5%",
+                                "result": 212.75,
+                            },
+                            {
+                                "name": "target",
+                                "formula": "entry - 60.0%",
+                                "resolved_formula": "212.75 - 60.0%",
+                                "result": 85.1,
+                            },
+                            {
+                                "name": "stoploss",
+                                "formula": "MIN(entry + 60.0%, OPT_PRV_2DHH + 7.0%)",
+                                "resolved_formula": "MIN(212.75 + 60.0%, 242.0 + 7.0%)",
+                                "result": 258.94,
+                            },
+                        ],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
     trade_id = "S23-NIFTY_20260602_23800_PE-20260610T093000"
     trade_rows = [
         {
@@ -212,6 +285,70 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
                 "state_directory": str(final_dir),
         },
     ]
+    closed_trade_id = "S23-NIFTY_20260602_23850_CE-20260610T123000"
+    trade_rows.extend(
+        [
+            {
+                "artifact_version": 1,
+                "event_timestamp": "2026-06-09T12:30:00+05:30",
+                "event_type": "CLOSE",
+                "trade_id": closed_trade_id,
+                "strategy_id": "S23:BEAR_CALL",
+                "strategy_code": "S23",
+                "strategy_branch": "BEAR_CALL",
+                "symbol": "NIFTY",
+                "option_type": "CALL",
+                "selected_contract_symbol": "NIFTY_20260602_23850_CE_CLOSED",
+                "expiry_date": "2026-06-02",
+                "side": "SELL",
+                "lots": 1,
+                "quantity": 65,
+                "entry_date": "2026-06-09",
+                "entry_timestamp": "2026-06-09T09:30:00+05:30",
+                "entry_price": 194.25,
+                "exit_price": 113.55,
+                "exit_timestamp": "2026-06-09T12:30:00+05:30",
+                "target_price": 77.70,
+                "stoploss_price": 242.0,
+                "gross_points": 80.70,
+                "gross_pnl": 5245.5,
+                "session_date": "2026-06-09",
+                "lifecycle_status": "PAPER_POSITION_CLOSED",
+                "manager_status": "PAPER_POSITION_FORCE_CLOSED",
+                "reason_code": "expiry_force_close",
+                "message": "Closed row should win over stale later rollover.",
+                "state_directory": str(final_dir),
+            },
+            {
+                "artifact_version": 1,
+                "event_timestamp": "2026-06-11T10:20:00+05:30",
+                "event_type": "ACTION_REQUIRED",
+                "trade_id": closed_trade_id,
+                "strategy_id": "S23:BEAR_CALL",
+                "strategy_code": "S23",
+                "strategy_branch": "BEAR_CALL",
+                "symbol": "NIFTY",
+                "option_type": "CALL",
+                "selected_contract_symbol": "NIFTY_20260602_23850_CE_CLOSED",
+                "expiry_date": "2026-06-02",
+                "side": "SELL",
+                "lots": 1,
+                "quantity": 65,
+                "entry_date": "2026-06-09",
+                "entry_timestamp": "2026-06-09T09:30:00+05:30",
+                "entry_price": 194.25,
+                "target_price": 77.70,
+                "stoploss_price": 242.0,
+                "session_date": "2026-06-11",
+                "lifecycle_status": "PAPER_ROLLOVER_REQUIRED",
+                "manager_status": "PAPER_POSITION_ROLLOVER_REQUIRED",
+                "reason_code": "stale_rollover_after_close",
+                "message": "STALE ROLLOVER AFTER CLOSE SHOULD NOT DISPLAY",
+                "rollover_required": True,
+                "state_directory": str(final_dir),
+            },
+        ]
+    )
     (final_dir / "paper_trade_ledger.jsonl").write_text(
         "\n".join(json.dumps(row) for row in trade_rows) + "\n",
         encoding="utf-8",
@@ -256,6 +393,45 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     (pending_dir / "paper_order_events.jsonl").write_text("{}\n", encoding="utf-8")
+    stale_day_dir = artifact_root / "2026-06-09" / "s23-fyers-morning-supervised-decision-2026-06-09"
+    stale_pending_dir = stale_day_dir / "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+    stale_pending_dir.mkdir(parents=True)
+    (stale_pending_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+                "symbol": "NIFTY",
+                "selected_contract_symbol": "NIFTY_20260609_24000_PE_STALE",
+                "selected_contract_expiry": "2026-06-09",
+                "selected_contract_option_type": "PUT",
+                "selected_contract_strike": 24000,
+                "expiry_type": "WEEKLY",
+                "rollover_policy": "T_MINUS_1",
+                "forced_close_time": "15:15:00",
+                "no_carry_past_expiry": True,
+                "order_side": "SELL",
+                "trigger_rule": "SELL_TRIGGER_WHEN_PREMIUM_AT_OR_BELOW_ENTRY",
+                "entry_date": "2026-06-09",
+                "order_timestamp": "2026-06-09T09:30:00+05:30",
+                "planned_entry_price": 200.0,
+                "target_price": 80.0,
+                "stoploss_price": 250.0,
+                "fsl_price": None,
+                "lots": 1,
+                "quantity": 65,
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "last_updated_timestamp": "2026-06-09T15:30:00+05:30",
+                "last_market_price": 260.0,
+                "last_reason_code": "paper_order_waiting_quote_above_entry",
+                "last_message": "Stale waiting order that must not carry forward.",
+                "provenance_source_ids": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (stale_pending_dir / "paper_order_events.jsonl").write_text("{}\n", encoding="utf-8")
 
     result = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(artifact_root),)).build(
         output_root=tmp_path / "dashboard"
@@ -271,10 +447,16 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "2026-06-10" in strategy_html
     assert "Run Status" in strategy_html
     assert "Final Contract" in strategy_html
-    assert "Final Selected S23 Legs" in strategy_html
+    assert "Final S23 Leg Decisions" in strategy_html
+    assert "No contract selected" in strategy_html
+    assert "SELL PE" in strategy_html
+    assert "MINIMUM_PREMIUM_NOT_MET" in strategy_html
+    assert "Option-chain candidates in the strike range do not meet minimum premium." in strategy_html
+    assert "near expiry 2026-06-02; fallback expiry 2026-06-09" in strategy_html
     assert '<details class="session-summary summary-shell explanation-panel">' in strategy_html
     assert "Expand dry-run steps" in strategy_html
     assert "Calculation Explanation" in strategy_html
+    assert "tfis-dashboard-open-details" in strategy_html
     assert "Step 1 - Preparation" in strategy_html
     assert "Step 2 - Monthly status" in strategy_html
     assert "Step 3 - Collect NIFTY spot data" in strategy_html
@@ -291,12 +473,18 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "239" in strategy_html
     assert "238.50 / 239.50" in strategy_html
     assert "PAPER_POSITION_HELD" in strategy_html
+    assert "NIFTY_20260602_23850_CE_CLOSED" not in strategy_html
+    assert "PAPER_POSITION_FORCE_CLOSED" not in strategy_html
+    assert "STALE ROLLOVER AFTER CLOSE SHOULD NOT DISPLAY" not in strategy_html
+    assert "stale_rollover_after_close" not in strategy_html
     assert strategy_html.count(trade_id) == 1
     assert "188.50" in strategy_html
     assert "188 / 189" in strategy_html
     assert "ORDER_WAITING" in strategy_html
     assert "paper_order_state.json" in strategy_html
     assert strategy_html.count("ORDER_WAITING_FOR_TRIGGER") == 1
+    assert "NIFTY_20260609_24000_PE_STALE" not in strategy_html
+    assert "Stale waiting order that must not carry forward" not in strategy_html
     assert '<details class="stage-card snapshot-panel">' in strategy_html
     assert '<summary class="stage-summary">' in strategy_html
     assert "S23 Rule Sheet Steps" in strategy_html

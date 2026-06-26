@@ -80,6 +80,8 @@ class S23LiveDecisionTimelineStage:
     decision_explanation: dict[str, Any] | None
     decision_failure_code: str | None
     decision_failure_message: str | None
+    decision_failure_attempted_expiries: tuple[str, ...] = ()
+    decision_failure_rejected_counts: dict[str, int] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,6 +176,8 @@ class S23LiveDecisionTimelineBuilder:
         decision: S23PaperLiveDecisionResult | None = None
         decision_failure_code: str | None = None
         decision_failure_message: str | None = None
+        decision_failure_attempted_expiries: tuple[str, ...] = ()
+        decision_failure_rejected_counts: dict[str, int] | None = None
         if can_finalize:
             try:
                 decision = self._decision_builder.build(
@@ -188,6 +192,12 @@ class S23LiveDecisionTimelineBuilder:
             except (S23PaperLiveDecisionError, S23LivePreludeError) as exc:
                 decision_failure_code = getattr(exc, "code", "LIVE_DECISION_FAILED")
                 decision_failure_message = str(exc)
+                selection = getattr(exc, "contract_selection", None)
+                if selection is not None:
+                    decision_failure_attempted_expiries = tuple(
+                        expiry.isoformat() for expiry in selection.attempted_expiries
+                    )
+                    decision_failure_rejected_counts = dict(selection.rejected_candidate_counts)
 
         stage = S23LiveDecisionTimelineStage(
             stage_name=stage_name,
@@ -249,6 +259,8 @@ class S23LiveDecisionTimelineBuilder:
             decision_explanation=decision.explanation if decision is not None else None,
             decision_failure_code=decision_failure_code,
             decision_failure_message=decision_failure_message,
+            decision_failure_attempted_expiries=decision_failure_attempted_expiries,
+            decision_failure_rejected_counts=decision_failure_rejected_counts,
         )
         return S23LiveDecisionTimelineStageBuild(
             stage=stage,
@@ -530,6 +542,10 @@ class S23LiveDecisionTimelineBuilder:
                     "### Final Decision At This Stage",
                     f"- Final decision could not be produced: `{stage.decision_failure_code}`",
                     f"- Reason: `{stage.decision_failure_message}`",
+                    "- Attempted Expiries: `"
+                    + (", ".join(stage.decision_failure_attempted_expiries) or "none")
+                    + "`",
+                    f"- Rejected Candidate Counts: `{stage.decision_failure_rejected_counts or {}}`",
                 ]
             )
         else:

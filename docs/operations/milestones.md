@@ -23,6 +23,9 @@
 - S23 scheduled startup now launches separate paper watcher processes for every
   produced paper order or open paper position instead of skipping automatic
   watching when a two-leg session creates both CE and PE orders
+- S23 scheduled startup now exits cleanly with `MARKET_CLOSED_NO_ACTION` when
+  the supervised snapshot window has no intraday FYERS candles, so holidays or
+  closed-market days do not register as failed scheduled-task runs
 - strategy and workbook normalization work is established for the S23 family
 - reference materials are now indexed and reviewable through archive metadata
 - deterministic monthly-status classification is implemented for the confirmed threshold rules

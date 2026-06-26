@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass, replace
 from datetime import date, datetime, time, timedelta
 from enum import Enum
 from pathlib import Path
@@ -27,7 +27,13 @@ from .live_prelude import (
     S23PaperPreludeSessionContext,
     S23PaperSnapshotInput,
 )
-from .models import EventEnvelope, OptionChainSnapshotEvent, SnapshotLabel, UnderlyingQuoteEvent
+from .models import (
+    EventEnvelope,
+    OptionChainContract,
+    OptionChainSnapshotEvent,
+    SnapshotLabel,
+    UnderlyingQuoteEvent,
+)
 from .position_state import S23PaperPositionStateStore
 
 
@@ -222,9 +228,10 @@ class S23FyersSnapshotCollector:
                 session_date=session_context.session_date,
                 lookback_days=180,
             )
-            option_chain_snapshot = active_adapter.get_option_chain(
-                config.market.underlying_symbol,
-                weekly_expiry,
+            option_chain_snapshot = self._collect_weekly_option_chains(
+                active_adapter=active_adapter,
+                symbol=config.market.underlying_symbol,
+                near_expiry=weekly_expiry,
                 session_date=session_context.session_date,
             )
         except (BrokerAdapterError, OSError, ValueError) as exc:
@@ -716,6 +723,118 @@ class S23FyersSnapshotCollector:
                 "Normalized option-chain snapshot is missing OI for one or more contracts: "
                 + ", ".join(missing_oi[:5]),
             )
+
+    def _collect_weekly_option_chains(
+        self,
+        *,
+        active_adapter: BrokerAdapter,
+        symbol: str,
+        near_expiry: date,
+        session_date: date,
+    ) -> OptionChainSnapshotEvent:
+        near_chain = active_adapter.get_option_chain(
+            symbol,
+            near_expiry,
+            session_date=session_date,
+        )
+        near_chain = self._chain_with_symbol_expiries(
+            near_chain,
+            requested_expiry=near_expiry,
+        )
+        next_expiry = self._next_weekly_expiry_after(near_expiry)
+        next_chain = active_adapter.get_option_chain(
+            symbol,
+            next_expiry,
+            session_date=session_date,
+        )
+        next_chain = self._chain_with_symbol_expiries(
+            next_chain,
+            requested_expiry=next_expiry,
+        )
+        if next_chain.underlying_symbol != near_chain.underlying_symbol:
+            raise S23FyersSnapshotCollectorError(
+                "OPTION_CHAIN_SYMBOL_MISMATCH",
+                "Near and next weekly option chains do not belong to the same underlying.",
+            )
+        quality_flags = list(near_chain.envelope.data_quality_flags)
+        quality_flags.extend(
+            flag
+            for flag in next_chain.envelope.data_quality_flags
+            if flag not in quality_flags
+        )
+        if not any(contract.expiry == next_expiry for contract in next_chain.contracts):
+            quality_flags.append(
+                "fallback_option_chain_unavailable:"
+                f"requested={next_expiry.isoformat()}"
+            )
+        merged_contracts = tuple(
+            {
+                (
+                    contract.symbol,
+                    contract.expiry,
+                    contract.option_type,
+                    contract.strike,
+                ): contract
+                for contract in (*near_chain.contracts, *next_chain.contracts)
+            }.values()
+        )
+        return OptionChainSnapshotEvent(
+            envelope=replace(
+                near_chain.envelope,
+                data_quality_flags=tuple(quality_flags),
+            ),
+            underlying_symbol=near_chain.underlying_symbol,
+            expiry=near_chain.expiry,
+            contracts=merged_contracts,
+        )
+
+    @staticmethod
+    def _next_weekly_expiry_after(expiry: date) -> date:
+        return expiry + timedelta(days=7)
+
+    @classmethod
+    def _chain_with_symbol_expiries(
+        cls,
+        option_chain: OptionChainSnapshotEvent,
+        *,
+        requested_expiry: date,
+    ) -> OptionChainSnapshotEvent:
+        sanitized_contracts: list[OptionChainContract] = []
+        flags = list(option_chain.envelope.data_quality_flags)
+        mismatched_count = 0
+        for contract in option_chain.contracts:
+            symbol_expiry = cls._normalized_option_symbol_expiry(contract.symbol)
+            if symbol_expiry is not None and contract.expiry != symbol_expiry:
+                mismatched_count += 1
+                sanitized_contracts.append(replace(contract, expiry=symbol_expiry))
+            else:
+                sanitized_contracts.append(contract)
+        if mismatched_count:
+            flags.append(
+                "option_chain_contract_expiry_corrected_from_symbol:"
+                f"requested={requested_expiry.isoformat()};count={mismatched_count}"
+            )
+        return OptionChainSnapshotEvent(
+            envelope=replace(option_chain.envelope, data_quality_flags=tuple(flags)),
+            underlying_symbol=option_chain.underlying_symbol,
+            expiry=option_chain.expiry,
+            contracts=tuple(sanitized_contracts),
+        )
+
+    @staticmethod
+    def _normalized_option_symbol_expiry(symbol: str) -> date | None:
+        parts = symbol.split("_")
+        if len(parts) < 4:
+            return None
+        expiry_text = parts[1]
+        if len(expiry_text) != 8 or not expiry_text.isdigit():
+            return None
+        try:
+            return date.fromisoformat(
+                f"{expiry_text[0:4]}-{expiry_text[4:6]}-{expiry_text[6:8]}"
+            )
+        except ValueError:
+            return None
 
     def _build_adapter(self, config: S23LivePaperIngressConfig) -> BrokerAdapter:
         if config.broker.provider != "fyers":

@@ -656,6 +656,8 @@ class TfisOperatorDashboardBuilder:
     ) -> Path | None:
         if final_session_dir is None:
             return None
+        if (final_session_dir / "trade_decision_summary.json").exists():
+            return final_session_dir
         try:
             strategy_rule = load_strategy_rule(config.strategy_path)
         except Exception:
@@ -956,9 +958,13 @@ class TfisOperatorDashboardBuilder:
         page_path: Path,
     ) -> str:
         latest = sessions[0] if sessions else None
-        trade_rows = self._collect_trade_ledger_rows(config)
+        trade_rows = self._collect_trade_ledger_rows(
+            config,
+            latest_session_date=latest.session_date if latest else None,
+        )
         latest_block = (
             self._render_latest_session_block(
+                config=config,
                 latest=latest,
                 trade_rows=trade_rows,
                 page_path=page_path,
@@ -966,7 +972,11 @@ class TfisOperatorDashboardBuilder:
             if latest
             else "<p>No session artifacts found yet.</p>"
         )
-        trades_block = self._render_trade_ledger_section(rows=trade_rows, page_path=page_path)
+        trades_block = self._render_trade_ledger_section(
+            rows=trade_rows,
+            page_path=page_path,
+            latest_session_date=latest.session_date if latest else None,
+        )
         history_rows = "\n".join(self._render_session_history_row(session, page_path=page_path) for session in sessions) or "<tr><td colspan=\"5\">No sessions found.</td></tr>"
         body = "\n".join(
             [
@@ -991,14 +1001,57 @@ class TfisOperatorDashboardBuilder:
                 history_rows,
                 "</tbody></table>",
                 "</section>",
-                "<script>setTimeout(function(){ window.location.reload(); }, 10000);</script>",
+                self._dashboard_refresh_script(),
             ]
         )
         return self._render_page(title=config.display_name, body=body)
 
+    @staticmethod
+    def _dashboard_refresh_script() -> str:
+        return """
+<script>
+(function(){
+  var storageKey = "tfis-dashboard-open-details:" + window.location.pathname;
+  function detailsKey(details, index) {
+    var summary = details.querySelector("summary");
+    var label = summary ? summary.textContent.replace(/\\s+/g, " ").trim() : "";
+    return details.className + "|" + label + "|" + index;
+  }
+  function readState() {
+    try {
+      return JSON.parse(sessionStorage.getItem(storageKey) || "{}");
+    } catch (error) {
+      return {};
+    }
+  }
+  function writeState(state) {
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify(state));
+    } catch (error) {
+      // Ignore private-mode or storage quota errors; auto-refresh still works.
+    }
+  }
+  var state = readState();
+  document.querySelectorAll("details").forEach(function(details, index) {
+    var key = detailsKey(details, index);
+    if (Object.prototype.hasOwnProperty.call(state, key)) {
+      details.open = !!state[key];
+    }
+    details.addEventListener("toggle", function() {
+      var nextState = readState();
+      nextState[key] = details.open;
+      writeState(nextState);
+    });
+  });
+  setTimeout(function(){ window.location.reload(); }, 10000);
+})();
+</script>"""
+
     def _collect_trade_ledger_rows(
         self,
         config: StrategyDashboardConfig,
+        *,
+        latest_session_date: date | None = None,
     ) -> list[DashboardTradeLedgerRow]:
         candidate_paths: set[Path] = set()
         if config.artifact_root.exists():
@@ -1079,10 +1132,10 @@ class TfisOperatorDashboardBuilder:
                 except (OSError, json.JSONDecodeError):
                     continue
                 status = str(raw.get("status") or "")
-                if status not in {
-                    "PAPER_ORDER_WAITING_FOR_TRIGGER",
-                    "PAPER_ORDER_NOT_FILLED",
-                }:
+                if status != "PAPER_ORDER_WAITING_FOR_TRIGGER":
+                    continue
+                entry_date = self._parse_date(raw.get("entry_date"))
+                if latest_session_date is not None and entry_date != latest_session_date:
                     continue
                 state_directory = order_path.parent
                 if not self._is_relative_to(state_directory, config.artifact_root):
@@ -1157,18 +1210,42 @@ class TfisOperatorDashboardBuilder:
         *,
         rows: list[DashboardTradeLedgerRow],
         page_path: Path,
+        latest_session_date: date | None = None,
     ) -> str:
+        if latest_session_date is not None:
+            rows = [
+                row
+                for row in rows
+                if row.event_type != "ORDER_WAITING"
+                or (
+                    row.event_timestamp is not None
+                    and row.event_timestamp.date() == latest_session_date
+                )
+            ]
         if not rows:
             return '<div class="empty-panel">No paper trades have been recorded yet.</div>'
 
-        latest_by_trade: dict[str, DashboardTradeLedgerRow] = {}
-        for row in reversed(rows):
-            latest_by_trade[row.trade_id] = row
+        grouped_rows: dict[str, list[DashboardTradeLedgerRow]] = {}
+        for row in rows:
+            grouped_rows.setdefault(row.trade_id, []).append(row)
+        latest_by_trade = {
+            trade_id: self._display_row_for_trade(trade_rows)
+            for trade_id, trade_rows in grouped_rows.items()
+        }
         latest_rows = sorted(
-            latest_by_trade.values(),
+            (
+                row
+                for row in latest_by_trade.values()
+                if self._trade_visible_for_latest_session(
+                    row,
+                    latest_session_date=latest_session_date,
+                )
+            ),
             key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
             reverse=True,
         )
+        if not latest_rows:
+            return '<div class="empty-panel">No active paper orders or positions for the latest session.</div>'
         open_count = sum(
             1
             for row in latest_rows
@@ -1200,6 +1277,56 @@ class TfisOperatorDashboardBuilder:
                 f"<tbody>{event_rows}</tbody>",
                 "</table>",
             ]
+        )
+
+    def _display_row_for_trade(self, rows: list[DashboardTradeLedgerRow]) -> DashboardTradeLedgerRow:
+        terminal_rows = [row for row in rows if self._trade_terminal(row)]
+        if terminal_rows:
+            return max(
+                terminal_rows,
+                key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+            )
+        return max(
+            rows,
+            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+        )
+
+    @staticmethod
+    def _trade_terminal(row: DashboardTradeLedgerRow) -> bool:
+        event_type = row.event_type.upper()
+        lifecycle_status = row.lifecycle_status.upper()
+        manager_status = row.manager_status.upper()
+        return (
+            event_type == "CLOSE"
+            or "CLOSED" in lifecycle_status
+            or manager_status
+            in {
+                "PAPER_POSITION_TARGET_HIT",
+                "PAPER_POSITION_STOPLOSS_HIT",
+                "PAPER_POSITION_FORCE_CLOSED",
+                "PAPER_POSITION_ALREADY_CLOSED",
+            }
+        )
+
+    def _trade_visible_for_latest_session(
+        self,
+        row: DashboardTradeLedgerRow,
+        *,
+        latest_session_date: date | None,
+    ) -> bool:
+        if latest_session_date is None or row.event_timestamp is None:
+            return True
+        if row.event_timestamp.date() == latest_session_date:
+            return True
+        if self._trade_terminal(row):
+            return False
+        return self._trade_open(row) or self._trade_action_required(row)
+
+    @staticmethod
+    def _trade_open(row: DashboardTradeLedgerRow) -> bool:
+        return (
+            "OPEN" in row.lifecycle_status.upper()
+            or row.manager_status.upper() in {"PAPER_POSITION_OPENED", "PAPER_POSITION_HELD"}
         )
 
     def _render_trade_ledger_row(self, row: DashboardTradeLedgerRow, *, page_path: Path) -> str:
@@ -1245,6 +1372,7 @@ class TfisOperatorDashboardBuilder:
     def _render_latest_session_block(
         self,
         *,
+        config: StrategyDashboardConfig,
         latest: DashboardSessionSummary,
         trade_rows: list[DashboardTradeLedgerRow],
         page_path: Path,
@@ -1265,16 +1393,16 @@ class TfisOperatorDashboardBuilder:
                 "</div>",
                 f"<div class=\"artifact-links top-links\">{artifact_links}</div>",
                 "</div>",
-                self._render_final_leg_panel(latest),
-                self._render_final_explanation_panel(latest),
+                self._render_final_leg_panel(config=config, latest=latest),
+                self._render_final_explanation_panel(config=config, latest=latest),
                 "<div class=\"stage-grid\">",
                 stage_cards or "<p>No stage artifacts found.</p>",
                 "</div>",
             ]
         )
 
-    def _render_final_leg_panel(self, latest: DashboardSessionSummary) -> str:
-        legs = self._session_final_leg_rows(latest)
+    def _render_final_leg_panel(self, *, config: StrategyDashboardConfig, latest: DashboardSessionSummary) -> str:
+        legs = self._session_final_leg_rows(config=config, session=latest)
         if not legs:
             return ""
         rows = "\n".join(
@@ -1282,7 +1410,7 @@ class TfisOperatorDashboardBuilder:
                 [
                     "<tr>",
                     f"<td class=\"text-cell code-cell\">{html.escape(str(item['branch']))}</td>",
-                    f"<td class=\"text-cell contract-cell\"><strong>{html.escape(str(item['contract']))}</strong></td>",
+                    f"<td class=\"text-cell contract-cell\"><strong>{html.escape(str(item.get('contract') or 'No contract selected'))}</strong></td>",
                     f"<td class=\"text-cell side-cell\">{html.escape(str(item['side']))}</td>",
                     f"<td class=\"number-cell\">{self._fmt_number(item['strike'])}</td>",
                     f"<td class=\"number-cell\">{self._fmt_number(item['premium'])}</td>",
@@ -1299,7 +1427,7 @@ class TfisOperatorDashboardBuilder:
         return "\n".join(
             [
                 '<div class="session-summary summary-shell final-leg-panel">',
-                '<div class="section-heading"><h3>Final Selected S23 Legs</h3><span>Final CE/PE decisions from the 09:30 run</span></div>',
+                '<div class="section-heading"><h3>Final S23 Leg Decisions</h3><span>Final CE/PE decisions from the 09:30 run</span></div>',
                 '<table class="candidate-table final-leg-table">',
                 "<thead><tr><th class=\"text-cell\">Branch</th><th class=\"text-cell\">Contract</th><th class=\"text-cell\">Side</th><th class=\"number-cell\">Strike</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Entry</th><th class=\"number-cell\">Target</th><th class=\"number-cell\">SL</th><th class=\"status-cell\">Order Status</th></tr></thead>",
                 f"<tbody>{rows}</tbody>",
@@ -1308,8 +1436,8 @@ class TfisOperatorDashboardBuilder:
             ]
         )
 
-    def _render_final_explanation_panel(self, latest: DashboardSessionSummary) -> str:
-        legs = self._session_final_leg_rows(latest)
+    def _render_final_explanation_panel(self, *, config: StrategyDashboardConfig, latest: DashboardSessionSummary) -> str:
+        legs = self._session_final_leg_rows(config=config, session=latest)
         if not legs:
             return ""
         monthly = legs[0].get("monthly") if legs else {}
@@ -1413,14 +1541,18 @@ class TfisOperatorDashboardBuilder:
                     f"distance from ideal {self._fmt_number(first.get('premium_distance'))}."
                 )
         dry_run_steps = self._s23_leg_dry_run_steps(leg)
+        contract_label = str(leg.get("contract") or "No contract selected")
+        final_decision_text = leg.get("final_decision_text")
+        if not final_decision_text:
+            final_decision_text = ranked_text
         return "\n".join(
             [
                 '<article class="leg-explanation-card">',
-                f"<h3>{html.escape(str(leg['side']))}: {html.escape(str(leg['contract']))}</h3>",
+                f"<h3>{html.escape(str(leg['side']))}: {html.escape(contract_label)}</h3>",
                 '<ol class="explanation-list">',
                 *(f"<li>{step}</li>" for step in dry_run_steps),
                 f"<li><strong>Search outcome.</strong> {html.escape(str(leg.get('selection_reason') or 'n/a'))} Rejections checked before selection: {html.escape(rejected_text)}.</li>",
-                f"<li><strong>Final decision.</strong> {html.escape(ranked_text)}</li>",
+                f"<li><strong>Final decision.</strong> {html.escape(str(final_decision_text))}</li>",
                 "</ol>",
                 eligible_table,
                 formula_table,
@@ -1505,7 +1637,37 @@ class TfisOperatorDashboardBuilder:
             if is_pe
             else f"from {self._fmt_number(leg.get('start_strike'))} down to {self._fmt_number(leg.get('end_strike'))}"
         )
+        attempted_expiries = self._s23_attempted_expiries_text(leg)
+        expiry_search_text = (
+            f" It attempted expiry search in this order: {html.escape(attempted_expiries)}."
+            if attempted_expiries
+            else " Attempted-expiry details were not persisted for this run."
+        )
         entry_status = self._normalize_trade_status_label(str(leg.get("order_status") or "n/a")) or "n/a"
+        if leg.get("contract"):
+            step_8 = (
+                f"<strong>Step 8 - Select final strike.</strong> The selected contract is {html.escape(str(leg.get('contract') or 'n/a'))}: "
+                f"strike {self._fmt_number(leg.get('strike'))}, premium {self._fmt_number(leg.get('premium'))}, "
+                f"OI {self._fmt_number(leg.get('oi'), integer=True)}."
+            )
+            step_9 = (
+                f"<strong>Step 9 - Calculate trade levels.</strong> Entry uses <code>{html.escape(str(entry.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('entry'))}; "
+                f"target uses <code>{html.escape(str(target.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('target'))}; "
+                f"SL uses <code>{html.escape(str(stoploss.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('stoploss'))}. "
+                f"Order status is {html.escape(entry_status)}."
+            )
+        else:
+            failure_code = str(leg.get("order_status") or "NO_ORDER")
+            failure_message = str(leg.get("selection_reason") or "No final contract selected.")
+            step_8 = (
+                f"<strong>Step 8 - Select final strike.</strong> No final {html.escape(side)} contract was selected. "
+                f"Reason: {html.escape(failure_code)} - {html.escape(failure_message)}"
+            )
+            step_9 = (
+                f"<strong>Step 9 - Trade levels.</strong> Entry/target/SL formulas were calculated for audit "
+                f"({self._fmt_number(leg.get('entry'))} / {self._fmt_number(leg.get('target'))} / {self._fmt_number(leg.get('stoploss'))}), "
+                "but no paper order was created because the strike search failed."
+            )
         return [
             (
                 f"<strong>Step 3 - Collect NIFTY spot data.</strong> Monthly status is {html.escape(monthly_status)}, "
@@ -1533,18 +1695,10 @@ class TfisOperatorDashboardBuilder:
                 f"<strong>Step 7 - Search eligible strikes.</strong> TFIS scans the option chain "
                 f"{search_text}. "
                 f"A strike must have enough OI, meet the premium rule, and be the correct option side."
+                f"{expiry_search_text}"
             ),
-            (
-                f"<strong>Step 8 - Select final strike.</strong> The selected contract is {html.escape(str(leg.get('contract') or 'n/a'))}: "
-                f"strike {self._fmt_number(leg.get('strike'))}, premium {self._fmt_number(leg.get('premium'))}, "
-                f"OI {self._fmt_number(leg.get('oi'), integer=True)}."
-            ),
-            (
-                f"<strong>Step 9 - Calculate trade levels.</strong> Entry uses <code>{html.escape(str(entry.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('entry'))}; "
-                f"target uses <code>{html.escape(str(target.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('target'))}; "
-                f"SL uses <code>{html.escape(str(stoploss.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('stoploss'))}. "
-                f"Order status is {html.escape(entry_status)}."
-            ),
+            step_8,
+            step_9,
         ]
 
     def _spot_reference_alias_for_s23_leg(self, leg: dict[str, Any]) -> str:
@@ -1589,6 +1743,17 @@ class TfisOperatorDashboardBuilder:
             return str(monthly["status"])
         return "n/a"
 
+    @staticmethod
+    def _s23_attempted_expiries_text(leg: dict[str, Any]) -> str:
+        attempted = leg.get("attempted_expiries")
+        if isinstance(attempted, tuple | list):
+            values = [str(item) for item in attempted if str(item).strip()]
+            if values:
+                if len(values) == 1:
+                    return f"near expiry {values[0]} only"
+                return "near expiry " + values[0] + "; fallback expiry " + "; fallback expiry ".join(values[1:])
+        return ""
+
     def _s23_strike_step_from_formula(self, formula: dict[str, Any]) -> float | None:
         text = str(formula.get("resolved_formula") or "")
         match = re.search(r"([+-])\s*(\d+(?:\.\d+)?)\s*$", text)
@@ -1596,11 +1761,17 @@ class TfisOperatorDashboardBuilder:
             return None
         return self._float_or_none(match.group(2))
 
-    def _session_final_leg_rows(self, session: DashboardSessionSummary) -> tuple[dict[str, Any], ...]:
+    def _session_final_leg_rows(
+        self,
+        *,
+        config: StrategyDashboardConfig,
+        session: DashboardSessionSummary,
+    ) -> tuple[dict[str, Any], ...]:
         session_dir = session.session_directory
         if session_dir is None or not session_dir.exists():
             return ()
         rows: list[dict[str, Any]] = []
+        selected_branches: set[str] = set()
         for summary_path in sorted(session_dir.rglob("trade_decision_summary.json")):
             try:
                 raw_summary = self._read_json(summary_path)
@@ -1632,9 +1803,11 @@ class TfisOperatorDashboardBuilder:
                     order_status = raw_order.get("status")
             option_type = str(summary.get("selected_contract_option_type") or "").upper()
             side = "SELL PE" if option_type in {"PE", "PUT"} else "SELL CE" if option_type in {"CE", "CALL"} else "SELL"
+            branch = str(summary.get("strategy_branch") or summary_path.parent.name)
+            selected_branches.add(self._normalize_s23_branch_name(branch))
             rows.append(
                 {
-                    "branch": summary.get("strategy_branch") or summary_path.parent.name,
+                    "branch": branch,
                     "contract": contract,
                     "side": side,
                     "strike": self._float_or_none(summary.get("selected_contract_strike")),
@@ -1650,6 +1823,7 @@ class TfisOperatorDashboardBuilder:
                     "minimum_premium": self._float_or_none(request.get("minimum_premium")),
                     "minimum_oi": self._float_or_none(thresholds.get("minimum_oi")),
                     "selection_reason": summary.get("contract_selection_reason"),
+                    "attempted_expiries": summary.get("contract_selection_attempted_expiries"),
                     "required_market_aliases": summary.get("required_market_aliases"),
                     "ranked_candidates": summary.get("ranked_candidates"),
                     "rejected_counts": summary.get("rejected_candidate_counts"),
@@ -1660,7 +1834,163 @@ class TfisOperatorDashboardBuilder:
                     "monthly": explanation.get("monthly_status"),
                 }
             )
+        rows.extend(
+            self._session_failed_leg_rows(
+                config=config,
+                session=session,
+                selected_branches=selected_branches,
+            )
+        )
         return tuple(rows)
+
+    def _session_failed_leg_rows(
+        self,
+        *,
+        config: StrategyDashboardConfig,
+        session: DashboardSessionSummary,
+        selected_branches: set[str],
+    ) -> list[dict[str, Any]]:
+        session_dir = session.session_directory
+        if session_dir is None or not session_dir.exists():
+            return []
+        stage_dir = self._session_final_stage_dir(config=config, session=session)
+        rows: list[dict[str, Any]] = []
+        for explainer_path in sorted(session_dir.glob("*/trade_decision_explainer.json")):
+            branch = explainer_path.parent.name
+            normalized_branch = self._normalize_s23_branch_name(branch)
+            if normalized_branch in selected_branches:
+                continue
+            try:
+                payload = self._read_json(explainer_path)
+            except (OSError, json.JSONDecodeError):
+                continue
+            stage = self._finalized_explainer_stage(payload)
+            if not stage:
+                continue
+            effective_monthly_status = str(stage.get("monthly_status") or session.final_monthly_status or "")
+            if not self._branch_matches_monthly_status(normalized_branch, effective_monthly_status):
+                continue
+            failure_code = str(stage.get("decision_failure_code") or "")
+            if not failure_code:
+                continue
+            formula_values = self._formula_values(stage)
+            strategy_rule = self._load_s23_branch_rule(config=config, branch=normalized_branch)
+            candidates: tuple[dict[str, Any], ...] = ()
+            minimum_oi = None
+            if strategy_rule is not None:
+                minimum_oi = self._float_or_none(getattr(strategy_rule, "minimum_oi", None))
+                if stage_dir is not None:
+                    candidates = self._candidate_rows(
+                        strategy_rule=strategy_rule,
+                        stage_dir=stage_dir,
+                        formula_values=formula_values,
+                        selected_contract_symbol=None,
+                    )
+            persisted_rejected_counts = stage.get("decision_failure_rejected_counts")
+            rejected_counts = (
+                persisted_rejected_counts
+                if isinstance(persisted_rejected_counts, dict)
+                else self._candidate_rejection_counts(candidates)
+            )
+            side = "SELL PE" if "PUT" in normalized_branch.upper() else "SELL CE" if "CALL" in normalized_branch.upper() else "SELL"
+            message = str(stage.get("decision_failure_message") or "No final contract selected.")
+            rows.append(
+                {
+                    "branch": normalized_branch,
+                    "contract": None,
+                    "side": side,
+                    "strike": None,
+                    "premium": None,
+                    "oi": None,
+                    "entry": self._formula_result(formula_values, "entry"),
+                    "target": self._formula_result(formula_values, "target"),
+                    "stoploss": self._formula_result(formula_values, "stoploss"),
+                    "order_status": failure_code,
+                    "start_strike": self._formula_result(formula_values, "start_strike"),
+                    "end_strike": self._formula_result(formula_values, "end_strike"),
+                    "ideal_premium": self._formula_result(formula_values, "ideal_premium"),
+                    "minimum_premium": self._formula_result(formula_values, "minimum_premium"),
+                    "minimum_oi": minimum_oi,
+                    "selection_reason": message,
+                    "attempted_expiries": stage.get("decision_failure_attempted_expiries"),
+                    "required_market_aliases": None,
+                    "ranked_candidates": [],
+                    "rejected_counts": rejected_counts,
+                    "contract_candidates": candidates,
+                    "formula_evaluation": stage.get("provisional_formula_evaluation"),
+                    "market_refs": stage.get("market_reference_values"),
+                    "option_refs": stage.get("option_reference_values"),
+                    "monthly": {
+                        "status": stage.get("monthly_status"),
+                        "trigger_name": stage.get("monthly_status_trigger"),
+                        "current_price": stage.get("monthly_status_price_used"),
+                        "resolution_reason": stage.get("monthly_status_resolution_reason"),
+                    },
+                    "final_decision_text": f"No {side} order: {failure_code} - {message}",
+                }
+            )
+        return rows
+
+    @staticmethod
+    def _normalize_s23_branch_name(branch: str) -> str:
+        return re.sub(r"^S23_", "", str(branch or ""))
+
+    @staticmethod
+    def _branch_matches_monthly_status(branch: str, monthly_status: str | None) -> bool:
+        status = str(monthly_status or "").upper()
+        branch_upper = branch.upper()
+        if status.startswith("BEAR"):
+            return "_BEAR_" in branch_upper or branch_upper.endswith("_BEAR_CALL") or branch_upper.endswith("_BEAR_PUT")
+        if status.startswith("BULL"):
+            return "_BULL_" in branch_upper or branch_upper.endswith("_BULL_CALL") or branch_upper.endswith("_BULL_PUT")
+        return False
+
+    @staticmethod
+    def _finalized_explainer_stage(payload: dict[str, Any]) -> dict[str, Any] | None:
+        stages = payload.get("stages")
+        if not isinstance(stages, list):
+            return None
+        for stage in reversed(stages):
+            if isinstance(stage, dict) and stage.get("can_finalize_trade_decision"):
+                return stage
+        return None
+
+    def _session_final_stage_dir(
+        self,
+        *,
+        config: StrategyDashboardConfig,
+        session: DashboardSessionSummary,
+    ) -> Path | None:
+        session_dir = session.session_directory
+        if session_dir is None:
+            return None
+        day_dir = session_dir.parent
+        for stage_dir in self._find_stage_dirs(config=config, day_dir=day_dir):
+            if self._extract_stage_key(stage_dir.name) == "0930":
+                return stage_dir
+        return None
+
+    def _load_s23_branch_rule(self, *, config: StrategyDashboardConfig, branch: str) -> Any | None:
+        config_dir = config.strategy_path.parent
+        for name in (branch, f"S23_{branch}"):
+            path = config_dir / name
+            if path.exists():
+                try:
+                    return load_strategy_rule(path)
+                except Exception:
+                    return None
+        return None
+
+    @staticmethod
+    def _candidate_rejection_counts(candidates: tuple[dict[str, Any], ...]) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for item in candidates:
+            status = str(item.get("status") or "").upper()
+            if status not in {"REJECTED", "FAIL", "FAILED"}:
+                continue
+            reason = str(item.get("reason") or "rejected").replace(" ", "_")
+            counts[reason] = counts.get(reason, 0) + 1
+        return counts
 
     def _render_stage_card(self, stage: DashboardStageSummary, *, page_path: Path) -> str:
         return "\n".join(
@@ -2043,6 +2373,18 @@ class TfisOperatorDashboardBuilder:
             text = f"{text[:-1]}+00:00"
         try:
             return datetime.fromisoformat(text)
+        except ValueError:
+            return None
+
+    @staticmethod
+    def _parse_date(value: Any) -> date | None:
+        if value is None:
+            return None
+        text = str(value).strip()
+        if not text:
+            return None
+        try:
+            return date.fromisoformat(text)
         except ValueError:
             return None
 

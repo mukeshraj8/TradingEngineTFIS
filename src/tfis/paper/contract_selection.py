@@ -157,7 +157,14 @@ class S23PaperContractSelector:
             failed_results.append(result)
 
         if len(failed_results) == 1:
-            return failed_results[0]
+            failed = failed_results[0]
+            return self._failure(
+                failure_code=failed.failure_code
+                or PaperContractSelectionFailureCode.NO_CONTRACT_SELECTED,
+                selection_reason=failed.selection_reason,
+                rejected_candidate_counts=failed.rejected_candidate_counts,
+                attempted_expiries=expiry_dates,
+            )
 
         merged_rejected: dict[str, int] = {}
         for result in failed_results:

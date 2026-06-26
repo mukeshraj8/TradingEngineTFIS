@@ -459,6 +459,7 @@ def _ready_summary(
         selected_contract_oi=1000000,
         contract_selection_reason="test",
         contract_selection_failure_code=None,
+        contract_selection_attempted_expiries=(selected_contract_expiry,),
         rejected_candidate_counts={},
         ranked_candidates=(),
         planned_entry_price=194.25,

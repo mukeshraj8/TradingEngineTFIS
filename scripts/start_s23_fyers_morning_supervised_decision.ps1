@@ -24,6 +24,7 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 Set-Location $repoRoot
+$Host.UI.RawUI.WindowTitle = "TFIS S23 Morning Supervised Decision"
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
 }
@@ -39,6 +40,7 @@ function Write-LaunchLog {
     param([string]$Message)
     $line = "{0} {1}" -f (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK"), $Message
     Add-Content -Path $logPath -Value $line
+    Write-Host "[TFIS S23] $Message"
 }
 
 function Start-S23PaperWatchProcess {
@@ -84,12 +86,45 @@ function Start-S23PaperWatchProcess {
     $stdoutPath = Join-Path $logDir "s23_paper_watch_${Mode}_${safeLabel}_${watchStamp}.out.log"
     $stderrPath = Join-Path $logDir "s23_paper_watch_${Mode}_${safeLabel}_${watchStamp}.err.log"
 
+    $windowTitle = "TFIS S23 Paper Watch - $Mode"
+    $quotedWindowTitle = "'" + ($windowTitle -replace "'", "''") + "'"
     $quotedRepoRoot = "'" + ($repoRoot -replace "'", "''") + "'"
     $quotedPythonExe = "'" + ($pythonExe -replace "'", "''") + "'"
     $quotedWatchArgs = @($watchArgs | ForEach-Object { "'" + ($_ -replace "'", "''") + "'" })
     $quotedStdoutPath = "'" + ($stdoutPath -replace "'", "''") + "'"
     $quotedStderrPath = "'" + ($stderrPath -replace "'", "''") + "'"
-    $watchCommand = "Set-Location $quotedRepoRoot; & $quotedPythonExe $($quotedWatchArgs -join ' ') 2> $quotedStderrPath | Tee-Object -FilePath $quotedStdoutPath -Append"
+    $quotedMode = "'" + ($Mode -replace "'", "''") + "'"
+    $watchDirectoryText = ""
+    if ($WatchDirectory) {
+        $watchDirectoryText = $WatchDirectory
+    }
+    $searchRootText = ""
+    if ($SearchRoot) {
+        $searchRootText = $SearchRoot
+    }
+    $quotedWatchDirectory = "'" + ($watchDirectoryText -replace "'", "''") + "'"
+    $quotedSearchRoot = "'" + ($searchRootText -replace "'", "''") + "'"
+    $watchCommand = @"
+`$Host.UI.RawUI.WindowTitle = $quotedWindowTitle
+Write-Host "============================================================"
+Write-Host "TFIS S23 PAPER WATCHER"
+Write-Host "Mode       : $quotedMode"
+Write-Host "Directory  : $quotedWatchDirectory"
+Write-Host "SearchRoot : $quotedSearchRoot"
+Write-Host "Repo       : $quotedRepoRoot"
+Write-Host "Stdout log : $quotedStdoutPath"
+Write-Host "Stderr log : $quotedStderrPath"
+Write-Host "============================================================"
+Write-Host "Starting watcher. Leave this window open while TFIS paper orders/positions are being monitored."
+Set-Location $quotedRepoRoot
+& $quotedPythonExe $($quotedWatchArgs -join ' ') 2> $quotedStderrPath | Tee-Object -FilePath $quotedStdoutPath -Append
+`$tfisWatchExitCode = `$LASTEXITCODE
+Write-Host "============================================================"
+Write-Host "TFIS S23 paper watcher exited with code `$tfisWatchExitCode."
+Write-Host "If this was during market hours and an order/position should still be monitored, restart the watcher."
+Write-Host "This window is held open for review; it is safe to close only after you have read the status above."
+Write-Host "============================================================"
+"@
 
     $process = Start-Process `
         -FilePath "powershell.exe" `
@@ -137,6 +172,12 @@ if ($CarryForwardStateDir) {
     $args += $CarryForwardStateDir
 }
 
+Write-Host "============================================================"
+Write-Host "TFIS S23 MORNING SUPERVISED DECISION"
+Write-Host "This window belongs to TradingEngineTFIS only."
+Write-Host "Repo: $repoRoot"
+Write-Host "Log : $logPath"
+Write-Host "============================================================"
 Write-LaunchLog "Starting TFIS S23 morning supervised decision wrapper."
 Write-LaunchLog "Python executable: $pythonExe"
 Write-LaunchLog "TfisRoot: $TfisRoot"

@@ -203,11 +203,16 @@ class _CountingFakeBrokerAdapter:
     def get_option_chain(self, symbol: str, expiry: date, *, session_date: date):
         self.get_option_chain_calls += 1
         self.requested_option_chain_expiries.append(expiry)
+        expiry_token = expiry.isoformat().replace("-", "")
         return replace(
             self._chain,
             expiry=expiry,
             contracts=tuple(
-                replace(contract, expiry=expiry)
+                replace(
+                    contract,
+                    symbol=_with_expiry_token(contract.symbol, expiry_token),
+                    expiry=expiry,
+                )
                 for contract in self._chain.contracts
             ),
         )
@@ -244,6 +249,14 @@ class _CountingFakeBrokerAdapter:
         raise AssertionError("cancel_order() must not be called in snapshot preflight")
 
 
+def _with_expiry_token(symbol: str, expiry_token: str) -> str:
+    parts = symbol.split("_")
+    if len(parts) >= 4 and len(parts[1]) == 8 and parts[1].isdigit():
+        parts[1] = expiry_token
+        return "_".join(parts)
+    return symbol
+
+
 def _write_strategy_folder(tmp_path: Path) -> Path:
     strategy_dir = tmp_path / "strategy"
     strategy_dir.mkdir()
@@ -271,19 +284,34 @@ def _write_strategy_folder(tmp_path: Path) -> Path:
     (strategy_dir / "formulas.yaml").write_text(
         yaml.safe_dump(
             {
-                "start_strike_formula": "24625",
-                "end_strike_formula": "25000",
-                "ideal_premium_formula": "790",
-                "minimum_premium_formula": "760",
-                "entry_formula": "798.3",
-                "target_formula": "791.85",
-                "stoploss_formula": "816.35",
+                "start_strike_formula": "ROUND_UP(PRV_3DHH - PARAM(strike_buffer_pct)%)",
+                "end_strike_formula": "ROUND_UP(PRV_3DHH) + PARAM(strike_step)",
+                "ideal_premium_formula": "PRV_3DHH * PARAM(ideal_premium_pct)%",
+                "minimum_premium_formula": "PRV_3DHH * PARAM(minimum_premium_pct)%",
+                "entry_formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                "target_formula": "ENTRY - PARAM(target_pct)%",
+                "stoploss_formula": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
             },
             sort_keys=False,
         ),
         encoding="utf-8",
     )
-    (strategy_dir / "parameters.yaml").write_text("{}", encoding="utf-8")
+    (strategy_dir / "parameters.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "strike_buffer_pct": 5.0,
+                "strike_step": 50.0,
+                "ideal_premium_pct": 1.2,
+                "minimum_premium_pct": 0.9,
+                "entry_discount_pct": 7.5,
+                "target_pct": 60.0,
+                "sl_entry_pct": 60.0,
+                "sl_reference_pct": 7.0,
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
     return strategy_dir
 
 
@@ -358,10 +386,15 @@ def _write_runtime_fixture(tmp_path: Path) -> Path:
         "market_levels": {
             "d2hh": 22500.0,
             "d2ll": 22300.0,
+            "d3hh": 25000.0,
+            "d3ll": 22200.0,
             "current_day_high": 22462.0,
             "current_day_low": 22395.0,
         },
-        "runtime_values": {},
+        "runtime_values": {
+            "OPT_PRV_3DLL": 216.22,
+            "OPT_PRV_2DHH": 300.0,
+        },
         "snapshots": [
             {
                 "snapshot_label": "0915",
@@ -428,8 +461,13 @@ def test_successful_snapshot_collection(tmp_path: Path) -> None:
     expected_expiry = artifact_set.summary.session_date
     while expected_expiry.weekday() != 1:
         expected_expiry += timedelta(days=1)
+    expected_next_expiry = expected_expiry + timedelta(days=7)
     assert artifact_set.summary.weekly_expiry == expected_expiry
-    assert adapter.requested_option_chain_expiries == [expected_expiry]
+    assert adapter.requested_option_chain_expiries == [expected_expiry, expected_next_expiry]
+    assert {
+        contract.expiry
+        for contract in artifact_set.collected_inputs.option_chain_snapshot.contracts
+    } == {expected_expiry, expected_next_expiry}
     assert any(
         issue.code == "configured_weekly_expiry_stale"
         for issue in artifact_set.summary.issues
@@ -442,7 +480,7 @@ def test_successful_snapshot_collection(tmp_path: Path) -> None:
     assert adapter.get_underlying_quote_calls == 1
     assert adapter.get_underlying_bars_calls == 1
     assert adapter.get_underlying_daily_bars_calls == 1
-    assert adapter.get_option_chain_calls == 1
+    assert adapter.get_option_chain_calls == 2
     assert adapter.get_option_quote_calls == 0
     assert adapter.stream_ticks_calls == 0
     assert adapter.order_api_calls == 0

@@ -39,9 +39,16 @@ from .position_state import (
 
 
 class S23LivePreludeError(RuntimeError):
-    def __init__(self, code: str, message: str) -> None:
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        *,
+        contract_selection: S23PaperContractSelectionResult | None = None,
+    ) -> None:
         super().__init__(message)
         self.code = code
+        self.contract_selection = contract_selection
 
 
 class S23PaperPreludeMode(str, Enum):
@@ -184,7 +191,11 @@ class S23PaperLivePreludeBuilder:
                 if selection.failure_code is not None
                 else PaperContractSelectionFailureCode.NO_CONTRACT_SELECTED.value
             )
-            raise S23LivePreludeError(code, selection.selection_reason)
+            raise S23LivePreludeError(
+                code,
+                selection.selection_reason,
+                contract_selection=selection,
+            )
 
         reference_snapshot = self._resolve_order_reference_snapshot(snapshot_events)
         trade_plan_event = self._build_trade_plan_event(

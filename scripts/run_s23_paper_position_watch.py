@@ -120,6 +120,7 @@ def main(argv: list[str] | None = None) -> int:
             search_roots=tuple(args.state_search_root or ()),
             default_artifact_root=Path("tmp/s23_fyers_morning_supervised_decision"),
             no_open_ok=args.no_open_ok,
+            session_date=session_date,
         )
         if order_dir is None:
             print("No open S23 paper position or waiting order found; nothing to watch.")
@@ -156,12 +157,54 @@ def main(argv: list[str] | None = None) -> int:
         else order_state.selected_contract_symbol
     )
     watch_lock_handle = _acquire_watch_file_lock(Path(state_dir or order_dir))
-    print(f"Watching S23 paper {'position' if state is not None else 'order'}: {watched_symbol}")
-    print(f"State directory: {state_dir or order_dir}")
-    print(f"Session date: {session_date.isoformat()}")
+    print("=" * 60, flush=True)
+    print("TFIS S23 PAPER POSITION WATCHER", flush=True)
+    print(f"Process ID       : {os.getpid()}", flush=True)
+    print(f"Watching         : {'position' if state is not None else 'order'}", flush=True)
+    print(f"Selected contract: {watched_symbol}", flush=True)
+    print(f"State directory  : {state_dir or order_dir}", flush=True)
+    print(f"Session date     : {session_date.isoformat()}", flush=True)
+    print(f"Poll seconds     : {args.poll_seconds}", flush=True)
+    print(f"Cutoff time      : {args.until} {timezone_name}", flush=True)
+    print(
+        "Dashboard rebuild: "
+        + ("disabled" if args.disable_dashboard_rebuild else str(args.dashboard_output_root)),
+        flush=True,
+    )
+    print("Status           : starting broker connection and quote watch", flush=True)
+    print("=" * 60, flush=True)
 
     iterations = 0
     try:
+        if (
+            state is None
+            and order_state is not None
+            and order_dir is not None
+            and order_state.status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
+            and order_state.entry_date < session_date
+        ):
+            evaluated_at = datetime.now(timezone)
+            order_state, order_event, _order_state_path, _order_events_path = order_store.mark_not_filled(
+                order_dir,
+                marked_at=evaluated_at,
+                reason_code="paper_order_expired_untriggered_previous_session",
+                message=(
+                    "Pending S23 paper entry orders are session-only. This order "
+                    "did not trigger on its entry date, so it was cancelled instead "
+                    "of being carried forward."
+                ),
+            )
+            print(
+                f"{evaluated_at.isoformat()} {order_state.status.value} "
+                f"{order_event.reason_code} fill={order_state.fill_price}",
+                flush=True,
+            )
+            if not args.disable_dashboard_rebuild:
+                _rebuild_dashboard(
+                    output_root=Path(args.dashboard_output_root),
+                    artifact_root=Path(args.s23_artifact_root),
+                )
+            return 0
         prepare_fyers_env_from_tfis(tfis_root=args.tfis_root, skip_refresh=args.skip_refresh)
         adapter.connect()
         adapter.subscribe_symbols((watched_symbol,))
@@ -177,7 +220,8 @@ def main(argv: list[str] | None = None) -> int:
             except BrokerAdapterError as exc:
                 print(
                     f"{evaluated_at.isoformat()} WARNING quote_fetch_failed "
-                    f"{exc}; keeping watcher alive"
+                    f"{exc}; keeping watcher alive",
+                    flush=True,
                 )
                 events = ()
             if state is None:
@@ -189,7 +233,8 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 print(
                     f"{evaluated_at.isoformat()} {order_state.status.value} "
-                    f"{order_event.reason_code} fill={order_state.fill_price}"
+                    f"{order_event.reason_code} fill={order_state.fill_price}",
+                    flush=True,
                 )
                 if not args.disable_dashboard_rebuild:
                     _rebuild_dashboard(
@@ -230,7 +275,8 @@ def main(argv: list[str] | None = None) -> int:
                         )
                         print(
                             f"{evaluated_at.isoformat()} {order_state.status.value} "
-                            f"{order_event.reason_code} fill={order_state.fill_price}"
+                            f"{order_event.reason_code} fill={order_state.fill_price}",
+                            flush=True,
                         )
                         if not args.disable_dashboard_rebuild:
                             _rebuild_dashboard(
@@ -251,7 +297,8 @@ def main(argv: list[str] | None = None) -> int:
                 watched_symbol = state.selected_contract_symbol
                 print(
                     f"{evaluated_at.isoformat()} {opened.status.value} "
-                    f"{opened.event.reason_code} entry={state.entry_price}"
+                    f"{opened.event.reason_code} entry={state.entry_price}",
+                    flush=True,
                 )
 
             assert state_dir is not None
@@ -284,7 +331,8 @@ def main(argv: list[str] | None = None) -> int:
             )
             print(
                 f"{evaluated_at.isoformat()} {result.status.value} "
-                f"{result.event.reason_code} exit={result.event.exit_price}"
+                f"{result.event.reason_code} exit={result.event.exit_price}",
+                flush=True,
             )
             if not args.disable_dashboard_rebuild:
                 _rebuild_dashboard(
@@ -301,7 +349,7 @@ def main(argv: list[str] | None = None) -> int:
                 return 0
             time_module.sleep(max(1.0, args.poll_seconds))
     except (BrokerAdapterError, RuntimeError, ValueError) as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
+        print(f"ERROR: {exc}", file=sys.stderr, flush=True)
         return 1
     finally:
         try:
@@ -414,6 +462,7 @@ def _resolve_order_dir(
     search_roots: tuple[str, ...],
     default_artifact_root: Path,
     no_open_ok: bool,
+    session_date: date,
 ) -> Path | None:
     if order_dir:
         return Path(order_dir)
@@ -428,7 +477,10 @@ def _resolve_order_dir(
                 state = store.load_state(path.parent)
             except Exception:
                 continue
-            if state.status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER:
+            if (
+                state.status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
+                and state.entry_date == session_date
+            ):
                 candidates.append((state.last_updated_timestamp, path.parent))
     if candidates:
         return sorted(candidates, key=lambda item: item[0])[-1][1]

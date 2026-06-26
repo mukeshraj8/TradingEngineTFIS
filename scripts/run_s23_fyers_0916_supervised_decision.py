@@ -27,6 +27,10 @@ DEFAULT_STRATEGIES = (
     "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
 )
 DEFAULT_STRATEGY_ROOT = REPO_ROOT / "config" / "strategies" / "options_sell" / "nifty"
+_MARKET_CLOSED_NO_CANDLE_MESSAGES = (
+    "FYERS underlying history payload returned no candles",
+    "No underlying history candles matched the requested TFIS session window",
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -88,6 +92,13 @@ def main(argv: list[str] | None = None) -> int:
         )
     except (S23FyersSnapshotCollectorError, RuntimeError) as exc:
         code = getattr(exc, "code", "MORNING_SUPERVISED_DECISION_FAILED")
+        if _is_market_closed_no_action(code=code, message=str(exc)):
+            print(
+                "MARKET_CLOSED_NO_ACTION: No intraday market candles were available "
+                "for the supervised S23 snapshot window. No trade decision or watcher "
+                "was started."
+            )
+            return 0
         print(f"ERROR [{code}]: {exc}", file=sys.stderr)
         return 1
     print("Scheduled morning supervised S23 decision run succeeded.")
@@ -99,6 +110,12 @@ def main(argv: list[str] | None = None) -> int:
     if result.final_summary_markdown is not None:
         print(f"Final decision summary: {result.final_summary_markdown}")
     return 0
+
+
+def _is_market_closed_no_action(*, code: str, message: str) -> bool:
+    return code == "BROKER_SNAPSHOT_FAILED" and any(
+        marker in message for marker in _MARKET_CLOSED_NO_CANDLE_MESSAGES
+    )
 
 
 if __name__ == "__main__":

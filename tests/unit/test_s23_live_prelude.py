@@ -38,7 +38,7 @@ def _ts(day: int, hour: int, minute: int, second: int = 0) -> datetime:
 def _strategy_rule() -> StrategyRule:
     return StrategyRule(
         strategy_code="S23",
-        unique_code="S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+        unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
         symbol="NIFTY",
         segment=Segment.OPTIONS_SELL,
         expiry_policy=StrategyExpiryPolicy(
@@ -51,15 +51,25 @@ def _strategy_rule() -> StrategyRule:
         option_type=OptionType.PUT,
         entry_time=time(9, 25),
         recalculation_time=time(9, 30),
-        start_strike_formula="PRV_2DLL",
-        end_strike_formula="PRV_2DHH",
-        ideal_premium_formula="ENTRY",
-        minimum_premium_formula="ENTRY - 10%",
+        start_strike_formula="ROUND_UP(PRV_3DHH - PARAM(strike_buffer_pct)%)",
+        end_strike_formula="ROUND_UP(PRV_3DHH) + PARAM(strike_step)",
+        ideal_premium_formula="PRV_3DHH * PARAM(ideal_premium_pct)%",
+        minimum_premium_formula="PRV_3DHH * PARAM(minimum_premium_pct)%",
         minimum_oi=500,
-        entry_formula="ENTRY",
-        target_formula="80",
-        stoploss_formula="320",
+        entry_formula="OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+        target_formula="ENTRY - PARAM(target_pct)%",
+        stoploss_formula="MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
         carry_forward_allowed=True,
+        parameters={
+            "strike_buffer_pct": 5.0,
+            "strike_step": 50.0,
+            "ideal_premium_pct": 1.2,
+            "minimum_premium_pct": 0.9,
+            "entry_discount_pct": 7.5,
+            "target_pct": 60.0,
+            "sl_entry_pct": 60.0,
+            "sl_reference_pct": 7.0,
+        },
     )
 
 
@@ -78,6 +88,8 @@ def _market_levels() -> MarketLevels:
     return MarketLevels(
         d2hh=22500.0,
         d2ll=22300.0,
+        d3hh=22400.0,
+        d3ll=22200.0,
         current_day_high=22480.0,
         current_day_low=22340.0,
     )
@@ -180,7 +192,7 @@ def _request(**overrides: object) -> S23PaperLivePreludeRequest:
         "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
         "monthly_status_result": _monthly_status_result(),
         "market_levels": _market_levels(),
-        "runtime_values": {"ENTRY": 200.0},
+        "runtime_values": {"OPT_PRV_3DLL": 216.22, "OPT_PRV_2DHH": 300.0},
         "option_chain_snapshot": _option_chain_snapshot(
             _option_chain_contract(
                 symbol="NIFTY_20260529_22300_PE",
@@ -191,7 +203,7 @@ def _request(**overrides: object) -> S23PaperLivePreludeRequest:
             _option_chain_contract(
                 symbol="NIFTY_20260529_22400_PE",
                 strike=22400.0,
-                ltp=200.0,
+                ltp=270.0,
                 oi=1200.0,
             ),
             _option_chain_contract(
@@ -218,7 +230,7 @@ def _open_position_state() -> object:
     store = S23PaperPositionStateStore()
     return store.create_open_position_state(
         strategy_code="S23",
-        unique_code="S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+        unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
         symbol="NIFTY",
         option_type=OptionType.PUT,
         selected_contract_symbol="NIFTY_20260529_22400_PE",
@@ -278,7 +290,7 @@ def test_fresh_session_falls_back_to_next_weekly_expiry_when_near_weekly_fails()
                 _option_chain_contract(
                     symbol="NIFTY_20260605_22400_PE",
                     strike=22400.0,
-                    ltp=200.0,
+                    ltp=270.0,
                     oi=1200.0,
                     expiry=date(2026, 6, 5),
                 ),
@@ -399,7 +411,7 @@ def test_missing_oi_fails_safely() -> None:
                     _option_chain_contract(
                         symbol="NIFTY_20260529_22400_PE",
                         strike=22400.0,
-                        ltp=200.0,
+                        ltp=270.0,
                         oi=None,
                     )
                 )
@@ -432,19 +444,19 @@ def test_explicit_smoke_override_only_applies_when_enabled_and_is_provenance_tag
     builder = S23PaperLivePreludeBuilder()
 
     ignored = builder.build(
-        _request(smoke_override_selected_contract_symbol="NIFTY_20260529_22500_PE")
+        _request(smoke_override_selected_contract_symbol="NIFTY_20260529_22400_PE")
     )
     applied = builder.build(
         _request(
             smoke_override_enabled=True,
-            smoke_override_selected_contract_symbol="NIFTY_20260529_22500_PE",
+            smoke_override_selected_contract_symbol="NIFTY_20260529_22400_PE",
         )
     )
 
     assert ignored.selected_contract_event is not None
     assert ignored.selected_contract_event.symbol == "NIFTY_20260529_22400_PE"
     assert applied.selected_contract_event is not None
-    assert applied.selected_contract_event.symbol == "NIFTY_20260529_22500_PE"
+    assert applied.selected_contract_event.symbol == "NIFTY_20260529_22400_PE"
     assert applied.selected_contract_provenance == "smoke_override"
     assert applied.selected_contract_event.envelope.data_quality_flags == (
         "smoke_override_selected_contract",

@@ -88,6 +88,23 @@ change in a meaningful way.
   section that renders Step 1-8 reasoning from the final decision artifacts,
   including monthly-status mapping, CE/PE strike ranges, qualification outcome,
   formula traces, final selections, entry, target, SL, and order status
+- S23 final leg dashboard reporting now shows both independently evaluated
+  CE/PE legs; if a leg does not qualify, the table and explanation show
+  `No contract selected`, the failure code, and the no-order reason instead of
+  hiding that side
+- S23 FYERS live snapshot collection now captures the resolved near weekly
+  expiry plus the following weekly expiry in the same normalized option-chain
+  snapshot, so rule-sheet fallback search can retry the next contract when the
+  near contract fails
+- S23 decision summaries, failure artifacts, markdown explainers, and dashboard
+  explanations now persist/show attempted expiries and rejection counts, making
+  near-vs-next expiry fallback auditable for both selected and no-order legs
+- S23 strategy dashboard auto-refresh preserves expanded/collapsed explanation
+  and snapshot panels per browser tab, so operator drill-down sections no
+  longer collapse every time the page refreshes
+- S23 trade dashboard summarization now prefers terminal close events over
+  later stale non-terminal rows for the same trade, so expired/closed historical
+  positions do not remain displayed as action-required rollover items
 - S23 runtime derivation/prelude now fail closed if a loaded strategy rule does
   not match the corrected rule matrix
 - `scripts/validate_s23_rule_matrix.py` validates configured S23 strategy
@@ -99,6 +116,18 @@ change in a meaningful way.
   produced paper order or open paper position, so two-leg sessions can update
   selected-contract current price, fill status, dashboard rebuilds, and open
   position P&L independently
+- S23 pending paper entry orders are session-only: untriggered waiting orders
+  are cancelled/not-filled after their entry session and must not carry forward
+  or remain active on the next day's dashboard; only filled/open paper positions
+  can carry forward for multi-day management
+- S23 scheduled wrapper and paper watcher consoles now identify themselves as
+  TFIS windows, print startup/status/exit messages, and keep visible watcher
+  windows readable for operator review instead of leaving ambiguous blank
+  PowerShell terminals
+- S23 scheduled morning decision CLI treats a no-intraday-candles response for
+  the supervised snapshot window as `MARKET_CLOSED_NO_ACTION` and exits cleanly,
+  so market holidays/closed days do not appear as failed Windows Scheduled Task
+  runs; other broker snapshot failures still fail closed
 
 ## Current Architecture Flow
 

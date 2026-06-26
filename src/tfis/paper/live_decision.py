@@ -58,6 +58,7 @@ class S23PaperTradeDecisionSummary:
     selected_contract_oi: float | None
     contract_selection_reason: str | None
     contract_selection_failure_code: str | None
+    contract_selection_attempted_expiries: tuple[str, ...]
     rejected_candidate_counts: dict[str, int]
     ranked_candidates: tuple[dict[str, Any], ...]
     planned_entry_price: float | None
@@ -239,6 +240,9 @@ class S23PaperLiveDecisionBuilder:
                     f"- Premium: `{summary.selected_contract_ltp}`",
                     f"- OI: `{summary.selected_contract_oi}`",
                     f"- Selection Reason: `{summary.contract_selection_reason}`",
+                    "- Attempted Expiries: `"
+                    + (", ".join(summary.contract_selection_attempted_expiries) or "none")
+                    + "`",
                 ]
             )
         lines.extend(
@@ -467,6 +471,11 @@ class S23PaperLiveDecisionBuilder:
                 if contract_selection is not None and contract_selection.failure_code is not None
                 else None
             ),
+            contract_selection_attempted_expiries=(
+                tuple(expiry.isoformat() for expiry in contract_selection.attempted_expiries)
+                if contract_selection is not None
+                else ()
+            ),
             rejected_candidate_counts=(
                 dict(contract_selection.rejected_candidate_counts)
                 if contract_selection is not None
@@ -584,6 +593,7 @@ class S23PaperLiveDecisionBuilder:
                 "selected_contract_symbol": summary.selected_contract_symbol,
                 "selection_reason": summary.contract_selection_reason,
                 "failure_code": summary.contract_selection_failure_code,
+                "attempted_expiries": list(summary.contract_selection_attempted_expiries),
                 "selected_contract_expiry": summary.selected_contract_expiry,
                 "selected_contract_strike": summary.selected_contract_strike,
                 "selected_contract_option_type": summary.selected_contract_option_type,
