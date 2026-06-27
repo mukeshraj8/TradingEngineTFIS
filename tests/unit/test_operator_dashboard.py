@@ -525,6 +525,10 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "PE final calculation" in manual_calculator_html
     assert "GetMonthlyStatus" in monthly_calculator_html
     assert "Fetch Captured Monthly Data" in monthly_calculator_html
+    assert "Market Structure Chart" in monthly_calculator_html
+    assert 'id="monthlyStatusChart"' in monthly_calculator_html
+    assert 'data-frame="monthly"' in monthly_calculator_html
+    assert "renderMonthlyStatusChart" in monthly_calculator_html
     assert "PMH" in monthly_calculator_html
     assert "CWH" in monthly_calculator_html
     assert manifest["strategies"][0]["sessions"][0]["final_decision_status"] == "READY"

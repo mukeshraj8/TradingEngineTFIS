@@ -2465,6 +2465,24 @@ class TfisOperatorDashboardBuilder:
     </div>
     <div id="monthlyFetchStatus" class="result-summary"></div>
   </section>
+  <section class="calc-panel market-chart-panel">
+    <div class="chart-heading">
+      <div>
+        <h2>Market Structure Chart</h2>
+        <div id="monthlyChartSubtitle" class="chart-subtitle">Fetch current data to load candles.</div>
+      </div>
+      <div class="chart-tabs" role="tablist" aria-label="Monthly status chart timeframe">
+        <button type="button" class="chart-tab active" data-frame="monthly">Monthly</button>
+        <button type="button" class="chart-tab" data-frame="weekly">Weekly</button>
+        <button type="button" class="chart-tab" data-frame="daily">Daily</button>
+      </div>
+    </div>
+    <div id="monthlyChartMeta" class="chart-meta-grid"></div>
+    <div class="chart-wrap">
+      <svg id="monthlyStatusChart" class="ohlc-chart" viewBox="0 0 1200 520" role="img" aria-label="Monthly status candlestick chart"></svg>
+      <div id="monthlyChartEmpty" class="chart-empty">No chart data loaded.</div>
+    </div>
+  </section>
   <section class="calc-panel output-panel">
     <h2>Monthly Status Result</h2>
     <div id="monthlyResultSummary" class="result-summary"></div>
@@ -2517,6 +2535,8 @@ const FALLBACK_INSTRUMENTS = [
   { symbol: "CHOLAFIN", label: "CHOLAFIN", instrument_group: "stock" }
 ];
 let monthlyInstrumentRegistry = { instruments: FALLBACK_INSTRUMENTS, default_symbol: "NIFTY", default_price_source: "spot" };
+let monthlyChartPayload = null;
+let monthlyChartFrame = "monthly";
 function text(id) { return document.getElementById(id).value.trim(); }
 function value(id) {
   const number = Number(document.getElementById(id).value);
@@ -2524,11 +2544,173 @@ function value(id) {
   return number;
 }
 function fmt(number) { return Number.isFinite(number) ? number.toFixed(2).replace(/\.00$/, "") : "n/a"; }
+function fmtAxis(number) {
+  if (!Number.isFinite(number)) return "n/a";
+  if (Math.abs(number) >= 1000) return number.toFixed(0);
+  return number.toFixed(2).replace(/\.00$/, "");
+}
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+}
+function chartPeriodLabel(item) {
+  const label = String(item.label || item.end_date || "");
+  if (monthlyChartFrame === "weekly") return label.replace(/^\d{4}-/, "");
+  if (monthlyChartFrame === "daily") return String(item.end_date || label).slice(5);
+  return label;
+}
 function setMonthlyDefaultDate() { if (!text("monthlyReviewDate")) document.getElementById("monthlyReviewDate").value = new Date().toISOString().slice(0, 10); }
 function pctAbove(base, pct) { return base * (1 + pct / 100); }
 function pctBelow(base, pct) { return base * (1 - pct / 100); }
 function levels() {
   return { PMH: value("PMH"), PML: value("PML"), CMH: value("CMH"), CML: value("CML"), PWH: value("PWH"), PWL: value("PWL"), CWH: value("CWH"), CWL: value("CWL"), currentPrice: value("currentPrice") };
+}
+function setMonthlyChartPayload(payload) {
+  monthlyChartPayload = payload && payload.chart ? payload : null;
+  renderMonthlyStatusChart();
+}
+function clearMonthlyChart(message) {
+  monthlyChartPayload = null;
+  document.getElementById("monthlyStatusChart").innerHTML = "";
+  document.getElementById("monthlyChartMeta").innerHTML = "";
+  document.getElementById("monthlyChartSubtitle").textContent = message || "Fetch current data to load candles.";
+  document.getElementById("monthlyChartEmpty").textContent = message || "No chart data loaded.";
+  document.getElementById("monthlyChartEmpty").style.display = "grid";
+}
+function chartReferenceLevels() {
+  try {
+    const l = levels();
+    return [
+      { key: "PMH", value: l.PMH, tone: "monthly-high" },
+      { key: "PML", value: l.PML, tone: "monthly-low" },
+      { key: "CMH", value: l.CMH, tone: "current-month-high" },
+      { key: "CML", value: l.CML, tone: "current-month-low" },
+      { key: "PWH", value: l.PWH, tone: "weekly-high" },
+      { key: "PWL", value: l.PWL, tone: "weekly-low" },
+      { key: "CWH", value: l.CWH, tone: "current-week-high" },
+      { key: "CWL", value: l.CWL, tone: "current-week-low" },
+      { key: "LTP", value: l.currentPrice, tone: "current-price" }
+    ].filter(item => Number.isFinite(item.value) && item.value > 0);
+  } catch (error) {
+    return [];
+  }
+}
+function renderMonthlyStatusChart() {
+  const svg = document.getElementById("monthlyStatusChart");
+  const empty = document.getElementById("monthlyChartEmpty");
+  const meta = document.getElementById("monthlyChartMeta");
+  const subtitle = document.getElementById("monthlyChartSubtitle");
+  const chart = monthlyChartPayload && monthlyChartPayload.chart ? monthlyChartPayload.chart : {};
+  const candles = (chart[monthlyChartFrame] || []).filter(item =>
+    Number.isFinite(Number(item.open)) &&
+    Number.isFinite(Number(item.high)) &&
+    Number.isFinite(Number(item.low)) &&
+    Number.isFinite(Number(item.close))
+  );
+  document.querySelectorAll(".chart-tab").forEach(tab => {
+    tab.classList.toggle("active", tab.dataset.frame === monthlyChartFrame);
+  });
+  if (!candles.length) {
+    svg.innerHTML = "";
+    meta.innerHTML = "";
+    subtitle.textContent = monthlyChartPayload ? "No candles available for this timeframe." : "Fetch current data to load candles.";
+    empty.textContent = monthlyChartPayload ? "No candles available for this timeframe." : "No chart data loaded.";
+    empty.style.display = "grid";
+    return;
+  }
+
+  empty.style.display = "none";
+  const bounds = svg.getBoundingClientRect();
+  const width = Math.max(1100, Math.round(bounds.width || 1200));
+  const height = 520;
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  const margin = { top: 28, right: 112, bottom: 56, left: 56 };
+  const plotW = width - margin.left - margin.right;
+  const plotH = height - margin.top - margin.bottom;
+  const refs = chartReferenceLevels();
+  const highs = candles.map(item => Number(item.high)).concat(refs.map(item => item.value));
+  const lows = candles.map(item => Number(item.low)).concat(refs.map(item => item.value));
+  let maxPrice = Math.max(...highs);
+  let minPrice = Math.min(...lows);
+  if (maxPrice === minPrice) {
+    maxPrice += 1;
+    minPrice -= 1;
+  }
+  const pad = (maxPrice - minPrice) * 0.08;
+  maxPrice += pad;
+  minPrice -= pad;
+  const xStep = plotW / Math.max(candles.length, 1);
+  const bodyW = Math.max(4, Math.min(24, xStep * 0.58));
+  const y = price => margin.top + ((maxPrice - price) / (maxPrice - minPrice)) * plotH;
+  const x = index => margin.left + xStep * index + xStep / 2;
+  const grid = [];
+  for (let i = 0; i <= 5; i += 1) {
+    const gy = margin.top + (plotH / 5) * i;
+    const price = maxPrice - ((maxPrice - minPrice) / 5) * i;
+    grid.push(`<line class="chart-grid-line" x1="${margin.left}" y1="${gy}" x2="${width - margin.right}" y2="${gy}"></line>`);
+    grid.push(`<text class="chart-axis-label" x="${width - margin.right + 10}" y="${gy + 4}">${fmtAxis(price)}</text>`);
+  }
+  const refPositions = refs
+    .map(ref => ({ ...ref, ry: y(ref.value), labelY: y(ref.value) - 6 }))
+    .sort((left, right) => left.ry - right.ry);
+  let previousLabelY = margin.top + 5;
+  for (const ref of refPositions) {
+    ref.labelY = Math.max(ref.labelY, previousLabelY + 15);
+    previousLabelY = ref.labelY;
+  }
+  for (let i = refPositions.length - 1; i >= 0; i -= 1) {
+    const maxLabelY = height - margin.bottom - 8 - (refPositions.length - 1 - i) * 15;
+    refPositions[i].labelY = Math.min(refPositions[i].labelY, maxLabelY);
+  }
+  const referenceLines = refPositions.map(ref => `<g class="chart-reference chart-reference-${ref.tone}">
+      <line x1="${margin.left}" y1="${ref.ry}" x2="${width - margin.right}" y2="${ref.ry}"></line>
+      <line class="chart-label-guide" x1="${width - margin.right}" y1="${ref.ry}" x2="${width - margin.right + 10}" y2="${ref.labelY - 4}"></line>
+      <text x="${width - margin.right + 12}" y="${ref.labelY}">${esc(ref.key)} ${fmtAxis(ref.value)}</text>
+    </g>`).join("");
+  const labelEvery = monthlyChartFrame === "monthly" ? 1 : Math.max(1, Math.ceil(candles.length / 10));
+  const highLowEvery = monthlyChartFrame === "monthly" ? 1 : Math.max(1, Math.ceil(candles.length / 8));
+  const candleNodes = candles.map((item, index) => {
+    const open = Number(item.open);
+    const high = Number(item.high);
+    const low = Number(item.low);
+    const close = Number(item.close);
+    const cx = x(index);
+    const yo = y(open);
+    const yc = y(close);
+    const yh = y(high);
+    const yl = y(low);
+    const top = Math.min(yo, yc);
+    const bodyH = Math.max(2, Math.abs(yc - yo));
+    const up = close >= open;
+    const showLabel = index % labelEvery === 0 || index === candles.length - 1;
+    const label = showLabel
+      ? `<text class="chart-x-label" x="${cx}" y="${height - 18}">${esc(chartPeriodLabel(item))}</text>`
+      : "";
+    const showHighLow = index % highLowEvery === 0 || index === candles.length - 1;
+    const highLow = showHighLow
+      ? `<text class="chart-hilo chart-high" x="${cx + bodyW / 2 + 5}" y="${yh - 6}">H ${fmtAxis(high)}</text>
+         <text class="chart-hilo chart-low" x="${cx + bodyW / 2 + 5}" y="${yl + 14}">L ${fmtAxis(low)}</text>`
+      : "";
+    return `<g class="chart-candle ${up ? "up" : "down"}">
+      <line x1="${cx}" y1="${yh}" x2="${cx}" y2="${yl}"></line>
+      <rect x="${cx - bodyW / 2}" y="${top}" width="${bodyW}" height="${bodyH}" rx="1"></rect>
+      ${label}
+      ${highLow}
+    </g>`;
+  }).join("");
+  const latest = candles[candles.length - 1];
+  subtitle.textContent = `${monthlyChartFrame.toUpperCase()} candles for ${monthlyChartPayload.symbol || text("monthlyInstrument")} through ${monthlyChartPayload.last_bar_date || latest.end_date || ""}`;
+  meta.innerHTML = [
+    ["Instrument", monthlyChartPayload.symbol || text("monthlyInstrument")],
+    ["Source", monthlyChartPayload.price_source || text("monthlyPriceSource")],
+    ["Candles", candles.length],
+    ["Latest Close", fmtAxis(Number(latest.close))]
+  ].map(([label, val]) => `<div class="chart-chip"><span>${label}</span><strong>${esc(val)}</strong></div>`).join("");
+  svg.innerHTML = `
+    <rect class="chart-bg" x="0" y="0" width="${width}" height="${height}"></rect>
+    <g>${grid.join("")}</g>
+    <line class="chart-axis" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
+    ${referenceLines}
+    <g>${candleNodes}</g>`;
 }
 function classifyMonthlyStructure(group, l) {
   const t = THRESHOLDS[group];
@@ -2593,6 +2775,7 @@ function calculateMonthlyStatus() {
     `Current price ${fmt(l.currentPrice)} with effective status ${text("effectiveStatus")} produced ${result.status}: ${result.notes}`
   ];
   document.getElementById("monthlyCalculationSteps").innerHTML = steps.map(step => `<li>${step}</li>`).join("");
+  renderMonthlyStatusChart();
 }
 async function fetchJson(path) {
   const response = await fetch(path, { cache: "no-store" });
@@ -2674,6 +2857,7 @@ async function fetchCurrentMonthlyData() {
   if (!response.ok) throw new Error(payload.error || `Unable to fetch current monthly data: HTTP ${response.status}`);
   applyMonthlyPayload(payload);
   renderBackendMonthlyResult(payload);
+  setMonthlyChartPayload(payload);
   document.getElementById("monthlyFetchStatus").innerHTML = `<div class="metric"><span>Current Data</span><div class="value">Loaded ${payload.bar_count || 0} ${payload.price_source || ""} daily candles for ${payload.symbol || ""} through ${payload.last_bar_date || payload.as_of || ""}.</div></div>`;
 }
 async function fetchCapturedMonthlyData(options = {}) {
@@ -2692,6 +2876,8 @@ async function fetchCapturedMonthlyData(options = {}) {
   assertCapturedPayloadMatchesSelection(payload);
   applyMonthlyPayload(payload);
   if (payload.monthly_status && payload.monthly_status.status) document.getElementById("effectiveStatus").value = payload.monthly_status.status;
+  if (payload.chart) setMonthlyChartPayload(payload);
+  else clearMonthlyChart("No candle chart was captured for this historical monthly-status artifact.");
   const prefix = options.prefix ? `${options.prefix} ` : "";
   document.getElementById("monthlyFetchStatus").innerHTML = `<div class="metric"><span>Captured Data</span><div class="value">${prefix}Loaded monthly-status data for ${date} from ${payload.source_artifact || "review data"}.</div></div>`;
   calculateMonthlyStatus();
@@ -2709,7 +2895,19 @@ document.getElementById("fetchCurrentMonthlyData").addEventListener("click", asy
   }
 });
 document.getElementById("getMonthlyStatus").addEventListener("click", () => { try { calculateMonthlyStatus(); } catch (error) { document.getElementById("monthlyResultSummary").innerHTML = `<div class="error-box">${error.message}</div>`; } });
-document.getElementById("monthlyInstrument").addEventListener("change", applySelectedInstrumentGroup);
+document.querySelectorAll(".chart-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    monthlyChartFrame = tab.dataset.frame || "monthly";
+    renderMonthlyStatusChart();
+  });
+});
+document.getElementById("monthlyInstrument").addEventListener("change", () => {
+  applySelectedInstrumentGroup();
+  clearMonthlyChart("Fetch current data to load candles for the selected instrument.");
+});
+document.getElementById("monthlyPriceSource").addEventListener("change", () => {
+  clearMonthlyChart("Fetch current data to load candles for the selected price source.");
+});
 setMonthlyDefaultDate();
 initInstrumentRegistry().then(() => calculateMonthlyStatus()).catch(() => calculateMonthlyStatus());
 </script>
@@ -3199,6 +3397,39 @@ calculate();
                 "    button[type='button'] { background: #fff8ef; color: var(--accent); }",
                 "    .calculator-shell { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 24px 40px; }",
                 "    .calc-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; box-shadow: 0 16px 32px rgba(47,39,22,0.07); }",
+                "    .market-chart-panel { padding: 0; overflow: hidden; }",
+                "    .chart-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px; border-bottom: 1px solid var(--soft-border); }",
+                "    .chart-heading h2 { margin: 0 0 4px; font-size: 1.15rem; }",
+                "    .chart-subtitle { color: var(--muted); font-size: 0.86rem; font-weight: 650; }",
+                "    .chart-tabs { display: inline-flex; gap: 6px; padding: 4px; border: 1px solid var(--soft-border); border-radius: 10px; background: #f7efe2; }",
+                "    .chart-tab { border: 0; border-radius: 7px; padding: 7px 11px; background: transparent; color: var(--muted); font-size: 0.82rem; }",
+                "    .chart-tab.active { background: var(--accent); color: #fff; }",
+                "    .chart-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; padding: 14px 18px 0; }",
+                "    .chart-chip { border: 1px solid #273447; background: #121a27; color: #d6dee9; border-radius: 8px; padding: 8px 10px; min-width: 0; }",
+                "    .chart-chip span { display: block; color: #8ea0b6; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }",
+                "    .chart-chip strong { display: block; margin-top: 3px; color: #f5f7fb; font-size: 0.94rem; overflow-wrap: anywhere; }",
+                "    .chart-wrap { position: relative; margin: 14px 18px 18px; min-height: 360px; border: 1px solid #263348; border-radius: 10px; background: #0d1320; overflow: hidden; }",
+                "    .ohlc-chart { display: block; width: 100%; height: min(58vh, 560px); min-height: 360px; font-family: 'Segoe UI', Arial, sans-serif; }",
+                "    .chart-bg { fill: #0d1320; }",
+                "    .chart-grid-line { stroke: #253149; stroke-width: 1; }",
+                "    .chart-axis { stroke: #526174; stroke-width: 1; }",
+                "    .chart-axis-label, .chart-x-label { fill: #9aa9bb; font-size: 13px; font-variant-numeric: tabular-nums; }",
+                "    .chart-x-label { text-anchor: middle; font-size: 11px; }",
+                "    .chart-candle line { stroke-width: 1.4; }",
+                "    .chart-candle.up line, .chart-candle.up rect { stroke: #00b386; fill: #00a077; }",
+                "    .chart-candle.down line, .chart-candle.down rect { stroke: #ff5b64; fill: #e94d5a; }",
+                "    .chart-hilo { fill: #dbe5f0; font-size: 11px; font-weight: 650; paint-order: stroke; stroke: #0d1320; stroke-width: 3px; stroke-linejoin: round; }",
+                "    .chart-high { fill: #f7c948; }",
+                "    .chart-low { fill: #7dd3fc; }",
+                "    .chart-reference line { stroke-width: 1.5; stroke-dasharray: 7 5; }",
+                "    .chart-reference text { font-size: 12px; font-weight: 750; paint-order: stroke; stroke: #0d1320; stroke-width: 3px; stroke-linejoin: round; }",
+                "    .chart-reference-monthly-high line, .chart-reference-monthly-high text, .chart-reference-current-month-high line, .chart-reference-current-month-high text { stroke: #f59e0b; fill: #f59e0b; }",
+                "    .chart-reference-monthly-low line, .chart-reference-monthly-low text, .chart-reference-current-month-low line, .chart-reference-current-month-low text { stroke: #38bdf8; fill: #38bdf8; }",
+                "    .chart-reference-weekly-high line, .chart-reference-weekly-high text, .chart-reference-current-week-high line, .chart-reference-current-week-high text { stroke: #a78bfa; fill: #a78bfa; }",
+                "    .chart-reference-weekly-low line, .chart-reference-weekly-low text, .chart-reference-current-week-low line, .chart-reference-current-week-low text { stroke: #34d399; fill: #34d399; }",
+                "    .chart-reference-current-price line { stroke-width: 2; stroke-dasharray: 0; }",
+                "    .chart-reference-current-price line, .chart-reference-current-price text { stroke: #f43f5e; fill: #f43f5e; }",
+                "    .chart-empty { position: absolute; inset: 0; display: grid; place-items: center; color: #aeb9c8; font-weight: 700; background: rgba(13,19,32,0.82); }",
                 "    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 14px; }",
                 "    label { display: grid; gap: 6px; color: var(--muted); font-weight: 700; font-size: 0.88rem; }",
                 "    input, select, textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; padding: 9px 10px; background: #fffaf2; color: var(--ink); font: inherit; }",

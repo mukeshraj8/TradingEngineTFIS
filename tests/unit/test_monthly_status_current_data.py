@@ -115,6 +115,22 @@ instruments:
     assert result.snapshot.instrument.instrument_group == "stock"
     assert result.snapshot.price_source == "futures_continuous"
     assert result.result.status in {MonthlyStatus.BULL, MonthlyStatus.BULL_CF}
+    payload = result.to_json()
+    assert len(payload["chart"]["daily"]) == 5
+    assert len(payload["chart"]["weekly"]) == 3
+    assert len(payload["chart"]["monthly"]) == 2
+    assert payload["chart"]["monthly"][0] == {
+        "label": "2026-05",
+        "start_date": "2026-05-28",
+        "end_date": "2026-05-29",
+        "open": 95.0,
+        "high": 110.0,
+        "low": 85.0,
+        "close": 100.0,
+    }
+    assert payload["chart"]["monthly"][1]["label"] == "2026-06"
+    assert payload["chart"]["monthly"][1]["high"] == 130.0
+    assert payload["chart"]["monthly"][1]["low"] == 101.0
 
 
 def test_fetch_current_monthly_status_resolves_unknown_from_lookback(tmp_path: Path) -> None:

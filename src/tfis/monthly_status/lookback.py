@@ -255,6 +255,7 @@ class MonthlyStatusHistoricalBar:
     high: float
     low: float
     close: float
+    open: float | None = None
 
 
 def build_monthly_weekly_context_lookback_windows(

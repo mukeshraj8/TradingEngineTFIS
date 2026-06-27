@@ -11,6 +11,48 @@ change in a meaningful way.
 - keep monthly status independent and reusable before rewriting strategy
   decision/dashboard flow around enabled strategy modules
 
+## Operational Status And TODO
+
+Current S23 paper-mode posture:
+
+- `DONE`: Windows Scheduled Task is installed as weekday-only and the wrapper
+  skips weekends and configured NSE holidays before FYERS login or watcher
+  startup.
+- `DONE`: Closed-market/no-candle days now exit cleanly with
+  `MARKET_CLOSED_NO_ACTION`; this no-action path no longer starts watchers
+  against stale prior-session orders.
+- `DONE`: S23 rule interpretation, CE/PE leg visibility, failed-leg reasons,
+  calculation explanations, visible watcher windows, and waiting-order behavior
+  are implemented and committed.
+- `PARTIAL`: Near-vs-next expiry search is auditable, but true next-expiry
+  fallback still depends on a reliable FYERS/data-source path that returns the
+  actual next weekly option chain instead of relabeled near-expiry contracts.
+- `PARTIAL`: Paper order watcher/current-price/P&L behavior is implemented,
+  but still needs one clean market-day validation after the latest scheduling
+  and stale-order fixes.
+- `PARTIAL`: Multi-day position lifecycle support exists in the paper runtime
+  foundation, but target/SL/FSL, expiry force-close, carry-forward, and
+  no-carry-past-expiry behavior still need live-like validation on real market
+  sessions.
+- `TODO`: On the next real NSE trading day, validate the full S23 paper flow
+  one step at a time:
+  1. scheduled task starts at `09:14`
+  2. `09:16`, `09:25`, and `09:30` snapshots complete
+  3. final CE/PE selections or no-trade reasons match the rule sheet
+  4. watchers start only for that day's valid waiting orders or open positions
+  5. dashboard current price, order status, fill status, and P&L update
+  6. unfilled waiting orders are cancelled/not-filled after the entry session
+  7. filled/open positions persist for valid multi-day management
+- `TODO`: Move durable S23 option-chain, decision, order, trade-ledger, and
+  monthly-status capture records out of temp-only storage into a structured
+  `data` layout with strategy/date/instrument provenance.
+- `TODO`: Generalize enabled-strategy execution through registry/config before
+  adding S21 or other strategies, so S23 remains the first operational path but
+  not the hidden shape of the engine.
+- `TODO`: Review and refresh the local NSE holiday calendar each year, and
+  preferably replace the static file with a maintained calendar source when the
+  broader runtime is generalized.
+
 ## Implemented Systems
 
 - broker-agnostic architecture
@@ -132,6 +174,10 @@ change in a meaningful way.
   the registered task runs only Monday-Friday, the wrapper exits before broker
   login on weekends or configured NSE trading holidays, and `MARKET_CLOSED_NO_ACTION`
   no longer starts watchers against stale prior-session orders
+- Monthly Status Calculator current-data fetch now returns daily, weekly, and
+  monthly candle series alongside the status result, and the dashboard renders
+  an instrument-aware market-structure candlestick chart with high/low labels
+  and PMH/PML/CMH/CML/PWH/PWL/CWH/CWL/current-price reference lines
 
 ## Current Architecture Flow
 

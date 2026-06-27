@@ -125,11 +125,36 @@ class MonthlyStatusReferenceSnapshot:
 
 
 @dataclass(frozen=True, slots=True)
+class MonthlyStatusChartCandle:
+    label: str
+    start_date: date
+    end_date: date
+    open: float
+    high: float
+    low: float
+    close: float
+
+    def to_json(self) -> dict[str, object]:
+        return {
+            "label": self.label,
+            "start_date": self.start_date.isoformat(),
+            "end_date": self.end_date.isoformat(),
+            "open": self.open,
+            "high": self.high,
+            "low": self.low,
+            "close": self.close,
+        }
+
+
+@dataclass(frozen=True, slots=True)
 class MonthlyStatusCurrentDataResult:
     snapshot: MonthlyStatusReferenceSnapshot
     result: MonthlyStatusResult
     effective_status: MonthlyStatus
     steps: tuple[str, ...]
+    daily_candles: tuple[MonthlyStatusChartCandle, ...] = ()
+    weekly_candles: tuple[MonthlyStatusChartCandle, ...] = ()
+    monthly_candles: tuple[MonthlyStatusChartCandle, ...] = ()
     resolution: MonthlyStatusResolutionResult | None = None
 
     def to_json(self) -> dict[str, object]:
@@ -153,6 +178,11 @@ class MonthlyStatusCurrentDataResult:
                 "a_pct": thresholds.a_pct,
                 "b_pct": thresholds.b_pct,
                 "c_pct": thresholds.c_pct,
+            },
+            "chart": {
+                "daily": [item.to_json() for item in self.daily_candles],
+                "weekly": [item.to_json() for item in self.weekly_candles],
+                "monthly": [item.to_json() for item in self.monthly_candles],
             },
             "steps": list(self.steps),
         }
@@ -371,6 +401,17 @@ def fetch_current_monthly_status(
             effective_status=status,
             resolution=resolution,
         ),
+        daily_candles=_daily_chart_candles(historical_bars),
+        weekly_candles=_aggregate_chart_candles(
+            historical_bars,
+            key_fn=lambda item: _iso_week_key(item.timestamp),
+            label_fn=_week_label,
+        ),
+        monthly_candles=_aggregate_chart_candles(
+            historical_bars,
+            key_fn=lambda item: (item.timestamp.year, item.timestamp.month),
+            label_fn=lambda key: f"{key[0]}-{key[1]:02d}",
+        ),
         resolution=resolution,
     )
 
@@ -427,12 +468,62 @@ def _to_historical_bars(
                 high=float(bar.high),
                 low=float(bar.low),
                 close=float(bar.close),
+                open=float(bar.open) if bar.open is not None else None,
             )
         )
     converted.sort(key=lambda item: item.timestamp)
     if not converted:
         raise MonthlyStatusCurrentDataError("No complete high/low/close daily bars found.")
     return tuple(converted)
+
+
+def _daily_chart_candles(
+    bars: tuple[MonthlyStatusHistoricalBar, ...],
+) -> tuple[MonthlyStatusChartCandle, ...]:
+    return tuple(
+        MonthlyStatusChartCandle(
+            label=bar.timestamp.date().isoformat(),
+            start_date=bar.timestamp.date(),
+            end_date=bar.timestamp.date(),
+            open=float(bar.open if bar.open is not None else bar.close),
+            high=bar.high,
+            low=bar.low,
+            close=bar.close,
+        )
+        for bar in bars
+    )
+
+
+def _aggregate_chart_candles(
+    bars: tuple[MonthlyStatusHistoricalBar, ...],
+    *,
+    key_fn: Callable[[MonthlyStatusHistoricalBar], tuple[int, int]],
+    label_fn: Callable[[tuple[int, int]], str],
+) -> tuple[MonthlyStatusChartCandle, ...]:
+    groups: dict[tuple[int, int], list[MonthlyStatusHistoricalBar]] = {}
+    for bar in bars:
+        groups.setdefault(key_fn(bar), []).append(bar)
+    candles: list[MonthlyStatusChartCandle] = []
+    for key in sorted(groups):
+        group = sorted(groups[key], key=lambda item: item.timestamp)
+        first = group[0]
+        last = group[-1]
+        candles.append(
+            MonthlyStatusChartCandle(
+                label=label_fn(key),
+                start_date=first.timestamp.date(),
+                end_date=last.timestamp.date(),
+                open=float(first.open if first.open is not None else first.close),
+                high=max(item.high for item in group),
+                low=min(item.low for item in group),
+                close=last.close,
+            )
+        )
+    return tuple(candles)
+
+
+def _week_label(key: tuple[int, int]) -> str:
+    return f"{key[0]}-W{key[1]:02d}"
 
 
 def _build_steps(
