@@ -26,6 +26,9 @@
 - S23 scheduled startup now exits cleanly with `MARKET_CLOSED_NO_ACTION` when
   the supervised snapshot window has no intraday FYERS candles, so holidays or
   closed-market days do not register as failed scheduled-task runs
+- S23 Windows Scheduled Task registration now creates a Monday-Friday trigger,
+  and the wrapper uses a local NSE holiday calendar to skip weekends/holidays
+  before token refresh or watcher startup
 - strategy and workbook normalization work is established for the S23 family
 - reference materials are now indexed and reviewable through archive metadata
 - deterministic monthly-status classification is implemented for the confirmed threshold rules

@@ -128,6 +128,10 @@ change in a meaningful way.
   the supervised snapshot window as `MARKET_CLOSED_NO_ACTION` and exits cleanly,
   so market holidays/closed days do not appear as failed Windows Scheduled Task
   runs; other broker snapshot failures still fail closed
+- S23 scheduled startup is now guarded at the Windows task and wrapper layers:
+  the registered task runs only Monday-Friday, the wrapper exits before broker
+  login on weekends or configured NSE trading holidays, and `MARKET_CLOSED_NO_ACTION`
+  no longer starts watchers against stale prior-session orders
 
 ## Current Architecture Flow
 

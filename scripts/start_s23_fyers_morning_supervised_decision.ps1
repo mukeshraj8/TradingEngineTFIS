@@ -16,7 +16,9 @@ param(
     [switch]$SkipRefresh,
     [switch]$EnableSmokeOverride,
     [string]$CarryForwardStateDir,
-    [switch]$DisablePositionWatch
+    [switch]$DisablePositionWatch,
+    [string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json",
+    [datetime]$RunDate
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,7 +35,7 @@ Remove-Item Env:HTTP_PROXY,Env:HTTPS_PROXY,Env:http_proxy,Env:https_proxy,Env:AL
 
 $logDir = Join-Path $repoRoot "tmp\s23_fyers_morning_supervised_decision\_task_launch_logs"
 New-Item -ItemType Directory -Path $logDir -Force | Out-Null
-$stamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$stamp = "{0}_{1}" -f (Get-Date -Format "yyyyMMdd_HHmmssfff"), $PID
 $logPath = Join-Path $logDir "start_s23_fyers_morning_supervised_decision_$stamp.log"
 
 function Write-LaunchLog {
@@ -41,6 +43,46 @@ function Write-LaunchLog {
     $line = "{0} {1}" -f (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK"), $Message
     Add-Content -Path $logPath -Value $line
     Write-Host "[TFIS S23] $Message"
+}
+
+function Get-TfisRunDate {
+    if ($RunDate) {
+        return $RunDate.Date
+    }
+    return (Get-Date).Date
+}
+
+function Get-TfisTradingHoliday {
+    param([datetime]$Date)
+
+    $calendarPath = $TradingHolidayCalendar
+    if (-not [System.IO.Path]::IsPathRooted($calendarPath)) {
+        $calendarPath = Join-Path $repoRoot $calendarPath
+    }
+    if (-not (Test-Path $calendarPath)) {
+        return $null
+    }
+    $calendar = Get-Content -Path $calendarPath -Raw | ConvertFrom-Json
+    $dateText = $Date.ToString("yyyy-MM-dd")
+    foreach ($holiday in $calendar.holidays) {
+        if ([string]$holiday.date -eq $dateText) {
+            return $holiday
+        }
+    }
+    return $null
+}
+
+function Get-TfisNoRunReason {
+    param([datetime]$Date)
+
+    if ($Date.DayOfWeek -eq [System.DayOfWeek]::Saturday -or $Date.DayOfWeek -eq [System.DayOfWeek]::Sunday) {
+        return "WEEKEND_NO_ACTION: $($Date.ToString('yyyy-MM-dd')) is $($Date.DayOfWeek); NSE equity/F&O market is closed."
+    }
+    $holiday = Get-TfisTradingHoliday -Date $Date
+    if ($holiday) {
+        return "NSE_HOLIDAY_NO_ACTION: $($Date.ToString('yyyy-MM-dd')) is configured as NSE holiday '$($holiday.name)'."
+    }
+    return $null
 }
 
 function Start-S23PaperWatchProcess {
@@ -184,14 +226,30 @@ Write-LaunchLog "TfisRoot: $TfisRoot"
 Write-LaunchLog "ArtifactRoot: $ArtifactRoot"
 Write-LaunchLog "SessionIdPrefix: $SessionIdPrefix"
 
+$effectiveRunDate = Get-TfisRunDate
+$noRunReason = Get-TfisNoRunReason -Date $effectiveRunDate
+if ($noRunReason) {
+    Write-LaunchLog $noRunReason
+    Write-LaunchLog "Skipping TFIS S23 morning decision and watcher startup."
+    Write-LaunchLog "Wrapper finished with exit code 0."
+    exit 0
+}
+
 try {
+    $marketClosedNoAction = $false
     & $pythonExe @args 2>&1 | ForEach-Object {
         Write-LaunchLog ("PYTHON: {0}" -f $_)
+        if ($_ -match "MARKET_CLOSED_NO_ACTION") {
+            $marketClosedNoAction = $true
+        }
         Write-Output $_
     }
     $exitCode = $LASTEXITCODE
     Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."
-    if (($exitCode -eq 0) -and (-not $DisablePositionWatch)) {
+    if ($marketClosedNoAction) {
+        Write-LaunchLog "Market-closed/no-action result detected; skipping S23 paper watcher startup."
+    }
+    if (($exitCode -eq 0) -and (-not $DisablePositionWatch) -and (-not $marketClosedNoAction)) {
         $artifactRootPath = Join-Path $repoRoot $ArtifactRoot
         $metadata = Get-ChildItem -Path $artifactRootPath -Recurse -Filter "scheduled_run_metadata.json" -ErrorAction SilentlyContinue |
             Sort-Object LastWriteTime -Descending |

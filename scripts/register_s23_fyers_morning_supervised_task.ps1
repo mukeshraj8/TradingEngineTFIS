@@ -12,7 +12,8 @@ param(
     [string]$IfPast = "abort",
     [switch]$SkipRefresh,
     [switch]$EnableSmokeOverride,
-    [string]$CarryForwardStateDir
+    [string]$CarryForwardStateDir,
+    [string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json"
 )
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -34,6 +35,7 @@ $defaultArtifactRoot = "tmp/s23_fyers_morning_supervised_decision"
 $defaultSessionIdPrefix = "s23-fyers-morning-supervised-decision"
 $defaultTimezone = "Asia/Kolkata"
 $defaultIfPast = "run_now"
+$defaultTradingHolidayCalendar = "config/nse_trading_holidays_2026.json"
 
 $actionParts = @(
     "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe",
@@ -85,14 +87,20 @@ if ($CarryForwardStateDir) {
     $actionParts += "-CarryForwardStateDir"
     $actionParts += ('"{0}"' -f $CarryForwardStateDir)
 }
+if ($TradingHolidayCalendar -ne $defaultTradingHolidayCalendar) {
+    $actionParts += "-TradingHolidayCalendar"
+    $actionParts += ('"{0}"' -f $TradingHolidayCalendar)
+}
 
 $taskAction = $actionParts -join " "
 
-schtasks /Create /F /SC DAILY /ST $RunTime /TN $TaskName /TR $taskAction
+schtasks /Create /F /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST $RunTime /TN $TaskName /TR $taskAction
 if ($LASTEXITCODE -ne 0) {
     throw "schtasks failed with exit code $LASTEXITCODE"
 }
 
 Write-Host "Registered scheduled task: $TaskName"
 Write-Host "Run time: $RunTime"
+Write-Host "Schedule: Weekly on MON,TUE,WED,THU,FRI"
+Write-Host "Holiday calendar: $TradingHolidayCalendar"
 Write-Host "Action: $taskAction"
