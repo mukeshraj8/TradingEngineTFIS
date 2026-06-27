@@ -178,6 +178,34 @@ Current S23 paper-mode posture:
   monthly candle series alongside the status result, and the dashboard renders
   an instrument-aware market-structure candlestick chart with high/low labels
   and PMH/PML/CMH/CML/PWH/PWL/CWH/CWL/current-price reference lines
+- Monthly Status Calculator chart now supports Zerodha-like review aids:
+  crosshair hover inspection, OHLC/reference-level tooltip, level visibility
+  toggles, and a review-date marker across daily, weekly, and monthly views
+- Monthly Status Calculator chart inspection now keeps full candle/reference
+  context in a fixed top inspector strip, uses a small OHLC-only hover tooltip
+  so candles are not obscured, and includes an inline color legend explaining
+  monthly, weekly, current-price, and review-date reference lines; chart price
+  values render with two decimal places for audit readability
+- S23 dashboard eligible-strike comparison tables now display rows in
+  rule-sheet search order using persisted start/end strike formulas when
+  available, and state the final selected strike/reason above the table
+- S23 dashboard leg explanations now include a collapsed full strike-scan
+  audit table showing all persisted candidate strikes in rule-sheet search
+  order, including rejected rows and reasons, while keeping the summary
+  comparison table focused on audit candidates and the selected strike
+- S23 full strike-scan audit now derives readable rejection reasons when older
+  candidate rows only persisted `REJECTED`, including option-side mismatch,
+  strike range, premium threshold, and OI threshold failures
+- S23 full strike-scan audit filters rows to the leg's expected option side, so
+  CE review does not show PE contracts and PE review does not show CE contracts
+- S23 full strike-scan audit now explains `PASSED` and `SELECTED` rows with
+  explicit qualification checks: option side, strike range, premium versus
+  minimum/ideal premium, OI versus minimum OI, and why an audit candidate was
+  not the final selected strike
+- S23 final leg decisions now show contract, strike, premium, OI, entry,
+  target, and SL only for legs with a selected final contract; failed/no-trade
+  legs show `n/a` for those fields and keep provisional formula values only in
+  the calculation explanation
 
 ## Current Architecture Flow
 

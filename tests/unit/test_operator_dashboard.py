@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -131,6 +132,23 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
                             "ltp": 224.0,
                             "oi": 650000,
                             "premium_distance_to_ideal": 16.25,
+                        },
+                        {
+                            "status": "REJECTED",
+                            "symbol": "NIFTY_20260602_23950_CE",
+                            "strike": 23950,
+                            "ltp": 184.0,
+                            "oi": 450000,
+                            "premium_distance_to_ideal": 56.25,
+                            "reason": "premium below minimum",
+                        },
+                        {
+                            "status": "REJECTED",
+                            "symbol": "NIFTY_20260602_23950_PE",
+                            "strike": 23950,
+                            "ltp": 312.0,
+                            "oi": 900000,
+                            "premium_distance_to_ideal": 73.0,
                         },
                     ]
                 },
@@ -448,9 +466,20 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Run Status" in strategy_html
     assert "Final Contract" in strategy_html
     assert "Final S23 Leg Decisions" in strategy_html
+    assert ".final-leg-table th:nth-child(2)" in strategy_html
+    assert ".final-leg-table .contract-cell strong" in strategy_html
     assert "No contract selected" in strategy_html
     assert "SELL PE" in strategy_html
     assert "MINIMUM_PREMIUM_NOT_MET" in strategy_html
+    failed_pe_row = re.search(
+        r"NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT.*?MINIMUM_PREMIUM_NOT_MET",
+        strategy_html,
+        flags=re.S,
+    )
+    assert failed_pe_row is not None
+    assert failed_pe_row.group(0).count(">n/a<") >= 6
+    assert "No final trade levels apply because no contract qualified" in strategy_html
+    assert "provisional entry/target/SL values were 212.75 / 85.10 / 258.94" in strategy_html
     assert "Option-chain candidates in the strike range do not meet minimum premium." in strategy_html
     assert "near expiry 2026-06-02; fallback expiry 2026-06-09" in strategy_html
     assert '<details class="session-summary summary-shell explanation-panel">' in strategy_html
@@ -464,6 +493,18 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Step 5a - Decide the strike range" in strategy_html
     assert "Step 9 - Calculate trade levels" in strategy_html
     assert "Eligible Strike OI Comparison" in strategy_html
+    assert "eligible-strike-table th.number-cell" in strategy_html
+    assert "Displayed in inferred rule-sheet search order" in strategy_html
+    assert "Final strike is 23850" in strategy_html
+    assert "Full strike scan audit" in strategy_html
+    assert "premium below minimum" in strategy_html
+    assert "selected because side CE matches CE" in strategy_html
+    assert "passed audit because side CE matches CE" in strategy_html
+    assert "not selected because another strike was first in rule-sheet search order" in strategy_html
+    assert "Showing CE candidates only." in strategy_html
+    assert "NIFTY_20260602_23950_PE" not in strategy_html
+    assert "full-scan-panel" in strategy_html
+    assert "full-scan-table-wrap" in strategy_html
     assert "650000" in strategy_html
     assert "NIFTY_20260602_23800_PE" in strategy_html
     assert "NIFTY_20260602_23850_CE" in strategy_html
@@ -527,7 +568,15 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Fetch Captured Monthly Data" in monthly_calculator_html
     assert "Market Structure Chart" in monthly_calculator_html
     assert 'id="monthlyStatusChart"' in monthly_calculator_html
+    assert 'id="monthlyChartInspector"' in monthly_calculator_html
+    assert 'id="monthlyChartLegend"' in monthly_calculator_html
     assert 'data-frame="monthly"' in monthly_calculator_html
+    assert 'id="monthlyChartTooltip"' in monthly_calculator_html
+    assert 'data-level-group="monthly"' in monthly_calculator_html
+    assert "chartLineLegend" in monthly_calculator_html
+    assert "handleMonthlyChartHover" in monthly_calculator_html
+    assert "return number.toFixed(2);" in monthly_calculator_html
+    assert "chart-review-marker" in monthly_calculator_html
     assert "renderMonthlyStatusChart" in monthly_calculator_html
     assert "PMH" in monthly_calculator_html
     assert "CWH" in monthly_calculator_html

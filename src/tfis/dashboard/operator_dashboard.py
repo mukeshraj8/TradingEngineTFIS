@@ -1578,6 +1578,9 @@ class TfisOperatorDashboardBuilder:
                 rows = [item for item in ranked if isinstance(item, dict)]
         if not rows:
             return ""
+        rows = self._sort_s23_candidate_rows_in_search_order(leg, rows)
+        search_note = self._s23_candidate_search_note(leg, rows)
+        full_scan = self._render_s23_full_strike_scan(leg)
         body = "\n".join(
             "".join(
                 [
@@ -1597,13 +1600,317 @@ class TfisOperatorDashboardBuilder:
             [
                 '<div class="eligible-strike-panel">',
                 "<h4>Eligible Strike OI Comparison</h4>",
+                f'<p class="table-help">{html.escape(search_note)}</p>',
                 '<table class="candidate-table eligible-strike-table">',
                 "<thead><tr><th class=\"number-cell\">Strike</th><th class=\"text-cell\">Contract</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Distance From Ideal</th><th class=\"status-cell\">Status</th></tr></thead>",
                 f"<tbody>{body}</tbody>",
                 "</table>",
+                full_scan,
                 "</div>",
             ]
         )
+
+    def _render_s23_full_strike_scan(self, leg: dict[str, Any]) -> str:
+        candidates = leg.get("contract_candidates")
+        if not isinstance(candidates, list) or not candidates:
+            return (
+                '<details class="full-scan-panel">'
+                '<summary>Full strike scan audit</summary>'
+                '<p class="table-help">Full strike scan rows were not persisted for this run.</p>'
+                "</details>"
+            )
+        expected_side = self._s23_expected_option_suffix(leg)
+        visible_candidates = [
+            item
+            for item in candidates
+            if isinstance(item, dict)
+            and (
+                expected_side is None
+                or self._s23_candidate_option_suffix(item) in {None, expected_side}
+            )
+        ]
+        rows = self._sort_s23_candidate_rows_in_search_order(leg, visible_candidates)
+        if not rows:
+            return ""
+        formula_text = self._s23_scan_formula_text(leg)
+        body = "\n".join(
+            "".join(
+                [
+                    "<tr>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item.get('strike'))}</td>",
+                    f"<td class=\"text-cell contract-cell\"><strong>{html.escape(str(item.get('symbol') or 'n/a'))}</strong></td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item.get('ltp', item.get('premium')))}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item.get('oi'), integer=True)}</td>",
+                    f"<td class=\"number-cell\">{self._fmt_number(item.get('premium_distance_to_ideal', item.get('premium_distance')))}</td>",
+                    f"<td class=\"status-cell\">{self._badge(str(item.get('status') or 'n/a'))}</td>",
+                    f"<td class=\"text-cell reason-cell\">{html.escape(self._s23_candidate_reason(leg, item))}</td>",
+                    "</tr>",
+                ]
+            )
+            for item in rows
+        )
+        return "\n".join(
+            [
+                '<details class="full-scan-panel">',
+                '<summary>Full strike scan audit</summary>',
+                f'<p class="table-help">{html.escape(formula_text)} Showing {html.escape(expected_side or "leg-side")} candidates only.</p>',
+                '<div class="full-scan-table-wrap">',
+                '<table class="candidate-table eligible-strike-table full-scan-table">',
+                "<thead><tr><th class=\"number-cell\">Strike</th><th class=\"text-cell\">Contract</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Distance From Ideal</th><th class=\"status-cell\">Status</th><th class=\"text-cell\">Reason</th></tr></thead>",
+                f"<tbody>{body}</tbody>",
+                "</table>",
+                "</div>",
+                "</details>",
+            ]
+        )
+
+    def _s23_scan_formula_text(self, leg: dict[str, Any]) -> str:
+        start = self._s23_formula_numeric_result(leg, "start_strike")
+        end = self._s23_formula_numeric_result(leg, "end_strike")
+        ideal = self._s23_formula_numeric_result(leg, "ideal_premium")
+        minimum = self._s23_formula_numeric_result(leg, "minimum_premium")
+        parts: list[str] = []
+        if start is not None and end is not None:
+            direction = "down" if start > end else "up"
+            parts.append(f"Strike scan: {self._fmt_number(start)} {direction} to {self._fmt_number(end)}")
+        else:
+            parts.append("Strike scan: persisted candidate order inferred from available rows")
+        if ideal is not None:
+            parts.append(f"ideal premium {self._fmt_number(ideal)}")
+        if minimum is not None:
+            parts.append(f"minimum premium {self._fmt_number(minimum)}")
+        return "; ".join(parts) + "."
+
+    def _s23_candidate_reason(self, leg: dict[str, Any], item: dict[str, Any]) -> str:
+        for key in (
+            "reason",
+            "rejection_reason",
+            "failure_reason",
+            "selection_reason",
+            "message",
+        ):
+            value = item.get(key)
+            if value not in (None, ""):
+                return str(value)
+        status = str(item.get("status") or "").upper()
+        if status in {"SELECTED", "PASSED", "PASS"}:
+            return self._s23_candidate_qualification_reason(leg, item, status)
+        derived_reasons = self._derive_s23_candidate_reasons(leg, item)
+        return ", ".join(derived_reasons) if derived_reasons else "not qualified; detailed rejection reason was not persisted"
+
+    def _s23_candidate_qualification_reason(
+        self,
+        leg: dict[str, Any],
+        item: dict[str, Any],
+        status: str,
+    ) -> str:
+        parts: list[str] = []
+        expected_side = self._s23_expected_option_suffix(leg)
+        actual_side = self._s23_candidate_option_suffix(item)
+        if expected_side:
+            side_text = f"side {actual_side or 'n/a'} matches {expected_side}"
+            parts.append(side_text if actual_side == expected_side else f"side check unavailable for {expected_side}")
+
+        strike = self._float_or_none(item.get("strike"))
+        start = self._s23_formula_numeric_result(leg, "start_strike")
+        end = self._s23_formula_numeric_result(leg, "end_strike")
+        if strike is not None and start is not None and end is not None:
+            parts.append(
+                f"strike {self._fmt_number(strike)} inside range "
+                f"{self._fmt_number(start)} to {self._fmt_number(end)}"
+            )
+
+        premium = self._float_or_none(item.get("ltp", item.get("premium")))
+        minimum_premium = (
+            self._s23_formula_numeric_result(leg, "minimum_premium")
+            or self._float_or_none(leg.get("minimum_premium"))
+        )
+        ideal_premium = (
+            self._s23_formula_numeric_result(leg, "ideal_premium")
+            or self._float_or_none(leg.get("ideal_premium"))
+        )
+        if premium is not None:
+            if minimum_premium is not None:
+                premium_part = (
+                    f"premium {self._fmt_number(premium)} >= minimum "
+                    f"{self._fmt_number(minimum_premium)}"
+                )
+            else:
+                premium_part = f"premium {self._fmt_number(premium)} present"
+            if ideal_premium is not None:
+                comparator = ">=" if premium >= ideal_premium else "<"
+                premium_part += f" and {comparator} ideal {self._fmt_number(ideal_premium)}"
+            parts.append(premium_part)
+
+        oi = self._float_or_none(item.get("oi"))
+        minimum_oi = self._float_or_none(leg.get("minimum_oi"))
+        if oi is not None:
+            if minimum_oi is not None:
+                parts.append(
+                    f"OI {self._fmt_number(oi, integer=True)} >= minimum "
+                    f"{self._fmt_number(minimum_oi, integer=True)}"
+                )
+            else:
+                parts.append(f"OI {self._fmt_number(oi, integer=True)} present")
+
+        if not parts:
+            return "passed persisted qualification checks; detailed threshold values were not persisted"
+        prefix = "selected because" if status == "SELECTED" else "passed audit because"
+        suffix = ""
+        if status != "SELECTED" and premium is not None and ideal_premium is not None and premium < ideal_premium:
+            suffix = "; not selected because premium is below the ideal premium"
+        elif status != "SELECTED":
+            suffix = "; not selected because another strike was first in rule-sheet search order"
+        return f"{prefix} " + "; ".join(parts) + suffix
+
+    def _derive_s23_candidate_reasons(
+        self,
+        leg: dict[str, Any],
+        item: dict[str, Any],
+    ) -> list[str]:
+        reasons: list[str] = []
+        expected_side = self._s23_expected_option_suffix(leg)
+        actual_side = self._s23_candidate_option_suffix(item)
+        if expected_side and actual_side and actual_side != expected_side:
+            reasons.append(f"option side mismatch; expected {expected_side}, got {actual_side}")
+
+        strike = self._float_or_none(item.get("strike"))
+        start = self._s23_formula_numeric_result(leg, "start_strike")
+        end = self._s23_formula_numeric_result(leg, "end_strike")
+        if strike is not None and start is not None and end is not None:
+            lower = min(start, end)
+            upper = max(start, end)
+            if strike < lower or strike > upper:
+                reasons.append(
+                    f"strike outside range {self._fmt_number(start)} to {self._fmt_number(end)}"
+                )
+
+        premium = self._float_or_none(item.get("ltp", item.get("premium")))
+        minimum_premium = (
+            self._s23_formula_numeric_result(leg, "minimum_premium")
+            or self._float_or_none(leg.get("minimum_premium"))
+        )
+        ideal_premium = (
+            self._s23_formula_numeric_result(leg, "ideal_premium")
+            or self._float_or_none(leg.get("ideal_premium"))
+        )
+        if premium is None:
+            reasons.append("premium missing")
+        else:
+            if minimum_premium is not None and premium < minimum_premium:
+                reasons.append(
+                    f"premium {self._fmt_number(premium)} below minimum {self._fmt_number(minimum_premium)}"
+                )
+            elif ideal_premium is not None and premium < ideal_premium:
+                reasons.append(
+                    f"premium {self._fmt_number(premium)} below ideal {self._fmt_number(ideal_premium)}"
+                )
+
+        oi = self._float_or_none(item.get("oi"))
+        minimum_oi = self._float_or_none(leg.get("minimum_oi"))
+        if oi is None:
+            reasons.append("OI missing")
+        elif minimum_oi is not None and oi < minimum_oi:
+            reasons.append(
+                f"OI {self._fmt_number(oi, integer=True)} below minimum {self._fmt_number(minimum_oi, integer=True)}"
+            )
+        return reasons
+
+    @staticmethod
+    def _s23_expected_option_suffix(leg: dict[str, Any]) -> str | None:
+        branch = str(leg.get("branch") or "").upper()
+        side = str(leg.get("side") or "").upper()
+        option_type = str(leg.get("option_type") or leg.get("selected_contract_option_type") or "").upper()
+        combined = f"{branch} {side} {option_type}"
+        if "PUT" in combined or " PE" in f" {combined} " or combined.endswith("PE"):
+            return "PE"
+        if "CALL" in combined or " CE" in f" {combined} " or combined.endswith("CE"):
+            return "CE"
+        return None
+
+    @staticmethod
+    def _s23_candidate_option_suffix(item: dict[str, Any]) -> str | None:
+        option_type = str(item.get("option_type") or "").upper()
+        if option_type in {"CE", "CALL"}:
+            return "CE"
+        if option_type in {"PE", "PUT"}:
+            return "PE"
+        symbol = str(item.get("symbol") or "").upper()
+        if symbol.endswith("_CE") or symbol.endswith("-CE"):
+            return "CE"
+        if symbol.endswith("_PE") or symbol.endswith("-PE"):
+            return "PE"
+        return None
+
+    def _sort_s23_candidate_rows_in_search_order(
+        self,
+        leg: dict[str, Any],
+        rows: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        start = self._s23_formula_numeric_result(leg, "start_strike")
+        end = self._s23_formula_numeric_result(leg, "end_strike")
+        reverse = False
+        if start is not None and end is not None:
+            reverse = start > end
+        else:
+            reverse = self._infer_s23_candidate_search_descending(leg, rows)
+        return sorted(
+            rows,
+            key=lambda item: self._float_or_default(item.get("strike"), 0.0),
+            reverse=reverse,
+        )
+
+    def _s23_candidate_search_note(self, leg: dict[str, Any], rows: list[dict[str, Any]]) -> str:
+        start = self._s23_formula_numeric_result(leg, "start_strike")
+        end = self._s23_formula_numeric_result(leg, "end_strike")
+        selected = next(
+            (
+                item
+                for item in rows
+                if str(item.get("status") or "").upper() == "SELECTED"
+            ),
+            None,
+        )
+        if start is not None and end is not None:
+            direction = "down" if start > end else "up"
+            range_text = (
+                f"Displayed in rule-sheet search order: "
+                f"{self._fmt_number(start)} {direction} to {self._fmt_number(end)}."
+            )
+        else:
+            range_text = "Displayed in inferred rule-sheet search order from the persisted candidates."
+        if selected is None:
+            return f"{range_text} No final strike was selected from these rows."
+        return (
+            f"{range_text} Final strike is {self._fmt_number(selected.get('strike'))} "
+            f"({selected.get('symbol', 'n/a')}) because it is the first candidate in that search order "
+            "that satisfies the final premium/OI/side rules. PASSED rows are audit candidates; "
+            "SELECTED is the row used for the order."
+        )
+
+    def _s23_formula_numeric_result(self, leg: dict[str, Any], name: str) -> float | None:
+        for key in ("formula_evaluation", "provisional_formula_evaluation"):
+            formulas = leg.get(key)
+            if not isinstance(formulas, list):
+                continue
+            for item in formulas:
+                if isinstance(item, dict) and item.get("name") == name:
+                    return self._float_or_none(item.get("result"))
+        return None
+
+    def _infer_s23_candidate_search_descending(
+        self,
+        leg: dict[str, Any],
+        rows: list[dict[str, Any]],
+    ) -> bool:
+        branch = str(leg.get("branch") or "").upper()
+        side = str(leg.get("side") or "").upper()
+        if "CALL" in branch or " CE" in f" {side} " or side.endswith("CE"):
+            return True
+        if "PUT" in branch or " PE" in f" {side} " or side.endswith("PE"):
+            return False
+        strikes = [self._float_or_default(item.get("strike"), 0.0) for item in rows]
+        return len(strikes) >= 2 and strikes[0] > strikes[-1]
 
     def _s23_leg_dry_run_steps(self, leg: dict[str, Any]) -> list[str]:
         formula_by_name: dict[str, dict[str, Any]] = {}
@@ -1664,9 +1971,11 @@ class TfisOperatorDashboardBuilder:
                 f"Reason: {html.escape(failure_code)} - {html.escape(failure_message)}"
             )
             step_9 = (
-                f"<strong>Step 9 - Trade levels.</strong> Entry/target/SL formulas were calculated for audit "
-                f"({self._fmt_number(leg.get('entry'))} / {self._fmt_number(leg.get('target'))} / {self._fmt_number(leg.get('stoploss'))}), "
-                "but no paper order was created because the strike search failed."
+                f"<strong>Step 9 - Trade levels.</strong> No final trade levels apply because no contract qualified. "
+                "For formula audit only, the provisional entry/target/SL values were "
+                f"{self._fmt_number(leg.get('provisional_entry'))} / {self._fmt_number(leg.get('provisional_target'))} / "
+                f"{self._fmt_number(leg.get('provisional_stoploss'))}; "
+                "these are not actionable order levels and no paper order was created."
             )
         return [
             (
@@ -1902,9 +2211,12 @@ class TfisOperatorDashboardBuilder:
                     "strike": None,
                     "premium": None,
                     "oi": None,
-                    "entry": self._formula_result(formula_values, "entry"),
-                    "target": self._formula_result(formula_values, "target"),
-                    "stoploss": self._formula_result(formula_values, "stoploss"),
+                    "entry": None,
+                    "target": None,
+                    "stoploss": None,
+                    "provisional_entry": self._formula_result(formula_values, "entry"),
+                    "provisional_target": self._formula_result(formula_values, "target"),
+                    "provisional_stoploss": self._formula_result(formula_values, "stoploss"),
                     "order_status": failure_code,
                     "start_strike": self._formula_result(formula_values, "start_strike"),
                     "end_strike": self._formula_result(formula_values, "end_strike"),
@@ -2398,6 +2710,11 @@ class TfisOperatorDashboardBuilder:
             return None
 
     @staticmethod
+    def _float_or_default(value: Any, default: float) -> float:
+        parsed = TfisOperatorDashboardBuilder._float_or_none(value)
+        return parsed if parsed is not None else default
+
+    @staticmethod
     def _int_or_none(value: Any) -> int | None:
         if value is None:
             return None
@@ -2478,9 +2795,18 @@ class TfisOperatorDashboardBuilder:
       </div>
     </div>
     <div id="monthlyChartMeta" class="chart-meta-grid"></div>
+    <div id="monthlyChartInspector" class="chart-inspector"></div>
+    <div class="chart-level-controls" aria-label="Chart level visibility">
+      <label><input type="checkbox" data-level-group="monthly" checked> Monthly levels</label>
+      <label><input type="checkbox" data-level-group="weekly" checked> Weekly levels</label>
+      <label><input type="checkbox" data-level-group="current" checked> Current price</label>
+      <label><input type="checkbox" data-level-group="labels" checked> Candle H/L labels</label>
+    </div>
+    <div id="monthlyChartLegend" class="chart-legend"></div>
     <div class="chart-wrap">
       <svg id="monthlyStatusChart" class="ohlc-chart" viewBox="0 0 1200 520" role="img" aria-label="Monthly status candlestick chart"></svg>
       <div id="monthlyChartEmpty" class="chart-empty">No chart data loaded.</div>
+      <div id="monthlyChartTooltip" class="chart-tooltip" hidden></div>
     </div>
   </section>
   <section class="calc-panel output-panel">
@@ -2537,6 +2863,7 @@ const FALLBACK_INSTRUMENTS = [
 let monthlyInstrumentRegistry = { instruments: FALLBACK_INSTRUMENTS, default_symbol: "NIFTY", default_price_source: "spot" };
 let monthlyChartPayload = null;
 let monthlyChartFrame = "monthly";
+let monthlyChartState = null;
 function text(id) { return document.getElementById(id).value.trim(); }
 function value(id) {
   const number = Number(document.getElementById(id).value);
@@ -2546,8 +2873,7 @@ function value(id) {
 function fmt(number) { return Number.isFinite(number) ? number.toFixed(2).replace(/\.00$/, "") : "n/a"; }
 function fmtAxis(number) {
   if (!Number.isFinite(number)) return "n/a";
-  if (Math.abs(number) >= 1000) return number.toFixed(0);
-  return number.toFixed(2).replace(/\.00$/, "");
+  return number.toFixed(2);
 }
 function esc(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -2557,6 +2883,20 @@ function chartPeriodLabel(item) {
   if (monthlyChartFrame === "weekly") return label.replace(/^\d{4}-/, "");
   if (monthlyChartFrame === "daily") return String(item.end_date || label).slice(5);
   return label;
+}
+function chartLevelVisibility() {
+  const visibility = { monthly: true, weekly: true, current: true, labels: true };
+  document.querySelectorAll("[data-level-group]").forEach(input => {
+    visibility[input.dataset.levelGroup] = input.checked;
+  });
+  return visibility;
+}
+function candleContainsReviewDate(candle) {
+  const reviewDate = text("monthlyReviewDate");
+  if (!reviewDate) return false;
+  const startDate = String(candle.start_date || candle.end_date || "");
+  const endDate = String(candle.end_date || candle.start_date || "");
+  return reviewDate >= startDate && reviewDate <= endDate;
 }
 function setMonthlyDefaultDate() { if (!text("monthlyReviewDate")) document.getElementById("monthlyReviewDate").value = new Date().toISOString().slice(0, 10); }
 function pctAbove(base, pct) { return base * (1 + pct / 100); }
@@ -2570,29 +2910,125 @@ function setMonthlyChartPayload(payload) {
 }
 function clearMonthlyChart(message) {
   monthlyChartPayload = null;
+  monthlyChartState = null;
   document.getElementById("monthlyStatusChart").innerHTML = "";
   document.getElementById("monthlyChartMeta").innerHTML = "";
+  document.getElementById("monthlyChartInspector").innerHTML = "";
+  document.getElementById("monthlyChartLegend").innerHTML = "";
   document.getElementById("monthlyChartSubtitle").textContent = message || "Fetch current data to load candles.";
   document.getElementById("monthlyChartEmpty").textContent = message || "No chart data loaded.";
   document.getElementById("monthlyChartEmpty").style.display = "grid";
+}
+function chartLineLegend() {
+  return [
+    ["Monthly Highs", "PMH/CMH", "Previous and current month high reference levels.", "monthly"],
+    ["Monthly Lows", "PML/CML", "Previous and current month low reference levels.", "monthly-low"],
+    ["Weekly Highs", "PWH/CWH", "Previous and current week high reference levels.", "weekly"],
+    ["Weekly Lows", "PWL/CWL", "Previous and current week low reference levels.", "weekly-low"],
+    ["Current Price", "LTP", "Latest close/reference price used in monthly-status review.", "current"],
+    ["Review Date", "marker", "The candle/window containing the selected review date.", "review"],
+  ];
 }
 function chartReferenceLevels() {
   try {
     const l = levels();
     return [
-      { key: "PMH", value: l.PMH, tone: "monthly-high" },
-      { key: "PML", value: l.PML, tone: "monthly-low" },
-      { key: "CMH", value: l.CMH, tone: "current-month-high" },
-      { key: "CML", value: l.CML, tone: "current-month-low" },
-      { key: "PWH", value: l.PWH, tone: "weekly-high" },
-      { key: "PWL", value: l.PWL, tone: "weekly-low" },
-      { key: "CWH", value: l.CWH, tone: "current-week-high" },
-      { key: "CWL", value: l.CWL, tone: "current-week-low" },
-      { key: "LTP", value: l.currentPrice, tone: "current-price" }
+      { key: "PMH", value: l.PMH, tone: "monthly-high", group: "monthly" },
+      { key: "PML", value: l.PML, tone: "monthly-low", group: "monthly" },
+      { key: "CMH", value: l.CMH, tone: "current-month-high", group: "monthly" },
+      { key: "CML", value: l.CML, tone: "current-month-low", group: "monthly" },
+      { key: "PWH", value: l.PWH, tone: "weekly-high", group: "weekly" },
+      { key: "PWL", value: l.PWL, tone: "weekly-low", group: "weekly" },
+      { key: "CWH", value: l.CWH, tone: "current-week-high", group: "weekly" },
+      { key: "CWL", value: l.CWL, tone: "current-week-low", group: "weekly" },
+      { key: "LTP", value: l.currentPrice, tone: "current-price", group: "current" }
     ].filter(item => Number.isFinite(item.value) && item.value > 0);
   } catch (error) {
     return [];
   }
+}
+function chartInspectorHtml(candle, price, refs) {
+  const refMap = Object.fromEntries(refs.map(ref => [ref.key, ref.value]));
+  const range = Number(candle.high) - Number(candle.low);
+  const rows = [
+    ["Window", chartPeriodLabel(candle)],
+    ["Dates", `${candle.start_date || ""}${candle.end_date && candle.end_date !== candle.start_date ? ` -> ${candle.end_date}` : ""}`],
+    ["Open", candle.open],
+    ["High", candle.high],
+    ["Low", candle.low],
+    ["Close", candle.close],
+    ["Range", range],
+    ["Cursor", price],
+    ["PMH", refMap.PMH],
+    ["PML", refMap.PML],
+    ["CMH", refMap.CMH],
+    ["CML", refMap.CML],
+    ["PWH", refMap.PWH],
+    ["PWL", refMap.PWL],
+    ["CWH", refMap.CWH],
+    ["CWL", refMap.CWL],
+  ];
+  return rows.map(([label, val]) => {
+    const rendered = typeof val === "number" || Number.isFinite(Number(val)) ? fmtAxis(Number(val)) : String(val || "n/a");
+    return `<div class="inspector-cell"><span>${esc(label)}</span><strong>${esc(rendered)}</strong></div>`;
+  }).join("");
+}
+function chartCompactTooltipHtml(candle) {
+  return `<div class="tooltip-title">${esc(chartPeriodLabel(candle))}</div>
+    <div class="tooltip-grid compact">
+      <span>O</span><strong>${fmtAxis(Number(candle.open))}</strong>
+      <span>H</span><strong>${fmtAxis(Number(candle.high))}</strong>
+      <span>L</span><strong>${fmtAxis(Number(candle.low))}</strong>
+      <span>C</span><strong>${fmtAxis(Number(candle.close))}</strong>
+    </div>`;
+}
+function hideMonthlyChartHover() {
+  const tooltip = document.getElementById("monthlyChartTooltip");
+  tooltip.hidden = true;
+  document.getElementById("chartCrosshairLayer")?.setAttribute("visibility", "hidden");
+}
+function handleMonthlyChartHover(event) {
+  if (!monthlyChartState) return;
+  const svg = document.getElementById("monthlyStatusChart");
+  const tooltip = document.getElementById("monthlyChartTooltip");
+  const point = svg.createSVGPoint();
+  point.x = event.clientX;
+  point.y = event.clientY;
+  const cursor = point.matrixTransform(svg.getScreenCTM().inverse());
+  const state = monthlyChartState;
+  if (cursor.x < state.margin.left || cursor.x > state.width - state.margin.right || cursor.y < state.margin.top || cursor.y > state.height - state.margin.bottom) {
+    hideMonthlyChartHover();
+    return;
+  }
+  const rawIndex = Math.floor((cursor.x - state.margin.left) / state.xStep);
+  const index = Math.max(0, Math.min(state.candles.length - 1, rawIndex));
+  const candle = state.candles[index];
+  const cx = state.x(index);
+  const price = state.priceFromY(cursor.y);
+  document.getElementById("crosshairV")?.setAttribute("x1", cx);
+  document.getElementById("crosshairV")?.setAttribute("x2", cx);
+  document.getElementById("crosshairH")?.setAttribute("y1", cursor.y);
+  document.getElementById("crosshairH")?.setAttribute("y2", cursor.y);
+  const priceLabel = document.getElementById("crosshairPriceLabel");
+  if (priceLabel) {
+    priceLabel.setAttribute("y", cursor.y + 4);
+    priceLabel.textContent = fmtAxis(price);
+  }
+  const dateLabel = document.getElementById("crosshairDateLabel");
+  if (dateLabel) {
+    dateLabel.setAttribute("x", cx);
+    dateLabel.textContent = chartPeriodLabel(candle);
+  }
+  document.getElementById("crosshairDateBox")?.setAttribute("x", cx - 36);
+  document.getElementById("chartCrosshairLayer")?.setAttribute("visibility", "visible");
+  document.getElementById("monthlyChartInspector").innerHTML = chartInspectorHtml(candle, price, state.refs);
+  tooltip.innerHTML = chartCompactTooltipHtml(candle);
+  tooltip.hidden = false;
+  const wrap = svg.parentElement.getBoundingClientRect();
+  const xOffset = event.clientX - wrap.left;
+  const yOffset = event.clientY - wrap.top;
+  tooltip.style.left = `${Math.min(wrap.width - 120, xOffset + 14)}px`;
+  tooltip.style.top = `${Math.max(12, Math.min(wrap.height - 120, yOffset - 18))}px`;
 }
 function renderMonthlyStatusChart() {
   const svg = document.getElementById("monthlyStatusChart");
@@ -2612,6 +3048,9 @@ function renderMonthlyStatusChart() {
   if (!candles.length) {
     svg.innerHTML = "";
     meta.innerHTML = "";
+    document.getElementById("monthlyChartInspector").innerHTML = "";
+    document.getElementById("monthlyChartLegend").innerHTML = "";
+    monthlyChartState = null;
     subtitle.textContent = monthlyChartPayload ? "No candles available for this timeframe." : "Fetch current data to load candles.";
     empty.textContent = monthlyChartPayload ? "No candles available for this timeframe." : "No chart data loaded.";
     empty.style.display = "grid";
@@ -2623,10 +3062,11 @@ function renderMonthlyStatusChart() {
   const width = Math.max(1100, Math.round(bounds.width || 1200));
   const height = 520;
   svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  const margin = { top: 28, right: 112, bottom: 56, left: 56 };
+  const margin = { top: 28, right: 78, bottom: 56, left: 52 };
   const plotW = width - margin.left - margin.right;
   const plotH = height - margin.top - margin.bottom;
-  const refs = chartReferenceLevels();
+  const visibility = chartLevelVisibility();
+  const refs = chartReferenceLevels().filter(item => visibility[item.group]);
   const highs = candles.map(item => Number(item.high)).concat(refs.map(item => item.value));
   const lows = candles.map(item => Number(item.low)).concat(refs.map(item => item.value));
   let maxPrice = Math.max(...highs);
@@ -2685,7 +3125,7 @@ function renderMonthlyStatusChart() {
     const label = showLabel
       ? `<text class="chart-x-label" x="${cx}" y="${height - 18}">${esc(chartPeriodLabel(item))}</text>`
       : "";
-    const showHighLow = index % highLowEvery === 0 || index === candles.length - 1;
+    const showHighLow = visibility.labels && (index % highLowEvery === 0 || index === candles.length - 1);
     const highLow = showHighLow
       ? `<text class="chart-hilo chart-high" x="${cx + bodyW / 2 + 5}" y="${yh - 6}">H ${fmtAxis(high)}</text>
          <text class="chart-hilo chart-low" x="${cx + bodyW / 2 + 5}" y="${yl + 14}">L ${fmtAxis(low)}</text>`
@@ -2697,6 +3137,13 @@ function renderMonthlyStatusChart() {
       ${highLow}
     </g>`;
   }).join("");
+  const reviewIndex = candles.findIndex(candleContainsReviewDate);
+  const reviewMarker = reviewIndex >= 0
+    ? `<g class="chart-review-marker">
+        <line x1="${x(reviewIndex)}" y1="${margin.top}" x2="${x(reviewIndex)}" y2="${height - margin.bottom}"></line>
+        <text x="${x(reviewIndex) + 8}" y="${margin.top + 16}">Review date</text>
+      </g>`
+    : "";
   const latest = candles[candles.length - 1];
   subtitle.textContent = `${monthlyChartFrame.toUpperCase()} candles for ${monthlyChartPayload.symbol || text("monthlyInstrument")} through ${monthlyChartPayload.last_bar_date || latest.end_date || ""}`;
   meta.innerHTML = [
@@ -2705,12 +3152,39 @@ function renderMonthlyStatusChart() {
     ["Candles", candles.length],
     ["Latest Close", fmtAxis(Number(latest.close))]
   ].map(([label, val]) => `<div class="chart-chip"><span>${label}</span><strong>${esc(val)}</strong></div>`).join("");
+  document.getElementById("monthlyChartLegend").innerHTML = chartLineLegend().map(([name, code, meaning, tone]) => `
+    <div class="legend-item legend-${tone}">
+      <i></i><div><strong>${esc(name)} <span>${esc(code)}</span></strong><em>${esc(meaning)}</em></div>
+    </div>`).join("");
+  document.getElementById("monthlyChartInspector").innerHTML = chartInspectorHtml(latest, Number(latest.close), chartReferenceLevels());
   svg.innerHTML = `
     <rect class="chart-bg" x="0" y="0" width="${width}" height="${height}"></rect>
     <g>${grid.join("")}</g>
     <line class="chart-axis" x1="${margin.left}" y1="${height - margin.bottom}" x2="${width - margin.right}" y2="${height - margin.bottom}"></line>
     ${referenceLines}
-    <g>${candleNodes}</g>`;
+    ${reviewMarker}
+    <g>${candleNodes}</g>
+    <g id="chartCrosshairLayer" class="chart-crosshair" visibility="hidden">
+      <line id="crosshairV" x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${height - margin.bottom}"></line>
+      <line id="crosshairH" x1="${margin.left}" y1="${margin.top}" x2="${width - margin.right}" y2="${margin.top}"></line>
+      <rect x="${width - margin.right + 4}" y="${margin.top - 12}" width="72" height="20" rx="4"></rect>
+      <text id="crosshairPriceLabel" x="${width - margin.right + 10}" y="${margin.top + 4}"></text>
+      <rect id="crosshairDateBox" x="${margin.left - 36}" y="${height - margin.bottom + 12}" width="72" height="22" rx="4"></rect>
+      <text id="crosshairDateLabel" x="${margin.left}" y="${height - margin.bottom + 28}"></text>
+    </g>
+    <rect class="chart-hit-area" x="${margin.left}" y="${margin.top}" width="${plotW}" height="${plotH}"></rect>`;
+  monthlyChartState = {
+    candles,
+    refs: chartReferenceLevels(),
+    width,
+    height,
+    margin,
+    xStep,
+    x,
+    priceFromY: cursorY => maxPrice - ((cursorY - margin.top) / plotH) * (maxPrice - minPrice),
+  };
+  svg.onmousemove = handleMonthlyChartHover;
+  svg.onmouseleave = hideMonthlyChartHover;
 }
 function classifyMonthlyStructure(group, l) {
   const t = THRESHOLDS[group];
@@ -2900,6 +3374,9 @@ document.querySelectorAll(".chart-tab").forEach(tab => {
     monthlyChartFrame = tab.dataset.frame || "monthly";
     renderMonthlyStatusChart();
   });
+});
+document.querySelectorAll("[data-level-group]").forEach(input => {
+  input.addEventListener("change", renderMonthlyStatusChart);
 });
 document.getElementById("monthlyInstrument").addEventListener("change", () => {
   applySelectedInstrumentGroup();
@@ -3333,11 +3810,21 @@ calculate();
                 "    .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }",
                 "    .section-heading h3 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; }",
                 "    .section-heading span { color: var(--muted); font-size: 0.82rem; font-weight: 650; }",
-                "    .final-leg-panel { overflow: hidden; }",
-                "    .final-leg-table { display: table; table-layout: fixed; width: 100%; overflow: hidden; font-size: 0.84rem; }",
+                "    .final-leg-panel { overflow-x: auto; }",
+                "    .final-leg-table { display: table; table-layout: fixed; width: 100%; min-width: 1180px; overflow: hidden; font-size: 0.82rem; }",
                 "    .final-leg-table thead, .final-leg-table tbody { display: table-row-group; width: auto; }",
                 "    .final-leg-table thead { display: table-header-group; }",
-                "    .final-leg-table th, .final-leg-table td { padding: 11px 10px; vertical-align: middle; }",
+                "    .final-leg-table th, .final-leg-table td { padding: 10px 12px; vertical-align: middle; }",
+                "    .final-leg-table th:nth-child(1), .final-leg-table td:nth-child(1) { width: 190px; }",
+                "    .final-leg-table th:nth-child(2), .final-leg-table td:nth-child(2) { width: 240px; }",
+                "    .final-leg-table th:nth-child(3), .final-leg-table td:nth-child(3) { width: 90px; }",
+                "    .final-leg-table th:nth-child(4), .final-leg-table td:nth-child(4) { width: 80px; }",
+                "    .final-leg-table th:nth-child(5), .final-leg-table td:nth-child(5) { width: 90px; }",
+                "    .final-leg-table th:nth-child(6), .final-leg-table td:nth-child(6) { width: 105px; }",
+                "    .final-leg-table th:nth-child(7), .final-leg-table td:nth-child(7) { width: 90px; }",
+                "    .final-leg-table th:nth-child(8), .final-leg-table td:nth-child(8) { width: 90px; }",
+                "    .final-leg-table th:nth-child(9), .final-leg-table td:nth-child(9) { width: 80px; }",
+                "    .final-leg-table th:nth-child(10), .final-leg-table td:nth-child(10) { width: 170px; }",
                 "    .final-leg-table th { color: #405047; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; }",
                 "    .final-leg-table tbody tr:nth-child(even) td { background: #fffaf3; }",
                 "    .text-cell { text-align: left; }",
@@ -3346,6 +3833,10 @@ calculate();
                 "    .code-cell { font-family: Consolas, 'Courier New', monospace; font-size: 0.78rem; overflow-wrap: anywhere; }",
                 "    .contract-cell strong { display: inline-block; font-family: Consolas, 'Courier New', monospace; font-size: 0.82rem; background: #f6efe4; border: 1px solid #e3d6c2; border-radius: 6px; padding: 3px 6px; white-space: nowrap; }",
                 "    .side-cell { font-weight: 800; color: var(--accent); white-space: nowrap; }",
+                "    .final-leg-table .code-cell { font-size: 0.76rem; line-height: 1.3; }",
+                "    .final-leg-table .contract-cell strong { box-sizing: border-box; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; font-size: 0.78rem; padding: 4px 7px; }",
+                "    .final-leg-table .side-cell { font-size: 0.78rem; letter-spacing: 0; }",
+                "    .final-leg-table .number-cell { white-space: nowrap; }",
                 "    .final-leg-table .badge { font-size: 0.66rem; padding: 4px 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }",
                 "    .leg-explanation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }",
                 "    .explanation-panel { cursor: default; }",
@@ -3359,8 +3850,43 @@ calculate();
                 "    .leg-explanation-card { border: 1px solid var(--soft-border); border-radius: 8px; background: #fffaf3; padding: 16px; }",
                 "    .leg-explanation-card h3 { margin: 0 0 12px; font-size: 1rem; color: var(--accent); font-family: Georgia, 'Times New Roman', serif; }",
                 "    .eligible-strike-panel { margin: 14px 0; }",
-                "    .eligible-strike-panel h4 { margin: 0 0 8px; font-size: 0.92rem; color: var(--ink); }",
-                "    .eligible-strike-table { font-size: 0.82rem; }",
+                "    .eligible-strike-panel h4 { margin: 0 0 10px; font-size: 0.98rem; color: var(--ink); font-family: 'Segoe UI', Arial, sans-serif; font-weight: 800; }",
+                "    .eligible-strike-table { display: table; table-layout: fixed; width: 100%; overflow: hidden; font-size: 0.86rem; }",
+                "    .eligible-strike-table thead, .eligible-strike-table tbody { display: table-row-group; width: auto; }",
+                "    .eligible-strike-table thead { display: table-header-group; }",
+                "    .eligible-strike-table th, .eligible-strike-table td { padding: 11px 14px; vertical-align: middle; }",
+                "    .eligible-strike-table th { font-size: 0.74rem; letter-spacing: 0.04em; }",
+                "    .eligible-strike-table th.number-cell, .eligible-strike-table td.number-cell { text-align: right; font-variant-numeric: tabular-nums; }",
+                "    .eligible-strike-table th.text-cell, .eligible-strike-table td.text-cell { text-align: left; }",
+                "    .eligible-strike-table th.status-cell, .eligible-strike-table td.status-cell { text-align: center; }",
+                "    .eligible-strike-table th:nth-child(1), .eligible-strike-table td:nth-child(1) { width: 88px; }",
+                "    .eligible-strike-table th:nth-child(2), .eligible-strike-table td:nth-child(2) { width: 240px; }",
+                "    .eligible-strike-table th:nth-child(3), .eligible-strike-table td:nth-child(3), .eligible-strike-table th:nth-child(4), .eligible-strike-table td:nth-child(4), .eligible-strike-table th:nth-child(5), .eligible-strike-table td:nth-child(5) { width: 112px; }",
+                "    .eligible-strike-table th:nth-child(6), .eligible-strike-table td:nth-child(6) { width: 116px; }",
+                "    .eligible-strike-table .contract-cell strong { display: inline-block; max-width: 100%; box-sizing: border-box; font-size: 0.78rem; padding: 4px 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }",
+                "    .eligible-strike-table .badge { min-width: 78px; }",
+                "    .table-help { margin: 0 0 12px; color: var(--ink); font-size: 0.9rem; line-height: 1.45; }",
+                "    .full-scan-panel { margin-top: 14px; border: 1px solid var(--soft-border); border-radius: 8px; background: #fffaf3; overflow: hidden; }",
+                "    .full-scan-panel summary { cursor: pointer; padding: 11px 14px; color: var(--accent); font-weight: 800; list-style: none; border-bottom: 1px solid transparent; }",
+                "    .full-scan-panel summary::-webkit-details-marker { display: none; }",
+                "    .full-scan-panel summary::before { content: '▶'; display: inline-block; margin-right: 8px; font-size: 0.78rem; transition: transform 160ms ease; }",
+                "    .full-scan-panel[open] summary { border-bottom-color: var(--soft-border); }",
+                "    .full-scan-panel[open] summary::before { transform: rotate(90deg); }",
+                "    .full-scan-panel .table-help { margin: 12px 14px; }",
+                "    .full-scan-table-wrap { overflow-x: auto; padding-bottom: 4px; }",
+                "    .full-scan-table { table-layout: fixed; min-width: 930px; border-left: 0; border-right: 0; border-bottom: 0; border-radius: 0; font-size: 0.8rem; }",
+                "    .full-scan-table th, .full-scan-table td { padding: 8px 9px; }",
+                "    .full-scan-table th { font-size: 0.68rem; }",
+                "    .full-scan-table th:nth-child(1), .full-scan-table td:nth-child(1) { width: 68px; }",
+                "    .full-scan-table th:nth-child(2), .full-scan-table td:nth-child(2) { width: 205px; }",
+                "    .full-scan-table th:nth-child(3), .full-scan-table td:nth-child(3) { width: 82px; }",
+                "    .full-scan-table th:nth-child(4), .full-scan-table td:nth-child(4) { width: 94px; }",
+                "    .full-scan-table th:nth-child(5), .full-scan-table td:nth-child(5) { width: 104px; }",
+                "    .full-scan-table th:nth-child(6), .full-scan-table td:nth-child(6) { width: 104px; }",
+                "    .full-scan-table th:nth-child(7), .full-scan-table td:nth-child(7) { width: 230px; }",
+                "    .full-scan-table .contract-cell strong { font-size: 0.72rem; padding: 3px 6px; }",
+                "    .full-scan-table .badge { min-width: 68px; font-size: 0.64rem; padding: 3px 7px; }",
+                "    .full-scan-table .reason-cell { color: var(--muted); font-size: 0.76rem; line-height: 1.25; }",
                 "    .explanation-list { margin: 0; padding-left: 20px; display: grid; gap: 8px; }",
                 "    .explanation-list li { padding-left: 4px; }",
                 "    .explanation-table { margin-top: 14px; }",
@@ -3408,6 +3934,20 @@ calculate();
                 "    .chart-chip { border: 1px solid #273447; background: #121a27; color: #d6dee9; border-radius: 8px; padding: 8px 10px; min-width: 0; }",
                 "    .chart-chip span { display: block; color: #8ea0b6; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }",
                 "    .chart-chip strong { display: block; margin-top: 3px; color: #f5f7fb; font-size: 0.94rem; overflow-wrap: anywhere; }",
+                "    .chart-inspector { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; padding: 10px 18px 0; }",
+                "    .inspector-cell { border: 1px solid #d9cdbb; background: #fff8ee; border-radius: 8px; padding: 7px 9px; min-width: 0; }",
+                "    .inspector-cell span { display: block; color: var(--muted); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }",
+                "    .inspector-cell strong { display: block; margin-top: 2px; color: var(--ink); font-size: 0.88rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }",
+                "    .chart-level-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; padding: 12px 18px 0; color: var(--muted); font-size: 0.82rem; font-weight: 750; }",
+                "    .chart-level-controls label { display: inline-flex; grid-auto-flow: column; align-items: center; gap: 6px; width: auto; color: inherit; font-size: inherit; }",
+                "    .chart-level-controls input { width: auto; accent-color: var(--accent); }",
+                "    .chart-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; padding: 10px 18px 0; }",
+                "    .legend-item { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; border: 1px solid var(--soft-border); background: #fffaf3; border-radius: 8px; padding: 8px 10px; }",
+                "    .legend-item i { display: block; height: 0; margin-top: 10px; border-top: 3px dashed currentColor; }",
+                "    .legend-item strong { display: block; font-size: 0.8rem; color: var(--ink); }",
+                "    .legend-item strong span { color: var(--muted); font-weight: 750; }",
+                "    .legend-item em { display: block; color: var(--muted); font-size: 0.74rem; font-style: normal; line-height: 1.25; }",
+                "    .legend-monthly { color: #f59e0b; } .legend-monthly-low { color: #38bdf8; } .legend-weekly { color: #a78bfa; } .legend-weekly-low { color: #34d399; } .legend-current { color: #f43f5e; } .legend-current i { border-top-style: solid; } .legend-review { color: #475569; }",
                 "    .chart-wrap { position: relative; margin: 14px 18px 18px; min-height: 360px; border: 1px solid #263348; border-radius: 10px; background: #0d1320; overflow: hidden; }",
                 "    .ohlc-chart { display: block; width: 100%; height: min(58vh, 560px); min-height: 360px; font-family: 'Segoe UI', Arial, sans-serif; }",
                 "    .chart-bg { fill: #0d1320; }",
@@ -3429,6 +3969,20 @@ calculate();
                 "    .chart-reference-weekly-low line, .chart-reference-weekly-low text, .chart-reference-current-week-low line, .chart-reference-current-week-low text { stroke: #34d399; fill: #34d399; }",
                 "    .chart-reference-current-price line { stroke-width: 2; stroke-dasharray: 0; }",
                 "    .chart-reference-current-price line, .chart-reference-current-price text { stroke: #f43f5e; fill: #f43f5e; }",
+                "    .chart-review-marker line { stroke: #f8fafc; stroke-width: 1.2; stroke-dasharray: 3 6; opacity: 0.72; }",
+                "    .chart-review-marker text { fill: #f8fafc; font-size: 12px; font-weight: 800; paint-order: stroke; stroke: #0d1320; stroke-width: 3px; }",
+                "    .chart-hit-area { fill: transparent; pointer-events: all; cursor: crosshair; }",
+                "    .chart-crosshair line { stroke: #b8c7da; stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.86; pointer-events: none; }",
+                "    .chart-crosshair rect { fill: #111827; stroke: #3d4d63; stroke-width: 1; opacity: 0.96; pointer-events: none; }",
+                "    .chart-crosshair text { fill: #f8fafc; font-size: 12px; font-weight: 750; text-anchor: middle; font-variant-numeric: tabular-nums; pointer-events: none; }",
+                "    #crosshairPriceLabel { text-anchor: start; }",
+                "    .chart-tooltip { position: absolute; z-index: 3; width: 104px; max-width: calc(100% - 24px); padding: 8px 9px; border: 1px solid #40506a; border-radius: 8px; background: rgba(15, 23, 42, 0.92); color: #e5edf7; box-shadow: 0 10px 22px rgba(0,0,0,0.26); pointer-events: none; }",
+                "    .tooltip-title { font-weight: 850; color: #fff; margin-bottom: 2px; }",
+                "    .tooltip-subtitle { color: #9fb0c5; font-size: 0.76rem; margin-bottom: 9px; }",
+                "    .tooltip-grid { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; font-size: 0.78rem; }",
+                "    .tooltip-grid.compact { gap: 3px 8px; }",
+                "    .tooltip-grid span { color: #9fb0c5; }",
+                "    .tooltip-grid strong { color: #f8fafc; font-variant-numeric: tabular-nums; }",
                 "    .chart-empty { position: absolute; inset: 0; display: grid; place-items: center; color: #aeb9c8; font-weight: 700; background: rgba(13,19,32,0.82); }",
                 "    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 14px; }",
                 "    label { display: grid; gap: 6px; color: var(--muted); font-weight: 700; font-size: 0.88rem; }",
