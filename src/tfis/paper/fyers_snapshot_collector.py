@@ -847,7 +847,10 @@ class S23FyersSnapshotCollector:
                 config.broker.payload_fixture_path,
                 source_timezone=config.broker.timezone,
             )
-        return FyersBrokerAdapter(source_timezone=config.broker.timezone)
+        return FyersBrokerAdapter(
+            source_timezone=config.broker.timezone,
+            option_chain_strike_count=config.broker.option_chain_strike_count,
+        )
 
     @staticmethod
     def _derive_session_id(

@@ -16,6 +16,7 @@ from tfis.paper import (
 from tfis.paper.live_ingress import (
     S23BrokerPaperIngressRunner,
     S23LivePaperIngressError,
+    S23LivePaperIngressConfig,
 )
 
 
@@ -200,6 +201,17 @@ def _write_payload_fixture(
     path = tmp_path / "fyers_payloads.json"
     path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
     return path
+
+
+def test_config_parses_option_chain_strike_count(tmp_path: Path) -> None:
+    config_path = _write_config(
+        tmp_path,
+        broker_overrides={"option_chain_strike_count": 80},
+    )
+
+    config = S23LivePaperIngressConfig.from_yaml(config_path)
+
+    assert config.broker.option_chain_strike_count == 80
 
 
 def test_preflight_missing_fyers_credentials_fails(

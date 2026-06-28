@@ -42,6 +42,10 @@ Current status:
 - a scheduled morning supervised decision runner for `09:16`, `09:25`, and
   `09:30` plus a step-by-step trade decision explainer now exist for operator
   cross-checks during live market
+- the operator dashboard now shows S23 final CE/PE decisions, selected and
+  failed-leg reasons, full strike-scan audit tables, current paper-order
+  status, and a monthly-status market-structure chart for daily/weekly/monthly
+  review
 - FYERS is the first market-data adapter, but order placement remains blocked
 - TradingEngine capture conversion and ingress-only pairing now exist, but that
   path is currently `NO_GO` for ingress acceptance because selected-contract
@@ -432,8 +436,7 @@ Serve the dashboard locally:
 python scripts/serve_operator_dashboard.py --output-root tmp/operator_dashboard --port 8765
 ```
 
-The first dashboard version is read-only and artifact-backed. It currently
-includes:
+The dashboard is read-only and artifact-backed. It currently includes:
 
 - a strategy index page
 - an `S23` strategy page
@@ -441,6 +444,15 @@ includes:
 - stage cards for `09:16`, `09:25`, and `09:30`
 - monthly-status visibility per stage
 - option-chain readiness and OI completeness
+- final S23 CE/PE leg decisions, including no-contract rows with failure codes
+- rule-sheet style calculation explanations and collapsed full strike-scan
+  audit tables
+- selected-strike qualification reasons, rejection reasons, and near/next
+  expiry audit context when persisted by the run
+- paper-order/trade rows with current price, fill status, and P&L fields when
+  watcher data is available
+- a monthly-status calculator with instrument-aware daily, weekly, and monthly
+  candlestick charts, reference lines, hover inspection, and color legend
 - links to raw TFIS artifacts for cross-checking
 
 During the morning supervised run, TFIS now rebuilds this dashboard
@@ -454,12 +466,13 @@ One-time Windows scheduled-task registration for automatic daily launch before
 powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supervised_task.ps1
 ```
 
-This registers a daily task at `09:08` so the TFIS morning runner has time to
-refresh FYERS auth and be alive before `09:16`. The scheduled task uses
-`-IfPast abort`, so a delayed start will fail loudly instead of writing a late
-artifact that looks like the `09:16` snapshot. Without this registration step,
-no automatic live-market snapshot will happen unless you launch the morning
-runner manually yourself.
+This registers a weekday task at the configured run time, default `09:08`, so
+the TFIS morning runner has time to refresh FYERS auth and be alive before
+`09:16`. The scheduled task is limited to Monday-Friday, and the wrapper also
+checks the configured NSE holiday calendar before token refresh, snapshot
+capture, or watcher startup. Without this registration step, no automatic
+live-market snapshot will happen unless you launch the morning runner manually
+yourself.
 
 To verify that the task is actually present and inspect the last-run details:
 

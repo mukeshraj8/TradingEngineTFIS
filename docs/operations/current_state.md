@@ -6,10 +6,11 @@ change in a meaningful way.
 
 ## Current Focus
 
-- correct S23 around the latest rule-sheet process while preserving the TFIS
-  broker-agnostic, multi-strategy architecture contract
-- keep monthly status independent and reusable before rewriting strategy
-  decision/dashboard flow around enabled strategy modules
+- validate the corrected S23 paper-mode flow on the next real NSE trading day,
+  especially watcher startup, current-price updates, fill status, P&L, and
+  no-carry-forward handling for unfilled orders
+- keep monthly status independent and reusable while improving generic
+  enabled-strategy execution and durable calculation storage
 
 ## Operational Status And TODO
 
@@ -24,6 +25,15 @@ Current S23 paper-mode posture:
 - `DONE`: S23 rule interpretation, CE/PE leg visibility, failed-leg reasons,
   calculation explanations, visible watcher windows, and waiting-order behavior
   are implemented and committed.
+- `DONE`: S23 dashboard Step 8 strike audits now preserve the full reconstructed
+  candidate set and explicitly show missing strike-grid rows as rejected audit
+  rows when the captured option chain does not include every strike in the
+  rule-book Start-to-End range.
+- `DONE`: FYERS option-chain collection now requests the specific weekly expiry
+  timestamp using the FYERS/expiry-day `15:30 IST` convention and uses
+  configurable `broker.option_chain_strike_count` for S23 paper snapshots, so
+  near and next weekly expiry data can be collected for Step 8c fallback instead
+  of repeatedly receiving only the default near chain.
 - `PARTIAL`: Near-vs-next expiry search is auditable, but true next-expiry
   fallback still depends on a reliable FYERS/data-source path that returns the
   actual next weekly option chain instead of relabeled near-expiry contracts.
@@ -36,7 +46,7 @@ Current S23 paper-mode posture:
   sessions.
 - `TODO`: On the next real NSE trading day, validate the full S23 paper flow
   one step at a time:
-  1. scheduled task starts at `09:14`
+  1. scheduled task starts at the configured pre-market time
   2. `09:16`, `09:25`, and `09:30` snapshots complete
   3. final CE/PE selections or no-trade reasons match the rule sheet
   4. watchers start only for that day's valid waiting orders or open positions
@@ -206,6 +216,19 @@ Current S23 paper-mode posture:
   target, and SL only for legs with a selected final contract; failed/no-trade
   legs show `n/a` for those fields and keep provisional formula values only in
   the calculation explanation
+- S23 calculation explanations now align leg-level dry-run numbering with the
+  rule-book sequence: Step 3 spot data, Step 4 strike factor, Step 5 strike
+  range, Step 6 minimum OI, Step 7a/7b premium thresholds, Step 8a/8b/8c/8d
+  near/next contract qualification, and Step 9/10/11 entry/target/SL
+- S23 Step 8 strike-matching audit tables now render inline directly under the
+  matching Step 8a, 8b, or 8c explanation. When Step 8a selects the final
+  strike, Step 8b and 8c show collapsed "not run" explanations instead of
+  implying unnecessary fallback calculations were performed.
+- S23 failed-leg dashboard audit now accepts reconstructed tuple-based
+  candidate rows, so failed PE/CE legs can display the captured strike,
+  premium, OI, status, and rejection reason instead of showing a blank
+  "No candidate rows were persisted" table when the option-chain snapshot is
+  available.
 
 ## Current Architecture Flow
 

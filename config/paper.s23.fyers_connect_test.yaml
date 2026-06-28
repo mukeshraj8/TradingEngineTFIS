@@ -30,6 +30,9 @@ broker:
   provider: fyers
   timezone: Asia/Kolkata
   capture_stream_events: false
+  # S23 can scan a wide 5% strike range; keep this large enough to include
+  # near and fallback candidates around spot for manual Step 8 audits.
+  option_chain_strike_count: 80
 
 paper:
   strategy_code: S23

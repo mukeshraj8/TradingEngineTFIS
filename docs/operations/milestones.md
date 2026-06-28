@@ -20,6 +20,20 @@
 - S23 operator dashboard latest-session view now shows a visible calculation
   explanation section with Step 1-8 reasoning and per-leg formula traces from
   the final decision artifacts
+- S23 operator dashboard now shows final CE/PE leg decisions with no-contract
+  rows, failure codes, selected/failed-leg explanations, and final trade levels
+  only when an actual contract qualifies
+- S23 operator dashboard strike audit now shows rule-sheet search order,
+  side-filtered full strike scans, derived rejection reasons, and explicit
+  qualification reasons for `PASSED` and `SELECTED` rows
+- FYERS-backed S23 option-chain collection now requests expiry-specific chains
+  with a configurable wider strike count, so Step 8c near-then-next expiry
+  fallback can be populated by broker data rather than relabeled/default
+  near-expiry responses
+- Monthly Status Calculator now includes daily, weekly, and monthly
+  market-structure candlestick charts with reference lines, hover inspection,
+  fixed inspector context, visibility controls, review-date marker, and color
+  legend for manual validation
 - S23 scheduled startup now launches separate paper watcher processes for every
   produced paper order or open paper position instead of skipping automatic
   watching when a two-leg session creates both CE and PE orders
@@ -147,11 +161,18 @@
 
 ## Next Recommended Priorities
 
-- rewrite the S23 manual calculator around the corrected rule-sheet matrix
-  before adding more runtime behavior
+- validate the corrected S23 paper flow on the next real NSE trading day,
+  including watcher startup, current-price updates, fill status, P&L, and
+  cancellation/non-carry-forward of unfilled waiting orders
 - keep monthly-status calculation independent and reusable for future enabled
   strategies
-- run the first real local FYERS market-data-only ingress session under the new preflight runbook during market hours
+- move durable S23 option-chain, decision, order, trade-ledger, and
+  monthly-status calculation records out of temp-only storage into structured
+  data folders with strategy/date/instrument provenance
+- introduce generic enabled-strategy execution through registry/config before
+  adding S21 or other strategies
+- run further real local FYERS market-data-only ingress sessions under the
+  preflight runbook during market hours
 - broaden the broker-backed S23 ingress-only validation set across more normalized archive and replay sessions
 - decide whether TradingEngine option-quote captures can be enriched with reliable OI before using them for ingress-only acceptance
 - run the first tightly controlled broker-backed live-like fill and same-day lifecycle rehearsal only after ingress thresholds stay green

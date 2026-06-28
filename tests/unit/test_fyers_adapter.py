@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
-from datetime import date, time
+from datetime import date, datetime, time
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -23,6 +24,16 @@ FIXTURE_PATH = (
     / "paper"
     / "fyers_market_data_payloads.json"
 )
+
+
+class _FakeFyersClient:
+    def __init__(self, payload: dict) -> None:
+        self.payload = payload
+        self.optionchain_requests: list[dict] = []
+
+    def optionchain(self, request: dict) -> dict:
+        self.optionchain_requests.append(dict(request))
+        return self.payload
 
 
 def test_fyers_adapter_normalizes_symbols_round_trip() -> None:
@@ -91,6 +102,30 @@ def test_fyers_adapter_normalizes_market_payloads() -> None:
     assert selected.option_type is OptionType.PUT
     assert len(stream_events) == 1
     assert stream_events[0].envelope.event_type is PaperEventType.SELECTED_CONTRACT_BAR
+
+
+def test_fyers_adapter_requests_specific_expiry_and_configured_strike_count() -> None:
+    payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))["option_chain"]
+    client = _FakeFyersClient(payload)
+    adapter = FyersBrokerAdapter(
+        client=client,
+        source_timezone="Asia/Kolkata",
+        option_chain_strike_count=80,
+    )
+    adapter.connect()
+
+    adapter.get_option_chain("NIFTY", date(2026, 6, 30), session_date=date(2026, 6, 25))
+
+    expected_timestamp = int(
+        datetime(2026, 6, 30, 15, 30, tzinfo=ZoneInfo("Asia/Kolkata")).timestamp()
+    )
+    assert client.optionchain_requests == [
+        {
+            "symbol": "NSE:NIFTY50-INDEX",
+            "strikecount": 80,
+            "timestamp": expected_timestamp,
+        }
+    ]
 
 
 def test_fyers_adapter_skips_underlying_rows_in_option_chain(tmp_path: Path) -> None:

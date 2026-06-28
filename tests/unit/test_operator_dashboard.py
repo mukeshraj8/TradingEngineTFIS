@@ -4,6 +4,7 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
@@ -32,21 +33,55 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     artifact_root = tmp_path / "artifacts"
     day_dir = artifact_root / "2026-06-10"
     stage_dir = day_dir / "s23-fyers-morning-supervised-decision-0916-2026-06-10"
+    rc_stage_dir = day_dir / "s23-fyers-morning-supervised-decision-0930-2026-06-10"
     final_dir = day_dir / "s23-fyers-morning-supervised-decision-2026-06-10"
     stage_dir.mkdir(parents=True)
+    rc_stage_dir.mkdir(parents=True)
     final_dir.mkdir(parents=True)
+    preflight_payload = {
+        "preflight_status": "READY",
+        "option_chain_contract_count": 42,
+        "option_chain_has_complete_oi": True,
+    }
     (stage_dir / "snapshot_preflight_summary.json").write_text(
+        json.dumps(preflight_payload),
+        encoding="utf-8",
+    )
+    (stage_dir / "normalized_underlying_bars.json").write_text("{}", encoding="utf-8")
+    (stage_dir / "normalized_option_chain_snapshot.json").write_text("{}", encoding="utf-8")
+    (rc_stage_dir / "normalized_underlying_bars.json").write_text("{}", encoding="utf-8")
+    (rc_stage_dir / "normalized_option_chain_snapshot.json").write_text(
         json.dumps(
             {
-                "preflight_status": "READY",
-                "option_chain_contract_count": 42,
-                "option_chain_has_complete_oi": True,
+                "payload": {
+                    "contracts": [
+                        {
+                            "symbol": "NIFTY_20260609_24250_PE",
+                            "option_type": "PUT",
+                            "strike": 24250,
+                            "ltp": 171.55,
+                            "oi": 656045,
+                        },
+                        {
+                            "symbol": "NIFTY_20260609_24200_PE",
+                            "option_type": "PUT",
+                            "strike": 24200,
+                            "ltp": 142.80,
+                            "oi": 3795415,
+                        },
+                        {
+                            "symbol": "NIFTY_20260609_24150_CE",
+                            "option_type": "CALL",
+                            "strike": 24150,
+                            "ltp": 320.0,
+                            "oi": 999999,
+                        },
+                    ]
+                }
             }
         ),
         encoding="utf-8",
     )
-    for filename in ("normalized_underlying_bars.json", "normalized_option_chain_snapshot.json"):
-        (stage_dir / filename).write_text("{}", encoding="utf-8")
     (final_dir / "monthly_status_stage_0916.json").write_text(
         json.dumps(
             {
@@ -478,7 +513,7 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     )
     assert failed_pe_row is not None
     assert failed_pe_row.group(0).count(">n/a<") >= 6
-    assert "No final trade levels apply because no contract qualified" in strategy_html
+    assert "No entry applies because no contract qualified" in strategy_html
     assert "provisional entry/target/SL values were 212.75 / 85.10 / 258.94" in strategy_html
     assert "Option-chain candidates in the strike range do not meet minimum premium." in strategy_html
     assert "near expiry 2026-06-02; fallback expiry 2026-06-09" in strategy_html
@@ -488,20 +523,39 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "tfis-dashboard-open-details" in strategy_html
     assert "Step 1 - Preparation" in strategy_html
     assert "Step 2 - Monthly status" in strategy_html
+    assert "Step 2a - Rule group" in strategy_html
     assert "Step 3 - Collect NIFTY spot data" in strategy_html
     assert "Step 4 - Check strike factor" in strategy_html
-    assert "Step 5a - Decide the strike range" in strategy_html
-    assert "Step 9 - Calculate trade levels" in strategy_html
+    assert "Step 5 - Find the strike range" in strategy_html
+    assert "Step 6 - Minimum OI" in strategy_html
+    assert "Step 7a - Ideal/maximum premium required" in strategy_html
+    assert "Step 7b - Minimum premium required" in strategy_html
+    assert "Step 8a - Near contract ideal/maximum premium search" in strategy_html
+    assert "Step 8b - Near contract minimum premium fallback" in strategy_html
+    assert "Step 8c - Next contract fallback" in strategy_html
+    assert "Step 8d - Final weekly option" in strategy_html
+    assert "Step 8d - No qualifying strike" in strategy_html
+    assert "Step 9 - Entry" in strategy_html
+    assert "Step 10 - Target" in strategy_html
+    assert "Step 11 - Stop loss" in strategy_html
     assert "Eligible Strike OI Comparison" in strategy_html
     assert "eligible-strike-table th.number-cell" in strategy_html
     assert "Displayed in inferred rule-sheet search order" in strategy_html
     assert "Final strike is 23850" in strategy_html
-    assert "Full strike scan audit" in strategy_html
-    assert "premium below minimum" in strategy_html
+    assert "Step 8a - Near contract ideal/maximum premium strike search" in strategy_html
+    assert "Rule 8a audit: TFIS checks the near weekly contract from Start Strike to End Strike." in strategy_html
+    assert "Step 8b - Near contract minimum premium strike search" in strategy_html
+    assert "Step 8b was not run because Step 8a already selected the final strike." in strategy_html
+    assert "Rule 8b audit: because Step 8a did not select a strike" in strategy_html
+    assert "Step 8b is used only when Step 8a does not find an ideal/maximum-premium strike" in strategy_html
+    assert "Expand the Step 8a strike matching audit below to validate each strike." in strategy_html
+    assert "Expand the Step 8b strike matching audit below" in strategy_html
+    assert "Step 8c - Next contract fallback" in strategy_html
+    assert "Expand the Step 8c next-contract audit below" in strategy_html
+    assert "passed audit because side CE matches CE; premium 184 present" in strategy_html
     assert "selected because side CE matches CE" in strategy_html
     assert "passed audit because side CE matches CE" in strategy_html
     assert "not selected because another strike was first in rule-sheet search order" in strategy_html
-    assert "Showing CE candidates only." in strategy_html
     assert "NIFTY_20260602_23950_PE" not in strategy_html
     assert "full-scan-panel" in strategy_html
     assert "full-scan-table-wrap" in strategy_html
@@ -783,3 +837,98 @@ def test_dashboard_reconstructs_stage_from_snapshot_dir(tmp_path: Path) -> None:
     assert "09:16" in strategy_html
     assert "Trigger" in strategy_html
     assert "normalized_underlying_bars.json" in strategy_html
+
+
+def test_s23_inline_step8_audit_accepts_tuple_candidates() -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    leg = {
+        "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+        "side": "SELL PE",
+        "start_strike": 23000,
+        "end_strike": 24250,
+        "ideal_premium": 290.02,
+        "minimum_premium": 217.51,
+        "minimum_oi": 32500,
+        "contract_candidates": (
+            {
+                "symbol": "NIFTY_20260630_24250_PE",
+                "strike": 24250,
+                "option_type": "PUT",
+                "premium": 171.55,
+                "oi": 656045,
+                "premium_distance": 118.47,
+                "status": "REJECTED",
+                "reason": "premium below minimum",
+            },
+            {
+                "symbol": "NIFTY_20260630_24200_PE",
+                "strike": 24200,
+                "option_type": "PUT",
+                "premium": 142.80,
+                "oi": 3795415,
+                "premium_distance": 147.22,
+                "status": "REJECTED",
+                "reason": "premium below minimum",
+            },
+            {
+                "symbol": "NIFTY_20260630_24150_CE",
+                "strike": 24150,
+                "option_type": "CALL",
+                "premium": 320.0,
+                "oi": 999999,
+                "premium_distance": 29.98,
+                "status": "PASS",
+            },
+        ),
+    }
+
+    html = builder._render_s23_step8_inline_audit(leg, "8a")
+
+    assert "NIFTY_20260630_24250_PE" in html
+    assert "NIFTY_20260630_24200_PE" in html
+    assert ">23000<" in html
+    assert "No PE contract was present in the captured option chain for strike 23000." in html
+    assert "NIFTY_20260630_24150_CE" not in html
+    assert "premium 171.55 below ideal/maximum 290.02" in html
+
+
+def test_reconstructed_s23_candidate_rows_keep_full_strike_range(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    stage_dir = tmp_path / "stage"
+    stage_dir.mkdir()
+    contracts = [
+        {
+            "symbol": f"NIFTY_20260630_{strike}_PE",
+            "option_type": "PUT",
+            "strike": strike,
+            "ltp": 10.0 + ((strike - 23000) / 50.0),
+            "oi": 100000,
+        }
+        for strike in range(23000, 24251, 50)
+    ]
+    (stage_dir / "normalized_option_chain_snapshot.json").write_text(
+        json.dumps({"payload": {"contracts": contracts}}),
+        encoding="utf-8",
+    )
+    strategy_rule = SimpleNamespace(
+        option_type=SimpleNamespace(value="PUT"),
+        minimum_oi=32500,
+    )
+    formula_values = {
+        "start_strike": {"result": 23000},
+        "end_strike": {"result": 24250},
+        "minimum_premium": {"result": 217.51},
+        "ideal_premium": {"result": 290.02},
+    }
+
+    rows = builder._candidate_rows(
+        strategy_rule=strategy_rule,
+        stage_dir=stage_dir,
+        formula_values=formula_values,
+        selected_contract_symbol=None,
+    )
+
+    assert len(rows) == 26
+    assert {row["strike"] for row in rows} == set(range(23000, 24251, 50))
+    assert any(row["symbol"] == "NIFTY_20260630_23000_PE" for row in rows)
+    assert any(row["symbol"] == "NIFTY_20260630_24250_PE" for row in rows)

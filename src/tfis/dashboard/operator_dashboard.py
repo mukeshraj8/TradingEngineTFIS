@@ -746,7 +746,7 @@ class TfisOperatorDashboardBuilder:
                 item["strike"] if item["strike"] is not None else 999999,
             )
         )
-        return tuple(rows[:12])
+        return tuple(rows)
 
     @staticmethod
     def _formula_result(formula_values: dict[str, Any], name: str) -> float | None:
@@ -1456,7 +1456,7 @@ class TfisOperatorDashboardBuilder:
                     '<ol class="explanation-list">',
                     f"<li><strong>Step 1 - Preparation.</strong> Session date is {html.escape(latest.session_date.isoformat())}; final decision uses the completed 09:30 RC snapshot.</li>",
                     f"<li><strong>Step 2 - Monthly status.</strong> Status is {html.escape(status_text)} via {html.escape(str(monthly.get('trigger_name') or 'n/a'))}. Current price used was {self._fmt_number(monthly.get('current_price'))}. {html.escape(str(monthly.get('resolution_reason') or ''))}</li>",
-                    f"<li><strong>Step 3 - Rule group.</strong> {html.escape(status_text)} maps to the {html.escape(group_text)}.</li>",
+                    f"<li><strong>Step 2a - Rule group.</strong> {html.escape(status_text)} maps to the {html.escape(group_text)}.</li>",
                     "</ol>",
                     "</div>",
                 ]
@@ -1475,7 +1475,7 @@ class TfisOperatorDashboardBuilder:
                     '<ol class="explanation-list">',
                     f"<li><strong>Step 1 - Preparation.</strong> Session date is {html.escape(latest.session_date.isoformat())}; final decision uses the completed 09:30 RC snapshot when available.</li>",
                     f"<li><strong>Step 2 - Monthly status.</strong> Status is {html.escape(str(status_text))}. Detailed monthly trace was not present in this summary artifact.</li>",
-                    f"<li><strong>Step 3 - Rule group.</strong> {html.escape(str(status_text))} maps to the {html.escape(group_text)}.</li>",
+                    f"<li><strong>Step 2a - Rule group.</strong> {html.escape(str(status_text))} maps to the {html.escape(group_text)}.</li>",
                     "</ol>",
                     "</div>",
                 ]
@@ -1562,6 +1562,8 @@ class TfisOperatorDashboardBuilder:
 
     def _render_eligible_strike_comparison_table(self, leg: dict[str, Any]) -> str:
         candidates = leg.get("contract_candidates")
+        if isinstance(candidates, tuple):
+            candidates = list(candidates)
         if not isinstance(candidates, list):
             candidates = []
         rows: list[dict[str, Any]] = []
@@ -1577,10 +1579,16 @@ class TfisOperatorDashboardBuilder:
             if isinstance(ranked, list):
                 rows = [item for item in ranked if isinstance(item, dict)]
         if not rows:
-            return ""
+            return "\n".join(
+                [
+                    '<div class="eligible-strike-panel">',
+                    "<h4>Eligible Strike OI Comparison</h4>",
+                    '<p class="table-help">No eligible strike rows were persisted for this leg. Review the inline Step 8 audit sections above to see which rule phase failed or which audit rows were unavailable.</p>',
+                    "</div>",
+                ]
+            )
         rows = self._sort_s23_candidate_rows_in_search_order(leg, rows)
         search_note = self._s23_candidate_search_note(leg, rows)
-        full_scan = self._render_s23_full_strike_scan(leg)
         body = "\n".join(
             "".join(
                 [
@@ -1605,19 +1613,69 @@ class TfisOperatorDashboardBuilder:
                 "<thead><tr><th class=\"number-cell\">Strike</th><th class=\"text-cell\">Contract</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Distance From Ideal</th><th class=\"status-cell\">Status</th></tr></thead>",
                 f"<tbody>{body}</tbody>",
                 "</table>",
-                full_scan,
                 "</div>",
             ]
         )
 
     def _render_s23_full_strike_scan(self, leg: dict[str, Any]) -> str:
         candidates = leg.get("contract_candidates")
+        if isinstance(candidates, tuple):
+            candidates = list(candidates)
         if not isinstance(candidates, list) or not candidates:
-            return (
-                '<details class="full-scan-panel">'
-                '<summary>Full strike scan audit</summary>'
-                '<p class="table-help">Full strike scan rows were not persisted for this run.</p>'
-                "</details>"
+            attempted = self._s23_attempted_expiry_values(leg)
+            panels = [
+                self._render_s23_scan_phase_panel(
+                    leg,
+                    rows=[],
+                    phase="ideal",
+                    title="Step 8a - Near contract ideal/maximum premium strike search",
+                    note=(
+                        "Rule 8a should scan the near weekly contract from Start Strike to End Strike "
+                        "and choose the first strike that qualifies by option side, strike range, "
+                        "minimum OI, and ideal/maximum premium. Full candidate rows were not persisted "
+                        "for this run, so only the recorded failure summary can be shown."
+                    ),
+                    default_open=False,
+                ),
+                self._render_s23_scan_phase_panel(
+                    leg,
+                    rows=[],
+                    phase="minimum",
+                    title="Step 8b - Near contract minimum premium strike search",
+                    note=(
+                        "Rule 8b should run only after Step 8a fails. It scans from End Strike back "
+                        "to Start Strike in the near weekly contract and chooses the first strike that "
+                        "qualifies by option side, strike range, minimum OI, and minimum premium. "
+                        "Full candidate rows were not persisted for this run."
+                    ),
+                    default_open=False,
+                ),
+            ]
+            if len(attempted) > 1:
+                panels.append(
+                    self._render_s23_scan_phase_panel(
+                        leg,
+                        rows=[],
+                        phase="fallback",
+                        title="Step 8c - Next contract repeat of 8a and 8b",
+                        note=(
+                            "Rule 8c should run only if both near-contract searches fail. TFIS then "
+                            "repeats Step 8a and Step 8b in the next weekly contract. Persisted "
+                            "attempted expiries: "
+                            + ", ".join(attempted)
+                            + ". Full candidate rows were not persisted for this run."
+                        ),
+                        default_open=False,
+                    )
+                )
+            return "\n".join(
+                [
+                    '<details class="full-scan-panel">',
+                    '<summary>Step 8 strike matching audit</summary>',
+                    f'<p class="table-help">{html.escape(self._s23_scan_formula_text(leg))} Expand each rule step below to validate the matching sequence. Full strike scan rows were not persisted for this run.</p>',
+                    *panels,
+                    "</details>",
+                ]
             )
         expected_side = self._s23_expected_option_suffix(leg)
         visible_candidates = [
@@ -1632,7 +1690,90 @@ class TfisOperatorDashboardBuilder:
         rows = self._sort_s23_candidate_rows_in_search_order(leg, visible_candidates)
         if not rows:
             return ""
-        formula_text = self._s23_scan_formula_text(leg)
+        selected_row = next(
+            (
+                item
+                for item in rows
+                if str(item.get("status") or "").upper() == "SELECTED"
+            ),
+            None,
+        )
+        selected_in_8a = self._s23_candidate_passes_phase(leg, selected_row, phase="ideal")
+        show_8b = selected_row is None or not selected_in_8a
+        attempted = self._s23_attempted_expiry_values(leg)
+        candidate_expiries = self._s23_candidate_expiry_values(rows)
+        show_8c = len(attempted) > 1 or len(candidate_expiries) > 1
+        near_rows, next_rows = self._s23_split_near_next_candidate_rows(rows, attempted)
+        if not near_rows:
+            near_rows = rows
+
+        panels = [
+            self._render_s23_scan_phase_panel(
+                leg,
+                rows=near_rows,
+                phase="ideal",
+                title="Step 8a - Near contract ideal/maximum premium strike search",
+                note=(
+                    "Rule 8a: scan the near weekly contract from Start Strike to End Strike "
+                    "and choose the first strike that qualifies by option side, strike range, "
+                    "minimum OI, and ideal/maximum premium. This section is the detailed "
+                    "strike audit for Step 8a."
+                ),
+                default_open=True,
+            )
+        ]
+        if show_8b:
+            panels.append(
+                self._render_s23_scan_phase_panel(
+                    leg,
+                    rows=list(reversed(near_rows)),
+                    phase="minimum",
+                    title="Step 8b - Near contract minimum premium strike search",
+                    note=(
+                        "Rule 8b runs only if Step 8a does not find an ideal/maximum-premium strike. "
+                        "TFIS scans from End Strike back to Start Strike and chooses the first strike "
+                        "that qualifies by option side, strike range, minimum OI, and minimum premium."
+                    ),
+                    default_open=False,
+                )
+            )
+        if show_8c:
+            note = (
+                "Rule 8c runs only if both Step 8a and Step 8b fail in the near contract. "
+                "TFIS then repeats the same 8a and 8b searches in the next weekly contract."
+            )
+            if attempted:
+                note += " Persisted attempted expiries: " + ", ".join(attempted) + "."
+            panels.append(
+                self._render_s23_scan_phase_panel(
+                    leg,
+                    rows=next_rows,
+                    phase="fallback",
+                    title="Step 8c - Next contract repeat of 8a and 8b",
+                    note=note,
+                    default_open=False,
+                )
+            )
+        return "\n".join(
+            [
+                '<details class="full-scan-panel">',
+                '<summary>Step 8 strike matching audit</summary>',
+                f'<p class="table-help">{html.escape(self._s23_scan_formula_text(leg))} Showing {html.escape(expected_side or "leg-side")} candidates only. Expand each rule step below to validate the algorithm exactly as written in the rule book.</p>',
+                *panels,
+                "</details>",
+            ]
+        )
+
+    def _render_s23_scan_phase_panel(
+        self,
+        leg: dict[str, Any],
+        *,
+        rows: list[dict[str, Any]],
+        phase: str,
+        title: str,
+        note: str,
+        default_open: bool,
+    ) -> str:
         body = "\n".join(
             "".join(
                 [
@@ -1642,18 +1783,21 @@ class TfisOperatorDashboardBuilder:
                     f"<td class=\"number-cell\">{self._fmt_number(item.get('ltp', item.get('premium')))}</td>",
                     f"<td class=\"number-cell\">{self._fmt_number(item.get('oi'), integer=True)}</td>",
                     f"<td class=\"number-cell\">{self._fmt_number(item.get('premium_distance_to_ideal', item.get('premium_distance')))}</td>",
-                    f"<td class=\"status-cell\">{self._badge(str(item.get('status') or 'n/a'))}</td>",
-                    f"<td class=\"text-cell reason-cell\">{html.escape(self._s23_candidate_reason(leg, item))}</td>",
+                    f"<td class=\"status-cell\">{self._badge(self._s23_phase_candidate_status(leg, item, phase=phase))}</td>",
+                    f"<td class=\"text-cell reason-cell\">{html.escape(self._s23_phase_candidate_reason(leg, item, phase=phase))}</td>",
                     "</tr>",
                 ]
             )
             for item in rows
         )
+        if not body:
+            body = '<tr><td colspan="7" class="text-cell reason-cell">No candidate rows were persisted for this step.</td></tr>'
+        open_attr = " open" if default_open else ""
         return "\n".join(
             [
-                '<details class="full-scan-panel">',
-                '<summary>Full strike scan audit</summary>',
-                f'<p class="table-help">{html.escape(formula_text)} Showing {html.escape(expected_side or "leg-side")} candidates only.</p>',
+                f'<details class="full-scan-panel step-scan-panel"{open_attr}>',
+                f"<summary>{html.escape(title)}</summary>",
+                f'<p class="table-help">{html.escape(note)}</p>',
                 '<div class="full-scan-table-wrap">',
                 '<table class="candidate-table eligible-strike-table full-scan-table">',
                 "<thead><tr><th class=\"number-cell\">Strike</th><th class=\"text-cell\">Contract</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Distance From Ideal</th><th class=\"status-cell\">Status</th><th class=\"text-cell\">Reason</th></tr></thead>",
@@ -1663,6 +1807,181 @@ class TfisOperatorDashboardBuilder:
                 "</details>",
             ]
         )
+
+    def _render_s23_step8_inline_audit(self, leg: dict[str, Any], step: str) -> str:
+        context = self._s23_step8_audit_context(leg)
+        selected_in_8a = bool(context["selected_in_8a"])
+        selected_in_8b = bool(context["selected_in_8b"])
+        if step == "8a":
+            return self._render_s23_scan_phase_panel(
+                leg,
+                rows=context["near_rows"],
+                phase="ideal",
+                title="Step 8a - Near contract ideal/maximum premium strike search",
+                note=(
+                    "Rule 8a audit: TFIS checks the near weekly contract from Start Strike to End Strike. "
+                    "A row is selected only if option side, strike range, minimum OI, and ideal/maximum "
+                    "premium all pass. The first passing row in this order becomes the final strike."
+                ),
+                default_open=False,
+            )
+        if step == "8b":
+            if selected_in_8a:
+                return self._render_s23_step8_not_run_panel(
+                    "Step 8b - Near contract minimum premium strike search",
+                    (
+                        "Step 8b was not run because Step 8a already selected the final strike. "
+                        "The rule book uses Step 8b only as a fallback when no strike qualifies under "
+                        "the ideal/maximum premium search."
+                    ),
+                )
+            return self._render_s23_scan_phase_panel(
+                leg,
+                rows=list(reversed(context["near_rows"])),
+                phase="minimum",
+                title="Step 8b - Near contract minimum premium strike search",
+                note=(
+                    "Rule 8b audit: because Step 8a did not select a strike, TFIS checks the same near "
+                    "weekly contract from End Strike back to Start Strike. A row qualifies only if option "
+                    "side, strike range, minimum OI, and minimum premium all pass."
+                ),
+                default_open=False,
+            )
+        if step == "8c":
+            if selected_in_8a or selected_in_8b:
+                prior_step = "Step 8a" if selected_in_8a else "Step 8b"
+                return self._render_s23_step8_not_run_panel(
+                    "Step 8c - Next contract repeat of 8a and 8b",
+                    (
+                        f"Step 8c was not run because {prior_step} already selected the final strike "
+                        "in the near weekly contract. The next weekly contract is checked only when "
+                        "both near-contract searches fail."
+                    ),
+                )
+            return self._render_s23_scan_phase_panel(
+                leg,
+                rows=context["next_rows"],
+                phase="fallback",
+                title="Step 8c - Next contract repeat of 8a and 8b",
+                note=(
+                    "Rule 8c audit: because Step 8a and Step 8b did not select a near-contract strike, "
+                    "TFIS repeats the same ideal/maximum and minimum premium searches in the next weekly "
+                    "contract."
+                ),
+                default_open=False,
+            )
+        return ""
+
+    @staticmethod
+    def _render_s23_step8_not_run_panel(title: str, note: str) -> str:
+        return "\n".join(
+            [
+                '<details class="full-scan-panel step-scan-panel">',
+                f"<summary>{html.escape(title)}</summary>",
+                f'<p class="table-help">{html.escape(note)}</p>',
+                "</details>",
+            ]
+        )
+
+    def _s23_step8_audit_context(self, leg: dict[str, Any]) -> dict[str, Any]:
+        candidates = leg.get("contract_candidates")
+        if isinstance(candidates, tuple):
+            candidates = list(candidates)
+        if not isinstance(candidates, list):
+            candidates = []
+        expected_side = self._s23_expected_option_suffix(leg)
+        visible_candidates = [
+            item
+            for item in candidates
+            if isinstance(item, dict)
+            and (
+                expected_side is None
+                or self._s23_candidate_option_suffix(item) in {None, expected_side}
+            )
+        ]
+        rows = self._sort_s23_candidate_rows_in_search_order(leg, visible_candidates)
+        rows = self._s23_fill_missing_strike_audit_rows(leg, rows)
+        attempted = self._s23_attempted_expiry_values(leg)
+        near_rows, next_rows = self._s23_split_near_next_candidate_rows(rows, attempted)
+        if not near_rows:
+            near_rows = rows
+        selected_row = next(
+            (
+                item
+                for item in near_rows
+                if str(item.get("status") or "").upper() == "SELECTED"
+            ),
+            None,
+        )
+        selected_in_8a = self._s23_candidate_passes_phase(leg, selected_row, phase="ideal")
+        selected_in_8b = (
+            selected_row is not None
+            and not selected_in_8a
+            and self._s23_candidate_passes_phase(leg, selected_row, phase="minimum")
+        )
+        return {
+            "near_rows": near_rows,
+            "next_rows": next_rows,
+            "selected_in_8a": selected_in_8a,
+            "selected_in_8b": selected_in_8b,
+        }
+
+    def _s23_fill_missing_strike_audit_rows(
+        self,
+        leg: dict[str, Any],
+        rows: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
+        start = self._s23_leg_numeric_value(leg, "start_strike")
+        end = self._s23_leg_numeric_value(leg, "end_strike")
+        expected_side = self._s23_expected_option_suffix(leg)
+        if start is None or end is None or expected_side is None:
+            return rows
+        step = self._s23_leg_numeric_value(leg, "strike_step")
+        if step is None or step <= 0:
+            strikes = sorted(
+                {
+                    int(round(value))
+                    for value in (self._float_or_none(item.get("strike")) for item in rows)
+                    if value is not None
+                }
+            )
+            diffs = [
+                abs(right - left)
+                for left, right in zip(strikes, strikes[1:])
+                if abs(right - left) > 0
+            ]
+            step = float(min(diffs)) if diffs else 50.0
+        step_int = max(1, int(round(step)))
+        lower = int(round(min(start, end)))
+        upper = int(round(max(start, end)))
+        present = {
+            int(round(value))
+            for value in (self._float_or_none(item.get("strike")) for item in rows)
+            if value is not None
+        }
+        filled = list(rows)
+        option_type = "PUT" if expected_side == "PE" else "CALL"
+        for strike in range(lower, upper + step_int, step_int):
+            if strike > upper or strike in present:
+                continue
+            filled.append(
+                {
+                    "symbol": f"No {expected_side} contract captured",
+                    "strike": strike,
+                    "option_type": option_type,
+                    "premium": None,
+                    "ltp": None,
+                    "oi": None,
+                    "premium_distance": None,
+                    "status": "REJECTED",
+                    "reason": (
+                        f"No {expected_side} contract was present in the captured option chain "
+                        f"for strike {self._fmt_number(strike)}."
+                    ),
+                    "audit_missing_contract": True,
+                }
+            )
+        return self._sort_s23_candidate_rows_in_search_order(leg, filled)
 
     def _s23_scan_formula_text(self, leg: dict[str, Any]) -> str:
         start = self._s23_formula_numeric_result(leg, "start_strike")
@@ -1680,6 +1999,120 @@ class TfisOperatorDashboardBuilder:
         if minimum is not None:
             parts.append(f"minimum premium {self._fmt_number(minimum)}")
         return "; ".join(parts) + "."
+
+    def _s23_phase_candidate_status(self, leg: dict[str, Any], item: dict[str, Any], *, phase: str) -> str:
+        persisted_status = str(item.get("status") or "").upper()
+        if phase == "fallback" and persisted_status == "SELECTED":
+            return "SELECTED"
+        if self._s23_candidate_passes_phase(leg, item, phase=phase):
+            return persisted_status if persisted_status in {"SELECTED", "PASSED", "PASS"} else "PASS"
+        return "REJECTED"
+
+    def _s23_phase_candidate_reason(self, leg: dict[str, Any], item: dict[str, Any], *, phase: str) -> str:
+        if self._s23_candidate_passes_phase(leg, item, phase=phase):
+            if phase == "ideal":
+                return self._s23_candidate_qualification_reason(leg, item, str(item.get("status") or "PASS").upper())
+            if phase == "minimum":
+                return "qualifies for Step 8b because side, strike range, minimum OI, and minimum premium checks pass"
+            return self._s23_candidate_reason(leg, item)
+        reasons = self._derive_s23_candidate_reasons_for_phase(leg, item, phase=phase)
+        return ", ".join(reasons) if reasons else self._s23_candidate_reason(leg, item)
+
+    def _s23_candidate_passes_phase(self, leg: dict[str, Any], item: dict[str, Any] | None, *, phase: str) -> bool:
+        if not isinstance(item, dict):
+            return False
+        return not self._derive_s23_candidate_reasons_for_phase(leg, item, phase=phase)
+
+    def _derive_s23_candidate_reasons_for_phase(
+        self,
+        leg: dict[str, Any],
+        item: dict[str, Any],
+        *,
+        phase: str,
+    ) -> list[str]:
+        if item.get("audit_missing_contract"):
+            return [self._s23_candidate_reason(leg, item)]
+        reasons: list[str] = []
+        expected_side = self._s23_expected_option_suffix(leg)
+        actual_side = self._s23_candidate_option_suffix(item)
+        if expected_side and actual_side and actual_side != expected_side:
+            reasons.append(f"option side mismatch; expected {expected_side}, got {actual_side}")
+        strike = self._float_or_none(item.get("strike"))
+        start = self._s23_formula_numeric_result(leg, "start_strike")
+        end = self._s23_formula_numeric_result(leg, "end_strike")
+        if strike is not None and start is not None and end is not None:
+            lower = min(start, end)
+            upper = max(start, end)
+            if strike < lower or strike > upper:
+                reasons.append(
+                    f"strike outside range {self._fmt_number(start)} to {self._fmt_number(end)}"
+                )
+        premium = self._float_or_none(item.get("ltp", item.get("premium")))
+        ideal_premium = (
+            self._s23_formula_numeric_result(leg, "ideal_premium")
+            or self._float_or_none(leg.get("ideal_premium"))
+        )
+        minimum_premium = (
+            self._s23_formula_numeric_result(leg, "minimum_premium")
+            or self._float_or_none(leg.get("minimum_premium"))
+        )
+        if premium is None:
+            reasons.append("premium missing")
+        elif phase == "ideal" and ideal_premium is not None and premium < ideal_premium:
+            reasons.append(
+                f"premium {self._fmt_number(premium)} below ideal/maximum {self._fmt_number(ideal_premium)}"
+            )
+        elif phase in {"minimum", "fallback"} and minimum_premium is not None and premium < minimum_premium:
+            reasons.append(
+                f"premium {self._fmt_number(premium)} below minimum {self._fmt_number(minimum_premium)}"
+            )
+        oi = self._float_or_none(item.get("oi"))
+        minimum_oi = self._float_or_none(leg.get("minimum_oi"))
+        if oi is None:
+            reasons.append("OI missing")
+        elif minimum_oi is not None and oi < minimum_oi:
+            reasons.append(
+                f"OI {self._fmt_number(oi, integer=True)} below minimum {self._fmt_number(minimum_oi, integer=True)}"
+            )
+        return reasons
+
+    @staticmethod
+    def _s23_attempted_expiry_values(leg: dict[str, Any]) -> list[str]:
+        attempted = leg.get("attempted_expiries")
+        if isinstance(attempted, tuple | list):
+            return [str(item) for item in attempted if str(item).strip()]
+        return []
+
+    @staticmethod
+    def _s23_candidate_expiry_values(rows: list[dict[str, Any]]) -> list[str]:
+        values: list[str] = []
+        for item in rows:
+            expiry = item.get("expiry") or item.get("expiry_date")
+            text = str(expiry or "").strip()
+            if text and text not in values:
+                values.append(text)
+        return values
+
+    def _s23_split_near_next_candidate_rows(
+        self,
+        rows: list[dict[str, Any]],
+        attempted: list[str],
+    ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+        if not attempted:
+            expiries = self._s23_candidate_expiry_values(rows)
+            attempted = expiries[:2]
+        if len(attempted) < 2:
+            return rows, []
+        near, fallback = attempted[0], attempted[1]
+        near_rows: list[dict[str, Any]] = []
+        next_rows: list[dict[str, Any]] = []
+        for item in rows:
+            expiry = str(item.get("expiry") or item.get("expiry_date") or "").strip()
+            if expiry == fallback:
+                next_rows.append(item)
+            elif not expiry or expiry == near:
+                near_rows.append(item)
+        return near_rows, next_rows
 
     def _s23_candidate_reason(self, leg: dict[str, Any], item: dict[str, Any]) -> str:
         for key in (
@@ -1898,6 +2331,9 @@ class TfisOperatorDashboardBuilder:
                     return self._float_or_none(item.get("result"))
         return None
 
+    def _s23_leg_numeric_value(self, leg: dict[str, Any], name: str) -> float | None:
+        return self._s23_formula_numeric_result(leg, name) or self._float_or_none(leg.get(name))
+
     def _infer_s23_candidate_search_descending(
         self,
         leg: dict[str, Any],
@@ -1944,38 +2380,133 @@ class TfisOperatorDashboardBuilder:
             if is_pe
             else f"from {self._fmt_number(leg.get('start_strike'))} down to {self._fmt_number(leg.get('end_strike'))}"
         )
+        search_direction = (
+            "Start Strike to End Strike"
+            if is_pe
+            else "Start Strike down to End Strike"
+        )
+        reverse_search_direction = (
+            "End Strike down to Start Strike"
+            if is_pe
+            else "End Strike up to Start Strike"
+        )
+        option_side_name = "PUT" if is_pe else "CALL"
+        start_formula = str(start.get("resolved_formula") or start.get("formula") or "n/a")
+        end_formula = str(end.get("resolved_formula") or end.get("formula") or "n/a")
+        ideal_formula = str(ideal.get("resolved_formula") or ideal.get("formula") or "n/a")
+        minimum_formula = str(minimum.get("resolved_formula") or minimum.get("formula") or "n/a")
         attempted_expiries = self._s23_attempted_expiries_text(leg)
         expiry_search_text = (
-            f" It attempted expiry search in this order: {html.escape(attempted_expiries)}."
+            f"The persisted run attempted expiry search in this order: {html.escape(attempted_expiries)}."
             if attempted_expiries
-            else " Attempted-expiry details were not persisted for this run."
+            else "This older run did not persist attempted-expiry details, so the dashboard cannot prove which expiries were attempted from the artifact."
         )
+        selection_reason = str(leg.get("selection_reason") or "n/a").rstrip(".")
         entry_status = self._normalize_trade_status_label(str(leg.get("order_status") or "n/a")) or "n/a"
+        step8_context = self._s23_step8_audit_context(leg)
+        selected_in_8a = bool(step8_context["selected_in_8a"])
+        selected_in_8b = bool(step8_context["selected_in_8b"])
+        step_8a_audit = self._render_s23_step8_inline_audit(leg, "8a")
+        step_8b_audit = self._render_s23_step8_inline_audit(leg, "8b")
+        step_8c_audit = self._render_s23_step8_inline_audit(leg, "8c")
         if leg.get("contract"):
-            step_8 = (
-                f"<strong>Step 8 - Select final strike.</strong> The selected contract is {html.escape(str(leg.get('contract') or 'n/a'))}: "
-                f"strike {self._fmt_number(leg.get('strike'))}, premium {self._fmt_number(leg.get('premium'))}, "
-                f"OI {self._fmt_number(leg.get('oi'), integer=True)}."
+            step_8a_outcome = (
+                "Step 8a selected the final strike, so the fallback steps were not required."
+                if selected_in_8a
+                else "Step 8a did not select the final strike, so TFIS continued to the fallback checks."
+            )
+            step_8a = (
+                f"<strong>Step 8a - Near contract ideal/maximum premium search.</strong> In the near weekly contract, TFIS must scan "
+                f"<strong>{html.escape(search_direction)}</strong> ({search_text}) and choose the first {html.escape(option_side_name)} strike "
+                f"that passes option side, strike range, minimum OI, and ideal/maximum premium "
+                f"({self._fmt_number(leg.get('ideal_premium'))}). Expand the Step 8a strike matching audit below to validate each strike. "
+                f"Selection reason persisted for this leg: {html.escape(selection_reason)}. {step_8a_outcome}"
+                f"{step_8a_audit}"
+            )
+            if selected_in_8a:
+                step_8b = (
+                    "<strong>Step 8b - Near contract minimum premium fallback.</strong> Not run. "
+                    "Step 8b is used only when Step 8a does not find an ideal/maximum-premium strike in the near contract."
+                    f"{step_8b_audit}"
+                )
+            else:
+                step_8b = (
+                    f"<strong>Step 8b - Near contract minimum premium fallback.</strong> Since Step 8a did not select a strike, TFIS scans "
+                    f"<strong>{html.escape(reverse_search_direction)}</strong> and chooses the first {html.escape(option_side_name)} strike "
+                    f"that passes option side, strike range, minimum OI, and minimum premium "
+                    f"({self._fmt_number(leg.get('minimum_premium'))}). Expand the Step 8b strike matching audit below to validate the reverse search."
+                    f"{step_8b_audit}"
+                )
+            if selected_in_8a or selected_in_8b:
+                prior_step = "Step 8a" if selected_in_8a else "Step 8b"
+                step_8c = (
+                    f"<strong>Step 8c - Next contract fallback.</strong> Not run. {prior_step} selected a strike in the near contract, "
+                    "so the rule book does not require checking the next weekly contract."
+                    f"{step_8c_audit}"
+                )
+            else:
+                step_8c = (
+                    f"<strong>Step 8c - Next contract fallback.</strong> If both Step 8a and Step 8b fail in the near contract, TFIS repeats "
+                    f"the same 8a and 8b searches in the next weekly contract. Expand the Step 8c next-contract audit below when this fallback is needed. {expiry_search_text}"
+                    f"{step_8c_audit}"
+                )
+            step_8d = (
+                f"<strong>Step 8d - Final weekly option.</strong> Final selected contract is "
+                f"<strong>{html.escape(str(leg.get('contract') or 'n/a'))}</strong>: strike {self._fmt_number(leg.get('strike'))}, "
+                f"premium {self._fmt_number(leg.get('premium'))}, OI {self._fmt_number(leg.get('oi'), integer=True)}."
             )
             step_9 = (
-                f"<strong>Step 9 - Calculate trade levels.</strong> Entry uses <code>{html.escape(str(entry.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('entry'))}; "
-                f"target uses <code>{html.escape(str(target.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('target'))}; "
-                f"SL uses <code>{html.escape(str(stoploss.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('stoploss'))}. "
+                f"<strong>Step 9 - Entry.</strong> Entry uses <code>{html.escape(str(entry.get('resolved_formula') or 'n/a'))}</code> "
+                f"= {self._fmt_number(leg.get('entry'))}."
+            )
+            step_10 = (
+                f"<strong>Step 10 - Target.</strong> Target uses <code>{html.escape(str(target.get('resolved_formula') or 'n/a'))}</code> "
+                f"= {self._fmt_number(leg.get('target'))}."
+            )
+            step_11 = (
+                f"<strong>Step 11 - Stop loss.</strong> SL uses <code>{html.escape(str(stoploss.get('resolved_formula') or 'n/a'))}</code> "
+                f"= {self._fmt_number(leg.get('stoploss'))}. "
                 f"Order status is {html.escape(entry_status)}."
             )
         else:
             failure_code = str(leg.get("order_status") or "NO_ORDER")
             failure_message = str(leg.get("selection_reason") or "No final contract selected.")
-            step_8 = (
-                f"<strong>Step 8 - Select final strike.</strong> No final {html.escape(side)} contract was selected. "
+            step_8a = (
+                f"<strong>Step 8a - Near contract ideal/maximum premium search.</strong> In the near weekly contract, TFIS must scan "
+                f"<strong>{html.escape(search_direction)}</strong> ({search_text}) and choose the first {html.escape(option_side_name)} strike "
+                f"that passes option side, strike range, minimum OI, and ideal/maximum premium "
+                f"({self._fmt_number(leg.get('ideal_premium'))}). Expand the Step 8a strike matching audit below to validate each strike. "
+                "No final strike was selected from this leg."
+                f"{step_8a_audit}"
+            )
+            step_8b = (
+                f"<strong>Step 8b - Near contract minimum premium fallback.</strong> If Step 8a finds no strike, TFIS scans "
+                f"<strong>{html.escape(reverse_search_direction)}</strong> and chooses the first {html.escape(option_side_name)} strike "
+                f"that passes option side, strike range, minimum OI, and minimum premium "
+                f"({self._fmt_number(leg.get('minimum_premium'))}). Expand the Step 8b strike matching audit below to validate the reverse search."
+                f"{step_8b_audit}"
+            )
+            step_8c = (
+                f"<strong>Step 8c - Next contract fallback.</strong> If both Step 8a and Step 8b fail in the near contract, TFIS repeats "
+                f"the same 8a and 8b searches in the next weekly contract. Expand the Step 8c next-contract audit below to validate fallback. {expiry_search_text}"
+                f"{step_8c_audit}"
+            )
+            step_8d = (
+                f"<strong>Step 8d - No qualifying strike.</strong> No final {html.escape(side)} contract was selected. "
                 f"Reason: {html.escape(failure_code)} - {html.escape(failure_message)}"
             )
             step_9 = (
-                f"<strong>Step 9 - Trade levels.</strong> No final trade levels apply because no contract qualified. "
+                f"<strong>Step 9 - Entry.</strong> No entry applies because no contract qualified. "
                 "For formula audit only, the provisional entry/target/SL values were "
                 f"{self._fmt_number(leg.get('provisional_entry'))} / {self._fmt_number(leg.get('provisional_target'))} / "
                 f"{self._fmt_number(leg.get('provisional_stoploss'))}; "
                 "these are not actionable order levels and no paper order was created."
+            )
+            step_10 = (
+                "<strong>Step 10 - Target.</strong> No target applies because no contract qualified."
+            )
+            step_11 = (
+                "<strong>Step 11 - Stop loss.</strong> No stop loss applies because no contract qualified."
             )
         return [
             (
@@ -1988,26 +2519,32 @@ class TfisOperatorDashboardBuilder:
                 f"TFIS rounds the spot reference to this strike grid before calculating start and end strikes."
             ),
             (
-                f"<strong>Step 5a - Decide the strike range.</strong> {html.escape(direction_text)} "
-                f"The rule produced start strike {self._fmt_number(leg.get('start_strike'))} using "
-                f"<code>{html.escape(str(start.get('resolved_formula') or 'n/a'))}</code> and end strike "
-                f"{self._fmt_number(leg.get('end_strike'))} using <code>{html.escape(str(end.get('resolved_formula') or 'n/a'))}</code>."
+                f"<strong>Step 5 - Find the strike range.</strong> {html.escape(direction_text)} "
+                f"Start Strike = <code>{html.escape(start_formula)}</code> = {self._fmt_number(leg.get('start_strike'))}. "
+                f"End Strike = <code>{html.escape(end_formula)}</code> = {self._fmt_number(leg.get('end_strike'))}. "
+                f"So the rule-book search range is <strong>{search_text}</strong>."
             ),
             (
-                f"<strong>Step 6 - Calculate premium and OI filters.</strong> Ideal premium is {html.escape(spot_alias_label)} * 1.20%: "
-                f"<code>{html.escape(str(ideal.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('ideal_premium'))}. "
-                f"Minimum acceptable premium is {html.escape(spot_alias_label)} * 0.90%: "
-                f"<code>{html.escape(str(minimum.get('resolved_formula') or 'n/a'))}</code> = {self._fmt_number(leg.get('minimum_premium'))}. "
-                f"Minimum OI is {self._fmt_number(leg.get('minimum_oi'), integer=True)} contracts."
+                f"<strong>Step 6 - Minimum OI.</strong> Minimum OI is 500 lots * lot size. "
+                f"For this run the minimum OI threshold is {self._fmt_number(leg.get('minimum_oi'), integer=True)} contracts."
             ),
             (
-                f"<strong>Step 7 - Search eligible strikes.</strong> TFIS scans the option chain "
-                f"{search_text}. "
-                f"A strike must have enough OI, meet the premium rule, and be the correct option side."
-                f"{expiry_search_text}"
+                f"<strong>Step 7a - Ideal/maximum premium required.</strong> Ideal/maximum premium = "
+                f"<code>{html.escape(ideal_formula)}</code> = {self._fmt_number(leg.get('ideal_premium'))}. "
+                f"Step 8a uses this threshold."
             ),
-            step_8,
+            (
+                f"<strong>Step 7b - Minimum premium required.</strong> Minimum acceptable premium = "
+                f"<code>{html.escape(minimum_formula)}</code> = {self._fmt_number(leg.get('minimum_premium'))}. "
+                f"Step 8b uses this threshold only if Step 8a cannot qualify a strike."
+            ),
+            step_8a,
+            step_8b,
+            step_8c,
+            step_8d,
             step_9,
+            step_10,
+            step_11,
         ]
 
     def _spot_reference_alias_for_s23_leg(self, leg: dict[str, Any]) -> str:

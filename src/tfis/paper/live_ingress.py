@@ -61,6 +61,7 @@ class S23BrokerAdapterConfig:
     timezone: str
     payload_fixture_path: str | None = None
     capture_stream_events: bool = False
+    option_chain_strike_count: int = 80
 
 
 @dataclass(frozen=True, slots=True)
@@ -138,6 +139,10 @@ class S23LivePaperIngressConfig:
                 timezone=str(broker.get("timezone", "Asia/Kolkata")),
                 payload_fixture_path=payload_fixture_path,
                 capture_stream_events=bool(broker.get("capture_stream_events", False)),
+                option_chain_strike_count=max(
+                    1,
+                    int(broker.get("option_chain_strike_count", 80)),
+                ),
             ),
             paper=S23PaperBrokerScopeConfig(
                 strategy_code=str(paper.get("strategy_code", "S23")),

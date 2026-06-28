@@ -105,6 +105,7 @@ class FyersBrokerAdapter(BrokerAdapter):
         payloads: dict[str, Any] | None = None,
         source_timezone: str = "Asia/Kolkata",
         now_provider: Callable[[], datetime] | None = None,
+        option_chain_strike_count: int = 80,
     ) -> None:
         self._client = client
         self._credentials = credentials
@@ -112,6 +113,7 @@ class FyersBrokerAdapter(BrokerAdapter):
         self._timezone = source_timezone
         self._tzinfo = ZoneInfo(source_timezone)
         self._now_provider = now_provider or (lambda: datetime.now(tz=self._tzinfo))
+        self._option_chain_strike_count = max(1, int(option_chain_strike_count))
         self._connected = False
         self._subscribed_symbols: tuple[str, ...] = ()
         self._reconnect_attempts = 0
@@ -255,8 +257,8 @@ class FyersBrokerAdapter(BrokerAdapter):
             payload = self._client.optionchain(
                 {
                     "symbol": raw_symbol,
-                    "strikecount": 10,
-                    "timestamp": "",
+                    "strikecount": self._option_chain_strike_count,
+                    "timestamp": self._option_chain_expiry_timestamp(expiry),
                 }
             )
         return self._normalize_option_chain_payload(
@@ -693,6 +695,9 @@ class FyersBrokerAdapter(BrokerAdapter):
             expiry=expiry,
             contracts=tuple(contracts),
         )
+
+    def _option_chain_expiry_timestamp(self, expiry: date) -> int:
+        return int(datetime.combine(expiry, time(15, 30), tzinfo=self._tzinfo).timestamp())
 
     def _normalize_selected_contract_bar_payload(
         self,
