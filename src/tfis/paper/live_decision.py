@@ -1,14 +1,20 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict, dataclass, field
-from datetime import date
+from dataclasses import asdict, dataclass, field, replace
+from datetime import date, time
 from pathlib import Path
 import re
 from typing import Any
 
 from tfis.domain import StrategyRule
+from tfis.domain.enums import OptionType
 from tfis.formulas import FormulaEngine
+from tfis.strategy.s23_recalculation import (
+    IntradaySnapshot,
+    RecalculationInput,
+    S23RecalculationEngine,
+)
 
 from .fyers_snapshot_collector import S23CollectedSnapshotInputs
 from .live_reference_derivation import (
@@ -21,6 +27,7 @@ from .live_prelude import (
     S23PaperLivePreludeResult,
     S23PaperPreludeMode,
 )
+from .models import SelectedContractBarEvent, SnapshotLabel
 from .position_state import S23PaperPositionState
 from .runtime_input_derivation import (
     S23DecisionReferencePacket,
@@ -31,6 +38,10 @@ from .runtime_input_derivation import (
 
 class S23PaperLiveDecisionError(RuntimeError):
     """Raised when TFIS cannot build a supervised S23 paper decision safely."""
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
 
 
 @dataclass(frozen=True, slots=True)
@@ -154,6 +165,7 @@ class S23PaperLiveDecisionBuilder:
         smoke_override_enabled: bool = False,
         smoke_override_selected_contract_symbol: str | None = None,
         allow_branch_pinned_unknown_monthly_status: bool = False,
+        require_orpt_rc_timing_bars: bool = True,
     ) -> S23PaperLiveDecisionResult:
         reference_derivation = self._live_reference_deriver.derive(
             base_reference_packet=reference_packet,
@@ -168,31 +180,33 @@ class S23PaperLiveDecisionBuilder:
             daily_bars=collected_inputs.daily_bars,
             session_context=collected_inputs.session_context,
         )
-        prelude_result = self._prelude_builder.build(
-            S23PaperLivePreludeRequest(
-                strategy_rule=strategy_rule,
-                strategy_branch=effective_reference_packet.strategy_branch or strategy_rule.unique_code,
-                monthly_status_result=derived_inputs.monthly_status_result,
-                market_levels=derived_inputs.market_levels,
-                runtime_values=derived_inputs.runtime_values,
-                option_chain_snapshot=collected_inputs.option_chain_snapshot,
-                snapshots=derived_inputs.snapshots,
-                session_context=collected_inputs.session_context,
-                expiry_governance=collected_inputs.expiry_governance,
-                lots=effective_reference_packet.lots,
-                quantity=effective_reference_packet.quantity,
-                monthly_status_reference_date=effective_reference_packet.monthly_status_reference_date,
-                monthly_status_source=effective_reference_packet.monthly_status_source,
-                monthly_status_threshold_version=effective_reference_packet.monthly_status_threshold_version,
-                source_workbook_rule=effective_reference_packet.source_workbook_rule,
-                workbook_row_number=effective_reference_packet.workbook_row_number,
-                fsl_price=effective_reference_packet.fsl_price,
-                carry_forward_position=carry_forward_position,
-                smoke_override_enabled=smoke_override_enabled,
-                smoke_override_selected_contract_symbol=smoke_override_selected_contract_symbol,
-                allow_branch_pinned_unknown_monthly_status=allow_branch_pinned_unknown_monthly_status,
-            )
+        prelude_request = self._build_prelude_request(
+            strategy_rule=strategy_rule,
+            reference_packet=effective_reference_packet,
+            derived_inputs=derived_inputs,
+            collected_inputs=collected_inputs,
+            carry_forward_position=carry_forward_position,
+            smoke_override_enabled=smoke_override_enabled,
+            smoke_override_selected_contract_symbol=smoke_override_selected_contract_symbol,
+            allow_branch_pinned_unknown_monthly_status=allow_branch_pinned_unknown_monthly_status,
         )
+        prelude_result = self._prelude_builder.build(prelude_request)
+        timing_audit = self._build_orpt_rc_timing_audit(
+            strategy_rule=strategy_rule,
+            prelude_result=prelude_result,
+            derived_inputs=derived_inputs,
+            collected_inputs=collected_inputs,
+        )
+        if require_orpt_rc_timing_bars and str(timing_audit.get("status", "")).startswith("MISSING_"):
+            raise S23PaperLiveDecisionError(
+                str(timing_audit.get("status")),
+                str(timing_audit.get("reason")),
+            )
+        recalculated_plan = timing_audit.get("recalculated_trade_plan")
+        if recalculated_plan is not None:
+            prelude_result = self._prelude_builder.build(
+                replace(prelude_request, trade_plan_override=recalculated_plan)
+            )
         summary = self._build_summary(
             strategy_rule=strategy_rule,
             reference_packet=effective_reference_packet,
@@ -209,12 +223,209 @@ class S23PaperLiveDecisionBuilder:
             summary=summary,
             reference_derivation=reference_derivation,
         )
+        explanation["orpt_rc_timing"] = self._serializable_timing_audit(timing_audit)
         return S23PaperLiveDecisionResult(
             derived_runtime_inputs=derived_inputs,
             prelude_result=prelude_result,
             summary=summary,
             explanation=explanation,
         )
+
+    def _build_prelude_request(
+        self,
+        *,
+        strategy_rule: StrategyRule,
+        reference_packet: S23DecisionReferencePacket,
+        derived_inputs: S23DerivedRuntimeInputs,
+        collected_inputs: S23CollectedSnapshotInputs,
+        carry_forward_position: S23PaperPositionState | None,
+        smoke_override_enabled: bool,
+        smoke_override_selected_contract_symbol: str | None,
+        allow_branch_pinned_unknown_monthly_status: bool,
+    ) -> S23PaperLivePreludeRequest:
+        return S23PaperLivePreludeRequest(
+            strategy_rule=strategy_rule,
+            strategy_branch=reference_packet.strategy_branch or strategy_rule.unique_code,
+            monthly_status_result=derived_inputs.monthly_status_result,
+            market_levels=derived_inputs.market_levels,
+            runtime_values=derived_inputs.runtime_values,
+            option_chain_snapshot=collected_inputs.option_chain_snapshot,
+            snapshots=derived_inputs.snapshots,
+            session_context=collected_inputs.session_context,
+            expiry_governance=collected_inputs.expiry_governance,
+            lots=reference_packet.lots,
+            quantity=reference_packet.quantity,
+            monthly_status_reference_date=reference_packet.monthly_status_reference_date,
+            monthly_status_source=reference_packet.monthly_status_source,
+            monthly_status_threshold_version=reference_packet.monthly_status_threshold_version,
+            source_workbook_rule=reference_packet.source_workbook_rule,
+            workbook_row_number=reference_packet.workbook_row_number,
+            fsl_price=reference_packet.fsl_price,
+            carry_forward_position=carry_forward_position,
+            smoke_override_enabled=smoke_override_enabled,
+            smoke_override_selected_contract_symbol=smoke_override_selected_contract_symbol,
+            allow_branch_pinned_unknown_monthly_status=allow_branch_pinned_unknown_monthly_status,
+        )
+
+    def _build_orpt_rc_timing_audit(
+        self,
+        *,
+        strategy_rule: StrategyRule,
+        prelude_result: S23PaperLivePreludeResult,
+        derived_inputs: S23DerivedRuntimeInputs,
+        collected_inputs: S23CollectedSnapshotInputs,
+    ) -> dict[str, Any]:
+        trade_plan = prelude_result.trade_plan
+        selected_contract = prelude_result.contract_selection.selected_contract if prelude_result.contract_selection else None
+        if trade_plan is None or selected_contract is None:
+            return {
+                "status": "NOT_APPLICABLE",
+                "reason": "No base selected contract was available for ORPT/RC timing check.",
+                "recalculated_trade_plan": None,
+            }
+        option_type = trade_plan.option_type or selected_contract.option_type
+        if option_type not in {OptionType.CALL, OptionType.PUT}:
+            return {
+                "status": "NOT_APPLICABLE",
+                "reason": "ORPT/RC timing applies only to option legs.",
+                "recalculated_trade_plan": None,
+            }
+        bars = tuple(
+            bar
+            for bar in collected_inputs.selected_contract_bars
+            if bar.symbol == selected_contract.symbol
+        )
+        if not bars:
+            return {
+                "status": "MISSING_SELECTED_CONTRACT_BARS",
+                "reason": "Selected-contract ORPT/RC bars were not captured, so base trade plan remains unchanged.",
+                "selected_contract": selected_contract.symbol,
+                "recalculated_trade_plan": None,
+            }
+        orpt_option_bar = self._find_bar_at_start(bars, time(9, 24))
+        rc_option_bar = self._find_bar_at_start(bars, time(9, 29))
+        orpt_spot = self._find_snapshot(derived_inputs, SnapshotLabel.ORPT)
+        rc_spot = self._find_snapshot(derived_inputs, SnapshotLabel.RC)
+        if orpt_option_bar is None or rc_option_bar is None or orpt_spot is None or rc_spot is None:
+            return {
+                "status": "MISSING_ORPT_RC_DATA",
+                "reason": "ORPT/RC option or spot bars were incomplete, so base trade plan remains unchanged.",
+                "selected_contract": selected_contract.symbol,
+                "recalculated_trade_plan": None,
+            }
+        entry_price = float(trade_plan.entry_price)
+        if option_type is OptionType.CALL:
+            entry_missed = (orpt_option_bar.low or 0.0) < entry_price
+            missed_rule = "CALL missed-entry test: ORPT option low < base entry."
+        else:
+            entry_missed = (orpt_option_bar.high or 0.0) < entry_price
+            missed_rule = "PUT missed-entry test: ORPT option high < base entry."
+        if not entry_missed:
+            return {
+                "status": "BASE_ENTRY_VALID",
+                "reason": "ORPT test did not mark the base entry as missed.",
+                "missed_rule": missed_rule,
+                "base_entry": entry_price,
+                "orpt_option_low": orpt_option_bar.low,
+                "orpt_option_high": orpt_option_bar.high,
+                "selected_contract": selected_contract.symbol,
+                "recalculated_trade_plan": None,
+            }
+        recalculation = S23RecalculationEngine().recalculate(
+            RecalculationInput(
+                branch_unique_code=strategy_rule.unique_code,
+                option_type=option_type,
+                monthly_status=derived_inputs.monthly_status_result.status,
+                base_trade_plan=trade_plan,
+                market_levels=derived_inputs.market_levels,
+                option_levels={k: float(v) for k, v in derived_inputs.runtime_values.items()},
+                intraday_snapshot_at_orpt=IntradaySnapshot(
+                    timestamp=orpt_option_bar.bar_end,
+                    spot_low=float(orpt_spot.low or 0.0),
+                    spot_high=float(orpt_spot.high or 0.0),
+                    option_low=float(orpt_option_bar.low or 0.0),
+                    option_high=float(orpt_option_bar.high or 0.0),
+                ),
+                intraday_snapshot_at_recalc=IntradaySnapshot(
+                    timestamp=rc_option_bar.bar_end,
+                    spot_low=float(rc_spot.low or 0.0),
+                    spot_high=float(rc_spot.high or 0.0),
+                    option_low=float(rc_option_bar.low or 0.0),
+                    option_high=float(rc_option_bar.high or 0.0),
+                ),
+                entry_missed=True,
+            )
+        )
+        if not recalculation.recalculated or recalculation.recalculated_entry_price is None:
+            return {
+                "status": "RECALCULATION_NOT_APPLIED",
+                "reason": recalculation.reason,
+                "audit_notes": recalculation.audit_notes,
+                "recalculated_trade_plan": None,
+            }
+        entry = float(recalculation.recalculated_entry_price)
+        target = entry * 0.40
+        sl_reference_pct = float(strategy_rule.parameters.get("sl_reference_pct", 0.0))
+        rc_option_high = float(rc_option_bar.high or 0.0)
+        stoploss = min(entry * 1.60, rc_option_high * (1.0 + sl_reference_pct / 100.0))
+        recalculated_trade_plan = replace(
+            trade_plan,
+            start_strike=recalculation.recalculated_start_strike,
+            end_strike=recalculation.recalculated_end_strike,
+            ideal_premium=recalculation.recalculated_ideal_premium,
+            minimum_premium=recalculation.recalculated_minimum_premium,
+            entry_price=entry,
+            target_price=target,
+            stoploss_price=stoploss,
+        )
+        return {
+            "status": "ENTRY_MISSED_RECALCULATED",
+            "reason": recalculation.reason,
+            "missed_rule": missed_rule,
+            "base_entry": entry_price,
+            "orpt_option_low": orpt_option_bar.low,
+            "orpt_option_high": orpt_option_bar.high,
+            "rc_option_low": rc_option_bar.low,
+            "rc_option_high": rc_option_bar.high,
+            "rc_spot_low": rc_spot.low,
+            "rc_spot_high": rc_spot.high,
+            "audit_notes": recalculation.audit_notes,
+            "recalculated_start_strike": recalculation.recalculated_start_strike,
+            "recalculated_end_strike": recalculation.recalculated_end_strike,
+            "recalculated_ideal_premium": recalculation.recalculated_ideal_premium,
+            "recalculated_minimum_premium": recalculation.recalculated_minimum_premium,
+            "recalculated_entry_price": entry,
+            "recalculated_target_price": target,
+            "recalculated_stoploss_price": stoploss,
+            "selected_contract": selected_contract.symbol,
+            "recalculated_trade_plan": recalculated_trade_plan,
+        }
+
+    @staticmethod
+    def _find_bar_at_start(
+        bars: tuple[SelectedContractBarEvent, ...],
+        expected_start: time,
+    ) -> SelectedContractBarEvent | None:
+        for bar in sorted(bars, key=lambda item: item.bar_start):
+            if bar.bar_start.timetz().replace(tzinfo=None) == expected_start:
+                return bar
+        return None
+
+    @staticmethod
+    def _find_snapshot(
+        derived_inputs: S23DerivedRuntimeInputs,
+        label: SnapshotLabel,
+    ):
+        for snapshot in derived_inputs.snapshots:
+            if snapshot.snapshot_label is label:
+                return snapshot
+        return None
+
+    @staticmethod
+    def _serializable_timing_audit(audit: dict[str, Any]) -> dict[str, Any]:
+        serializable = dict(audit)
+        serializable.pop("recalculated_trade_plan", None)
+        return serializable
 
     def render_markdown(self, result: S23PaperLiveDecisionResult) -> str:
         summary = result.summary

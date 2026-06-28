@@ -1,0 +1,207 @@
+Now this needs another improvement. At 09:16/09:25/09:30 when we take snapshot, we are not using the data to actually take decision correctly. But now we need to correct this. We already got 2DLL or 3DLL or 2DHH or 3DHH based on bullish and bearish conditions for CE and PE. 
+
+Let me explain the rules in plain English and this will give you the clarity what we need to do. Please ask if you have questions.
+	
+MONTHLY STATUS:	BULL / BULL CF	
+		
+	OPTION TYPE:  CALL
+		START STRIKE =( SPT : PRV : 3DLL + 5.00% ) & Round Down
+		END STRIKE   =( SPT : PRV : 3DLL ) & Round Down - 1
+
+		IDEAL PREMIUM  =SPT : PRV : 3DLL * 1.20%
+		MINIMUM  PREMIUM =SPT : PRV : 3DLL * 0.90%
+
+		MINIMUM OI = 500 Lots
+		NO OF EXP = 1 Expiry		
+		
+		Lot: 1
+		ENTRY  = OPT : PRV : 3DLL - 7.50%
+		TARGET = CE : Entry  - 60.00%
+		SL / TRP = Min ( CE : Entry  + 60.00%,  OPT : PRV : 2DHH + 7.00% )
+		
+		Rules for Taking Entry: 
+			ORPT = Order Placement time = 09:24:59 AM
+			RC = Recalculation Time = 09:29:59 AM
+			
+			Check If 09:24:59 AM LL < Call Sell Entry	
+				If No: This means the above entry Not Missed, Place the Order at ORPT (Order Placement time) which is 09:24:59 AM
+				If Yes: This means the above entry Missed, Therefore,wait till RC (Recalculation Time) and include data 09:29:59 AM Lowest Low
+						AT RC Recalcuate : Call Sell Entry : Bull / Bull CF as 
+						START STRIKE = Min of ( SPT : PRV : 3DLL & 09:29:59 AM LL ) + 5.00% ) & Round Down
+						END STRIKE   = Min of ( SPT : PRV : 3DLL & 09:29:59 AM LL ) & Round Down - 1
+						
+						IDEAL PREMIUM  =Min of ( SPT : PRV : 3DLL & 09:29:59 AM LL )  * 1.20%	
+						MINIMUM  PREMIUM =Min of ( SPT : PRV : 3DLL & 09:29:59 AM LL )  * 0.90%
+						
+						MINIMUM OI = 500 Lots
+						NO OF EXP = 1 Expiry
+						
+						Entry: Min of ( OPT : PRV : 3DLL & 09:29:59 AM LL )  -  7.50%	
+						TARGET   = CE : Entry  - 60.00%
+						SL / TRP = Min ( CE : Entry  + 60.00%, OPT : 09:29:59 AM HH + 7.00% ) 
+						
+						If SL or Target is not hit till 3:00 PM, then we need to do the following: 
+							Check If Current Option Close at 03:00:00 PM  > Call Original SL?
+									If Yes then  Square Off The Position At CMP at 03:00:00 PM						
+									If No  then  Continue the Position for Next Day but cancel stoploss order for this position. The idea is to avoid accidental SL hit during morning opening time price fluctuations at 09:15 AM. So if the price fluctuations cause target hit, we are good but we want to avoid SL hit.So if positin is ON, next day at 09:15AM we set the Target order but calculate Stop Loss Price as per the Rules below:	
+										Rules For Setting SL : 
+											ORPT = Order Placement time = 09:24:59 AM
+											RC = Recalculation Time = 09:29:59 AM	
+											Check If  09:15:00 AM HH > Call Sell SL	?
+												If No then SL Not Missed, Place the Order at ORPT
+												If Yes then SL Missed, So, Recalcuate : Call Sell FSL / TRP at RC 09:29:59 AM
+												  Revised SL = 09:29:59 AM HH + 7.00%
+
+
+	OPTION TYPE:  PUT
+		START STRIKE = ( SPT : PRV : 2DHH - 5.00% ) & Round Up
+		END STRIKE = ( SPT : PRV : 2DHH ) & Round Up + 1
+
+
+		IDEAL PREMIUM = SPT : PRV : 2DHH * 1.20%
+		MINIMUM  PREMIUM = SPT : PRV : 2DHH * 0.90%
+
+		MINIMUM OI = 500 Lots
+		NO OF EXP = 1 Expiry
+		
+		
+		Lot: 1
+		ENTRY  = OPT : PRV : 2DLL - 7.50%		
+		TARGET   = PE : Entry  - 60.00%
+		SL / TRP = Min ( PE : Entry  + 60.00% & OPT : PRV : 3DHH + 10.00% )
+		
+		Rules for Taking Entry: 
+			ORPT = Order Placement time = 09:24:59 AM
+			RC = Recalculation Time = 09:29:59 AM
+			
+			Check If 09:24:59 AM HH < Put Sell Entry	
+				If No: This means the above entry Not Missed, Place the Order at ORPT (Order Placement time) which is 09:24:59 AM
+				If Yes: This means the above entry Missed, Therefore,wait till RC (Recalculation Time) and include data 09:29:59 AM Lowest Low
+						AT RC Recalcuate : Call Sell Entry : Bull / Bull CF as 
+						START STRIKE = Max of ( SPT : PRV : 2DHH & 09:29:59 AM LL ) - 5.00% ) & Round Up
+						END STRIKE   = Max of ( SPT : PRV : 2DHH & 09:29:59 AM LL ) & Round Up + 1
+						
+						IDEAL PREMIUM  =Min of ( SPT : PRV : 2DHH & 09:29:59 AM LL )  * 1.20%	
+						MINIMUM  PREMIUM =Min of ( SPT : PRV : 2DHH & 09:29:59 AM LL )  * 0.90%
+						
+						MINIMUM OI = 500 Lots
+						NO OF EXP = 1 Expiry
+						
+						Entry: Min of ( OPT : PRV : 2DLL & 09:29:59 AM LL )  -  7.50%	
+						TARGET   = CE : Entry  - 60.00%
+						SL = Min ( PE : Entry  + 60.00% & 09:29:59 AM HH + 10.00% )  
+						
+						If SL or Target is not hit till 3:00 PM, then we need to do the following: 
+							Check If Current Option position Close at 03:00:00 PM  > Put Original SL?
+									If Yes then  Square Off The Position At CMP at 03:00:00 PM						
+									If No  then  Continue the Position for Next Day but cancel stoploss order for this position. The idea is to avoid accidental SL hit during morning opening time price fluctuations at 09:15 AM. So if the price fluctuations cause target hit, we are good but we want to avoid SL hit.So if positin is ON, next day at 09:15AM we set the Target order but calculate Stop Loss Price as per the Rules below:	
+										Rules For Setting SL : 
+											ORPT = Order Placement time = 09:24:59 AM
+											RC = Recalculation Time = 09:29:59 AM	
+											Check If  09:15:00 AM HH > Put Sell SL?
+												If No then SL Not Missed, Place the Order at ORPT
+												If Yes then SL Missed, So, Recalcuate Put Sell FSL / TRP at RC 09:29:59 AM
+												  Revised SL = 09:29:59 AM HH + 10.00%
+		
+	
+MONTHLY STATUS:	BEAR / BEAR CF	
+		
+	OPTION TYPE:  CALL
+
+		START STRIKE =( SPT : PRV : 2DLL + 5.00% ) & Round Down
+		END STRIKE  =( SPT : PRV : 2DLL ) & Round Down - 1
+
+		IDEAL PREMIUM = SPT : PRV : 2DLL * 1.20%
+		MINIMUM  PREMIUM = SPT : PRV : 2DLL * 0.90%
+
+		MINIMUM OI = 500 Lots
+		NO OF EXP = 1 Expiry
+		
+		Lot: 1
+		ENTRY  = OPT : PRV : 2DLL - 7.50%
+		TARGET   = CE : Entry  - 60.00%
+		SL / TRP = Min ( CE : Entry  + 60.00% & OPT : PRV : 3DHH + 10.00% )
+		
+		Rules for Taking Entry: 
+			ORPT = Order Placement time = 09:24:59 AM
+			RC = Recalculation Time = 09:29:59 AM
+			
+			Check If 09:24:59 AM LL < Call Sell Entry	
+				If No: This means the above entry Not Missed, Place the Order at ORPT (Order Placement time) which is 09:24:59 AM
+				If Yes: This means the above entry Missed, Therefore,wait till RC (Recalculation Time) and include data 09:29:59 AM Lowest Low
+						AT RC Recalcuate : Call Sell Entry : Bull / Bull CF as 
+						START STRIKE = Min of ( SPT : PRV : 2DLL & 09:29:59 AM LL ) + 5.00% ) & Round Down
+						END STRIKE   = Min of ( SPT : PRV : 2DLL & 09:29:59 AM LL ) & Round Down - 1
+						
+						IDEAL PREMIUM  =Min of ( SPT : PRV : 2DLL & 09:29:59 AM LL )  * 1.20%	
+						MINIMUM  PREMIUM =Min of ( SPT : PRV : 2DLL & 09:29:59 AM LL )  * 0.90%
+						
+						MINIMUM OI = 500 Lots
+						NO OF EXP = 1 Expiry
+						
+						Entry: Min of ( OPT : PRV : 2DLL & 09:29:59 AM LL )  -  7.50%	
+						TARGET   = CE : Entry  - 60.00%
+						SL / TRP = Min ( CE : Entry  + 60.00%, OPT : PRV : 09:29:59 AM HH + 7.00% ) 
+						
+						If SL or Target is not hit till 3:00 PM, then we need to do the following: 
+							Check If Current Option Close at 03:00:00 PM  > Call Original SL?
+									If Yes then  Square Off The Position At CMP at 03:00:00 PM						
+									If No  then  Continue the Position for Next Day but cancel stoploss order for this position. The idea is to avoid accidental SL hit during morning opening time price fluctuations at 09:15 AM. So if the price fluctuations cause target hit, we are good but we want to avoid SL hit.So if positin is ON, next day at 09:15AM we set the Target order but calculate Stop Loss Price as per the Rules below:	
+										Rules For Setting SL : 
+											ORPT = Order Placement time = 09:24:59 AM
+											RC = Recalculation Time = 09:29:59 AM	
+											Check If  09:15:00 AM HH > Call Sell SL	?
+												If No then SL Not Missed, Place the Order at ORPT
+												If Yes then SL Missed, So, Recalcuate : Call Sell FSL / TRP : Bull / Bull CF at RC 09:29:59 AM
+												  Revised SL = 09:29:59 AM HH + 10.00%
+
+
+
+	OPTION TYPE:  PUT
+		START STRIKE =( SPT : PRV : 3DHH - 5.00% ) & Round Up
+		END STRIKE=( SPT : PRV : 3DHH ) & Round Up + 1
+
+		IDEAL PREMIUM = SPT : PRV : 3DHH * 1.20%
+		MINIMUM  PREMIUM = SPT : PRV : 3DHH * 0.90%
+
+		MINIMUM OI = 500 Lots
+		NO OF EXP = 1 Expiry
+		
+		Lot: 1
+		ENTRY  = OPT : PRV : 3DLL - 7.50%
+		TARGET   = CE : Entry  - 60.00%
+		SL / TRP = Min ( PE : Entry  + 60.00% & OPT : PRV : 2DHH + 7.00% )
+
+		Rules for Taking Entry: 
+			ORPT = Order Placement time = 09:24:59 AM
+			RC = Recalculation Time = 09:29:59 AM
+			
+			Check If 09:24:59 AM HH < Put Sell Entry	
+				If No: This means the above entry Not Missed, Place the Order at ORPT (Order Placement time) which is 09:24:59 AM
+				If Yes: This means the above entry Missed, Therefore,wait till RC (Recalculation Time) and include data 09:29:59 AM Lowest Low
+						AT RC Recalcuate : Call Sell Entry : Bull / Bull CF as 
+						START STRIKE = Max of ( SPT : PRV : 3DHH & 09:29:59 AM LL ) - 5.00% ) & Round Up
+						END STRIKE   = Max of ( SPT : PRV : 3DHH & 09:29:59 AM LL ) & Round Up + 1
+						
+						IDEAL PREMIUM  =Min of ( SPT : PRV : 3DHH & 09:29:59 AM LL )  * 1.20%	
+						MINIMUM  PREMIUM =Min of ( SPT : PRV : 3DHH & 09:29:59 AM LL )  * 0.90%
+						
+						MINIMUM OI = 500 Lots
+						NO OF EXP = 1 Expiry
+						
+						Entry: Min of ( OPT : PRV : 3DLL & 09:29:59 AM LL )  -  7.50%	
+						TARGET   = CE : Entry  - 60.00%
+						SL = Min ( PE : Entry  + 60.00% & 09:29:59 AM HH + 7.00% )  
+						
+						If SL or Target is not hit till 3:00 PM, then we need to do the following: 
+							Check If Current Option position Close at 03:00:00 PM  > Put Original SL?
+									If Yes then  Square Off The Position At CMP at 03:00:00 PM						
+									If No  then  Continue the Position for Next Day but cancel stoploss order for this position. The idea is to avoid accidental SL hit during morning opening time price fluctuations at 09:15 AM. So if the price fluctuations cause target hit, we are good but we want to avoid SL hit.So if positin is ON, next day at 09:15AM we set the Target order but calculate Stop Loss Price as per the Rules below:	
+										Rules For Setting SL : 
+											ORPT = Order Placement time = 09:24:59 AM
+											RC = Recalculation Time = 09:29:59 AM	
+											Check If  09:15:00 AM HH > Put Sell SL?
+												If No then SL Not Missed, Place the Order at ORPT
+												If Yes then SL Missed, So, Recalcuate Put Sell FSL / TRP at RC 09:29:59 AM
+												  Revised SL = 09:29:59 AM HH + 7.00%
+										

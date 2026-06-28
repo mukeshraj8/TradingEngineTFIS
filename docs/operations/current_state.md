@@ -25,6 +25,20 @@ Current S23 paper-mode posture:
 - `DONE`: S23 rule interpretation, CE/PE leg visibility, failed-leg reasons,
   calculation explanations, visible watcher windows, and waiting-order behavior
   are implemented and committed.
+- `DONE`: S23 live paper final decisions now require selected-contract ORPT
+  and RC timing bars. The runner first builds a provisional base selection,
+  fetches the selected option's `09:24`/`09:29` bars through the broker adapter,
+  then rebuilds the final decision with ORPT/RC timing evidence. Missing timing
+  bars fail closed instead of silently placing a base order.
+- `DONE`: S23 missed-entry recalculation is now applied in the supervised live
+  decision path. If ORPT marks the base entry as missed, TFIS recalculates the
+  branch strike range, premium filters, entry, target, and SL from the RC spot
+  and selected-option candles, then reruns normal near/next contract selection.
+- `DONE`: S23 paper position management now applies the 15:00 continuation
+  decision after target/SL/FSL/expiry checks. If the option price is not above
+  original SL, the position remains open with an auditable
+  `s23_1500_carry_forward_stop_inactive` reason; if above original SL, normal
+  stop/force-close handling closes the paper position.
 - `DONE`: S23 dashboard Step 8 strike audits now preserve the full reconstructed
   candidate set and explicitly show missing strike-grid rows as rejected audit
   rows when the captured option chain does not include every strike in the
@@ -41,9 +55,10 @@ Current S23 paper-mode posture:
   but still needs one clean market-day validation after the latest scheduling
   and stale-order fixes.
 - `PARTIAL`: Multi-day position lifecycle support exists in the paper runtime
-  foundation, but target/SL/FSL, expiry force-close, carry-forward, and
-  no-carry-past-expiry behavior still need live-like validation on real market
-  sessions.
+  foundation, including target/SL/FSL, expiry force-close, session-only pending
+  orders, and the 15:00 carry-forward decision. It still needs live-like
+  validation on real market sessions, especially next-day SL reset/recalculation
+  after an overnight carry.
 - `TODO`: On the next real NSE trading day, validate the full S23 paper flow
   one step at a time:
   1. scheduled task starts at the configured pre-market time
@@ -229,6 +244,18 @@ Current S23 paper-mode posture:
   premium, OI, status, and rejection reason instead of showing a blank
   "No candidate rows were persisted" table when the option-chain snapshot is
   available.
+- S23 supervised live decisions now consume selected-contract ORPT/RC option
+  bars through the broker adapter boundary, fail closed when those timing bars
+  are missing, and apply the updated missed-entry recalculation before creating
+  the final waiting paper order.
+- S23 missed-entry recalculation now lives in the shared strategy layer
+  (`tfis.strategy.s23_recalculation`) with a compatibility import kept at the
+  old backtest path, so live paper and backtest consume the same strategy rule
+  helper instead of paper importing from backtest.
+- S23 paper position management now implements the rule-sheet 15:00
+  continuation decision after target/SL/FSL/expiry checks, recording whether a
+  position was carried forward with overnight SL inactive or closed by the
+  applicable exit rule.
 
 ## Current Architecture Flow
 
@@ -289,7 +316,10 @@ Current supervised live decision path:
 -> normalized underlying quote
 -> normalized underlying morning bars
 -> normalized option-chain snapshot
+-> provisional base S23 selection
+-> selected-contract ORPT/RC option bars
 -> `S23RuntimeInputDeriver`
+-> S23 ORPT/RC timing recalculation when needed
 -> TFIS checkpoint snapshots + monthly status + runtime aliases
 -> `S23PaperLivePreludeBuilder`
 -> `S23PaperLiveDecisionBuilder`
@@ -387,7 +417,11 @@ Current notes:
 - that applied-case fixture now proves row `183` can apply apples-to-apples against the same base dataset with workbook-backed `start_strike` / `ideal_premium` / `minimum_premium` and `entry_price` changes
 - a broader `AB6 OS` recalculation audit across rows `162-191` now confirms no additional workbook-backed target override formulas in that block
 - the same audit found populated current-day option-entry cells `Z183:Z186`, and TFIS now consumes those workbook-backed entry overrides inside the opt-in current-day FSL / TRP layer
-- rows `190-191` add position-open missed-SL process notes, and the new `s23_position_open_1500_audit.md` confirms they are still process-only in this workbook area rather than hidden continuation-stoploss math
+- rows `190-191` in the older workbook add position-open missed-SL process
+  notes, and `s23_position_open_1500_audit.md` found no hidden numeric
+  continuation-stoploss formula there. The newer S23 gap-up/gap-down text file
+  now supplies the operational 15:00 original-SL comparison rule implemented in
+  the paper position manager.
 - if no spot intraday CSV is supplied, recalculation keeps an explicit current-day market-level fallback and records that choice in audit output
 - base strategy formulas remain the canonical source for normal evaluation
 
@@ -407,9 +441,9 @@ Current notes:
   than by unresolved mapping ambiguity:
   - `AB6 OS!Z183:Z186` are now implemented as workbook-backed current-day
     option-entry overrides for the supported `183-186` rows
-  - `AB6 OS!190:191` only describe position-open process flow; the dedicated
-    15:00 audit found no linked numeric continuation-stoploss rule elsewhere in
-    the inspected workbook ranges
+  - `AB6 OS!190:191` only describe position-open process flow in the older
+    workbook; the updated S23 text file now defines the 15:00 original-SL
+    comparison rule used by the paper position manager
   - no additional target override formulas were found in `AB6 OS!162:191`
 - unsupported paths are now explicit implementation boundaries, not silent
   ambiguities:

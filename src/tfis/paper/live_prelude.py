@@ -103,6 +103,7 @@ class S23PaperLivePreludeRequest:
     smoke_override_enabled: bool = False
     smoke_override_selected_contract_symbol: str | None = None
     allow_branch_pinned_unknown_monthly_status: bool = False
+    trade_plan_override: TradePlan | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -179,7 +180,7 @@ class S23PaperLivePreludeBuilder:
                 selected_contract_provenance="carry_forward_position_state",
             )
 
-        trade_plan = self._strategy_evaluator.evaluate(
+        trade_plan = request.trade_plan_override or self._strategy_evaluator.evaluate(
             request.strategy_rule,
             market_levels=request.market_levels,
             runtime_values=request.runtime_values,

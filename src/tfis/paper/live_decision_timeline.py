@@ -129,6 +129,7 @@ class S23LiveDecisionTimelineBuilder:
         smoke_override_enabled: bool = False,
         smoke_override_selected_contract_symbol: str | None = None,
         allow_branch_pinned_unknown_monthly_status: bool = False,
+        require_orpt_rc_timing_bars: bool = True,
     ) -> S23LiveDecisionTimelineStageBuild:
         effective_reference_packet = self._live_reference_deriver.derive(
             base_reference_packet=reference_packet,
@@ -188,6 +189,7 @@ class S23LiveDecisionTimelineBuilder:
                     smoke_override_enabled=smoke_override_enabled,
                     smoke_override_selected_contract_symbol=smoke_override_selected_contract_symbol,
                     allow_branch_pinned_unknown_monthly_status=allow_branch_pinned_unknown_monthly_status,
+                    require_orpt_rc_timing_bars=require_orpt_rc_timing_bars,
                 )
             except (S23PaperLiveDecisionError, S23LivePreludeError) as exc:
                 decision_failure_code = getattr(exc, "code", "LIVE_DECISION_FAILED")

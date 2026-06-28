@@ -94,7 +94,17 @@
 
 ## Completed
 
-- S23 15:00 position-open continuation audited as process-only; numeric continuation rule remains blocked pending new workbook evidence.
+- S23 live ORPT/RC timing recalculation is now implemented in the supervised
+  live decision path: provisional base selection, selected-contract option-bar
+  collection through the broker adapter, fail-closed missing-timing behavior,
+  missed-entry recalculation, and final near/next contract reselection are
+  covered by focused unit tests.
+- S23 paper position management now implements the rule-sheet 15:00
+  continuation decision after target/SL/FSL/expiry checks, with an auditable
+  carry-forward reason when overnight SL is inactive.
+- Earlier S23 15:00 continuation ambiguity is now resolved by the updated rule
+  sheet: TFIS applies the 15:00 original-SL comparison and carries forward with
+  overnight SL inactive when the option price is not above original SL.
 - broker-agnostic architecture
 - strategy folder layout
 - S23 all four branches

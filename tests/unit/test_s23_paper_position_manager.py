@@ -206,6 +206,35 @@ def test_holds_position_for_next_day_when_no_exit_hit(tmp_path: Path) -> None:
     assert ledger_rows[-1]["gross_pnl"] == 3318.75
 
 
+def test_1500_rule_carries_forward_with_overnight_stop_inactive(tmp_path: Path) -> None:
+    manager = _manager(tmp_path)
+    manager.open_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(),
+        opened_at=datetime(2026, 6, 22, 9, 31),
+    )
+
+    result = manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 23),
+        market_events=(
+            _bar(
+                session_date=date(2026, 6, 23),
+                high=210,
+                low=120,
+                close=150,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 23, 15, 0),
+    )
+
+    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD
+    assert result.event.reason_code == "s23_1500_carry_forward_stop_inactive"
+    assert "overnight stoploss is inactive" in result.event.message
+    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_OPEN
+
+
 def test_target_hit_requires_fresh_recalculated_entry(tmp_path: Path) -> None:
     manager = _manager(tmp_path)
     manager.open_from_live_decision(

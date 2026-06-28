@@ -31,6 +31,7 @@ from .models import (
     EventEnvelope,
     OptionChainContract,
     OptionChainSnapshotEvent,
+    SelectedContractBarEvent,
     SnapshotLabel,
     UnderlyingQuoteEvent,
 )
@@ -130,6 +131,7 @@ class S23CollectedSnapshotInputs:
     option_chain_snapshot: OptionChainSnapshotEvent
     expiry_governance: S23PaperExpiryGovernance
     weekly_expiry: date
+    selected_contract_bars: tuple[SelectedContractBarEvent, ...] = ()
 
 
 class S23FyersSnapshotCollector:
@@ -787,6 +789,40 @@ class S23FyersSnapshotCollector:
             expiry=near_chain.expiry,
             contracts=merged_contracts,
         )
+
+    def collect_selected_contract_bars_from_files(
+        self,
+        *,
+        config_path: str | Path,
+        option_symbol: str,
+        session_date: date,
+        from_time: time = time(9, 24),
+        to_time: time = time(9, 29),
+        interval_minutes: int = 1,
+        adapter: BrokerAdapter | None = None,
+    ) -> tuple[SelectedContractBarEvent, ...]:
+        config = S23LivePaperIngressConfig.from_yaml(config_path)
+        active_adapter = adapter or self._build_adapter(config)
+        connected_here = False
+        try:
+            if adapter is None:
+                active_adapter.connect()
+                connected_here = True
+            return active_adapter.get_option_bars(
+                option_symbol,
+                session_date=session_date,
+                from_time=from_time,
+                to_time=to_time,
+                interval_minutes=interval_minutes,
+            )
+        except BrokerAdapterError as exc:
+            raise S23FyersSnapshotCollectorError(
+                "SELECTED_CONTRACT_BARS_FAILED",
+                f"Selected-contract ORPT/RC bar collection failed: {exc}",
+            ) from exc
+        finally:
+            if connected_here:
+                active_adapter.disconnect()
 
     @staticmethod
     def _next_weekly_expiry_after(expiry: date) -> date:

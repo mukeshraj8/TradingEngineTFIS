@@ -122,6 +122,18 @@ class BrokerAdapter(ABC):
         """Fetch a bounded normalized set of underlying history bars."""
 
     @abstractmethod
+    def get_option_bars(
+        self,
+        option_symbol: str,
+        *,
+        session_date: date,
+        from_time: time,
+        to_time: time,
+        interval_minutes: int = 1,
+    ) -> tuple[SelectedContractBarEvent, ...]:
+        """Fetch bounded normalized history bars for one option contract."""
+
+    @abstractmethod
     def get_underlying_daily_bars(
         self,
         symbol: str,

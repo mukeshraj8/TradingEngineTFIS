@@ -398,6 +398,39 @@ class S23PaperPositionManager:
                 state_path=session_dir / "paper_position_state.json",
             )
 
+        continuation_event = self._evaluate_1500_continuation_rule(
+            state=state,
+            session_date=session_date,
+            evaluated_at=evaluated_at,
+            market_events=market_events,
+        )
+        if continuation_event is not None and continuation_event.exit_price is not None:
+            state = self._state_store.mark_position_closed(
+                session_dir,
+                session_date=session_date,
+                closed_at=continuation_event.timestamp,
+                reason_code=continuation_event.reason_code,
+                message=continuation_event.message,
+                provenance_source_ids=provenance_source_ids,
+            )
+            return self._persist_result(
+                session_dir,
+                session_date=session_date,
+                status=continuation_event.status,
+                state=state,
+                event=continuation_event,
+                state_path=session_dir / "paper_position_state.json",
+            )
+        if continuation_event is not None:
+            return self._persist_result(
+                session_dir,
+                session_date=session_date,
+                status=continuation_event.status,
+                state=state,
+                event=continuation_event,
+                state_path=session_dir / "paper_position_state.json",
+            )
+
         if not market_events:
             status = S23PaperPositionManagerStatus.PAPER_POSITION_NO_MARKET_DATA
             reason_code = "missing_selected_contract_market_data"
@@ -470,6 +503,67 @@ class S23PaperPositionManager:
             if exit_event is not None:
                 return exit_event
         return None
+
+    def _evaluate_1500_continuation_rule(
+        self,
+        *,
+        state: S23PaperPositionState,
+        session_date: date,
+        evaluated_at: datetime,
+        market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
+    ) -> S23PaperPositionManagerEvent | None:
+        if evaluated_at.timetz().replace(tzinfo=None) < time(15, 0):
+            return None
+        current_price, current_bid, current_ask, source_kind, source_id, source_timestamp = (
+            self._latest_market_reference(state, market_events)
+        )
+        if current_price is None:
+            return None
+        timestamp = source_timestamp or evaluated_at
+        original_stoploss = float(state.stoploss_price)
+        if float(current_price) > original_stoploss:
+            exit_price = float(current_price) + self._slippage_exit_points
+            return self._exit_event(
+                session_date=session_date,
+                event_timestamp=timestamp,
+                status=S23PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED,
+                selected_contract_symbol=state.selected_contract_symbol,
+                reason_code="s23_1500_close_above_original_sl",
+                message=(
+                    "At or after 15:00, selected option price was above the original "
+                    "S23 stoploss, so the paper position was squared off at CMP."
+                ),
+                current_price=float(current_price),
+                current_bid=current_bid,
+                current_ask=current_ask,
+                exit_price=exit_price,
+                source_kind=source_kind or "selected_contract_market_data",
+                source_id=source_id or "unknown",
+                source_effective_timestamp=timestamp,
+                target_price=state.target_price,
+                stop_price=original_stoploss,
+            )
+        return S23PaperPositionManagerEvent(
+            artifact_version=_ARTIFACT_VERSION,
+            timestamp=timestamp,
+            session_date=session_date,
+            status=S23PaperPositionManagerStatus.PAPER_POSITION_HELD,
+            selected_contract_symbol=state.selected_contract_symbol,
+            reason_code="s23_1500_carry_forward_stop_inactive",
+            message=(
+                "At or after 15:00, selected option price was not above the original "
+                "S23 stoploss. Position is carried forward; overnight stoploss is "
+                "inactive and must be recalculated on the next trading day."
+            ),
+            current_price=float(current_price),
+            current_bid=current_bid,
+            current_ask=current_ask,
+            source_kind=source_kind,
+            source_id=source_id,
+            source_effective_timestamp=timestamp,
+            target_price=state.target_price,
+            stop_price=original_stoploss,
+        )
 
     def _evaluate_quote(
         self,

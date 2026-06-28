@@ -2455,17 +2455,21 @@ class TfisOperatorDashboardBuilder:
                 f"<strong>{html.escape(str(leg.get('contract') or 'n/a'))}</strong>: strike {self._fmt_number(leg.get('strike'))}, "
                 f"premium {self._fmt_number(leg.get('premium'))}, OI {self._fmt_number(leg.get('oi'), integer=True)}."
             )
+            step_8e = self._s23_orpt_rc_timing_step(leg)
             step_9 = (
-                f"<strong>Step 9 - Entry.</strong> Entry uses <code>{html.escape(str(entry.get('resolved_formula') or 'n/a'))}</code> "
-                f"= {self._fmt_number(leg.get('entry'))}."
+                f"<strong>Step 9 - Entry.</strong> The actionable sell-entry limit is {self._fmt_number(leg.get('entry'))}. "
+                f"Formula trace: <code>{html.escape(str(entry.get('resolved_formula') or 'n/a'))}</code>. "
+                "The paper order waits for the selected option premium to trade at or below this entry price before it is filled."
             )
             step_10 = (
-                f"<strong>Step 10 - Target.</strong> Target uses <code>{html.escape(str(target.get('resolved_formula') or 'n/a'))}</code> "
-                f"= {self._fmt_number(leg.get('target'))}."
+                f"<strong>Step 10 - Target exit.</strong> Target is {self._fmt_number(leg.get('target'))}. "
+                f"Rule calculation: option sell entry - 60% = <code>{html.escape(str(target.get('resolved_formula') or 'n/a'))}</code>. "
+                "For a paper short option, this is the profit exit level."
             )
             step_11 = (
-                f"<strong>Step 11 - Stop loss.</strong> SL uses <code>{html.escape(str(stoploss.get('resolved_formula') or 'n/a'))}</code> "
-                f"= {self._fmt_number(leg.get('stoploss'))}. "
+                f"<strong>Step 11 - Stop loss / TRP exit.</strong> SL is {self._fmt_number(leg.get('stoploss'))}. "
+                f"Rule calculation takes the lower of entry + 60% and the rule-book option high reference buffer: "
+                f"<code>{html.escape(str(stoploss.get('resolved_formula') or 'n/a'))}</code>. "
                 f"Order status is {html.escape(entry_status)}."
             )
         else:
@@ -2494,6 +2498,10 @@ class TfisOperatorDashboardBuilder:
             step_8d = (
                 f"<strong>Step 8d - No qualifying strike.</strong> No final {html.escape(side)} contract was selected. "
                 f"Reason: {html.escape(failure_code)} - {html.escape(failure_message)}"
+            )
+            step_8e = (
+                "<strong>Step 8e - ORPT/RC entry timing.</strong> Not applicable because no final weekly option qualified. "
+                "TFIS cannot check ORPT/RC option candles or place a paper order without a selected option contract."
             )
             step_9 = (
                 f"<strong>Step 9 - Entry.</strong> No entry applies because no contract qualified. "
@@ -2542,10 +2550,65 @@ class TfisOperatorDashboardBuilder:
             step_8b,
             step_8c,
             step_8d,
+            step_8e,
             step_9,
             step_10,
             step_11,
         ]
+
+    def _s23_orpt_rc_timing_step(self, leg: dict[str, Any]) -> str:
+        audit = leg.get("orpt_rc_timing")
+        if not isinstance(audit, dict) or not audit:
+            return (
+                "<strong>Step 8e - ORPT/RC entry timing.</strong> No ORPT/RC timing audit was persisted with this run. "
+                "The dashboard can show the final entry/target/SL formula trace, but cannot prove whether the base entry was missed before RC from this artifact."
+            )
+        status = str(audit.get("status") or "n/a")
+        selected_contract = html.escape(str(audit.get("selected_contract") or leg.get("contract") or "n/a"))
+        reason = html.escape(str(audit.get("reason") or "n/a"))
+        base_entry = self._fmt_number(audit.get("base_entry") or leg.get("entry"))
+        option_type = "PUT" if "PE" in str(leg.get("side") or "").upper() else "CALL"
+        if option_type == "CALL":
+            comparison = (
+                f"CALL sell miss test is ORPT option low < base entry. "
+                f"ORPT low was {self._fmt_number(audit.get('orpt_option_low'))}; base entry was {base_entry}."
+            )
+        else:
+            comparison = (
+                f"PUT sell miss test is ORPT option high < base entry. "
+                f"ORPT high was {self._fmt_number(audit.get('orpt_option_high'))}; base entry was {base_entry}."
+            )
+        if status == "BASE_ENTRY_VALID":
+            return (
+                f"<strong>Step 8e - ORPT/RC entry timing.</strong> Selected option {selected_contract}. "
+                f"{html.escape(comparison)} The entry was not missed at ORPT, so TFIS keeps the base entry/target/SL. "
+                f"Timing status: {html.escape(status)} - {reason}"
+            )
+        if status == "ENTRY_MISSED_RECALCULATED":
+            notes = audit.get("audit_notes")
+            note_text = ""
+            if isinstance(notes, list) and notes:
+                note_text = " " + " ".join(html.escape(str(item)) for item in notes if item)
+            return (
+                f"<strong>Step 8e - ORPT/RC entry timing.</strong> Selected option {selected_contract}. "
+                f"{html.escape(comparison)} The entry was missed, so TFIS waited until RC and recalculated using the 09:29:59 option/spot candle. "
+                f"RC option low/high were {self._fmt_number(audit.get('rc_option_low'))} / {self._fmt_number(audit.get('rc_option_high'))}; "
+                f"RC spot low/high were {self._fmt_number(audit.get('rc_spot_low'))} / {self._fmt_number(audit.get('rc_spot_high'))}. "
+                f"Recalculated start/end strikes: {self._fmt_number(audit.get('recalculated_start_strike'))} / {self._fmt_number(audit.get('recalculated_end_strike'))}; "
+                f"recalculated ideal/minimum premium: {self._fmt_number(audit.get('recalculated_ideal_premium'))} / {self._fmt_number(audit.get('recalculated_minimum_premium'))}; "
+                f"recalculated entry/target/SL: {self._fmt_number(audit.get('recalculated_entry_price'))} / "
+                f"{self._fmt_number(audit.get('recalculated_target_price'))} / {self._fmt_number(audit.get('recalculated_stoploss_price'))}. "
+                f"Timing status: {html.escape(status)} - {reason}.{note_text}"
+            )
+        if status.startswith("MISSING_"):
+            return (
+                f"<strong>Step 8e - ORPT/RC entry timing.</strong> TFIS could not complete the mandatory timing check for {selected_contract}. "
+                f"Status: {html.escape(status)} - {reason}. A live final decision should fail closed until the selected-option ORPT/RC bars are available."
+            )
+        return (
+            f"<strong>Step 8e - ORPT/RC entry timing.</strong> Timing status: {html.escape(status)} - {reason}. "
+            f"{html.escape(comparison)}"
+        )
 
     def _spot_reference_alias_for_s23_leg(self, leg: dict[str, Any]) -> str:
         aliases = leg.get("required_market_aliases")
@@ -2677,6 +2740,7 @@ class TfisOperatorDashboardBuilder:
                     "formula_evaluation": explanation.get("formula_evaluation"),
                     "market_refs": explanation.get("market_reference_values"),
                     "option_refs": explanation.get("option_reference_values"),
+                    "orpt_rc_timing": explanation.get("orpt_rc_timing"),
                     "monthly": explanation.get("monthly_status"),
                 }
             )
@@ -2769,6 +2833,7 @@ class TfisOperatorDashboardBuilder:
                     "formula_evaluation": stage.get("provisional_formula_evaluation"),
                     "market_refs": stage.get("market_reference_values"),
                     "option_refs": stage.get("option_reference_values"),
+                    "orpt_rc_timing": stage.get("orpt_rc_timing"),
                     "monthly": {
                         "status": stage.get("monthly_status"),
                         "trigger_name": stage.get("monthly_status_trigger"),

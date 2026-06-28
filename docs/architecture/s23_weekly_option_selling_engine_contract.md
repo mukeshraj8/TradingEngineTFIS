@@ -51,6 +51,32 @@ S23 must follow the rule-sheet steps in order.
      values from the branch matrix.
    - A selected S23 trade becomes a waiting paper order first. A position opens
      only after market data satisfies the entry trigger.
+6. ORPT / RC entry timing
+   - Build the base trade plan and base selected contract first.
+   - At ORPT (`09:24:59`), test the selected option contract against the base
+     entry rule.
+   - For CE sell, entry is missed when the ORPT selected-contract low is below
+     the base CE entry.
+   - For PE sell, entry is missed when the ORPT selected-contract high is below
+     the base PE entry, matching the updated S23 text.
+   - If entry is not missed, keep the base selected contract and place the
+     waiting paper order at ORPT.
+   - If entry is missed, wait for RC (`09:29:59`), recalculate the branch's
+     strike range, ideal premium, minimum premium, entry, target, and SL using
+     the updated rule-sheet formulas, then re-run contract selection against
+     the available option-chain data.
+   - If any required ORPT/RC selected-contract or underlying candle data is
+     missing, fail closed with an auditable no-order reason instead of silently
+     using stale base values.
+7. Carry-forward stop handling
+   - If an open position has not hit target or SL by `15:00:00`, compare the
+     selected option close at `15:00:00` with the original SL.
+   - If the option close is above original SL, square off at CMP at `15:00:00`.
+   - If the option close is not above original SL, carry the position forward
+     and mark the stoploss inactive overnight.
+   - On the next trading day, keep the target active, but reset/recalculate SL
+     only after the morning `09:15`, ORPT, and RC checks described by the rule
+     sheet. This behavior must be explicit and auditable.
 
 ## Monthly Status Boundary
 
@@ -117,6 +143,45 @@ Trade level rules:
 - percent SL = entry * `1.60`
 - structure SL = structure SL reference * configured buffer
 - final SL = `min(percent SL, structure SL)`
+
+## ORPT / RC Recalculation Matrix
+
+These rules apply after the base S23 branch has selected an initial contract.
+The selected-contract intraday candles are separate from the NIFTY spot
+reference candles.
+
+| Monthly Group | Side | Missed-entry test at ORPT | RC strike / premium reference | RC entry reference | RC SL reference |
+|---|---|---|---|---|---|
+| Bullish | CE | ORPT option low `<` base CE entry | `MIN(PRV_3DLL, RC spot low)` | `MIN(OPT_PRV_3DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.07)` |
+| Bullish | PE | ORPT option high `<` base PE entry | strike uses `MAX(PRV_2DHH, RC spot high)`; premium uses `MIN(PRV_2DHH, RC spot low)` | `MIN(OPT_PRV_2DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.10)` |
+| Bearish | CE | ORPT option low `<` base CE entry | `MIN(PRV_2DLL, RC spot low)` | `MIN(OPT_PRV_2DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.10)` |
+| Bearish | PE | ORPT option high `<` base PE entry | strike uses `MAX(PRV_3DHH, RC spot high)`; premium uses `MIN(PRV_3DHH, RC spot low)` | `MIN(OPT_PRV_3DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.07)` |
+
+For recalculated CE legs:
+
+- start strike = round down `(RC reference + 5%)`
+- end strike = round down `RC reference` minus one strike
+
+For recalculated PE legs:
+
+- start strike = round up `(RC strike reference - 5%)`
+- end strike = round up `RC strike reference` plus one strike
+
+After recalculation, the near-contract 8a/8b and next-contract 8c search rules
+remain unchanged. The final waiting paper order must be created from the
+recalculated selected contract and recalculated entry/target/SL, not from the
+base missed contract.
+
+Current implementation note:
+
+- The supervised live decision runner now performs a provisional base
+  selection, fetches the selected contract's ORPT/RC option bars through the
+  broker adapter, then rebuilds the final decision with timing evidence.
+- Missing ORPT/RC selected-contract bars fail closed with a decision failure.
+- If ORPT marks entry as missed, TFIS recalculates the trade plan from RC spot
+  and selected-option candles and reruns normal near/next contract selection.
+- Next-day SL reset after an overnight 15:00 carry remains the next lifecycle
+  validation/refinement item.
 
 ## Strategy Registry Contract
 
@@ -249,8 +314,9 @@ but the calculation records needed for review must be stored durably.
 - Some current artifacts remain under `tmp`.
 - Current operational scripts are FYERS-first, which is acceptable only at the
   script/adapter boundary.
-- The paper runtime has partial carry-forward handling but still needs a clean
-  generic lifecycle service before more strategies are added.
+- The paper runtime now has S23-specific 15:00 continuation handling, but
+  next-day SL reset after overnight carry still needs a clean auditable flow
+  before the lifecycle can be called complete.
 
 ## Minimum Acceptance Tests
 
@@ -266,3 +332,9 @@ Before claiming S23 complete, tests must prove:
 - minimum OI uses current configured lot size
 - selected trade becomes waiting order before any paper position is opened
 - broker adapter can be mocked in unit tests
+- live final decisions fail closed when selected-contract ORPT/RC bars are
+  missing
+- missed ORPT entries recalculate strike range, premium filters, entry, target,
+  and SL before final contract selection
+- 15:00 continuation keeps positions open with overnight SL inactive when the
+  option price is not above original SL

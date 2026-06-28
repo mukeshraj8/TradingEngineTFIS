@@ -104,6 +104,36 @@ def test_fyers_adapter_normalizes_market_payloads() -> None:
     assert stream_events[0].envelope.event_type is PaperEventType.SELECTED_CONTRACT_BAR
 
 
+def test_fyers_adapter_normalizes_selected_contract_history_bars(tmp_path: Path) -> None:
+    payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    tz = ZoneInfo("Asia/Kolkata")
+    payload["selected_contract_history_bars"] = {
+        "s": "ok",
+        "candles": [
+            [int(datetime(2026, 5, 8, 9, 24, tzinfo=tz).timestamp()), 211.0, 214.0, 198.0, 205.0, 1000],
+            [int(datetime(2026, 5, 8, 9, 29, tzinfo=tz).timestamp()), 205.0, 209.0, 190.0, 195.0, 1200],
+        ],
+    }
+    fixture_path = tmp_path / "fyers_option_history_payloads.json"
+    fixture_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    adapter = FyersBrokerAdapter.from_payload_file(fixture_path)
+    adapter.connect()
+
+    bars = adapter.get_option_bars(
+        "NIFTY_20260512_25000_PE",
+        session_date=date(2026, 5, 8),
+        from_time=time(9, 24),
+        to_time=time(9, 29),
+    )
+
+    assert len(bars) == 2
+    assert bars[0].symbol == "NIFTY_20260512_25000_PE"
+    assert bars[0].low == 198.0
+    assert bars[1].high == 209.0
+    assert bars[1].envelope.event_type is PaperEventType.SELECTED_CONTRACT_BAR
+
+
 def test_fyers_adapter_requests_specific_expiry_and_configured_strike_count() -> None:
     payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))["option_chain"]
     client = _FakeFyersClient(payload)

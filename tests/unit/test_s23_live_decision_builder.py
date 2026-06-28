@@ -26,6 +26,7 @@ from tfis.paper import (
     S23MonthlyStatusReferencePacket,
 )
 from tfis.paper.models import UnderlyingQuoteEvent
+from tfis.paper.models import SelectedContractBarEvent
 
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -372,6 +373,10 @@ def _collected_inputs(day: int = 28) -> S23CollectedSnapshotInputs:
             )
         ),
         weekly_expiry=date(2026, 6, 4),
+        selected_contract_bars=(
+            _selected_contract_bar(day=day, minute=24, low=215.0, high=230.0, close=225.0),
+            _selected_contract_bar(day=day, minute=29, low=214.0, high=228.0, close=220.0),
+        ),
     )
 
 
@@ -389,6 +394,42 @@ def _collected_inputs_live_shape(day: int = 28) -> S23CollectedSnapshotInputs:
             )
         ),
         weekly_expiry=date(2026, 6, 4),
+        selected_contract_bars=(
+            _selected_contract_bar(day=day, minute=24, low=215.0, high=230.0, close=225.0),
+            _selected_contract_bar(day=day, minute=29, low=214.0, high=228.0, close=220.0),
+        ),
+    )
+
+
+def _selected_contract_bar(
+    *,
+    day: int,
+    minute: int,
+    low: float,
+    high: float,
+    close: float,
+) -> SelectedContractBarEvent:
+    bar_start = _ts(day, 9, minute)
+    return SelectedContractBarEvent(
+        envelope=EventEnvelope(
+            event_type=PaperEventType.SELECTED_CONTRACT_BAR,
+            session_date=date(2026, 5, day),
+            effective_timestamp=bar_start.replace(second=59),
+            captured_at=bar_start.replace(second=59),
+            timezone="Asia/Kolkata",
+            source_type="unit_test",
+            source_id=f"selected-contract-bar:{minute}",
+            synthetic_fixture=True,
+            normalized_by="unit-test",
+        ),
+        symbol="NIFTY_20260604_23750_PE",
+        open=close,
+        high=high,
+        low=low,
+        close=close,
+        bar_start=bar_start,
+        bar_end=bar_start.replace(second=59),
+        volume=100.0,
     )
 
 
@@ -418,6 +459,28 @@ def test_runtime_derivation_and_live_decision_build() -> None:
     assert result.explanation["contract_selection"]["selected_contract_symbol"] == "NIFTY_20260604_23750_PE"
     assert result.explanation["formula_evaluation"][0]["name"] == "start_strike"
     assert "ROUND_UP" in result.explanation["formula_evaluation"][0]["resolved_formula"]
+
+
+def test_live_decision_recalculates_bear_put_when_orpt_entry_is_missed() -> None:
+    collected_inputs = replace(
+        _collected_inputs(),
+        selected_contract_bars=(
+            _selected_contract_bar(day=28, minute=24, low=180.0, high=200.0, close=190.0),
+            _selected_contract_bar(day=28, minute=29, low=175.0, high=205.0, close=180.0),
+        ),
+    )
+
+    result = S23PaperLiveDecisionBuilder().build(
+        strategy_rule=_strategy_rule(),
+        reference_packet=_reference_packet(),
+        collected_inputs=collected_inputs,
+    )
+
+    assert result.explanation["orpt_rc_timing"]["status"] == "ENTRY_MISSED_RECALCULATED"
+    assert result.summary.planned_entry_price == pytest.approx(161.875)
+    assert result.summary.target_price == pytest.approx(64.75)
+    assert result.summary.stoploss_price == pytest.approx(219.35)
+    assert result.summary.selected_contract_symbol == "NIFTY_20260604_23750_PE"
 
 
 def test_runtime_derivation_accepts_live_fyers_0915_bar_shape() -> None:

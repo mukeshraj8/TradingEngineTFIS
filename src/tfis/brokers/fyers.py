@@ -329,6 +329,48 @@ class FyersBrokerAdapter(BrokerAdapter):
             interval_minutes=interval_minutes,
         )
 
+    def get_option_bars(
+        self,
+        option_symbol: str,
+        *,
+        session_date: date,
+        from_time: time,
+        to_time: time,
+        interval_minutes: int = 1,
+    ) -> tuple[SelectedContractBarEvent, ...]:
+        raw_symbol = (
+            option_symbol
+            if option_symbol.upper().startswith("NSE:")
+            else self.to_fyers_option_symbol(option_symbol)
+        )
+        if self._payloads:
+            payload = (
+                self._payloads.get("selected_contract_history_bars")
+                or self._payloads.get("selected_contract_bars")
+                or self._payloads.get("option_history_bars")
+            )
+        else:
+            if self._client is None:
+                raise BrokerConnectionError("Fyers client is not connected.")
+            payload = self._client.history(
+                {
+                    "symbol": raw_symbol,
+                    "resolution": str(interval_minutes),
+                    "date_format": "1",
+                    "range_from": session_date.isoformat(),
+                    "range_to": session_date.isoformat(),
+                    "cont_flag": "0",
+                }
+            )
+        return self._normalize_option_history_payload(
+            payload,
+            raw_symbol=raw_symbol,
+            session_date=session_date,
+            from_time=from_time,
+            to_time=to_time,
+            interval_minutes=interval_minutes,
+        )
+
     def get_underlying_daily_bars(
         self,
         symbol: str,
@@ -789,6 +831,78 @@ class FyersBrokerAdapter(BrokerAdapter):
         if not bars:
             raise BrokerNormalizationError(
                 "No underlying history candles matched the requested TFIS session window."
+            )
+        return tuple(sorted(bars, key=lambda item: (item.bar_start, item.bar_end)))
+
+    def _normalize_option_history_payload(
+        self,
+        payload: dict[str, Any] | list[dict[str, Any]] | None,
+        *,
+        raw_symbol: str,
+        session_date: date,
+        from_time: time,
+        to_time: time,
+        interval_minutes: int,
+    ) -> tuple[SelectedContractBarEvent, ...]:
+        if payload is None:
+            raise BrokerNormalizationError("Missing FYERS option history payload.")
+        candles = self._extract_history_candles(payload)
+        if not candles:
+            raise BrokerNormalizationError("FYERS option history payload returned no candles.")
+
+        from_dt = datetime.combine(session_date, from_time, tzinfo=self._tzinfo)
+        to_dt = datetime.combine(session_date, to_time, tzinfo=self._tzinfo)
+        source_id = (
+            str(payload.get("source_id"))
+            if isinstance(payload, dict) and payload.get("source_id")
+            else "fyers:option_history"
+        )
+        interval_delta = timedelta(minutes=max(1, int(interval_minutes)))
+        normalized_symbol = self.normalize_option_symbol(raw_symbol)
+        bars: list[SelectedContractBarEvent] = []
+        for index, candle in enumerate(candles, start=1):
+            if not isinstance(candle, (list, tuple)) or len(candle) < 6:
+                raise BrokerNormalizationError("FYERS option history candle must contain at least 6 values.")
+            epoch = int(candle[0])
+            bar_start = datetime.fromtimestamp(epoch, tz=self._tzinfo)
+            if bar_start.date() != session_date:
+                continue
+            bar_end = bar_start + interval_delta - timedelta(seconds=1)
+            if bar_end < from_dt or bar_start > to_dt:
+                continue
+            envelope = EventEnvelope(
+                event_type=PaperEventType.SELECTED_CONTRACT_BAR,
+                session_date=session_date,
+                effective_timestamp=bar_end,
+                captured_at=self._now_provider(),
+                timezone=self._timezone,
+                source_type="broker_fyers",
+                source_id=source_id,
+                synthetic_fixture=bool(
+                    payload.get("synthetic_fixture", False)
+                    if isinstance(payload, dict)
+                    else False
+                ),
+                normalized_by="fyers-adapter-v1",
+                source_sequence=index,
+                data_quality_flags=(),
+            )
+            bars.append(
+                SelectedContractBarEvent(
+                    envelope=envelope,
+                    symbol=normalized_symbol,
+                    open=self._optional_float(candle[1]),
+                    high=self._optional_float(candle[2]),
+                    low=self._optional_float(candle[3]),
+                    close=self._optional_float(candle[4]),
+                    bar_start=bar_start,
+                    bar_end=bar_end,
+                    volume=self._optional_float(candle[5]),
+                )
+            )
+        if not bars:
+            raise BrokerNormalizationError(
+                "No option history candles matched the requested TFIS session window."
             )
         return tuple(sorted(bars, key=lambda item: (item.bar_start, item.bar_end)))
 

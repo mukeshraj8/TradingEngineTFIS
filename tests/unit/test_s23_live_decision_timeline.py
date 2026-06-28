@@ -27,7 +27,7 @@ from tfis.paper import (
     S23PaperPreludeSessionContext,
     run_s23_morning_supervised_decision,
 )
-from tfis.paper.models import UnderlyingQuoteEvent
+from tfis.paper.models import SelectedContractBarEvent, UnderlyingQuoteEvent
 
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -54,7 +54,7 @@ def _strategy_rule() -> StrategyRule:
         entry_time=time(9, 24, 59),
         recalculation_time=time(9, 29, 59),
         start_strike_formula="ROUND_UP(PRV_3DHH - PARAM(strike_buffer_pct)%)",
-        end_strike_formula="ROUND_UP(PRV_3DHH) + 1",
+        end_strike_formula="ROUND_UP(PRV_3DHH) + PARAM(strike_step)",
         ideal_premium_formula="PRV_3DHH * PARAM(ideal_premium_pct)%",
         minimum_premium_formula="PRV_3DHH * PARAM(minimum_premium_pct)%",
         minimum_oi=500,
@@ -64,6 +64,7 @@ def _strategy_rule() -> StrategyRule:
         carry_forward_allowed=True,
         parameters={
             "strike_buffer_pct": 5.0,
+            "strike_step": 50.0,
             "ideal_premium_pct": 1.2,
             "minimum_premium_pct": 0.9,
             "entry_discount_pct": 7.5,
@@ -272,7 +273,51 @@ def _option_chain(day: int = 28) -> OptionChainSnapshotEvent:
                 oi=1200.0,
                 volume=240.0,
             ),
+            OptionChainContract(
+                symbol="NIFTY_20260604_25000_CE",
+                option_type=OptionType.CALL,
+                strike=25000.0,
+                expiry=date(2026, 6, 4),
+                bid=284.0,
+                ask=286.0,
+                ltp=285.0,
+                oi=1200.0,
+                volume=240.0,
+            ),
         ),
+    )
+
+
+def _selected_contract_bar(
+    *,
+    day: int,
+    minute: int,
+    symbol: str = "NIFTY_20260604_23750_PE",
+    low: float = 215.0,
+    high: float = 230.0,
+    close: float = 225.0,
+) -> SelectedContractBarEvent:
+    bar_start = _ts(day, 9, minute)
+    return SelectedContractBarEvent(
+        envelope=EventEnvelope(
+            event_type=PaperEventType.SELECTED_CONTRACT_BAR,
+            session_date=date(2026, 5, day),
+            effective_timestamp=bar_start.replace(second=59),
+            captured_at=bar_start.replace(second=59),
+            timezone="Asia/Kolkata",
+            source_type="unit_test",
+            source_id=f"selected-contract-bar:{minute}",
+            synthetic_fixture=True,
+            normalized_by="unit-test",
+        ),
+        symbol=symbol,
+        open=close,
+        high=high,
+        low=low,
+        close=close,
+        bar_start=bar_start,
+        bar_end=bar_start.replace(second=59),
+        volume=100.0,
     )
 
 
@@ -300,6 +345,8 @@ def _reference_packet() -> S23DecisionReferencePacket:
         ),
         option_reference_values={
             "OPT_PRV_2DHH": 242.0,
+            "OPT_PRV_2DLL": 210.0,
+            "OPT_PRV_3DHH": 260.0,
             "OPT_PRV_3DLL": 230.0,
         },
         lots=1,
@@ -324,6 +371,10 @@ def _collected_inputs(day: int = 28, *, generated_at: datetime | None = None) ->
             )
         ),
         weekly_expiry=date(2026, 6, 4),
+        selected_contract_bars=(
+            _selected_contract_bar(day=day, minute=24),
+            _selected_contract_bar(day=day, minute=29, low=214.0, high=228.0, close=220.0),
+        ),
     )
 
 
@@ -441,10 +492,11 @@ def test_timeline_builder_recovers_final_decision_from_live_references() -> None
         underlying_quote=_underlying_quote(29, ltp=23917.3),
         underlying_bars=mismatch_inputs.underlying_bars,
         daily_bars=mismatch_inputs.daily_bars,
-        option_chain_snapshot=mismatch_inputs.option_chain_snapshot,
-        expiry_governance=mismatch_inputs.expiry_governance,
-        weekly_expiry=mismatch_inputs.weekly_expiry,
-    )
+            option_chain_snapshot=mismatch_inputs.option_chain_snapshot,
+            expiry_governance=mismatch_inputs.expiry_governance,
+            weekly_expiry=mismatch_inputs.weekly_expiry,
+            selected_contract_bars=mismatch_inputs.selected_contract_bars,
+        )
     stage_build = S23LiveDecisionTimelineBuilder().build_stage(
         stage_name="RC Snapshot",
         stage_time=time(9, 30),
@@ -480,6 +532,23 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
                     generated_at=_ts(28, 9, generated_minutes[idx], 0)
                 ),
                 summary=_summary(),
+            )
+
+        def collect_selected_contract_bars_from_files(self, **kwargs):
+            return (
+                _selected_contract_bar(
+                    day=28,
+                    minute=24,
+                    symbol=kwargs["option_symbol"],
+                ),
+                _selected_contract_bar(
+                    day=28,
+                    minute=29,
+                    symbol=kwargs["option_symbol"],
+                    low=214.0,
+                    high=228.0,
+                    close=220.0,
+                ),
             )
 
     now_values = iter(
@@ -560,6 +629,23 @@ def test_morning_supervised_runner_fans_out_shared_snapshots_to_multiple_branche
                 summary=_summary(),
             )
 
+        def collect_selected_contract_bars_from_files(self, **kwargs):
+            return (
+                _selected_contract_bar(
+                    day=28,
+                    minute=24,
+                    symbol=kwargs["option_symbol"],
+                ),
+                _selected_contract_bar(
+                    day=28,
+                    minute=29,
+                    symbol=kwargs["option_symbol"],
+                    low=214.0,
+                    high=228.0,
+                    close=220.0,
+                ),
+            )
+
     def fake_strategy_rule(path):
         base = _strategy_rule()
         suffix = Path(str(path)).name.upper()
@@ -568,6 +654,13 @@ def test_morning_supervised_runner_fans_out_shared_snapshots_to_multiple_branche
                 base,
                 unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
                 option_type=OptionType.CALL,
+                start_strike_formula="ROUND_DOWN(PRV_2DLL + PARAM(strike_buffer_pct)%)",
+                end_strike_formula="ROUND_DOWN(PRV_2DLL) - PARAM(strike_step)",
+                ideal_premium_formula="PRV_2DLL * PARAM(ideal_premium_pct)%",
+                minimum_premium_formula="PRV_2DLL * PARAM(minimum_premium_pct)%",
+                entry_formula="OPT_PRV_2DLL - PARAM(entry_discount_pct)%",
+                stoploss_formula="MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_3DHH + PARAM(sl_reference_pct)%)",
+                parameters={**base.parameters, "sl_reference_pct": 10.0},
             )
         return base
 

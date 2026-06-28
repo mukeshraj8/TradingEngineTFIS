@@ -185,7 +185,62 @@ def run_s23_morning_supervised_decision(
                     ingress_config.market.selected_contract_symbol if enable_smoke_override else None
                 ),
                 allow_branch_pinned_unknown_monthly_status=True,
+                require_orpt_rc_timing_bars=False,
             )
+            selected_symbol = (
+                stage_build.decision_result.summary.selected_contract_symbol
+                if stage_build.decision_result is not None
+                else None
+            )
+            has_selected_bars = any(
+                bar.symbol == selected_symbol
+                for bar in snapshot_artifacts.collected_inputs.selected_contract_bars
+            )
+            if selected_symbol and not has_selected_bars:
+                try:
+                    selected_bars = collector.collect_selected_contract_bars_from_files(
+                        config_path=config_path,
+                        option_symbol=selected_symbol,
+                        session_date=snapshot_artifacts.summary.session_date,
+                        from_time=time(9, 24),
+                        to_time=time(9, 29),
+                    )
+                except Exception:
+                    selected_bars = ()
+                if selected_bars:
+                    enriched_inputs = replace(
+                        snapshot_artifacts.collected_inputs,
+                        selected_contract_bars=selected_bars,
+                    )
+                    stage_build = timeline_builder.build_stage(
+                        stage_name=checkpoint.stage_name,
+                        stage_time=checkpoint.stage_time,
+                        strategy_rule=strategy_rule,
+                        reference_packet=reference_packet,
+                        collected_inputs=enriched_inputs,
+                        carry_forward_position=carry_forward_position,
+                        smoke_override_enabled=enable_smoke_override,
+                        smoke_override_selected_contract_symbol=(
+                            ingress_config.market.selected_contract_symbol if enable_smoke_override else None
+                        ),
+                        allow_branch_pinned_unknown_monthly_status=True,
+                        require_orpt_rc_timing_bars=True,
+                    )
+                else:
+                    stage_build = timeline_builder.build_stage(
+                        stage_name=checkpoint.stage_name,
+                        stage_time=checkpoint.stage_time,
+                        strategy_rule=strategy_rule,
+                        reference_packet=reference_packet,
+                        collected_inputs=snapshot_artifacts.collected_inputs,
+                        carry_forward_position=carry_forward_position,
+                        smoke_override_enabled=enable_smoke_override,
+                        smoke_override_selected_contract_symbol=(
+                            ingress_config.market.selected_contract_symbol if enable_smoke_override else None
+                        ),
+                        allow_branch_pinned_unknown_monthly_status=True,
+                        require_orpt_rc_timing_bars=True,
+                    )
             timeline_stages_by_branch[strategy_branch].append(stage_build.stage)
             output_dir = (
                 session_directory

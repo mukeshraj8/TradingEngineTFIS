@@ -535,7 +535,10 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Step 8c - Next contract fallback" in strategy_html
     assert "Step 8d - Final weekly option" in strategy_html
     assert "Step 8d - No qualifying strike" in strategy_html
+    assert "Step 8e - ORPT/RC entry timing" in strategy_html
+    assert "cannot check ORPT/RC option candles or place a paper order without a selected option contract" in strategy_html
     assert "Step 9 - Entry" in strategy_html
+    assert "paper order waits for the selected option premium to trade at or below this entry price" in strategy_html
     assert "Step 10 - Target" in strategy_html
     assert "Step 11 - Stop loss" in strategy_html
     assert "Eligible Strike OI Comparison" in strategy_html

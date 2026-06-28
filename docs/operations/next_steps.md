@@ -6,7 +6,18 @@ way.
 
 ## Immediate Next Priorities
 
-1. Validate S23 live order-watcher/current-price visibility end to end.
+1. Validate S23 live ORPT/RC timing recalculation during the next real market
+   session. The supervised live decision path now builds a provisional base
+   selection, fetches selected-contract ORPT/RC option bars through the broker
+   adapter, fails closed if those bars are missing, and recalculates
+   missed-entry plans before final order creation. The remaining work is live
+   market evidence across CE/PE and near/next-expiry cases.
+2. Validate and refine S23 next-day SL reset after a 15:00 carry-forward. The
+   paper position manager now applies the 15:00 continuation decision after
+   target/SL/FSL/expiry checks and records overnight SL inactive carry-forward
+   when price is not above original SL. The remaining implementation gap is the
+   next trading day's explicit SL reset/recalculation flow after 09:15/ORPT/RC.
+3. Validate S23 live order-watcher/current-price visibility end to end.
    The scheduled startup wrapper now starts one paper watcher per produced order
    or open position, which should let both selected CE/PE legs publish current
    price, fill status, dashboard rebuilds, and open-position P&L. The remaining
@@ -14,27 +25,27 @@ way.
    during market hours, and to confirm the FYERS option-chain snapshot contains
    both near and next weekly expiry contracts after the expiry-specific request
    fix, without changing strategy rules.
-2. Keep monthly status as an independent service and improve its explanation/provenance output.
+4. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
-3. Introduce generic strategy-registry execution for enabled strategies.
+5. Introduce generic strategy-registry execution for enabled strategies.
    The engine should load enabled strategies from config, skip disabled strategies, and call strategy modules through a shared interface. S23/FYERS can remain the first operational path, but not as a core engine assumption.
-4. Move durable calculation records out of temp-only storage.
+6. Move durable calculation records out of temp-only storage.
    Monthly-status captures and S23 option-chain/decision/order/ledger records should be written under a `data` layout with strategy/date/instrument provenance while retaining temporary launch logs where appropriate.
-5. Decide whether TradingEngine option-quote captures can be enriched with reliable selected-contract OI before using them for TFIS ingress-only acceptance.
+7. Decide whether TradingEngine option-quote captures can be enriched with reliable selected-contract OI before using them for TFIS ingress-only acceptance.
    The paired suite under `D:/TradingEngineTFIS/tmp/s23_tradingengine_capture_dry_runs` proved that six real captured dates can be converted, paired with TFIS preludes, and fed through the ingress-only runner without touching `D:\TradingData`, but all six sessions still ended `ABORTED` with `missing_contract_oi`. The new audit in `docs/operations/s23_tradingengine_capture_oi_audit.md` makes the blocker explicit: the six audited quote archives have `0` non-blank `oi` rows overall and `0` non-blank `oi` rows in the RC window, while `option_positioning` journal events are only near-spot summaries and not a selected-contract-safe substitute.
-6. Replace the current TFIS decision reference packet with fully TFIS-native sourcing for monthly-status and prior-session reference levels.
+8. Replace the current TFIS decision reference packet with fully TFIS-native sourcing for monthly-status and prior-session reference levels.
    `src/tfis/paper/runtime_input_derivation.py` and `scripts/run_s23_fyers_live_decision_check.py` now prove that TFIS can derive `09:15`, `ORPT`, and `RC` checkpoints from normalized morning bars and build a supervised paper decision summary from live FYERS snapshots. The main remaining TFIS decision gap is the reference packet itself: monthly-status levels, `d2/d3/d4` levels, and option aliases such as `OPT_PRV_2DHH` and `OPT_PRV_3DLL` still need a TFIS-native sourcing path rather than a manual packet.
-7. Broaden the supervised FYERS live-decision evidence set across more dates and branch shapes before introducing any continuous socket/session orchestration.
+9. Broaden the supervised FYERS live-decision evidence set across more dates and branch shapes before introducing any continuous socket/session orchestration.
    The new supervised path now exists under `src/tfis/paper/runtime_input_derivation.py`, `src/tfis/paper/live_decision.py`, and `scripts/run_s23_fyers_live_decision_check.py`. The next safe step is to prove the same TFIS-native decision summary works cleanly across more market dates, more branch fixtures, and more option-chain shapes while keeping OI validation strict.
-8. Broaden the broker-backed S23 ingress-only validation set across multi-date normalized archive and replay sessions before enabling any broker-backed fill or lifecycle rehearsal.
+10. Broaden the broker-backed S23 ingress-only validation set across multi-date normalized archive and replay sessions before enabling any broker-backed fill or lifecycle rehearsal.
    The broker-agnostic ingress layer still exists under `src/tfis/brokers/` and `src/tfis/paper/live_ingress.py`, with FYERS as the first market-data adapter and explicit order-placement blocking. `D:/TradingEngineTFIS/tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1` remains the first operator-grade baseline: `5` sessions, `4 PASS`, `1 WARNING`, `0 NO_GO`, `80.0%` pass rate, `100.0%` selected-contract availability, and a `LIMITED_GO` recommendation.
-9. If the broader supervised decision and ingress suites stay within the close-out thresholds, run the first tightly controlled live-like S23 paper fill and same-day lifecycle rehearsal under operator sign-off.
+11. If the broader supervised decision and ingress suites stay within the close-out thresholds, run the first tightly controlled live-like S23 paper fill and same-day lifecycle rehearsal under operator sign-off.
    The operator policy now exists in `docs/operations/s23_operator_closeout_policy.md`, and the new broker-backed ingress design now exists in `docs/operations/s23_fyers_paper_ingress_design.md`. The next rehearsal should happen only after broader multi-date decision and ingress suites still preserve `0` NO_GO sessions and keep warning cases bounded and reviewed.
-10. Design and implement carry-forward-capable paper lifecycle handling for S23, including mandatory pre-expiry square-off and strategy-specific T-1 / T-2 next-expiry policy.
+12. Design and implement carry-forward-capable paper lifecycle handling for S23, including mandatory pre-expiry square-off and strategy-specific T-1 / T-2 next-expiry policy.
    S23 and similar option-selling strategies are carry-forward-capable before expiry. The paper runtime now has multi-day foundation pieces, visible watcher windows, expiry force-close governance, and session-only waiting-order behavior, but the next major runtime gap is clean market-day validation and any remaining generic extraction needed before treating carry-forward management as operationally reliable.
-11. Broader real/archive contract-specific intraday coverage for S23.
+13. Broader real/archive contract-specific intraday coverage for S23.
    The deterministic fixture set is fully covered at 100.0%; the next safe step is to widen real session coverage while keeping TFIS runtime on the existing contract-intraday CSV contract.
-12. If an OI-enrichment source is found, rerun the TradingEngine capture ingress suite before attempting any fill or lifecycle replay from captures.
+14. If an OI-enrichment source is found, rerun the TradingEngine capture ingress suite before attempting any fill or lifecycle replay from captures.
    `scripts/run_s23_tradingengine_capture_ingress_suite.py` now proves that the raw capture path itself is operationally read-only and deterministic. The blocker is not prelude pairing, timing, or selected-contract identity alone; it is the absence of usable selected-contract `oi` in the option-quote archives at decision time.
 
 Comparison reporting note:
@@ -51,9 +62,11 @@ Comparison reporting note:
 
 - no workbook-backed recalculated target formulas were found in `AB6 OS` rows `162-191`; any target override work remains blocked until new workbook evidence appears
 - `AB6 OS!Z183:Z186` are now implemented as workbook-backed current-day option-entry overrides for the supported `183-186` rows
-- `AB6 OS!190:191` still describe 15:00 position-open process flow only; the new
-  `docs/importers/s23_position_open_1500_audit.md` found no linked numeric
-  continuation-stoploss formulas in the inspected workbook ranges
+- `AB6 OS!190:191` still describe 15:00 position-open process flow only in the
+  older workbook, and `docs/importers/s23_position_open_1500_audit.md` found no
+  linked numeric continuation-stoploss formulas there. The newer S23
+  gap-up/gap-down text file now defines the 15:00 original-SL comparison rule
+  implemented in paper position management.
 - a deterministic applied-case fixture now exists for current-day FSL / TRP (`tests/fixtures/backtest/s23_current_day_applied/`), so future row-183 or row-185 timing investigations should start from that same apples-to-apples dataset before using any synthetic scenario variants
 - if we later want to study whether current-day FSL / TRP can change lifecycle exits under broader market conditions, the next data need is wider non-synthetic intraday coverage rather than new workbook mapping assumptions
 - current-day S23 FSL / TRP unsupported paths remain intentionally unchanged until the workbook confirms additional rows:
