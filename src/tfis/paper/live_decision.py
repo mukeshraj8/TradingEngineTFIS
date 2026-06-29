@@ -303,13 +303,11 @@ class S23PaperLiveDecisionBuilder:
                 "recalculated_trade_plan": None,
             }
         orpt_option_bar = self._find_bar_at_start(bars, time(9, 24))
-        rc_option_bar = self._find_bar_at_start(bars, time(9, 29))
         orpt_spot = self._find_snapshot(derived_inputs, SnapshotLabel.ORPT)
-        rc_spot = self._find_snapshot(derived_inputs, SnapshotLabel.RC)
-        if orpt_option_bar is None or rc_option_bar is None or orpt_spot is None or rc_spot is None:
+        if orpt_option_bar is None or orpt_spot is None:
             return {
-                "status": "MISSING_ORPT_RC_DATA",
-                "reason": "ORPT/RC option or spot bars were incomplete, so base trade plan remains unchanged.",
+                "status": "MISSING_ORPT_DATA",
+                "reason": "ORPT option or spot data was incomplete, so base trade plan remains unchanged.",
                 "selected_contract": selected_contract.symbol,
                 "recalculated_trade_plan": None,
             }
@@ -324,6 +322,19 @@ class S23PaperLiveDecisionBuilder:
             return {
                 "status": "BASE_ENTRY_VALID",
                 "reason": "ORPT test did not mark the base entry as missed.",
+                "missed_rule": missed_rule,
+                "base_entry": entry_price,
+                "orpt_option_low": orpt_option_bar.low,
+                "orpt_option_high": orpt_option_bar.high,
+                "selected_contract": selected_contract.symbol,
+                "recalculated_trade_plan": None,
+            }
+        rc_option_bar = self._find_bar_at_start(bars, time(9, 29))
+        rc_spot = self._find_snapshot(derived_inputs, SnapshotLabel.RC)
+        if rc_option_bar is None or rc_spot is None:
+            return {
+                "status": "MISSING_RC_DATA",
+                "reason": "ORPT marked the entry as missed, but RC option or spot data was incomplete for recalculation.",
                 "missed_rule": missed_rule,
                 "base_entry": entry_price,
                 "orpt_option_low": orpt_option_bar.low,

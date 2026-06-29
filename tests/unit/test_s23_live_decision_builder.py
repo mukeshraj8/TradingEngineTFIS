@@ -483,6 +483,26 @@ def test_live_decision_recalculates_bear_put_when_orpt_entry_is_missed() -> None
     assert result.summary.selected_contract_symbol == "NIFTY_20260604_23750_PE"
 
 
+def test_live_decision_accepts_base_entry_at_orpt_without_rc_bar() -> None:
+    collected_inputs = replace(
+        _collected_inputs(),
+        selected_contract_bars=(
+            _selected_contract_bar(day=28, minute=24, low=215.0, high=230.0, close=225.0),
+        ),
+    )
+
+    result = S23PaperLiveDecisionBuilder().build(
+        strategy_rule=_strategy_rule(),
+        reference_packet=_reference_packet(),
+        collected_inputs=collected_inputs,
+        require_orpt_rc_timing_bars=True,
+    )
+
+    assert result.explanation["orpt_rc_timing"]["status"] == "BASE_ENTRY_VALID"
+    assert result.summary.selected_contract_symbol == "NIFTY_20260604_23750_PE"
+    assert result.summary.planned_entry_price == pytest.approx(212.75)
+
+
 def test_runtime_derivation_accepts_live_fyers_0915_bar_shape() -> None:
     result = S23PaperLiveDecisionBuilder().build(
         strategy_rule=_strategy_rule(),

@@ -72,6 +72,28 @@ def default_morning_decision_checkpoints() -> tuple[S23MorningDecisionCheckpoint
     )
 
 
+def _s23_stage_finalization_reason(
+    *,
+    checkpoint: S23MorningDecisionCheckpoint,
+    decision,
+) -> str | None:
+    if decision is None:
+        return None
+    timing_status = str(
+        decision.explanation.get("orpt_rc_timing", {}).get("status", "")
+    )
+    if checkpoint.stage_name == "ORPT Snapshot" and timing_status == "BASE_ENTRY_VALID":
+        return "ORPT_BASE_ENTRY_VALID"
+    if checkpoint.stage_name == "RC Snapshot":
+        if timing_status == "ENTRY_MISSED_RECALCULATED":
+            return "RC_ENTRY_MISSED_RECALCULATED"
+        if timing_status == "BASE_ENTRY_VALID":
+            return "RC_BASE_ENTRY_VALID_FALLBACK"
+        if timing_status == "NOT_APPLICABLE":
+            return "RC_TIMING_NOT_APPLICABLE"
+    return None
+
+
 def run_s23_morning_supervised_decision(
     *,
     tfis_root: str | Path | None = None,
@@ -134,6 +156,9 @@ def run_s23_morning_supervised_decision(
         rule.unique_code: [] for rule in strategy_rules
     }
     final_decisions_by_branch = {}
+    final_decision_trigger_time_by_branch: dict[str, str] = {}
+    final_decision_stage_by_branch: dict[str, str] = {}
+    final_decision_reason_by_branch: dict[str, str] = {}
     last_snapshot_artifacts: S23FyersSnapshotArtifactSet | None = None
 
     for checkpoint in stage_checkpoints:
@@ -275,8 +300,19 @@ def run_s23_morning_supervised_decision(
                     stage=stage_build.stage,
                 )
             )
-            if stage_build.decision_result is not None:
+            finalization_reason = _s23_stage_finalization_reason(
+                checkpoint=checkpoint,
+                decision=stage_build.decision_result,
+            )
+            if (
+                stage_build.decision_result is not None
+                and finalization_reason is not None
+                and strategy_branch not in final_decisions_by_branch
+            ):
                 final_decisions_by_branch[strategy_branch] = stage_build.decision_result
+                final_decision_trigger_time_by_branch[strategy_branch] = trigger_time.isoformat()
+                final_decision_stage_by_branch[strategy_branch] = checkpoint.stage_name
+                final_decision_reason_by_branch[strategy_branch] = finalization_reason
                 summary_json, summary_markdown = decision_builder.write_artifacts(
                     stage_build.decision_result,
                     output_dir=output_dir,
@@ -325,8 +361,8 @@ def run_s23_morning_supervised_decision(
             and decision_result.summary.planned_entry_price is not None
         ):
             opened_at = (
-                datetime.fromisoformat(stage_runs[-1].trigger_time)
-                if stage_runs
+                datetime.fromisoformat(final_decision_trigger_time_by_branch[strategy_branch])
+                if strategy_branch in final_decision_trigger_time_by_branch
                 else datetime.combine(decision_result.summary.session_date, time(9, 30))
             )
             provenance_source_ids = tuple(
@@ -360,6 +396,9 @@ def run_s23_morning_supervised_decision(
                 "final_summary_markdown": str(final_summary_markdown) if final_summary_markdown is not None else None,
                 "branch_final_summary_json": branch_final_summary_json,
                 "branch_final_summary_markdown": branch_final_summary_markdown,
+                "branch_finalization_stage": final_decision_stage_by_branch,
+                "branch_finalization_trigger_time": final_decision_trigger_time_by_branch,
+                "branch_finalization_reason": final_decision_reason_by_branch,
                 "branch_order_state_json": branch_order_state_json,
                 "branch_position_state_json": branch_position_state_json,
                 "stages": [

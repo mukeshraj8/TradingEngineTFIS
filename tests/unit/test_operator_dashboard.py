@@ -446,6 +446,45 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     (pending_dir / "paper_order_events.jsonl").write_text("{}\n", encoding="utf-8")
+    not_filled_dir = day_dir / "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL_NOT_FILLED"
+    not_filled_dir.mkdir()
+    (not_filled_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "symbol": "NIFTY",
+                "selected_contract_symbol": "NIFTY_20260602_23900_CE",
+                "selected_contract_expiry": "2026-06-02",
+                "selected_contract_option_type": "CALL",
+                "selected_contract_strike": 23900,
+                "expiry_type": "WEEKLY",
+                "rollover_policy": "T_MINUS_1",
+                "forced_close_time": "15:30:00",
+                "no_carry_past_expiry": True,
+                "order_side": "SELL",
+                "trigger_rule": "SELL_TRIGGER_WHEN_PREMIUM_AT_OR_BELOW_ENTRY",
+                "entry_date": "2026-06-10",
+                "order_timestamp": "2026-06-10T09:30:00+05:30",
+                "planned_entry_price": 190.0,
+                "target_price": 76.0,
+                "stoploss_price": 240.0,
+                "lots": 1,
+                "quantity": 65,
+                "status": "PAPER_ORDER_NOT_FILLED",
+                "last_updated_timestamp": "2026-06-10T15:30:05+05:30",
+                "last_market_price": 231.65,
+                "last_market_bid": 227.8,
+                "last_market_ask": 231.8,
+                "last_reason_code": "paper_order_not_triggered_by_watch_cutoff",
+                "last_message": "Selected option premium did not reach entry before cutoff.",
+                "provenance_source_ids": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (not_filled_dir / "paper_order_events.jsonl").write_text("{}\n", encoding="utf-8")
     stale_day_dir = artifact_root / "2026-06-09" / "s23-fyers-morning-supervised-decision-2026-06-09"
     stale_pending_dir = stale_day_dir / "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
     stale_pending_dir.mkdir(parents=True)
@@ -567,10 +606,15 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "NIFTY_20260602_23850_CE" in strategy_html
     assert "SELL CE" in strategy_html
     assert "Trades Taken" in strategy_html
+    assert "trade-table-wrap" in strategy_html
     assert "Current" in strategy_html
+    assert "LTP" in strategy_html
+    assert "Bid / Ask" in strategy_html
     assert "239" in strategy_html
     assert "238.50 / 239.50" in strategy_html
     assert "PAPER_POSITION_HELD" in strategy_html
+    assert "Bear Put" in strategy_html
+    assert "compact-cell" in strategy_html
     assert "NIFTY_20260602_23850_CE_CLOSED" not in strategy_html
     assert "PAPER_POSITION_FORCE_CLOSED" not in strategy_html
     assert "STALE ROLLOVER AFTER CLOSE SHOULD NOT DISPLAY" not in strategy_html
@@ -581,6 +625,8 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "ORDER_WAITING" in strategy_html
     assert "paper_order_state.json" in strategy_html
     assert strategy_html.count("ORDER_WAITING_FOR_TRIGGER") == 1
+    assert "ORDER_NOT_FILLED" in strategy_html
+    assert "paper_order_not_triggered_by_watch_cutoff" in strategy_html
     assert "NIFTY_20260609_24000_PE_STALE" not in strategy_html
     assert "Stale waiting order that must not carry forward" not in strategy_html
     assert '<details class="stage-card snapshot-panel">' in strategy_html
@@ -874,6 +920,26 @@ def test_s23_inline_step8_audit_accepts_tuple_candidates() -> None:
                 "reason": "premium below minimum",
             },
             {
+                "symbol": "NIFTY_20260630_22950_PE",
+                "strike": 22950,
+                "option_type": "PUT",
+                "premium": 320.0,
+                "oi": 999999,
+                "premium_distance": 29.98,
+                "status": "REJECTED",
+                "reason": "strike outside range",
+            },
+            {
+                "symbol": "NIFTY_20260630_24300_PE",
+                "strike": 24300,
+                "option_type": "PUT",
+                "premium": 320.0,
+                "oi": 999999,
+                "premium_distance": 29.98,
+                "status": "REJECTED",
+                "reason": "strike outside range",
+            },
+            {
                 "symbol": "NIFTY_20260630_24150_CE",
                 "strike": 24150,
                 "option_type": "CALL",
@@ -889,10 +955,54 @@ def test_s23_inline_step8_audit_accepts_tuple_candidates() -> None:
 
     assert "NIFTY_20260630_24250_PE" in html
     assert "NIFTY_20260630_24200_PE" in html
+    assert "NIFTY_20260630_22950_PE" not in html
+    assert "NIFTY_20260630_24300_PE" not in html
     assert ">23000<" in html
     assert "No PE contract was present in the captured option chain for strike 23000." in html
     assert "NIFTY_20260630_24150_CE" not in html
     assert "premium 171.55 below ideal/maximum 290.02" in html
+
+
+def test_s23_inline_step8_audit_filters_to_attempted_near_expiry() -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    leg = {
+        "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "side": "SELL CE",
+        "start_strike": 24950,
+        "end_strike": 23700,
+        "ideal_premium": 285.47,
+        "minimum_premium": 214.10,
+        "minimum_oi": 32500,
+        "attempted_expiries": ["2026-07-07"],
+        "contract_candidates": [
+            {
+                "symbol": "NIFTY_20260630_23900_CE",
+                "expiry": "2026-06-30",
+                "strike": 23900,
+                "option_type": "CALL",
+                "premium": 287.40,
+                "oi": 2597335,
+                "premium_distance": 1.93,
+                "status": "REJECTED",
+                "reason": "expiry mismatch",
+            },
+            {
+                "symbol": "NIFTY_20260707_23900_CE",
+                "expiry": "2026-07-07",
+                "strike": 23900,
+                "option_type": "CALL",
+                "premium": 305.0,
+                "oi": 216645,
+                "premium_distance": 19.53,
+                "status": "SELECTED",
+            },
+        ],
+    }
+
+    html = builder._render_s23_step8_inline_audit(leg, "8a")
+
+    assert "NIFTY_20260707_23900_CE" in html
+    assert "NIFTY_20260630_23900_CE" not in html
 
 
 def test_reconstructed_s23_candidate_rows_keep_full_strike_range(tmp_path: Path) -> None:

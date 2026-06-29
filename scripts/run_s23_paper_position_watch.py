@@ -408,7 +408,14 @@ def _resolve_state_dir(
 
 def _rebuild_dashboard(*, output_root: Path, artifact_root: Path) -> None:
     resolved_output_root = REPO_ROOT / output_root
-    lock_handle = _acquire_dashboard_build_lock(resolved_output_root)
+    try:
+        lock_handle = _acquire_dashboard_build_lock(resolved_output_root)
+    except OSError as exc:
+        print(
+            f"{datetime.now().isoformat()} WARNING dashboard_rebuild_skipped "
+            f"lock_error={exc}; watcher remains alive"
+        )
+        return
     try:
         TfisOperatorDashboardBuilder(
             strategy_configs=(

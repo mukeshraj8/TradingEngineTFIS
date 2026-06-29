@@ -1132,7 +1132,7 @@ class TfisOperatorDashboardBuilder:
                 except (OSError, json.JSONDecodeError):
                     continue
                 status = str(raw.get("status") or "")
-                if status != "PAPER_ORDER_WAITING_FOR_TRIGGER":
+                if status not in {"PAPER_ORDER_WAITING_FOR_TRIGGER", "PAPER_ORDER_NOT_FILLED"}:
                     continue
                 entry_date = self._parse_date(raw.get("entry_date"))
                 if latest_session_date is not None and entry_date != latest_session_date:
@@ -1153,7 +1153,7 @@ class TfisOperatorDashboardBuilder:
                 identity = (
                     trade_id,
                     order_timestamp,
-                    "ORDER_WAITING",
+                    "ORDER_NOT_FILLED" if status == "PAPER_ORDER_NOT_FILLED" else "ORDER_WAITING",
                     status,
                     str(raw.get("last_reason_code") or "paper_order_waiting_for_entry_trigger"),
                 )
@@ -1163,7 +1163,11 @@ class TfisOperatorDashboardBuilder:
                 rows.append(
                     DashboardTradeLedgerRow(
                         event_timestamp=self._parse_datetime(order_timestamp),
-                        event_type="ORDER_WAITING",
+                        event_type=(
+                            "ORDER_NOT_FILLED"
+                            if status == "PAPER_ORDER_NOT_FILLED"
+                            else "ORDER_WAITING"
+                        ),
                         trade_id=trade_id,
                         strategy_id=f"{strategy_code}:{strategy_branch}",
                         strategy_code=strategy_code,
@@ -1272,10 +1276,12 @@ class TfisOperatorDashboardBuilder:
         return "\n".join(
             [
                 header,
+                '<div class="trade-table-wrap">',
                 '<table class="trade-table">',
                 "<thead><tr><th class=\"trade-time\">Time</th><th class=\"trade-event\">Event</th><th class=\"trade-strategy\">Strategy</th><th class=\"trade-contract\">Contract</th><th class=\"trade-side\">Side / Qty</th><th class=\"trade-number\">Entry</th><th class=\"trade-number\">Current</th><th class=\"trade-number\">Exit</th><th class=\"trade-number\">Target / SL</th><th class=\"trade-number\">P&L</th><th class=\"trade-status\">Status</th><th class=\"trade-manage\">Manage</th></tr></thead>",
                 f"<tbody>{event_rows}</tbody>",
                 "</table>",
+                "</div>",
             ]
         )
 
@@ -1350,16 +1356,19 @@ class TfisOperatorDashboardBuilder:
         reason = html.escape(row.reason_code)
         if row.message:
             reason = f"{reason}<br><span class=\"muted-text\">{html.escape(row.message)}</span>"
+        current_cell = self._render_trade_current_cell(row)
+        strategy_cell = self._render_trade_strategy_cell(row)
+        contract_cell = self._render_trade_contract_cell(row)
         return "\n".join(
             [
                 "<tr>",
                 f"<td class=\"trade-time\">{html.escape(event_time)}</td>",
                 f"<td class=\"trade-event\">{self._badge(row.event_type)}</td>",
-                f"<td class=\"trade-strategy\"><strong>{html.escape(row.strategy_id)}</strong><br><span class=\"muted-text code-text\">{html.escape(row.strategy_branch)}</span></td>",
-                f"<td class=\"trade-contract\"><strong>{html.escape(row.selected_contract_symbol)}</strong><br><span class=\"muted-text code-text\">{html.escape(row.trade_id)}</span></td>",
+                f"<td class=\"trade-strategy\">{strategy_cell}</td>",
+                f"<td class=\"trade-contract\">{contract_cell}</td>",
                 f"<td class=\"trade-side\"><strong>{html.escape(row.side)}</strong><br>{self._fmt_number(row.lots, integer=True)} lots / {self._fmt_number(row.quantity, integer=True)}</td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.entry_price)}</td>",
-                f"<td class=\"trade-number\">{self._fmt_number(row.current_price)}<br><span class=\"muted-text\">{self._fmt_number(row.current_bid)} / {self._fmt_number(row.current_ask)}</span></td>",
+                f"<td class=\"trade-number trade-current\">{current_cell}</td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.exit_price)}</td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.target_price)}<br><span class=\"muted-text\">/ {self._fmt_number(row.stoploss_price)}</span></td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.gross_points)} pts<br><span class=\"muted-text\">{self._fmt_number(row.gross_pnl)}</span></td>",
@@ -1368,6 +1377,64 @@ class TfisOperatorDashboardBuilder:
                 "</tr>",
             ]
         )
+
+    def _render_trade_strategy_cell(self, row: DashboardTradeLedgerRow) -> str:
+        strategy_code = html.escape(str(row.strategy_code or "n/a"))
+        branch = str(row.strategy_branch or row.strategy_id or "n/a")
+        short_branch = self._short_s23_branch_label(branch)
+        title = html.escape(f"{row.strategy_id} | {branch}")
+        return (
+            f'<div class="compact-cell" title="{title}">'
+            f"<strong>{strategy_code}</strong>"
+            f'<span class="muted-text">{html.escape(short_branch)}</span>'
+            "</div>"
+        )
+
+    def _render_trade_contract_cell(self, row: DashboardTradeLedgerRow) -> str:
+        contract = html.escape(row.selected_contract_symbol)
+        title = html.escape(f"{row.selected_contract_symbol} | {row.trade_id}")
+        option_label = self._short_option_label(row.selected_contract_symbol)
+        return (
+            f'<div class="compact-cell contract-compact" title="{title}">'
+            f"<strong>{contract}</strong>"
+            f'<span class="muted-text">{html.escape(option_label)}</span>'
+            "</div>"
+        )
+
+    @staticmethod
+    def _short_option_label(symbol: str) -> str:
+        text = str(symbol or "").upper()
+        if text.endswith("_CE") or "_CE-" in text:
+            return "CE"
+        if text.endswith("_PE") or "_PE-" in text:
+            return "PE"
+        return "OPTION"
+
+    @staticmethod
+    def _short_s23_branch_label(branch: str) -> str:
+        text = str(branch or "").upper()
+        if "BEAR" in text and ("CALL" in text or text.endswith("_CE")):
+            return "Bear Call"
+        if "BEAR" in text and ("PUT" in text or text.endswith("_PE")):
+            return "Bear Put"
+        if "BULL" in text and ("CALL" in text or text.endswith("_CE")):
+            return "Bull Call"
+        if "BULL" in text and ("PUT" in text or text.endswith("_PE")):
+            return "Bull Put"
+        return str(branch or "n/a").replace("_", " ").title()
+
+    def _render_trade_current_cell(self, row: DashboardTradeLedgerRow) -> str:
+        current = self._fmt_number(row.current_price)
+        bid = self._fmt_number(row.current_bid)
+        ask = self._fmt_number(row.current_ask)
+        if current == "n/a" and bid == "n/a" and ask == "n/a":
+            return '<span class="muted-text">n/a</span>'
+        bid_ask = (
+            '<span class="muted-text">Bid / Ask n/a</span>'
+            if bid == "n/a" and ask == "n/a"
+            else f'<span class="muted-text">Bid / Ask {bid} / {ask}</span>'
+        )
+        return f'<span class="price-label">LTP</span> {current}<br>{bid_ask}'
 
     def _render_latest_session_block(
         self,
@@ -1686,6 +1753,7 @@ class TfisOperatorDashboardBuilder:
                 expected_side is None
                 or self._s23_candidate_option_suffix(item) in {None, expected_side}
             )
+            and self._s23_candidate_inside_strike_range(leg, item)
         ]
         rows = self._sort_s23_candidate_rows_in_search_order(leg, visible_candidates)
         if not rows:
@@ -1701,11 +1769,10 @@ class TfisOperatorDashboardBuilder:
         selected_in_8a = self._s23_candidate_passes_phase(leg, selected_row, phase="ideal")
         show_8b = selected_row is None or not selected_in_8a
         attempted = self._s23_attempted_expiry_values(leg)
-        candidate_expiries = self._s23_candidate_expiry_values(rows)
-        show_8c = len(attempted) > 1 or len(candidate_expiries) > 1
         near_rows, next_rows = self._s23_split_near_next_candidate_rows(rows, attempted)
         if not near_rows:
             near_rows = rows
+        show_8c = bool(next_rows)
 
         panels = [
             self._render_s23_scan_phase_panel(
@@ -1898,6 +1965,7 @@ class TfisOperatorDashboardBuilder:
                 expected_side is None
                 or self._s23_candidate_option_suffix(item) in {None, expected_side}
             )
+            and self._s23_candidate_inside_strike_range(leg, item)
         ]
         rows = self._sort_s23_candidate_rows_in_search_order(leg, visible_candidates)
         rows = self._s23_fill_missing_strike_audit_rows(leg, rows)
@@ -1925,6 +1993,16 @@ class TfisOperatorDashboardBuilder:
             "selected_in_8a": selected_in_8a,
             "selected_in_8b": selected_in_8b,
         }
+
+    def _s23_candidate_inside_strike_range(self, leg: dict[str, Any], item: dict[str, Any]) -> bool:
+        strike = self._float_or_none(item.get("strike"))
+        start = self._s23_leg_numeric_value(leg, "start_strike")
+        end = self._s23_leg_numeric_value(leg, "end_strike")
+        if strike is None or start is None or end is None:
+            return True
+        lower = min(start, end)
+        upper = max(start, end)
+        return lower <= strike <= upper
 
     def _s23_fill_missing_strike_audit_rows(
         self,
@@ -2101,14 +2179,15 @@ class TfisOperatorDashboardBuilder:
         if not attempted:
             expiries = self._s23_candidate_expiry_values(rows)
             attempted = expiries[:2]
-        if len(attempted) < 2:
+        if not attempted:
             return rows, []
-        near, fallback = attempted[0], attempted[1]
+        near = attempted[0]
+        fallback = attempted[1] if len(attempted) > 1 else None
         near_rows: list[dict[str, Any]] = []
         next_rows: list[dict[str, Any]] = []
         for item in rows:
             expiry = str(item.get("expiry") or item.get("expiry_date") or "").strip()
-            if expiry == fallback:
+            if fallback is not None and expiry == fallback:
                 next_rows.append(item)
             elif not expiry or expiry == near:
                 near_rows.append(item)
@@ -4500,22 +4579,29 @@ calculate();
                 "    .artifact-links a { padding: 6px 10px; border-radius: 999px; background: #f4ecdf; border: 1px solid #e4d6c1; font-size: 0.82rem; }",
                 "    .top-links { margin-top: 16px; }",
                 "    .trade-summary { margin-bottom: 14px; }",
-                "    .trade-table { display: table; table-layout: fixed; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.84rem; line-height: 1.28; }",
-                "    .trade-table th, .trade-table td { padding: 10px 12px; }",
+                "    .trade-table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }",
+                "    .trade-table { display: table; table-layout: fixed; width: 100%; min-width: 1500px; border: 0; border-radius: 0; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.82rem; line-height: 1.32; }",
+                "    .trade-table th, .trade-table td { padding: 10px 10px; vertical-align: top; }",
                 "    .trade-table th { color: #3f493f; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }",
-                "    .trade-table .badge { padding: 4px 8px; font-size: 0.68rem; line-height: 1; white-space: nowrap; }",
+                "    .trade-table .badge { display: inline-flex; max-width: 100%; padding: 4px 8px; font-size: 0.68rem; line-height: 1; white-space: nowrap; }",
                 "    .trade-time { width: 105px; white-space: normal; }",
-                "    .trade-event { width: 64px; text-align: center; }",
-                "    .trade-strategy { width: 205px; }",
-                "    .trade-contract { width: 285px; }",
+                "    .trade-event { width: 118px; text-align: center; }",
+                "    .trade-strategy { width: 95px; overflow-wrap: anywhere; }",
+                "    .trade-contract { width: 185px; overflow-wrap: anywhere; }",
                 "    .trade-side { width: 82px; }",
                 "    .trade-number { width: 78px; text-align: right; font-variant-numeric: tabular-nums; }",
-                "    .trade-status { width: 260px; }",
-                "    .trade-manage { width: 230px; }",
+                "    .trade-current { width: 112px; white-space: nowrap; }",
+                "    .price-label { color: var(--muted); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; }",
+                "    .trade-status { width: 275px; }",
+                "    .trade-manage { width: 185px; }",
                 "    .trade-links { margin-top: 0; min-width: 0; gap: 6px; }",
                 "    .trade-links a { padding: 5px 9px; }",
                 "    .status-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }",
                 "    .trade-reason { color: var(--ink); font-size: 0.78rem; }",
+                "    .compact-cell { display: grid; gap: 3px; min-width: 0; }",
+                "    .compact-cell strong { display: block; min-width: 0; overflow-wrap: anywhere; }",
+                "    .compact-cell .muted-text { font-size: 0.74rem; }",
+                "    .contract-compact strong { font-family: Consolas, 'Courier New', monospace; font-size: 0.78rem; }",
                 "    .code-text { font-family: Consolas, 'Courier New', monospace; overflow-wrap: anywhere; }",
                 "    .muted-text { color: var(--muted); font-size: 0.82rem; word-break: break-word; }",
                 "    .empty-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; color: var(--muted); }",

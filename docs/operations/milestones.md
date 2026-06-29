@@ -24,8 +24,8 @@
   rows, failure codes, selected/failed-leg explanations, and final trade levels
   only when an actual contract qualifies
 - S23 operator dashboard strike audit now shows rule-sheet search order,
-  side-filtered full strike scans, derived rejection reasons, and explicit
-  qualification reasons for `PASSED` and `SELECTED` rows
+  side-filtered and expiry-scoped full strike scans, derived rejection reasons,
+  and explicit qualification reasons for `PASSED` and `SELECTED` rows
 - FYERS-backed S23 option-chain collection now requests expiry-specific chains
   with a configurable wider strike count, so Step 8c near-then-next expiry
   fallback can be populated by broker data rather than relabeled/default
@@ -37,12 +37,18 @@
 - S23 scheduled startup now launches separate paper watcher processes for every
   produced paper order or open paper position instead of skipping automatic
   watching when a two-leg session creates both CE and PE orders
+- S23 paper mode now has a post-cutoff waiting-order finalizer and registerable
+  Windows task wrapper, so same-session paper orders that never triggered can be
+  marked `PAPER_ORDER_NOT_FILLED` even if a watcher process exits before cutoff
 - S23 scheduled startup now exits cleanly with `MARKET_CLOSED_NO_ACTION` when
   the supervised snapshot window has no intraday FYERS candles, so holidays or
   closed-market days do not register as failed scheduled-task runs
 - S23 Windows Scheduled Task registration now creates a Monday-Friday trigger,
   and the wrapper uses a local NSE holiday calendar to skip weekends/holidays
   before token refresh or watcher startup
+- S23 supervised live paper finalization now keeps the ORPT-selected base
+  strike/order when the selected option has not missed entry, and uses RC only
+  for the revised missed-entry recalculation path
 - strategy and workbook normalization work is established for the S23 family
 - reference materials are now indexed and reviewable through archive metadata
 - deterministic monthly-status classification is implemented for the confirmed threshold rules

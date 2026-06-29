@@ -25,11 +25,13 @@ Current S23 paper-mode posture:
 - `DONE`: S23 rule interpretation, CE/PE leg visibility, failed-leg reasons,
   calculation explanations, visible watcher windows, and waiting-order behavior
   are implemented and committed.
-- `DONE`: S23 live paper final decisions now require selected-contract ORPT
-  and RC timing bars. The runner first builds a provisional base selection,
-  fetches the selected option's `09:24`/`09:29` bars through the broker adapter,
-  then rebuilds the final decision with ORPT/RC timing evidence. Missing timing
-  bars fail closed instead of silently placing a base order.
+- `DONE`: S23 live paper finalization now follows the revised ORPT/RC timing
+  contract. The runner builds a provisional base selection at ORPT, fetches the
+  selected option's `09:24` bar through the broker adapter, and finalizes that
+  base selection immediately when ORPT proves the entry was not missed. RC is
+  used only when ORPT marks the base entry as missed and recalculation evidence
+  is needed. Missing required timing bars fail closed instead of silently
+  placing a base order.
 - `DONE`: S23 missed-entry recalculation is now applied in the supervised live
   decision path. If ORPT marks the base entry as missed, TFIS recalculates the
   branch strike range, premium filters, entry, target, and SL from the RC spot
@@ -40,9 +42,16 @@ Current S23 paper-mode posture:
   `s23_1500_carry_forward_stop_inactive` reason; if above original SL, normal
   stop/force-close handling closes the paper position.
 - `DONE`: S23 dashboard Step 8 strike audits now preserve the full reconstructed
-  candidate set and explicitly show missing strike-grid rows as rejected audit
-  rows when the captured option chain does not include every strike in the
-  rule-book Start-to-End range.
+  candidate set inside the rule-book Start-to-End range, scope rows to the
+  attempted expiry for that step, and explicitly show missing strike-grid rows
+  as rejected audit rows when the captured option chain does not include every
+  strike in the displayed range.
+- `DONE`: S23 waiting paper orders now have a post-cutoff finalizer safety net.
+  `scripts/finalize_s23_pending_paper_orders.py` and
+  `scripts/start_s23_paper_order_finalizer.ps1` scan TFIS S23 artifacts after
+  the configured cutoff and mark same-session still-waiting orders as
+  `PAPER_ORDER_NOT_FILLED` through the normal order-state store. This prevents
+  dashboard/order-state drift when an individual watcher exits unexpectedly.
 - `DONE`: FYERS option-chain collection now requests the specific weekly expiry
   timestamp using the FYERS/expiry-day `15:30 IST` convention and uses
   configurable `broker.option_chain_strike_count` for S23 paper snapshots, so
@@ -52,8 +61,9 @@ Current S23 paper-mode posture:
   fallback still depends on a reliable FYERS/data-source path that returns the
   actual next weekly option chain instead of relabeled near-expiry contracts.
 - `PARTIAL`: Paper order watcher/current-price/P&L behavior is implemented,
-  but still needs one clean market-day validation after the latest scheduling
-  and stale-order fixes.
+  and a post-cutoff finalizer now prevents unfilled waiting orders from
+  lingering if a watcher crashes. This still needs one clean market-day
+  validation after the latest scheduling, watcher, and finalizer fixes.
 - `PARTIAL`: Multi-day position lifecycle support exists in the paper runtime
   foundation, including target/SL/FSL, expiry force-close, session-only pending
   orders, and the 15:00 carry-forward decision. It still needs live-like
@@ -66,7 +76,8 @@ Current S23 paper-mode posture:
   3. final CE/PE selections or no-trade reasons match the rule sheet
   4. watchers start only for that day's valid waiting orders or open positions
   5. dashboard current price, order status, fill status, and P&L update
-  6. unfilled waiting orders are cancelled/not-filled after the entry session
+  6. unfilled waiting orders are cancelled/not-filled after the entry session by
+     the watcher or by the post-cutoff finalizer task
   7. filled/open positions persist for valid multi-day management
 - `TODO`: Move durable S23 option-chain, decision, order, trade-ledger, and
   monthly-status capture records out of temp-only storage into a structured

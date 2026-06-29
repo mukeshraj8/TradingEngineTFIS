@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from datetime import date, datetime, time
 from pathlib import Path
@@ -526,11 +527,27 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
             stage_dir = self._artifact_root / date(2026, 5, 28).isoformat() / session_id
             stage_dir.mkdir(parents=True, exist_ok=True)
             generated_minutes = (16, 25, 30)
+            inputs = _collected_inputs(
+                generated_at=_ts(28, 9, generated_minutes[idx], 0)
+            )
+            if idx == 2:
+                inputs = replace(
+                    inputs,
+                    option_chain_snapshot=replace(
+                        inputs.option_chain_snapshot,
+                        contracts=tuple(
+                            replace(contract, bid=304.0, ask=306.0, ltp=305.0)
+                            if contract.symbol == "NIFTY_20260604_23700_PE"
+                            else replace(contract, bid=194.0, ask=196.0, ltp=195.0)
+                            if contract.symbol == "NIFTY_20260604_23750_PE"
+                            else contract
+                            for contract in inputs.option_chain_snapshot.contracts
+                        ),
+                    ),
+                )
             return SimpleNamespace(
                 session_directory=stage_dir,
-                collected_inputs=_collected_inputs(
-                    generated_at=_ts(28, 9, generated_minutes[idx], 0)
-                ),
+                collected_inputs=inputs,
                 summary=_summary(),
             )
 
@@ -602,6 +619,23 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
     assert "09:16" in result.timeline_markdown.read_text(encoding="utf-8")
     assert "09:25" in result.timeline_markdown.read_text(encoding="utf-8")
     assert "09:30" in result.timeline_markdown.read_text(encoding="utf-8")
+    assert result.branch_final_summary_json["NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"]
+    summary_payload = json.loads(
+        Path(result.branch_final_summary_json["NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"]).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert summary_payload["explanation"]["orpt_rc_timing"]["status"] == "BASE_ENTRY_VALID"
+    assert summary_payload["summary"]["selected_contract_symbol"] == "NIFTY_20260604_23750_PE"
+    metadata = json.loads((result.session_directory / "scheduled_run_metadata.json").read_text(encoding="utf-8"))
+    assert metadata["branch_finalization_stage"]["NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"] == "ORPT Snapshot"
+    assert metadata["branch_finalization_reason"]["NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"] == "ORPT_BASE_ENTRY_VALID"
+    order_payload = json.loads(
+        Path(result.branch_order_state_json["NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"]).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert order_payload["order_timestamp"].startswith("2026-05-28T09:25:00")
 
 
 def test_morning_supervised_runner_fans_out_shared_snapshots_to_multiple_branches(

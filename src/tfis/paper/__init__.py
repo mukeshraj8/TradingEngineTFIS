@@ -98,6 +98,11 @@ from .order_state import (
     S23PaperOrderStateStore,
     S23PaperOrderStatus,
 )
+from .order_finalizer import (
+    S23PaperOrderFinalizer,
+    S23PaperOrderFinalizerDecision,
+    S23PaperOrderFinalizerSummary,
+)
 from .guardrails import (
     PaperGuardrailDecision,
     S23PaperGuardrailEvaluator,
@@ -383,6 +388,9 @@ __all__ = [
     "S23PaperOrderIntent",
     "S23PaperOrderIntentValidationResult",
     "S23PaperOrderEvent",
+    "S23PaperOrderFinalizer",
+    "S23PaperOrderFinalizerDecision",
+    "S23PaperOrderFinalizerSummary",
     "S23PaperOrderPlan",
     "S23PaperOrderState",
     "S23PaperOrderStateError",

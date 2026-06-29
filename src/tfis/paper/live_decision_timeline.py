@@ -173,13 +173,17 @@ class S23LiveDecisionTimelineBuilder:
             runtime_values=stage_runtime_values,
         )
 
+        can_evaluate_decision = not waiting_for or self._can_evaluate_orpt_stage(
+            stage_name=stage_name,
+            available_labels=available_labels,
+        )
         can_finalize = not waiting_for
         decision: S23PaperLiveDecisionResult | None = None
         decision_failure_code: str | None = None
         decision_failure_message: str | None = None
         decision_failure_attempted_expiries: tuple[str, ...] = ()
         decision_failure_rejected_counts: dict[str, int] | None = None
-        if can_finalize:
+        if can_evaluate_decision:
             try:
                 decision = self._decision_builder.build(
                     strategy_rule=strategy_rule,
@@ -200,6 +204,12 @@ class S23LiveDecisionTimelineBuilder:
                         expiry.isoformat() for expiry in selection.attempted_expiries
                     )
                     decision_failure_rejected_counts = dict(selection.rejected_candidate_counts)
+        if decision is not None:
+            can_finalize = self._can_finalize_stage_decision(
+                stage_name=stage_name,
+                waiting_for=waiting_for,
+                decision=decision,
+            )
 
         stage = S23LiveDecisionTimelineStage(
             stage_name=stage_name,
@@ -268,6 +278,28 @@ class S23LiveDecisionTimelineBuilder:
             stage=stage,
             decision_result=decision,
         )
+
+    @staticmethod
+    def _can_evaluate_orpt_stage(
+        *,
+        stage_name: str,
+        available_labels: tuple[str, ...],
+    ) -> bool:
+        return stage_name == "ORPT Snapshot" and {"0915", "ORPT"}.issubset(set(available_labels))
+
+    @staticmethod
+    def _can_finalize_stage_decision(
+        *,
+        stage_name: str,
+        waiting_for: tuple[str, ...],
+        decision: S23PaperLiveDecisionResult,
+    ) -> bool:
+        if not waiting_for:
+            return True
+        timing_status = str(
+            decision.explanation.get("orpt_rc_timing", {}).get("status", "")
+        )
+        return stage_name == "ORPT Snapshot" and timing_status == "BASE_ENTRY_VALID"
 
     def build_timeline(
         self,

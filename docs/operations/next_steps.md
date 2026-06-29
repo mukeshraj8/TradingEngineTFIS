@@ -6,11 +6,11 @@ way.
 
 ## Immediate Next Priorities
 
-1. Validate S23 live ORPT/RC timing recalculation during the next real market
+1. Validate S23 live ORPT/RC timing finalization during the next real market
    session. The supervised live decision path now builds a provisional base
-   selection, fetches selected-contract ORPT/RC option bars through the broker
-   adapter, fails closed if those bars are missing, and recalculates
-   missed-entry plans before final order creation. The remaining work is live
+   selection at ORPT, finalizes and places the waiting paper order from that
+   ORPT selection when the selected option has not missed entry, and reserves
+   RC for the missed-entry recalculation path only. The remaining work is live
    market evidence across CE/PE and near/next-expiry cases.
 2. Validate and refine S23 next-day SL reset after a 15:00 carry-forward. The
    paper position manager now applies the 15:00 continuation decision after
@@ -20,11 +20,13 @@ way.
 3. Validate S23 live order-watcher/current-price visibility end to end.
    The scheduled startup wrapper now starts one paper watcher per produced order
    or open position, which should let both selected CE/PE legs publish current
-   price, fill status, dashboard rebuilds, and open-position P&L. The remaining
-   operational validation is to prove those updates from live FYERS quotes
-   during market hours, and to confirm the FYERS option-chain snapshot contains
-   both near and next weekly expiry contracts after the expiry-specific request
-   fix, without changing strategy rules.
+   price, fill status, dashboard rebuilds, and open-position P&L. A separate
+   post-cutoff finalizer now marks still-waiting same-session orders as
+   `PAPER_ORDER_NOT_FILLED` if a watcher exits before cutoff. The remaining
+   operational validation is to prove watcher updates and finalizer cleanup from
+   live FYERS quotes/artifacts during market hours, and to confirm the FYERS
+   option-chain snapshot contains both near and next weekly expiry contracts
+   after the expiry-specific request fix, without changing strategy rules.
 4. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
 5. Introduce generic strategy-registry execution for enabled strategies.
