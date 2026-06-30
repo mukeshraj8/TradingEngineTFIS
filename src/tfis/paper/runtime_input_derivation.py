@@ -119,6 +119,7 @@ class S23RuntimeInputDeriver:
         underlying_bars: tuple[UnderlyingHistoryBar, ...],
         daily_bars: tuple[UnderlyingHistoryBar, ...] | None,
         session_context: S23PaperPreludeSessionContext,
+        required_snapshot_labels: tuple[SnapshotLabel, ...] | None = None,
     ) -> S23DerivedRuntimeInputs:
         self._validate_scope(strategy_rule, reference_packet, session_context, underlying_quote)
         required_market_aliases = self._required_market_aliases(strategy_rule)
@@ -126,6 +127,7 @@ class S23RuntimeInputDeriver:
         snapshots = self._derive_snapshots(
             underlying_bars=underlying_bars,
             session_context=session_context,
+            required_snapshot_labels=required_snapshot_labels,
         )
         market_levels = self._build_market_levels(
             reference_levels=reference_packet.market_reference_levels,
@@ -258,12 +260,14 @@ class S23RuntimeInputDeriver:
         *,
         underlying_bars: tuple[UnderlyingHistoryBar, ...],
         session_context: S23PaperPreludeSessionContext,
+        required_snapshot_labels: tuple[SnapshotLabel, ...] | None = None,
     ) -> tuple[S23PaperSnapshotInput, ...]:
         if not underlying_bars:
             raise S23RuntimeInputDerivationError(
                 "UNDERLYING_BARS_MISSING",
                 "Morning underlying bars are required to derive TFIS checkpoints.",
             )
+        required_labels = set(required_snapshot_labels or tuple(_CHECKPOINT_CANDLE_STARTS))
         bar_index = {
             bar.bar_start.timetz().replace(tzinfo=None): bar
             for bar in underlying_bars
@@ -278,7 +282,8 @@ class S23RuntimeInputDeriver:
                 if bar is not None:
                     break
             if bar is None:
-                missing_labels.append(label.value)
+                if label in required_labels:
+                    missing_labels.append(label.value)
                 continue
             snapshots.append(
                 S23PaperSnapshotInput(

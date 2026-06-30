@@ -28,8 +28,9 @@ from .live_decision import (
     S23PaperLiveDecisionResult,
 )
 from .live_prelude import S23LivePreludeError
+from .models import SnapshotLabel
 from .position_state import S23PaperPositionState
-from .runtime_input_derivation import S23DecisionReferencePacket
+from .runtime_input_derivation import S23DecisionReferencePacket, S23RuntimeInputDerivationError
 
 
 _CHECKPOINT_LABELS = {
@@ -177,6 +178,10 @@ class S23LiveDecisionTimelineBuilder:
             stage_name=stage_name,
             available_labels=available_labels,
         )
+        required_snapshot_labels = self._required_snapshot_labels_for_decision(
+            stage_name=stage_name,
+            waiting_for=waiting_for,
+        )
         can_finalize = not waiting_for
         decision: S23PaperLiveDecisionResult | None = None
         decision_failure_code: str | None = None
@@ -194,8 +199,13 @@ class S23LiveDecisionTimelineBuilder:
                     smoke_override_selected_contract_symbol=smoke_override_selected_contract_symbol,
                     allow_branch_pinned_unknown_monthly_status=allow_branch_pinned_unknown_monthly_status,
                     require_orpt_rc_timing_bars=require_orpt_rc_timing_bars,
+                    required_snapshot_labels=required_snapshot_labels,
                 )
-            except (S23PaperLiveDecisionError, S23LivePreludeError) as exc:
+            except (
+                S23PaperLiveDecisionError,
+                S23LivePreludeError,
+                S23RuntimeInputDerivationError,
+            ) as exc:
                 decision_failure_code = getattr(exc, "code", "LIVE_DECISION_FAILED")
                 decision_failure_message = str(exc)
                 selection = getattr(exc, "contract_selection", None)
@@ -286,6 +296,16 @@ class S23LiveDecisionTimelineBuilder:
         available_labels: tuple[str, ...],
     ) -> bool:
         return stage_name == "ORPT Snapshot" and {"0915", "ORPT"}.issubset(set(available_labels))
+
+    @staticmethod
+    def _required_snapshot_labels_for_decision(
+        *,
+        stage_name: str,
+        waiting_for: tuple[str, ...],
+    ) -> tuple[SnapshotLabel, ...] | None:
+        if stage_name == "ORPT Snapshot" and waiting_for == ("RC",):
+            return (SnapshotLabel.AT_0915, SnapshotLabel.ORPT)
+        return None
 
     @staticmethod
     def _can_finalize_stage_decision(

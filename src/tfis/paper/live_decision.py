@@ -166,6 +166,7 @@ class S23PaperLiveDecisionBuilder:
         smoke_override_selected_contract_symbol: str | None = None,
         allow_branch_pinned_unknown_monthly_status: bool = False,
         require_orpt_rc_timing_bars: bool = True,
+        required_snapshot_labels: tuple[SnapshotLabel, ...] | None = None,
     ) -> S23PaperLiveDecisionResult:
         reference_derivation = self._live_reference_deriver.derive(
             base_reference_packet=reference_packet,
@@ -179,6 +180,7 @@ class S23PaperLiveDecisionBuilder:
             underlying_bars=collected_inputs.underlying_bars,
             daily_bars=collected_inputs.daily_bars,
             session_context=collected_inputs.session_context,
+            required_snapshot_labels=required_snapshot_labels,
         )
         prelude_request = self._build_prelude_request(
             strategy_rule=strategy_rule,

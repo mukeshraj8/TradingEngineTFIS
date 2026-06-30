@@ -32,6 +32,9 @@ Current S23 paper-mode posture:
   used only when ORPT marks the base entry as missed and recalculation evidence
   is needed. Missing required timing bars fail closed instead of silently
   placing a base order.
+- `DONE`: S23 timeline/dashboard reconstruction can now evaluate the ORPT stage
+  before the RC checkpoint exists. ORPT-stage decisions require only `0915` and
+  `ORPT` snapshots, while RC/final stages still require all checkpoints.
 - `DONE`: S23 missed-entry recalculation is now applied in the supervised live
   decision path. If ORPT marks the base entry as missed, TFIS recalculates the
   branch strike range, premium filters, entry, target, and SL from the RC spot

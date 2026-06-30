@@ -467,6 +467,39 @@ def test_timeline_builder_writes_stage_monthly_status_artifacts(tmp_path: Path) 
     assert "window_label" in monthly_status_json.read_text(encoding="utf-8")
 
 
+def test_timeline_builder_can_finalize_orpt_before_rc_bar_exists() -> None:
+    inputs = _collected_inputs()
+    orpt_only_inputs = replace(
+        inputs,
+        underlying_bars=tuple(
+            bar
+            for bar in inputs.underlying_bars
+            if bar.bar_start.timetz().replace(tzinfo=None) != time(9, 29)
+        ),
+        selected_contract_bars=(
+            _selected_contract_bar(day=28, minute=24, low=215.0, high=230.0, close=225.0),
+        ),
+    )
+
+    stage_build = S23LiveDecisionTimelineBuilder().build_stage(
+        stage_name="ORPT Snapshot",
+        stage_time=time(9, 25),
+        strategy_rule=_strategy_rule(),
+        reference_packet=_reference_packet(),
+        collected_inputs=orpt_only_inputs,
+        require_orpt_rc_timing_bars=True,
+    )
+
+    stage = stage_build.stage
+    assert stage.available_checkpoint_labels == ("0915", "ORPT")
+    assert stage.waiting_for_checkpoint_labels == ("RC",)
+    assert stage.can_finalize_trade_decision is True
+    assert stage.decision_failure_code is None
+    assert stage.decision_summary is not None
+    assert stage.decision_summary["checkpoint_labels"] == ("0915", "ORPT")
+    assert stage.decision_explanation["orpt_rc_timing"]["status"] == "BASE_ENTRY_VALID"
+
+
 def test_timeline_builder_marks_0930_as_finalizable() -> None:
     stage_build = S23LiveDecisionTimelineBuilder().build_stage(
         stage_name="RC Snapshot",

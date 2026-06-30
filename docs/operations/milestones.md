@@ -49,6 +49,9 @@
 - S23 supervised live paper finalization now keeps the ORPT-selected base
   strike/order when the selected option has not missed entry, and uses RC only
   for the revised missed-entry recalculation path
+- S23 runtime/timeline reconstruction now supports ORPT-stage evaluation before
+  RC exists, so the dashboard and scheduled runner do not fail with missing RC
+  bars during the live `09:25` window
 - strategy and workbook normalization work is established for the S23 family
 - reference materials are now indexed and reviewable through archive metadata
 - deterministic monthly-status classification is implemented for the confirmed threshold rules
