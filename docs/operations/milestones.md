@@ -96,6 +96,11 @@
   scheduled-run metadata now expose `order_placement_blocked` details so the
   dashboard can show calculated daily candidates without implying an order was
   routed.
+- S23 captured-session validation now has a repeatable offline command that
+  summarizes durable supervised-session artifacts by date/branch, reconstructs
+  blocked fresh CE/PE calculations from captured 09:30 option-chain snapshots,
+  and separates decision/order evidence from missing full selected-contract
+  price-stream evidence.
 - S23 dashboard strike qualification and Step 8 audit tables now include
   candidate expiry and wrap long rejection reasons, improving manual validation
   when near and next expiry rows contain overlapping strikes

@@ -78,6 +78,13 @@ Current S23 paper-mode posture:
   decision summary, explanation, scheduled-run metadata, and dashboard state now
   carry an explicit `order_placement_blocked` flag/reason so calculated daily
   CE/PE symbols remain visible while the execution gate stays locked.
+- `DONE`: Captured S23 supervised sessions can now be validated offline with
+  `scripts/run_s23_captured_session_validation.py`. The report walks durable
+  captured sessions, summarizes CE/PE decisions, reconstructs review-only
+  fresh CE/PE calculations from captured 09:30 option-chain snapshots when a
+  carry-forward resume blocked order placement, reports paper orders/carried
+  positions/stage coverage, and clearly flags replay gaps such as missing
+  selected-contract intraday price streams.
 - `DONE`: `scripts/start_s23_paper_watchers_from_metadata.ps1` is available as
   a TFIS-only recovery launcher. It reads the selected session metadata and
   starts watcher windows for produced paper orders or open paper positions
