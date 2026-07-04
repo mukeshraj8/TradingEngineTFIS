@@ -787,7 +787,18 @@ def test_morning_supervised_runner_computes_but_blocks_fresh_order_when_position
     assert summary_payload["summary"]["mode"] == "CARRY_FORWARD_RESUME"
     assert summary_payload["summary"]["selected_contract_symbol"] == "NIFTY_20260604_23750_PE"
     assert summary_payload["summary"]["planned_entry_price"] == 212.75
+    assert summary_payload["summary"]["order_placement_blocked"] is True
+    assert summary_payload["summary"]["order_placement_block_reason"] == "OPEN_CARRY_FORWARD_POSITION"
     assert result.branch_order_state_json == {}
+    assert result.branch_order_placement_blocked == {"NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": True}
+    assert result.branch_order_placement_block_reason == {
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": "OPEN_CARRY_FORWARD_POSITION"
+    }
+    metadata = json.loads((result.session_directory / "scheduled_run_metadata.json").read_text(encoding="utf-8"))
+    assert metadata["branch_order_placement_blocked"] == {"NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": True}
+    assert metadata["branch_order_placement_block_reason"] == {
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": "OPEN_CARRY_FORWARD_POSITION"
+    }
     assert not list(result.session_directory.rglob("paper_order_state.json"))
 
 

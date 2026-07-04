@@ -81,6 +81,8 @@ class S23PaperTradeDecisionSummary:
     governance_event_types: tuple[str, ...] = ()
     resume_event_type: str | None = None
     notes: tuple[str, ...] = ()
+    order_placement_blocked: bool = False
+    order_placement_block_reason: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -665,12 +667,16 @@ class S23PaperLiveDecisionBuilder:
             else ()
         )
         notes: list[str] = []
+        order_placement_blocked = False
+        order_placement_block_reason = None
         if prelude_result.mode is S23PaperPreludeMode.CARRY_FORWARD_RESUME:
             if strategy_rule.allow_fresh_entry_with_open_position:
                 notes.append(
                     "Fresh entry planning was computed while an open carry-forward position exists; config allows a fresh paper order."
                 )
             else:
+                order_placement_blocked = True
+                order_placement_block_reason = "OPEN_CARRY_FORWARD_POSITION"
                 notes.append(
                     "Fresh entry planning was computed while an open carry-forward position exists; config blocks fresh paper order creation until the open position exits."
                 )
@@ -732,6 +738,8 @@ class S23PaperLiveDecisionBuilder:
                 else None
             ),
             notes=tuple(notes),
+            order_placement_blocked=order_placement_blocked,
+            order_placement_block_reason=order_placement_block_reason,
         )
 
     def _build_explanation(
@@ -830,6 +838,8 @@ class S23PaperLiveDecisionBuilder:
                 "selected_contract_symbol": summary.selected_contract_symbol,
                 "selection_reason": summary.contract_selection_reason,
                 "failure_code": summary.contract_selection_failure_code,
+                "order_placement_blocked": summary.order_placement_blocked,
+                "order_placement_block_reason": summary.order_placement_block_reason,
                 "attempted_expiries": list(summary.contract_selection_attempted_expiries),
                 "selected_contract_expiry": summary.selected_contract_expiry,
                 "selected_contract_strike": summary.selected_contract_strike,

@@ -62,6 +62,8 @@ class S23MorningDecisionRunResult:
     branch_final_summary_markdown: dict[str, str] = field(default_factory=dict)
     branch_order_state_json: dict[str, str] = field(default_factory=dict)
     branch_position_state_json: dict[str, str] = field(default_factory=dict)
+    branch_order_placement_blocked: dict[str, bool] = field(default_factory=dict)
+    branch_order_placement_block_reason: dict[str, str] = field(default_factory=dict)
 
 
 def default_morning_decision_checkpoints() -> tuple[S23MorningDecisionCheckpoint, ...]:
@@ -151,6 +153,8 @@ def run_s23_morning_supervised_decision(
     branch_final_summary_markdown: dict[str, str] = {}
     branch_order_state_json: dict[str, str] = {}
     branch_position_state_json: dict[str, str] = {}
+    branch_order_placement_blocked: dict[str, bool] = {}
+    branch_order_placement_block_reason: dict[str, str] = {}
     stage_runs: list[S23MorningDecisionStageRun] = []
     timeline_stages_by_branch: dict[str, list[S23LiveDecisionTimelineStage]] = {
         rule.unique_code: [] for rule in strategy_rules
@@ -358,12 +362,17 @@ def run_s23_morning_supervised_decision(
             carry_forward_position is not None
             and not strategy_rule.allow_fresh_entry_with_open_position
         )
+        if decision_result is not None and decision_result.summary.order_placement_blocked:
+            branch_order_placement_blocked[strategy_branch] = True
+            if decision_result.summary.order_placement_block_reason:
+                branch_order_placement_block_reason[strategy_branch] = decision_result.summary.order_placement_block_reason
         if (
             decision_result is not None
             and decision_result.summary.status == "READY"
             and decision_result.summary.selected_contract_symbol
             and decision_result.summary.planned_entry_price is not None
             and not fresh_order_blocked_by_open_position
+            and not decision_result.summary.order_placement_blocked
         ):
             opened_at = (
                 datetime.fromisoformat(final_decision_trigger_time_by_branch[strategy_branch])
@@ -406,6 +415,8 @@ def run_s23_morning_supervised_decision(
                 "branch_finalization_reason": final_decision_reason_by_branch,
                 "branch_order_state_json": branch_order_state_json,
                 "branch_position_state_json": branch_position_state_json,
+                "branch_order_placement_blocked": branch_order_placement_blocked,
+                "branch_order_placement_block_reason": branch_order_placement_block_reason,
                 "stages": [
                     {
                         "strategy_branch": stage_run.strategy_branch,
@@ -446,6 +457,8 @@ def run_s23_morning_supervised_decision(
         branch_final_summary_markdown=branch_final_summary_markdown,
         branch_order_state_json=branch_order_state_json,
         branch_position_state_json=branch_position_state_json,
+        branch_order_placement_blocked=branch_order_placement_blocked,
+        branch_order_placement_block_reason=branch_order_placement_block_reason,
     )
 
 

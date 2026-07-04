@@ -688,6 +688,10 @@ def test_carry_forward_mode_emits_governance_summary() -> None:
     assert result.summary.planned_entry_price == 212.75
     assert "PAPER_POSITION_RESUMED" == result.summary.resume_event_type
     assert result.summary.governance_event_types == ()
+    assert result.summary.order_placement_blocked is True
+    assert result.summary.order_placement_block_reason == "OPEN_CARRY_FORWARD_POSITION"
     assert result.summary.notes == (
         "Fresh entry planning was computed while an open carry-forward position exists; config blocks fresh paper order creation until the open position exits.",
     )
+    assert result.explanation["contract_selection"]["order_placement_blocked"] is True
+    assert result.explanation["contract_selection"]["order_placement_block_reason"] == "OPEN_CARRY_FORWARD_POSITION"

@@ -25,6 +25,9 @@ def test_morning_wrapper_does_not_stream_supervised_decision_through_pipeline() 
 def test_morning_wrapper_starts_watchers_from_current_session_metadata_and_open_positions() -> None:
     script = _script_text("start_s23_fyers_morning_supervised_decision.ps1")
 
+    assert "function Resolve-TfisAbsolutePathText" in script
+    assert "function Resolve-TfisPositionStateDirectory" in script
+    assert "[System.IO.Path]::GetFullPath" in script
     assert "function Get-TfisLatestSessionMetadata" in script
     assert "function Get-TfisOpenPositionStatePaths" in script
     assert 'Join-Path $artifactRootPath $Date.ToString("yyyy-MM-dd")' in script
@@ -36,6 +39,20 @@ def test_morning_wrapper_starts_watchers_from_current_session_metadata_and_open_
     assert "$discoveredCarryForwardStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)" in script
     assert "$openCarryForwardStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)" in script
     assert "$openStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)" in script
+    assert "$discoveredCarryForwardStatePath = Resolve-TfisAbsolutePathText -PathText ([string]$discoveredCarryForwardStatePaths[0])" in script
+    assert "$discoveredCarryForwardStateDir = Resolve-TfisPositionStateDirectory -PathText $discoveredCarryForwardStatePath" in script
+    assert "$args += $discoveredCarryForwardStateDir" in script
+
+
+def test_morning_wrapper_normalizes_carry_forward_paths_before_subprocess_handoff() -> None:
+    script = _script_text("start_s23_fyers_morning_supervised_decision.ps1")
+
+    assert "$carryForwardStateDirArg = Resolve-TfisPositionStateDirectory -PathText $CarryForwardStateDir" in script
+    assert "$args += $carryForwardStateDirArg" in script
+    assert "Carry-forward state directory argument: $discoveredCarryForwardStateDir" in script
+    assert "$watchArgs += $normalizedWatchDirectory" in script
+    assert "$watchArgs += $normalizedSearchRoot" in script
+    assert "directory=$normalizedWatchDirectory, searchRoot=$normalizedSearchRoot" in script
 
 
 def test_s23_watcher_launchers_start_mixed_position_and_order_branches() -> None:

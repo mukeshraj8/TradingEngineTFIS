@@ -55,18 +55,29 @@ Current S23 paper-mode posture:
   fresh current-day waiting orders. The latest discovered open position is also
   passed into the supervised decision runner as carry-forward context when no
   explicit `-CarryForwardStateDir` is supplied.
+- `DONE`: S23 supervised decision and paper watcher startups now have
+  PID-aware single-instance guards under `tmp/process_locks`. A second
+  supervised decision run for the same configured S23 engine, or a second
+  watcher for the same order/position, fails closed before broker connection
+  with `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, while stale dead-PID locks are
+  reclaimed with `STALE_PROCESS_LOCK_RECLAIMED`.
 - `DONE`: The 2026-07-03 scheduled startup failure was traced to a PowerShell
   scalar/array edge case when exactly one open carry-forward state was
   discovered. The wrapper now preserves discovered state paths as arrays in the
-  carry-forward handoff, metadata watcher startup, and fallback discovery paths,
-  preventing a single Windows path from being truncated to only its drive
-  letter.
+  carry-forward handoff, metadata watcher startup, and fallback discovery paths.
+  It also normalizes explicit and discovered carry-forward state paths to full
+  absolute state-directory strings before passing them to Python or watcher
+  subprocesses, preventing a single Windows path from being truncated to only
+  its drive letter.
 - `DONE`: S23 carry-forward resume no longer suppresses same-day CE/PE
   calculation. When an open S23 position exists, TFIS still computes and
   persists the fresh leg decision artifacts for the active rule group. Fresh
   paper order creation is separately controlled by the strategy boolean
   `allow_fresh_entry_with_open_position`, currently configured as `false` for
-  all S23 legs so no new order is placed until the open position exits.
+  all S23 legs so no new order is placed until the open position exits. The
+  decision summary, explanation, scheduled-run metadata, and dashboard state now
+  carry an explicit `order_placement_blocked` flag/reason so calculated daily
+  CE/PE symbols remain visible while the execution gate stays locked.
 - `DONE`: `scripts/start_s23_paper_watchers_from_metadata.ps1` is available as
   a TFIS-only recovery launcher. It reads the selected session metadata and
   starts watcher windows for produced paper orders or open paper positions

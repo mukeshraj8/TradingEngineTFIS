@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import sys
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from tfis.paper import (
     S23FyersSnapshotCollectorError,
     run_s23_morning_supervised_decision,
 )
+from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 
 
 DEFAULT_CONFIG = REPO_ROOT / "config" / "paper.s23.fyers_connect_test.yaml"
@@ -56,6 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument("--dashboard-output-root", default="tmp/operator_dashboard")
     parser.add_argument("--session-id-prefix", default="s23-fyers-morning-supervised-decision")
+    parser.add_argument("--process-lock-root", default="tmp/process_locks/s23_supervised_decision")
     parser.add_argument("--carry-forward-state-dir")
     parser.add_argument("--enable-smoke-override", action="store_true")
     parser.add_argument("--skip-refresh", action="store_true")
@@ -74,6 +77,25 @@ def main(argv: list[str] | None = None) -> int:
             else [str(DEFAULT_STRATEGY_ROOT / name) for name in DEFAULT_STRATEGIES]
         )
     )
+    process_lock_handle: ProcessLockHandle | None = None
+    try:
+        process_lock_handle = acquire_process_lock(
+            _supervised_decision_process_lock_path(
+                artifact_root=Path(args.artifact_root),
+                session_id_prefix=args.session_id_prefix,
+                lock_root=Path(args.process_lock_root),
+            ),
+            label=f"s23-supervised-decision:{args.session_id_prefix}",
+            metadata={
+                "artifact_root": str(Path(args.artifact_root).resolve()),
+                "session_id_prefix": args.session_id_prefix,
+                "strategy_paths": [str(item) for item in strategy_paths],
+            },
+            logger=lambda message: print(message, file=sys.stderr, flush=True),
+        )
+    except ProcessLockError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr, flush=True)
+        return 1
     try:
         result = run_s23_morning_supervised_decision(
             tfis_root=args.tfis_root,
@@ -101,6 +123,9 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         print(f"ERROR [{code}]: {exc}", file=sys.stderr)
         return 1
+    finally:
+        if process_lock_handle is not None:
+            process_lock_handle.release()
     print("Scheduled morning supervised S23 decision run succeeded.")
     print(f"Session directory: {result.session_directory}")
     print(f"Decision explainer: {result.timeline_markdown}")
@@ -116,6 +141,17 @@ def _is_market_closed_no_action(*, code: str, message: str) -> bool:
     return code == "BROKER_SNAPSHOT_FAILED" and any(
         marker in message for marker in _MARKET_CLOSED_NO_CANDLE_MESSAGES
     )
+
+
+def _supervised_decision_process_lock_path(
+    *,
+    artifact_root: Path,
+    session_id_prefix: str,
+    lock_root: Path,
+) -> Path:
+    identity = f"{artifact_root.resolve()}::{session_id_prefix}"
+    digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:24]
+    return lock_root / f"s23_supervised_decision_{digest}.pid.json"
 
 
 if __name__ == "__main__":

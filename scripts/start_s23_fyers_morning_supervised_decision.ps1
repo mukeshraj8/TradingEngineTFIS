@@ -157,6 +157,41 @@ function Get-TfisOpenPositionStatePaths {
     return $paths
 }
 
+function Resolve-TfisAbsolutePathText {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PathText
+    )
+
+    if ([string]::IsNullOrWhiteSpace($PathText)) {
+        return ""
+    }
+
+    if ([System.IO.Path]::IsPathRooted($PathText)) {
+        return [System.IO.Path]::GetFullPath($PathText)
+    }
+
+    return [System.IO.Path]::GetFullPath((Join-Path $repoRoot $PathText))
+}
+
+function Resolve-TfisPositionStateDirectory {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PathText
+    )
+
+    $absolutePath = Resolve-TfisAbsolutePathText -PathText $PathText
+    if ([string]::IsNullOrWhiteSpace($absolutePath)) {
+        return ""
+    }
+
+    if ((Split-Path -Leaf $absolutePath) -eq "paper_position_state.json" -or (Test-Path -Path $absolutePath -PathType Leaf)) {
+        return [System.IO.Path]::GetDirectoryName($absolutePath)
+    }
+
+    return $absolutePath
+}
+
 function Start-S23PaperWatchProcess {
     param(
         [Parameter(Mandatory = $true)]
@@ -167,6 +202,14 @@ function Start-S23PaperWatchProcess {
     )
 
     $watchScript = Join-Path $repoRoot "scripts\run_s23_paper_position_watch.py"
+    $normalizedWatchDirectory = ""
+    if ($WatchDirectory) {
+        $normalizedWatchDirectory = Resolve-TfisAbsolutePathText -PathText $WatchDirectory
+    }
+    $normalizedSearchRoot = ""
+    if ($SearchRoot) {
+        $normalizedSearchRoot = Resolve-TfisAbsolutePathText -PathText $SearchRoot
+    }
     $watchArgs = @(
         $watchScript,
         "--tfis-root", $TfisRoot,
@@ -176,19 +219,19 @@ function Start-S23PaperWatchProcess {
     )
     if ($Mode -eq "state") {
         $watchArgs += "--state-dir"
-        $watchArgs += $WatchDirectory
+        $watchArgs += $normalizedWatchDirectory
     }
     elseif ($Mode -eq "order") {
         $watchArgs += "--order-dir"
-        $watchArgs += $WatchDirectory
+        $watchArgs += $normalizedWatchDirectory
     }
     else {
         $watchArgs += "--state-search-root"
-        $watchArgs += $SearchRoot
+        $watchArgs += $normalizedSearchRoot
         $watchArgs += "--no-open-ok"
     }
 
-    $labelSource = if ($WatchDirectory) { $WatchDirectory } else { $SearchRoot }
+    $labelSource = if ($normalizedWatchDirectory) { $normalizedWatchDirectory } else { $normalizedSearchRoot }
     $safeLabel = (($labelSource -replace '^[A-Za-z]:', '') -replace '[\\/:*?"<>|\s]+', '_').Trim('_')
     if (-not $safeLabel) {
         $safeLabel = "discovery"
@@ -209,12 +252,12 @@ function Start-S23PaperWatchProcess {
     $quotedStderrPath = "'" + ($stderrPath -replace "'", "''") + "'"
     $quotedMode = "'" + ($Mode -replace "'", "''") + "'"
     $watchDirectoryText = ""
-    if ($WatchDirectory) {
-        $watchDirectoryText = $WatchDirectory
+    if ($normalizedWatchDirectory) {
+        $watchDirectoryText = $normalizedWatchDirectory
     }
     $searchRootText = ""
-    if ($SearchRoot) {
-        $searchRootText = $SearchRoot
+    if ($normalizedSearchRoot) {
+        $searchRootText = $normalizedSearchRoot
     }
     $quotedWatchDirectory = "'" + ($watchDirectoryText -replace "'", "''") + "'"
     $quotedSearchRoot = "'" + ($searchRootText -replace "'", "''") + "'"
@@ -250,7 +293,7 @@ Write-Host "============================================================"
         -WindowStyle Normal `
         -PassThru
 
-    Write-LaunchLog "Started S23 paper watch process PID=$($process.Id), mode=$Mode, directory=$WatchDirectory, searchRoot=$SearchRoot"
+    Write-LaunchLog "Started S23 paper watch process PID=$($process.Id), mode=$Mode, directory=$normalizedWatchDirectory, searchRoot=$normalizedSearchRoot"
     Write-LaunchLog "S23 paper watch stdout: $stdoutPath"
     Write-LaunchLog "S23 paper watch stderr: $stderrPath"
 }
@@ -287,15 +330,20 @@ if ($EnableSmokeOverride) {
     $args += "--enable-smoke-override"
 }
 if ($CarryForwardStateDir) {
+    $carryForwardStateDirArg = Resolve-TfisPositionStateDirectory -PathText $CarryForwardStateDir
     $args += "--carry-forward-state-dir"
-    $args += $CarryForwardStateDir
+    $args += $carryForwardStateDirArg
+    Write-LaunchLog "Using explicit S23 carry-forward state directory: $carryForwardStateDirArg"
 }
 else {
     $discoveredCarryForwardStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)
     if ($discoveredCarryForwardStatePaths.Count -gt 0) {
+        $discoveredCarryForwardStatePath = Resolve-TfisAbsolutePathText -PathText ([string]$discoveredCarryForwardStatePaths[0])
+        $discoveredCarryForwardStateDir = Resolve-TfisPositionStateDirectory -PathText $discoveredCarryForwardStatePath
         $args += "--carry-forward-state-dir"
-        $args += (Split-Path -Parent ([string]$discoveredCarryForwardStatePaths[0]))
-        Write-LaunchLog "Passing latest discovered open S23 paper position to supervised decision: $($discoveredCarryForwardStatePaths[0])"
+        $args += $discoveredCarryForwardStateDir
+        Write-LaunchLog "Passing latest discovered open S23 paper position to supervised decision: $discoveredCarryForwardStatePath"
+        Write-LaunchLog "Carry-forward state directory argument: $discoveredCarryForwardStateDir"
     }
 }
 

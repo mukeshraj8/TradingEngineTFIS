@@ -2793,6 +2793,11 @@ class TfisOperatorDashboardBuilder:
                     raw_order = {}
                 if isinstance(raw_order, dict):
                     order_status = raw_order.get("status")
+            if order_status is None and summary.get("order_placement_blocked"):
+                order_status = str(
+                    summary.get("order_placement_block_reason")
+                    or "ORDER_PLACEMENT_BLOCKED"
+                )
             option_type = str(summary.get("selected_contract_option_type") or "").upper()
             side = "SELL PE" if option_type in {"PE", "PUT"} else "SELL CE" if option_type in {"CE", "CALL"} else "SELL"
             branch = str(summary.get("strategy_branch") or summary_path.parent.name)

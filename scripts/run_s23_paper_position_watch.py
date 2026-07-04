@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import sys
 import time as time_module
@@ -33,6 +34,7 @@ from tfis.paper import (
 from tfis.paper.live_ingress import S23LivePaperIngressConfig
 from tfis.paper.models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
+from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 
 
 DEFAULT_CONFIG = REPO_ROOT / "config" / "paper.s23.fyers_connect_test.yaml"
@@ -72,6 +74,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--poll-seconds", type=float, default=5.0)
     parser.add_argument("--max-iterations", type=int, default=0, help="0 means run until --until.")
     parser.add_argument("--until", default="15:30", help="Local HH:MM cutoff for the watch loop.")
+    parser.add_argument("--process-lock-root", default="tmp/process_locks/s23_paper_watch")
     parser.add_argument("--dashboard-output-root", default="tmp/operator_dashboard")
     parser.add_argument("--s23-artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument(
@@ -135,12 +138,38 @@ def main(argv: list[str] | None = None) -> int:
         else _order_id_for_state(order_state)
     )
     owner_id = s23_live_state_owner_id()
+    process_lock_handle: ProcessLockHandle | None = None
+    process_lock_path = _watch_process_lock_path(
+        Path(state_dir or order_dir),
+        lock_root=Path(args.process_lock_root),
+    )
+    try:
+        process_lock_handle = acquire_process_lock(
+            process_lock_path,
+            label=f"s23-paper-watch:{trade_id}",
+            metadata={
+                "trade_id": trade_id,
+                "session_date": session_date.isoformat(),
+                "selected_contract_symbol": (
+                    state.selected_contract_symbol
+                    if state is not None
+                    else order_state.selected_contract_symbol
+                ),
+                "state_directory": str(Path(state_dir or order_dir).resolve()),
+            },
+            logger=lambda message: print(message, file=sys.stderr, flush=True),
+        )
+    except ProcessLockError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr, flush=True)
+        return 1
     lock_ttl_seconds = max(30, int(args.poll_seconds * 6))
     if not live_state_store.acquire_trade_lock(
         trade_id=trade_id,
         owner_id=owner_id,
         ttl_seconds=lock_ttl_seconds,
     ):
+        if process_lock_handle is not None:
+            process_lock_handle.release()
         raise RuntimeError(f"Another S23 paper watcher already owns {trade_id}.")
 
     adapter = FyersBrokerAdapter(source_timezone=timezone_name)
@@ -156,7 +185,14 @@ def main(argv: list[str] | None = None) -> int:
         if state is not None
         else order_state.selected_contract_symbol
     )
-    watch_lock_handle = _acquire_watch_file_lock(Path(state_dir or order_dir))
+    try:
+        watch_lock_handle = _acquire_watch_file_lock(Path(state_dir or order_dir))
+    except RuntimeError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr, flush=True)
+        live_state_store.release_trade_lock(trade_id=trade_id, owner_id=owner_id)
+        if process_lock_handle is not None:
+            process_lock_handle.release()
+        return 1
     print("=" * 60, flush=True)
     print("TFIS S23 PAPER POSITION WATCHER", flush=True)
     print(f"Process ID       : {os.getpid()}", flush=True)
@@ -361,6 +397,8 @@ def main(argv: list[str] | None = None) -> int:
             pass
         _release_watch_file_lock(watch_lock_handle)
         live_state_store.release_trade_lock(trade_id=trade_id, owner_id=owner_id)
+        if process_lock_handle is not None:
+            process_lock_handle.release()
 
 
 def _fetch_selected_contract_events(
@@ -530,6 +568,12 @@ def _resolve_order_dir(
     raise RuntimeError(
         "No waiting S23 paper order state was found. Searched: " + searched
     )
+
+
+def _watch_process_lock_path(watch_directory: Path, *, lock_root: Path) -> Path:
+    resolved_directory = watch_directory.resolve()
+    digest = hashlib.sha256(str(resolved_directory).encode("utf-8")).hexdigest()[:24]
+    return lock_root / f"s23_paper_watch_{digest}.pid.json"
 
 
 def _acquire_watch_file_lock(state_directory: Path):

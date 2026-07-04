@@ -80,13 +80,22 @@
   the latest open position into the supervised decision runner as carry-forward
   context, and starts state watchers for all eligible open positions alongside
   fresh current-day order watchers
+- S23 supervised decision and paper watcher startup now enforce PID-aware
+  single-instance process locks, fail duplicate live-PID launches with
+  `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, and reclaim stale dead-PID locks with
+  an auditable `STALE_PROCESS_LOCK_RECLAIMED` message
 - S23 scheduled startup now preserves single discovered carry-forward state
   paths as arrays, preventing the 2026-07-03 PowerShell scalar edge case where
-  one Windows path was truncated to its drive letter before Python invocation
+  one Windows path was truncated to its drive letter before Python invocation.
+  The wrapper also normalizes carry-forward state arguments to absolute
+  directories before Python/watch subprocess handoff.
 - S23 carry-forward resume now still computes same-day fresh CE/PE leg
   decisions for audit, while fresh paper order creation during an existing open
   position is controlled by the configurable
-  `allow_fresh_entry_with_open_position` strategy flag
+  `allow_fresh_entry_with_open_position` strategy flag. Decision summaries and
+  scheduled-run metadata now expose `order_placement_blocked` details so the
+  dashboard can show calculated daily candidates without implying an order was
+  routed.
 - S23 dashboard strike qualification and Step 8 audit tables now include
   candidate expiry and wrap long rejection reasons, improving manual validation
   when near and next expiry rows contain overlapping strikes

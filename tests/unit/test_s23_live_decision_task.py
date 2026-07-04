@@ -69,3 +69,50 @@ def test_build_wrapper_command_includes_optional_flags() -> None:
 
     assert " -EnableSmokeOverride" in command
     assert " -CarryForwardStateDir \"tmp\\state\"" in command
+
+
+def test_build_runner_arguments_preserve_windows_carry_forward_path_as_one_argument() -> None:
+    carry_forward_path = Path(
+        "D:/TradingDataPaper/strategies/S23/fyers_morning_supervised_decision/"
+        "2026-07-03/session/NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+    )
+    spec = S23MorningSupervisedTaskSpec(
+        task_name="TFIS S23 Morning Supervised Decision",
+        repo_root=Path("D:/TradingEngineTFIS"),
+        tfis_root=Path("D:/TradingEngineTFIS"),
+        config_path=Path("config/paper.s23.fyers_connect_test.yaml"),
+        strategy_path=Path("config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"),
+        reference_packet_path=Path("config/reference_packets/s23_bear_put_live_decision_reference.json"),
+        artifact_root=DURABLE_S23_ARTIFACT_ROOT,
+        session_id_prefix="s23-fyers-morning-supervised-decision",
+        carry_forward_state_dir=carry_forward_path,
+    )
+
+    args = build_s23_morning_runner_arguments(spec)
+
+    carry_forward_index = args.index("--carry-forward-state-dir") + 1
+    assert args[carry_forward_index] == str(carry_forward_path)
+    assert args[carry_forward_index] != "D"
+
+
+def test_build_wrapper_command_quotes_windows_carry_forward_path() -> None:
+    carry_forward_path = Path(
+        "D:/TradingDataPaper/strategies/S23/fyers_morning_supervised_decision/"
+        "2026-07-03/session/NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+    )
+    spec = S23MorningSupervisedTaskSpec(
+        task_name="TFIS S23 Morning Supervised Decision",
+        repo_root=Path("D:/TradingEngineTFIS"),
+        tfis_root=Path("D:/TradingEngineTFIS"),
+        config_path=Path("config/paper.s23.fyers_connect_test.yaml"),
+        strategy_path=Path("config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"),
+        reference_packet_path=Path("config/reference_packets/s23_bear_put_live_decision_reference.json"),
+        artifact_root=DURABLE_S23_ARTIFACT_ROOT,
+        session_id_prefix="s23-fyers-morning-supervised-decision",
+        carry_forward_state_dir=carry_forward_path,
+    )
+
+    command = build_s23_morning_wrapper_command(spec)
+
+    assert f' -CarryForwardStateDir "{carry_forward_path}"' in command
+    assert ' -CarryForwardStateDir "D"' not in command
