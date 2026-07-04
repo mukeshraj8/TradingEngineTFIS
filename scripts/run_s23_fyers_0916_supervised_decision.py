@@ -53,7 +53,7 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("--reference-packet", default=str(DEFAULT_REFERENCE_PACKET))
-    parser.add_argument("--artifact-root", default="tmp/s23_fyers_morning_supervised_decision")
+    parser.add_argument("--artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument("--dashboard-output-root", default="tmp/operator_dashboard")
     parser.add_argument("--session-id-prefix", default="s23-fyers-morning-supervised-decision")
     parser.add_argument("--carry-forward-state-dir")

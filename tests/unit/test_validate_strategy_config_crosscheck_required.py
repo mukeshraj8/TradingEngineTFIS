@@ -63,7 +63,7 @@ def _build_valid_folder_strategy(base_dir: Path) -> Path:
         base_dir / "parameters.yaml",
         "\n".join(
             [
-                "strike_buffer_pct: 5.0",
+                "strike_buffer_pct: 1.2",
                 "strike_step: 50.0",
                 "ideal_premium_pct: 1.2",
                 "minimum_premium_pct: 0.9",

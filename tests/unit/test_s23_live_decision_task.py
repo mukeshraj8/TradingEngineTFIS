@@ -9,6 +9,9 @@ from tfis.paper import (
 )
 
 
+DURABLE_S23_ARTIFACT_ROOT = Path("data/strategies/S23/fyers_morning_supervised_decision")
+
+
 def _spec() -> S23MorningSupervisedTaskSpec:
     return S23MorningSupervisedTaskSpec(
         task_name="TFIS S23 Morning Supervised Decision",
@@ -17,7 +20,7 @@ def _spec() -> S23MorningSupervisedTaskSpec:
         config_path=Path("config/paper.s23.fyers_connect_test.yaml"),
         strategy_path=Path("config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"),
         reference_packet_path=Path("config/reference_packets/s23_bear_put_live_decision_reference.json"),
-        artifact_root=Path("tmp/s23_fyers_morning_supervised_decision"),
+        artifact_root=DURABLE_S23_ARTIFACT_ROOT,
         session_id_prefix="s23-fyers-morning-supervised-decision",
         skip_refresh=True,
     )
@@ -32,6 +35,7 @@ def test_build_runner_arguments_includes_required_paths() -> None:
     assert args[1].endswith("scripts\\run_s23_fyers_0916_supervised_decision.py")
     assert "--tfis-root" in args
     assert "D:\\TradingEngineTFIS" in args
+    assert str(DURABLE_S23_ARTIFACT_ROOT) in args
     assert "--skip-refresh" in args
 
 
@@ -54,7 +58,7 @@ def test_build_wrapper_command_includes_optional_flags() -> None:
         config_path=Path("config/paper.s23.fyers_connect_test.yaml"),
         strategy_path=Path("config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"),
         reference_packet_path=Path("config/reference_packets/s23_bear_put_live_decision_reference.json"),
-        artifact_root=Path("tmp/s23_fyers_morning_supervised_decision"),
+        artifact_root=DURABLE_S23_ARTIFACT_ROOT,
         session_id_prefix="s23-fyers-morning-supervised-decision",
         skip_refresh=False,
         enable_smoke_override=True,

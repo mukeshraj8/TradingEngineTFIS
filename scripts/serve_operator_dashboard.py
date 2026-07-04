@@ -100,7 +100,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--output-root", default="tmp/operator_dashboard")
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--s23-artifact-root", default="tmp/s23_fyers_morning_supervised_decision")
+    parser.add_argument("--s23-artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument(
         "--s23-strategy-path",
         default="config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",

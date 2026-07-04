@@ -74,9 +74,16 @@ S23 must follow the rule-sheet steps in order.
    - If the option close is above original SL, square off at CMP at `15:00:00`.
    - If the option close is not above original SL, carry the position forward
      and mark the stoploss inactive overnight.
-   - On the next trading day, keep the target active, but reset/recalculate SL
-     only after the morning `09:15`, ORPT, and RC checks described by the rule
-     sheet. This behavior must be explicit and auditable.
+   - On the next trading day, keep the target active while stoploss remains
+     inactive through the opening window.
+   - At ORPT, compare the `09:15` selected-option high with the original SL.
+     If the high did not exceed original SL, reactivate the original SL.
+   - If the `09:15` selected-option high exceeded original SL, wait until RC and
+     set revised SL as `RC selected-option high + configured sl_reference_pct`.
+     The buffer percentage comes from the selected strategy branch parameters
+     so future strategies can reuse the lifecycle flow with different figures.
+   - Missing selected-option bars required for this reset must hold the position
+     with an auditable reason instead of applying stale SL evidence.
 
 ## Monthly Status Boundary
 

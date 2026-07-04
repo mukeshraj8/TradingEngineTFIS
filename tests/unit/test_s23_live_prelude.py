@@ -177,6 +177,19 @@ def _option_chain_snapshot(*contracts: OptionChainContract, day: int = 27) -> Op
     )
 
 
+def _next_expiry_option_chain_snapshot(*, day: int = 28) -> OptionChainSnapshotEvent:
+    return _option_chain_snapshot(
+        _option_chain_contract(
+            symbol="NIFTY_20260604_22400_PE",
+            strike=22400.0,
+            ltp=270.0,
+            oi=1200.0,
+            expiry=date(2026, 6, 4),
+        ),
+        day=day,
+    )
+
+
 def _expiry_governance(*, explicit_expiry_for_day: int) -> S23PaperExpiryGovernance:
     calendar = DeterministicExpiryCalendar(
         explicit_expiries={
@@ -470,16 +483,17 @@ def test_open_carry_forward_position_produces_resume_without_rollover_on_t_minus
             session_context=_session_context(day=28, generated_at=_ts(28, 9, 30, 3)),
             snapshots=_snapshots(day=28),
             expiry_governance=_expiry_governance(explicit_expiry_for_day=28),
-            option_chain_snapshot=_option_chain_snapshot(day=28),
+            option_chain_snapshot=_next_expiry_option_chain_snapshot(day=28),
         )
     )
 
     assert result.mode is S23PaperPreludeMode.CARRY_FORWARD_RESUME
-    assert result.trade_plan_event is None
-    assert result.selected_contract_event is None
+    assert result.trade_plan_event is not None
+    assert result.selected_contract_event is not None
     assert result.resume_event is not None
     assert result.resume_event.event_type is S23PaperPositionStateEventType.PAPER_POSITION_RESUMED
     assert result.governance_events == ()
+    assert result.selected_contract_provenance == "runtime_option_chain_selection_with_carry_forward"
 
 
 def test_open_carry_forward_position_on_t_minus_1_does_not_force_close_before_expiry() -> None:
@@ -489,7 +503,7 @@ def test_open_carry_forward_position_on_t_minus_1_does_not_force_close_before_ex
             session_context=_session_context(day=28, generated_at=_ts(28, 15, 20, 0)),
             snapshots=_snapshots(day=28),
             expiry_governance=_expiry_governance(explicit_expiry_for_day=28),
-            option_chain_snapshot=_option_chain_snapshot(day=28),
+            option_chain_snapshot=_next_expiry_option_chain_snapshot(day=28),
         )
     )
 

@@ -483,6 +483,36 @@ def test_live_decision_recalculates_bear_put_when_orpt_entry_is_missed() -> None
     assert result.summary.selected_contract_symbol == "NIFTY_20260604_23750_PE"
 
 
+def test_live_decision_missed_entry_uses_configured_target_and_sl_percentages() -> None:
+    collected_inputs = replace(
+        _collected_inputs(),
+        selected_contract_bars=(
+            _selected_contract_bar(day=28, minute=24, low=180.0, high=200.0, close=190.0),
+            _selected_contract_bar(day=28, minute=29, low=175.0, high=205.0, close=180.0),
+        ),
+    )
+    strategy_rule = _strategy_rule()
+    strategy_rule = replace(
+        strategy_rule,
+        parameters={
+            **strategy_rule.parameters,
+            "target_pct": 50.0,
+            "sl_entry_pct": 20.0,
+        },
+    )
+
+    result = S23PaperLiveDecisionBuilder().build(
+        strategy_rule=strategy_rule,
+        reference_packet=_reference_packet(),
+        collected_inputs=collected_inputs,
+    )
+
+    assert result.explanation["orpt_rc_timing"]["status"] == "ENTRY_MISSED_RECALCULATED"
+    assert result.summary.planned_entry_price == pytest.approx(161.875)
+    assert result.summary.target_price == pytest.approx(80.9375)
+    assert result.summary.stoploss_price == pytest.approx(194.25)
+
+
 def test_live_decision_accepts_base_entry_at_orpt_without_rc_bar() -> None:
     collected_inputs = replace(
         _collected_inputs(),
@@ -654,6 +684,10 @@ def test_carry_forward_mode_emits_governance_summary() -> None:
     )
 
     assert result.summary.mode == "CARRY_FORWARD_RESUME"
-    assert result.summary.selected_contract_symbol is None
+    assert result.summary.selected_contract_symbol == "NIFTY_20260604_23750_PE"
+    assert result.summary.planned_entry_price == 212.75
     assert "PAPER_POSITION_RESUMED" == result.summary.resume_event_type
     assert result.summary.governance_event_types == ()
+    assert result.summary.notes == (
+        "Fresh entry planning was computed while an open carry-forward position exists; config blocks fresh paper order creation until the open position exits.",
+    )

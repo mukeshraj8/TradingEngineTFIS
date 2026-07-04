@@ -98,5 +98,8 @@ def load_strategy_rule(path: str | Path) -> StrategyRule:
         target_formula=data["target_formula"],
         stoploss_formula=data["stoploss_formula"],
         carry_forward_allowed=bool(data["carry_forward_allowed"]),
+        allow_fresh_entry_with_open_position=bool(
+            data.get("allow_fresh_entry_with_open_position", False)
+        ),
         parameters={str(key): float(value) for key, value in (data.get("parameters") or {}).items()},
     )

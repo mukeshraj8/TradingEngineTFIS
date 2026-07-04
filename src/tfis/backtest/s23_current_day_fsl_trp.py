@@ -18,14 +18,6 @@ S23_BULL_PUT_UNIQUE_CODE = "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT"
 S23_BEAR_CALL_UNIQUE_CODE = "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
 S23_BEAR_PUT_UNIQUE_CODE = "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
 
-S23_COMMON_PARAMETERS = {
-    "strike_buffer_pct": 5.0,
-    "ideal_premium_pct": 1.20,
-    "minimum_premium_pct": 0.90,
-    "entry_discount_pct": 7.50,
-}
-
-
 @dataclass(frozen=True, slots=True)
 class CurrentDaySnapshot:
     timestamp: datetime
@@ -50,6 +42,7 @@ class S23CurrentDayFslTrpInput:
     base_trade_plan: TradePlan
     market_levels: MarketLevels
     option_levels: dict[str, float]
+    parameters: dict[str, float]
     trigger_snapshot_at_0915: CurrentDaySnapshot
     snapshot_at_orpt: CurrentDaySnapshot
     snapshot_at_recalc: CurrentDaySnapshot
@@ -190,6 +183,7 @@ class S23CurrentDayFslTrpEngine:
         handling_input: S23CurrentDayFslTrpInput,
         trigger_result: CurrentDayFslTrpTriggerResult,
     ) -> S23CurrentDayFslTrpResult:
+        parameters = self._require_parameters(handling_input)
         reference_value = min(
             self._require_market_level(handling_input.market_levels.d3ll, "PRV_3DLL"),
             handling_input.snapshot_at_orpt.spot_low,
@@ -205,20 +199,20 @@ class S23CurrentDayFslTrpEngine:
             trigger_result=trigger_result,
             effective_option_type=OptionType.CALL,
             recalculated_start_strike=self._round_down(
-                self._pct_above(reference_value, S23_COMMON_PARAMETERS["strike_buffer_pct"])
+                self._pct_above(reference_value, parameters["strike_buffer_pct"])
             ),
             recalculated_end_strike=self._round_down(reference_value) - 1,
             recalculated_ideal_premium=self._pct_of(
                 reference_value,
-                S23_COMMON_PARAMETERS["ideal_premium_pct"],
+                parameters["ideal_premium_pct"],
             ),
             recalculated_minimum_premium=self._pct_of(
                 reference_value,
-                S23_COMMON_PARAMETERS["minimum_premium_pct"],
+                parameters["minimum_premium_pct"],
             ),
             recalculated_entry_price=self._pct_below(
                 entry_reference,
-                S23_COMMON_PARAMETERS["entry_discount_pct"],
+                parameters["entry_discount_pct"],
             ),
             recalculated_stoploss_price=None,
             entry_override_source_cell="AB6_OS_Z183",
@@ -228,7 +222,7 @@ class S23CurrentDayFslTrpEngine:
             audit_notes=(
                 "Row 183 applied exactly as workbook-backed current-day Bull/Bull CF Call not-missed handling.",
                 "Used MIN(PRV_3DLL, CDLL_at_ORPT) for current-day strike and premium recalculation.",
-                "Used MIN(OPT_PRV_3DLL, OPT_CDLL_at_ORPT) minus 7.50% for the current-day option entry override from AB6_OS_Z183.",
+                f"Used MIN(OPT_PRV_3DLL, OPT_CDLL_at_ORPT) minus {parameters['entry_discount_pct']}% for the current-day option entry override from AB6_OS_Z183.",
                 "Target and stoploss remain inherited from the base trade plan because row 183 does not confirm additional override cells for those fields.",
             ),
         )
@@ -238,6 +232,7 @@ class S23CurrentDayFslTrpEngine:
         handling_input: S23CurrentDayFslTrpInput,
         trigger_result: CurrentDayFslTrpTriggerResult,
     ) -> S23CurrentDayFslTrpResult:
+        parameters = self._require_parameters(handling_input)
         strike_reference = max(
             self._require_market_level(handling_input.market_levels.d2hh, "PRV_2DHH"),
             handling_input.snapshot_at_recalc.spot_high,
@@ -257,24 +252,24 @@ class S23CurrentDayFslTrpEngine:
             trigger_result=trigger_result,
             effective_option_type=OptionType.PUT,
             recalculated_start_strike=self._round_up(
-                self._pct_below(strike_reference, S23_COMMON_PARAMETERS["strike_buffer_pct"])
+                self._pct_below(strike_reference, parameters["strike_buffer_pct"])
             ),
             recalculated_end_strike=self._round_up(strike_reference) + 1,
             recalculated_ideal_premium=self._pct_of(
                 premium_reference,
-                S23_COMMON_PARAMETERS["ideal_premium_pct"],
+                parameters["ideal_premium_pct"],
             ),
             recalculated_minimum_premium=self._pct_of(
                 premium_reference,
-                S23_COMMON_PARAMETERS["minimum_premium_pct"],
+                parameters["minimum_premium_pct"],
             ),
             recalculated_entry_price=self._pct_below(
                 entry_reference,
-                S23_COMMON_PARAMETERS["entry_discount_pct"],
+                parameters["entry_discount_pct"],
             ),
             recalculated_stoploss_price=self._pct_above(
                 handling_input.snapshot_at_recalc.option_high,
-                7.0,
+                parameters["sl_reference_pct"],
             ),
             entry_override_source_cell="AB6_OS_Z184",
             lifecycle_start_after=handling_input.snapshot_at_recalc.timestamp,
@@ -284,8 +279,8 @@ class S23CurrentDayFslTrpEngine:
                 "Row 184 applied exactly as workbook-directed for Bull/Bull CF Call FSL/TRP missed handling.",
                 "Workbook confirmation keeps the Put-side Q/R/S/U/W/Z family intentional for this missed Bull/Bull CF Call branch.",
                 "Used MAX(PRV_2DHH, CDHH_at_recalc) for strike range and MIN(PRV_2DHH, CDLL_at_recalc) for premium thresholds.",
-                "Used MIN(OPT_PRV_2DLL, OPT_CDLL_at_recalc) minus 7.50% for the current-day option entry override from AB6_OS_Z184.",
-                "Used current-day option HH at recalculation time plus 7% for the new FSL.",
+                f"Used MIN(OPT_PRV_2DLL, OPT_CDLL_at_recalc) minus {parameters['entry_discount_pct']}% for the current-day option entry override from AB6_OS_Z184.",
+                f"Used current-day option HH at recalculation time plus {parameters['sl_reference_pct']}% for the new FSL.",
                 "Target remains inherited because row 184 does not confirm an additional target override cell.",
             ),
         )
@@ -295,6 +290,7 @@ class S23CurrentDayFslTrpEngine:
         handling_input: S23CurrentDayFslTrpInput,
         trigger_result: CurrentDayFslTrpTriggerResult,
     ) -> S23CurrentDayFslTrpResult:
+        parameters = self._require_parameters(handling_input)
         reference_value = min(
             self._require_market_level(handling_input.market_levels.d2ll, "PRV_2DLL"),
             handling_input.snapshot_at_recalc.spot_low,
@@ -310,24 +306,24 @@ class S23CurrentDayFslTrpEngine:
             trigger_result=trigger_result,
             effective_option_type=OptionType.CALL,
             recalculated_start_strike=self._round_down(
-                self._pct_above(reference_value, S23_COMMON_PARAMETERS["strike_buffer_pct"])
+                self._pct_above(reference_value, parameters["strike_buffer_pct"])
             ),
             recalculated_end_strike=self._round_down(reference_value) - 1,
             recalculated_ideal_premium=self._pct_of(
                 reference_value,
-                S23_COMMON_PARAMETERS["ideal_premium_pct"],
+                parameters["ideal_premium_pct"],
             ),
             recalculated_minimum_premium=self._pct_of(
                 reference_value,
-                S23_COMMON_PARAMETERS["minimum_premium_pct"],
+                parameters["minimum_premium_pct"],
             ),
             recalculated_entry_price=self._pct_below(
                 entry_reference,
-                S23_COMMON_PARAMETERS["entry_discount_pct"],
+                parameters["entry_discount_pct"],
             ),
             recalculated_stoploss_price=self._pct_above(
                 handling_input.snapshot_at_recalc.option_high,
-                10.0,
+                parameters["sl_reference_pct"],
             ),
             entry_override_source_cell="AB6_OS_Z185",
             lifecycle_start_after=handling_input.snapshot_at_recalc.timestamp,
@@ -336,8 +332,8 @@ class S23CurrentDayFslTrpEngine:
             audit_notes=(
                 "Row 185 applied exactly as workbook-backed Bear/Bear CF Call FSL/TRP missed handling.",
                 "Used MIN(PRV_2DLL, CDLL_at_recalc) for current-day strike and premium recalculation.",
-                "Used MIN(OPT_PRV_2DLL, OPT_CDLL_at_recalc) minus 7.50% for the current-day option entry override from AB6_OS_Z185.",
-                "Used current-day option HH at recalculation time plus 10% for the new FSL.",
+                f"Used MIN(OPT_PRV_2DLL, OPT_CDLL_at_recalc) minus {parameters['entry_discount_pct']}% for the current-day option entry override from AB6_OS_Z185.",
+                f"Used current-day option HH at recalculation time plus {parameters['sl_reference_pct']}% for the new FSL.",
                 "Target remains inherited because row 185 does not confirm an additional target override cell.",
             ),
         )
@@ -347,6 +343,7 @@ class S23CurrentDayFslTrpEngine:
         handling_input: S23CurrentDayFslTrpInput,
         trigger_result: CurrentDayFslTrpTriggerResult,
     ) -> S23CurrentDayFslTrpResult:
+        parameters = self._require_parameters(handling_input)
         strike_reference = max(
             self._require_market_level(handling_input.market_levels.d3hh, "PRV_3DHH"),
             handling_input.snapshot_at_orpt.spot_high,
@@ -366,20 +363,20 @@ class S23CurrentDayFslTrpEngine:
             trigger_result=trigger_result,
             effective_option_type=OptionType.PUT,
             recalculated_start_strike=self._round_up(
-                self._pct_below(strike_reference, S23_COMMON_PARAMETERS["strike_buffer_pct"])
+                self._pct_below(strike_reference, parameters["strike_buffer_pct"])
             ),
             recalculated_end_strike=self._round_up(strike_reference) + 1,
             recalculated_ideal_premium=self._pct_of(
                 premium_reference,
-                S23_COMMON_PARAMETERS["ideal_premium_pct"],
+                parameters["ideal_premium_pct"],
             ),
             recalculated_minimum_premium=self._pct_of(
                 premium_reference,
-                S23_COMMON_PARAMETERS["minimum_premium_pct"],
+                parameters["minimum_premium_pct"],
             ),
             recalculated_entry_price=self._pct_below(
                 entry_reference,
-                S23_COMMON_PARAMETERS["entry_discount_pct"],
+                parameters["entry_discount_pct"],
             ),
             recalculated_stoploss_price=None,
             entry_override_source_cell="AB6_OS_Z186",
@@ -389,7 +386,7 @@ class S23CurrentDayFslTrpEngine:
             audit_notes=(
                 "Row 186 applied exactly as workbook-backed Put Sell SL not-missed handling.",
                 "Used MAX(PRV_3DHH, CDHH_at_ORPT) for strike range and MIN(PRV_3DHH, CDLL_at_ORPT) for premium thresholds.",
-                "Used MIN(OPT_PRV_3DLL, OPT_CDLL_at_ORPT) minus 7.50% for the current-day option entry override from AB6_OS_Z186.",
+                f"Used MIN(OPT_PRV_3DLL, OPT_CDLL_at_ORPT) minus {parameters['entry_discount_pct']}% for the current-day option entry override from AB6_OS_Z186.",
                 "Target and stoploss remain inherited from the base trade plan because row 186 does not confirm additional override cells for those fields.",
             ),
         )
@@ -399,6 +396,7 @@ class S23CurrentDayFslTrpEngine:
         handling_input: S23CurrentDayFslTrpInput,
         trigger_result: CurrentDayFslTrpTriggerResult,
     ) -> S23CurrentDayFslTrpResult:
+        parameters = self._require_parameters(handling_input)
         return S23CurrentDayFslTrpResult(
             applied=True,
             reason="s23_current_day_fsl_trp_row_187_fsl_only_applied",
@@ -412,7 +410,7 @@ class S23CurrentDayFslTrpEngine:
             recalculated_entry_price=None,
             recalculated_stoploss_price=self._pct_above(
                 handling_input.snapshot_at_recalc.option_high,
-                10.0,
+                parameters["sl_reference_pct"],
             ),
             entry_override_source_cell=None,
             lifecycle_start_after=handling_input.snapshot_at_recalc.timestamp,
@@ -428,7 +426,7 @@ class S23CurrentDayFslTrpEngine:
             audit_notes=(
                 "Row 187 applied as FSL-only exactly as workbook-backed.",
                 "R/S/U/W/Z are blank in the workbook, so strike, premium, and entry recalculation must not be inferred.",
-                "Used current-day option HH at recalculation time plus 10% for the new FSL.",
+                f"Used current-day option HH at recalculation time plus {parameters['sl_reference_pct']}% for the new FSL.",
                 "Workbook note: 'When You Call And Put Position is Exited'.",
             ),
         )
@@ -438,6 +436,7 @@ class S23CurrentDayFslTrpEngine:
         handling_input: S23CurrentDayFslTrpInput,
         trigger_result: CurrentDayFslTrpTriggerResult,
     ) -> S23CurrentDayFslTrpResult:
+        parameters = self._require_parameters(handling_input)
         return S23CurrentDayFslTrpResult(
             applied=True,
             reason="s23_current_day_fsl_trp_row_188_fsl_only_applied",
@@ -451,7 +450,7 @@ class S23CurrentDayFslTrpEngine:
             recalculated_entry_price=None,
             recalculated_stoploss_price=self._pct_above(
                 handling_input.snapshot_at_recalc.option_high,
-                7.0,
+                parameters["sl_reference_pct"],
             ),
             entry_override_source_cell=None,
             lifecycle_start_after=handling_input.snapshot_at_recalc.timestamp,
@@ -467,7 +466,7 @@ class S23CurrentDayFslTrpEngine:
             audit_notes=(
                 "Row 188 applied as FSL-only exactly as workbook-backed.",
                 "R/S/U/W/Z are blank in the workbook, so strike, premium, and entry recalculation must not be inferred.",
-                "Used current-day option HH at recalculation time plus 7% for the new FSL.",
+                f"Used current-day option HH at recalculation time plus {parameters['sl_reference_pct']}% for the new FSL.",
                 "Workbook note: 'This is Only Applicable for Same Day'.",
             ),
         )
@@ -511,6 +510,21 @@ class S23CurrentDayFslTrpEngine:
                 f"Missing option reference for S23 current-day FSL/TRP: {alias}"
             )
         return float(value)
+
+    def _require_parameters(self, handling_input: S23CurrentDayFslTrpInput) -> dict[str, float]:
+        required = (
+            "strike_buffer_pct",
+            "ideal_premium_pct",
+            "minimum_premium_pct",
+            "entry_discount_pct",
+            "sl_reference_pct",
+        )
+        missing = tuple(name for name in required if name not in handling_input.parameters)
+        if missing:
+            raise ValueError(
+                "Missing S23 current-day FSL/TRP parameter(s): " + ", ".join(missing)
+            )
+        return handling_input.parameters
 
     def _pct_of(self, base_value: float, pct: float) -> float:
         return float(base_value) * (float(pct) / 100.0)

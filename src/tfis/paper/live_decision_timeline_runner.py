@@ -354,11 +354,16 @@ def run_s23_morning_supervised_decision(
             primary_timeline_json = timeline_json
             primary_timeline_markdown = timeline_markdown
         decision_result = final_decisions_by_branch.get(strategy_branch)
+        fresh_order_blocked_by_open_position = (
+            carry_forward_position is not None
+            and not strategy_rule.allow_fresh_entry_with_open_position
+        )
         if (
             decision_result is not None
             and decision_result.summary.status == "READY"
             and decision_result.summary.selected_contract_symbol
             and decision_result.summary.planned_entry_price is not None
+            and not fresh_order_blocked_by_open_position
         ):
             opened_at = (
                 datetime.fromisoformat(final_decision_trigger_time_by_branch[strategy_branch])

@@ -576,12 +576,7 @@ class TfisOperatorDashboardBuilder:
                 decision_failure_code=stage_payload.get("decision_failure_code"),
                 decision_failure_message=stage_payload.get("decision_failure_message"),
                 formula_values=formula_values,
-                candidate_rows=self._candidate_rows(
-                    strategy_rule=strategy_rule,
-                    stage_dir=stage_dir,
-                    formula_values=formula_values,
-                    selected_contract_symbol=decision_summary.get("selected_contract_symbol"),
-                ),
+                candidate_rows=(),
                 raw_artifact_links={
                     "snapshot_preflight_summary.json": str(stage_dir / "snapshot_preflight_summary.json"),
                     "normalized_underlying_bars.json": str(stage_dir / "normalized_underlying_bars.json"),
@@ -627,12 +622,7 @@ class TfisOperatorDashboardBuilder:
             decision_failure_code=stage.decision_failure_code,
             decision_failure_message=stage.decision_failure_message,
             formula_values=formula_values,
-            candidate_rows=self._candidate_rows(
-                strategy_rule=strategy_rule,
-                stage_dir=stage_dir,
-                formula_values=formula_values,
-                selected_contract_symbol=decision_summary.get("selected_contract_symbol"),
-            ),
+            candidate_rows=(),
             raw_artifact_links={
                 "snapshot_preflight_summary.json": str(stage_dir / "snapshot_preflight_summary.json"),
                 "normalized_underlying_bars.json": str(stage_dir / "normalized_underlying_bars.json"),
@@ -720,6 +710,7 @@ class TfisOperatorDashboardBuilder:
             rows.append(
                 {
                     "symbol": contract.get("symbol"),
+                    "expiry": contract.get("expiry") or contract.get("expiry_date"),
                     "strike": strike,
                     "option_type": option_type,
                     "premium": premium,
@@ -1478,6 +1469,7 @@ class TfisOperatorDashboardBuilder:
                     "<tr>",
                     f"<td class=\"text-cell code-cell\">{html.escape(str(item['branch']))}</td>",
                     f"<td class=\"text-cell contract-cell\"><strong>{html.escape(str(item.get('contract') or 'No contract selected'))}</strong></td>",
+                    f"<td class=\"text-cell expiry-cell\"><strong>{html.escape(str(item.get('expiry') or 'n/a'))}</strong></td>",
                     f"<td class=\"text-cell side-cell\">{html.escape(str(item['side']))}</td>",
                     f"<td class=\"number-cell\">{self._fmt_number(item['strike'])}</td>",
                     f"<td class=\"number-cell\">{self._fmt_number(item['premium'])}</td>",
@@ -1496,7 +1488,7 @@ class TfisOperatorDashboardBuilder:
                 '<div class="session-summary summary-shell final-leg-panel">',
                 '<div class="section-heading"><h3>Final S23 Leg Decisions</h3><span>Final CE/PE decisions from the 09:30 run</span></div>',
                 '<table class="candidate-table final-leg-table">',
-                "<thead><tr><th class=\"text-cell\">Branch</th><th class=\"text-cell\">Contract</th><th class=\"text-cell\">Side</th><th class=\"number-cell\">Strike</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Entry</th><th class=\"number-cell\">Target</th><th class=\"number-cell\">SL</th><th class=\"status-cell\">Order Status</th></tr></thead>",
+                "<thead><tr><th class=\"text-cell\">Branch</th><th class=\"text-cell\">Contract</th><th class=\"text-cell\">Expiry</th><th class=\"text-cell\">Side</th><th class=\"number-cell\">Strike</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Entry</th><th class=\"number-cell\">Target</th><th class=\"number-cell\">SL</th><th class=\"status-cell\">Order Status</th></tr></thead>",
                 f"<tbody>{rows}</tbody>",
                 "</table>",
                 "</div>",
@@ -1661,6 +1653,7 @@ class TfisOperatorDashboardBuilder:
                 [
                     "<tr>",
                     f"<td class=\"number-cell\">{self._fmt_number(item.get('strike'))}</td>",
+                    f"<td class=\"text-cell expiry-cell\">{html.escape(str(item.get('expiry') or item.get('expiry_date') or 'n/a'))}</td>",
                     f"<td class=\"text-cell contract-cell\"><strong>{html.escape(str(item.get('symbol') or 'n/a'))}</strong></td>",
                     f"<td class=\"number-cell\">{self._fmt_number(item.get('ltp', item.get('premium')))}</td>",
                     f"<td class=\"number-cell\">{self._fmt_number(item.get('oi'), integer=True)}</td>",
@@ -1858,7 +1851,7 @@ class TfisOperatorDashboardBuilder:
             for item in rows
         )
         if not body:
-            body = '<tr><td colspan="7" class="text-cell reason-cell">No candidate rows were persisted for this step.</td></tr>'
+            body = '<tr><td colspan="8" class="text-cell reason-cell">No candidate rows were persisted for this step.</td></tr>'
         open_attr = " open" if default_open else ""
         return "\n".join(
             [
@@ -1867,7 +1860,7 @@ class TfisOperatorDashboardBuilder:
                 f'<p class="table-help">{html.escape(note)}</p>',
                 '<div class="full-scan-table-wrap">',
                 '<table class="candidate-table eligible-strike-table full-scan-table">',
-                "<thead><tr><th class=\"number-cell\">Strike</th><th class=\"text-cell\">Contract</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Distance From Ideal</th><th class=\"status-cell\">Status</th><th class=\"text-cell\">Reason</th></tr></thead>",
+                "<thead><tr><th class=\"number-cell\">Strike</th><th class=\"text-cell\">Expiry</th><th class=\"text-cell\">Contract</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Distance From Ideal</th><th class=\"status-cell\">Status</th><th class=\"text-cell\">Reason</th></tr></thead>",
                 f"<tbody>{body}</tbody>",
                 "</table>",
                 "</div>",
@@ -2045,6 +2038,7 @@ class TfisOperatorDashboardBuilder:
             filled.append(
                 {
                     "symbol": f"No {expected_side} contract captured",
+                    "expiry": "",
                     "strike": strike,
                     "option_type": option_type,
                     "premium": None,
@@ -2449,10 +2443,15 @@ class TfisOperatorDashboardBuilder:
         spot_ref_value = self._s23_reference_value(leg.get("market_refs"), spot_alias)
         monthly_status = self._s23_leg_monthly_status(leg)
         strike_step = self._s23_strike_step_from_formula(end) or 50.0
+        start_formula = str(start.get("resolved_formula") or start.get("formula") or "n/a")
+        end_formula = str(end.get("resolved_formula") or end.get("formula") or "n/a")
+        ideal_formula = str(ideal.get("resolved_formula") or ideal.get("formula") or "n/a")
+        minimum_formula = str(minimum.get("resolved_formula") or minimum.get("formula") or "n/a")
+        strike_buffer_text = self._s23_strike_buffer_text_from_formula(start_formula)
         direction_text = (
-            "For PE selling, TFIS starts below the spot reference using the 5% buffer, then searches upward toward the reference."
+            f"For PE selling, TFIS starts below the spot reference using the configured {strike_buffer_text} buffer, then searches upward toward the reference."
             if is_pe
-            else "For CE selling, TFIS starts above the spot reference using the 5% buffer, then searches downward toward the reference."
+            else f"For CE selling, TFIS starts above the spot reference using the configured {strike_buffer_text} buffer, then searches downward toward the reference."
         )
         search_text = (
             f"from {self._fmt_number(leg.get('start_strike'))} up to {self._fmt_number(leg.get('end_strike'))}"
@@ -2470,10 +2469,6 @@ class TfisOperatorDashboardBuilder:
             else "End Strike up to Start Strike"
         )
         option_side_name = "PUT" if is_pe else "CALL"
-        start_formula = str(start.get("resolved_formula") or start.get("formula") or "n/a")
-        end_formula = str(end.get("resolved_formula") or end.get("formula") or "n/a")
-        ideal_formula = str(ideal.get("resolved_formula") or ideal.get("formula") or "n/a")
-        minimum_formula = str(minimum.get("resolved_formula") or minimum.get("formula") or "n/a")
         attempted_expiries = self._s23_attempted_expiries_text(leg)
         expiry_search_text = (
             f"The persisted run attempted expiry search in this order: {html.escape(attempted_expiries)}."
@@ -2749,6 +2744,15 @@ class TfisOperatorDashboardBuilder:
             return None
         return self._float_or_none(match.group(2))
 
+    def _s23_strike_buffer_text_from_formula(self, formula: str) -> str:
+        match = re.search(r"([+-])\s*(\d+(?:\.\d+)?)\s*%", formula)
+        if not match:
+            return "strategy-configured"
+        value = self._float_or_none(match.group(2))
+        if value is None:
+            return "strategy-configured"
+        return f"{self._fmt_number(value)}%"
+
     def _session_final_leg_rows(
         self,
         *,
@@ -2797,6 +2801,7 @@ class TfisOperatorDashboardBuilder:
                 {
                     "branch": branch,
                     "contract": contract,
+                    "expiry": summary.get("selected_contract_expiry"),
                     "side": side,
                     "strike": self._float_or_none(summary.get("selected_contract_strike")),
                     "premium": self._float_or_none(summary.get("selected_contract_ltp")),
@@ -2887,6 +2892,7 @@ class TfisOperatorDashboardBuilder:
                 {
                     "branch": normalized_branch,
                     "contract": None,
+                    "expiry": None,
                     "side": side,
                     "strike": None,
                     "premium": None,
@@ -3092,7 +3098,7 @@ class TfisOperatorDashboardBuilder:
         selected_side = (
             str(selected_candidate.get("option_type") or "n/a")
             if selected_candidate is not None
-            else "n/a"
+            else "See final calculation explanation"
         )
         selected_strike = (
             self._fmt_number(selected_candidate.get("strike"))
@@ -3133,12 +3139,21 @@ class TfisOperatorDashboardBuilder:
             (
                 "Step 5",
                 "Near/next contract search",
-                f"{len(stage.candidate_rows)} candidates reviewed; selected side {html.escape(selected_side)}",
+                (
+                    f"{len(stage.candidate_rows)} persisted stage candidates reviewed; "
+                    f"selected side {html.escape(selected_side)}"
+                    if stage.candidate_rows
+                    else "Authoritative Step 8a/8b/8c strike audit is shown in the final calculation explanation below."
+                ),
             ),
             (
                 "Step 6",
                 "Premium and OI",
-                f"premium {selected_premium}, OI {selected_oi}",
+                (
+                    f"premium {selected_premium}, OI {selected_oi}"
+                    if selected_candidate is not None
+                    else "See final CE/PE leg decision and strike audit below."
+                ),
             ),
             ("Step 7", "Final weekly option", final_decision),
             (
@@ -3247,12 +3262,13 @@ class TfisOperatorDashboardBuilder:
         rows = "\n".join(
             [
                 "<tr>"
-                f"<td>{html.escape(str(item.get('strike') or 'n/a'))}</td>"
-                f"<td>{html.escape(str(item.get('option_type') or 'n/a'))}</td>"
-                f"<td>{html.escape(self._fmt_number(item.get('premium')))}</td>"
-                f"<td>{html.escape(self._fmt_number(item.get('oi'), integer=True))}</td>"
-                f"<td>{self._badge(str(item.get('status') or 'n/a'))}</td>"
-                f"<td>{html.escape(str(item.get('reason') or ''))}</td>"
+                f"<td class=\"number-cell\">{html.escape(str(item.get('strike') or 'n/a'))}</td>"
+                f"<td class=\"text-cell expiry-cell\">{html.escape(str(item.get('expiry') or item.get('expiry_date') or 'n/a'))}</td>"
+                f"<td class=\"text-cell\">{html.escape(str(item.get('option_type') or 'n/a'))}</td>"
+                f"<td class=\"number-cell\">{html.escape(self._fmt_number(item.get('premium')))}</td>"
+                f"<td class=\"number-cell\">{html.escape(self._fmt_number(item.get('oi'), integer=True))}</td>"
+                f"<td class=\"status-cell\">{self._badge(str(item.get('status') or 'n/a'))}</td>"
+                f"<td class=\"text-cell reason-cell\">{html.escape(str(item.get('reason') or ''))}</td>"
                 "</tr>"
                 for item in stage.candidate_rows
             ]
@@ -3262,7 +3278,7 @@ class TfisOperatorDashboardBuilder:
                 '<div class="candidate-panel">',
                 "<h4>Strike Qualification</h4>",
                 '<table class="candidate-table">',
-                "<thead><tr><th>Strike</th><th>Side</th><th>Premium</th><th>OI</th><th>Status</th><th>Reason</th></tr></thead>",
+                "<thead><tr><th class=\"number-cell\">Strike</th><th class=\"text-cell\">Expiry</th><th class=\"text-cell\">Side</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"status-cell\">Status</th><th class=\"text-cell\">Reason</th></tr></thead>",
                 f"<tbody>{rows}</tbody>",
                 "</table>",
                 "</div>",
@@ -4092,6 +4108,14 @@ initInstrumentRegistry().then(() => calculateMonthlyStatus()).catch(() => calcul
         <label>Near Contract Label<input id="nearLabel" value="near"></label>
         <label>Next Contract Label<input id="nextLabel" value="next"></label>
         <label>Review Date<input id="reviewDate" type="date"></label>
+        <label>Strike Buffer %<input id="strikeBufferPct" type="number" step="0.05" value="1.2"></label>
+        <label>Ideal Premium %<input id="idealPremiumPct" type="number" step="0.05" value="1.20"></label>
+        <label>Minimum Premium %<input id="minimumPremiumPct" type="number" step="0.05" value="0.90"></label>
+        <label>Entry Discount %<input id="entryDiscountPct" type="number" step="0.05" value="7.5"></label>
+        <label>Target %<input id="targetPct" type="number" step="0.05" value="60.0"></label>
+        <label>SL Entry %<input id="slEntryPct" type="number" step="0.05" value="60.0"></label>
+        <label>SL Ref 2DHH %<input id="slRef2dhhPct" type="number" step="0.05" value="7.0"></label>
+        <label>SL Ref 3DHH %<input id="slRef3dhhPct" type="number" step="0.05" value="10.0"></label>
       </div>
 
       <h3>Spot References</h3>
@@ -4153,12 +4177,12 @@ initInstrumentRegistry().then(() => calculateMonthlyStatus()).catch(() => calcul
 <script>
 const BRANCHES = {
   bullish: {
-    CE: { trade: "Sell Call", spotRef: "d3ll", entryRef: "opt3dll", slRef: "opt2dhh", slBuffer: 1.07, direction: "down" },
-    PE: { trade: "Sell Put", spotRef: "d2hh", entryRef: "opt2dll", slRef: "opt3dhh", slBuffer: 1.10, direction: "up" }
+    CE: { trade: "Sell Call", spotRef: "d3ll", entryRef: "opt3dll", slRef: "opt2dhh", slPctId: "slRef2dhhPct", direction: "down" },
+    PE: { trade: "Sell Put", spotRef: "d2hh", entryRef: "opt2dll", slRef: "opt3dhh", slPctId: "slRef3dhhPct", direction: "up" }
   },
   bearish: {
-    CE: { trade: "Sell Call", spotRef: "d2ll", entryRef: "opt2dll", slRef: "opt3dhh", slBuffer: 1.10, direction: "down" },
-    PE: { trade: "Sell Put", spotRef: "d3hh", entryRef: "opt3dll", slRef: "opt2dhh", slBuffer: 1.07, direction: "up" }
+    CE: { trade: "Sell Call", spotRef: "d2ll", entryRef: "opt2dll", slRef: "opt3dhh", slPctId: "slRef3dhhPct", direction: "down" },
+    PE: { trade: "Sell Put", spotRef: "d3hh", entryRef: "opt3dll", slRef: "opt2dhh", slPctId: "slRef2dhhPct", direction: "up" }
   }
 };
 
@@ -4184,8 +4208,11 @@ function refs() {
 function strikePlan(group, side) {
   const branch = BRANCHES[group][side];
   const step = number("strikeStep");
+  const strikeBufferPct = number("strikeBufferPct");
+  const idealPremiumPct = number("idealPremiumPct");
+  const minimumPremiumPct = number("minimumPremiumPct");
   const ref = refs()[branch.spotRef];
-  const start = branch.direction === "down" ? roundDown(ref * 1.05, step) : roundUp(ref * 0.95, step);
+  const start = branch.direction === "down" ? roundDown(ref * (1 + strikeBufferPct / 100), step) : roundUp(ref * (1 - strikeBufferPct / 100), step);
   const end = branch.direction === "down" ? roundDown(ref, step) - step : roundUp(ref, step) + step;
   const low = Math.min(start, end);
   const high = Math.max(start, end);
@@ -4195,7 +4222,7 @@ function strikePlan(group, side) {
   } else {
     for (let strike = start; strike <= end; strike += step) strikes.push(strike);
   }
-  return { group, side, branch, ref, start, end, low, high, strikes, idealPremium: ref * 0.012, minimumPremium: ref * 0.009 };
+  return { group, side, branch, ref, start, end, low, high, strikes, idealPremium: ref * (idealPremiumPct / 100), minimumPremium: ref * (minimumPremiumPct / 100) };
 }
 function inputValue(selector) {
   const element = document.querySelector(selector);
@@ -4330,11 +4357,15 @@ function riskForSide(group, side, selectedBySide) {
   const refValues = refs();
   const selected = selectedBySide[side];
   const entryReference = refValues[branch.entryRef];
-  const entry = entryReference * 0.925;
-  const target = entry * 0.40;
-  const percentSl = entry * 1.60;
+  const entryDiscountPct = number("entryDiscountPct");
+  const targetPct = number("targetPct");
+  const slEntryPct = number("slEntryPct");
+  const slReferencePct = number(branch.slPctId);
+  const entry = entryReference * (1 - entryDiscountPct / 100);
+  const target = entry * (1 - targetPct / 100);
+  const percentSl = entry * (1 + slEntryPct / 100);
   const structureReference = refValues[branch.slRef];
-  const structureSl = structureReference * branch.slBuffer;
+  const structureSl = structureReference * (1 + slReferencePct / 100);
   const stoploss = Math.min(percentSl, structureSl);
   return {
     side,
@@ -4346,6 +4377,7 @@ function riskForSide(group, side, selectedBySide) {
     target,
     percentSl,
     structureReference,
+    slReferencePct,
     structureSl,
     stoploss,
     status: selected.row ? "READY" : "NO ORDER"
@@ -4399,8 +4431,8 @@ function calculate() {
     `${branchLabel(group, "CE")}: spot ref ${ce.branch.spotRef.toUpperCase()} = ${fmt(ce.plan.ref)}, range ${fmt(ce.plan.start)} -> ${fmt(ce.plan.end)}, final strike ${ce.selected.row ? fmt(ce.selected.row.strike) : "not selected"}; ${ce.selected.reason}`,
     `${branchLabel(group, "PE")}: spot ref ${pe.branch.spotRef.toUpperCase()} = ${fmt(pe.plan.ref)}, range ${fmt(pe.plan.start)} -> ${fmt(pe.plan.end)}, final strike ${pe.selected.row ? fmt(pe.selected.row.strike) : "not selected"}; ${pe.selected.reason}`,
     `Minimum OI = ${fmt(number("minOiLots"))} lots * ${fmt(number("lotSize"))} = ${fmt(minOiContracts)} contracts. Manual OI fields are used on this static review page.`,
-    `CE final calculation: entry = ${ce.branch.entryRef.toUpperCase()} ${fmt(ce.entryReference)} * 0.925 = ${fmt(ce.entry)}; target = ${fmt(ce.target)}; SL = min(entry * 1.60 = ${fmt(ce.percentSl)}, ${ce.branch.slRef.toUpperCase()} * ${fmt(ce.branch.slBuffer)} = ${fmt(ce.structureSl)}) = ${fmt(ce.stoploss)}.`,
-    `PE final calculation: entry = ${pe.branch.entryRef.toUpperCase()} ${fmt(pe.entryReference)} * 0.925 = ${fmt(pe.entry)}; target = ${fmt(pe.target)}; SL = min(entry * 1.60 = ${fmt(pe.percentSl)}, ${pe.branch.slRef.toUpperCase()} * ${fmt(pe.branch.slBuffer)} = ${fmt(pe.structureSl)}) = ${fmt(pe.stoploss)}.`
+    `CE final calculation: entry = ${ce.branch.entryRef.toUpperCase()} ${fmt(ce.entryReference)} - ${fmt(number("entryDiscountPct"))}% = ${fmt(ce.entry)}; target = entry - ${fmt(number("targetPct"))}% = ${fmt(ce.target)}; SL = min(entry + ${fmt(number("slEntryPct"))}% = ${fmt(ce.percentSl)}, ${ce.branch.slRef.toUpperCase()} + ${fmt(ce.slReferencePct)}% = ${fmt(ce.structureSl)}) = ${fmt(ce.stoploss)}.`,
+    `PE final calculation: entry = ${pe.branch.entryRef.toUpperCase()} ${fmt(pe.entryReference)} - ${fmt(number("entryDiscountPct"))}% = ${fmt(pe.entry)}; target = entry - ${fmt(number("targetPct"))}% = ${fmt(pe.target)}; SL = min(entry + ${fmt(number("slEntryPct"))}% = ${fmt(pe.percentSl)}, ${pe.branch.slRef.toUpperCase()} + ${fmt(pe.slReferencePct)}% = ${fmt(pe.structureSl)}) = ${fmt(pe.stoploss)}.`
   ];
   document.getElementById("calculationSteps").innerHTML = steps.map(stepText => `<li>${stepText}</li>`).join("");
 }
@@ -4488,29 +4520,33 @@ calculate();
                 "    .rule-step-panel h4, .formula-panel h4, .candidate-panel h4 { margin: 0 0 10px; font-size: 1rem; }",
                 "    .candidate-table { display: block; overflow-x: auto; font-size: 0.86rem; border-radius: 8px; }",
                 "    .candidate-table thead, .candidate-table tbody { display: table; width: 100%; }",
+                "    .candidate-table th, .candidate-table td { vertical-align: top; }",
                 "    .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }",
                 "    .section-heading h3 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; }",
                 "    .section-heading span { color: var(--muted); font-size: 0.82rem; font-weight: 650; }",
                 "    .final-leg-panel { overflow-x: auto; }",
-                "    .final-leg-table { display: table; table-layout: fixed; width: 100%; min-width: 1180px; overflow: hidden; font-size: 0.82rem; }",
+                "    .final-leg-table { display: table; table-layout: fixed; width: 100%; min-width: 1260px; overflow: hidden; font-size: 0.82rem; }",
                 "    .final-leg-table thead, .final-leg-table tbody { display: table-row-group; width: auto; }",
                 "    .final-leg-table thead { display: table-header-group; }",
                 "    .final-leg-table th, .final-leg-table td { padding: 10px 12px; vertical-align: middle; }",
                 "    .final-leg-table th:nth-child(1), .final-leg-table td:nth-child(1) { width: 190px; }",
-                "    .final-leg-table th:nth-child(2), .final-leg-table td:nth-child(2) { width: 240px; }",
-                "    .final-leg-table th:nth-child(3), .final-leg-table td:nth-child(3) { width: 90px; }",
-                "    .final-leg-table th:nth-child(4), .final-leg-table td:nth-child(4) { width: 80px; }",
-                "    .final-leg-table th:nth-child(5), .final-leg-table td:nth-child(5) { width: 90px; }",
-                "    .final-leg-table th:nth-child(6), .final-leg-table td:nth-child(6) { width: 105px; }",
-                "    .final-leg-table th:nth-child(7), .final-leg-table td:nth-child(7) { width: 90px; }",
+                "    .final-leg-table th:nth-child(2), .final-leg-table td:nth-child(2) { width: 230px; }",
+                "    .final-leg-table th:nth-child(3), .final-leg-table td:nth-child(3) { width: 100px; }",
+                "    .final-leg-table th:nth-child(4), .final-leg-table td:nth-child(4) { width: 90px; }",
+                "    .final-leg-table th:nth-child(5), .final-leg-table td:nth-child(5) { width: 80px; }",
+                "    .final-leg-table th:nth-child(6), .final-leg-table td:nth-child(6) { width: 90px; }",
+                "    .final-leg-table th:nth-child(7), .final-leg-table td:nth-child(7) { width: 105px; }",
                 "    .final-leg-table th:nth-child(8), .final-leg-table td:nth-child(8) { width: 90px; }",
-                "    .final-leg-table th:nth-child(9), .final-leg-table td:nth-child(9) { width: 80px; }",
-                "    .final-leg-table th:nth-child(10), .final-leg-table td:nth-child(10) { width: 170px; }",
+                "    .final-leg-table th:nth-child(9), .final-leg-table td:nth-child(9) { width: 90px; }",
+                "    .final-leg-table th:nth-child(10), .final-leg-table td:nth-child(10) { width: 80px; }",
+                "    .final-leg-table th:nth-child(11), .final-leg-table td:nth-child(11) { width: 170px; }",
                 "    .final-leg-table th { color: #405047; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; }",
                 "    .final-leg-table tbody tr:nth-child(even) td { background: #fffaf3; }",
                 "    .text-cell { text-align: left; }",
                 "    .number-cell { text-align: right; font-variant-numeric: tabular-nums; }",
                 "    .status-cell { text-align: center; }",
+                "    .expiry-cell { white-space: nowrap; font-variant-numeric: tabular-nums; color: #43524a; }",
+                "    .reason-cell { white-space: normal; overflow-wrap: anywhere; word-break: normal; line-height: 1.35; }",
                 "    .code-cell { font-family: Consolas, 'Courier New', monospace; font-size: 0.78rem; overflow-wrap: anywhere; }",
                 "    .contract-cell strong { display: inline-block; font-family: Consolas, 'Courier New', monospace; font-size: 0.82rem; background: #f6efe4; border: 1px solid #e3d6c2; border-radius: 6px; padding: 3px 6px; white-space: nowrap; }",
                 "    .side-cell { font-weight: 800; color: var(--accent); white-space: nowrap; }",
@@ -4519,7 +4555,7 @@ calculate();
                 "    .final-leg-table .side-cell { font-size: 0.78rem; letter-spacing: 0; }",
                 "    .final-leg-table .number-cell { white-space: nowrap; }",
                 "    .final-leg-table .badge { font-size: 0.66rem; padding: 4px 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }",
-                "    .leg-explanation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }",
+                "    .leg-explanation-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }",
                 "    .explanation-panel { cursor: default; }",
                 "    .explanation-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; list-style: none; }",
                 "    .explanation-summary::-webkit-details-marker { display: none; }",
@@ -4528,7 +4564,7 @@ calculate();
                 "    .explanation-summary span { font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; font-weight: 700; }",
                 "    .explanation-summary small { color: var(--muted); font-size: 0.82rem; font-weight: 650; }",
                 "    .explanation-panel[open] .focus-panel { margin-top: 16px; }",
-                "    .leg-explanation-card { border: 1px solid var(--soft-border); border-radius: 8px; background: #fffaf3; padding: 16px; }",
+                "    .leg-explanation-card { border: 1px solid var(--soft-border); border-radius: 8px; background: #fffaf3; padding: 16px; min-width: 0; }",
                 "    .leg-explanation-card h3 { margin: 0 0 12px; font-size: 1rem; color: var(--accent); font-family: Georgia, 'Times New Roman', serif; }",
                 "    .eligible-strike-panel { margin: 14px 0; }",
                 "    .eligible-strike-panel h4 { margin: 0 0 10px; font-size: 0.98rem; color: var(--ink); font-family: 'Segoe UI', Arial, sans-serif; font-weight: 800; }",
@@ -4555,19 +4591,20 @@ calculate();
                 "    .full-scan-panel[open] summary::before { transform: rotate(90deg); }",
                 "    .full-scan-panel .table-help { margin: 12px 14px; }",
                 "    .full-scan-table-wrap { overflow-x: auto; padding-bottom: 4px; }",
-                "    .full-scan-table { table-layout: fixed; min-width: 930px; border-left: 0; border-right: 0; border-bottom: 0; border-radius: 0; font-size: 0.8rem; }",
-                "    .full-scan-table th, .full-scan-table td { padding: 8px 9px; }",
-                "    .full-scan-table th { font-size: 0.68rem; }",
-                "    .full-scan-table th:nth-child(1), .full-scan-table td:nth-child(1) { width: 68px; }",
-                "    .full-scan-table th:nth-child(2), .full-scan-table td:nth-child(2) { width: 205px; }",
-                "    .full-scan-table th:nth-child(3), .full-scan-table td:nth-child(3) { width: 82px; }",
-                "    .full-scan-table th:nth-child(4), .full-scan-table td:nth-child(4) { width: 94px; }",
+                "    .full-scan-table { table-layout: fixed; width: 100%; min-width: 1180px; border-left: 0; border-right: 0; border-bottom: 0; border-radius: 0; font-size: 0.79rem; }",
+                "    .full-scan-table th, .full-scan-table td { padding: 9px 10px; vertical-align: middle; }",
+                "    .full-scan-table th { font-size: 0.68rem; line-height: 1.2; }",
+                "    .full-scan-table th:nth-child(1), .full-scan-table td:nth-child(1) { width: 72px; }",
+                "    .full-scan-table th:nth-child(2), .full-scan-table td:nth-child(2) { width: 96px; }",
+                "    .full-scan-table th:nth-child(3), .full-scan-table td:nth-child(3) { width: 250px; }",
+                "    .full-scan-table th:nth-child(4), .full-scan-table td:nth-child(4) { width: 90px; }",
                 "    .full-scan-table th:nth-child(5), .full-scan-table td:nth-child(5) { width: 104px; }",
-                "    .full-scan-table th:nth-child(6), .full-scan-table td:nth-child(6) { width: 104px; }",
-                "    .full-scan-table th:nth-child(7), .full-scan-table td:nth-child(7) { width: 230px; }",
-                "    .full-scan-table .contract-cell strong { font-size: 0.72rem; padding: 3px 6px; }",
-                "    .full-scan-table .badge { min-width: 68px; font-size: 0.64rem; padding: 3px 7px; }",
-                "    .full-scan-table .reason-cell { color: var(--muted); font-size: 0.76rem; line-height: 1.25; }",
+                "    .full-scan-table th:nth-child(6), .full-scan-table td:nth-child(6) { width: 118px; }",
+                "    .full-scan-table th:nth-child(7), .full-scan-table td:nth-child(7) { width: 112px; }",
+                "    .full-scan-table th:nth-child(8), .full-scan-table td:nth-child(8) { width: 338px; }",
+                "    .full-scan-table .contract-cell strong { font-size: 0.72rem; padding: 3px 6px; max-width: 230px; }",
+                "    .full-scan-table .badge { min-width: 76px; font-size: 0.64rem; padding: 3px 8px; }",
+                "    .full-scan-table .reason-cell { color: var(--muted); font-size: 0.76rem; line-height: 1.3; white-space: normal; overflow-wrap: normal; word-break: normal; }",
                 "    .explanation-list { margin: 0; padding-left: 20px; display: grid; gap: 8px; }",
                 "    .explanation-list li { padding-left: 4px; }",
                 "    .explanation-table { margin-top: 14px; }",

@@ -150,6 +150,14 @@ class S23PaperPositionManager:
             carry_forward_allowed=True,
             last_updated_timestamp=opened_at,
             provenance_source_ids=provenance_source_ids,
+            strategy_parameters=strategy_rule.parameters,
+            stoploss_reset_buffer_pct=(
+                float(strategy_rule.parameters["sl_reference_pct"])
+                if "sl_reference_pct" in strategy_rule.parameters
+                else None
+            ),
+            stoploss_reset_orpt_time=strategy_rule.entry_time,
+            stoploss_reset_rc_time=strategy_rule.recalculation_time,
         )
         session_dir = Path(session_directory)
         state_path = self._state_store.save_state(session_dir, state)
@@ -221,6 +229,26 @@ class S23PaperPositionManager:
             if strategy_rule is not None
             else order_state.no_carry_past_expiry
         )
+        strategy_parameters = (
+            strategy_rule.parameters
+            if strategy_rule is not None
+            else order_state.strategy_parameters
+        )
+        stoploss_reset_buffer_pct = (
+            float(strategy_rule.parameters["sl_reference_pct"])
+            if strategy_rule is not None and "sl_reference_pct" in strategy_rule.parameters
+            else order_state.stoploss_reset_buffer_pct
+        )
+        stoploss_reset_orpt_time = (
+            strategy_rule.entry_time
+            if strategy_rule is not None
+            else order_state.stoploss_reset_orpt_time
+        )
+        stoploss_reset_rc_time = (
+            strategy_rule.recalculation_time
+            if strategy_rule is not None
+            else order_state.stoploss_reset_rc_time
+        )
 
         state = self._state_store.create_open_position_state(
             strategy_code=order_state.strategy_code,
@@ -246,6 +274,10 @@ class S23PaperPositionManager:
             carry_forward_allowed=True,
             last_updated_timestamp=order_state.fill_timestamp,
             provenance_source_ids=provenance_source_ids,
+            strategy_parameters=strategy_parameters,
+            stoploss_reset_buffer_pct=stoploss_reset_buffer_pct,
+            stoploss_reset_orpt_time=stoploss_reset_orpt_time,
+            stoploss_reset_rc_time=stoploss_reset_rc_time,
         )
         session_dir = Path(session_directory)
         state_path = self._state_store.save_state(session_dir, state)
@@ -346,12 +378,59 @@ class S23PaperPositionManager:
                     state_path=session_dir / "paper_position_state.json",
                 )
 
+        if self._pending_next_day_stoploss_reset(state, session_date):
+            target_event = self._first_exit_event(
+                state=state,
+                session_date=session_date,
+                market_events=market_events,
+                evaluated_at=evaluated_at,
+                allow_reverse_on_stoploss=allow_reverse_on_stoploss,
+                stoploss_enabled=False,
+            )
+            if target_event is not None:
+                state = self._state_store.mark_position_closed(
+                    session_dir,
+                    session_date=session_date,
+                    closed_at=target_event.timestamp,
+                    reason_code=target_event.reason_code,
+                    message=target_event.message,
+                    reverse_entry_required=target_event.reverse_entry_required,
+                    fresh_entry_required=target_event.fresh_entry_required,
+                    provenance_source_ids=provenance_source_ids,
+                )
+                return self._persist_result(
+                    session_dir,
+                    session_date=session_date,
+                    status=target_event.status,
+                    state=state,
+                    event=target_event,
+                    state_path=session_dir / "paper_position_state.json",
+                )
+            reset_event, state = self._evaluate_next_day_stoploss_reset(
+                session_directory=session_dir,
+                state=state,
+                session_date=session_date,
+                market_events=market_events,
+                evaluated_at=evaluated_at,
+                provenance_source_ids=provenance_source_ids,
+            )
+            if reset_event is not None and not state.stoploss_active:
+                return self._persist_result(
+                    session_dir,
+                    session_date=session_date,
+                    status=reset_event.status,
+                    state=state,
+                    event=reset_event,
+                    state_path=session_dir / "paper_position_state.json",
+                )
+
         exit_event = self._first_exit_event(
             state=state,
             session_date=session_date,
             market_events=market_events,
             evaluated_at=evaluated_at,
             allow_reverse_on_stoploss=allow_reverse_on_stoploss,
+            stoploss_enabled=state.stoploss_active,
         )
         if exit_event is not None:
             state = self._state_store.mark_position_closed(
@@ -422,6 +501,15 @@ class S23PaperPositionManager:
                 state_path=session_dir / "paper_position_state.json",
             )
         if continuation_event is not None:
+            state = self._state_store.mark_stoploss_inactive_for_carry_forward(
+                session_dir,
+                session_date=session_date,
+                updated_at=continuation_event.timestamp,
+                reference_price=state.stoploss_price,
+                reason_code=continuation_event.reason_code,
+                message=continuation_event.message,
+                provenance_source_ids=provenance_source_ids,
+            )
             return self._persist_result(
                 session_dir,
                 session_date=session_date,
@@ -463,7 +551,7 @@ class S23PaperPositionManager:
             source_id=current_id,
             source_effective_timestamp=current_timestamp,
             target_price=state.target_price,
-            stop_price=self._effective_stop_price(state),
+            stop_price=self._effective_stop_price(state) if state.stoploss_active else None,
         )
         return self._persist_result(
             session_dir,
@@ -482,6 +570,7 @@ class S23PaperPositionManager:
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
         allow_reverse_on_stoploss: bool,
+        stoploss_enabled: bool = True,
     ) -> S23PaperPositionManagerEvent | None:
         for event in self._sorted_market_events(market_events):
             if event.symbol != state.selected_contract_symbol:
@@ -492,6 +581,7 @@ class S23PaperPositionManager:
                     session_date=session_date,
                     event=event,
                     allow_reverse_on_stoploss=allow_reverse_on_stoploss,
+                    stoploss_enabled=stoploss_enabled,
                 )
             else:
                 exit_event = self._evaluate_bar(
@@ -499,10 +589,234 @@ class S23PaperPositionManager:
                     session_date=session_date,
                     event=event,
                     allow_reverse_on_stoploss=allow_reverse_on_stoploss,
+                    stoploss_enabled=stoploss_enabled,
                 )
             if exit_event is not None:
                 return exit_event
         return None
+
+    def _pending_next_day_stoploss_reset(
+        self,
+        state: S23PaperPositionState,
+        session_date: date,
+    ) -> bool:
+        return (
+            state.stoploss_reset_pending
+            and not state.stoploss_active
+            and session_date > (state.stoploss_reset_session_date or state.entry_date)
+        )
+
+    def _evaluate_next_day_stoploss_reset(
+        self,
+        *,
+        session_directory: Path,
+        state: S23PaperPositionState,
+        session_date: date,
+        market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
+        evaluated_at: datetime,
+        provenance_source_ids: tuple[str, ...],
+    ) -> tuple[S23PaperPositionManagerEvent | None, S23PaperPositionState]:
+        orpt_time = state.stoploss_reset_orpt_time or time(9, 24, 59)
+        rc_time = state.stoploss_reset_rc_time or time(9, 29, 59)
+        current_time = evaluated_at.timetz().replace(tzinfo=None)
+        current_price, current_bid, current_ask, source_kind, source_id, source_timestamp = (
+            self._latest_market_reference(state, market_events)
+        )
+        original_stop = float(state.stoploss_price)
+        if current_time < orpt_time:
+            return (
+                self._held_event(
+                    state=state,
+                    session_date=session_date,
+                    evaluated_at=evaluated_at,
+                    reason_code="carry_forward_stoploss_waiting_for_orpt",
+                    message=(
+                        "Carried S23 position has target active, but stoploss remains "
+                        "inactive until ORPT before the next-day SL reset check."
+                    ),
+                    current_price=current_price,
+                    current_bid=current_bid,
+                    current_ask=current_ask,
+                    source_kind=source_kind,
+                    source_id=source_id,
+                    source_timestamp=source_timestamp,
+                    stop_price=None,
+                ),
+                state,
+            )
+
+        open_high = self._bar_high_for_minute(
+            state=state,
+            market_events=market_events,
+            target_time=time(9, 15),
+        )
+        if open_high is None:
+            return (
+                self._held_event(
+                    state=state,
+                    session_date=session_date,
+                    evaluated_at=evaluated_at,
+                    reason_code="carry_forward_stoploss_waiting_for_0915_high",
+                    message=(
+                        "Carried S23 position needs the 09:15 selected-option high "
+                        "to decide whether the original SL was missed. Stoploss "
+                        "remains inactive; target remains active."
+                    ),
+                    current_price=current_price,
+                    current_bid=current_bid,
+                    current_ask=current_ask,
+                    source_kind=source_kind,
+                    source_id=source_id,
+                    source_timestamp=source_timestamp,
+                    stop_price=None,
+                ),
+                state,
+            )
+
+        if open_high <= original_stop:
+            updated = self._state_store.activate_stoploss_after_reset(
+                session_directory,
+                session_date=session_date,
+                updated_at=evaluated_at,
+                stoploss_price=original_stop,
+                fsl_price=None,
+                reason_code="carry_forward_stoploss_not_missed_orpt_activated",
+                message=(
+                    f"09:15 high {open_high:.2f} did not exceed original SL "
+                    f"{original_stop:.2f}; stoploss is active again from ORPT."
+                ),
+                provenance_source_ids=provenance_source_ids,
+            )
+            return None, updated
+
+        if current_time < rc_time:
+            return (
+                self._held_event(
+                    state=state,
+                    session_date=session_date,
+                    evaluated_at=evaluated_at,
+                    reason_code="carry_forward_stoploss_missed_waiting_for_rc",
+                    message=(
+                        f"09:15 high {open_high:.2f} exceeded original SL "
+                        f"{original_stop:.2f}. TFIS is waiting until RC to set "
+                        "the revised SL from the RC high plus the configured buffer."
+                    ),
+                    current_price=current_price,
+                    current_bid=current_bid,
+                    current_ask=current_ask,
+                    source_kind=source_kind,
+                    source_id=source_id,
+                    source_timestamp=source_timestamp,
+                    stop_price=None,
+                ),
+                state,
+            )
+
+        rc_high = self._bar_high_for_minute(
+            state=state,
+            market_events=market_events,
+            target_time=rc_time,
+        )
+        if rc_high is None:
+            return (
+                self._held_event(
+                    state=state,
+                    session_date=session_date,
+                    evaluated_at=evaluated_at,
+                    reason_code="carry_forward_stoploss_waiting_for_rc_high",
+                    message=(
+                        "09:15 high exceeded the original SL, but the RC selected-option "
+                        "high is not available yet. Stoploss remains inactive; target "
+                        "remains active."
+                    ),
+                    current_price=current_price,
+                    current_bid=current_bid,
+                    current_ask=current_ask,
+                    source_kind=source_kind,
+                    source_id=source_id,
+                    source_timestamp=source_timestamp,
+                    stop_price=None,
+                ),
+                state,
+            )
+
+        buffer_pct = float(
+            state.stoploss_reset_buffer_pct
+            if state.stoploss_reset_buffer_pct is not None
+            else (state.strategy_parameters or {}).get("sl_reference_pct", 0.0)
+        )
+        revised_stop = rc_high * (1.0 + buffer_pct / 100.0)
+        updated = self._state_store.activate_stoploss_after_reset(
+            session_directory,
+            session_date=session_date,
+            updated_at=evaluated_at,
+            stoploss_price=revised_stop,
+            fsl_price=None,
+            reason_code="carry_forward_stoploss_recalculated_from_rc_high",
+            message=(
+                f"09:15 high {open_high:.2f} exceeded original SL {original_stop:.2f}; "
+                f"revised SL = RC high {rc_high:.2f} + {buffer_pct:.2f}% = "
+                f"{revised_stop:.2f}."
+            ),
+            provenance_source_ids=provenance_source_ids,
+        )
+        return None, updated
+
+    def _held_event(
+        self,
+        *,
+        state: S23PaperPositionState,
+        session_date: date,
+        evaluated_at: datetime,
+        reason_code: str,
+        message: str,
+        current_price: float | None,
+        current_bid: float | None,
+        current_ask: float | None,
+        source_kind: str | None,
+        source_id: str | None,
+        source_timestamp: datetime | None,
+        stop_price: float | None,
+    ) -> S23PaperPositionManagerEvent:
+        return S23PaperPositionManagerEvent(
+            artifact_version=_ARTIFACT_VERSION,
+            timestamp=source_timestamp or evaluated_at,
+            session_date=session_date,
+            status=S23PaperPositionManagerStatus.PAPER_POSITION_HELD,
+            selected_contract_symbol=state.selected_contract_symbol,
+            reason_code=reason_code,
+            message=message,
+            current_price=current_price,
+            current_bid=current_bid,
+            current_ask=current_ask,
+            source_kind=source_kind,
+            source_id=source_id,
+            source_effective_timestamp=source_timestamp,
+            target_price=state.target_price,
+            stop_price=stop_price,
+        )
+
+    def _bar_high_for_minute(
+        self,
+        *,
+        state: S23PaperPositionState,
+        market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
+        target_time: time,
+    ) -> float | None:
+        target_hour = target_time.hour
+        target_minute = target_time.minute
+        highs: list[float] = []
+        for event in self._sorted_market_events(market_events):
+            if not isinstance(event, SelectedContractBarEvent):
+                continue
+            if event.symbol != state.selected_contract_symbol or event.high is None:
+                continue
+            if (
+                (event.bar_start.hour, event.bar_start.minute) == (target_hour, target_minute)
+                or (event.bar_end.hour, event.bar_end.minute) == (target_hour, target_minute)
+            ):
+                highs.append(float(event.high))
+        return max(highs) if highs else None
 
     def _evaluate_1500_continuation_rule(
         self,
@@ -572,6 +886,7 @@ class S23PaperPositionManager:
         session_date: date,
         event: SelectedContractQuoteEvent,
         allow_reverse_on_stoploss: bool,
+        stoploss_enabled: bool = True,
     ) -> S23PaperPositionManagerEvent | None:
         exit_reference = (
             float(event.ask)
@@ -581,7 +896,7 @@ class S23PaperPositionManager:
         if exit_reference is None:
             return None
         stop_price = self._effective_stop_price(state)
-        if exit_reference >= stop_price:
+        if stoploss_enabled and exit_reference >= stop_price:
             exit_price = max(stop_price, exit_reference) + self._slippage_exit_points
             return self._exit_event(
                 session_date=session_date,
@@ -642,13 +957,14 @@ class S23PaperPositionManager:
         session_date: date,
         event: SelectedContractBarEvent,
         allow_reverse_on_stoploss: bool,
+        stoploss_enabled: bool = True,
     ) -> S23PaperPositionManagerEvent | None:
         if event.high is None or event.low is None:
             return None
         high = float(event.high)
         low = float(event.low)
         stop_price = self._effective_stop_price(state)
-        stop_hit = high >= stop_price
+        stop_hit = stoploss_enabled and high >= stop_price
         target_hit = low <= state.target_price
         if stop_hit:
             reason = (

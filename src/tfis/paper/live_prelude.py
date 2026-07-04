@@ -156,6 +156,8 @@ class S23PaperLivePreludeBuilder:
         monthly_status_event = self._build_monthly_status_event(request)
         snapshot_events = self._build_snapshot_events(request)
 
+        resume_event: S23PaperPositionStateEvent | None = None
+        governance_events: tuple[S23PaperPositionStateEvent, ...] = ()
         if request.carry_forward_position is not None:
             resume_event = self._build_resume_event(request)
             governance_events = request.expiry_governance.build_events(
@@ -164,20 +166,6 @@ class S23PaperLivePreludeBuilder:
                 event_timestamp=request.session_context.generated_at,
                 current_time=request.session_context.generated_at.timetz().replace(tzinfo=None),
                 provenance_source_ids=(monthly_status_event.envelope.source_id,),
-            )
-            return S23PaperLivePreludeResult(
-                mode=S23PaperPreludeMode.CARRY_FORWARD_RESUME,
-                selected_branch=request.strategy_branch,
-                calendar_context_event=calendar_event,
-                monthly_status_event=monthly_status_event,
-                snapshot_events=snapshot_events,
-                trade_plan_event=None,
-                selected_contract_event=None,
-                governance_events=governance_events,
-                resume_event=resume_event,
-                contract_selection=None,
-                trade_plan=None,
-                selected_contract_provenance="carry_forward_position_state",
             )
 
         trade_plan = request.trade_plan_override or self._strategy_evaluator.evaluate(
@@ -212,25 +200,33 @@ class S23PaperLivePreludeBuilder:
                 "smoke_override"
                 if request.smoke_override_enabled
                 and request.smoke_override_selected_contract_symbol
+                else "runtime_option_chain_selection_with_carry_forward"
+                if request.carry_forward_position is not None
                 else "runtime_option_chain_selection"
             ),
         )
         return S23PaperLivePreludeResult(
-            mode=S23PaperPreludeMode.FRESH_ENTRY,
+            mode=(
+                S23PaperPreludeMode.CARRY_FORWARD_RESUME
+                if request.carry_forward_position is not None
+                else S23PaperPreludeMode.FRESH_ENTRY
+            ),
             selected_branch=request.strategy_branch,
             calendar_context_event=calendar_event,
             monthly_status_event=monthly_status_event,
             snapshot_events=snapshot_events,
             trade_plan_event=trade_plan_event,
             selected_contract_event=selected_contract_event,
-            governance_events=(),
-            resume_event=None,
+            governance_events=governance_events,
+            resume_event=resume_event,
             contract_selection=selection,
             trade_plan=trade_plan,
             selected_contract_provenance=(
                 "smoke_override"
                 if request.smoke_override_enabled
                 and request.smoke_override_selected_contract_symbol
+                else "runtime_option_chain_selection_with_carry_forward"
+                if request.carry_forward_position is not None
                 else "runtime_option_chain_selection"
             ),
         )

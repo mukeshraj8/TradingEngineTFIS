@@ -73,7 +73,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--max-iterations", type=int, default=0, help="0 means run until --until.")
     parser.add_argument("--until", default="15:30", help="Local HH:MM cutoff for the watch loop.")
     parser.add_argument("--dashboard-output-root", default="tmp/operator_dashboard")
-    parser.add_argument("--s23-artifact-root", default="tmp/s23_fyers_morning_supervised_decision")
+    parser.add_argument("--s23-artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument(
         "--disable-dashboard-rebuild",
         action="store_true",
@@ -107,7 +107,7 @@ def main(argv: list[str] | None = None) -> int:
         else _resolve_state_dir(
             state_dir=args.state_dir,
             search_roots=tuple(args.state_search_root or ()),
-            default_artifact_root=Path("tmp/s23_fyers_morning_supervised_decision"),
+            default_artifact_root=Path("data/strategies/S23/fyers_morning_supervised_decision"),
             no_open_ok=True,
         )
     )
@@ -118,7 +118,7 @@ def main(argv: list[str] | None = None) -> int:
         order_dir = _resolve_order_dir(
             order_dir=args.order_dir,
             search_roots=tuple(args.state_search_root or ()),
-            default_artifact_root=Path("tmp/s23_fyers_morning_supervised_decision"),
+            default_artifact_root=Path("data/strategies/S23/fyers_morning_supervised_decision"),
             no_open_ok=args.no_open_ok,
             session_date=session_date,
         )
@@ -216,6 +216,8 @@ def main(argv: list[str] | None = None) -> int:
                     adapter=adapter,
                     selected_contract_symbol=watched_symbol,
                     session_date=session_date,
+                    evaluated_at=evaluated_at,
+                    state=state,
                 )
             except BrokerAdapterError as exc:
                 print(
@@ -341,6 +343,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
             if result.status in TERMINAL_STATUSES:
                 return 0
+            state = result.state
             if args.once:
                 return 0
             if args.max_iterations and iterations >= args.max_iterations:
@@ -365,6 +368,8 @@ def _fetch_selected_contract_events(
     adapter: FyersBrokerAdapter,
     selected_contract_symbol: str,
     session_date: date,
+    evaluated_at: datetime,
+    state,
 ) -> tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...]:
     events: list[SelectedContractQuoteEvent | SelectedContractBarEvent] = []
     try:
@@ -375,14 +380,42 @@ def _fetch_selected_contract_events(
                     events.append(event)
     except (AttributeError, BrokerAdapterError):
         pass
-    if events:
-        return tuple(events)
-    return (
-        adapter.get_option_quote(
-            selected_contract_symbol,
-            session_date=session_date,
-        ),
-    )
+    if (
+        state is not None
+        and getattr(state, "stoploss_reset_pending", False)
+        and not getattr(state, "stoploss_active", True)
+        and session_date > (getattr(state, "stoploss_reset_session_date", None) or state.entry_date)
+    ):
+        rc_time = getattr(state, "stoploss_reset_rc_time", None) or time(9, 29, 59)
+        to_time = max(evaluated_at.timetz().replace(tzinfo=None), rc_time)
+        try:
+            events.extend(
+                adapter.get_option_bars(
+                    selected_contract_symbol,
+                    session_date=session_date,
+                    from_time=time(9, 15),
+                    to_time=to_time,
+                    interval_minutes=1,
+                )
+            )
+        except (AttributeError, BrokerAdapterError) as exc:
+            print(
+                f"{evaluated_at.isoformat()} WARNING sl_reset_bar_fetch_failed "
+                f"{exc}; target-only watch continues",
+                flush=True,
+            )
+    try:
+        events.append(
+            adapter.get_option_quote(
+                selected_contract_symbol,
+                session_date=session_date,
+            )
+        )
+    except BrokerAdapterError:
+        if events:
+            return tuple(events)
+        raise
+    return tuple(events)
 
 
 def _resolve_state_dir(

@@ -35,15 +35,74 @@ Current S23 paper-mode posture:
 - `DONE`: S23 timeline/dashboard reconstruction can now evaluate the ORPT stage
   before the RC checkpoint exists. ORPT-stage decisions require only `0915` and
   `ORPT` snapshots, while RC/final stages still require all checkpoints.
+- `DONE`: S23 scheduled startup wrapper no longer depends on a live PowerShell
+  output pipeline to reach watcher startup. The supervised decision process now
+  writes stdout/stderr to TFIS launch logs, then the wrapper deterministically
+  scans the current run-date metadata and starts paper order/position watchers.
+  This addresses the 2026-06-30 issue where valid waiting orders were present
+  but no watcher was left running to update current prices, and prevents a
+  later-touched stale session from being chosen during watcher startup.
+- `DONE`: S23 watcher launchers now handle mixed branch state correctly. If one
+  branch has become an open paper position and another branch remains a waiting
+  order, TFIS starts a state watcher for the position branch and an order
+  watcher for the waiting branch instead of letting the position branch suppress
+  the order branch. If original metadata only contains order state but a branch
+  directory now has `paper_position_state.json`, the launcher derives state mode
+  from the branch directory.
+- `DONE`: S23 scheduled startup now scans the durable S23 artifact root for
+  persisted open/carry-forward `paper_position_state.json` files and starts a
+  state watcher for each eligible non-expired open position in addition to any
+  fresh current-day waiting orders. The latest discovered open position is also
+  passed into the supervised decision runner as carry-forward context when no
+  explicit `-CarryForwardStateDir` is supplied.
+- `DONE`: The 2026-07-03 scheduled startup failure was traced to a PowerShell
+  scalar/array edge case when exactly one open carry-forward state was
+  discovered. The wrapper now preserves discovered state paths as arrays in the
+  carry-forward handoff, metadata watcher startup, and fallback discovery paths,
+  preventing a single Windows path from being truncated to only its drive
+  letter.
+- `DONE`: S23 carry-forward resume no longer suppresses same-day CE/PE
+  calculation. When an open S23 position exists, TFIS still computes and
+  persists the fresh leg decision artifacts for the active rule group. Fresh
+  paper order creation is separately controlled by the strategy boolean
+  `allow_fresh_entry_with_open_position`, currently configured as `false` for
+  all S23 legs so no new order is placed until the open position exits.
+- `DONE`: `scripts/start_s23_paper_watchers_from_metadata.ps1` is available as
+  a TFIS-only recovery launcher. It reads the selected session metadata and
+  starts watcher windows for produced paper orders or open paper positions
+  without rerunning the strategy decision.
+- `DONE`: S23 dashboard strike qualification and full Step 8 audit tables now
+  show expiry per candidate row, and full-scan rejection reasons wrap inside the
+  table instead of being clipped at the right edge.
+- `DONE`: S23 dashboard strike-range explanation now derives the displayed
+  buffer percentage from the resolved strategy formula, so a configured 1.2%
+  strike buffer is no longer described as the older 5% workbook/default text.
+  Final S23 leg decisions also show the selected contract expiry explicitly,
+  which makes near/next-expiry selections easier to verify against broker
+  charts.
 - `DONE`: S23 missed-entry recalculation is now applied in the supervised live
   decision path. If ORPT marks the base entry as missed, TFIS recalculates the
   branch strike range, premium filters, entry, target, and SL from the RC spot
   and selected-option candles, then reruns normal near/next contract selection.
+- `DONE`: S23 missed-entry recalculation now consumes the loaded strategy
+  parameters for strike buffer, ideal/minimum premium percentages, entry
+  discount, target percentage, and SL entry percentage instead of carrying
+  duplicate hardcoded S23 constants in the recalculation path. The opt-in
+  current-day FSL/TRP overlay now also receives loaded strategy parameters for
+  its confirmed workbook-backed strike, premium, entry, and FSL calculations.
 - `DONE`: S23 paper position management now applies the 15:00 continuation
   decision after target/SL/FSL/expiry checks. If the option price is not above
   original SL, the position remains open with an auditable
   `s23_1500_carry_forward_stop_inactive` reason; if above original SL, normal
   stop/force-close handling closes the paper position.
+- `DONE`: S23 carried-forward positions now persist strategy parameters,
+  ORPT/RC reset times, and stoploss-active state. On the next trading day the
+  paper manager keeps the target active while the stoploss stays inactive until
+  the rule-sheet reset flow runs: if the `09:15` selected-option high does not
+  exceed the original SL, the original SL is reactivated at ORPT; if it does,
+  TFIS waits until RC and sets revised SL as RC high plus the configured
+  `sl_reference_pct` buffer. The watcher now fetches selected-option bars from
+  `09:15` through RC when a carried position needs this reset evidence.
 - `DONE`: S23 dashboard Step 8 strike audits now preserve the full reconstructed
   candidate set inside the rule-book Start-to-End range, scope rows to the
   attempted expiry for that step, and explicitly show missing strike-grid rows
@@ -60,18 +119,27 @@ Current S23 paper-mode posture:
   configurable `broker.option_chain_strike_count` for S23 paper snapshots, so
   near and next weekly expiry data can be collected for Step 8c fallback instead
   of repeatedly receiving only the default near chain.
-- `PARTIAL`: Near-vs-next expiry search is auditable, but true next-expiry
-  fallback still depends on a reliable FYERS/data-source path that returns the
-  actual next weekly option chain instead of relabeled near-expiry contracts.
+- `DONE`: Near-vs-next expiry fallback now fails closed unless the second
+  expiry request produces real next-weekly contracts after contract-symbol
+  expiry normalization. Relabeled/default near-expiry responses no longer pass
+  through as a partial Step 8c fallback; TFIS raises
+  `NEXT_WEEKLY_OPTION_CHAIN_UNAVAILABLE` with observed expiries so the operator
+  can see the broker-data issue clearly.
 - `PARTIAL`: Paper order watcher/current-price/P&L behavior is implemented,
   and a post-cutoff finalizer now prevents unfilled waiting orders from
-  lingering if a watcher crashes. This still needs one clean market-day
-  validation after the latest scheduling, watcher, and finalizer fixes.
+  lingering if a watcher crashes. Watchers were manually restarted on
+  2026-06-30 for the active TFIS S23 paper orders and current prices began
+  updating again. This still needs one clean market-day validation of automatic
+  watcher startup after the latest wrapper fix. On 2026-07-02, Windows process
+  inspection showed one TFIS watcher branch for the S23 BEAR_CALL order and one
+  TFIS watcher branch for the S23 BEAR_PUT position, with each visible as a
+  Python parent/child pair. No TradingEngineProd or sibling project process was
+  touched.
 - `PARTIAL`: Multi-day position lifecycle support exists in the paper runtime
   foundation, including target/SL/FSL, expiry force-close, session-only pending
-  orders, and the 15:00 carry-forward decision. It still needs live-like
-  validation on real market sessions, especially next-day SL reset/recalculation
-  after an overnight carry.
+  orders, the 15:00 carry-forward decision, and automatic watcher startup for
+  persisted open positions. It still needs live-like validation on real market
+  sessions, especially next-day SL reset/recalculation after an overnight carry.
 - `TODO`: On the next real NSE trading day, validate the full S23 paper flow
   one step at a time:
   1. scheduled task starts at the configured pre-market time
@@ -266,6 +334,10 @@ Current S23 paper-mode posture:
   (`tfis.strategy.s23_recalculation`) with a compatibility import kept at the
   old backtest path, so live paper and backtest consume the same strategy rule
   helper instead of paper importing from backtest.
+- S23 missed-entry recalculation now receives the loaded strategy parameters
+  from live decision and historical backtest callers, preserving the config
+  contract for strategy experiments and future strategy variants. The
+  current-day FSL/TRP overlay follows the same parameter handoff.
 - S23 paper position management now implements the rule-sheet 15:00
   continuation decision after target/SL/FSL/expiry checks, recording whether a
   position was carried forward with overnight SL inactive or closed by the
@@ -474,6 +546,9 @@ Current notes:
 - broad multi-broker live runtime beyond the current market-data-only FYERS ingress foundation
 - fully TFIS-native sourcing for monthly-status and prior-session reference
   levels without the current decision reference packet
+- historical S23 morning-supervised artifacts created before the durable data
+  layout still live under `tmp/s23_fyers_morning_supervised_decision` until a
+  deliberate after-hours migration/backfill is performed
 
 ## Current Quality Snapshot
 
@@ -542,3 +617,9 @@ Current notes:
   stops at same-day execution and does not yet implement multi-session
   carry-forward or strategy-specific T-1 / T-2 expiry handling.
 - Expiry-day review is now explicitly visible in historical reports when option-chain expiry metadata is available, which makes S23 no-rollover governance easier to verify without changing the core lifecycle mechanics.
+- S23 morning supervised operational artifacts now default to
+  `data/strategies/S23/fyers_morning_supervised_decision` for durable
+  option-chain, decision, paper-order, paper-position, and ledger/state records.
+  Rebuildable dashboard HTML remains under `tmp/operator_dashboard`, and
+  short-lived PowerShell launch diagnostics remain under
+  `tmp/s23_fyers_morning_supervised_decision/_task_launch_logs`.

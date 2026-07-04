@@ -46,6 +46,8 @@ def test_opens_ready_decision_as_multi_day_position(tmp_path: Path) -> None:
 
     assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_OPENED
     assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_OPEN
+    assert result.state.stoploss_active is True
+    assert result.state.stoploss_reset_pending is False
     assert result.state.selected_contract_symbol == "NIFTY_20260625_24150_PE"
     assert (tmp_path / "paper_position_state.json").is_file()
     ledger_rows = _session_ledger_rows(tmp_path)
@@ -133,8 +135,167 @@ def test_quote_at_entry_fills_order_then_opens_position(tmp_path: Path) -> None:
     assert event.reason_code == "paper_order_filled_from_quote_entry_trigger"
     assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_OPENED
     assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_OPEN
+    assert result.state.stoploss_active is True
+    assert result.state.stoploss_reset_pending is False
     assert result.state.entry_price == 193.75
     assert result.state.entry_timestamp == datetime(2026, 6, 22, 9, 37)
+
+
+def test_carried_position_ignores_stoploss_until_orpt_reset(tmp_path: Path) -> None:
+    manager = _manager(tmp_path)
+    manager.open_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(),
+        opened_at=datetime(2026, 6, 22, 9, 31),
+    )
+    manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 22),
+        market_events=(
+            _bar(
+                session_date=date(2026, 6, 22),
+                high=210,
+                low=120,
+                close=150,
+                bar_time=time(15, 0),
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 22, 15, 0),
+    )
+
+    result = manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 23),
+        market_events=(
+            _quote(
+                session_date=date(2026, 6, 23),
+                effective_timestamp=datetime(2026, 6, 23, 9, 20),
+                bid=330,
+                ask=331,
+                ltp=330.5,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 23, 9, 20),
+    )
+
+    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD
+    assert result.event.reason_code == "carry_forward_stoploss_waiting_for_orpt"
+    assert result.state.stoploss_active is False
+    assert result.state.stoploss_reset_pending is True
+
+
+def test_carried_position_reactivates_original_stop_at_orpt_when_0915_high_does_not_miss_sl(
+    tmp_path: Path,
+) -> None:
+    manager = _manager(tmp_path)
+    manager.open_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(),
+        opened_at=datetime(2026, 6, 22, 9, 31),
+    )
+    manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 22),
+        market_events=(
+            _bar(
+                session_date=date(2026, 6, 22),
+                high=210,
+                low=120,
+                close=150,
+                bar_time=time(15, 0),
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 22, 15, 0),
+    )
+
+    result = manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 23),
+        market_events=(
+            _bar(
+                session_date=date(2026, 6, 23),
+                high=315,
+                low=140,
+                close=250,
+                bar_time=time(9, 15),
+            ),
+            _quote(
+                session_date=date(2026, 6, 23),
+                effective_timestamp=datetime(2026, 6, 23, 9, 25),
+                bid=250,
+                ask=251,
+                ltp=250.5,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 23, 9, 25),
+    )
+
+    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD
+    assert result.state.stoploss_active is True
+    assert result.state.stoploss_reset_pending is False
+    assert result.state.stoploss_price == 320
+
+
+def test_carried_position_recalculates_stop_from_rc_high_when_0915_high_misses_sl(
+    tmp_path: Path,
+) -> None:
+    manager = _manager(tmp_path)
+    manager.open_from_live_decision(
+        tmp_path,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(),
+        opened_at=datetime(2026, 6, 22, 9, 31),
+    )
+    manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 22),
+        market_events=(
+            _bar(
+                session_date=date(2026, 6, 22),
+                high=210,
+                low=120,
+                close=150,
+                bar_time=time(15, 0),
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 22, 15, 0),
+    )
+
+    result = manager.process_session(
+        tmp_path,
+        session_date=date(2026, 6, 23),
+        market_events=(
+            _bar(
+                session_date=date(2026, 6, 23),
+                high=330,
+                low=140,
+                close=250,
+                bar_time=time(9, 15),
+            ),
+            _bar(
+                session_date=date(2026, 6, 23),
+                high=350,
+                low=300,
+                close=310,
+                bar_time=time(9, 29),
+            ),
+            _quote(
+                session_date=date(2026, 6, 23),
+                effective_timestamp=datetime(2026, 6, 23, 9, 30),
+                bid=310,
+                ask=311,
+                ltp=310.5,
+            ),
+        ),
+        evaluated_at=datetime(2026, 6, 23, 9, 30),
+    )
+
+    assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD
+    assert result.state.stoploss_active is True
+    assert result.state.stoploss_reset_pending is False
+    assert result.state.stoploss_price == 374.5
 
 
 def test_waiting_order_can_be_marked_not_filled_at_cutoff(tmp_path: Path) -> None:
@@ -197,7 +358,9 @@ def test_holds_position_for_next_day_when_no_exit_hit(tmp_path: Path) -> None:
     )
 
     assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD
-    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_OPEN
+    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD
+    assert result.state.stoploss_active is False
+    assert result.state.stoploss_reset_pending is True
     assert result.event.current_price == 150
     assert result.event.source_kind == "selected_contract_bar"
     ledger_rows = _session_ledger_rows(tmp_path)
@@ -232,7 +395,9 @@ def test_1500_rule_carries_forward_with_overnight_stop_inactive(tmp_path: Path) 
     assert result.status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD
     assert result.event.reason_code == "s23_1500_carry_forward_stop_inactive"
     assert "overnight stoploss is inactive" in result.event.message
-    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_OPEN
+    assert result.state.lifecycle_status is S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD
+    assert result.state.stoploss_active is False
+    assert result.state.stoploss_reset_pending is True
 
 
 def test_target_hit_requires_fresh_recalculated_entry(tmp_path: Path) -> None:
@@ -446,8 +611,8 @@ def _strategy_rule() -> StrategyRule:
         ),
         allowed_monthly_statuses=(MonthlyStatus.BEAR,),
         option_type=OptionType.PUT,
-        entry_time=time(9, 30),
-        recalculation_time=time(9, 25),
+        entry_time=time(9, 24, 59),
+        recalculation_time=time(9, 29, 59),
         start_strike_formula="1",
         end_strike_formula="1",
         ideal_premium_formula="1",
@@ -457,6 +622,7 @@ def _strategy_rule() -> StrategyRule:
         target_formula="1",
         stoploss_formula="1",
         carry_forward_allowed=True,
+        parameters={"sl_reference_pct": 7.0},
     )
 
 
@@ -531,8 +697,9 @@ def _bar(
     high: float,
     low: float,
     close: float,
+    bar_time: time = time(10, 5),
 ) -> SelectedContractBarEvent:
-    timestamp = datetime.combine(session_date, time(10, 5))
+    timestamp = datetime.combine(session_date, bar_time)
     return SelectedContractBarEvent(
         envelope=_envelope(
             event_type=PaperEventType.SELECTED_CONTRACT_BAR,

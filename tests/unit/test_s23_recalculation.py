@@ -47,6 +47,21 @@ def _snapshots() -> tuple[IntradaySnapshot, IntradaySnapshot]:
     return orpt, recalc
 
 
+def _parameters(
+    *,
+    strike_buffer_pct: float = 5.0,
+    ideal_premium_pct: float = 1.20,
+    minimum_premium_pct: float = 0.90,
+    entry_discount_pct: float = 7.5,
+) -> dict[str, float]:
+    return {
+        "strike_buffer_pct": strike_buffer_pct,
+        "ideal_premium_pct": ideal_premium_pct,
+        "minimum_premium_pct": minimum_premium_pct,
+        "entry_discount_pct": entry_discount_pct,
+    }
+
+
 def test_bull_call_recalculation_matches_expected_values() -> None:
     orpt, recalc = _snapshots()
     result = S23RecalculationEngine().recalculate(
@@ -57,6 +72,7 @@ def test_bull_call_recalculation_matches_expected_values() -> None:
             base_trade_plan=_base_trade_plan(OptionType.CALL),
             market_levels=MarketLevels(d3ll=22000.0),
             option_levels={"OPT_PRV_3DLL": 220.0},
+            parameters=_parameters(),
             intraday_snapshot_at_orpt=orpt,
             intraday_snapshot_at_recalc=recalc,
             entry_missed=True,
@@ -83,6 +99,7 @@ def test_bear_call_recalculation_matches_expected_values() -> None:
             base_trade_plan=_base_trade_plan(OptionType.CALL),
             market_levels=MarketLevels(d2ll=22100.0),
             option_levels={"OPT_PRV_2DLL": 215.0},
+            parameters=_parameters(),
             intraday_snapshot_at_orpt=orpt,
             intraday_snapshot_at_recalc=IntradaySnapshot(
                 timestamp=recalc.timestamp,
@@ -117,6 +134,7 @@ def test_put_branches_recalculate_expected_strike_premium_and_entry_values() -> 
             base_trade_plan=_base_trade_plan(OptionType.PUT),
             market_levels=MarketLevels(d2hh=22500.0),
             option_levels={"OPT_PRV_2DLL": 208.0},
+            parameters=_parameters(),
             intraday_snapshot_at_orpt=orpt,
             intraday_snapshot_at_recalc=IntradaySnapshot(
                 timestamp=recalc.timestamp,
@@ -136,6 +154,7 @@ def test_put_branches_recalculate_expected_strike_premium_and_entry_values() -> 
             base_trade_plan=_base_trade_plan(OptionType.PUT),
             market_levels=MarketLevels(d3hh=22600.0),
             option_levels={"OPT_PRV_3DLL": 214.0},
+            parameters=_parameters(),
             intraday_snapshot_at_orpt=orpt,
             intraday_snapshot_at_recalc=IntradaySnapshot(
                 timestamp=recalc.timestamp,
@@ -183,6 +202,7 @@ def test_no_recalculation_when_entry_was_not_missed() -> None:
             base_trade_plan=_base_trade_plan(OptionType.CALL),
             market_levels=MarketLevels(d3ll=22000.0),
             option_levels={"OPT_PRV_3DLL": 220.0},
+            parameters=_parameters(),
             intraday_snapshot_at_orpt=orpt,
             intraday_snapshot_at_recalc=recalc,
             entry_missed=False,
@@ -194,3 +214,38 @@ def test_no_recalculation_when_entry_was_not_missed() -> None:
     assert result.recalculated_start_strike is None
     assert result.recalculated_entry_price is None
     assert result.source_rule is None
+
+
+def test_recalculation_uses_supplied_strategy_parameters() -> None:
+    orpt, recalc = _snapshots()
+    result = S23RecalculationEngine().recalculate(
+        RecalculationInput(
+            branch_unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+            option_type=OptionType.CALL,
+            monthly_status=MonthlyStatus.BEAR,
+            base_trade_plan=_base_trade_plan(OptionType.CALL),
+            market_levels=MarketLevels(d2ll=22100.0),
+            option_levels={"OPT_PRV_2DLL": 215.0},
+            parameters=_parameters(
+                strike_buffer_pct=4.0,
+                ideal_premium_pct=1.10,
+                minimum_premium_pct=0.80,
+                entry_discount_pct=10.0,
+            ),
+            intraday_snapshot_at_orpt=orpt,
+            intraday_snapshot_at_recalc=IntradaySnapshot(
+                timestamp=recalc.timestamp,
+                spot_low=21950.0,
+                spot_high=recalc.spot_high,
+                option_low=205.0,
+                option_high=recalc.option_high,
+            ),
+            entry_missed=True,
+        )
+    )
+
+    assert result.recalculated_start_strike == 22828
+    assert result.recalculated_end_strike == 21949
+    assert result.recalculated_ideal_premium == pytest.approx(241.45)
+    assert result.recalculated_minimum_premium == pytest.approx(175.6)
+    assert result.recalculated_entry_price == pytest.approx(184.5)

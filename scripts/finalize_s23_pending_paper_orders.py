@@ -26,7 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
             "orders and never calls a broker."
         )
     )
-    parser.add_argument("--artifact-root", default="tmp/s23_fyers_morning_supervised_decision")
+    parser.add_argument("--artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument("--session-date", help="YYYY-MM-DD. Defaults to current date in --timezone.")
     parser.add_argument("--timezone", default="Asia/Kolkata")
     parser.add_argument("--cutoff", default="15:30", help="HH:MM local cutoff.")

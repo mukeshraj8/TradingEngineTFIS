@@ -352,6 +352,7 @@ class S23PaperLiveDecisionBuilder:
                 base_trade_plan=trade_plan,
                 market_levels=derived_inputs.market_levels,
                 option_levels={k: float(v) for k, v in derived_inputs.runtime_values.items()},
+                parameters=strategy_rule.parameters,
                 intraday_snapshot_at_orpt=IntradaySnapshot(
                     timestamp=orpt_option_bar.bar_end,
                     spot_low=float(orpt_spot.low or 0.0),
@@ -377,10 +378,15 @@ class S23PaperLiveDecisionBuilder:
                 "recalculated_trade_plan": None,
             }
         entry = float(recalculation.recalculated_entry_price)
-        target = entry * 0.40
+        target_pct = float(strategy_rule.parameters["target_pct"])
+        sl_entry_pct = float(strategy_rule.parameters["sl_entry_pct"])
         sl_reference_pct = float(strategy_rule.parameters.get("sl_reference_pct", 0.0))
         rc_option_high = float(rc_option_bar.high or 0.0)
-        stoploss = min(entry * 1.60, rc_option_high * (1.0 + sl_reference_pct / 100.0))
+        target = entry * (1.0 - target_pct / 100.0)
+        stoploss = min(
+            entry * (1.0 + sl_entry_pct / 100.0),
+            rc_option_high * (1.0 + sl_reference_pct / 100.0),
+        )
         recalculated_trade_plan = replace(
             trade_plan,
             start_strike=recalculation.recalculated_start_strike,
@@ -660,7 +666,14 @@ class S23PaperLiveDecisionBuilder:
         )
         notes: list[str] = []
         if prelude_result.mode is S23PaperPreludeMode.CARRY_FORWARD_RESUME:
-            notes.append("Fresh entry planning was skipped because an open carry-forward position exists.")
+            if strategy_rule.allow_fresh_entry_with_open_position:
+                notes.append(
+                    "Fresh entry planning was computed while an open carry-forward position exists; config allows a fresh paper order."
+                )
+            else:
+                notes.append(
+                    "Fresh entry planning was computed while an open carry-forward position exists; config blocks fresh paper order creation until the open position exits."
+                )
         if prelude_result.contract_selection is not None and prelude_result.contract_selection.failure_code is not None:
             notes.append("Contract selection failed closed.")
         if allow_branch_pinned_unknown_monthly_status and derived_inputs.monthly_status_result.status.value == "UNKNOWN":

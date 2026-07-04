@@ -30,6 +30,10 @@
   with a configurable wider strike count, so Step 8c near-then-next expiry
   fallback can be populated by broker data rather than relabeled/default
   near-expiry responses
+- S23 FYERS snapshot collection now verifies that the next-expiry request
+  contains contracts whose normalized symbols truly belong to the requested
+  next weekly expiry; relabeled/default near-expiry responses fail closed with
+  `NEXT_WEEKLY_OPTION_CHAIN_UNAVAILABLE`
 - Monthly Status Calculator now includes daily, weekly, and monthly
   market-structure candlestick charts with reference lines, hover inspection,
   fixed inspector context, visibility controls, review-date marker, and color
@@ -49,9 +53,46 @@
 - S23 supervised live paper finalization now keeps the ORPT-selected base
   strike/order when the selected option has not missed entry, and uses RC only
   for the revised missed-entry recalculation path
+- S23 paper position management now persists strategy parameters and next-day
+  stoploss reset state for carried positions. After a 15:00 carry-forward, the
+  next trading day keeps target active, holds SL inactive through the opening
+  window, reactivates original SL at ORPT when `09:15` high does not miss SL,
+  or recalculates revised SL from RC high plus configured `sl_reference_pct`
+  when the `09:15` high misses SL.
 - S23 runtime/timeline reconstruction now supports ORPT-stage evaluation before
   RC exists, so the dashboard and scheduled runner do not fail with missing RC
   bars during the live `09:25` window
+- S23 scheduled startup wrapper now captures the supervised Python process into
+  TFIS stdout/stderr launch logs before scanning metadata and starting watchers,
+  avoiding a stalled PowerShell pipeline that could leave valid paper orders
+  without current-price monitoring
+- S23 scheduled startup wrapper now scopes watcher startup metadata discovery
+  to the current run date, preventing a later-touched stale session from
+  launching or confusing watcher windows for the current market day
+- S23 now has `scripts/start_s23_paper_watchers_from_metadata.ps1`, a TFIS-only
+  recovery launcher that starts watcher windows from produced paper
+  order/position metadata without rerunning the morning decision
+- S23 watcher launchers now handle mixed waiting-order and open-position branch
+  state, deriving state mode from an existing `paper_position_state.json` when
+  a branch fills after the original scheduled-run metadata was written
+- S23 scheduled startup now discovers persisted open/carry-forward
+  `paper_position_state.json` files under the durable S23 artifact root, passes
+  the latest open position into the supervised decision runner as carry-forward
+  context, and starts state watchers for all eligible open positions alongside
+  fresh current-day order watchers
+- S23 scheduled startup now preserves single discovered carry-forward state
+  paths as arrays, preventing the 2026-07-03 PowerShell scalar edge case where
+  one Windows path was truncated to its drive letter before Python invocation
+- S23 carry-forward resume now still computes same-day fresh CE/PE leg
+  decisions for audit, while fresh paper order creation during an existing open
+  position is controlled by the configurable
+  `allow_fresh_entry_with_open_position` strategy flag
+- S23 dashboard strike qualification and Step 8 audit tables now include
+  candidate expiry and wrap long rejection reasons, improving manual validation
+  when near and next expiry rows contain overlapping strikes
+- S23 dashboard final leg decisions now show selected contract expiry, and
+  strike-range explanation text derives the buffer percentage from the resolved
+  strategy formula instead of hardcoded workbook wording
 - strategy and workbook normalization work is established for the S23 family
 - reference materials are now indexed and reviewable through archive metadata
 - deterministic monthly-status classification is implemented for the confirmed threshold rules
@@ -108,6 +149,12 @@
   collection through the broker adapter, fail-closed missing-timing behavior,
   missed-entry recalculation, and final near/next contract reselection are
   covered by focused unit tests.
+- S23 missed-entry recalculation now uses loaded strategy parameters for strike
+  buffer, premium thresholds, entry discount, target percentage, and SL entry
+  percentage, removing duplicate hardcoded recalculation constants while
+  preserving the canonical S23 YAML formula contract. The opt-in current-day
+  FSL/TRP overlay now uses the same parameter handoff for its confirmed
+  workbook-backed strike, premium, entry, and FSL calculations.
 - S23 paper position management now implements the rule-sheet 15:00
   continuation decision after target/SL/FSL/expiry checks, with an auditable
   carry-forward reason when overnight SL is inactive.
@@ -177,6 +224,11 @@
 - S23 FYERS live-paper preflight-only safety gate and local runbook implemented
 - read-only TradingEngine capture audit and market-event adapter prototype implemented for one-session S23 dry-run inputs
 - TradingEngine capture plus TFIS prelude ingress-only suite implemented and exercised across six real captured dates; all six sessions ended `ABORTED` with `missing_contract_oi`, confirming that this path is currently limited by raw option-quote OI completeness rather than by timing or selected-contract discovery
+- S23 morning supervised operational artifacts now default to durable storage
+  under `data/strategies/S23/fyers_morning_supervised_decision`, keeping
+  option-chain snapshots, decisions, paper orders, paper positions, and
+  ledger/state files out of temp-only storage while leaving rebuildable
+  dashboard HTML and short-lived launch logs in `tmp`
 
 ## Next Recommended Priorities
 
@@ -185,9 +237,9 @@
   cancellation/non-carry-forward of unfilled waiting orders
 - keep monthly-status calculation independent and reusable for future enabled
   strategies
-- move durable S23 option-chain, decision, order, trade-ledger, and
-  monthly-status calculation records out of temp-only storage into structured
-  data folders with strategy/date/instrument provenance
+- validate the durable S23 data-root default on the next scheduled market run
+  and decide whether to backfill older tmp-based sessions into the new
+  `data/strategies/S23/fyers_morning_supervised_decision` layout
 - introduce generic enabled-strategy execution through registry/config before
   adding S21 or other strategies
 - run further real local FYERS market-data-only ingress sessions under the

@@ -71,6 +71,7 @@ class StrategyRule:
     stoploss_formula: str
     carry_forward_allowed: bool
     parameters: dict[str, float] | None = None
+    allow_fresh_entry_with_open_position: bool = False
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "strategy_code", _require_text("strategy_code", self.strategy_code))
@@ -103,6 +104,10 @@ class StrategyRule:
 
         _require_non_negative_int("minimum_oi", self.minimum_oi)
         object.__setattr__(self, "parameters", _normalize_parameters(self.parameters))
+        if not isinstance(self.carry_forward_allowed, bool):
+            raise TypeError("carry_forward_allowed must be a bool")
+        if not isinstance(self.allow_fresh_entry_with_open_position, bool):
+            raise TypeError("allow_fresh_entry_with_open_position must be a bool")
 
         if self.segment in {Segment.OPTIONS_BUY, Segment.OPTIONS_SELL} and self.option_type is None:
             raise ValueError("option_type is required for option segments")

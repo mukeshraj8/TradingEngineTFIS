@@ -39,8 +39,9 @@ def test_strategy_folder_loads_s23_with_parameters() -> None:
     assert rule.expiry_policy.rollover_policy.value == "T_MINUS_1"
     assert rule.expiry_policy.forced_close_time == time(12, 0)
     assert rule.expiry_policy.no_carry_past_expiry is True
+    assert rule.allow_fresh_entry_with_open_position is False
     assert rule.parameters == {
-        "strike_buffer_pct": 5.0,
+        "strike_buffer_pct": 1.2,
         "strike_step": 50.0,
         "ideal_premium_pct": 1.20,
         "minimum_premium_pct": 0.90,
@@ -80,7 +81,7 @@ def test_strategy_evaluator_folder_s23_uses_excel_premium_semantics() -> None:
         },
     )
 
-    assert plan.start_strike == 23100
+    assert plan.start_strike == 22250
     assert plan.end_strike == 21950
     assert plan.ideal_premium == pytest.approx(264.0)
     assert plan.minimum_premium == pytest.approx(198.0)

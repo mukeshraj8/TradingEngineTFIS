@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass, fields, is_dataclass
+from dataclasses import dataclass, fields, is_dataclass, replace
 from datetime import date, datetime, time
 from enum import Enum
 from pathlib import Path
@@ -69,6 +69,15 @@ class S23PaperPositionState:
     lifecycle_status: S23PaperPositionStateStatus
     last_updated_timestamp: datetime
     provenance_source_ids: tuple[str, ...] = ()
+    strategy_parameters: dict[str, float] | None = None
+    stoploss_active: bool = True
+    stoploss_reset_pending: bool = False
+    stoploss_reset_session_date: date | None = None
+    stoploss_reset_reference_price: float | None = None
+    stoploss_reset_buffer_pct: float | None = None
+    stoploss_reset_orpt_time: time | None = None
+    stoploss_reset_rc_time: time | None = None
+    stoploss_reset_reason_code: str | None = None
 
     def __post_init__(self) -> None:
         for field_name in (
@@ -114,6 +123,32 @@ class S23PaperPositionState:
             )
         if any(not isinstance(item, str) or not item.strip() for item in self.provenance_source_ids):
             raise ValueError("provenance_source_ids must contain non-empty strings")
+        if self.strategy_parameters is not None:
+            for key, value in self.strategy_parameters.items():
+                if not isinstance(key, str) or not key.strip():
+                    raise ValueError("strategy_parameters keys must be non-empty strings")
+                if isinstance(value, bool):
+                    raise TypeError("strategy_parameters values must be numeric")
+                float(value)
+        if not isinstance(self.stoploss_active, bool):
+            raise TypeError("stoploss_active must be a bool")
+        if not isinstance(self.stoploss_reset_pending, bool):
+            raise TypeError("stoploss_reset_pending must be a bool")
+        if self.stoploss_reset_session_date is not None and not isinstance(
+            self.stoploss_reset_session_date,
+            date,
+        ):
+            raise TypeError("stoploss_reset_session_date must be a date")
+        if self.stoploss_reset_orpt_time is not None and not isinstance(
+            self.stoploss_reset_orpt_time,
+            time,
+        ):
+            raise TypeError("stoploss_reset_orpt_time must be a time")
+        if self.stoploss_reset_rc_time is not None and not isinstance(
+            self.stoploss_reset_rc_time,
+            time,
+        ):
+            raise TypeError("stoploss_reset_rc_time must be a time")
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,6 +201,10 @@ class S23PaperPositionStateStore:
         carry_forward_allowed: bool,
         last_updated_timestamp: datetime,
         provenance_source_ids: tuple[str, ...] = (),
+        strategy_parameters: dict[str, float] | None = None,
+        stoploss_reset_buffer_pct: float | None = None,
+        stoploss_reset_orpt_time: time | None = None,
+        stoploss_reset_rc_time: time | None = None,
     ) -> S23PaperPositionState:
         return S23PaperPositionState(
             artifact_version=_ARTIFACT_VERSION,
@@ -196,6 +235,12 @@ class S23PaperPositionStateStore:
             lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
             last_updated_timestamp=last_updated_timestamp,
             provenance_source_ids=provenance_source_ids,
+            strategy_parameters=self._normalize_strategy_parameters(strategy_parameters),
+            stoploss_active=True,
+            stoploss_reset_pending=False,
+            stoploss_reset_buffer_pct=stoploss_reset_buffer_pct,
+            stoploss_reset_orpt_time=stoploss_reset_orpt_time,
+            stoploss_reset_rc_time=stoploss_reset_rc_time,
         )
 
     def save_state(
@@ -626,6 +671,98 @@ class S23PaperPositionStateStore:
         )
         return updated_state
 
+    def mark_stoploss_inactive_for_carry_forward(
+        self,
+        session_directory: str | Path,
+        *,
+        session_date: date,
+        updated_at: datetime,
+        reference_price: float,
+        reason_code: str,
+        message: str,
+        provenance_source_ids: tuple[str, ...] = (),
+    ) -> S23PaperPositionState:
+        state = self.load_state(session_directory)
+        session_dir = Path(session_directory)
+        updated_state = replace(
+            state,
+            lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
+            last_updated_timestamp=updated_at,
+            stoploss_active=False,
+            stoploss_reset_pending=True,
+            stoploss_reset_session_date=session_date,
+            stoploss_reset_reference_price=float(reference_price),
+            stoploss_reset_reason_code=reason_code,
+            provenance_source_ids=self._merge_provenance(
+                state.provenance_source_ids,
+                provenance_source_ids,
+            ),
+        )
+        self.save_state(session_dir, updated_state)
+        self._append_event(
+            session_dir,
+            S23PaperPositionStateEvent(
+                timestamp=updated_at,
+                event_type=S23PaperPositionStateEventType.PAPER_POSITION_CARRIED_FORWARD,
+                strategy_code=updated_state.strategy_code,
+                unique_code=updated_state.unique_code,
+                selected_contract_symbol=updated_state.selected_contract_symbol,
+                lifecycle_status=updated_state.lifecycle_status,
+                session_date=session_date,
+                reason_code=reason_code,
+                message=message,
+                provenance_source_ids=provenance_source_ids,
+            ),
+        )
+        return updated_state
+
+    def activate_stoploss_after_reset(
+        self,
+        session_directory: str | Path,
+        *,
+        session_date: date,
+        updated_at: datetime,
+        stoploss_price: float,
+        fsl_price: float | None,
+        reason_code: str,
+        message: str,
+        provenance_source_ids: tuple[str, ...] = (),
+    ) -> S23PaperPositionState:
+        state = self.load_state(session_directory)
+        session_dir = Path(session_directory)
+        updated_state = replace(
+            state,
+            lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
+            last_updated_timestamp=updated_at,
+            stoploss_price=float(stoploss_price),
+            fsl_price=fsl_price,
+            stoploss_active=True,
+            stoploss_reset_pending=False,
+            stoploss_reset_session_date=session_date,
+            stoploss_reset_reason_code=reason_code,
+            provenance_source_ids=self._merge_provenance(
+                state.provenance_source_ids,
+                provenance_source_ids,
+            ),
+        )
+        self.save_state(session_dir, updated_state)
+        self._append_event(
+            session_dir,
+            S23PaperPositionStateEvent(
+                timestamp=updated_at,
+                event_type=S23PaperPositionStateEventType.PAPER_POSITION_RESUMED,
+                strategy_code=updated_state.strategy_code,
+                unique_code=updated_state.unique_code,
+                selected_contract_symbol=updated_state.selected_contract_symbol,
+                lifecycle_status=updated_state.lifecycle_status,
+                session_date=session_date,
+                reason_code=reason_code,
+                message=message,
+                provenance_source_ids=provenance_source_ids,
+            ),
+        )
+        return updated_state
+
     def _append_invalid_state_event(
         self,
         session_directory: Path,
@@ -766,6 +903,35 @@ class S23PaperPositionStateStore:
             provenance_source_ids=self._parse_optional_text_tuple(
                 payload.get("provenance_source_ids")
             ),
+            strategy_parameters=self._parse_strategy_parameters(
+                payload.get("strategy_parameters")
+            ),
+            stoploss_active=self._parse_bool(
+                payload.get("stoploss_active", True),
+                "stoploss_active",
+            ),
+            stoploss_reset_pending=self._parse_bool(
+                payload.get("stoploss_reset_pending", False),
+                "stoploss_reset_pending",
+            ),
+            stoploss_reset_session_date=self._parse_optional_date(
+                payload.get("stoploss_reset_session_date")
+            ),
+            stoploss_reset_reference_price=self._parse_optional_float(
+                payload.get("stoploss_reset_reference_price")
+            ),
+            stoploss_reset_buffer_pct=self._parse_optional_float(
+                payload.get("stoploss_reset_buffer_pct")
+            ),
+            stoploss_reset_orpt_time=self._parse_optional_time(
+                payload.get("stoploss_reset_orpt_time")
+            ),
+            stoploss_reset_rc_time=self._parse_optional_time(
+                payload.get("stoploss_reset_rc_time")
+            ),
+            stoploss_reset_reason_code=self._parse_optional_text(
+                payload.get("stoploss_reset_reason_code")
+            ),
         )
 
     def _load_json_required(self, path: Path) -> dict[str, Any]:
@@ -865,6 +1031,36 @@ class S23PaperPositionStateStore:
             text = self._parse_text(item, "provenance_source_ids[]")
             normalized.append(text)
         return tuple(normalized)
+
+    def _parse_strategy_parameters(self, value: Any) -> dict[str, float] | None:
+        if value in (None, ""):
+            return None
+        if not isinstance(value, dict):
+            raise S23PaperPositionStateError("strategy_parameters must be a JSON object")
+        return self._normalize_strategy_parameters(value)
+
+    @staticmethod
+    def _normalize_strategy_parameters(value: dict[str, Any] | None) -> dict[str, float] | None:
+        if value in (None, {}):
+            return None
+        normalized: dict[str, float] = {}
+        for key, raw_value in value.items():
+            key_text = str(key).strip()
+            if not key_text:
+                raise S23PaperPositionStateError(
+                    "strategy_parameters keys must be non-empty strings"
+                )
+            if isinstance(raw_value, bool):
+                raise S23PaperPositionStateError(
+                    f"strategy parameter {key_text!r} must be numeric"
+                )
+            try:
+                normalized[key_text] = float(raw_value)
+            except (TypeError, ValueError) as exc:
+                raise S23PaperPositionStateError(
+                    f"strategy parameter {key_text!r} must be numeric"
+                ) from exc
+        return normalized
 
     def _parse_bool(self, value: Any, field_name: str) -> bool:
         if not isinstance(value, bool):
@@ -992,6 +1188,15 @@ class S23PaperPositionStateStore:
             "lifecycle_status": state.lifecycle_status,
             "last_updated_timestamp": state.last_updated_timestamp,
             "provenance_source_ids": state.provenance_source_ids,
+            "strategy_parameters": state.strategy_parameters,
+            "stoploss_active": state.stoploss_active,
+            "stoploss_reset_pending": state.stoploss_reset_pending,
+            "stoploss_reset_session_date": state.stoploss_reset_session_date,
+            "stoploss_reset_reference_price": state.stoploss_reset_reference_price,
+            "stoploss_reset_buffer_pct": state.stoploss_reset_buffer_pct,
+            "stoploss_reset_orpt_time": state.stoploss_reset_orpt_time,
+            "stoploss_reset_rc_time": state.stoploss_reset_rc_time,
+            "stoploss_reset_reason_code": state.stoploss_reset_reason_code,
         }
 
     def _parse_expiry_type(self, value: Any) -> ExpiryType:

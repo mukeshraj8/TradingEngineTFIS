@@ -866,7 +866,7 @@ python scripts/run_s23_fyers_0916_supervised_decision.py `
   --config config/paper.s23.fyers_connect_test.yaml `
   --strategy-path config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT `
   --reference-packet config/reference_packets/s23_bear_put_live_decision_reference.json `
-  --artifact-root tmp/s23_fyers_morning_supervised_decision `
+  --artifact-root data/strategies/S23/fyers_morning_supervised_decision `
   --session-id-prefix s23-fyers-morning-supervised-decision
 ```
 
@@ -900,7 +900,11 @@ powershell -ExecutionPolicy Bypass -File scripts/check_s23_fyers_morning_supervi
 The wrapper clears proxy environment variables before launching the Python
 runner and writes launch diagnostics under:
 
-- `tmp/s23_fyers_morning_supervised_decision/_task_launch_logs`
+- `data/strategies/S23/fyers_morning_supervised_decision` for durable S23
+  option-chain, decision, paper-order, paper-position, and ledger/state
+  artifacts
+- `tmp/s23_fyers_morning_supervised_decision/_task_launch_logs` for
+  short-lived PowerShell launcher stdout/stderr diagnostics
 
 ### What to open first
 

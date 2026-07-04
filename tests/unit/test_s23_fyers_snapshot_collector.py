@@ -43,6 +43,9 @@ class _CountingFakeBrokerAdapter:
         underlying_bars=None,
         daily_bars=None,
         option_chain=None,
+        option_chain_by_expiry: dict[date, OptionChainSnapshotEvent] | None = None,
+        preserve_contract_symbols_for_expiries: set[date] | None = None,
+        return_first_expiry_symbols_on_second_chain_call: bool = False,
     ) -> None:
         loader = S23NormalizedPaperEventLoader()
         events = loader.load_jsonl(BASE_EVENTS)
@@ -87,6 +90,12 @@ class _CountingFakeBrokerAdapter:
         self._chain = option_chain or next(
             event for event in events if event.envelope.event_type is PaperEventType.OPTION_CHAIN_SNAPSHOT
         )
+        self._chain_by_expiry = option_chain_by_expiry or {}
+        self._preserve_contract_symbols_for_expiries = preserve_contract_symbols_for_expiries or set()
+        self._return_first_expiry_symbols_on_second_chain_call = (
+            return_first_expiry_symbols_on_second_chain_call
+        )
+        self._first_requested_option_chain_expiry: date | None = None
         self._daily_bars = daily_bars or (
             UnderlyingHistoryBar(
                 symbol="NIFTY",
@@ -203,18 +212,33 @@ class _CountingFakeBrokerAdapter:
     def get_option_chain(self, symbol: str, expiry: date, *, session_date: date):
         self.get_option_chain_calls += 1
         self.requested_option_chain_expiries.append(expiry)
+        if self._first_requested_option_chain_expiry is None:
+            self._first_requested_option_chain_expiry = expiry
+        source_chain = self._chain_by_expiry.get(expiry, self._chain)
         expiry_token = expiry.isoformat().replace("-", "")
-        return replace(
-            self._chain,
-            expiry=expiry,
-            contracts=tuple(
+        if (
+            self._return_first_expiry_symbols_on_second_chain_call
+            and self.get_option_chain_calls == 2
+            and self._first_requested_option_chain_expiry is not None
+        ):
+            expiry_token = self._first_requested_option_chain_expiry.isoformat().replace("-", "")
+        contracts = tuple(
+            replace(contract, expiry=expiry)
+            for contract in source_chain.contracts
+        )
+        if expiry not in self._preserve_contract_symbols_for_expiries:
+            contracts = tuple(
                 replace(
                     contract,
                     symbol=_with_expiry_token(contract.symbol, expiry_token),
                     expiry=expiry,
                 )
-                for contract in self._chain.contracts
-            ),
+                for contract in source_chain.contracts
+            )
+        return replace(
+            source_chain,
+            expiry=expiry,
+            contracts=contracts,
         )
 
     def get_option_quote(self, option_symbol: str, *, session_date: date):
@@ -481,6 +505,31 @@ def test_successful_snapshot_collection(tmp_path: Path) -> None:
     assert adapter.get_underlying_bars_calls == 1
     assert adapter.get_underlying_daily_bars_calls == 1
     assert adapter.get_option_chain_calls == 2
+    assert adapter.get_option_quote_calls == 0
+    assert adapter.stream_ticks_calls == 0
+    assert adapter.order_api_calls == 0
+
+
+def test_next_expiry_request_must_return_true_next_expiry_contracts(tmp_path: Path) -> None:
+    near_chain = _base_chain()
+    adapter = _CountingFakeBrokerAdapter(
+        option_chain=near_chain,
+        return_first_expiry_symbols_on_second_chain_call=True,
+    )
+    collector = S23FyersSnapshotCollector(artifact_root=tmp_path / "artifacts")
+
+    with pytest.raises(S23FyersSnapshotCollectorError) as exc:
+        collector.collect_from_files(
+            config_path=_write_config(tmp_path),
+            strategy_path=_write_strategy_folder(tmp_path),
+            session_id="snapshot-next-expiry-relabel",
+            adapter=adapter,
+        )
+
+    assert exc.value.code == "NEXT_WEEKLY_OPTION_CHAIN_UNAVAILABLE"
+    assert str(adapter.requested_option_chain_expiries[1]) in str(exc.value)
+    assert str(adapter.requested_option_chain_expiries[0]) in str(exc.value)
+    assert len(adapter.requested_option_chain_expiries) == 2
     assert adapter.get_option_quote_calls == 0
     assert adapter.stream_ticks_calls == 0
     assert adapter.order_api_calls == 0

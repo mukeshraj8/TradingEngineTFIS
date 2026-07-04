@@ -5,7 +5,7 @@ param(
     [string]$Config = "config/paper.s23.fyers_connect_test.yaml",
     [string]$StrategyPath = "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
     [string]$ReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json",
-    [string]$ArtifactRoot = "tmp/s23_fyers_morning_supervised_decision",
+    [string]$ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",
     [string]$SessionIdPrefix = "s23-fyers-morning-supervised-decision",
     [string]$Timezone = "Asia/Kolkata",
     [ValidateSet("run_now", "abort")]
@@ -31,7 +31,7 @@ $defaultTfisRoot = $repoRoot
 $defaultConfig = "config/paper.s23.fyers_connect_test.yaml"
 $defaultStrategyPath = "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
 $defaultReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json"
-$defaultArtifactRoot = "tmp/s23_fyers_morning_supervised_decision"
+$defaultArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision"
 $defaultSessionIdPrefix = "s23-fyers-morning-supervised-decision"
 $defaultTimezone = "Asia/Kolkata"
 $defaultIfPast = "run_now"

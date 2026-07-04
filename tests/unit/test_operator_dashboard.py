@@ -582,6 +582,9 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Step 11 - Stop loss" in strategy_html
     assert "Eligible Strike OI Comparison" in strategy_html
     assert "eligible-strike-table th.number-cell" in strategy_html
+    assert "Expiry</th>" in strategy_html
+    assert ".full-scan-table th:nth-child(8)" in strategy_html
+    assert ".full-scan-table .reason-cell" in strategy_html
     assert "Displayed in inferred rule-sheet search order" in strategy_html
     assert "Final strike is 23850" in strategy_html
     assert "Step 8a - Near contract ideal/maximum premium strike search" in strategy_html
@@ -1012,6 +1015,7 @@ def test_reconstructed_s23_candidate_rows_keep_full_strike_range(tmp_path: Path)
     contracts = [
         {
             "symbol": f"NIFTY_20260630_{strike}_PE",
+            "expiry": "2026-06-30",
             "option_type": "PUT",
             "strike": strike,
             "ltp": 10.0 + ((strike - 23000) / 50.0),
@@ -1043,5 +1047,6 @@ def test_reconstructed_s23_candidate_rows_keep_full_strike_range(tmp_path: Path)
 
     assert len(rows) == 26
     assert {row["strike"] for row in rows} == set(range(23000, 24251, 50))
+    assert {row["expiry"] for row in rows} == {"2026-06-30"}
     assert any(row["symbol"] == "NIFTY_20260630_23000_PE" for row in rows)
     assert any(row["symbol"] == "NIFTY_20260630_24250_PE" for row in rows)

@@ -14,13 +14,6 @@ S23_BULL_PUT_UNIQUE_CODE = "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT"
 S23_BEAR_CALL_UNIQUE_CODE = "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
 S23_BEAR_PUT_UNIQUE_CODE = "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
 
-S23_COMMON_PARAMETERS = {
-    "strike_buffer_pct": 5.0,
-    "ideal_premium_pct": 1.20,
-    "minimum_premium_pct": 0.90,
-    "entry_discount_pct": 7.50,
-}
-
 
 @dataclass(frozen=True, slots=True)
 class IntradaySnapshot:
@@ -39,6 +32,7 @@ class RecalculationInput:
     base_trade_plan: TradePlan
     market_levels: MarketLevels
     option_levels: dict[str, float]
+    parameters: dict[str, float]
     intraday_snapshot_at_orpt: IntradaySnapshot
     intraday_snapshot_at_recalc: IntradaySnapshot
     entry_missed: bool
@@ -115,7 +109,7 @@ class S23RecalculationEngine:
         self,
         recalculation_input: RecalculationInput,
     ) -> RecalculationResult:
-        parameters = S23_COMMON_PARAMETERS
+        parameters = self._require_parameters(recalculation_input)
         reference_value = min(
             self._require_market_level(recalculation_input.market_levels.d3ll, "PRV_3DLL"),
             recalculation_input.intraday_snapshot_at_recalc.spot_low,
@@ -154,7 +148,7 @@ class S23RecalculationEngine:
         self,
         recalculation_input: RecalculationInput,
     ) -> RecalculationResult:
-        parameters = S23_COMMON_PARAMETERS
+        parameters = self._require_parameters(recalculation_input)
         reference_value = min(
             self._require_market_level(recalculation_input.market_levels.d2ll, "PRV_2DLL"),
             recalculation_input.intraday_snapshot_at_recalc.spot_low,
@@ -193,7 +187,7 @@ class S23RecalculationEngine:
         self,
         recalculation_input: RecalculationInput,
     ) -> RecalculationResult:
-        parameters = S23_COMMON_PARAMETERS
+        parameters = self._require_parameters(recalculation_input)
         strike_reference = max(
             self._require_market_level(recalculation_input.market_levels.d2hh, "PRV_2DHH"),
             recalculation_input.intraday_snapshot_at_recalc.spot_high,
@@ -237,7 +231,7 @@ class S23RecalculationEngine:
         self,
         recalculation_input: RecalculationInput,
     ) -> RecalculationResult:
-        parameters = S23_COMMON_PARAMETERS
+        parameters = self._require_parameters(recalculation_input)
         strike_reference = max(
             self._require_market_level(recalculation_input.market_levels.d3hh, "PRV_3DHH"),
             recalculation_input.intraday_snapshot_at_recalc.spot_high,
@@ -287,6 +281,20 @@ class S23RecalculationEngine:
         if value is None:
             raise ValueError(f"Missing option reference for recalculation: {alias}")
         return float(value)
+
+    def _require_parameters(self, recalculation_input: RecalculationInput) -> dict[str, float]:
+        required = (
+            "strike_buffer_pct",
+            "ideal_premium_pct",
+            "minimum_premium_pct",
+            "entry_discount_pct",
+        )
+        missing = tuple(name for name in required if name not in recalculation_input.parameters)
+        if missing:
+            raise ValueError(
+                "Missing S23 recalculation parameter(s): " + ", ".join(missing)
+            )
+        return recalculation_input.parameters
 
     def _pct_of(self, base_value: float, pct: float) -> float:
         return float(base_value) * (float(pct) / 100.0)

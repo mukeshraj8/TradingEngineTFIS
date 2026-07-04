@@ -25,6 +25,7 @@ from tfis.paper import (
     S23MarketReferencePacket,
     S23MonthlyStatusReferencePacket,
     S23PaperExpiryGovernance,
+    S23PaperPositionStateStore,
     S23PaperPreludeSessionContext,
     run_s23_morning_supervised_decision,
 )
@@ -669,6 +670,125 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
         )
     )
     assert order_payload["order_timestamp"].startswith("2026-05-28T09:25:00")
+
+
+def test_morning_supervised_runner_computes_but_blocks_fresh_order_when_position_open(
+    monkeypatch,
+    tmp_path: Path,
+) -> None:
+    call_index = {"value": 0}
+
+    class FakeCollector:
+        def __init__(self, *, artifact_root, prelude_builder=None, position_state_store=None) -> None:
+            self._artifact_root = Path(artifact_root)
+
+        def collect_from_files(self, **kwargs):
+            idx = call_index["value"]
+            call_index["value"] += 1
+            session_id = kwargs["session_id"]
+            stage_dir = self._artifact_root / date(2026, 5, 28).isoformat() / session_id
+            stage_dir.mkdir(parents=True, exist_ok=True)
+            generated_minutes = (16, 25, 30)
+            return SimpleNamespace(
+                session_directory=stage_dir,
+                collected_inputs=_collected_inputs(
+                    generated_at=_ts(28, 9, generated_minutes[idx], 0)
+                ),
+                summary=_summary(),
+            )
+
+        def collect_selected_contract_bars_from_files(self, **kwargs):
+            return (
+                _selected_contract_bar(
+                    day=28,
+                    minute=24,
+                    symbol=kwargs["option_symbol"],
+                ),
+                _selected_contract_bar(
+                    day=28,
+                    minute=29,
+                    symbol=kwargs["option_symbol"],
+                    low=214.0,
+                    high=228.0,
+                    close=220.0,
+                ),
+            )
+
+    state_dir = tmp_path / "open_state"
+    state = S23PaperPositionStateStore().create_open_position_state(
+        strategy_code="S23",
+        unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+        symbol="NIFTY",
+        option_type=OptionType.PUT,
+        selected_contract_symbol="NIFTY_20260604_23750_PE",
+        expiry_date=date(2026, 6, 4),
+        expiry_type=ExpiryType.WEEKLY,
+        rollover_policy=RolloverPolicy.T_MINUS_1,
+        forced_close_time=time(15, 15),
+        no_carry_past_expiry=True,
+        entry_date=date(2026, 5, 27),
+        entry_timestamp=_ts(27, 9, 30),
+        entry_price=212.75,
+        lots=1,
+        quantity=75,
+        side="SELL",
+        target_price=85.1,
+        stoploss_price=258.94,
+        fsl_price=258.94,
+        trp_price=None,
+        carry_forward_allowed=True,
+        last_updated_timestamp=_ts(27, 15, 20),
+        provenance_source_ids=("unit-test",),
+    )
+    S23PaperPositionStateStore().save_state(state_dir, state)
+
+    now_values = iter(
+        (
+            _ts(28, 9, 16, 0),
+            _ts(28, 9, 16, 0),
+            _ts(28, 9, 25, 0),
+            _ts(28, 9, 25, 0),
+            _ts(28, 9, 30, 0),
+            _ts(28, 9, 30, 0),
+        )
+    )
+
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_fyers_env_from_tfis_auth", lambda **kwargs: None)
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.load_strategy_rule", lambda path: _strategy_rule())
+    monkeypatch.setattr(
+        "tfis.paper.live_decision_timeline_runner.load_s23_decision_reference_packet",
+        lambda path: _reference_packet(),
+    )
+    monkeypatch.setattr(
+        "tfis.paper.live_decision_timeline_runner.S23LivePaperIngressConfig.from_yaml",
+        lambda path: SimpleNamespace(market=SimpleNamespace(selected_contract_symbol="NIFTY_20260604_23750_PE")),
+    )
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.S23FyersSnapshotCollector", FakeCollector)
+
+    result = run_s23_morning_supervised_decision(
+        tfis_root="D:/TradingEngineTFIS",
+        config_path="config.yaml",
+        strategy_path="strategy",
+        reference_packet_path="reference.json",
+        artifact_root=tmp_path / "artifacts",
+        dashboard_output_root=tmp_path / "dashboard",
+        session_id_prefix="timeline-test",
+        carry_forward_state_dir=state_dir,
+        skip_refresh=True,
+        now_provider=lambda: next(now_values),
+        sleeper=lambda seconds: None,
+    )
+
+    summary_payload = json.loads(
+        Path(result.branch_final_summary_json["NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"]).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert summary_payload["summary"]["mode"] == "CARRY_FORWARD_RESUME"
+    assert summary_payload["summary"]["selected_contract_symbol"] == "NIFTY_20260604_23750_PE"
+    assert summary_payload["summary"]["planned_entry_price"] == 212.75
+    assert result.branch_order_state_json == {}
+    assert not list(result.session_directory.rglob("paper_order_state.json"))
 
 
 def test_morning_supervised_runner_fans_out_shared_snapshots_to_multiple_branches(

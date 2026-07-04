@@ -27,7 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--s23-artifact-root",
-        default="tmp/s23_fyers_morning_supervised_decision",
+        default="data/strategies/S23/fyers_morning_supervised_decision",
         help="Artifact root for the S23 morning supervised decision workflow.",
     )
     parser.add_argument(

@@ -69,6 +69,10 @@ class S23PaperOrderState:
     last_reason_code: str | None = None
     last_message: str | None = None
     provenance_source_ids: tuple[str, ...] = ()
+    strategy_parameters: dict[str, float] | None = None
+    stoploss_reset_buffer_pct: float | None = None
+    stoploss_reset_orpt_time: time | None = None
+    stoploss_reset_rc_time: time | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -142,6 +146,14 @@ class S23PaperOrderStateStore:
                 "open only after selected option premium trades at or below entry."
             ),
             provenance_source_ids=provenance_source_ids,
+            strategy_parameters=self._normalize_strategy_parameters(strategy_rule.parameters),
+            stoploss_reset_buffer_pct=(
+                float(strategy_rule.parameters["sl_reference_pct"])
+                if "sl_reference_pct" in strategy_rule.parameters
+                else None
+            ),
+            stoploss_reset_orpt_time=strategy_rule.entry_time,
+            stoploss_reset_rc_time=strategy_rule.recalculation_time,
         )
         session_dir = Path(session_directory)
         state_path = self.save_state(session_dir, state)
@@ -342,6 +354,24 @@ class S23PaperOrderStateStore:
             last_reason_code=payload.get("last_reason_code"),
             last_message=payload.get("last_message"),
             provenance_source_ids=tuple(str(item) for item in payload.get("provenance_source_ids", ())),
+            strategy_parameters=self._parse_strategy_parameters(
+                payload.get("strategy_parameters")
+            ),
+            stoploss_reset_buffer_pct=(
+                float(payload["stoploss_reset_buffer_pct"])
+                if payload.get("stoploss_reset_buffer_pct") is not None
+                else None
+            ),
+            stoploss_reset_orpt_time=(
+                time.fromisoformat(str(payload["stoploss_reset_orpt_time"]))
+                if payload.get("stoploss_reset_orpt_time") is not None
+                else None
+            ),
+            stoploss_reset_rc_time=(
+                time.fromisoformat(str(payload["stoploss_reset_rc_time"]))
+                if payload.get("stoploss_reset_rc_time") is not None
+                else None
+            ),
         )
 
     def append_event(self, session_directory: str | Path, event: S23PaperOrderEvent) -> Path:
@@ -498,6 +528,36 @@ class S23PaperOrderStateStore:
         if not isinstance(payload, dict):
             raise S23PaperOrderStateError(f"Invalid S23 paper order state: {path}")
         return payload
+
+    def _parse_strategy_parameters(self, value: Any) -> dict[str, float] | None:
+        if value in (None, ""):
+            return None
+        if not isinstance(value, dict):
+            raise S23PaperOrderStateError("strategy_parameters must be a JSON object")
+        return self._normalize_strategy_parameters(value)
+
+    @staticmethod
+    def _normalize_strategy_parameters(value: dict[str, Any] | None) -> dict[str, float] | None:
+        if value in (None, {}):
+            return None
+        normalized: dict[str, float] = {}
+        for key, raw_value in value.items():
+            key_text = str(key).strip()
+            if not key_text:
+                raise S23PaperOrderStateError(
+                    "strategy_parameters keys must be non-empty strings"
+                )
+            if isinstance(raw_value, bool):
+                raise S23PaperOrderStateError(
+                    f"strategy parameter {key_text!r} must be numeric"
+                )
+            try:
+                normalized[key_text] = float(raw_value)
+            except (TypeError, ValueError) as exc:
+                raise S23PaperOrderStateError(
+                    f"strategy parameter {key_text!r} must be numeric"
+                ) from exc
+        return normalized
 
     def _write_json(self, path: Path, payload: Any) -> None:
         self._atomic_write_text(

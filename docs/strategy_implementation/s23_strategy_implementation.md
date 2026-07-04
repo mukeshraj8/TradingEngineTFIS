@@ -108,7 +108,7 @@ Option reference aliases used in S23:
 
 Shared S23 parameters:
 
-- `strike_buffer_pct = 5.0`
+- `strike_buffer_pct = 1.2`
 - `ideal_premium_pct = 1.20`
 - `minimum_premium_pct = 0.90`
 - `entry_discount_pct = 7.50`

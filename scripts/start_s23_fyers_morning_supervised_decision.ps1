@@ -8,7 +8,7 @@ param(
         "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
     ),
     [string]$ReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json",
-    [string]$ArtifactRoot = "tmp/s23_fyers_morning_supervised_decision",
+    [string]$ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",
     [string]$SessionIdPrefix = "s23-fyers-morning-supervised-decision",
     [string]$Timezone = "Asia/Kolkata",
     [ValidateSet("run_now", "abort")]
@@ -83,6 +83,78 @@ function Get-TfisNoRunReason {
         return "NSE_HOLIDAY_NO_ACTION: $($Date.ToString('yyyy-MM-dd')) is configured as NSE holiday '$($holiday.name)'."
     }
     return $null
+}
+
+function Get-TfisLatestSessionMetadata {
+    param([datetime]$Date)
+
+    $artifactRootPath = $ArtifactRoot
+    if (-not [System.IO.Path]::IsPathRooted($artifactRootPath)) {
+        $artifactRootPath = Join-Path $repoRoot $artifactRootPath
+    }
+    $dayRoot = Join-Path $artifactRootPath $Date.ToString("yyyy-MM-dd")
+    if (-not (Test-Path $dayRoot)) {
+        Write-LaunchLog "No TFIS S23 artifact day directory found for watcher startup: $dayRoot"
+        return $null
+    }
+    return Get-ChildItem -Path $dayRoot -Recurse -Filter "scheduled_run_metadata.json" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+}
+
+function Get-TfisOpenPositionStatePaths {
+    param(
+        [Parameter(Mandatory = $true)]
+        [datetime]$Date
+    )
+
+    $artifactRootPath = $ArtifactRoot
+    if (-not [System.IO.Path]::IsPathRooted($artifactRootPath)) {
+        $artifactRootPath = Join-Path $repoRoot $artifactRootPath
+    }
+    if (-not (Test-Path $artifactRootPath)) {
+        Write-LaunchLog "No TFIS S23 artifact root found for open-position discovery: $artifactRootPath"
+        return @()
+    }
+
+    $openStatuses = @(
+        "PAPER_POSITION_OPEN",
+        "PAPER_POSITION_CARRIED_FORWARD",
+        "PAPER_POSITION_RESUMED"
+    )
+    $paths = @()
+    Get-ChildItem -Path $artifactRootPath -Recurse -Filter "paper_position_state.json" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        ForEach-Object {
+            try {
+                $stateJson = Get-Content -Path $_.FullName -Raw | ConvertFrom-Json
+            }
+            catch {
+                Write-LaunchLog "Skipping unreadable S23 paper position state: $($_.FullName)"
+                return
+            }
+            $status = [string]$stateJson.lifecycle_status
+            if ($openStatuses -notcontains $status) {
+                return
+            }
+            if ($false -eq [bool]$stateJson.carry_forward_allowed) {
+                return
+            }
+            if ($stateJson.expiry_date) {
+                try {
+                    $expiryDate = [datetime]::Parse([string]$stateJson.expiry_date).Date
+                    if ($expiryDate -lt $Date.Date) {
+                        Write-LaunchLog "Skipping expired S23 paper position state: $($_.FullName)"
+                        return
+                    }
+                }
+                catch {
+                    Write-LaunchLog "S23 paper position state has unparseable expiry_date; leaving it eligible for watcher validation: $($_.FullName)"
+                }
+            }
+            $paths += [string]$_.FullName
+        }
+    return $paths
 }
 
 function Start-S23PaperWatchProcess {
@@ -167,10 +239,13 @@ Write-Host "If this was during market hours and an order/position should still b
 Write-Host "This window is held open for review; it is safe to close only after you have read the status above."
 Write-Host "============================================================"
 "@
+    $encodedWatchCommand = [Convert]::ToBase64String(
+        [System.Text.Encoding]::Unicode.GetBytes($watchCommand)
+    )
 
     $process = Start-Process `
         -FilePath "powershell.exe" `
-        -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-Command", $watchCommand) `
+        -ArgumentList @("-NoExit", "-ExecutionPolicy", "Bypass", "-EncodedCommand", $encodedWatchCommand) `
         -WorkingDirectory $repoRoot `
         -WindowStyle Normal `
         -PassThru
@@ -184,6 +259,8 @@ $pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
 if (-not (Test-Path $pythonExe)) {
     $pythonExe = "python"
 }
+
+$effectiveRunDate = Get-TfisRunDate
 
 $args = @(
     (Join-Path $repoRoot "scripts\run_s23_fyers_0916_supervised_decision.py"),
@@ -213,6 +290,14 @@ if ($CarryForwardStateDir) {
     $args += "--carry-forward-state-dir"
     $args += $CarryForwardStateDir
 }
+else {
+    $discoveredCarryForwardStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)
+    if ($discoveredCarryForwardStatePaths.Count -gt 0) {
+        $args += "--carry-forward-state-dir"
+        $args += (Split-Path -Parent ([string]$discoveredCarryForwardStatePaths[0]))
+        Write-LaunchLog "Passing latest discovered open S23 paper position to supervised decision: $($discoveredCarryForwardStatePaths[0])"
+    }
+}
 
 Write-Host "============================================================"
 Write-Host "TFIS S23 MORNING SUPERVISED DECISION"
@@ -226,7 +311,6 @@ Write-LaunchLog "TfisRoot: $TfisRoot"
 Write-LaunchLog "ArtifactRoot: $ArtifactRoot"
 Write-LaunchLog "SessionIdPrefix: $SessionIdPrefix"
 
-$effectiveRunDate = Get-TfisRunDate
 $noRunReason = Get-TfisNoRunReason -Date $effectiveRunDate
 if ($noRunReason) {
     Write-LaunchLog $noRunReason
@@ -237,65 +321,122 @@ if ($noRunReason) {
 
 try {
     $marketClosedNoAction = $false
-    & $pythonExe @args 2>&1 | ForEach-Object {
-        Write-LaunchLog ("PYTHON: {0}" -f $_)
-        if ($_ -match "MARKET_CLOSED_NO_ACTION") {
-            $marketClosedNoAction = $true
-        }
-        Write-Output $_
-    }
+    $pythonOutputPath = Join-Path $logDir "run_s23_fyers_0916_supervised_decision_$stamp.out.log"
+    $pythonErrorPath = Join-Path $logDir "run_s23_fyers_0916_supervised_decision_$stamp.err.log"
+    Write-LaunchLog "Supervised decision stdout: $pythonOutputPath"
+    Write-LaunchLog "Supervised decision stderr: $pythonErrorPath"
+    Write-LaunchLog "Starting supervised decision Python process."
+    & $pythonExe @args > $pythonOutputPath 2> $pythonErrorPath
     $exitCode = $LASTEXITCODE
+    if ($null -eq $exitCode) {
+        $exitCode = 0
+    }
+    if (Test-Path $pythonOutputPath) {
+        Get-Content -Path $pythonOutputPath | ForEach-Object {
+            Write-LaunchLog ("PYTHON: {0}" -f $_)
+            if ($_ -match "MARKET_CLOSED_NO_ACTION") {
+                $marketClosedNoAction = $true
+            }
+        }
+    }
+    if (Test-Path $pythonErrorPath) {
+        Get-Content -Path $pythonErrorPath | ForEach-Object {
+            Write-LaunchLog ("PYTHON_ERR: {0}" -f $_)
+            if ($_ -match "MARKET_CLOSED_NO_ACTION") {
+                $marketClosedNoAction = $true
+            }
+        }
+    }
     Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."
     if ($marketClosedNoAction) {
         Write-LaunchLog "Market-closed/no-action result detected; skipping S23 paper watcher startup."
     }
     if (($exitCode -eq 0) -and (-not $DisablePositionWatch) -and (-not $marketClosedNoAction)) {
-        $artifactRootPath = Join-Path $repoRoot $ArtifactRoot
-        $metadata = Get-ChildItem -Path $artifactRootPath -Recurse -Filter "scheduled_run_metadata.json" -ErrorAction SilentlyContinue |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
+        $metadata = Get-TfisLatestSessionMetadata -Date $effectiveRunDate
         if ($metadata) {
+            Write-LaunchLog "Using S23 metadata for watcher startup: $($metadata.FullName)"
             $metadataJson = Get-Content -Path $metadata.FullName -Raw | ConvertFrom-Json
             $statePaths = @()
             $orderPaths = @()
+            $stateDirectories = @{}
+            $openCarryForwardStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)
+            if ($openCarryForwardStatePaths.Count -gt 0) {
+                foreach ($openStatePath in $openCarryForwardStatePaths) {
+                    $openStateDir = Split-Path -Parent ([string]$openStatePath)
+                    if (-not $stateDirectories.ContainsKey($openStateDir)) {
+                        $statePaths += [string]$openStatePath
+                        $stateDirectories[$openStateDir] = $true
+                    }
+                }
+                Write-LaunchLog "Discovered $($openCarryForwardStatePaths.Count) open/carry-forward S23 paper position state file(s) for watcher startup."
+            }
             if ($metadataJson.branch_position_state_json) {
                 $metadataJson.branch_position_state_json.PSObject.Properties | ForEach-Object {
                     if ($_.Value) {
-                        $statePaths += [string]$_.Value
+                        $metadataStateDir = Split-Path -Parent ([string]$_.Value)
+                        if (-not $stateDirectories.ContainsKey($metadataStateDir)) {
+                            $statePaths += [string]$_.Value
+                            $stateDirectories[$metadataStateDir] = $true
+                        }
                     }
                 }
             }
             if ($metadataJson.branch_order_state_json) {
                 $metadataJson.branch_order_state_json.PSObject.Properties | ForEach-Object {
                     if ($_.Value) {
-                        $orderPaths += [string]$_.Value
+                        $orderDir = Split-Path -Parent ([string]$_.Value)
+                        if (-not $stateDirectories.ContainsKey($orderDir)) {
+                            $derivedStatePath = Join-Path $orderDir "paper_position_state.json"
+                            if (Test-Path $derivedStatePath) {
+                                $statePaths += $derivedStatePath
+                                $stateDirectories[$orderDir] = $true
+                            }
+                            else {
+                                $orderPaths += [string]$_.Value
+                            }
+                        }
                     }
                 }
             }
+            $watcherStartCount = 0
             if ($statePaths.Count -gt 0) {
                 foreach ($statePath in $statePaths) {
                     $stateDir = Split-Path -Parent $statePath
                     Write-LaunchLog "Starting S23 paper position watch for state directory: $stateDir"
                     Start-S23PaperWatchProcess -Mode "state" -WatchDirectory $stateDir
+                    $watcherStartCount += 1
                 }
                 Write-LaunchLog "Started $($statePaths.Count) S23 paper position watch process(es)."
             }
-            elseif ($orderPaths.Count -gt 0) {
+            if ($orderPaths.Count -gt 0) {
                 foreach ($orderPath in $orderPaths) {
                     $orderDir = Split-Path -Parent $orderPath
                     Write-LaunchLog "Starting S23 paper order watch for order directory: $orderDir"
                     Start-S23PaperWatchProcess -Mode "order" -WatchDirectory $orderDir
+                    $watcherStartCount += 1
                 }
                 Write-LaunchLog "Started $($orderPaths.Count) S23 paper order watch process(es)."
             }
-            else {
+            if ($watcherStartCount -eq 0) {
                 Write-LaunchLog "No new S23 paper position/order state was produced; attempting latest state discovery under $ArtifactRoot."
                 Start-S23PaperWatchProcess -Mode "discover" -SearchRoot $ArtifactRoot
             }
         }
         else {
-            Write-LaunchLog "No scheduled_run_metadata.json found under $artifactRootPath; attempting latest-open-state discovery."
-            Start-S23PaperWatchProcess -Mode "discover" -SearchRoot $ArtifactRoot
+            Write-LaunchLog "No scheduled_run_metadata.json found for $($effectiveRunDate.ToString('yyyy-MM-dd')); attempting open-position discovery under $ArtifactRoot."
+            $openStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)
+            if ($openStatePaths.Count -gt 0) {
+                foreach ($openStatePath in $openStatePaths) {
+                    $openStateDir = Split-Path -Parent $openStatePath
+                    Write-LaunchLog "Starting S23 paper position watch for discovered open state directory: $openStateDir"
+                    Start-S23PaperWatchProcess -Mode "state" -WatchDirectory $openStateDir
+                }
+                Write-LaunchLog "Started $($openStatePaths.Count) discovered S23 paper position watch process(es)."
+            }
+            else {
+                Write-LaunchLog "No open S23 paper positions found; attempting latest-open-state discovery under $ArtifactRoot."
+                Start-S23PaperWatchProcess -Mode "discover" -SearchRoot $ArtifactRoot
+            }
         }
     }
     elseif ($DisablePositionWatch) {

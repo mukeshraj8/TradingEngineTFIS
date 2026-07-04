@@ -743,6 +743,11 @@ class S23FyersSnapshotCollector:
             near_chain,
             requested_expiry=near_expiry,
         )
+        if not near_chain.contracts:
+            raise S23FyersSnapshotCollectorError(
+                "OPTION_CHAIN_MISSING",
+                "Normalized option-chain snapshot has no contracts.",
+            )
         next_expiry = self._next_weekly_expiry_after(near_expiry)
         next_chain = active_adapter.get_option_chain(
             symbol,
@@ -758,17 +763,29 @@ class S23FyersSnapshotCollector:
                 "OPTION_CHAIN_SYMBOL_MISMATCH",
                 "Near and next weekly option chains do not belong to the same underlying.",
             )
+        next_expiry_contract_count = sum(
+            1 for contract in next_chain.contracts if contract.expiry == next_expiry
+        )
+        if next_expiry_contract_count == 0:
+            observed_expiries = sorted({contract.expiry for contract in next_chain.contracts})
+            observed_text = ", ".join(item.isoformat() for item in observed_expiries) or "none"
+            raise S23FyersSnapshotCollectorError(
+                "NEXT_WEEKLY_OPTION_CHAIN_UNAVAILABLE",
+                "FYERS did not return any true next-weekly contracts for requested expiry "
+                f"{next_expiry.isoformat()}. Observed contract expiries after symbol "
+                f"normalization: {observed_text}. TFIS cannot safely perform S23 Step 8c "
+                "near-then-next fallback without real next-expiry option-chain data.",
+            )
         quality_flags = list(near_chain.envelope.data_quality_flags)
         quality_flags.extend(
             flag
             for flag in next_chain.envelope.data_quality_flags
             if flag not in quality_flags
         )
-        if not any(contract.expiry == next_expiry for contract in next_chain.contracts):
-            quality_flags.append(
-                "fallback_option_chain_unavailable:"
-                f"requested={next_expiry.isoformat()}"
-            )
+        quality_flags.append(
+            "next_weekly_option_chain_verified:"
+            f"requested={next_expiry.isoformat()};contracts={next_expiry_contract_count}"
+        )
         merged_contracts = tuple(
             {
                 (

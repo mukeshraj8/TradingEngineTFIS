@@ -62,6 +62,23 @@ def _option_levels(
     }
 
 
+def _parameters(
+    *,
+    strike_buffer_pct: float = 5.0,
+    ideal_premium_pct: float = 1.20,
+    minimum_premium_pct: float = 0.90,
+    entry_discount_pct: float = 7.5,
+    sl_reference_pct: float = 7.0,
+) -> dict[str, float]:
+    return {
+        "strike_buffer_pct": strike_buffer_pct,
+        "ideal_premium_pct": ideal_premium_pct,
+        "minimum_premium_pct": minimum_premium_pct,
+        "entry_discount_pct": entry_discount_pct,
+        "sl_reference_pct": sl_reference_pct,
+    }
+
+
 def test_row_183_bull_call_not_missed_recalculates_workbook_backed_entry_and_strike_fields() -> None:
     result = S23CurrentDayFslTrpEngine().apply(
         S23CurrentDayFslTrpInput(
@@ -69,6 +86,7 @@ def test_row_183_bull_call_not_missed_recalculates_workbook_backed_entry_and_str
             base_trade_plan=_base_trade_plan(option_type=OptionType.CALL),
             market_levels=MarketLevels(d3ll=21950.0),
             option_levels=_option_levels(opt_prv_3dll=210.0),
+            parameters=_parameters(sl_reference_pct=7.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 18, 9, 15, 0),
                 spot_low=22210.0,
@@ -116,6 +134,7 @@ def test_row_184_bull_call_missed_uses_workbook_directed_put_formula_family_and_
             base_trade_plan=_base_trade_plan(option_type=OptionType.CALL),
             market_levels=MarketLevels(d2hh=22410.0),
             option_levels=_option_levels(opt_prv_2dll=204.0),
+            parameters=_parameters(sl_reference_pct=7.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 18, 9, 15, 0),
                 spot_low=22210.0,
@@ -167,6 +186,7 @@ def test_row_185_bear_call_missed_recalculates_strike_premium_entry_and_fsl() ->
             ),
             market_levels=MarketLevels(d2ll=22010.0),
             option_levels=_option_levels(opt_prv_2dll=204.0),
+            parameters=_parameters(sl_reference_pct=10.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 21, 9, 15, 0),
                 spot_low=22310.0,
@@ -203,6 +223,55 @@ def test_row_185_bear_call_missed_recalculates_strike_premium_entry_and_fsl() ->
     assert result.recalculated_stoploss_price == pytest.approx(374.0)
 
 
+def test_current_day_fsl_trp_uses_supplied_strategy_parameters() -> None:
+    result = S23CurrentDayFslTrpEngine().apply(
+        S23CurrentDayFslTrpInput(
+            branch_unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+            base_trade_plan=_base_trade_plan(
+                option_type=OptionType.CALL,
+                stoploss_price=320.0,
+            ),
+            market_levels=MarketLevels(d2ll=22010.0),
+            option_levels=_option_levels(opt_prv_2dll=204.0),
+            parameters=_parameters(
+                strike_buffer_pct=4.0,
+                ideal_premium_pct=1.10,
+                minimum_premium_pct=0.80,
+                entry_discount_pct=10.0,
+                sl_reference_pct=5.0,
+            ),
+            trigger_snapshot_at_0915=_snapshot(
+                cutoff=datetime(2026, 5, 21, 9, 15, 0),
+                spot_low=22310.0,
+                spot_high=22410.0,
+                option_low=230.0,
+                option_high=330.0,
+            ),
+            snapshot_at_orpt=_snapshot(
+                cutoff=datetime(2026, 5, 21, 9, 24, 59),
+                spot_low=22220.0,
+                spot_high=22420.0,
+                option_low=228.0,
+                option_high=332.0,
+            ),
+            snapshot_at_recalc=_snapshot(
+                cutoff=datetime(2026, 5, 21, 9, 29, 59),
+                spot_low=21920.0,
+                spot_high=22550.0,
+                option_low=215.0,
+                option_high=340.0,
+            ),
+        )
+    )
+
+    assert result.recalculated_start_strike == 22796
+    assert result.recalculated_end_strike == 21919
+    assert result.recalculated_ideal_premium == pytest.approx(241.12)
+    assert result.recalculated_minimum_premium == pytest.approx(175.36)
+    assert result.recalculated_entry_price == pytest.approx(183.6)
+    assert result.recalculated_stoploss_price == pytest.approx(357.0)
+
+
 def test_row_186_bear_put_not_missed_recalculates_entry_and_other_confirmed_fields() -> None:
     result = S23CurrentDayFslTrpEngine().apply(
         S23CurrentDayFslTrpInput(
@@ -214,6 +283,7 @@ def test_row_186_bear_put_not_missed_recalculates_entry_and_other_confirmed_fiel
             ),
             market_levels=MarketLevels(d3hh=22410.0),
             option_levels=_option_levels(opt_prv_3dll=210.0),
+            parameters=_parameters(sl_reference_pct=7.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 18, 9, 15, 0),
                 spot_low=22230.0,
@@ -262,6 +332,7 @@ def test_rows_187_and_188_apply_only_fsl_and_do_not_infer_blank_entry_or_premium
             ),
             market_levels=MarketLevels(d2hh=22500.0),
             option_levels=_option_levels(),
+            parameters=_parameters(sl_reference_pct=10.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 23, 9, 15, 0),
                 spot_low=22210.0,
@@ -295,6 +366,7 @@ def test_rows_187_and_188_apply_only_fsl_and_do_not_infer_blank_entry_or_premium
             ),
             market_levels=MarketLevels(d3hh=22600.0),
             option_levels=_option_levels(),
+            parameters=_parameters(sl_reference_pct=7.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 21, 9, 15, 0),
                 spot_low=22310.0,
@@ -347,6 +419,7 @@ def test_unsupported_not_missed_paths_are_not_inferred() -> None:
             ),
             market_levels=MarketLevels(d2hh=22500.0),
             option_levels=_option_levels(),
+            parameters=_parameters(sl_reference_pct=10.0),
             trigger_snapshot_at_0915=_snapshot(
                 cutoff=datetime(2026, 5, 23, 9, 15, 0),
                 spot_low=22210.0,

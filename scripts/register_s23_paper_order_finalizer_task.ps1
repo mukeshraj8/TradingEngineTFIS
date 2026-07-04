@@ -2,7 +2,7 @@ param(
     [string]$TaskName = "TFIS S23 Paper Order Finalizer",
     [string]$RunTime = "15:35",
     [string]$TfisRoot,
-    [string]$ArtifactRoot = "tmp/s23_fyers_morning_supervised_decision",
+    [string]$ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
     [string]$Timezone = "Asia/Kolkata",
     [string]$Cutoff = "15:30",
@@ -22,7 +22,7 @@ if (-not (Test-Path $wrapperPath)) {
 }
 
 $defaultTfisRoot = $repoRoot
-$defaultArtifactRoot = "tmp/s23_fyers_morning_supervised_decision"
+$defaultArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision"
 $defaultDashboardOutputRoot = "tmp/operator_dashboard"
 $defaultTimezone = "Asia/Kolkata"
 $defaultCutoff = "15:30"
