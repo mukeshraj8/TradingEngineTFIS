@@ -436,3 +436,168 @@ def test_validate_captured_sessions_replays_position_still_open(tmp_path: Path) 
 
     assert branch_summary.replay_position_verdict == "POSITION_REPLAY_CONFIRMED_OPEN"
     assert "did not hit target 77.70" in branch_summary.replay_position_reason
+
+
+def test_validate_captured_sessions_replays_expiry_force_close(tmp_path: Path) -> None:
+    module = _load_validation_module()
+    root = tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision"
+    day = root / "2026-07-14"
+    for stage in ("0916", "0925", "0930"):
+        (day / f"s23-fyers-morning-supervised-decision-{stage}-2026-07-14").mkdir(parents=True)
+    branch = (
+        day
+        / "s23-fyers-morning-supervised-decision-2026-07-14"
+        / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    )
+    branch.mkdir(parents=True)
+    (branch / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "READY",
+                    "selected_contract_symbol": "NIFTY_20260714_23900_CE",
+                    "selected_contract_expiry": "2026-07-14",
+                    "selected_contract_option_type": "CALL",
+                    "selected_contract_strike": 23900,
+                    "selected_contract_ltp": 292.75,
+                    "selected_contract_oi": 2317510,
+                    "planned_entry_price": 194.25,
+                    "target_price": 77.70,
+                    "stoploss_price": 242.00,
+                    "monthly_status": "BEAR",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (branch / "paper_position_state.json").write_text(
+        json.dumps(
+            {
+                "lifecycle_status": "PAPER_POSITION_CLOSED",
+                "selected_contract_symbol": "NIFTY_20260714_23900_CE",
+                "expiry_date": "2026-07-14",
+                "forced_close_time": "12:00:00",
+                "target_price": 77.70,
+                "stoploss_price": 242.00,
+                "fsl_price": None,
+                "stoploss_active": True,
+                "last_updated_timestamp": "2026-07-14T12:00:00+05:30",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (branch / "paper_position_state_events.jsonl").write_text("{}", encoding="utf-8")
+    (branch / "paper_position_manager_events.jsonl").write_text(
+        json.dumps(
+            {
+                "timestamp": "2026-07-14T12:00:00+05:30",
+                "session_date": "2026-07-14",
+                "status": "PAPER_POSITION_FORCE_CLOSED",
+                "selected_contract_symbol": "NIFTY_20260714_23900_CE",
+                "reason_code": "expiry_force_close",
+                "exit_price": 151.0,
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (branch / "selected_contract_market_events.jsonl").write_text(
+        json.dumps(
+            {
+                "event_kind": "selected_contract_quote",
+                "observed_at": "2026-07-14T11:59:00+05:30",
+                "symbol": "NIFTY_20260714_23900_CE",
+                "payload": {
+                    "symbol": "NIFTY_20260714_23900_CE",
+                    "ltp": 150.0,
+                    "bid": 149.5,
+                    "ask": 151.0,
+                    "envelope": {"effective_timestamp": "2026-07-14T11:59:00+05:30"},
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    branch_summary = module.validate_captured_sessions(root)[0].branches[0]
+
+    assert branch_summary.replay_position_verdict == "POSITION_REPLAY_CONFIRMED_EXPIRY_FORCE_CLOSE"
+    assert branch_summary.replay_position_exit_price == 151.0
+    assert branch_summary.replay_position_exit_timestamp == "2026-07-14T12:00:00+05:30"
+
+
+def test_validate_captured_sessions_replays_next_day_stoploss_reset(tmp_path: Path) -> None:
+    module = _load_validation_module()
+    root = tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision"
+    day = root / "2026-07-08"
+    for stage in ("0916", "0925", "0930"):
+        (day / f"s23-fyers-morning-supervised-decision-{stage}-2026-07-08").mkdir(parents=True)
+    branch = (
+        day
+        / "s23-fyers-morning-supervised-decision-2026-07-08"
+        / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+    )
+    branch.mkdir(parents=True)
+    (branch / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "READY",
+                    "selected_contract_symbol": "NIFTY_20260714_24200_PE",
+                    "selected_contract_expiry": "2026-07-14",
+                    "selected_contract_option_type": "PUT",
+                    "selected_contract_strike": 24200,
+                    "selected_contract_ltp": 219.1,
+                    "selected_contract_oi": 217425,
+                    "planned_entry_price": 212.75,
+                    "target_price": 85.10,
+                    "stoploss_price": 258.94,
+                    "monthly_status": "BEAR",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (branch / "paper_position_state.json").write_text(
+        json.dumps(
+            {
+                "lifecycle_status": "PAPER_POSITION_OPEN",
+                "selected_contract_symbol": "NIFTY_20260714_24200_PE",
+                "target_price": 85.10,
+                "stoploss_price": 374.50,
+                "fsl_price": None,
+                "stoploss_active": True,
+                "stoploss_reset_pending": False,
+                "stoploss_reset_session_date": "2026-07-08",
+                "stoploss_reset_reference_price": 350.0,
+                "stoploss_reset_reason_code": "carry_forward_stoploss_recalculated_from_rc_high",
+                "last_updated_timestamp": "2026-07-08T09:30:00+05:30",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (branch / "paper_position_state_events.jsonl").write_text("{}", encoding="utf-8")
+    (branch / "selected_contract_market_events.jsonl").write_text(
+        json.dumps(
+            {
+                "event_kind": "selected_contract_quote",
+                "observed_at": "2026-07-08T09:30:00+05:30",
+                "symbol": "NIFTY_20260714_24200_PE",
+                "payload": {
+                    "symbol": "NIFTY_20260714_24200_PE",
+                    "ltp": 310.5,
+                    "bid": 310.0,
+                    "ask": 311.0,
+                    "envelope": {"effective_timestamp": "2026-07-08T09:30:00+05:30"},
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    branch_summary = module.validate_captured_sessions(root)[0].branches[0]
+
+    assert branch_summary.replay_position_verdict == "POSITION_REPLAY_CONFIRMED_NEXT_DAY_SL_RESET"
+    assert "stoploss is active at 374.50" in branch_summary.replay_position_reason

@@ -238,6 +238,11 @@ What now exists in paper mode:
 - TFIS-native runtime-input derivation from normalized underlying bars plus a
   TFIS reference packet
 - paper trade-decision summary artifacts for supervised live decision review
+- persisted selected-contract quote/bar evidence for paper orders and
+  positions via `selected_contract_market_events.jsonl`
+- captured-session validation that replays waiting-order fill/not-filled,
+  open-position target/SL/FSL outcomes, expiry force-close, and next-day SL
+  reset states from persisted artifacts without live broker access
 - TradingEngine capture-derived market-event conversion and ingress-only suite
 - capture-path OI evidence and acceptance blocker audit
 
@@ -246,8 +251,9 @@ What is still intentionally blocking broad rollout:
 - broader multi-date ingress-only evidence
 - controlled live-like rehearsal evidence beyond the current archive-derived set
 - broker order-routing remains disabled
-- multi-session carry-forward and expiry-aware next-contract handling remain
-  unimplemented in the current paper runtime
+- multi-session carry-forward, watcher resume, expiry force-close, and
+  next-day SL reset have implementation and replay coverage, but still need
+  repeated live-market proof before any money-readiness claim
 - no broker execution is allowed
 
 The core paper-mode docs now include:

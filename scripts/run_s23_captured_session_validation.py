@@ -4,7 +4,7 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, time
 from pathlib import Path
 from typing import Any
 
@@ -261,6 +261,7 @@ def _summarize_branch(
     explanation = summary_payload.get("explanation", {})
     order_state = _read_json(branch_dir / "paper_order_state.json")
     position_state = _read_json(branch_dir / "paper_position_state.json")
+    position_manager_events = _load_jsonl_dicts(branch_dir / "paper_position_manager_events.jsonl")
     evidence_files = tuple(sorted(path.name for path in branch_dir.iterdir() if path.is_file()))
     selected_market_events = _load_selected_contract_market_events(branch_dir)
     market_event_count, latest_market_event_at = _selected_contract_market_event_stats(selected_market_events)
@@ -331,6 +332,7 @@ def _summarize_branch(
         gaps.append(str(replay["gap"]))
     position_replay = _replay_position_from_market_events(
         position_state=position_state,
+        position_manager_events=position_manager_events,
         selected_contract_symbol=selected_symbol,
         events=selected_market_events,
     )
@@ -465,21 +467,28 @@ def _load_selected_contract_market_events(branch_dir: Path) -> tuple[dict[str, A
     paths = sorted(branch_dir.glob("selected_contract_market_events*.jsonl"))
     events: list[dict[str, Any]] = []
     for path in paths:
-        try:
-            lines = path.read_text(encoding="utf-8").splitlines()
-        except OSError:
-            continue
-        for line in lines:
-            if not line.strip():
-                continue
-            try:
-                payload = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if isinstance(payload, dict):
-                events.append(payload)
+        events.extend(_load_jsonl_dicts(path))
     return tuple(events)
 
+
+def _load_jsonl_dicts(path: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    if not path.exists():
+        return rows
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return rows
+    for line in lines:
+        if not line.strip():
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            rows.append(payload)
+    return rows
 
 def _selected_contract_market_event_stats(events: tuple[dict[str, Any], ...]) -> tuple[int, str | None]:
     latest: str | None = None
@@ -608,6 +617,7 @@ def _first_order_trigger(
 def _replay_position_from_market_events(
     *,
     position_state: dict[str, Any],
+    position_manager_events: list[dict[str, Any]],
     selected_contract_symbol: str | None,
     events: tuple[dict[str, Any], ...],
 ) -> dict[str, Any]:
@@ -669,6 +679,18 @@ def _replay_position_from_market_events(
             "gap": "position_replay_mismatch_should_have_exited",
         }
 
+    expiry_replay = _replay_expiry_force_close(
+        position_state=position_state,
+        position_manager_events=position_manager_events,
+        lifecycle_status=lifecycle_status,
+    )
+    if expiry_replay is not None:
+        return expiry_replay
+
+    stoploss_reset_replay = _replay_next_day_stoploss_reset(position_state=position_state)
+    if stoploss_reset_replay is not None:
+        return stoploss_reset_replay
+
     latest = _selected_contract_market_event_stats(matching_events)[1]
     if lifecycle_status in {"PAPER_POSITION_OPEN", "PAPER_POSITION_CARRIED_FORWARD", "PAPER_POSITION_RESUMED"}:
         return {
@@ -686,6 +708,142 @@ def _replay_position_from_market_events(
         ),
         "gap": "position_replay_mismatch_closed_without_stream_exit",
     }
+
+
+def _replay_expiry_force_close(
+    *,
+    position_state: dict[str, Any],
+    position_manager_events: list[dict[str, Any]],
+    lifecycle_status: str,
+) -> dict[str, Any] | None:
+    force_close_event = _latest_position_manager_event(
+        position_manager_events,
+        statuses={"PAPER_POSITION_FORCE_CLOSED"},
+        reason_codes={"expiry_force_close"},
+    )
+    if force_close_event is None:
+        return None
+
+    force_close_time = _as_optional_datetime(force_close_event.get("timestamp"))
+    expiry_date = _as_optional_date(position_state.get("expiry_date"))
+    forced_close_time = _position_forced_close_time(position_state)
+    if force_close_time is None:
+        return {
+            "verdict": "POSITION_REPLAY_INCOMPLETE_EXPIRY_FORCE_CLOSE",
+            "reason": "Expiry force-close event is present, but its timestamp is missing or invalid.",
+            "gap": "position_replay_expiry_force_close_missing_timestamp",
+        }
+    if expiry_date is None:
+        return {
+            "verdict": "POSITION_REPLAY_INCOMPLETE_EXPIRY_FORCE_CLOSE",
+            "reason": "Expiry force-close event is present, but position expiry_date is missing.",
+            "gap": "position_replay_expiry_force_close_missing_expiry_date",
+        }
+    if force_close_time.date() < expiry_date:
+        return {
+            "verdict": "POSITION_REPLAY_MISMATCH_EXPIRY_FORCE_CLOSE_TOO_EARLY",
+            "reason": (
+                f"Expiry force-close event occurred on {force_close_time.date().isoformat()}, "
+                f"before contract expiry {expiry_date.isoformat()}."
+            ),
+            "gap": "position_replay_expiry_force_close_before_expiry",
+        }
+    if forced_close_time is not None and force_close_time.timetz().replace(tzinfo=None) < forced_close_time:
+        return {
+            "verdict": "POSITION_REPLAY_MISMATCH_EXPIRY_FORCE_CLOSE_TOO_EARLY",
+            "reason": (
+                f"Expiry force-close event occurred at {force_close_time.time().isoformat(timespec='seconds')}, "
+                f"before configured force-close time {forced_close_time.isoformat(timespec='seconds')}."
+            ),
+            "gap": "position_replay_expiry_force_close_before_forced_close_time",
+        }
+    if lifecycle_status not in {"PAPER_POSITION_CLOSED", "PAPER_POSITION_FORCE_CLOSED"}:
+        return {
+            "verdict": "POSITION_REPLAY_MISMATCH_EXPIRY_FORCE_CLOSE_STATUS",
+            "reason": (
+                "Expiry force-close event is present and due, but persisted lifecycle "
+                f"status is {lifecycle_status}."
+            ),
+            "gap": "position_replay_expiry_force_close_status_mismatch",
+        }
+    forced_close_label = forced_close_time.isoformat(timespec="seconds") if forced_close_time else "configured cutoff"
+    return {
+        "verdict": "POSITION_REPLAY_CONFIRMED_EXPIRY_FORCE_CLOSE",
+        "reason": (
+            f"No target/SL/FSL stream exit occurred before expiry governance. "
+            f"Persisted manager event force-closed the position at {force_close_time.isoformat()} "
+            f"on expiry {expiry_date.isoformat()} after {forced_close_label}."
+        ),
+        "exit_price": _as_optional_float(force_close_event.get("exit_price")),
+        "exit_timestamp": force_close_time.isoformat(),
+    }
+
+
+def _replay_next_day_stoploss_reset(*, position_state: dict[str, Any]) -> dict[str, Any] | None:
+    reset_session = _as_optional_date(position_state.get("stoploss_reset_session_date"))
+    if reset_session is None:
+        return None
+    lifecycle_status = _as_optional_str(position_state.get("lifecycle_status")) or ""
+    stoploss_active = bool(position_state.get("stoploss_active", True))
+    reset_pending = bool(position_state.get("stoploss_reset_pending", False))
+    reset_reason = _as_optional_str(position_state.get("stoploss_reset_reason_code")) or ""
+    stoploss = _as_optional_float(position_state.get("stoploss_price"))
+    reference = _as_optional_float(position_state.get("stoploss_reset_reference_price"))
+    if reset_pending and not stoploss_active:
+        return {
+            "verdict": "POSITION_REPLAY_CONFIRMED_STOPLOSS_RESET_PENDING",
+            "reason": (
+                f"Position is carried forward with target active and stoploss inactive for "
+                f"next-day reset. Reset session={reset_session.isoformat()}, "
+                f"reference={_fmt(reference)}, reason={reset_reason or 'n/a'}."
+            ),
+        }
+    if (
+        lifecycle_status in {"PAPER_POSITION_OPEN", "PAPER_POSITION_RESUMED"}
+        and stoploss_active
+        and not reset_pending
+        and reset_reason.startswith("carry_forward_stoploss_")
+    ):
+        return {
+            "verdict": "POSITION_REPLAY_CONFIRMED_NEXT_DAY_SL_RESET",
+            "reason": (
+                f"Next-day SL reset is complete for {reset_session.isoformat()}: "
+                f"stoploss is active at {_fmt(stoploss)}, reference={_fmt(reference)}, "
+                f"reason={reset_reason}."
+            ),
+        }
+    if lifecycle_status in {"PAPER_POSITION_OPEN", "PAPER_POSITION_RESUMED"} and not stoploss_active:
+        return {
+            "verdict": "POSITION_REPLAY_MISMATCH_STOPLOSS_RESET_INACTIVE",
+            "reason": (
+                f"Position is open for reset session {reset_session.isoformat()}, but stoploss "
+                "is still inactive and reset is not marked pending."
+            ),
+            "gap": "position_replay_stoploss_reset_inactive_without_pending",
+        }
+    return None
+
+
+def _latest_position_manager_event(
+    events: list[dict[str, Any]],
+    *,
+    statuses: set[str],
+    reason_codes: set[str],
+) -> dict[str, Any] | None:
+    candidates = [
+        event
+        for event in events
+        if (_as_optional_str(event.get("status")) in statuses)
+        or (_as_optional_str(event.get("reason_code")) in reason_codes)
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda item: _as_optional_str(item.get("timestamp")) or "")
+
+
+def _position_forced_close_time(position_state: dict[str, Any]) -> time | None:
+    expiry_policy = position_state.get("expiry_policy") if isinstance(position_state.get("expiry_policy"), dict) else {}
+    return _as_optional_time(position_state.get("forced_close_time") or expiry_policy.get("forced_close_time"))
 
 
 def _first_position_exit_event(
@@ -911,6 +1069,15 @@ def _as_optional_datetime(value: Any) -> datetime | None:
         return None
     try:
         return datetime.fromisoformat(str(value))
+    except ValueError:
+        return None
+
+
+def _as_optional_time(value: Any) -> time | None:
+    if value is None:
+        return None
+    try:
+        return time.fromisoformat(str(value))
     except ValueError:
         return None
 

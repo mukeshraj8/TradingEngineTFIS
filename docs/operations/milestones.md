@@ -85,6 +85,11 @@
   age/staleness, watcher PID, source, and a direct Market Events artifact link.
   This makes current-price freshness auditable without changing strategy
   selection, order routing, or watcher lifecycle behavior.
+- S23 captured-session replay validation now covers expiry force-close and
+  next-day stoploss reset states. Expiry force-close is confirmed from persisted
+  position-manager events plus expiry date/force-close time, and next-day SL
+  reset pending/completed states are reported distinctly from generic open
+  position replay.
 - S23 supervised decision and paper watcher startup now enforce PID-aware
   single-instance process locks, fail duplicate live-PID launches with
   `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, and reclaim stale dead-PID locks with

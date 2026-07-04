@@ -38,9 +38,13 @@ live-order design. This checklist must be updated after each completed slice.
   quote/bar evidence. The validator now reports position replay confirmations
   or mismatches for target exits, stop/FSL exits, and still-open/carry-forward
   states.
-- `TODO`: Extend replay validation for expiry force-close and next-day SL reset
+- `DONE`: Extend replay validation for expiry force-close and next-day SL reset
   decisions, which require calendar/session-time context in addition to the
-  selected-contract event stream.
+  selected-contract event stream. The captured-session validator now recognizes
+  expiry force-close manager events as legitimate non-price-threshold exits
+  when expiry date and configured force-close time support them, and it reports
+  next-day stoploss reset pending/completed states separately from generic
+  still-open position replay.
 - `DONE`: Add dashboard visibility for selected-contract stream health:
   event count, latest event timestamp, quote age/staleness, watcher PID, and
   last update source. The Trades Taken table now includes a Stream column built

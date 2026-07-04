@@ -42,8 +42,9 @@ way.
    is populated continuously during a real market watch. The Trades Taken
    dashboard now surfaces that stream as event count, latest timestamp,
    age/staleness, watcher PID, source, and Market Events artifact link, so the
-   live validation should check those fields alongside price and P&L. Replay
-   proof still needs expiry force-close and next-day SL reset decisions. Improve
+   live validation should check those fields alongside price and P&L. The
+   captured-session validator now also recognizes expiry force-close and
+   next-day SL reset replay outcomes from persisted artifacts. Improve
    TFIS-only watcher observability so an
    operator can see branch, contract, parent/child process relationship, and
    last quote timestamp without confusing a normal wrapper/child pair for two
