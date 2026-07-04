@@ -266,6 +266,9 @@ The core paper-mode docs now include:
 - [S23 Paper Trading MVP v1 Design](docs/operations/s23_paper_trading_mvp_v1_design.md)
 - [S23 FYERS Ingress Live Runbook](docs/operations/s23_fyers_ingress_live_runbook.md)
 - [TFIS Manual Operator Guide](docs/operations/tfis_manual_operator_guide.md)
+  - includes the money-readiness operator command table for dashboard launch,
+    captured-session replay validation, focused tests, syntax checks, scheduled
+    task checks, watcher recovery, and pre-live readiness checks
 
 ## Strategy Configuration Layout
 

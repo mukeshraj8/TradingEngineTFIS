@@ -1211,7 +1211,36 @@ If you only inspect a few files, start with:
 - `paper_pnl_summary.json` when lifecycle exists
 - `paper_vs_historical.md` when parity was run
 
-## 20. Quick “Which Command Do I Need?” Table
+## 20. Money-Readiness Operator Test Commands
+
+Use this table when you want to test TFIS without touching `TradingEngineProd`
+or placing live broker orders. Commands that use FYERS are explicitly marked;
+run those only when you intend to use the TFIS FYERS paper-data path.
+
+| Command | Purpose | When to use | What to check | Safety / notes |
+| --- | --- | --- | --- | --- |
+| `git status --short` | Confirm the working tree state before or after a TFIS test. | Before starting manual validation and before committing. | Clean output means no untracked or modified files. Modified docs/code should be intentional. | Read-only; does not touch any live process. |
+| `.\.venv\Scripts\python.exe -m pytest tests\unit\test_operator_dashboard.py tests\unit\test_s23_captured_session_validation.py tests\unit\test_s23_paper_watch_market_event_persistence.py` | Run the focused money-readiness regression suite for dashboard stream health, selected-contract evidence persistence, and captured-session replay. | After changing dashboard, watcher evidence, or replay validation code. | All tests should pass. Current focused expectation is `14 passed`. | Fixture-only; no broker/network access. |
+| `.\.venv\Scripts\python.exe -m py_compile scripts\run_s23_captured_session_validation.py src\tfis\dashboard\operator_dashboard.py scripts\run_s23_paper_position_watch.py` | Catch syntax/import errors in the validator, dashboard builder, and watcher entry script. | After editing these operational scripts. | Command exits silently on success. Any traceback must be fixed before market use. | Local-only; no broker/network access. |
+| `.\.venv\Scripts\python.exe scripts\run_s23_captured_session_validation.py --artifact-root data\strategies\S23\fyers_morning_supervised_decision --out-json tmp\s23_captured_session_validation.json --out-md tmp\s23_captured_session_validation.md` | Rebuild the captured-session replay report from durable S23 artifacts. | Post-market, or any time you want to audit saved S23 sessions. | Review `tmp\s23_captured_session_validation.md` for `REPLAY_CONFIRMED_*`, `POSITION_REPLAY_CONFIRMED_*`, mismatch, or gap lines. | Offline artifact replay only; does not call FYERS or start watchers. |
+| `.\.venv\Scripts\python.exe scripts\serve_operator_dashboard.py --output-root tmp\operator_dashboard --port 8765` | Build and serve the operator dashboard locally. | When reviewing S23 session status, calculated CE/PE legs, trade rows, current price, stream status, or monthly-status chart. | Open `http://127.0.0.1:8765/index.html`; for S23 open `http://127.0.0.1:8765/strategies/S23/index.html`. | Reads local artifacts. If old partial artifacts fail, fix post-market; do not touch live processes. |
+| `powershell -ExecutionPolicy Bypass -File scripts\check_s23_fyers_morning_supervised_task.ps1` | Check the Windows Scheduled Task registration for S23 morning supervised decision. | Before a market day or after changing task scripts. | Task should be enabled, weekday scheduled, and pointing to the TFIS wrapper under `D:\TradingEngineTFIS`. | Read-only scheduled-task check. Do not confuse this with TradingEngineProd tasks. |
+| `powershell -ExecutionPolicy Bypass -File scripts\register_s23_fyers_morning_supervised_task.ps1` | Register or refresh the TFIS S23 scheduled task. | Only when the task is missing or wrapper settings changed. | Follow with the check command above. | Changes Windows Task Scheduler for TFIS only. Do not run for sibling projects. |
+| `powershell -ExecutionPolicy Bypass -File scripts\start_s23_fyers_morning_supervised_decision.ps1` | Manually run the same wrapper used by the scheduled task. | Controlled operator test, usually before/after market, or when explicitly starting the TFIS paper path. | Watch visible TFIS PowerShell windows and generated logs under `tmp\s23_fyers_morning_supervised_decision\_task_launch_logs`. | Uses FYERS auth/data path. Do not run if another TFIS run is active unless testing duplicate-process protection. |
+| `powershell -ExecutionPolicy Bypass -File scripts\start_s23_paper_watchers_from_metadata.ps1` | Start or recover watcher windows from existing current-day metadata without rerunning the morning decision. | If valid paper orders/positions exist but watcher windows are not running. | Trades Taken should show current price and Stream status after watchers write `selected_contract_market_events.jsonl`. | TFIS-only recovery command. Confirm it points at TFIS artifact roots; do not touch TradingEngineProd. |
+| `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token` | Run pre-live readiness checks for configured profile and token availability. | Pre-market readiness audit. | Clean pass means config/token prerequisites look usable. Failures should be resolved before scheduled start. | May inspect broker-token setup but does not place orders. |
+
+### How to read the captured-session validation report
+
+| Report field | Meaning | Healthy examples | Action if unhealthy |
+| --- | --- | --- | --- |
+| `Market Events` | Number of persisted selected-contract quote/bar observations available for replay. | Non-zero for watcher-managed orders/positions. | If zero for a current session, verify watcher startup and `selected_contract_market_events.jsonl`. |
+| `Order Replay` | Offline replay of whether a waiting paper order should have filled, remained waiting, or been marked not filled. | `REPLAY_CONFIRMED_FILLED`, `REPLAY_CONFIRMED_NOT_FILLED`, `REPLAY_CONFIRMED_WAITING`. | Investigate any `REPLAY_MISMATCH_*` before trusting paper behavior. |
+| `Position Replay` | Offline replay of target/SL/FSL, expiry force-close, and next-day SL reset outcomes. | `POSITION_REPLAY_CONFIRMED_EXIT`, `POSITION_REPLAY_CONFIRMED_OPEN`, `POSITION_REPLAY_CONFIRMED_EXPIRY_FORCE_CLOSE`, `POSITION_REPLAY_CONFIRMED_NEXT_DAY_SL_RESET`. | Investigate mismatch/gap lines and compare with Trades Taken dashboard and manager events. |
+| `Latest Market Event` | Latest selected-contract evidence timestamp used by replay. | Should be near watcher activity time for live sessions. | If stale during market hours, watcher or data feed may have stopped. |
+| `gaps` | Missing evidence or inconsistent lifecycle state. | Empty or known historical gaps for older sessions. | Treat new current-day gaps as action items before any money-readiness claim. |
+
+## 21. Quick “Which Command Do I Need?” Table
 
 | If you want to… | Use this |
 | --- | --- |
@@ -1222,25 +1251,28 @@ If you only inspect a few files, start with:
 | test realistic contract selection | option-chain plus contract-specific lifecycle run |
 | compare historical modes | compare backtest reports |
 | inspect one paper session | review paper session |
+| replay captured S23 paper evidence | captured-session validation |
+| inspect watcher/current-price health | operator dashboard Trades Taken Stream column |
 | compare paper to historical | compare paper to historical |
 | validate normalized ingress only | ingress-only dry run |
 | safely prepare a real FYERS run | FYERS preflight |
 | run broker-backed market-data ingress only | FYERS real ingress-only run |
 | test whether TradingEngine captures can feed TFIS ingress | capture conversion plus capture ingress suite |
 
-## 21. What Not To Do
+## 22. What Not To Do
 
 Do not:
 
 - add broker order placement
 - bypass `missing_contract_oi`
-- enable next-day continuation
+- enable or alter next-day continuation rules without updating tests and
+  operator documentation
 - write inside `D:\TradingData`
 - treat TradingEngine captures as ingress-acceptance evidence until a safe OI
   source exists
 - infer unsupported workbook behavior
 
-## 22. Safest Starting Sequence For A Human Operator
+## 23. Safest Starting Sequence For A Human Operator
 
 If you are operating TFIS manually for the first time, use this exact order:
 
@@ -1250,8 +1282,10 @@ If you are operating TFIS manually for the first time, use this exact order:
 4. Run the historical comparison report
 5. Review one existing paper session
 6. Run one normalized JSONL ingress-only dry run
-7. Run FYERS preflight only
-8. Read the close-out policy
-9. Only then attempt a real market-hours ingress-only run
+7. Run captured-session validation against durable S23 artifacts
+8. Launch the operator dashboard and review Trades Taken stream health
+9. Run FYERS preflight only
+10. Read the close-out policy
+11. Only then attempt a real market-hours ingress-only run
 
 That path gives you context first, then realism, then operational readiness.

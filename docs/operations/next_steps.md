@@ -48,7 +48,10 @@ way.
    TFIS-only watcher observability so an
    operator can see branch, contract, parent/child process relationship, and
    last quote timestamp without confusing a normal wrapper/child pair for two
-   independent strategy watchers.
+   independent strategy watchers. The manual operator guide now has a
+   money-readiness command table for the dashboard, replay validator, focused
+   tests, syntax checks, scheduled-task checks, watcher recovery, and pre-live
+   readiness checks; use that table as the first human-run test checklist.
 4. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
 5. Introduce generic strategy-registry execution for enabled strategies.

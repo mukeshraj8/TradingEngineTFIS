@@ -90,6 +90,11 @@
   position-manager events plus expiry date/force-close time, and next-day SL
   reset pending/completed states are reported distinctly from generic open
   position replay.
+- TFIS Manual Operator Guide now includes a money-readiness command reference
+  table covering focused tests, syntax checks, captured-session replay
+  validation, dashboard launch, scheduled-task checks, watcher recovery, and
+  pre-live readiness checks with purpose, timing, expected checks, and safety
+  notes.
 - S23 supervised decision and paper watcher startup now enforce PID-aware
   single-instance process locks, fail duplicate live-PID launches with
   `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, and reclaim stale dead-PID locks with

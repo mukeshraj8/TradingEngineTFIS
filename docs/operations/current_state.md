@@ -55,6 +55,11 @@ live-order design. This checklist must be updated after each completed slice.
 
 ### Phase 2 - Watcher And Position Reliability
 
+- `DONE`: Add a money-readiness operator command reference to
+  `docs/operations/tfis_manual_operator_guide.md`. It explains dashboard launch,
+  captured-session replay validation, focused tests, syntax checks, scheduled
+  task checks, watcher recovery, and pre-live readiness commands in table form,
+  including purpose, usage timing, expected checks, and safety notes.
 - `TODO`: Prove automatic scheduled watcher startup on a real market day for
   every current-day waiting order and every valid carry-forward position.
 - `TODO`: Validate the new dashboard Stream column during a live market watch
