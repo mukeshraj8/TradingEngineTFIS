@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
 import sys
 import time as time_module
+from dataclasses import asdict, is_dataclass
 from datetime import date, datetime, time
+from enum import Enum
 from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 
@@ -262,6 +266,13 @@ def main(argv: list[str] | None = None) -> int:
                     flush=True,
                 )
                 events = ()
+            _append_selected_contract_market_events(
+                Path(state_dir or order_dir),
+                events=events,
+                observed_at=evaluated_at,
+                watcher_pid=os.getpid(),
+                trade_id=trade_id,
+            )
             if state is None:
                 assert order_dir is not None
                 order_state, order_event, _order_state_path, _order_events_path = order_store.evaluate_waiting_order(
@@ -454,6 +465,68 @@ def _fetch_selected_contract_events(
             return tuple(events)
         raise
     return tuple(events)
+
+
+def _append_selected_contract_market_events(
+    directory: Path,
+    *,
+    events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
+    observed_at: datetime,
+    watcher_pid: int,
+    trade_id: str,
+) -> Path:
+    path = directory / "selected_contract_market_events.jsonl"
+    if not events:
+        return path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        for event in events:
+            payload = _serialize_selected_contract_market_event(
+                event,
+                observed_at=observed_at,
+                watcher_pid=watcher_pid,
+                trade_id=trade_id,
+            )
+            handle.write(json.dumps(payload, sort_keys=True) + "\n")
+    return path
+
+
+def _serialize_selected_contract_market_event(
+    event: SelectedContractQuoteEvent | SelectedContractBarEvent,
+    *,
+    observed_at: datetime,
+    watcher_pid: int,
+    trade_id: str,
+) -> dict[str, Any]:
+    payload = _to_jsonable(asdict(event) if is_dataclass(event) else event)
+    event_kind = (
+        "selected_contract_quote"
+        if isinstance(event, SelectedContractQuoteEvent)
+        else "selected_contract_bar"
+    )
+    return {
+        "artifact_version": 1,
+        "event_kind": event_kind,
+        "observed_at": observed_at.isoformat(),
+        "watcher_pid": watcher_pid,
+        "trade_id": trade_id,
+        "symbol": event.symbol,
+        "payload": payload,
+    }
+
+
+def _to_jsonable(value: Any) -> Any:
+    if isinstance(value, (datetime, date, time)):
+        return value.isoformat()
+    if isinstance(value, Enum):
+        return value.value
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {str(key): _to_jsonable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_to_jsonable(item) for item in value]
+    return value
 
 
 def _resolve_state_dir(

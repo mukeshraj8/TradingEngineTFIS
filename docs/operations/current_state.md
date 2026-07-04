@@ -12,6 +12,73 @@ change in a meaningful way.
 - keep monthly status independent and reusable while improving generic
   enabled-strategy execution and durable calculation storage
 
+## Money-Ready Phase Milestones
+
+TFIS is not money-ready yet. The current target is to make S23 paper mode
+auditable, replayable, and operationally reliable enough to justify later
+live-order design. This checklist must be updated after each completed slice.
+
+### Phase 1 - Paper Evidence And Replayability
+
+- `DONE`: Persist selected-contract quote/bar observations consumed by S23
+  paper watchers into `selected_contract_market_events.jsonl` beside the
+  order/position state. This gives future sessions raw evidence for current
+  price, entry trigger, target, SL/FSL, and dashboard-price review.
+- `DONE`: Extend `scripts/run_s23_captured_session_validation.py` to report
+  selected-contract market-event counts/latest timestamps and to keep the
+  missing price-stream gap open for older sessions without this file.
+- `DONE`: Extend offline replay validation so it reads
+  `selected_contract_market_events.jsonl` and independently verifies whether
+  each waiting order should have filled, remained waiting, or been marked not
+  filled. The validator now reports `REPLAY_CONFIRMED_FILLED`,
+  `REPLAY_CONFIRMED_NOT_FILLED`, `REPLAY_CONFIRMED_WAITING`, or mismatch
+  verdicts from persisted quote/bar evidence without live broker access.
+- `DONE`: Extend replay validation for open positions so target and active
+  SL/FSL threshold decisions are checked from persisted selected-contract
+  quote/bar evidence. The validator now reports position replay confirmations
+  or mismatches for target exits, stop/FSL exits, and still-open/carry-forward
+  states.
+- `TODO`: Extend replay validation for expiry force-close and next-day SL reset
+  decisions, which require calendar/session-time context in addition to the
+  selected-contract event stream.
+- `TODO`: Add dashboard visibility for selected-contract stream health:
+  event count, latest event timestamp, quote age/staleness, watcher PID, and
+  last update source.
+
+### Phase 2 - Watcher And Position Reliability
+
+- `TODO`: Prove automatic scheduled watcher startup on a real market day for
+  every current-day waiting order and every valid carry-forward position.
+- `TODO`: Prove single-instance watcher behavior across restart attempts:
+  valid duplicate launches fail closed, stale locks are reclaimed, and no
+  duplicate rows/events are produced.
+- `TODO`: Prove overnight carry-forward by stopping/restarting the engine after
+  market close and confirming the next-day watcher resumes the persisted open
+  position with target and reset-SL handling intact.
+- `TODO`: Prove session-only waiting orders are always marked not-filled after
+  cutoff and never carry forward as pending orders.
+
+### Phase 3 - Operator Safety Controls
+
+- `TODO`: Add and validate operator-visible kill switches at global and
+  strategy scope.
+- `TODO`: Add configurable risk limits for max daily loss, max trades per day,
+  max open positions, max order quantity, stale quote no-trade, and broker-data
+  inconsistency no-trade.
+- `TODO`: Add dashboard/operator alerts for stale quote stream, stopped
+  watcher, duplicate process shutdown, missing next expiry, and blocked order
+  placement.
+
+### Phase 4 - Broker Reconciliation Before Any Live Money
+
+- `TODO`: Design live-order adapter boundary behind explicit config flags; do
+  not reuse paper state as live truth.
+- `TODO`: Add broker order/position reconciliation model before any real order
+  placement: broker order id, broker position quantity, average price,
+  open/closed status, and fail-closed mismatch handling.
+- `TODO`: Require supervised small-quantity dry/live checklist only after
+  paper evidence gates pass.
+
 ## Operational Status And TODO
 
 Current S23 paper-mode posture:
@@ -85,6 +152,20 @@ Current S23 paper-mode posture:
   carry-forward resume blocked order placement, reports paper orders/carried
   positions/stage coverage, and clearly flags replay gaps such as missing
   selected-contract intraday price streams.
+- `DONE`: S23 paper watchers now persist every selected-contract quote/bar
+  event they consume into `selected_contract_market_events.jsonl` beside the
+  order or position state. The captured-session validator reports the event
+  count/latest event timestamp and only clears the selected-contract price
+  stream gap when this evidence exists.
+- `DONE`: The captured-session validator now replays waiting paper orders from
+  persisted selected-contract quote/bar events. It independently confirms
+  filled, not-filled, or still-waiting order outcomes, and flags mismatch gaps
+  when the event stream indicates a different outcome from the persisted paper
+  order state.
+- `DONE`: The captured-session validator now also replays open-position
+  lifecycle thresholds from persisted selected-contract quote/bar events. It
+  verifies target-hit, stop/FSL-hit, and still-open/carry-forward outcomes
+  against persisted position state and flags mismatches for review.
 - `DONE`: `scripts/start_s23_paper_watchers_from_metadata.ps1` is available as
   a TFIS-only recovery launcher. It reads the selected session metadata and
   starts watcher windows for produced paper orders or open paper positions

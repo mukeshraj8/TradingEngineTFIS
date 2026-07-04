@@ -33,7 +33,15 @@ way.
    quotes/artifacts during market hours, and to confirm that the FYERS
    option-chain snapshot passes the new true-next-expiry verification instead
    of failing closed with `NEXT_WEEKLY_OPTION_CHAIN_UNAVAILABLE`, without
-   changing strategy rules. Improve TFIS-only watcher observability so an
+   changing strategy rules. The watcher now persists selected-contract
+   quote/bar observations to `selected_contract_market_events.jsonl`, and the
+   captured-session validator can replay waiting-order fill/not-filled/waiting
+   outcomes from that evidence. The validator now also replays persisted
+   position threshold outcomes for target, active SL/FSL, and still-open or
+   carry-forward states. The remaining validation is to prove that this stream
+   is populated continuously during a real market watch and to extend replay
+   proof through expiry force-close and next-day SL reset decisions. Improve
+   TFIS-only watcher observability so an
    operator can see branch, contract, parent/child process relationship, and
    last quote timestamp without confusing a normal wrapper/child pair for two
    independent strategy watchers.

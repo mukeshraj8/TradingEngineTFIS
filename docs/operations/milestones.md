@@ -101,6 +101,18 @@
   blocked fresh CE/PE calculations from captured 09:30 option-chain snapshots,
   and separates decision/order evidence from missing full selected-contract
   price-stream evidence.
+- S23 paper watcher runs now write selected-contract quote/bar observations to
+  `selected_contract_market_events.jsonl`, giving future market sessions a
+  replayable evidence trail for entry, target, stoploss, and dashboard current
+  price updates.
+- S23 captured-session validation now replays waiting paper-order outcomes from
+  persisted selected-contract quote/bar observations, confirming filled,
+  not-filled, or still-waiting outcomes offline and flagging mismatches between
+  the market evidence stream and persisted paper order state.
+- S23 captured-session validation now also replays persisted position threshold
+  outcomes from selected-contract quote/bar observations, confirming target,
+  stop/FSL, or still-open/carry-forward states and flagging lifecycle
+  mismatches for manual review.
 - S23 dashboard strike qualification and Step 8 audit tables now include
   candidate expiry and wrap long rejection reasons, improving manual validation
   when near and next expiry rows contain overlapping strikes

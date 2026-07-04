@@ -45,6 +45,16 @@ class CapturedBranchSummary:
     calculation_source: str
     order_placement_blocked: bool
     order_placement_blocked_reason: str | None
+    selected_contract_market_event_count: int
+    latest_selected_contract_market_event_at: str | None
+    replay_order_verdict: str | None
+    replay_order_reason: str | None
+    replay_fill_price: float | None
+    replay_fill_timestamp: str | None
+    replay_position_verdict: str | None
+    replay_position_reason: str | None
+    replay_position_exit_price: float | None
+    replay_position_exit_timestamp: str | None
     order_status: str | None
     order_fill_price: float | None
     position_status: str | None
@@ -147,8 +157,8 @@ def render_markdown_report(report: dict[str, Any]) -> str:
         lines.extend(
             [
                 "",
-                "| Branch | Status | Contract | Expiry | LTP | OI | Entry | Target | SL | Order | Position | Reason |",
-                "|---|---:|---|---:|---:|---:|---:|---:|---:|---|---|---|",
+                "| Branch | Status | Contract | Expiry | LTP | OI | Entry | Target | SL | Market Events | Latest Market Event | Order Replay | Position Replay | Order | Position | Reason |",
+                "|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|---|---|",
             ]
         )
         for branch in session["branches"]:
@@ -165,6 +175,10 @@ def render_markdown_report(report: dict[str, Any]) -> str:
                         _fmt(branch["planned_entry_price"]),
                         _fmt(branch["target_price"]),
                         _fmt(branch["stoploss_price"]),
+                        str(branch["selected_contract_market_event_count"]),
+                        branch["latest_selected_contract_market_event_at"] or "n/a",
+                        branch["replay_order_verdict"] or "n/a",
+                        branch["replay_position_verdict"] or "n/a",
                         branch["order_status"]
                         or ("BLOCKED" if branch["order_placement_blocked"] else "n/a"),
                         branch["position_status"] or "n/a",
@@ -248,6 +262,8 @@ def _summarize_branch(
     order_state = _read_json(branch_dir / "paper_order_state.json")
     position_state = _read_json(branch_dir / "paper_position_state.json")
     evidence_files = tuple(sorted(path.name for path in branch_dir.iterdir() if path.is_file()))
+    selected_market_events = _load_selected_contract_market_events(branch_dir)
+    market_event_count, latest_market_event_at = _selected_contract_market_event_stats(selected_market_events)
     gaps: list[str] = []
     selected_symbol = _as_optional_str(summary.get("selected_contract_symbol"))
     selected_expiry = _as_optional_str(summary.get("selected_contract_expiry"))
@@ -302,8 +318,24 @@ def _summarize_branch(
         gaps.append("missing_paper_order_events")
     if position_state and not (branch_dir / "paper_position_state_events.jsonl").exists():
         gaps.append("missing_paper_position_state_events")
-    if selected_symbol and not any(name.startswith("selected_contract_market_events") for name in evidence_files):
+    if selected_symbol and market_event_count <= 0:
         gaps.append("missing_selected_contract_price_stream")
+
+    replay = _replay_waiting_order_from_market_events(
+        order_state=order_state,
+        selected_contract_symbol=selected_symbol,
+        planned_entry_price=planned_entry,
+        events=selected_market_events,
+    )
+    if replay.get("gap"):
+        gaps.append(str(replay["gap"]))
+    position_replay = _replay_position_from_market_events(
+        position_state=position_state,
+        selected_contract_symbol=selected_symbol,
+        events=selected_market_events,
+    )
+    if position_replay.get("gap"):
+        gaps.append(str(position_replay["gap"]))
 
     return CapturedBranchSummary(
         branch=branch_dir.name,
@@ -323,6 +355,16 @@ def _summarize_branch(
         calculation_source=calculation_source,
         order_placement_blocked=order_placement_blocked,
         order_placement_blocked_reason=order_placement_blocked_reason,
+        selected_contract_market_event_count=market_event_count,
+        latest_selected_contract_market_event_at=latest_market_event_at,
+        replay_order_verdict=_as_optional_str(replay.get("verdict")),
+        replay_order_reason=_as_optional_str(replay.get("reason")),
+        replay_fill_price=_as_optional_float(replay.get("fill_price")),
+        replay_fill_timestamp=_as_optional_str(replay.get("fill_timestamp")),
+        replay_position_verdict=_as_optional_str(position_replay.get("verdict")),
+        replay_position_reason=_as_optional_str(position_replay.get("reason")),
+        replay_position_exit_price=_as_optional_float(position_replay.get("exit_price")),
+        replay_position_exit_timestamp=_as_optional_str(position_replay.get("exit_timestamp")),
         order_status=_as_optional_str(order_state.get("status")),
         order_fill_price=_as_optional_float(order_state.get("fill_price")),
         position_status=_as_optional_str(position_state.get("lifecycle_status")),
@@ -417,6 +459,311 @@ def _read_json(path: Path) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
+
+
+def _load_selected_contract_market_events(branch_dir: Path) -> tuple[dict[str, Any], ...]:
+    paths = sorted(branch_dir.glob("selected_contract_market_events*.jsonl"))
+    events: list[dict[str, Any]] = []
+    for path in paths:
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for line in lines:
+            if not line.strip():
+                continue
+            try:
+                payload = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(payload, dict):
+                events.append(payload)
+    return tuple(events)
+
+
+def _selected_contract_market_event_stats(events: tuple[dict[str, Any], ...]) -> tuple[int, str | None]:
+    latest: str | None = None
+    for payload in events:
+        observed_at = _event_timestamp(payload)
+        if observed_at and (latest is None or observed_at > latest):
+            latest = observed_at
+    return len(events), latest
+
+
+def _replay_waiting_order_from_market_events(
+    *,
+    order_state: dict[str, Any],
+    selected_contract_symbol: str | None,
+    planned_entry_price: float | None,
+    events: tuple[dict[str, Any], ...],
+) -> dict[str, Any]:
+    if not order_state:
+        return {}
+    order_status = _as_optional_str(order_state.get("status"))
+    if order_status not in {"PAPER_ORDER_WAITING_FOR_TRIGGER", "PAPER_ORDER_FILLED", "PAPER_ORDER_NOT_FILLED"}:
+        return {}
+    symbol = _as_optional_str(order_state.get("selected_contract_symbol")) or selected_contract_symbol
+    entry = _as_optional_float(order_state.get("planned_entry_price")) or planned_entry_price
+    if not symbol or entry is None:
+        return {
+            "verdict": "REPLAY_INCOMPLETE",
+            "reason": "Cannot replay order trigger because selected contract or entry price is missing.",
+            "gap": "order_replay_missing_symbol_or_entry",
+        }
+    matching_events = tuple(event for event in events if _event_symbol(event) == symbol)
+    if not matching_events:
+        return {
+            "verdict": "REPLAY_INCOMPLETE",
+            "reason": "No selected-contract market events match the paper order symbol.",
+            "gap": "order_replay_missing_matching_selected_contract_events",
+        }
+
+    trigger = _first_order_trigger(symbol=symbol, entry=entry, events=matching_events)
+    if trigger is not None:
+        expected_status = "PAPER_ORDER_FILLED"
+        if order_status == expected_status:
+            return {
+                "verdict": "REPLAY_CONFIRMED_FILLED",
+                "reason": (
+                    f"Selected-contract stream reached entry at {trigger['timestamp']}: "
+                    f"{trigger['basis']} {trigger['market_price']:.2f} <= entry {entry:.2f}."
+                ),
+                "fill_price": trigger["fill_price"],
+                "fill_timestamp": trigger["timestamp"],
+            }
+        return {
+            "verdict": "REPLAY_MISMATCH_SHOULD_HAVE_FILLED",
+            "reason": (
+                f"Selected-contract stream reached entry at {trigger['timestamp']}: "
+                f"{trigger['basis']} {trigger['market_price']:.2f} <= entry {entry:.2f}, "
+                f"but persisted order status is {order_status}."
+            ),
+            "fill_price": trigger["fill_price"],
+            "fill_timestamp": trigger["timestamp"],
+            "gap": "order_replay_mismatch_should_have_filled",
+        }
+
+    latest = _selected_contract_market_event_stats(matching_events)[1]
+    if order_status == "PAPER_ORDER_FILLED":
+        return {
+            "verdict": "REPLAY_MISMATCH_FILLED_WITHOUT_TRIGGER",
+            "reason": (
+                f"Selected-contract stream never reached entry {entry:.2f}, "
+                "but persisted order status is PAPER_ORDER_FILLED."
+            ),
+            "gap": "order_replay_mismatch_filled_without_trigger",
+        }
+    if order_status == "PAPER_ORDER_NOT_FILLED":
+        return {
+            "verdict": "REPLAY_CONFIRMED_NOT_FILLED",
+            "reason": (
+                f"Selected-contract stream did not reach entry {entry:.2f} through {latest or 'the latest event'}; "
+                "persisted status is PAPER_ORDER_NOT_FILLED."
+            ),
+        }
+    return {
+        "verdict": "REPLAY_CONFIRMED_WAITING",
+        "reason": (
+            f"Selected-contract stream did not reach entry {entry:.2f} through {latest or 'the latest event'}; "
+            "persisted status remains PAPER_ORDER_WAITING_FOR_TRIGGER."
+        ),
+    }
+
+
+def _first_order_trigger(
+    *,
+    symbol: str,
+    entry: float,
+    events: tuple[dict[str, Any], ...],
+) -> dict[str, Any] | None:
+    for event in sorted(events, key=lambda item: (_event_timestamp(item) or "", item.get("observed_at") or "")):
+        payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+        event_kind = _as_optional_str(event.get("event_kind")) or ""
+        if _event_symbol(event) != symbol:
+            continue
+        if "bar" in event_kind:
+            low = _as_optional_float(payload.get("low"))
+            if low is not None and low <= entry:
+                return {
+                    "timestamp": _event_timestamp(event) or "n/a",
+                    "basis": "bar low",
+                    "market_price": low,
+                    "fill_price": entry,
+                }
+            continue
+        market_price = _as_optional_float(payload.get("ltp"))
+        if market_price is None:
+            market_price = _as_optional_float(payload.get("bid"))
+        if market_price is not None and market_price <= entry:
+            bid = _as_optional_float(payload.get("bid"))
+            return {
+                "timestamp": _event_timestamp(event) or "n/a",
+                "basis": "quote price",
+                "market_price": market_price,
+                "fill_price": bid if bid is not None else market_price,
+            }
+    return None
+
+
+def _replay_position_from_market_events(
+    *,
+    position_state: dict[str, Any],
+    selected_contract_symbol: str | None,
+    events: tuple[dict[str, Any], ...],
+) -> dict[str, Any]:
+    if not position_state:
+        return {}
+    lifecycle_status = _as_optional_str(position_state.get("lifecycle_status"))
+    if not lifecycle_status:
+        return {}
+    symbol = _as_optional_str(position_state.get("selected_contract_symbol")) or selected_contract_symbol
+    target = _as_optional_float(position_state.get("target_price"))
+    stoploss = _as_optional_float(position_state.get("stoploss_price"))
+    fsl = _as_optional_float(position_state.get("fsl_price"))
+    stop_active = bool(position_state.get("stoploss_active", True))
+    if not symbol or target is None or stoploss is None:
+        return {
+            "verdict": "POSITION_REPLAY_INCOMPLETE",
+            "reason": "Cannot replay position lifecycle because selected contract, target, or stoploss is missing.",
+            "gap": "position_replay_missing_symbol_or_levels",
+        }
+    matching_events = tuple(event for event in events if _event_symbol(event) == symbol)
+    if not matching_events:
+        return {
+            "verdict": "POSITION_REPLAY_INCOMPLETE",
+            "reason": "No selected-contract market events match the paper position symbol.",
+            "gap": "position_replay_missing_matching_selected_contract_events",
+        }
+
+    exit_event = _first_position_exit_event(
+        symbol=symbol,
+        target=target,
+        stop_price=min([item for item in (stoploss, fsl) if item is not None]),
+        stop_active=stop_active,
+        events=matching_events,
+    )
+    if exit_event is not None:
+        expected_status = {
+            "target_hit": "PAPER_FRESH_ENTRY_REQUIRED",
+            "stoploss_or_fsl_hit": "PAPER_REVERSE_ENTRY_REQUIRED",
+            "same_bar_target_stop_conflict_stoploss_wins": "PAPER_REVERSE_ENTRY_REQUIRED",
+        }[exit_event["reason_code"]]
+        if lifecycle_status == expected_status:
+            return {
+                "verdict": "POSITION_REPLAY_CONFIRMED_EXIT",
+                "reason": (
+                    f"Selected-contract stream confirms {exit_event['reason_code']} at "
+                    f"{exit_event['timestamp']}: {exit_event['basis']} {exit_event['market_price']:.2f}."
+                ),
+                "exit_price": exit_event["exit_price"],
+                "exit_timestamp": exit_event["timestamp"],
+            }
+        return {
+            "verdict": "POSITION_REPLAY_MISMATCH_SHOULD_HAVE_EXITED",
+            "reason": (
+                f"Selected-contract stream indicates {exit_event['reason_code']} at "
+                f"{exit_event['timestamp']}, but persisted lifecycle status is {lifecycle_status}."
+            ),
+            "exit_price": exit_event["exit_price"],
+            "exit_timestamp": exit_event["timestamp"],
+            "gap": "position_replay_mismatch_should_have_exited",
+        }
+
+    latest = _selected_contract_market_event_stats(matching_events)[1]
+    if lifecycle_status in {"PAPER_POSITION_OPEN", "PAPER_POSITION_CARRIED_FORWARD", "PAPER_POSITION_RESUMED"}:
+        return {
+            "verdict": "POSITION_REPLAY_CONFIRMED_OPEN",
+            "reason": (
+                f"Selected-contract stream did not hit target {target:.2f} or active stop "
+                f"{stoploss:.2f} through {latest or 'the latest event'}; persisted position remains open/carry-forward."
+            ),
+        }
+    return {
+        "verdict": "POSITION_REPLAY_MISMATCH_CLOSED_WITHOUT_STREAM_EXIT",
+        "reason": (
+            f"Selected-contract stream did not hit target {target:.2f} or active stop {stoploss:.2f}, "
+            f"but persisted lifecycle status is {lifecycle_status}."
+        ),
+        "gap": "position_replay_mismatch_closed_without_stream_exit",
+    }
+
+
+def _first_position_exit_event(
+    *,
+    symbol: str,
+    target: float,
+    stop_price: float,
+    stop_active: bool,
+    events: tuple[dict[str, Any], ...],
+) -> dict[str, Any] | None:
+    for event in sorted(events, key=lambda item: (_event_timestamp(item) or "", item.get("observed_at") or "")):
+        payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+        event_kind = _as_optional_str(event.get("event_kind")) or ""
+        if _event_symbol(event) != symbol:
+            continue
+        timestamp = _event_timestamp(event) or "n/a"
+        if "bar" in event_kind:
+            high = _as_optional_float(payload.get("high"))
+            low = _as_optional_float(payload.get("low"))
+            if high is None or low is None:
+                continue
+            stop_hit = stop_active and high >= stop_price
+            target_hit = low <= target
+            if stop_hit:
+                return {
+                    "reason_code": "same_bar_target_stop_conflict_stoploss_wins" if target_hit else "stoploss_or_fsl_hit",
+                    "timestamp": timestamp,
+                    "basis": "bar high",
+                    "market_price": high,
+                    "exit_price": stop_price,
+                }
+            if target_hit:
+                return {
+                    "reason_code": "target_hit",
+                    "timestamp": timestamp,
+                    "basis": "bar low",
+                    "market_price": low,
+                    "exit_price": target,
+                }
+            continue
+        stop_reference = _as_optional_float(payload.get("ask"))
+        if stop_reference is None:
+            stop_reference = _as_optional_float(payload.get("ltp"))
+        target_reference = _as_optional_float(payload.get("bid"))
+        if target_reference is None:
+            target_reference = _as_optional_float(payload.get("ltp"))
+        if stop_active and stop_reference is not None and stop_reference >= stop_price:
+            return {
+                "reason_code": "stoploss_or_fsl_hit",
+                "timestamp": timestamp,
+                "basis": "quote ask/ltp",
+                "market_price": stop_reference,
+                "exit_price": max(stop_price, stop_reference),
+            }
+        if target_reference is not None and target_reference <= target:
+            return {
+                "reason_code": "target_hit",
+                "timestamp": timestamp,
+                "basis": "quote bid/ltp",
+                "market_price": target_reference,
+                "exit_price": max(target, target_reference),
+            }
+    return None
+
+
+def _event_symbol(event: dict[str, Any]) -> str | None:
+    payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+    return _as_optional_str(event.get("symbol")) or _as_optional_str(payload.get("symbol"))
+
+
+def _event_timestamp(event: dict[str, Any]) -> str | None:
+    payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+    envelope = payload.get("envelope") if isinstance(payload.get("envelope"), dict) else {}
+    return (
+        _as_optional_str(envelope.get("effective_timestamp"))
+        or _as_optional_str(event.get("observed_at"))
+        or _as_optional_str(payload.get("bar_end"))
+    )
 
 
 def _load_latest_stage_option_chain(day_dir: Path) -> OptionChainSnapshotEvent | None:
@@ -514,6 +861,16 @@ def _branch_to_dict(branch: CapturedBranchSummary) -> dict[str, Any]:
         "calculation_source": branch.calculation_source,
         "order_placement_blocked": branch.order_placement_blocked,
         "order_placement_blocked_reason": branch.order_placement_blocked_reason,
+        "selected_contract_market_event_count": branch.selected_contract_market_event_count,
+        "latest_selected_contract_market_event_at": branch.latest_selected_contract_market_event_at,
+        "replay_order_verdict": branch.replay_order_verdict,
+        "replay_order_reason": branch.replay_order_reason,
+        "replay_fill_price": branch.replay_fill_price,
+        "replay_fill_timestamp": branch.replay_fill_timestamp,
+        "replay_position_verdict": branch.replay_position_verdict,
+        "replay_position_reason": branch.replay_position_reason,
+        "replay_position_exit_price": branch.replay_position_exit_price,
+        "replay_position_exit_timestamp": branch.replay_position_exit_timestamp,
         "order_status": branch.order_status,
         "order_fill_price": branch.order_fill_price,
         "position_status": branch.position_status,
@@ -593,6 +950,10 @@ def _branch_reason(branch: dict[str, Any]) -> str:
         parts.append("Order blocked: " + str(branch.get("order_placement_blocked_reason") or "blocked in captured run"))
     if branch.get("calculation_source") == "review_reconstructed_from_captured_snapshot":
         parts.append("Calculation source: reconstructed from captured 09:30 option chain")
+    if branch.get("replay_order_reason"):
+        parts.append("Order replay: " + str(branch.get("replay_order_reason")))
+    if branch.get("replay_position_reason"):
+        parts.append("Position replay: " + str(branch.get("replay_position_reason")))
     return " ".join(parts)
 
 
