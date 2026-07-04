@@ -95,6 +95,17 @@ class DashboardSessionSummary:
 
 
 @dataclass(frozen=True, slots=True)
+class DashboardSelectedContractStreamHealth:
+    event_count: int = 0
+    latest_event_at: datetime | None = None
+    latest_event_kind: str | None = None
+    latest_event_source: str | None = None
+    watcher_pid: int | None = None
+    age_seconds: float | None = None
+    health_status: str = "NO_STREAM"
+
+
+@dataclass(frozen=True, slots=True)
 class DashboardTradeLedgerRow:
     event_timestamp: datetime | None
     event_type: str
@@ -123,6 +134,7 @@ class DashboardTradeLedgerRow:
     reverse_entry_required: bool
     rollover_required: bool
     state_directory: Path | None
+    stream_health: DashboardSelectedContractStreamHealth
     raw_artifact_links: dict[str, str]
 
 
@@ -1081,6 +1093,11 @@ class TfisOperatorDashboardBuilder:
                 if identity in seen:
                     continue
                 seen.add(identity)
+                selected_contract = str(raw.get("selected_contract_symbol") or "n/a")
+                stream_health = self._selected_contract_stream_health(
+                    state_directory=state_directory,
+                    selected_contract_symbol=selected_contract,
+                )
                 rows.append(
                     DashboardTradeLedgerRow(
                         event_timestamp=self._parse_datetime(event_timestamp_raw),
@@ -1089,7 +1106,7 @@ class TfisOperatorDashboardBuilder:
                         strategy_id=str(raw.get("strategy_id") or "n/a"),
                         strategy_code=str(raw.get("strategy_code") or config.strategy_code),
                         strategy_branch=str(raw.get("strategy_branch") or "n/a"),
-                        selected_contract_symbol=str(raw.get("selected_contract_symbol") or "n/a"),
+                        selected_contract_symbol=selected_contract,
                         side=str(raw.get("side") or "n/a"),
                         lots=self._int_or_none(raw.get("lots")),
                         quantity=self._int_or_none(raw.get("quantity")),
@@ -1110,6 +1127,7 @@ class TfisOperatorDashboardBuilder:
                         reverse_entry_required=bool(raw.get("reverse_entry_required")),
                         rollover_required=bool(raw.get("rollover_required")),
                         state_directory=state_directory,
+                        stream_health=stream_health,
                         raw_artifact_links=self._trade_artifact_links(
                             ledger_path=ledger_path,
                             state_directory=state_directory,
@@ -1151,6 +1169,10 @@ class TfisOperatorDashboardBuilder:
                 if identity in seen:
                     continue
                 seen.add(identity)
+                stream_health = self._selected_contract_stream_health(
+                    state_directory=state_directory,
+                    selected_contract_symbol=selected_contract,
+                )
                 rows.append(
                     DashboardTradeLedgerRow(
                         event_timestamp=self._parse_datetime(order_timestamp),
@@ -1188,6 +1210,7 @@ class TfisOperatorDashboardBuilder:
                         reverse_entry_required=False,
                         rollover_required=False,
                         state_directory=state_directory,
+                        stream_health=stream_health,
                         raw_artifact_links=self._trade_artifact_links(
                             ledger_path=None,
                             state_directory=state_directory,
@@ -1269,7 +1292,7 @@ class TfisOperatorDashboardBuilder:
                 header,
                 '<div class="trade-table-wrap">',
                 '<table class="trade-table">',
-                "<thead><tr><th class=\"trade-time\">Time</th><th class=\"trade-event\">Event</th><th class=\"trade-strategy\">Strategy</th><th class=\"trade-contract\">Contract</th><th class=\"trade-side\">Side / Qty</th><th class=\"trade-number\">Entry</th><th class=\"trade-number\">Current</th><th class=\"trade-number\">Exit</th><th class=\"trade-number\">Target / SL</th><th class=\"trade-number\">P&L</th><th class=\"trade-status\">Status</th><th class=\"trade-manage\">Manage</th></tr></thead>",
+                "<thead><tr><th class=\"trade-time\">Time</th><th class=\"trade-event\">Event</th><th class=\"trade-strategy\">Strategy</th><th class=\"trade-contract\">Contract</th><th class=\"trade-side\">Side / Qty</th><th class=\"trade-number\">Entry</th><th class=\"trade-number\">Current</th><th class=\"trade-stream\">Stream</th><th class=\"trade-number\">Exit</th><th class=\"trade-number\">Target / SL</th><th class=\"trade-number\">P&L</th><th class=\"trade-status\">Status</th><th class=\"trade-manage\">Manage</th></tr></thead>",
                 f"<tbody>{event_rows}</tbody>",
                 "</table>",
                 "</div>",
@@ -1348,6 +1371,7 @@ class TfisOperatorDashboardBuilder:
         if row.message:
             reason = f"{reason}<br><span class=\"muted-text\">{html.escape(row.message)}</span>"
         current_cell = self._render_trade_current_cell(row)
+        stream_cell = self._render_trade_stream_cell(row)
         strategy_cell = self._render_trade_strategy_cell(row)
         contract_cell = self._render_trade_contract_cell(row)
         return "\n".join(
@@ -1360,6 +1384,7 @@ class TfisOperatorDashboardBuilder:
                 f"<td class=\"trade-side\"><strong>{html.escape(row.side)}</strong><br>{self._fmt_number(row.lots, integer=True)} lots / {self._fmt_number(row.quantity, integer=True)}</td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.entry_price)}</td>",
                 f"<td class=\"trade-number trade-current\">{current_cell}</td>",
+                f"<td class=\"trade-stream\">{stream_cell}</td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.exit_price)}</td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.target_price)}<br><span class=\"muted-text\">/ {self._fmt_number(row.stoploss_price)}</span></td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.gross_points)} pts<br><span class=\"muted-text\">{self._fmt_number(row.gross_pnl)}</span></td>",
@@ -1426,6 +1451,34 @@ class TfisOperatorDashboardBuilder:
             else f'<span class="muted-text">Bid / Ask {bid} / {ask}</span>'
         )
         return f'<span class="price-label">LTP</span> {current}<br>{bid_ask}'
+
+    def _render_trade_stream_cell(self, row: DashboardTradeLedgerRow) -> str:
+        stream = row.stream_health
+        if stream.event_count <= 0:
+            return '<span class="muted-text">No stream evidence</span>'
+        latest = (
+            stream.latest_event_at.isoformat(sep=" ", timespec="seconds")
+            if stream.latest_event_at is not None
+            else "n/a"
+        )
+        if stream.health_status == "RECORDED":
+            age = "historical"
+        else:
+            age = self._fmt_seconds(stream.age_seconds)
+        source = stream.latest_event_source or stream.latest_event_kind or "n/a"
+        pid = str(stream.watcher_pid) if stream.watcher_pid is not None else "n/a"
+        return "\n".join(
+            [
+                '<div class="stream-cell">',
+                f'<div class="status-badges">{self._badge(stream.health_status)}</div>',
+                f'<span class="muted-text">Events {stream.event_count}</span>',
+                f'<span class="muted-text">Latest {html.escape(latest)}</span>',
+                f'<span class="muted-text">Age {html.escape(age)}</span>',
+                f'<span class="muted-text">PID {html.escape(pid)}</span>',
+                f'<span class="muted-text">Source {html.escape(source)}</span>',
+                "</div>",
+            ]
+        )
 
     def _render_latest_session_block(
         self,
@@ -3331,6 +3384,7 @@ class TfisOperatorDashboardBuilder:
         known_artifacts = {
             "Order State": "paper_order_state.json",
             "Order Events": "paper_order_events.jsonl",
+            "Market Events": "selected_contract_market_events.jsonl",
             "State": "paper_position_state.json",
             "Manager Summary": "paper_position_manager_summary.json",
             "State Events": "paper_position_state_events.jsonl",
@@ -3341,6 +3395,73 @@ class TfisOperatorDashboardBuilder:
             if artifact_path.exists():
                 links[label] = str(artifact_path)
         return links
+
+    def _selected_contract_stream_health(
+        self,
+        *,
+        state_directory: Path | None,
+        selected_contract_symbol: str,
+    ) -> DashboardSelectedContractStreamHealth:
+        if state_directory is None:
+            return DashboardSelectedContractStreamHealth()
+        symbol = str(selected_contract_symbol or "").strip()
+        if not symbol or symbol.lower() == "n/a":
+            return DashboardSelectedContractStreamHealth()
+        if not state_directory.exists():
+            return DashboardSelectedContractStreamHealth()
+
+        matched_events: list[tuple[datetime | None, dict[str, Any]]] = []
+        for event_path in sorted(state_directory.glob("selected_contract_market_events*.jsonl")):
+            for event in self._iter_jsonl_dicts(event_path):
+                event_symbol = self._selected_contract_event_symbol(event)
+                if event_symbol and event_symbol != symbol:
+                    continue
+                event_time = self._parse_datetime(self._selected_contract_event_timestamp(event))
+                matched_events.append((event_time, event))
+        if not matched_events:
+            return DashboardSelectedContractStreamHealth()
+
+        latest_time, latest_event = max(
+            matched_events,
+            key=lambda item: item[0].isoformat() if item[0] is not None else "",
+        )
+        age_seconds: float | None = None
+        health_status = "RECORDED"
+        if latest_time is not None:
+            now = datetime.now(latest_time.tzinfo) if latest_time.tzinfo is not None else datetime.now()
+            age_seconds = max((now - latest_time).total_seconds(), 0.0)
+            if latest_time.date() == now.date():
+                health_status = "OK" if age_seconds <= 120 else "STALE"
+
+        payload = latest_event.get("payload") if isinstance(latest_event.get("payload"), dict) else {}
+        envelope = payload.get("envelope") if isinstance(payload.get("envelope"), dict) else {}
+        source = str(envelope.get("source_id") or envelope.get("source_type") or latest_event.get("source") or "")
+        return DashboardSelectedContractStreamHealth(
+            event_count=len(matched_events),
+            latest_event_at=latest_time,
+            latest_event_kind=str(latest_event.get("event_kind") or latest_event.get("event_type") or ""),
+            latest_event_source=source or None,
+            watcher_pid=self._int_or_none(latest_event.get("watcher_pid")),
+            age_seconds=age_seconds,
+            health_status=health_status,
+        )
+
+    @staticmethod
+    def _selected_contract_event_symbol(event: dict[str, Any]) -> str:
+        payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+        return str(event.get("symbol") or payload.get("symbol") or "").strip()
+
+    @staticmethod
+    def _selected_contract_event_timestamp(event: dict[str, Any]) -> str:
+        payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+        envelope = payload.get("envelope") if isinstance(payload.get("envelope"), dict) else {}
+        return str(
+            envelope.get("effective_timestamp")
+            or event.get("observed_at")
+            or payload.get("timestamp")
+            or payload.get("bar_end")
+            or ""
+        )
 
     @staticmethod
     def _iter_jsonl_dicts(path: Path) -> list[dict[str, Any]]:
@@ -4622,7 +4743,7 @@ calculate();
                 "    .top-links { margin-top: 16px; }",
                 "    .trade-summary { margin-bottom: 14px; }",
                 "    .trade-table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }",
-                "    .trade-table { display: table; table-layout: fixed; width: 100%; min-width: 1500px; border: 0; border-radius: 0; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.82rem; line-height: 1.32; }",
+                "    .trade-table { display: table; table-layout: fixed; width: 100%; min-width: 1620px; border: 0; border-radius: 0; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.82rem; line-height: 1.32; }",
                 "    .trade-table th, .trade-table td { padding: 10px 10px; vertical-align: top; }",
                 "    .trade-table th { color: #3f493f; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }",
                 "    .trade-table .badge { display: inline-flex; max-width: 100%; padding: 4px 8px; font-size: 0.68rem; line-height: 1; white-space: nowrap; }",
@@ -4633,6 +4754,10 @@ calculate();
                 "    .trade-side { width: 82px; }",
                 "    .trade-number { width: 78px; text-align: right; font-variant-numeric: tabular-nums; }",
                 "    .trade-current { width: 112px; white-space: nowrap; }",
+                "    .trade-stream { width: 150px; text-align: left; }",
+                "    .stream-cell { display: grid; gap: 3px; min-width: 0; }",
+                "    .stream-cell .status-badges { margin-bottom: 2px; }",
+                "    .stream-cell .muted-text { font-size: 0.72rem; }",
                 "    .price-label { color: var(--muted); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; }",
                 "    .trade-status { width: 275px; }",
                 "    .trade-manage { width: 185px; }",
@@ -4784,3 +4909,16 @@ calculate();
         if number.is_integer():
             return f"{int(number)}"
         return f"{number:.2f}"
+
+    @staticmethod
+    def _fmt_seconds(value: float | None) -> str:
+        if value is None:
+            return "n/a"
+        seconds = max(int(value), 0)
+        if seconds < 60:
+            return f"{seconds}s"
+        minutes, remaining_seconds = divmod(seconds, 60)
+        if minutes < 60:
+            return f"{minutes}m {remaining_seconds}s"
+        hours, remaining_minutes = divmod(minutes, 60)
+        return f"{hours}h {remaining_minutes}m"

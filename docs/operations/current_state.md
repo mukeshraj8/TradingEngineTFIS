@@ -41,14 +41,21 @@ live-order design. This checklist must be updated after each completed slice.
 - `TODO`: Extend replay validation for expiry force-close and next-day SL reset
   decisions, which require calendar/session-time context in addition to the
   selected-contract event stream.
-- `TODO`: Add dashboard visibility for selected-contract stream health:
+- `DONE`: Add dashboard visibility for selected-contract stream health:
   event count, latest event timestamp, quote age/staleness, watcher PID, and
-  last update source.
+  last update source. The Trades Taken table now includes a Stream column built
+  from `selected_contract_market_events.jsonl`, plus a direct Market Events
+  artifact link for operator audit. This slice only surfaces already-persisted
+  watcher evidence; it does not change strategy selection, order routing, or
+  watcher lifecycle behavior.
 
 ### Phase 2 - Watcher And Position Reliability
 
 - `TODO`: Prove automatic scheduled watcher startup on a real market day for
   every current-day waiting order and every valid carry-forward position.
+- `TODO`: Validate the new dashboard Stream column during a live market watch
+  and confirm current-day rows move between `OK` and `STALE` as selected-contract
+  evidence is written or stops arriving.
 - `TODO`: Prove single-instance watcher behavior across restart attempts:
   valid duplicate launches fail closed, stale locks are reclaimed, and no
   duplicate rows/events are produced.

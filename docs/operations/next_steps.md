@@ -39,8 +39,11 @@ way.
    outcomes from that evidence. The validator now also replays persisted
    position threshold outcomes for target, active SL/FSL, and still-open or
    carry-forward states. The remaining validation is to prove that this stream
-   is populated continuously during a real market watch and to extend replay
-   proof through expiry force-close and next-day SL reset decisions. Improve
+   is populated continuously during a real market watch. The Trades Taken
+   dashboard now surfaces that stream as event count, latest timestamp,
+   age/staleness, watcher PID, source, and Market Events artifact link, so the
+   live validation should check those fields alongside price and P&L. Replay
+   proof still needs expiry force-close and next-day SL reset decisions. Improve
    TFIS-only watcher observability so an
    operator can see branch, contract, parent/child process relationship, and
    last quote timestamp without confusing a normal wrapper/child pair for two

@@ -406,6 +406,29 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
         "\n".join(json.dumps(row) for row in trade_rows) + "\n",
         encoding="utf-8",
     )
+    (final_dir / "selected_contract_market_events.jsonl").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "event_kind": "selected_contract_quote",
+                "observed_at": "2026-06-10T09:31:01+05:30",
+                "watcher_pid": 4321,
+                "symbol": "NIFTY_20260602_23800_PE",
+                "payload": {
+                    "ltp": 188.5,
+                    "bid": 188.0,
+                    "ask": 189.0,
+                    "envelope": {
+                        "source_id": "fixture_quote_feed",
+                        "source_type": "quote",
+                        "effective_timestamp": "2026-06-10T09:31:01+05:30",
+                    },
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     pending_dir = day_dir / "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
     pending_dir.mkdir()
     (pending_dir / "paper_order_state.json").write_text(
@@ -446,6 +469,29 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     (pending_dir / "paper_order_events.jsonl").write_text("{}\n", encoding="utf-8")
+    (pending_dir / "selected_contract_market_events.jsonl").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "event_kind": "selected_contract_quote",
+                "observed_at": "2026-06-10T09:31:02+05:30",
+                "watcher_pid": 9876,
+                "symbol": "NIFTY_20260602_23850_CE",
+                "payload": {
+                    "ltp": 239.0,
+                    "bid": 238.5,
+                    "ask": 239.5,
+                    "envelope": {
+                        "source_id": "fixture_order_feed",
+                        "source_type": "quote",
+                        "effective_timestamp": "2026-06-10T09:31:02+05:30",
+                    },
+                },
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     not_filled_dir = day_dir / "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL_NOT_FILLED"
     not_filled_dir.mkdir()
     (not_filled_dir / "paper_order_state.json").write_text(
@@ -611,10 +657,18 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "Trades Taken" in strategy_html
     assert "trade-table-wrap" in strategy_html
     assert "Current" in strategy_html
+    assert "Stream" in strategy_html
     assert "LTP" in strategy_html
     assert "Bid / Ask" in strategy_html
     assert "239" in strategy_html
     assert "238.50 / 239.50" in strategy_html
+    assert "selected_contract_market_events.jsonl" in strategy_html
+    assert "Events 1" in strategy_html
+    assert "PID 4321" in strategy_html
+    assert "PID 9876" in strategy_html
+    assert "Source fixture_quote_feed" in strategy_html
+    assert "Source fixture_order_feed" in strategy_html
+    assert "RECORDED" in strategy_html
     assert "PAPER_POSITION_HELD" in strategy_html
     assert "Bear Put" in strategy_html
     assert "compact-cell" in strategy_html

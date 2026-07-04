@@ -80,6 +80,11 @@
   the latest open position into the supervised decision runner as carry-forward
   context, and starts state watchers for all eligible open positions alongside
   fresh current-day order watchers
+- S23 Trades Taken dashboard now shows selected-contract stream health from
+  persisted watcher evidence: event count, latest quote/bar timestamp,
+  age/staleness, watcher PID, source, and a direct Market Events artifact link.
+  This makes current-price freshness auditable without changing strategy
+  selection, order routing, or watcher lifecycle behavior.
 - S23 supervised decision and paper watcher startup now enforce PID-aware
   single-instance process locks, fail duplicate live-PID launches with
   `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, and reclaim stale dead-PID locks with
