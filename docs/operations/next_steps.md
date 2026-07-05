@@ -50,7 +50,10 @@ way.
    TFIS-only watcher observability so an
    operator can see branch, contract, parent/child process relationship, and
    last quote timestamp without confusing a normal wrapper/child pair for two
-   independent strategy watchers. The manual operator guide now has a
+   independent strategy watchers. Offline unit tests now prove the watcher and
+   supervised-decision PID-lock identities and duplicate live-PID fail-closed
+   behavior; remaining proof is a real Windows restart attempt with live
+   process inspection. The manual operator guide now has a
    money-readiness command table for the dashboard, replay validator, focused
    tests, syntax checks, scheduled-task checks, watcher recovery, and pre-live
    readiness checks; use that table as the first human-run test checklist.

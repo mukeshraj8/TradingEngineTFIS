@@ -105,6 +105,11 @@
   single-instance process locks, fail duplicate live-PID launches with
   `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, and reclaim stale dead-PID locks with
   an auditable `STALE_PROCESS_LOCK_RECLAIMED` message
+- S23 supervised decision and paper watcher single-instance guards now have
+  offline proof at the S23 entrypoint level. Tests verify stable lock identity,
+  branch/prefix isolation, duplicate live-PID fail-closed behavior, and
+  retained lock metadata for operator diagnosis without launching live
+  processes.
 - S23 scheduled startup now preserves single discovered carry-forward state
   paths as arrays, preventing the 2026-07-03 PowerShell scalar edge case where
   one Windows path was truncated to its drive letter before Python invocation.

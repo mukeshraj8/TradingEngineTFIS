@@ -67,14 +67,20 @@ live-order design. This checklist must be updated after each completed slice.
   reset buffer metadata instead of rebuilding state with defaults. Focused
   tests prove a carried position remains target-active but SL-inactive until
   the next-day reset flow explicitly reactivates or recalculates SL.
+- `DONE`: Strengthen offline single-instance proof for S23 supervised decision
+  and paper watcher locks. Unit tests now prove lock identity is stable for the
+  same engine/order-position scope, different branches/prefixes get different
+  lock files, duplicate live PIDs fail closed with
+  `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, and original lock metadata is retained
+  for operator diagnosis.
 - `TODO`: Prove automatic scheduled watcher startup on a real market day for
   every current-day waiting order and every valid carry-forward position.
 - `TODO`: Validate the new dashboard Stream column during a live market watch
   and confirm current-day rows move between `OK` and `STALE` as selected-contract
   evidence is written or stops arriving.
-- `TODO`: Prove single-instance watcher behavior across restart attempts:
-  valid duplicate launches fail closed, stale locks are reclaimed, and no
-  duplicate rows/events are produced.
+- `TODO`: Prove single-instance watcher behavior against real Windows process
+  restart attempts: valid duplicate launches fail closed, stale locks are
+  reclaimed, and no duplicate rows/events are produced.
 - `TODO`: Prove overnight carry-forward in a real market session by
   stopping/restarting the engine after market close and confirming the next-day
   watcher resumes the persisted open position with target and reset-SL handling
