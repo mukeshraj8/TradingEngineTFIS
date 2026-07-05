@@ -17,7 +17,9 @@ way.
    carry-forward when price is not above original SL, keeps target active the
    next day, reactivates the original SL at ORPT when `09:15` high does not
    miss SL, and recalculates revised SL from RC high plus configured
-   `sl_reference_pct` when the `09:15` high misses SL. Remaining work is live
+   `sl_reference_pct` when the `09:15` high misses SL. Offline restart-safety
+   tests now also prove that carry/resume transitions preserve the SL-reset
+   metadata instead of reactivating SL by default. Remaining work is live
    evidence from FYERS quotes/bars and dashboard review of the resulting state.
 3. Validate S23 live order-watcher/current-price visibility end to end.
    The scheduled startup wrapper now starts one paper watcher per produced order

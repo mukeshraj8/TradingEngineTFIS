@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, time
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -51,6 +51,10 @@ def _create_state(
         carry_forward_allowed=carry_forward_allowed,
         last_updated_timestamp=_ts(27, 15, 20),
         provenance_source_ids=("paper_order_intent.json", "execution_summary.json"),
+        strategy_parameters={"strike_buffer_pct": 1.2, "sl_reference_pct": 7.0},
+        stoploss_reset_buffer_pct=7.0,
+        stoploss_reset_orpt_time=time(9, 24, 59),
+        stoploss_reset_rc_time=time(9, 29, 59),
     )
 
 
@@ -142,6 +146,48 @@ def test_allow_next_day_resume_when_expiry_has_not_passed(tmp_path) -> None:
         S23PaperPositionStateEventType.PAPER_POSITION_CARRIED_FORWARD,
         S23PaperPositionStateEventType.PAPER_POSITION_RESUMED,
     ]
+
+
+def test_carry_forward_and_resume_preserve_stoploss_reset_metadata(tmp_path) -> None:
+    store = S23PaperPositionStateStore()
+    state = _create_state(store, expiry_date=date(2026, 5, 29))
+    store.save_state(tmp_path, state)
+    carried_inactive = store.mark_stoploss_inactive_for_carry_forward(
+        tmp_path,
+        session_date=date(2026, 5, 27),
+        updated_at=_ts(27, 15, 0),
+        reference_price=state.stoploss_price,
+        reason_code="s23_1500_carry_forward_stop_inactive",
+        message="Test carry-forward keeps overnight stoploss inactive.",
+    )
+
+    carried = store.carry_forward(
+        tmp_path,
+        next_session_date=date(2026, 5, 28),
+        updated_at=_ts(28, 8, 45),
+        provenance_source_ids=("carry-forward-check",),
+    )
+    resumed = store.resume_position(
+        tmp_path,
+        session_date=date(2026, 5, 28),
+        resumed_at=_ts(28, 9, 10),
+        provenance_source_ids=("resume-check",),
+    )
+    reloaded = store.load_state(tmp_path)
+
+    for candidate in (carried_inactive, carried, resumed, reloaded):
+        assert candidate.strategy_parameters == {
+            "sl_reference_pct": 7.0,
+            "strike_buffer_pct": 1.2,
+        }
+        assert candidate.stoploss_active is False
+        assert candidate.stoploss_reset_pending is True
+        assert candidate.stoploss_reset_session_date == date(2026, 5, 27)
+        assert candidate.stoploss_reset_reference_price == 320.0
+        assert candidate.stoploss_reset_buffer_pct == 7.0
+        assert candidate.stoploss_reset_orpt_time == time(9, 24, 59)
+        assert candidate.stoploss_reset_rc_time == time(9, 29, 59)
+        assert candidate.stoploss_reset_reason_code == "s23_1500_carry_forward_stop_inactive"
 
 
 def test_reject_resume_if_expiry_has_passed(tmp_path) -> None:

@@ -310,27 +310,8 @@ class S23PaperPositionStateStore:
                 "Cannot carry the paper position beyond expiry."
             )
 
-        updated_state = S23PaperPositionState(
-            artifact_version=state.artifact_version,
-            strategy_code=state.strategy_code,
-            unique_code=state.unique_code,
-            symbol=state.symbol,
-            option_type=state.option_type,
-            selected_contract_symbol=state.selected_contract_symbol,
-            expiry_date=state.expiry_date,
-            expiry_policy=state.expiry_policy,
-            entry_date=state.entry_date,
-            entry_timestamp=state.entry_timestamp,
-            entry_price=state.entry_price,
-            lots=state.lots,
-            quantity=state.quantity,
-            side=state.side,
-            target_price=state.target_price,
-            stoploss_price=state.stoploss_price,
-            fsl_price=state.fsl_price,
-            trp_price=state.trp_price,
-            carry_forward_allowed=state.carry_forward_allowed,
-            no_carry_past_expiry=state.no_carry_past_expiry,
+        updated_state = replace(
+            state,
             lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
             last_updated_timestamp=updated_at,
             provenance_source_ids=self._merge_provenance(
@@ -399,27 +380,8 @@ class S23PaperPositionStateStore:
                 "Cannot resume a paper position after expiry has passed."
             )
 
-        updated_state = S23PaperPositionState(
-            artifact_version=state.artifact_version,
-            strategy_code=state.strategy_code,
-            unique_code=state.unique_code,
-            symbol=state.symbol,
-            option_type=state.option_type,
-            selected_contract_symbol=state.selected_contract_symbol,
-            expiry_date=state.expiry_date,
-            expiry_policy=state.expiry_policy,
-            entry_date=state.entry_date,
-            entry_timestamp=state.entry_timestamp,
-            entry_price=state.entry_price,
-            lots=state.lots,
-            quantity=state.quantity,
-            side=state.side,
-            target_price=state.target_price,
-            stoploss_price=state.stoploss_price,
-            fsl_price=state.fsl_price,
-            trp_price=state.trp_price,
-            carry_forward_allowed=state.carry_forward_allowed,
-            no_carry_past_expiry=state.no_carry_past_expiry,
+        updated_state = replace(
+            state,
             lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
             last_updated_timestamp=resumed_at,
             provenance_source_ids=self._merge_provenance(

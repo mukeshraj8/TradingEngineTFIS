@@ -60,6 +60,13 @@ live-order design. This checklist must be updated after each completed slice.
   captured-session replay validation, focused tests, syntax checks, scheduled
   task checks, watcher recovery, and pre-live readiness commands in table form,
   including purpose, usage timing, expected checks, and safety notes.
+- `DONE`: Add offline restart-safety proof for multi-day carried paper
+  positions. `S23PaperPositionStateStore.carry_forward()` and
+  `resume_position()` now preserve strategy parameters, stoploss-active state,
+  pending SL-reset flags, ORPT/RC reset times, reset reference price, and
+  reset buffer metadata instead of rebuilding state with defaults. Focused
+  tests prove a carried position remains target-active but SL-inactive until
+  the next-day reset flow explicitly reactivates or recalculates SL.
 - `TODO`: Prove automatic scheduled watcher startup on a real market day for
   every current-day waiting order and every valid carry-forward position.
 - `TODO`: Validate the new dashboard Stream column during a live market watch
@@ -68,9 +75,10 @@ live-order design. This checklist must be updated after each completed slice.
 - `TODO`: Prove single-instance watcher behavior across restart attempts:
   valid duplicate launches fail closed, stale locks are reclaimed, and no
   duplicate rows/events are produced.
-- `TODO`: Prove overnight carry-forward by stopping/restarting the engine after
-  market close and confirming the next-day watcher resumes the persisted open
-  position with target and reset-SL handling intact.
+- `TODO`: Prove overnight carry-forward in a real market session by
+  stopping/restarting the engine after market close and confirming the next-day
+  watcher resumes the persisted open position with target and reset-SL handling
+  intact.
 - `TODO`: Prove session-only waiting orders are always marked not-filled after
   cutoff and never carry forward as pending orders.
 

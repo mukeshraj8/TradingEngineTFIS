@@ -59,6 +59,12 @@
   window, reactivates original SL at ORPT when `09:15` high does not miss SL,
   or recalculates revised SL from RC high plus configured `sl_reference_pct`
   when the `09:15` high misses SL.
+- S23 carried-position state transitions now preserve strategy parameters and
+  next-day SL-reset metadata across explicit carry-forward and resume calls.
+  This gives offline restart-safety proof that an overnight carried paper
+  position does not accidentally lose ORPT/RC reset times, reset buffer,
+  stoploss inactive/pending state, or reset reference price before the next
+  session watcher manages it.
 - S23 runtime/timeline reconstruction now supports ORPT-stage evaluation before
   RC exists, so the dashboard and scheduled runner do not fail with missing RC
   bars during the live `09:25` window
