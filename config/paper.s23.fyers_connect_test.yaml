@@ -12,6 +12,21 @@
 #   S23/NIFTY by resolving the active weekly expiry for the session date.
 source_mode: broker_fyers_live_paper_ingress
 
+strategies:
+  - strategy_code: S23
+    enabled: true
+    executor: s23_morning_supervised
+    registry_ids:
+      - S23_NIFTY_OP_SELL_WK_DIFF_2D_3D
+      - S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL
+      - S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT
+      - S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT
+    strategy_paths:
+      - config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D
+      - config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL
+      - config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT
+      - config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT
+
 storage:
   live_state:
     enabled: true

@@ -122,6 +122,12 @@
   scheduled-run metadata now expose `order_placement_blocked` details so the
   dashboard can show calculated daily candidates without implying an order was
   routed.
+- Generic enabled-strategy execution planning now exists under
+  `tfis.strategy.execution_plan`. It builds a broker-agnostic plan from runtime
+  config, skips disabled strategies, checks registry status and supported
+  executor names, and fails closed for unsupported enabled strategies. Current
+  S23 paper configs declare their enabled S23 entry, branch registry IDs, and
+  strategy paths for later runner wiring.
 - S23 captured-session validation now has a repeatable offline command that
   summarizes durable supervised-session artifacts by date/branch, reconstructs
   blocked fresh CE/PE calculations from captured 09:30 option-chain snapshots,

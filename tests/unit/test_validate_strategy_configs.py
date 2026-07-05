@@ -42,3 +42,11 @@ def test_validate_strategy_configs_script_passes_for_current_configs() -> None:
         "PASS config\\strategies\\options_sell\\nifty\\S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT\\strategy.yaml"
         in result.stdout
     )
+    assert (
+        "EXECUTION_PLAN config\\paper.s23.yaml S23 RUNNABLE s23_morning_supervised"
+        in result.stdout
+    )
+    assert (
+        "EXECUTION_PLAN config\\paper.s23.fyers_connect_test.yaml S23 RUNNABLE s23_morning_supervised"
+        in result.stdout
+    )

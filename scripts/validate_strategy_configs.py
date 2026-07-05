@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 SRC_DIR = ROOT / "src"
 if str(SRC_DIR) not in sys.path:
@@ -11,10 +13,22 @@ if str(SRC_DIR) not in sys.path:
 from tfis.importers import (
     discover_strategy_sources,
     get_strategy_status,
+    load_strategy_registry,
     validate_folder_strategy_detailed,
     validate_folder_strategy,
     validate_legacy_strategy,
 )
+from tfis.strategy import (
+    assert_no_blocked_enabled_strategies,
+    build_strategy_execution_plan,
+)
+
+
+PAPER_CONFIGS = (
+    ROOT / "config" / "paper.s23.yaml",
+    ROOT / "config" / "paper.s23.fyers_connect_test.yaml",
+)
+SUPPORTED_EXECUTORS = ("s23_morning_supervised",)
 
 
 def main() -> int:
@@ -53,6 +67,29 @@ def main() -> int:
                     f"WARN {file_path.relative_to(ROOT)} {finding.field_name}: "
                     f"{finding.message}"
                 )
+
+    registry = load_strategy_registry()
+    for config_path in PAPER_CONFIGS:
+        if not config_path.exists():
+            continue
+        with config_path.open("r", encoding="utf-8") as handle:
+            config = yaml.safe_load(handle) or {}
+        try:
+            plan = build_strategy_execution_plan(
+                config,
+                registry=registry,
+                supported_executors=SUPPORTED_EXECUTORS,
+            )
+            assert_no_blocked_enabled_strategies(plan)
+        except Exception as exc:
+            failures += 1
+            print(f"FAIL {config_path.relative_to(ROOT)} execution plan: {exc}")
+            continue
+        for item in plan.items:
+            print(
+                f"EXECUTION_PLAN {config_path.relative_to(ROOT)} "
+                f"{item.strategy_code} {item.status} {item.executor or 'n/a'}"
+            )
 
     return 1 if failures else 0
 

@@ -5,6 +5,13 @@ from .branch_selector import (
     BranchSelectionResult,
     StrategyBranchSelector,
 )
+from .execution_plan import (
+    EXECUTION_ALLOWED_REGISTRY_STATUSES,
+    StrategyExecutionPlan,
+    StrategyExecutionPlanItem,
+    assert_no_blocked_enabled_strategies,
+    build_strategy_execution_plan,
+)
 from .offline_pipeline import OfflinePipelineResult, OfflineStrategyPipeline
 from .s23_recalculation import (
     IntradaySnapshot,
@@ -17,12 +24,17 @@ from .strategy_evaluator import StrategyEvaluator
 __all__ = [
     "BranchSelectionIssue",
     "BranchSelectionResult",
+    "EXECUTION_ALLOWED_REGISTRY_STATUSES",
     "IntradaySnapshot",
     "OfflinePipelineResult",
     "OfflineStrategyPipeline",
     "RecalculationInput",
     "RecalculationResult",
     "S23RecalculationEngine",
+    "StrategyExecutionPlan",
+    "StrategyExecutionPlanItem",
     "StrategyBranchSelector",
     "StrategyEvaluator",
+    "assert_no_blocked_enabled_strategies",
+    "build_strategy_execution_plan",
 ]

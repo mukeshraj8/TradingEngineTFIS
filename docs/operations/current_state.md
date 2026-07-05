@@ -282,9 +282,16 @@ Current S23 paper-mode posture:
 - `TODO`: Move durable S23 option-chain, decision, order, trade-ledger, and
   monthly-status capture records out of temp-only storage into a structured
   `data` layout with strategy/date/instrument provenance.
-- `TODO`: Generalize enabled-strategy execution through registry/config before
-  adding S21 or other strategies, so S23 remains the first operational path but
-  not the hidden shape of the engine.
+- `DONE`: Add a generic enabled-strategy execution-plan contract in
+  `tfis.strategy.execution_plan`. It reads runtime config, honors
+  enabled/disabled strategy entries, checks registry status, checks supported
+  executor names, skips disabled strategies, and fails closed for unsupported
+  enabled strategies without importing broker adapters or executing strategy
+  code. Current S23 paper configs now declare an explicit enabled S23 strategy
+  entry with branch registry IDs and strategy paths.
+- `TODO`: Wire the supervised live-paper runner to consume the generic
+  execution plan directly before adding S21 or other strategies, so S23 remains
+  the first operational path but not the hidden shape of the engine.
 - `TODO`: Review and refresh the local NSE holiday calendar each year, and
   preferably replace the static file with a maintained calendar source when the
   broader runtime is generalized.

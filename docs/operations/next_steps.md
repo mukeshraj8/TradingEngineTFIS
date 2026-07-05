@@ -60,7 +60,14 @@ way.
 4. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
 5. Introduce generic strategy-registry execution for enabled strategies.
-   The engine should load enabled strategies from config, skip disabled strategies, and call strategy modules through a shared interface. S23/FYERS can remain the first operational path, but not as a core engine assumption.
+   The generic execution-plan contract now exists under
+   `tfis.strategy.execution_plan`, and current S23 paper configs declare an
+   enabled S23 entry with branch registry IDs and strategy paths. It can skip
+   disabled strategies and fail closed for unsupported enabled executors without
+   broker imports. Remaining work is wiring the supervised live-paper runner to
+   consume this plan directly and call strategy modules through a shared
+   interface. S23/FYERS can remain the first operational path, but not as a core
+   engine assumption.
 6. Validate the new durable S23 artifact layout through the next scheduled
    market run. The morning supervised workflow, watcher, dashboard source, and
    finalizer now default to
