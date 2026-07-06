@@ -21,6 +21,12 @@ way.
    tests now also prove that carry/resume transitions preserve the SL-reset
    metadata instead of reactivating SL by default. Remaining work is live
    evidence from FYERS quotes/bars and dashboard review of the resulting state.
+   If the carried position exits after the morning fresh decision was already
+   calculated and blocked, `scripts/promote_s23_blocked_fresh_order.py` is now
+   available as a guarded operator path to promote that same-day blocked
+   `READY` decision into a waiting paper order. It must only be used after
+   confirming no active S23 paper position remains. The follow-up runtime task
+   is to automate this handoff inside the watcher/position-manager flow.
 3. Validate S23 live order-watcher/current-price visibility end to end.
    The scheduled startup wrapper now starts one paper watcher per produced order
    or open position, scans the durable S23 artifact root for persisted

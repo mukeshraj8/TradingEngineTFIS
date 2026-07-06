@@ -295,6 +295,9 @@ def _summarize_branch(
     calculation_source = "persisted_decision_summary"
     order_placement_blocked = bool(summary.get("order_placement_blocked"))
     order_placement_blocked_reason = _as_optional_str(summary.get("order_placement_blocked_reason"))
+    if order_state and order_placement_blocked:
+        order_placement_blocked = False
+        order_placement_blocked_reason = None
 
     if not selected_symbol:
         reconstructed = _reconstruct_branch_selection(

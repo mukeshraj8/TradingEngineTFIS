@@ -125,6 +125,14 @@
   scheduled-run metadata now expose `order_placement_blocked` details so the
   dashboard can show calculated daily candidates without implying an order was
   routed.
+- S23 now has a guarded post-carry-exit promotion utility:
+  `scripts/promote_s23_blocked_fresh_order.py`. It promotes an already
+  calculated same-day S23 `READY` decision that was blocked by an active
+  carry-forward position into a normal waiting paper order only after scanning
+  durable S23 artifacts and proving no active S23 paper position remains. The
+  2026-07-06 carried PE target-hit case used this path to promote the fresh
+  Bear Call decision while preserving the existing
+  `allow_fresh_entry_with_open_position=false` execution gate.
 - S23 captured-session validation and dashboard final-leg review now include
   latest stage-level no-contract calculations when no final
   `trade_decision_summary.json` exists for a branch. This keeps CE/PE review

@@ -175,6 +175,16 @@ Current S23 paper-mode posture:
   decision summary, explanation, scheduled-run metadata, and dashboard state now
   carry an explicit `order_placement_blocked` flag/reason so calculated daily
   CE/PE symbols remain visible while the execution gate stays locked.
+- `DONE`: `scripts/promote_s23_blocked_fresh_order.py` can safely promote a
+  same-day S23 `READY` decision that was blocked only by
+  `OPEN_CARRY_FORWARD_POSITION` after the carry-forward position exits. The
+  script scans the durable S23 artifact root, fails closed if any active S23
+  paper position still exists, writes a normal waiting `paper_order_state.json`
+  through `S23PaperOrderStateStore`, and updates scheduled-run metadata with
+  promotion provenance. On 2026-07-06 this was used after the carried PE hit
+  target to promote the fresh Bear Call decision
+  `NIFTY_20260714_24150_CE` into a waiting paper order without changing S23
+  selection rules or enabling fresh entries while a position is still active.
 - `DONE`: S23 dashboard and captured-session review now include stage-only
   no-contract leg calculations. If one leg writes a final
   `trade_decision_summary.json` and the other leg only has
@@ -287,6 +297,11 @@ Current S23 paper-mode posture:
   6. unfilled waiting orders are cancelled/not-filled after the entry session by
      the watcher or by the post-cutoff finalizer task
   7. filled/open positions persist for valid multi-day management
+- `TODO`: Automate the post-target/post-SL fresh-entry handoff inside the S23
+  watcher or position-manager workflow. The current promotion script is a safe
+  operator recovery path, but the next runtime improvement is for TFIS to
+  promote the already-calculated blocked same-day decision automatically once
+  the carried position exits and no active position remains.
 - `TODO`: Move durable S23 option-chain, decision, order, trade-ledger, and
   monthly-status capture records out of temp-only storage into a structured
   `data` layout with strategy/date/instrument provenance.
