@@ -23,6 +23,9 @@
 - S23 operator dashboard now shows final CE/PE leg decisions with no-contract
   rows, failure codes, selected/failed-leg explanations, and final trade levels
   only when an actual contract qualifies
+- S23 operator dashboard now also accepts latest stage-level explainers as
+  review artifacts for no-contract legs, so failed CE/PE calculations remain
+  visible even when no final selected-leg summary artifact was written.
 - S23 operator dashboard strike audit now shows rule-sheet search order,
   side-filtered and expiry-scoped full strike scans, derived rejection reasons,
   and explicit qualification reasons for `PASSED` and `SELECTED` rows
@@ -122,6 +125,12 @@
   scheduled-run metadata now expose `order_placement_blocked` details so the
   dashboard can show calculated daily candidates without implying an order was
   routed.
+- S23 captured-session validation and dashboard final-leg review now include
+  latest stage-level no-contract calculations when no final
+  `trade_decision_summary.json` exists for a branch. This keeps CE/PE review
+  complete on carry-forward days and on failed-leg days: selected branches show
+  final contracts, while no-contract branches show failure code and formula
+  audit context instead of disappearing from the operator view.
 - Generic enabled-strategy execution planning now exists under
   `tfis.strategy.execution_plan`. It builds a broker-agnostic plan from runtime
   config, skips disabled strategies, checks registry status and supported

@@ -8,6 +8,8 @@ from datetime import date, datetime, time
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -203,9 +205,13 @@ def _summarize_session(*, day_dir: Path, session_dir: Path) -> CapturedSessionSu
     )
     option_chain = _load_latest_stage_option_chain(day_dir)
     branches = tuple(
-        _summarize_branch(branch_dir, option_chain=option_chain)
-        for branch_dir in sorted(item for item in session_dir.iterdir() if item.is_dir())
-        if (branch_dir / "trade_decision_summary.json").exists()
+        branch
+        for branch in (
+            _summarize_branch(branch_dir, option_chain=option_chain)
+            for branch_dir in sorted(item for item in session_dir.iterdir() if item.is_dir())
+            if _branch_has_reviewable_calculation_artifact(branch_dir)
+        )
+        if _branch_matches_monthly_status(branch.branch, branch.monthly_status)
     )
     selected_count = sum(1 for branch in branches if branch.selected_contract_symbol)
     order_count = sum(1 for branch in branches if branch.order_status)
@@ -259,6 +265,14 @@ def _summarize_branch(
     summary_payload = _read_json(branch_dir / "trade_decision_summary.json")
     summary = summary_payload.get("summary", {})
     explanation = summary_payload.get("explanation", {})
+    if not isinstance(summary, dict):
+        summary = {}
+    if not isinstance(explanation, dict):
+        explanation = {}
+    stage_payload = _latest_branch_stage_payload(branch_dir)
+    if not summary and stage_payload:
+        summary = _summary_from_stage_payload(stage_payload, branch_dir=branch_dir)
+        explanation = _explanation_from_stage_payload(stage_payload, branch_dir=branch_dir)
     order_state = _read_json(branch_dir / "paper_order_state.json")
     position_state = _read_json(branch_dir / "paper_position_state.json")
     position_manager_events = _load_jsonl_dicts(branch_dir / "paper_position_manager_events.jsonl")
@@ -451,6 +465,96 @@ def _reconstruct_branch_selection(
         "attempted_expiries": [item.isoformat() for item in result.attempted_expiries],
         "calculation_source": "review_reconstructed_from_captured_snapshot",
     }
+
+
+def _branch_has_reviewable_calculation_artifact(branch_dir: Path) -> bool:
+    return (
+        (branch_dir / "trade_decision_summary.json").exists()
+        or (branch_dir / "trade_decision_explainer.json").exists()
+        or any(branch_dir.glob("trade_decision_explainer_stage_*.json"))
+    )
+
+
+def _latest_branch_stage_payload(branch_dir: Path) -> dict[str, Any]:
+    candidates = sorted(branch_dir.glob("trade_decision_explainer_stage_*.json"))
+    if (branch_dir / "trade_decision_explainer.json").exists():
+        candidates.append(branch_dir / "trade_decision_explainer.json")
+    for path in reversed(candidates):
+        payload = _read_json(path)
+        if not payload:
+            continue
+        if isinstance(payload.get("stage"), dict):
+            return payload["stage"]
+        stages = payload.get("stages")
+        if isinstance(stages, list):
+            for stage in reversed(stages):
+                if isinstance(stage, dict):
+                    return stage
+    return {}
+
+
+def _summary_from_stage_payload(stage: dict[str, Any], *, branch_dir: Path) -> dict[str, Any]:
+    failure_code = _as_optional_str(stage.get("decision_failure_code"))
+    return {
+        "status": "NO_GO" if failure_code else "UNKNOWN",
+        "strategy_branch": branch_dir.name,
+        "monthly_status": stage.get("monthly_status"),
+        "selected_contract_symbol": None,
+        "selected_contract_expiry": None,
+        "selected_contract_option_type": (
+            _option_type_from_branch(branch_dir.name).value
+            if _option_type_from_branch(branch_dir.name) is not None
+            else None
+        ),
+        "selected_contract_strike": None,
+        "selected_contract_ltp": None,
+        "selected_contract_oi": None,
+        "planned_entry_price": None,
+        "target_price": None,
+        "stoploss_price": None,
+        "contract_selection_reason": stage.get("decision_failure_message"),
+        "contract_selection_failure_code": failure_code,
+        "contract_selection_attempted_expiries": stage.get("decision_failure_attempted_expiries") or (),
+        "notes": [
+            "Review summary reconstructed from latest stage explainer because no final trade_decision_summary.json was written."
+        ],
+    }
+
+
+def _explanation_from_stage_payload(stage: dict[str, Any], *, branch_dir: Path) -> dict[str, Any]:
+    return {
+        "formula_evaluation": stage.get("provisional_formula_evaluation") or (),
+        "contract_selection_thresholds": {"minimum_oi": _strategy_minimum_oi(branch_dir.name)},
+        "monthly_status": {
+            "status": stage.get("monthly_status"),
+            "trigger_name": stage.get("monthly_status_trigger"),
+            "current_price": stage.get("monthly_status_price_used"),
+            "resolution_reason": stage.get("monthly_status_resolution_reason"),
+        },
+        "market_reference_values": stage.get("market_reference_values") or {},
+        "option_reference_values": stage.get("option_reference_values") or {},
+    }
+
+
+def _strategy_minimum_oi(branch_name: str) -> float | None:
+    strategy_path = (
+        PROJECT_ROOT
+        / "config"
+        / "strategies"
+        / "options_sell"
+        / "nifty"
+        / branch_name
+        / "strategy.yaml"
+    )
+    if not strategy_path.exists():
+        return None
+    try:
+        payload = yaml.safe_load(strategy_path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    return _as_optional_float(payload.get("minimum_oi"))
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -1088,6 +1192,16 @@ def _option_type_from_branch(branch_name: str) -> OptionType | None:
     if branch_name.endswith("_PUT"):
         return OptionType.PUT
     return None
+
+
+def _branch_matches_monthly_status(branch_name: str, monthly_status: str | None) -> bool:
+    status = str(monthly_status or "").upper()
+    branch = str(branch_name or "").upper()
+    if status.startswith("BEAR"):
+        return "_BEAR_" in branch or branch.endswith("_BEAR_CALL") or branch.endswith("_BEAR_PUT")
+    if status.startswith("BULL"):
+        return "_BULL_" in branch or branch.endswith("_BULL_CALL") or branch.endswith("_BULL_PUT")
+    return True
 
 
 def _formula_results(explanation: dict[str, Any]) -> dict[str, float]:

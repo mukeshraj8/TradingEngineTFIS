@@ -57,6 +57,11 @@ way.
    money-readiness command table for the dashboard, replay validator, focused
    tests, syntax checks, scheduled-task checks, watcher recovery, and pre-live
    readiness checks; use that table as the first human-run test checklist.
+   The 2026-07-06 captured-session review gap is fixed: the dashboard and
+   validator now include active monthly-status branch calculations even when a
+   branch only produced `trade_decision_explainer_stage_*.json` and no final
+   `trade_decision_summary.json`. The remaining live validation is evidence,
+   not a known calculation-visibility blocker.
 4. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
 5. Introduce generic strategy-registry execution for enabled strategies.
@@ -94,9 +99,15 @@ way.
    session-only waiting-order behavior, and next-day SL reset. The next
    architecture step is to lift shared lifecycle concepts into strategy-neutral
    services only after the S23 behavior is proven in live paper operation.
-13. Broader real/archive contract-specific intraday coverage for S23.
+13. Persist explicit final no-trade summaries for every evaluated S23 leg.
+   The dashboard and validator can now reconstruct no-contract legs from the
+   latest stage explainer, but the cleaner long-term artifact contract is for
+   the runner to write an explicit final no-trade summary for each evaluated
+   active leg, including failure code, attempted expiries, threshold inputs,
+   and provisional formula audit values.
+14. Broader real/archive contract-specific intraday coverage for S23.
    The deterministic fixture set is fully covered at 100.0%; the next safe step is to widen real session coverage while keeping TFIS runtime on the existing contract-intraday CSV contract.
-14. If an OI-enrichment source is found, rerun the TradingEngine capture ingress suite before attempting any fill or lifecycle replay from captures.
+15. If an OI-enrichment source is found, rerun the TradingEngine capture ingress suite before attempting any fill or lifecycle replay from captures.
    `scripts/run_s23_tradingengine_capture_ingress_suite.py` now proves that the raw capture path itself is operationally read-only and deterministic. The blocker is not prelude pairing, timing, or selected-contract identity alone; it is the absence of usable selected-contract `oi` in the option-quote archives at decision time.
 
 Comparison reporting note:

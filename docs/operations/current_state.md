@@ -175,6 +175,14 @@ Current S23 paper-mode posture:
   decision summary, explanation, scheduled-run metadata, and dashboard state now
   carry an explicit `order_placement_blocked` flag/reason so calculated daily
   CE/PE symbols remain visible while the execution gate stays locked.
+- `DONE`: S23 dashboard and captured-session review now include stage-only
+  no-contract leg calculations. If one leg writes a final
+  `trade_decision_summary.json` and the other leg only has
+  `trade_decision_explainer_stage_*.json` because no contract qualified, the
+  validator and dashboard still show both active monthly-status branches. This
+  fixes the 2026-07-06 visibility gap where the CE branch was visible but the
+  PE `MINIMUM_PREMIUM_NOT_MET` calculation was hidden from the final CE/PE
+  review section.
 - `DONE`: Captured S23 supervised sessions can now be validated offline with
   `scripts/run_s23_captured_session_validation.py`. The report walks durable
   captured sessions, summarizes CE/PE decisions, reconstructs review-only
@@ -377,6 +385,10 @@ Current S23 paper-mode posture:
   CE/PE legs; if a leg does not qualify, the table and explanation show
   `No contract selected`, the failure code, and the no-order reason instead of
   hiding that side
+- S23 final leg dashboard reporting now also accepts latest stage-level
+  explainers for no-contract branches when no final summary was written, so
+  review pages can show failed CE/PE calculations from the captured snapshots
+  instead of requiring a selected-contract summary artifact.
 - S23 FYERS live snapshot collection now captures the resolved near weekly
   expiry plus the following weekly expiry in the same normalized option-chain
   snapshot, so rule-sheet fallback search can retry the next contract when the

@@ -2907,7 +2907,7 @@ class TfisOperatorDashboardBuilder:
             return []
         stage_dir = self._session_final_stage_dir(config=config, session=session)
         rows: list[dict[str, Any]] = []
-        for explainer_path in sorted(session_dir.glob("*/trade_decision_explainer.json")):
+        for explainer_path in self._session_branch_explainer_paths(session_dir):
             branch = explainer_path.parent.name
             normalized_branch = self._normalize_s23_branch_name(branch)
             if normalized_branch in selected_branches:
@@ -3004,6 +3004,9 @@ class TfisOperatorDashboardBuilder:
 
     @staticmethod
     def _finalized_explainer_stage(payload: dict[str, Any]) -> dict[str, Any] | None:
+        stage_payload = payload.get("stage")
+        if isinstance(stage_payload, dict):
+            return stage_payload
         stages = payload.get("stages")
         if not isinstance(stages, list):
             return None
@@ -3025,7 +3028,21 @@ class TfisOperatorDashboardBuilder:
         for stage_dir in self._find_stage_dirs(config=config, day_dir=day_dir):
             if self._extract_stage_key(stage_dir.name) == "0930":
                 return stage_dir
-        return None
+        stage_dirs = self._find_stage_dirs(config=config, day_dir=day_dir)
+        return stage_dirs[-1] if stage_dirs else None
+
+    @staticmethod
+    def _session_branch_explainer_paths(session_dir: Path) -> tuple[Path, ...]:
+        paths: list[Path] = []
+        for branch_dir in sorted(item for item in session_dir.iterdir() if item.is_dir()):
+            final_path = branch_dir / "trade_decision_explainer.json"
+            if final_path.exists():
+                paths.append(final_path)
+                continue
+            stage_paths = sorted(branch_dir.glob("trade_decision_explainer_stage_*.json"))
+            if stage_paths:
+                paths.append(stage_paths[-1])
+        return tuple(paths)
 
     def _load_s23_branch_rule(self, *, config: StrategyDashboardConfig, branch: str) -> Any | None:
         config_dir = config.strategy_path.parent
