@@ -1,0 +1,13 @@
+strategies:
+  - strategy_code: S23
+    display_name: S23 Operator Dashboard
+    artifact_root: data/strategies/S23/fyers_morning_supervised_decision
+    strategy_path: config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL
+    reference_packet_path: config/reference_packets/s23_bear_put_live_decision_reference.json
+    session_id_prefix: s23-fyers-morning-supervised-decision
+  - strategy_code: S21
+    display_name: S21 Operator Dashboard
+    artifact_root: data/strategies/S21/fyers_morning_supervised_decision
+    strategy_path: config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL
+    reference_packet_path: config/reference_packets/s21_banknifty_monthly_live_decision_reference.json
+    session_id_prefix: s21-fyers-morning-supervised-decision

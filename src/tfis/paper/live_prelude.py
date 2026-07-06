@@ -8,7 +8,10 @@ from zoneinfo import ZoneInfo
 from tfis.domain import MarketLevels, StrategyRule, TradePlan
 from tfis.domain.enums import OptionType
 from tfis.monthly_status import MonthlyStatusResult
-from tfis.rules import validate_s23_strategy_rule_matches_matrix
+from tfis.rules import (
+    validate_s21_strategy_rule_matches_matrix,
+    validate_s23_strategy_rule_matches_matrix,
+)
 from tfis.strategy import StrategyEvaluator
 
 from .contract_selection import (
@@ -233,26 +236,22 @@ class S23PaperLivePreludeBuilder:
 
     def _validate_scope(self, request: S23PaperLivePreludeRequest) -> None:
         rule = request.strategy_rule
-        if rule.strategy_code != "S23":
-            raise S23LivePreludeError("UNSUPPORTED_STRATEGY", "Only S23 is supported.")
-        matrix_mismatches = validate_s23_strategy_rule_matches_matrix(rule)
+        matrix_mismatches = _validate_supported_strategy_rule(rule)
         if matrix_mismatches:
             raise S23LivePreludeError(
-                "S23_RULE_MATRIX_MISMATCH",
-                "Loaded S23 strategy rule does not match the corrected rule-sheet matrix: "
+                f"{rule.strategy_code}_RULE_MATRIX_MISMATCH",
+                f"Loaded {rule.strategy_code} strategy rule does not match the configured rule-sheet matrix: "
                 + "; ".join(matrix_mismatches),
             )
-        if rule.symbol != "NIFTY":
-            raise S23LivePreludeError("UNSUPPORTED_SYMBOL", "Only NIFTY is supported.")
         if rule.option_type not in {OptionType.CALL, OptionType.PUT}:
             raise S23LivePreludeError(
                 "UNSUPPORTED_OPTION_TYPE",
                 "Prelude generation requires an options strategy branch with CE or PE.",
             )
-        if request.option_chain_snapshot is not None and request.option_chain_snapshot.underlying_symbol != "NIFTY":
+        if request.option_chain_snapshot is not None and request.option_chain_snapshot.underlying_symbol != rule.symbol:
             raise S23LivePreludeError(
                 "UNSUPPORTED_OPTION_CHAIN_UNDERLYING",
-                "Only NIFTY option-chain snapshots are supported.",
+                f"Option-chain snapshot underlying must match strategy symbol {rule.symbol}.",
             )
         if (
             request.monthly_status_result.status not in rule.allowed_monthly_statuses
@@ -652,3 +651,14 @@ class S23PaperLivePreludeBuilder:
             request.strategy_rule,
             request.session_context.session_date,
         )
+
+
+def _validate_supported_strategy_rule(rule: StrategyRule) -> tuple[str, ...]:
+    if rule.strategy_code == "S23":
+        return validate_s23_strategy_rule_matches_matrix(rule)
+    if rule.strategy_code == "S21":
+        return validate_s21_strategy_rule_matches_matrix(rule)
+    raise S23LivePreludeError(
+        "UNSUPPORTED_STRATEGY",
+        f"Prelude generation currently supports S23 and S21 only, received {rule.strategy_code}.",
+    )

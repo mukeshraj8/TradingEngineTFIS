@@ -20,7 +20,10 @@ from tfis.monthly_status import (
     MonthlyStatusResult,
     build_monthly_weekly_context_lookback_windows,
 )
-from tfis.rules import validate_s23_strategy_rule_matches_matrix
+from tfis.rules import (
+    validate_s21_strategy_rule_matches_matrix,
+    validate_s23_strategy_rule_matches_matrix,
+)
 
 from .live_prelude import (
     S23PaperPreludeSessionContext,
@@ -172,27 +175,17 @@ class S23RuntimeInputDeriver:
         session_context: S23PaperPreludeSessionContext,
         underlying_quote: UnderlyingQuoteEvent,
     ) -> None:
-        if strategy_rule.strategy_code != "S23":
-            raise S23RuntimeInputDerivationError(
-                "UNSUPPORTED_STRATEGY",
-                "Runtime derivation is currently limited to S23.",
-            )
-        matrix_mismatches = validate_s23_strategy_rule_matches_matrix(strategy_rule)
+        matrix_mismatches = _validate_supported_strategy_rule(strategy_rule)
         if matrix_mismatches:
             raise S23RuntimeInputDerivationError(
-                "S23_RULE_MATRIX_MISMATCH",
-                "Loaded S23 strategy rule does not match the corrected rule-sheet matrix: "
+                f"{strategy_rule.strategy_code}_RULE_MATRIX_MISMATCH",
+                f"Loaded {strategy_rule.strategy_code} strategy rule does not match the configured rule-sheet matrix: "
                 + "; ".join(matrix_mismatches),
             )
-        if strategy_rule.symbol != "NIFTY":
-            raise S23RuntimeInputDerivationError(
-                "UNSUPPORTED_SYMBOL",
-                "Runtime derivation is currently limited to NIFTY.",
-            )
-        if underlying_quote.symbol != "NIFTY":
+        if underlying_quote.symbol != strategy_rule.symbol:
             raise S23RuntimeInputDerivationError(
                 "UNDERLYING_SYMBOL_MISMATCH",
-                "Underlying quote must be normalized to NIFTY.",
+                f"Underlying quote must be normalized to {strategy_rule.symbol}.",
             )
         if underlying_quote.envelope.session_date != session_context.session_date:
             raise S23RuntimeInputDerivationError(
@@ -540,3 +533,14 @@ def _optional_date(value: object) -> date | None:
     if text is None:
         return None
     return date.fromisoformat(text)
+
+
+def _validate_supported_strategy_rule(strategy_rule: StrategyRule) -> tuple[str, ...]:
+    if strategy_rule.strategy_code == "S23":
+        return validate_s23_strategy_rule_matches_matrix(strategy_rule)
+    if strategy_rule.strategy_code == "S21":
+        return validate_s21_strategy_rule_matches_matrix(strategy_rule)
+    raise S23RuntimeInputDerivationError(
+        "UNSUPPORTED_STRATEGY",
+        f"Runtime derivation currently supports S23 and S21 only, received {strategy_rule.strategy_code}.",
+    )

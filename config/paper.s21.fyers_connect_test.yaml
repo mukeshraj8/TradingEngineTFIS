@@ -1,0 +1,70 @@
+source_mode: broker_fyers_live_paper_ingress
+
+strategies:
+  - strategy_code: S21
+    enabled: true
+    executor: s23_morning_supervised
+    registry_ids:
+      - S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL
+      - S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT
+      - S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL
+      - S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT
+    strategy_paths:
+      - config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL
+      - config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT
+      - config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL
+      - config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT
+
+storage:
+  live_state:
+    enabled: true
+    provider: redis
+    namespace: tfis
+    environment: paper
+    strategy_id: s21
+    ttl_hours: 168
+    series_maxlen: 1000
+  redis:
+    host: localhost
+    port: 6379
+    db: 1
+
+broker:
+  provider: fyers
+  timezone: Asia/Kolkata
+  capture_stream_events: false
+  option_chain_strike_count: 100
+
+paper:
+  strategy_code: S21
+  symbol: BANKNIFTY
+  contract_cycle: MONTHLY
+  mode: paper
+  operator_id: fyers-connect-test-s21
+  paper_mode_enabled: true
+  same_day_square_off_only: false
+  allow_recalculation: false
+  allow_current_day_fsl_trp: false
+  kill_switch_enabled: true
+  session_kill_switch_active: false
+  no_live_orders_allowed: true
+
+market:
+  underlying_symbol: BANKNIFTY
+  weekly_expiry: 2026-07-28
+  selected_contract_symbol: ""
+
+costs:
+  brokerage_per_lot: 20.0
+  slippage_entry_points: 1.0
+  slippage_exit_points: 1.0
+  spread_buffer_policy: bid_ask_guard
+  version_label: paper-cost-v1
+
+thresholds:
+  max_quote_age_seconds: 5.0
+  max_timing_drift_seconds: 5.0
+  max_stale_events: 0
+  max_missing_chains: 0
+  required_selected_contract_availability_ratio: 1.0
+  max_no_trade_rate: 0.0

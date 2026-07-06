@@ -1,0 +1,33 @@
+strategy_code: S21
+unique_code: BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL
+source_sheet: BNF Monthly OS Rules
+source_branch: Bear/Bear CF Call
+source_cells:
+  monthly_status: image.step_2_bearish
+  option_type: image.bearish_call_sell_rules
+  start_strike_formula: image.step_5_bearish_call_start
+  end_strike_formula: image.step_5_bearish_call_end
+  ideal_premium_formula: image.step_7a_bearish_call
+  minimum_premium_formula: image.step_7b_bearish_call
+  minimum_oi: image.step_6_500_lots_times_lot_size
+  entry_formula: image.step_9_bearish_call
+  target_formula: image.step_10_bearish_call
+  stoploss_formula: image.step_11_bearish_call
+
+sample_calculation:
+  spot_levels:
+    SPT_PRV_2DLL: 44800
+    SPT_PRV_3DHH: 46500
+  option_levels:
+    OPT_PRV_2DLL: 480
+    OPT_PRV_3DHH: 780
+  runtime_values:
+    ENTRY: 444
+  expected:
+    start_strike: 47000
+    end_strike: 44700
+    ideal_premium: 896
+    minimum_premium: 672
+    entry_price: 444
+    target_price: 177.6
+    stoploss_price: 710.4

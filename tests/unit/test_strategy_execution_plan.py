@@ -129,3 +129,23 @@ def test_paper_s23_configs_have_runnable_generic_strategy_plan() -> None:
         assert len(plan.items[0].registry_ids) == 4
         assert len(plan.items[0].strategy_paths) == 4
         assert_no_blocked_enabled_strategies(plan)
+
+
+def test_paper_s21_config_has_runnable_generic_strategy_plan() -> None:
+    registry = load_strategy_registry()
+    config = yaml.safe_load(
+        (ROOT / "config" / "paper.s21.fyers_connect_test.yaml").read_text(encoding="utf-8")
+    )
+    plan = build_strategy_execution_plan(
+        config,
+        registry=registry,
+        supported_executors=("s23_morning_supervised",),
+    )
+
+    assert len(plan.items) == 1
+    assert plan.items[0].strategy_code == "S21"
+    assert plan.items[0].executor == "s23_morning_supervised"
+    assert plan.items[0].status == "RUNNABLE"
+    assert len(plan.items[0].registry_ids) == 4
+    assert len(plan.items[0].strategy_paths) == 4
+    assert_no_blocked_enabled_strategies(plan)

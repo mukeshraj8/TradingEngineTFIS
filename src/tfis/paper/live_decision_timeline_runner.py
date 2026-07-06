@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Callable
 
 from tfis.importers import load_strategy_rule
+from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 
 from .fyers_snapshot_collector import S23FyersSnapshotArtifactSet, S23FyersSnapshotCollector
 from .live_decision import S23PaperLiveDecisionBuilder
@@ -480,6 +481,14 @@ def _build_dashboard_builder(
 ) -> object:
     from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
 
+    dashboard_config_path = Path("config/operator_dashboard_strategies.yaml")
+    if dashboard_config_path.exists():
+        return TfisOperatorDashboardBuilder(
+            strategy_configs=load_dashboard_strategy_configs(
+                dashboard_config_path,
+                repo_root=Path.cwd(),
+            )
+        )
     strategy_rule = load_strategy_rule(strategy_path)
     return TfisOperatorDashboardBuilder(
         strategy_configs=(

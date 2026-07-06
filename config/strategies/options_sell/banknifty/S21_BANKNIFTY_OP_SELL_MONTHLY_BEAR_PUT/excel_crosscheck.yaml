@@ -1,0 +1,33 @@
+strategy_code: S21
+unique_code: BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT
+source_sheet: BNF Monthly OS Rules
+source_branch: Bear/Bear CF Put
+source_cells:
+  monthly_status: image.step_2_bearish
+  option_type: image.bearish_put_sell_rules
+  start_strike_formula: image.step_5_bearish_put_start
+  end_strike_formula: image.step_5_bearish_put_end
+  ideal_premium_formula: image.step_7a_bearish_put
+  minimum_premium_formula: image.step_7b_bearish_put
+  minimum_oi: image.step_6_500_lots_times_lot_size
+  entry_formula: image.step_9_bearish_put
+  target_formula: image.step_10_bearish_put
+  stoploss_formula: image.step_11_bearish_put
+
+sample_calculation:
+  spot_levels:
+    SPT_PRV_3DHH: 46500
+    SPT_PRV_2DHH: 46200
+  option_levels:
+    OPT_PRV_3DLL: 500
+    OPT_PRV_2DHH: 760
+  runtime_values:
+    ENTRY: 462.5
+  expected:
+    start_strike: 44200
+    end_strike: 46600
+    ideal_premium: 930
+    minimum_premium: 697.5
+    entry_price: 462.5
+    target_price: 185
+    stoploss_price: 740

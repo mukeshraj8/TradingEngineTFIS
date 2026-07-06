@@ -50,6 +50,8 @@ class DeterministicExpiryCalendar:
             return explicit
         if expiry_type is ExpiryType.WEEKLY:
             return self._resolve_weekly_expiry(session_date)
+        if expiry_type is ExpiryType.MONTHLY:
+            return self._resolve_monthly_expiry(session_date)
         raise ValueError(f"Unsupported expiry_type: {expiry_type.value}")
 
     def trading_days_until(self, session_date: date, expiry_date: date) -> int:
@@ -69,6 +71,23 @@ class DeterministicExpiryCalendar:
             if cursor.weekday() == 3 and self.is_trading_day(cursor):
                 return cursor
             cursor += timedelta(days=1)
+
+    def _resolve_monthly_expiry(self, session_date: date) -> date:
+        year = session_date.year
+        month = session_date.month
+        if month == 12:
+            next_month = date(year + 1, 1, 1)
+        else:
+            next_month = date(year, month + 1, 1)
+        cursor = next_month - timedelta(days=1)
+        while cursor.weekday() != 3:
+            cursor -= timedelta(days=1)
+        while not self.is_trading_day(cursor):
+            cursor -= timedelta(days=1)
+        if cursor >= session_date:
+            return cursor
+        next_session_date = session_date.replace(day=28) + timedelta(days=4)
+        return self._resolve_monthly_expiry(next_session_date.replace(day=1))
 
 
 @dataclass(frozen=True, slots=True)

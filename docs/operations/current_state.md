@@ -11,6 +11,9 @@ change in a meaningful way.
   no-carry-forward handling for unfilled orders
 - keep monthly status independent and reusable while improving generic
   enabled-strategy execution and durable calculation storage
+- validate the newly enabled S21 BankNifty monthly paper-mode path tomorrow as
+  an `ACTIVE_CANDIDATE`, including reference-packet freshness, monthly-expiry
+  selection, dashboard page rendering, and watcher/order-state visibility
 
 ## Money-Ready Phase Milestones
 
@@ -185,6 +188,16 @@ Current S23 paper-mode posture:
   target to promote the fresh Bear Call decision
   `NIFTY_20260714_24150_CE` into a waiting paper order without changing S23
   selection rules or enabling fresh entries while a position is still active.
+- `DONE`: S23 Trades Taken dashboard rows now keep target/SL closed trades
+  visually clean when the persisted lifecycle also records
+  `PAPER_FRESH_ENTRY_REQUIRED`. The closed carried trade displays as a closed
+  row with the target/SL reason, while the fresh-entry requirement is shown as
+  a follow-up note and any promoted/calculated waiting entry remains its own
+  separate paper-order row.
+- `DONE`: The S23 Calculation Explanation panel now restores side-by-side
+  CE/PE stepwise cards on wide screens and includes direct CE/PE leg links
+  above the cards, so both leg calculations remain discoverable even when one
+  leg's Step 8 audit is expanded and visually long.
 - `DONE`: S23 dashboard and captured-session review now include stage-only
   no-contract leg calculations. If one leg writes a final
   `trade_decision_summary.json` and the other leg only has
@@ -193,6 +206,17 @@ Current S23 paper-mode posture:
   fixes the 2026-07-06 visibility gap where the CE branch was visible but the
   PE `MINIMUM_PREMIUM_NOT_MET` calculation was hidden from the final CE/PE
   review section.
+- `DONE`: S21 BankNifty monthly option-selling now has a validated
+  rule/config scaffold for all four rule-sheet legs: Bull Call, Bull Put, Bear
+  Call, and Bear Put. The branch folders are under
+  `config/strategies/options_sell/banknifty`, use configurable rule
+  parameters, validate against `tfis.rules.s21_rule_matrix`, and are now
+  registered as `ACTIVE_CANDIDATE` for controlled TFIS paper-mode testing only.
+- `DONE`: TFIS now has an S21 paper-mode config, reference packet placeholder,
+  runner wrapper, and dashboard strategy registration. The shared supervised
+  paper path accepts S21 scope validation, monthly expiry resolution, and a
+  dedicated S21 dashboard page without reusing S23 labels in the final
+  explanation panel.
 - `DONE`: Captured S23 supervised sessions can now be validated offline with
   `scripts/run_s23_captured_session_validation.py`. The report walks durable
   captured sessions, summarizes CE/PE decisions, reconstructs review-only
@@ -684,6 +708,10 @@ Current notes:
 
 ## Current Open Ambiguities
 
+- S21 BankNifty monthly option-selling is now represented as config and a rule
+  matrix, but operational promotion is blocked until active BankNifty lot size,
+  monthly expiry selection, futures-continuous monthly-status sourcing, ORPT/RC
+  applicability, carry-forward, and force-close policy are confirmed.
 - no active workbook blocker currently prevents the implemented S23
   current-day FSL / TRP layer
 - broader recalculation refinement is now constrained by workbook coverage rather
@@ -704,6 +732,7 @@ Current notes:
 
 - futures rollover lifecycle
 - monthly option buying
+- S21 BankNifty monthly live/paper runtime beyond rule/config validation
 - fuller strike-availability realism and broader contract-specific archive coverage
 - broader multi-date TradingEngine capture normalization beyond the new read-only market-event adapter prototype
 - broad multi-broker live runtime beyond the current market-data-only FYERS ingress foundation
@@ -715,7 +744,8 @@ Current notes:
 
 ## Current Quality Snapshot
 
-- tests passing: `426`
+- last full-suite snapshot before the S21 scaffold: tests passing `426`
+- S21/strategy focused validation for this task: `20 passed`
 - `python scripts/validate_project.py`: passing
 
 ## Operational Coordination Discipline

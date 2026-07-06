@@ -1,0 +1,33 @@
+strategy_code: S21
+unique_code: BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL
+source_sheet: BNF Monthly OS Rules
+source_branch: Bull/Bull CF Call
+source_cells:
+  monthly_status: image.step_2_bullish
+  option_type: image.bullish_call_sell_rules
+  start_strike_formula: image.step_5_bullish_call_start
+  end_strike_formula: image.step_5_bullish_call_end
+  ideal_premium_formula: image.step_7a_bullish_call
+  minimum_premium_formula: image.step_7b_bullish_call
+  minimum_oi: image.step_6_500_lots_times_lot_size
+  entry_formula: image.step_9_bullish_call
+  target_formula: image.step_10_bullish_call
+  stoploss_formula: image.step_11_bullish_call
+
+sample_calculation:
+  spot_levels:
+    SPT_PRV_3DLL: 45000
+    SPT_PRV_2DHH: 46200
+  option_levels:
+    OPT_PRV_3DLL: 500
+    OPT_PRV_2DHH: 760
+  runtime_values:
+    ENTRY: 462.5
+  expected:
+    start_strike: 47200
+    end_strike: 44900
+    ideal_premium: 900
+    minimum_premium: 675
+    entry_price: 462.5
+    target_price: 185
+    stoploss_price: 740

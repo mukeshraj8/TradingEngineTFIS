@@ -68,9 +68,20 @@ way.
    branch only produced `trade_decision_explainer_stage_*.json` and no final
    `trade_decision_summary.json`. The remaining live validation is evidence,
    not a known calculation-visibility blocker.
-4. Keep monthly status as an independent service and improve its explanation/provenance output.
+4. Validate the first controlled S21 BankNifty monthly paper-mode run.
+   S21 is now enabled as an `ACTIVE_CANDIDATE` through
+   `config/paper.s21.fyers_connect_test.yaml`,
+   `scripts/run_s21_banknifty_0916_supervised_decision.py`, and the shared
+   supervised paper path. The immediate operator work is to refresh the S21
+   daily reference packet, confirm the configured monthly expiry and lot size,
+   verify that the dashboard builds a separate S21 page, and capture one real
+   market-day paper session before broadening runtime support.
+5. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
-5. Introduce generic strategy-registry execution for enabled strategies.
+   S21 now has a BankNifty monthly option-selling runtime candidate, but it
+   still needs confirmed BankNifty futures-continuous monthly-status sourcing
+   and live evidence before it can be treated as an operationally trusted path.
+6. Introduce generic strategy-registry execution for enabled strategies.
    The generic execution-plan contract now exists under
    `tfis.strategy.execution_plan`, and current S23 paper configs declare an
    enabled S23 entry with branch registry IDs and strategy paths. It can skip
@@ -78,8 +89,9 @@ way.
    broker imports. Remaining work is wiring the supervised live-paper runner to
    consume this plan directly and call strategy modules through a shared
    interface. S23/FYERS can remain the first operational path, but not as a core
-   engine assumption.
-6. Validate the new durable S23 artifact layout through the next scheduled
+   engine assumption. S21 must wait for this generic path and BankNifty runtime
+   policy confirmation before live/paper enablement.
+7. Validate the new durable S23 artifact layout through the next scheduled
    market run. The morning supervised workflow, watcher, dashboard source, and
    finalizer now default to
    `data/strategies/S23/fyers_morning_supervised_decision` for option-chain,
@@ -88,32 +100,32 @@ way.
    work is live-run validation and optional historical migration/backfill from
    older `tmp/s23_fyers_morning_supervised_decision` sessions after confirming
    no process is using them.
-7. Decide whether TradingEngine option-quote captures can be enriched with reliable selected-contract OI before using them for TFIS ingress-only acceptance.
+8. Decide whether TradingEngine option-quote captures can be enriched with reliable selected-contract OI before using them for TFIS ingress-only acceptance.
    The paired suite under `D:/TradingEngineTFIS/tmp/s23_tradingengine_capture_dry_runs` proved that six real captured dates can be converted, paired with TFIS preludes, and fed through the ingress-only runner without touching `D:\TradingData`, but all six sessions still ended `ABORTED` with `missing_contract_oi`. The new audit in `docs/operations/s23_tradingengine_capture_oi_audit.md` makes the blocker explicit: the six audited quote archives have `0` non-blank `oi` rows overall and `0` non-blank `oi` rows in the RC window, while `option_positioning` journal events are only near-spot summaries and not a selected-contract-safe substitute.
-8. Replace the current TFIS decision reference packet with fully TFIS-native sourcing for monthly-status and prior-session reference levels.
+9. Replace the current TFIS decision reference packet with fully TFIS-native sourcing for monthly-status and prior-session reference levels.
    `src/tfis/paper/runtime_input_derivation.py` and `scripts/run_s23_fyers_live_decision_check.py` now prove that TFIS can derive `09:15`, `ORPT`, and `RC` checkpoints from normalized morning bars and build a supervised paper decision summary from live FYERS snapshots. The main remaining TFIS decision gap is the reference packet itself: monthly-status levels, `d2/d3/d4` levels, and option aliases such as `OPT_PRV_2DHH` and `OPT_PRV_3DLL` still need a TFIS-native sourcing path rather than a manual packet.
-9. Broaden the supervised FYERS live-decision evidence set across more dates and branch shapes before introducing any continuous socket/session orchestration.
+10. Broaden the supervised FYERS live-decision evidence set across more dates and branch shapes before introducing any continuous socket/session orchestration.
    The new supervised path now exists under `src/tfis/paper/runtime_input_derivation.py`, `src/tfis/paper/live_decision.py`, and `scripts/run_s23_fyers_live_decision_check.py`. The next safe step is to prove the same TFIS-native decision summary works cleanly across more market dates, more branch fixtures, and more option-chain shapes while keeping OI validation strict.
-10. Broaden the broker-backed S23 ingress-only validation set across multi-date normalized archive and replay sessions before enabling any broker-backed fill or lifecycle rehearsal.
+11. Broaden the broker-backed S23 ingress-only validation set across multi-date normalized archive and replay sessions before enabling any broker-backed fill or lifecycle rehearsal.
    The broker-agnostic ingress layer still exists under `src/tfis/brokers/` and `src/tfis/paper/live_ingress.py`, with FYERS as the first market-data adapter and explicit order-placement blocking. `D:/TradingEngineTFIS/tmp/s23_live_paper_dry_runs/2026-05-27/s23-ingress-validation-suite-v1` remains the first operator-grade baseline: `5` sessions, `4 PASS`, `1 WARNING`, `0 NO_GO`, `80.0%` pass rate, `100.0%` selected-contract availability, and a `LIMITED_GO` recommendation.
-11. If the broader supervised decision and ingress suites stay within the close-out thresholds, run the first tightly controlled live-like S23 paper fill and same-day lifecycle rehearsal under operator sign-off.
+12. If the broader supervised decision and ingress suites stay within the close-out thresholds, run the first tightly controlled live-like S23 paper fill and same-day lifecycle rehearsal under operator sign-off.
    The operator policy now exists in `docs/operations/s23_operator_closeout_policy.md`, and the new broker-backed ingress design now exists in `docs/operations/s23_fyers_paper_ingress_design.md`. The next rehearsal should happen only after broader multi-date decision and ingress suites still preserve `0` NO_GO sessions and keep warning cases bounded and reviewed.
-12. Continue extracting generic paper lifecycle pieces after S23 market
+13. Continue extracting generic paper lifecycle pieces after S23 market
    validation. S23 and similar option-selling strategies are carry-forward
    capable before expiry. The paper runtime now has multi-day foundation
    pieces, visible watcher windows, expiry force-close governance,
    session-only waiting-order behavior, and next-day SL reset. The next
    architecture step is to lift shared lifecycle concepts into strategy-neutral
    services only after the S23 behavior is proven in live paper operation.
-13. Persist explicit final no-trade summaries for every evaluated S23 leg.
+14. Persist explicit final no-trade summaries for every evaluated S23 leg.
    The dashboard and validator can now reconstruct no-contract legs from the
    latest stage explainer, but the cleaner long-term artifact contract is for
    the runner to write an explicit final no-trade summary for each evaluated
    active leg, including failure code, attempted expiries, threshold inputs,
    and provisional formula audit values.
-14. Broader real/archive contract-specific intraday coverage for S23.
+15. Broader real/archive contract-specific intraday coverage for S23.
    The deterministic fixture set is fully covered at 100.0%; the next safe step is to widen real session coverage while keeping TFIS runtime on the existing contract-intraday CSV contract.
-15. If an OI-enrichment source is found, rerun the TradingEngine capture ingress suite before attempting any fill or lifecycle replay from captures.
+16. If an OI-enrichment source is found, rerun the TradingEngine capture ingress suite before attempting any fill or lifecycle replay from captures.
    `scripts/run_s23_tradingengine_capture_ingress_suite.py` now proves that the raw capture path itself is operationally read-only and deterministic. The blocker is not prelude pairing, timing, or selected-contract identity alone; it is the absence of usable selected-contract `oi` in the option-quote archives at decision time.
 
 Comparison reporting note:
@@ -128,6 +140,13 @@ Comparison reporting note:
 
 ## Blocked / Pending Clarification
 
+- S21 BankNifty monthly option-selling is now runnable in controlled paper mode
+  as an `ACTIVE_CANDIDATE`, but it is not yet operationally trusted. Confirm
+  active BankNifty lot size, strike step, near/next monthly-expiry selection,
+  futures-continuous monthly-status source, ORPT/RC timing applicability,
+  carry-forward behavior, forced close, and whether `minimum_oi` should be
+  derived automatically from `minimum_lots * lot_size`. The current reference
+  packet is a placeholder and must be refreshed before tomorrow's test.
 - no workbook-backed recalculated target formulas were found in `AB6 OS` rows `162-191`; any target override work remains blocked until new workbook evidence appears
 - `AB6 OS!Z183:Z186` are now implemented as workbook-backed current-day option-entry overrides for the supported `183-186` rows
 - `AB6 OS!190:191` still describe 15:00 position-open process flow only in the
@@ -149,6 +168,8 @@ Comparison reporting note:
 
 - futures rollover module for future-based strategy families
 - monthly option buying
+- broader S21 BankNifty monthly runtime hardening beyond the current controlled
+  paper-mode candidate
 - BankNifty weekly live support
 - multi-broker live runtime beyond the current market-data-only FYERS adapter
 

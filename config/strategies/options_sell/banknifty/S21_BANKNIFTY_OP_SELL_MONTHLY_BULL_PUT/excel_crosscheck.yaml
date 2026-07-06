@@ -1,0 +1,33 @@
+strategy_code: S21
+unique_code: BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT
+source_sheet: BNF Monthly OS Rules
+source_branch: Bull/Bull CF Put
+source_cells:
+  monthly_status: image.step_2_bullish
+  option_type: image.bullish_put_sell_rules
+  start_strike_formula: image.step_5_bullish_put_start
+  end_strike_formula: image.step_5_bullish_put_end
+  ideal_premium_formula: image.step_7a_bullish_put
+  minimum_premium_formula: image.step_7b_bullish_put
+  minimum_oi: image.step_6_500_lots_times_lot_size
+  entry_formula: image.step_9_bullish_put
+  target_formula: image.step_10_bullish_put
+  stoploss_formula: image.step_11_bullish_put
+
+sample_calculation:
+  spot_levels:
+    SPT_PRV_2DHH: 46200
+    SPT_PRV_3DHH: 46500
+  option_levels:
+    OPT_PRV_2DLL: 480
+    OPT_PRV_3DHH: 780
+  runtime_values:
+    ENTRY: 444
+  expected:
+    start_strike: 43900
+    end_strike: 46300
+    ideal_premium: 924
+    minimum_premium: 693
+    entry_price: 444
+    target_price: 177.6
+    stoploss_price: 710.4

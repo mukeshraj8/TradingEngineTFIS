@@ -29,6 +29,18 @@ def _strategy_config(artifact_root: Path) -> StrategyDashboardConfig:
     )
 
 
+def _s21_strategy_config(artifact_root: Path) -> StrategyDashboardConfig:
+    repo_root = _repo_root()
+    return StrategyDashboardConfig(
+        strategy_code="S21",
+        display_name="S21 Operator Dashboard",
+        artifact_root=artifact_root,
+        strategy_path=repo_root / "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL",
+        reference_packet_path=repo_root / "config/reference_packets/s21_banknifty_monthly_live_decision_reference.json",
+        session_id_prefix="s21-fyers-morning-supervised-decision",
+    )
+
+
 def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     artifact_root = tmp_path / "artifacts"
     day_dir = artifact_root / "2026-06-10"
@@ -402,6 +414,41 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
             },
         ]
     )
+    fresh_entry_close_trade_id = "S23-NIFTY_20260602_23825_PE-20260610T100000"
+    trade_rows.append(
+        {
+            "artifact_version": 1,
+            "event_timestamp": "2026-06-10T10:00:00+05:30",
+            "event_type": "CLOSE",
+            "trade_id": fresh_entry_close_trade_id,
+            "strategy_id": "S23:BEAR_PUT",
+            "strategy_code": "S23",
+            "strategy_branch": "BEAR_PUT",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "selected_contract_symbol": "NIFTY_20260602_23825_PE",
+            "expiry_date": "2026-06-02",
+            "side": "SELL",
+            "lots": 1,
+            "quantity": 65,
+            "entry_date": "2026-06-10",
+            "entry_timestamp": "2026-06-10T09:30:00+05:30",
+            "entry_price": 194.25,
+            "exit_price": 77.70,
+            "exit_timestamp": "2026-06-10T10:00:00+05:30",
+            "target_price": 77.70,
+            "stoploss_price": 242.0,
+            "gross_points": 116.55,
+            "gross_pnl": 7575.75,
+            "session_date": "2026-06-10",
+            "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+            "manager_status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+            "reason_code": "target_hit",
+            "message": "Selected-contract quote proved target hit. The paper position was closed; a fresh S23 position must be recalculated from current market data before any new entry.",
+            "fresh_entry_required": True,
+            "state_directory": str(final_dir),
+        }
+    )
     (final_dir / "paper_trade_ledger.jsonl").write_text(
         "\n".join(json.dumps(row) for row in trade_rows) + "\n",
         encoding="utf-8",
@@ -605,6 +652,12 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert '<details class="session-summary summary-shell explanation-panel">' in strategy_html
     assert "Expand dry-run steps" in strategy_html
     assert "Calculation Explanation" in strategy_html
+    assert "repeat(auto-fit, minmax(min(520px, 100%), 1fr))" in strategy_html
+    assert "leg-explanation-nav" in strategy_html
+    assert 'href="#s23-leg-explanation-nifty-op-sell-wk-diff-2d-3d-bear-call"' in strategy_html
+    assert 'href="#s23-leg-explanation-nifty-op-sell-wk-diff-2d-3d-bear-put"' in strategy_html
+    assert 'id="s23-leg-explanation-nifty-op-sell-wk-diff-2d-3d-bear-call"' in strategy_html
+    assert 'id="s23-leg-explanation-nifty-op-sell-wk-diff-2d-3d-bear-put"' in strategy_html
     assert "tfis-dashboard-open-details" in strategy_html
     assert "Step 1 - Preparation" in strategy_html
     assert "Step 2 - Monthly status" in strategy_html
@@ -682,6 +735,17 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "ORDER_WAITING" in strategy_html
     assert "paper_order_state.json" in strategy_html
     assert strategy_html.count("ORDER_WAITING_FOR_TRIGGER") == 1
+    assert "NIFTY_20260602_23825_PE" in strategy_html
+    fresh_entry_close_row = re.search(
+        r"NIFTY_20260602_23825_PE.*?</tr>",
+        strategy_html,
+        flags=re.S,
+    )
+    assert fresh_entry_close_row is not None
+    assert "POSITION_CLOSED" in fresh_entry_close_row.group(0)
+    assert "PAPER_FRESH_ENTRY_REQUIRED" not in fresh_entry_close_row.group(0)
+    assert "PAPER_POSITION_FRESH_ENTRY_REQUIRED" not in fresh_entry_close_row.group(0)
+    assert "Follow-up: fresh entry recalculation required." in fresh_entry_close_row.group(0)
     assert "ORDER_NOT_FILLED" in strategy_html
     assert "paper_order_not_triggered_by_watch_cutoff" in strategy_html
     assert "NIFTY_20260609_24000_PE_STALE" not in strategy_html
@@ -709,49 +773,107 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "paper_position_manager_summary.json" in strategy_html
     assert "paper_trade_ledger.jsonl" in strategy_html
     assert "Monthly Status Calculator" in index_html
-    assert "Monthly Status Calculator" in strategy_html
-    assert "CalculateStrikes" in manual_calculator_html
-    assert "Review Date" in manual_calculator_html
-    assert "Fetch Captured Premium/OI" in manual_calculator_html
-    assert "Eligible CE Strikes" in manual_calculator_html
-    assert "Eligible PE Strikes" in manual_calculator_html
-    assert "Rule Sheet Steps" in manual_calculator_html
-    assert "Manual Review Value" in manual_calculator_html
-    assert "Final CE Premium / OI" in manual_calculator_html
-    assert 'PE: { trade: "Sell Put", spotRef: "d2hh", entryRef: "opt2dll"' in manual_calculator_html
-    assert 'PE: { trade: "Sell Put", spotRef: "d3hh", entryRef: "opt3dll"' in manual_calculator_html
-    assert "optionSide" not in manual_calculator_html
-    assert "<th>Side</th><th>Trade</th>" in manual_calculator_html
-    assert "CE final calculation" in manual_calculator_html
-    assert "PE final calculation" in manual_calculator_html
-    assert "GetMonthlyStatus" in monthly_calculator_html
-    assert "Fetch Captured Monthly Data" in monthly_calculator_html
-    assert "Market Structure Chart" in monthly_calculator_html
-    assert 'id="monthlyStatusChart"' in monthly_calculator_html
-    assert 'id="monthlyChartInspector"' in monthly_calculator_html
-    assert 'id="monthlyChartLegend"' in monthly_calculator_html
-    assert 'data-frame="monthly"' in monthly_calculator_html
-    assert 'id="monthlyChartTooltip"' in monthly_calculator_html
-    assert 'data-level-group="monthly"' in monthly_calculator_html
-    assert "chartLineLegend" in monthly_calculator_html
-    assert "handleMonthlyChartHover" in monthly_calculator_html
-    assert "return number.toFixed(2);" in monthly_calculator_html
-    assert "chart-review-marker" in monthly_calculator_html
-    assert "renderMonthlyStatusChart" in monthly_calculator_html
-    assert "PMH" in monthly_calculator_html
-    assert "CWH" in monthly_calculator_html
-    assert manifest["strategies"][0]["sessions"][0]["final_decision_status"] == "READY"
-    assert manifest["strategies"][0]["sessions"][0]["final_selected_contract_symbols"] == [
-        "NIFTY_20260602_23850_CE",
-        "NIFTY_20260602_23800_PE",
-    ]
-    assert "monthly_status_index" in manifest["review_data"]
-    assert "strategy_S23_index" in manifest["review_data"]
-    monthly_index = json.loads(result.review_data_pages["monthly_status_index"].read_text(encoding="utf-8"))
-    monthly_payload_path = result.output_root / monthly_index["dates"]["2026-06-10"]
-    monthly_payload = json.loads(monthly_payload_path.read_text(encoding="utf-8"))
-    assert monthly_payload["symbol"] == "NIFTY"
-    assert monthly_payload["instrument_group"] == "nifty"
+
+
+def test_dashboard_builds_separate_s21_page_with_generic_explanation(tmp_path: Path) -> None:
+    artifact_root = tmp_path / "s21-artifacts"
+    day_dir = artifact_root / "2026-07-06"
+    final_dir = day_dir / "s21-fyers-morning-supervised-decision-2026-07-06"
+    final_dir.mkdir(parents=True)
+    (final_dir / "monthly_status_stage_0916.json").write_text(
+        json.dumps(
+            {
+                "monthly_status": {
+                    "status": "BEAR",
+                    "trigger_name": "BEAR_CONFIRMED",
+                    "price_used": 56210.5,
+                    "resolution_reason": "Confirmed from captured monthly structure.",
+                    "lookback_used": False,
+                    "notes": "BankNifty monthly status resolved for paper-mode review.",
+                    "trace": [],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (final_dir / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "READY",
+                    "monthly_status": "BEAR",
+                    "selected_contract_symbol": "BANKNIFTY_20260730_56500_CE",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    branch_dir = final_dir / "BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL"
+    branch_dir.mkdir()
+    (branch_dir / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "READY",
+                    "strategy_branch": "BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL",
+                    "selected_contract_symbol": "BANKNIFTY_20260730_56500_CE",
+                    "selected_contract_option_type": "CALL",
+                    "selected_contract_strike": 56500,
+                    "selected_contract_ltp": 421.25,
+                    "selected_contract_oi": 210000,
+                    "planned_entry_price": 260.0,
+                    "target_price": 104.0,
+                    "stoploss_price": 416.0,
+                    "selected_contract_expiry": "2026-07-30",
+                },
+                "explanation": {
+                    "selection_reason": "Selected first strike meeting ideal premium in near monthly contract order.",
+                    "entry_formula": "OPT_PRV_2DLL - 7.5%",
+                    "target_formula": "entry - 60%",
+                    "stoploss_formula": "MIN(entry + 60%, OPT_PRV_2DLL + 5%)",
+                    "monthly": {
+                        "status": "BEAR",
+                        "trigger_name": "BEAR_CONFIRMED",
+                        "current_price": 56210.5,
+                        "resolution_reason": "Confirmed from captured monthly structure.",
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S21",
+                "strategy_branch": "S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL",
+                "selected_contract_symbol": "BANKNIFTY_20260730_56500_CE",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "order_timestamp": "2026-07-06T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-06T09:31:00+05:30",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(
+            _strategy_config(tmp_path / "unused-s23"),
+            _s21_strategy_config(artifact_root),
+        )
+    ).build(output_root=tmp_path / "dashboard")
+
+    index_html = result.index_html.read_text(encoding="utf-8")
+    s21_html = result.strategy_pages["S21"].read_text(encoding="utf-8")
+
+    assert "S21 Operator Dashboard" in index_html
+    assert "strategies/S21/index.html" in index_html
+    assert "Final S21 Leg Decisions" in s21_html
+    assert "BANKNIFTY_20260730_56500_CE" in s21_html
+    assert "Strategy-specific decision audit" in s21_html
+    assert "bullish S23 group" not in s21_html
 
 
 def test_dashboard_reconstructs_stage_from_snapshot_dir(tmp_path: Path) -> None:

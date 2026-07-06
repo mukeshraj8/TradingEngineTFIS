@@ -12,19 +12,21 @@ from typing import Any
 from tfis.domain.enums import ExpiryType, OptionType
 from tfis.importers import load_strategy_rule
 from tfis.market_data import UnderlyingHistoryBar
-from tfis.paper import (
+from tfis.paper.expiry_governance import (
     DeterministicExpiryCalendar,
+    S23PaperExpiryGovernance,
+)
+from tfis.paper.fyers_snapshot_collector import S23CollectedSnapshotInputs
+from tfis.paper.live_decision_timeline import S23LiveDecisionTimelineBuilder
+from tfis.paper.live_prelude import S23PaperPreludeSessionContext
+from tfis.paper.models import (
     EventEnvelope,
     OptionChainContract,
     OptionChainSnapshotEvent,
     PaperEventType,
-    S23CollectedSnapshotInputs,
-    S23LiveDecisionTimelineBuilder,
-    S23PaperExpiryGovernance,
-    S23PaperPreludeSessionContext,
-    load_s23_decision_reference_packet,
+    UnderlyingQuoteEvent,
 )
-from tfis.paper.models import UnderlyingQuoteEvent
+from tfis.paper.runtime_input_derivation import load_s23_decision_reference_packet
 
 
 _STAGE_SNAPSHOT_RE = re.compile(r"-(\d{4})-(\d{4}-\d{2}-\d{2})$")
@@ -361,8 +363,8 @@ class TfisOperatorDashboardBuilder:
                 "artifact_version": 1,
                 "kind": "monthly_status_review_data",
                 "session_date": session.session_date.isoformat(),
-                "symbol": "NIFTY" if session.strategy_code == "S23" else session.strategy_code,
-                "instrument_group": "nifty" if session.strategy_code == "S23" else None,
+                "symbol": self._strategy_symbol(session.strategy_code),
+                "instrument_group": self._strategy_instrument_group(session.strategy_code),
                 "price_source": "captured_strategy_snapshot",
                 "strategy_code": session.strategy_code,
                 "source_artifact": str(path),
@@ -424,6 +426,22 @@ class TfisOperatorDashboardBuilder:
                 "contracts": rows,
             }
         return None
+
+    @staticmethod
+    def _strategy_symbol(strategy_code: str) -> str:
+        mapping = {
+            "S23": "NIFTY",
+            "S21": "BANKNIFTY",
+        }
+        return mapping.get(strategy_code, strategy_code)
+
+    @staticmethod
+    def _strategy_instrument_group(strategy_code: str) -> str | None:
+        mapping = {
+            "S23": "nifty",
+            "S21": "banknifty",
+        }
+        return mapping.get(strategy_code)
 
     def _collect_strategy_sessions(
         self,
@@ -1351,25 +1369,14 @@ class TfisOperatorDashboardBuilder:
 
     def _render_trade_ledger_row(self, row: DashboardTradeLedgerRow, *, page_path: Path) -> str:
         event_time = row.event_timestamp.isoformat(sep=" ", timespec="seconds") if row.event_timestamp else "n/a"
-        action_flags = []
-        if row.fresh_entry_required:
-            action_flags.append("Fresh Entry")
-        if row.reverse_entry_required:
-            action_flags.append("Reverse Entry")
-        if row.rollover_required:
-            action_flags.append("Rollover")
-        action_text = ", ".join(action_flags)
-        status_labels = []
-        for label in (row.lifecycle_status, row.manager_status):
-            normalized = self._normalize_trade_status_label(label)
-            if normalized and normalized not in status_labels:
-                status_labels.append(normalized)
+        status_labels = self._trade_status_labels(row)
         status_parts = [self._badge(label) for label in status_labels]
-        if action_text:
-            status_parts.append(self._badge(action_text))
         reason = html.escape(row.reason_code)
         if row.message:
             reason = f"{reason}<br><span class=\"muted-text\">{html.escape(row.message)}</span>"
+        followup_note = self._trade_followup_note(row)
+        if followup_note:
+            reason = f"{reason}<br><span class=\"trade-followup-note\">{html.escape(followup_note)}</span>"
         current_cell = self._render_trade_current_cell(row)
         stream_cell = self._render_trade_stream_cell(row)
         strategy_cell = self._render_trade_strategy_cell(row)
@@ -1393,6 +1400,40 @@ class TfisOperatorDashboardBuilder:
                 "</tr>",
             ]
         )
+
+    def _trade_status_labels(self, row: DashboardTradeLedgerRow) -> list[str]:
+        if self._trade_terminal(row):
+            return ["POSITION_CLOSED"]
+        status_labels: list[str] = []
+        for label in (row.lifecycle_status, row.manager_status):
+            normalized = self._normalize_trade_status_label(label)
+            if normalized and normalized not in status_labels:
+                status_labels.append(normalized)
+        action_flags = []
+        if row.fresh_entry_required:
+            action_flags.append("Fresh Entry")
+        if row.reverse_entry_required:
+            action_flags.append("Reverse Entry")
+        if row.rollover_required:
+            action_flags.append("Rollover")
+        action_text = ", ".join(action_flags)
+        if action_text:
+            status_labels.append(action_text)
+        return status_labels
+
+    def _trade_followup_note(self, row: DashboardTradeLedgerRow) -> str:
+        if not self._trade_terminal(row):
+            return ""
+        notes = []
+        if row.fresh_entry_required:
+            notes.append("fresh entry recalculation required")
+        if row.reverse_entry_required:
+            notes.append("reverse entry review required")
+        if row.rollover_required:
+            notes.append("rollover review required")
+        if not notes:
+            return ""
+        return "Follow-up: " + "; ".join(notes) + "."
 
     def _render_trade_strategy_cell(self, row: DashboardTradeLedgerRow) -> str:
         strategy_code = html.escape(str(row.strategy_code or "n/a"))
@@ -1488,7 +1529,14 @@ class TfisOperatorDashboardBuilder:
         trade_rows: list[DashboardTradeLedgerRow],
         page_path: Path,
     ) -> str:
-        stage_cards = "\n".join(self._render_stage_card(stage, page_path=page_path) for stage in latest.stages)
+        stage_cards = "\n".join(
+            self._render_stage_card(
+                stage,
+                strategy_code=config.strategy_code,
+                page_path=page_path,
+            )
+            for stage in latest.stages
+        )
         artifact_links = self._render_links(latest.raw_artifact_links, page_path=page_path)
         final_contracts = self._final_contract_display(latest=latest, trade_rows=trade_rows)
         return "\n".join(
@@ -1539,7 +1587,7 @@ class TfisOperatorDashboardBuilder:
         return "\n".join(
             [
                 '<div class="session-summary summary-shell final-leg-panel">',
-                '<div class="section-heading"><h3>Final S23 Leg Decisions</h3><span>Final CE/PE decisions from the 09:30 run</span></div>',
+                f'<div class="section-heading"><h3>Final {html.escape(config.strategy_code)} Leg Decisions</h3><span>Final CE/PE decisions from the 09:30 run</span></div>',
                 '<table class="candidate-table final-leg-table">',
                 "<thead><tr><th class=\"text-cell\">Branch</th><th class=\"text-cell\">Contract</th><th class=\"text-cell\">Expiry</th><th class=\"text-cell\">Side</th><th class=\"number-cell\">Strike</th><th class=\"number-cell\">Premium</th><th class=\"number-cell\">OI</th><th class=\"number-cell\">Entry</th><th class=\"number-cell\">Target</th><th class=\"number-cell\">SL</th><th class=\"status-cell\">Order Status</th></tr></thead>",
                 f"<tbody>{rows}</tbody>",
@@ -1552,6 +1600,12 @@ class TfisOperatorDashboardBuilder:
         legs = self._session_final_leg_rows(config=config, session=latest)
         if not legs:
             return ""
+        if config.strategy_code != "S23":
+            return self._render_generic_final_explanation_panel(
+                config=config,
+                latest=latest,
+                legs=legs,
+            )
         monthly = legs[0].get("monthly") if legs else {}
         monthly_block = ""
         if isinstance(monthly, dict) and monthly:
@@ -1592,16 +1646,116 @@ class TfisOperatorDashboardBuilder:
                     "</div>",
                 ]
             )
+        leg_links = "\n".join(
+            f'<a href="#{html.escape(self._leg_explanation_anchor(leg))}">'
+            f'{html.escape(str(leg.get("side") or "Leg"))}: '
+            f'{html.escape(str(leg.get("contract") or "No contract selected"))}</a>'
+            for leg in legs
+        )
+        leg_nav = f'<div class="leg-explanation-nav">{leg_links}</div>' if leg_links else ""
         leg_blocks = "\n".join(self._render_leg_explanation_card(leg) for leg in legs)
         return "\n".join(
             [
                 '<details class="session-summary summary-shell explanation-panel">',
                 '<summary class="explanation-summary"><span>Calculation Explanation</span><small>Expand dry-run steps</small></summary>',
                 monthly_block,
+                leg_nav,
                 '<div class="leg-explanation-grid">',
                 leg_blocks,
                 "</div>",
                 "</details>",
+            ]
+        )
+
+    def _render_generic_final_explanation_panel(
+        self,
+        *,
+        config: StrategyDashboardConfig,
+        latest: DashboardSessionSummary,
+        legs: list[dict[str, Any]],
+    ) -> str:
+        monthly_status = html.escape(str(latest.final_monthly_status or "n/a"))
+        monthly_block = "\n".join(
+            [
+                '<div class="focus-panel">',
+                '<ol class="explanation-list">',
+                f"<li><strong>Step 1 - Preparation.</strong> Session date is {html.escape(latest.session_date.isoformat())}; final decision uses the completed strategy artifacts available for this run.</li>",
+                f"<li><strong>Step 2 - Monthly status.</strong> Final monthly status is {monthly_status}. Review the branch sections below for contract qualification and formula details.</li>",
+                "</ol>",
+                "</div>",
+            ]
+        )
+        leg_links = "\n".join(
+            f'<a href="#{html.escape(self._leg_explanation_anchor(leg))}">'
+            f'{html.escape(str(leg.get("side") or "Leg"))}: '
+            f'{html.escape(str(leg.get("contract") or "No contract selected"))}</a>'
+            for leg in legs
+        )
+        leg_nav = f'<div class="leg-explanation-nav">{leg_links}</div>' if leg_links else ""
+        leg_blocks = "\n".join(
+            self._render_generic_leg_explanation_card(config=config, leg=leg) for leg in legs
+        )
+        return "\n".join(
+            [
+                '<details class="session-summary summary-shell explanation-panel">',
+                '<summary class="explanation-summary"><span>Calculation Explanation</span><small>Strategy-specific decision audit</small></summary>',
+                monthly_block,
+                leg_nav,
+                '<div class="leg-explanation-grid">',
+                leg_blocks,
+                "</div>",
+                "</details>",
+            ]
+        )
+
+    def _render_generic_leg_explanation_card(
+        self,
+        *,
+        config: StrategyDashboardConfig,
+        leg: dict[str, Any],
+    ) -> str:
+        formula_rows = []
+        formulas = leg.get("formula_evaluation")
+        if isinstance(formulas, list):
+            formula_rows = [
+                "".join(
+                    [
+                        "<tr>",
+                        f"<td>{html.escape(str(item.get('name') or 'n/a'))}</td>",
+                        f"<td>{html.escape(str(item.get('resolved_formula') or item.get('formula') or 'n/a'))}</td>",
+                        f"<td>{self._fmt_number(item.get('result'))}</td>",
+                        "</tr>",
+                    ]
+                )
+                for item in formulas
+                if isinstance(item, dict)
+            ]
+        formula_table = (
+            "\n".join(
+                [
+                    '<table class="candidate-table explanation-table">',
+                    "<thead><tr><th>Calculated Item</th><th>Resolved Formula</th><th>Result</th></tr></thead>",
+                    f"<tbody>{''.join(formula_rows)}</tbody>",
+                    "</table>",
+                ]
+            )
+            if formula_rows
+            else "<p>No formula trace found.</p>"
+        )
+        anchor = self._leg_explanation_anchor(leg)
+        contract_label = str(leg.get("contract") or "No contract selected")
+        return "\n".join(
+            [
+                f'<article class="leg-explanation-card" id="{html.escape(anchor)}">',
+                f"<h3>{html.escape(str(leg.get('side') or config.strategy_code))}: {html.escape(contract_label)}</h3>",
+                '<ol class="explanation-list">',
+                f"<li><strong>Branch.</strong> {html.escape(str(leg.get('branch') or 'n/a'))}</li>",
+                f"<li><strong>Status.</strong> {html.escape(str(leg.get('order_status') or 'n/a'))}</li>",
+                f"<li><strong>Selection reason.</strong> {html.escape(str(leg.get('selection_reason') or 'n/a'))}</li>",
+                f"<li><strong>Entry / Target / SL.</strong> {self._fmt_number(leg.get('entry'))} / {self._fmt_number(leg.get('target'))} / {self._fmt_number(leg.get('stoploss'))}</li>",
+                "</ol>",
+                formula_table,
+                "</article>",
             ]
         )
 
@@ -1657,9 +1811,10 @@ class TfisOperatorDashboardBuilder:
         final_decision_text = leg.get("final_decision_text")
         if not final_decision_text:
             final_decision_text = ranked_text
+        anchor = self._leg_explanation_anchor(leg)
         return "\n".join(
             [
-                '<article class="leg-explanation-card">',
+                f'<article class="leg-explanation-card" id="{html.escape(anchor)}">',
                 f"<h3>{html.escape(str(leg['side']))}: {html.escape(contract_label)}</h3>",
                 '<ol class="explanation-list">',
                 *(f"<li>{step}</li>" for step in dry_run_steps),
@@ -1671,6 +1826,11 @@ class TfisOperatorDashboardBuilder:
                 "</article>",
             ]
         )
+
+    def _leg_explanation_anchor(self, leg: dict[str, Any]) -> str:
+        label = str(leg.get("branch") or leg.get("side") or "leg")
+        normalized = re.sub(r"[^a-z0-9]+", "-", label.lower()).strip("-")
+        return f"s23-leg-explanation-{normalized or 'leg'}"
 
     def _render_eligible_strike_comparison_table(self, leg: dict[str, Any]) -> str:
         candidates = leg.get("contract_candidates")
@@ -3066,7 +3226,13 @@ class TfisOperatorDashboardBuilder:
             counts[reason] = counts.get(reason, 0) + 1
         return counts
 
-    def _render_stage_card(self, stage: DashboardStageSummary, *, page_path: Path) -> str:
+    def _render_stage_card(
+        self,
+        stage: DashboardStageSummary,
+        *,
+        strategy_code: str,
+        page_path: Path,
+    ) -> str:
         return "\n".join(
             [
                 '<details class="stage-card snapshot-panel">',
@@ -3089,7 +3255,7 @@ class TfisOperatorDashboardBuilder:
                 f"<p><strong>Trigger</strong><br>{html.escape(stage.monthly_status_trigger or 'n/a')}</p>",
                 f"<p><strong>Resolution Reason</strong><br>{html.escape(stage.monthly_status_reason or 'n/a')}</p>",
                 "</div>",
-                self._render_s23_rule_step_panel(stage),
+                self._render_s23_rule_step_panel(stage, strategy_code=strategy_code),
                 '<div class="decision-strip">',
                 self._summary_metric("Selected Contract", stage.selected_contract_symbol or "n/a"),
                 self._summary_metric("Entry", self._fmt_number(stage.planned_entry_price)),
@@ -3161,7 +3327,12 @@ class TfisOperatorDashboardBuilder:
             contracts.append(session.final_selected_contract_symbol)
         return tuple(contracts)
 
-    def _render_s23_rule_step_panel(self, stage: DashboardStageSummary) -> str:
+    def _render_s23_rule_step_panel(
+        self,
+        stage: DashboardStageSummary,
+        *,
+        strategy_code: str,
+    ) -> str:
         selected_candidate = next(
             (
                 item
@@ -3248,7 +3419,7 @@ class TfisOperatorDashboardBuilder:
         return "\n".join(
             [
                 '<div class="rule-step-panel">',
-                "<h4>S23 Rule Sheet Steps</h4>",
+                f"<h4>{html.escape(strategy_code)} Rule Sheet Steps</h4>",
                 '<table class="candidate-table rule-step-table">',
                 "<thead><tr><th>Step</th><th>Rule Sheet Item</th><th>Dashboard Value</th></tr></thead>",
                 f"<tbody>{rows}</tbody>",
@@ -4698,7 +4869,7 @@ calculate();
                 "    .final-leg-table .side-cell { font-size: 0.78rem; letter-spacing: 0; }",
                 "    .final-leg-table .number-cell { white-space: nowrap; }",
                 "    .final-leg-table .badge { font-size: 0.66rem; padding: 4px 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }",
-                "    .leg-explanation-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }",
+                "    .leg-explanation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(520px, 100%), 1fr)); gap: 16px; align-items: start; }",
                 "    .explanation-panel { cursor: default; }",
                 "    .explanation-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; list-style: none; }",
                 "    .explanation-summary::-webkit-details-marker { display: none; }",
@@ -4707,6 +4878,8 @@ calculate();
                 "    .explanation-summary span { font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; font-weight: 700; }",
                 "    .explanation-summary small { color: var(--muted); font-size: 0.82rem; font-weight: 650; }",
                 "    .explanation-panel[open] .focus-panel { margin-top: 16px; }",
+                "    .leg-explanation-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }",
+                "    .leg-explanation-nav a { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--soft-border); background: #fff8ef; font-size: 0.82rem; font-weight: 700; }",
                 "    .leg-explanation-card { border: 1px solid var(--soft-border); border-radius: 8px; background: #fffaf3; padding: 16px; min-width: 0; }",
                 "    .leg-explanation-card h3 { margin: 0 0 12px; font-size: 1rem; color: var(--accent); font-family: Georgia, 'Times New Roman', serif; }",
                 "    .eligible-strike-panel { margin: 14px 0; }",
@@ -4782,6 +4955,7 @@ calculate();
                 "    .trade-links a { padding: 5px 9px; }",
                 "    .status-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }",
                 "    .trade-reason { color: var(--ink); font-size: 0.78rem; }",
+                "    .trade-followup-note { display: block; margin-top: 4px; color: var(--muted); font-size: 0.74rem; }",
                 "    .compact-cell { display: grid; gap: 3px; min-width: 0; }",
                 "    .compact-cell strong { display: block; min-width: 0; overflow-wrap: anywhere; }",
                 "    .compact-cell .muted-text { font-size: 0.74rem; }",

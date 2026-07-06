@@ -230,11 +230,12 @@ class S23FyersSnapshotCollector:
                 session_date=session_context.session_date,
                 lookback_days=180,
             )
-            option_chain_snapshot = self._collect_weekly_option_chains(
+            option_chain_snapshot = self._collect_option_chains(
                 active_adapter=active_adapter,
                 symbol=config.market.underlying_symbol,
                 near_expiry=weekly_expiry,
                 session_date=session_context.session_date,
+                expiry_type=strategy.expiry_policy.expiry_type,
             )
         except (BrokerAdapterError, OSError, ValueError) as exc:
             raise S23FyersSnapshotCollectorError(
@@ -481,32 +482,37 @@ class S23FyersSnapshotCollector:
                     "Snapshot preflight currently supports broker.provider=fyers only.",
                 )
             )
-        if config.paper.strategy_code != "S23" or strategy.strategy_code != "S23":
+        if config.paper.strategy_code != strategy.strategy_code:
             issues.append(
                 self._issue(
                     "unsupported_strategy",
-                    "Snapshot preflight is scoped to S23 only.",
+                    "Snapshot preflight requires matching paper.strategy_code and strategy.strategy_code. "
+                    f"Received {config.paper.strategy_code} vs {strategy.strategy_code}.",
                 )
             )
-        if config.paper.symbol != "NIFTY" or strategy.symbol != "NIFTY":
+        if config.paper.symbol != strategy.symbol:
             issues.append(
                 self._issue(
                     "unsupported_symbol",
-                    "Snapshot preflight is scoped to NIFTY only.",
+                    "Snapshot preflight requires matching paper.symbol and strategy.symbol. "
+                    f"Received {config.paper.symbol} vs {strategy.symbol}.",
                 )
             )
-        if config.market.underlying_symbol != "NIFTY":
+        if config.market.underlying_symbol != strategy.symbol:
             issues.append(
                 self._issue(
                     "unsupported_underlying_symbol",
-                    "Snapshot preflight requires market.underlying_symbol=NIFTY.",
+                    "Snapshot preflight requires market.underlying_symbol to match strategy.symbol. "
+                    f"Received {config.market.underlying_symbol} vs {strategy.symbol}.",
                 )
             )
-        if config.paper.contract_cycle != "WEEKLY":
+        expected_contract_cycle = strategy.expiry_policy.expiry_type.value
+        if config.paper.contract_cycle != expected_contract_cycle:
             issues.append(
                 self._issue(
                     "unsupported_contract_cycle",
-                    "Snapshot preflight is scoped to weekly options only.",
+                    "Snapshot preflight requires paper.contract_cycle to match strategy expiry policy. "
+                    f"Received {config.paper.contract_cycle} vs {expected_contract_cycle}.",
                 )
             )
         if config.paper.mode != "paper":
@@ -548,7 +554,7 @@ class S23FyersSnapshotCollector:
             issues.append(
                 self._issue(
                     "unsupported_strategy_segment",
-                    "Snapshot preflight is scoped to S23 option-selling strategies only.",
+                    "Snapshot preflight is scoped to supported option-selling strategies only.",
                 )
             )
         if strategy.option_type is None:
@@ -667,10 +673,7 @@ class S23FyersSnapshotCollector:
         configured_expiry = config.market.weekly_expiry
         if configured_expiry >= session_date:
             return configured_expiry
-        if (
-            strategy.symbol == "NIFTY"
-            and strategy.expiry_policy.expiry_type is ExpiryType.WEEKLY
-        ):
+        if strategy.expiry_policy.expiry_type is ExpiryType.WEEKLY and strategy.symbol == "NIFTY":
             return self._resolve_live_nifty_weekly_expiry(session_date)
         raise S23FyersSnapshotCollectorError(
             "STALE_WEEKLY_EXPIRY",
@@ -726,13 +729,14 @@ class S23FyersSnapshotCollector:
                 + ", ".join(missing_oi[:5]),
             )
 
-    def _collect_weekly_option_chains(
+    def _collect_option_chains(
         self,
         *,
         active_adapter: BrokerAdapter,
         symbol: str,
         near_expiry: date,
         session_date: date,
+        expiry_type: ExpiryType,
     ) -> OptionChainSnapshotEvent:
         near_chain = active_adapter.get_option_chain(
             symbol,
@@ -748,7 +752,7 @@ class S23FyersSnapshotCollector:
                 "OPTION_CHAIN_MISSING",
                 "Normalized option-chain snapshot has no contracts.",
             )
-        next_expiry = self._next_weekly_expiry_after(near_expiry)
+        next_expiry = self._next_expiry_after(near_expiry, expiry_type=expiry_type)
         next_chain = active_adapter.get_option_chain(
             symbol,
             next_expiry,
@@ -771,10 +775,10 @@ class S23FyersSnapshotCollector:
             observed_text = ", ".join(item.isoformat() for item in observed_expiries) or "none"
             raise S23FyersSnapshotCollectorError(
                 "NEXT_WEEKLY_OPTION_CHAIN_UNAVAILABLE",
-                "FYERS did not return any true next-weekly contracts for requested expiry "
+                "FYERS did not return any true next-expiry contracts for requested expiry "
                 f"{next_expiry.isoformat()}. Observed contract expiries after symbol "
-                f"normalization: {observed_text}. TFIS cannot safely perform S23 Step 8c "
-                "near-then-next fallback without real next-expiry option-chain data.",
+                f"normalization: {observed_text}. TFIS cannot safely perform near-then-next "
+                "expiry fallback without real next-expiry option-chain data.",
             )
         quality_flags = list(near_chain.envelope.data_quality_flags)
         quality_flags.extend(
@@ -783,7 +787,7 @@ class S23FyersSnapshotCollector:
             if flag not in quality_flags
         )
         quality_flags.append(
-            "next_weekly_option_chain_verified:"
+            "next_option_chain_verified:"
             f"requested={next_expiry.isoformat()};contracts={next_expiry_contract_count}"
         )
         merged_contracts = tuple(
@@ -842,8 +846,23 @@ class S23FyersSnapshotCollector:
                 active_adapter.disconnect()
 
     @staticmethod
-    def _next_weekly_expiry_after(expiry: date) -> date:
-        return expiry + timedelta(days=7)
+    def _next_expiry_after(expiry: date, *, expiry_type: ExpiryType) -> date:
+        if expiry_type is ExpiryType.WEEKLY:
+            return expiry + timedelta(days=7)
+        month = expiry.month + 1
+        year = expiry.year
+        if month == 13:
+            month = 1
+            year += 1
+        cursor = date(year, month, 1)
+        if month == 12:
+            next_month = date(year + 1, 1, 1)
+        else:
+            next_month = date(year, month + 1, 1)
+        candidate = next_month - timedelta(days=1)
+        while candidate.weekday() != expiry.weekday():
+            candidate -= timedelta(days=1)
+        return candidate
 
     @classmethod
     def _chain_with_symbol_expiries(

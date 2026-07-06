@@ -1,0 +1,17 @@
+strategy_code: S21
+unique_code: BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL
+symbol: BANKNIFTY
+segment: OPTIONS_SELL
+expiry_type: MONTHLY
+rollover_policy: T_MINUS_1
+forced_close_time: "12:00:00"
+no_carry_past_expiry: true
+allowed_monthly_statuses:
+  - BEAR
+  - BEAR_CF
+option_type: CALL
+entry_time: "09:24:59"
+recalculation_time: "09:29:59"
+minimum_oi: 17500
+carry_forward_allowed: true
+allow_fresh_entry_with_open_position: false

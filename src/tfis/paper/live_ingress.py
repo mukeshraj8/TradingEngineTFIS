@@ -939,14 +939,14 @@ class S23BrokerPaperIngressRunner:
             issues.append(
                 self._issue(
                     "unsupported_strategy",
-                    "Live-paper ingress is scoped to S23 only.",
+                    "Live-paper ingress is currently scoped to S23 only.",
                 )
             )
         if config.paper.symbol != "NIFTY":
             issues.append(
                 self._issue(
                     "unsupported_symbol",
-                    "Live-paper ingress is scoped to NIFTY only.",
+                    "Live-paper ingress is currently scoped to NIFTY only.",
                 )
             )
         if config.market.underlying_symbol != "NIFTY":

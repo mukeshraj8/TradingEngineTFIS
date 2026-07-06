@@ -133,12 +133,25 @@
   2026-07-06 carried PE target-hit case used this path to promote the fresh
   Bear Call decision while preserving the existing
   `allow_fresh_entry_with_open_position=false` execution gate.
+- S23 Trades Taken dashboard now renders target/SL exits that also require a
+  fresh-entry recalculation as clean closed rows. The fresh-entry requirement is
+  retained as follow-up text, and any new waiting entry remains represented by
+  its own paper-order row.
+- S23 Calculation Explanation now shows CE/PE stepwise cards side by side on
+  wide screens, with direct CE/PE leg links before the detailed cards, making
+  both branch calculations easy to locate even when the first branch's inline
+  strike audit is long.
 - S23 captured-session validation and dashboard final-leg review now include
   latest stage-level no-contract calculations when no final
   `trade_decision_summary.json` exists for a branch. This keeps CE/PE review
   complete on carry-forward days and on failed-leg days: selected branches show
   final contracts, while no-contract branches show failure code and formula
   audit context instead of disappearing from the operator view.
+- S21 BankNifty monthly option-selling is now implemented as a controlled
+  paper-mode candidate for all four rule-sheet legs, with configurable
+  parameters, a dedicated `tfis.rules.s21_rule_matrix`, focused unit coverage,
+  `ACTIVE_CANDIDATE` registry entries, an S21 paper config/runner wrapper, and
+  dashboard multi-strategy registration.
 - Generic enabled-strategy execution planning now exists under
   `tfis.strategy.execution_plan`. It builds a broker-agnostic plan from runtime
   config, skips disabled strategies, checks registry status and supported
@@ -214,7 +227,8 @@
 - S23 mode comparison reporting is now bounded, deterministic, and summary-based rather than relying on unbounded raw JSON comparison
 - S23 mode comparison now records input-dataset paths, cost settings, and apples-to-apples status; the earlier row-183 `current_day_fsl_trp` exit flip did not reproduce after rerunning all six modes on one shared dataset set
 - quality snapshot:
-  - tests passing: `426`
+  - last full-suite snapshot before the S21 scaffold: tests passing `426`
+  - S21/strategy focused validation for this task: `20 passed`
   - `python scripts/validate_project.py`: passed
 
 ## Completed
@@ -304,6 +318,9 @@
   option-chain snapshots, decisions, paper orders, paper positions, and
   ledger/state files out of temp-only storage while leaving rebuildable
   dashboard HTML and short-lived launch logs in `tmp`
+- S21 BankNifty monthly option-selling rule/config scaffold implemented for
+  Bull Call, Bull Put, Bear Call, and Bear Put with configurable rule-sheet
+  parameters and focused validation tests
 
 ## Next Recommended Priorities
 
@@ -316,7 +333,7 @@
   and decide whether to backfill older tmp-based sessions into the new
   `data/strategies/S23/fyers_morning_supervised_decision` layout
 - introduce generic enabled-strategy execution through registry/config before
-  adding S21 or other strategies
+  enabling S21 or other strategies operationally
 - run further real local FYERS market-data-only ingress sessions under the
   preflight runbook during market hours
 - broaden the broker-backed S23 ingress-only validation set across more normalized archive and replay sessions

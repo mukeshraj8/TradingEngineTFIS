@@ -11,19 +11,25 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
+from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
             "Build a read-only TFIS operator dashboard from artifact directories. "
-            "The first version renders a strategy index plus an S23 strategy page."
+            "It renders a strategy index plus one page per configured TFIS strategy."
         )
     )
     parser.add_argument(
         "--output-root",
         default="tmp/operator_dashboard",
         help="Directory where the generated dashboard HTML and manifest should be written.",
+    )
+    parser.add_argument(
+        "--dashboard-config",
+        default="config/operator_dashboard_strategies.yaml",
+        help="YAML file listing dashboard strategy pages to build.",
     )
     parser.add_argument(
         "--s23-artifact-root",
@@ -47,8 +53,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    builder = TfisOperatorDashboardBuilder(
-        strategy_configs=(
+    dashboard_config_path = REPO_ROOT / args.dashboard_config
+    if dashboard_config_path.exists():
+        strategy_configs = load_dashboard_strategy_configs(
+            dashboard_config_path,
+            repo_root=REPO_ROOT,
+        )
+    else:
+        strategy_configs = (
             StrategyDashboardConfig(
                 strategy_code="S23",
                 display_name="S23 Operator Dashboard",
@@ -58,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
                 session_id_prefix=args.session_id_prefix,
             ),
         )
-    )
+    builder = TfisOperatorDashboardBuilder(strategy_configs=strategy_configs)
     result = builder.build(output_root=REPO_ROOT / args.output_root)
     print("TFIS operator dashboard build succeeded.")
     print(f"Index page: {result.index_html}")

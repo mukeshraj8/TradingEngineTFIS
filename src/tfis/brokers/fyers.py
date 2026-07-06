@@ -96,6 +96,14 @@ class FyersCredentials:
 
 class FyersBrokerAdapter(BrokerAdapter):
     broker_name = "fyers"
+    _UNDERLYING_PREFIXES = {
+        "NIFTY": ("NSE:NIFTY",),
+        "BANKNIFTY": ("NSE:BANKNIFTY", "NSE:NIFTYBANK"),
+    }
+    _UNDERLYING_INDEX_SYMBOLS = {
+        "NIFTY": "NSE:NIFTY50-INDEX",
+        "BANKNIFTY": "NSE:NIFTYBANK-INDEX",
+    }
 
     def __init__(
         self,
@@ -135,14 +143,23 @@ class FyersBrokerAdapter(BrokerAdapter):
         cleaned = symbol.strip().upper()
         if cleaned in {"NIFTY", "NSE:NIFTY50-INDEX", "NSE:NIFTY-INDEX"}:
             return "NIFTY"
+        if cleaned in {"BANKNIFTY", "NSE:NIFTYBANK-INDEX", "NSE:BANKNIFTY-INDEX"}:
+            return "BANKNIFTY"
         raise BrokerNormalizationError(f"Unsupported FYERS underlying symbol: {symbol}")
 
     @classmethod
     def normalize_option_symbol(cls, symbol: str, *, expiry_hint: date | None = None) -> str:
         cleaned = symbol.strip().upper()
-        if not cleaned.startswith("NSE:NIFTY"):
+        underlying = None
+        body = ""
+        for candidate_underlying, prefixes in cls._UNDERLYING_PREFIXES.items():
+            matched = next((prefix for prefix in prefixes if cleaned.startswith(prefix)), None)
+            if matched is not None:
+                underlying = candidate_underlying
+                body = cleaned.replace(matched, "", 1)
+                break
+        if underlying is None:
             raise BrokerNormalizationError(f"Unsupported FYERS option symbol: {symbol}")
-        body = cleaned.replace("NSE:NIFTY", "", 1)
         if len(body) < 8 or not (body.endswith("CE") or body.endswith("PE")):
             raise BrokerNormalizationError(f"Malformed FYERS option symbol: {symbol}")
         option_type = body[-2:]
@@ -157,7 +174,7 @@ class FyersBrokerAdapter(BrokerAdapter):
             if expiry_hint is not None and expiry_hint.year == year and expiry_hint.month == month:
                 expiry = expiry_hint
             else:
-                expiry = cls._last_nifty_monthly_expiry(year, month)
+                expiry = cls._last_monthly_expiry(underlying, year, month)
             strike_text = body[5:-2]
         else:
             strike_text = body[5:-2]
@@ -168,7 +185,7 @@ class FyersBrokerAdapter(BrokerAdapter):
                 raise BrokerNormalizationError(f"Unsupported FYERS month token: {month_token}")
             expiry = date(2000 + yy, month, day)
         strike = int(strike_text)
-        return f"NIFTY_{expiry.isoformat().replace('-', '')}_{strike}_{option_type}"
+        return f"{underlying}_{expiry.isoformat().replace('-', '')}_{strike}_{option_type}"
 
     @classmethod
     def to_fyers_option_symbol(
@@ -176,24 +193,40 @@ class FyersBrokerAdapter(BrokerAdapter):
         normalized_symbol: str,
     ) -> str:
         prefix, expiry_text, strike_text, option_type = normalized_symbol.split("_", 3)
-        if prefix.upper() != "NIFTY":
+        normalized_prefix = prefix.upper()
+        if normalized_prefix not in cls._UNDERLYING_PREFIXES:
             raise BrokerNormalizationError(
                 f"Unsupported normalized option symbol for FYERS: {normalized_symbol}"
             )
         expiry = date.fromisoformat(
             f"{expiry_text[0:4]}-{expiry_text[4:6]}-{expiry_text[6:8]}"
         )
-        if expiry == cls._last_nifty_monthly_expiry(expiry.year, expiry.month):
+        if expiry == cls._last_monthly_expiry(normalized_prefix, expiry.year, expiry.month):
             expiry_id = f"{str(expiry.year)[2:]}{_FYERS_MONTH_TO_TEXT[expiry.month]}"
         else:
             month_token = _MONTH_TO_FYERS[expiry.month]
             expiry_id = f"{str(expiry.year)[2:]}{month_token}{expiry.day:02d}"
-        return f"NSE:NIFTY{expiry_id}{int(strike_text)}{option_type.upper()}"
+        fyers_prefix = cls._UNDERLYING_PREFIXES[normalized_prefix][0]
+        return f"{fyers_prefix}{expiry_id}{int(strike_text)}{option_type.upper()}"
 
     @staticmethod
     def _last_nifty_monthly_expiry(year: int, month: int) -> date:
         cursor = date(year, month + 1, 1) - timedelta(days=1) if month < 12 else date(year, 12, 31)
         while cursor.weekday() != 1:
+            cursor -= timedelta(days=1)
+        return cursor
+
+    @classmethod
+    def _last_monthly_expiry(cls, underlying: str, year: int, month: int) -> date:
+        normalized = underlying.strip().upper()
+        if normalized in {"NIFTY", "BANKNIFTY"}:
+            return cls._last_nifty_monthly_expiry(year, month)
+        cursor = (
+            date(year, month + 1, 1) - timedelta(days=1)
+            if month < 12
+            else date(year, 12, 31)
+        )
+        while cursor.weekday() != 3:
             cursor -= timedelta(days=1)
         return cursor
 
@@ -533,8 +566,9 @@ class FyersBrokerAdapter(BrokerAdapter):
 
     def _to_fyers_underlying_symbol(self, symbol: str) -> str:
         normalized = symbol.strip().upper()
-        if normalized == "NIFTY":
-            return "NSE:NIFTY50-INDEX"
+        mapped = self._UNDERLYING_INDEX_SYMBOLS.get(normalized)
+        if mapped is not None:
+            return mapped
         if normalized.startswith("NSE:"):
             return normalized
         raise BrokerNormalizationError(f"Unsupported underlying symbol: {symbol}")
@@ -738,8 +772,8 @@ class FyersBrokerAdapter(BrokerAdapter):
             contracts=tuple(contracts),
         )
 
-    def _option_chain_expiry_timestamp(self, expiry: date) -> int:
-        return int(datetime.combine(expiry, time(15, 30), tzinfo=self._tzinfo).timestamp())
+    def _option_chain_expiry_timestamp(self, expiry: date) -> str:
+        return str(int(datetime.combine(expiry, time(15, 30), tzinfo=self._tzinfo).timestamp()))
 
     def _normalize_selected_contract_bar_payload(
         self,
