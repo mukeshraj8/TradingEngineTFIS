@@ -321,6 +321,12 @@
 - S21 BankNifty monthly option-selling rule/config scaffold implemented for
   Bull Call, Bull Put, Bear Call, and Bear Put with configurable rule-sheet
   parameters and focused validation tests
+- TFIS-only reboot recovery script now waits for prior TFIS runtime processes
+  to exit and skips starting duplicate dashboard servers or duplicate watcher
+  targets when the same reset path is rerun after a delayed startup or reboot
+- TFIS reboot recovery now also starts dashboard and watcher/runtime consoles
+  as visible windows instead of hidden background processes, making the active
+  TFIS runtime discoverable to the operator after restart
 
 ## Next Recommended Priorities
 

@@ -74,6 +74,7 @@ def main(argv: list[str] | None = None) -> int:
     result = builder.build(output_root=REPO_ROOT / args.output_root)
     print("TFIS operator dashboard build succeeded.")
     print(f"Index page: {result.index_html}")
+    print(f"All trades page: {result.trades_page}")
     for strategy_code, page in sorted(result.strategy_pages.items()):
         print(f"{strategy_code} page: {page}")
     print(f"Manifest: {result.manifest_json}")

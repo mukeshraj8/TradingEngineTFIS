@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 import time as time_module
 from dataclasses import asdict, is_dataclass
@@ -38,6 +39,7 @@ from tfis.paper import (
 from tfis.paper.live_ingress import S23LivePaperIngressConfig
 from tfis.paper.models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
+from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 
 
@@ -148,6 +150,8 @@ def main(argv: list[str] | None = None) -> int:
         lock_root=Path(args.process_lock_root),
     )
     try:
+        watch_mode = "state" if state is not None else "order"
+        watched_directory = Path(state_dir or order_dir).resolve()
         process_lock_handle = acquire_process_lock(
             process_lock_path,
             label=f"s23-paper-watch:{trade_id}",
@@ -159,8 +163,15 @@ def main(argv: list[str] | None = None) -> int:
                     if state is not None
                     else order_state.selected_contract_symbol
                 ),
-                "state_directory": str(Path(state_dir or order_dir).resolve()),
+                "state_directory": str(watched_directory),
+                "watch_mode": watch_mode,
             },
+            process_exists=lambda pid: _matching_watch_process_exists(
+                pid,
+                mode=watch_mode,
+                watched_directory=watched_directory,
+                config_path=Path(args.config).resolve(),
+            ),
             logger=lambda message: print(message, file=sys.stderr, flush=True),
         )
     except ProcessLockError as exc:
@@ -561,8 +572,14 @@ def _rebuild_dashboard(*, output_root: Path, artifact_root: Path) -> None:
         )
         return
     try:
-        TfisOperatorDashboardBuilder(
-            strategy_configs=(
+        dashboard_config_path = REPO_ROOT / "config" / "operator_dashboard_strategies.yaml"
+        if dashboard_config_path.exists():
+            strategy_configs = load_dashboard_strategy_configs(
+                dashboard_config_path,
+                repo_root=REPO_ROOT,
+            )
+        else:
+            strategy_configs = (
                 StrategyDashboardConfig(
                     strategy_code="S23",
                     display_name="S23 Operator Dashboard",
@@ -578,6 +595,8 @@ def _rebuild_dashboard(*, output_root: Path, artifact_root: Path) -> None:
                     session_id_prefix="s23-fyers-morning-supervised-decision",
                 ),
             )
+        TfisOperatorDashboardBuilder(
+            strategy_configs=strategy_configs,
         ).build(output_root=resolved_output_root)
     finally:
         _release_watch_file_lock(lock_handle)
@@ -647,6 +666,72 @@ def _watch_process_lock_path(watch_directory: Path, *, lock_root: Path) -> Path:
     resolved_directory = watch_directory.resolve()
     digest = hashlib.sha256(str(resolved_directory).encode("utf-8")).hexdigest()[:24]
     return lock_root / f"s23_paper_watch_{digest}.pid.json"
+
+
+def _matching_watch_process_exists(
+    pid: int,
+    *,
+    mode: str,
+    watched_directory: Path,
+    config_path: Path,
+) -> bool:
+    command_line = _command_line_for_pid(pid)
+    if not command_line:
+        return False
+    return _watch_process_commandline_matches(
+        command_line,
+        mode=mode,
+        watched_directory=watched_directory,
+        config_path=config_path,
+    )
+
+
+def _command_line_for_pid(pid: int) -> str | None:
+    if pid <= 0 or os.name != "nt":
+        return None
+    try:
+        completed = subprocess.run(
+            [
+                "powershell.exe",
+                "-NoProfile",
+                "-Command",
+                (
+                    f"$proc = Get-CimInstance Win32_Process -Filter \"ProcessId = {pid}\"; "
+                    "if ($proc) { $proc.CommandLine }"
+                ),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=5,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if completed.returncode != 0:
+        return None
+    command_line = completed.stdout.strip()
+    return command_line or None
+
+
+def _watch_process_commandline_matches(
+    command_line: str,
+    *,
+    mode: str,
+    watched_directory: Path,
+    config_path: Path,
+) -> bool:
+    normalized = command_line.replace("/", "\\").lower()
+    expected_directory = str(watched_directory).replace("/", "\\").lower()
+    expected_config = str(config_path).replace("/", "\\").lower()
+    normalized_repo_root = str(REPO_ROOT).replace("/", "\\").lower()
+    mode_flag = "--state-dir" if mode == "state" else "--order-dir"
+    return (
+        "run_s23_paper_position_watch.py" in normalized
+        and normalized_repo_root in normalized
+        and expected_config in normalized
+        and mode_flag in normalized
+        and expected_directory in normalized
+    )
 
 
 def _acquire_watch_file_lock(state_directory: Path):

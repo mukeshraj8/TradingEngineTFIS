@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import subprocess
 import sys
 from pathlib import Path
 
@@ -29,6 +30,7 @@ DEFAULT_STRATEGIES = (
     "S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT",
 )
 DEFAULT_STRATEGY_ROOT = REPO_ROOT / "config" / "strategies" / "options_sell" / "banknifty"
+DEFAULT_WATCHER_WRAPPER = REPO_ROOT / "scripts" / "start_s21_paper_watchers_from_metadata.ps1"
 _MARKET_CLOSED_NO_CANDLE_MESSAGES = (
     "FYERS underlying history payload returned no candles",
     "No underlying history candles matched the requested TFIS session window",
@@ -64,6 +66,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--skip-refresh", action="store_true")
     parser.add_argument("--timezone", default="Asia/Kolkata")
     parser.add_argument("--if-past", choices=["run_now", "abort"], default="run_now")
+    parser.add_argument("--disable-position-watch", action="store_true")
     return parser
 
 
@@ -134,6 +137,16 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Final decision summary [{branch}]: {path}")
     if result.final_summary_markdown is not None:
         print(f"Final decision summary: {result.final_summary_markdown}")
+    if (
+        not args.disable_position_watch
+        and (result.branch_order_state_json or result.branch_position_state_json)
+    ):
+        _start_s21_watchers(
+            tfis_root=Path(args.tfis_root),
+            config_path=Path(args.config),
+            artifact_root=Path(args.artifact_root),
+            session_date=result.session_directory.parent.name,
+        )
     return 0
 
 
@@ -152,6 +165,56 @@ def _supervised_decision_process_lock_path(
     identity = f"{artifact_root.resolve()}::{session_id_prefix}"
     digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:24]
     return lock_root / f"s21_supervised_decision_{digest}.pid.json"
+
+
+def _start_s21_watchers(
+    *,
+    tfis_root: Path,
+    config_path: Path,
+    artifact_root: Path,
+    session_date: str,
+) -> None:
+    if not DEFAULT_WATCHER_WRAPPER.exists():
+        print(
+            f"WARNING: S21 watcher wrapper not found: {DEFAULT_WATCHER_WRAPPER}",
+            file=sys.stderr,
+        )
+        return
+    command = [
+        "powershell.exe",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        str(DEFAULT_WATCHER_WRAPPER),
+        "-TfisRoot",
+        str(tfis_root),
+        "-Config",
+        str(config_path),
+        "-ArtifactRoot",
+        str(artifact_root),
+        "-SessionDate",
+        session_date,
+    ]
+    try:
+        completed = subprocess.run(
+            command,
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError as exc:
+        print(f"WARNING: failed to launch S21 watcher bootstrap: {exc}", file=sys.stderr)
+        return
+    if completed.stdout.strip():
+        print(completed.stdout.strip())
+    if completed.returncode != 0:
+        stderr_text = completed.stderr.strip() or "unknown watcher bootstrap failure"
+        print(
+            f"WARNING: S21 watcher bootstrap exited with code {completed.returncode}: {stderr_text}",
+            file=sys.stderr,
+        )
 
 
 if __name__ == "__main__":

@@ -87,3 +87,35 @@ def test_s23_paper_watch_duplicate_live_pid_fails_closed_with_metadata(tmp_path:
     assert payload["pid"] == 1111
     assert payload["metadata"]["selected_contract_symbol"] == "NIFTY_20260714_23900_CE"
     assert any(CRITICAL_DUPLICATE_PROCESS_SHUTDOWN in item for item in logs)
+
+
+def test_s23_paper_watch_process_match_requires_same_commandline_identity(tmp_path: Path) -> None:
+    module = _load_watch_script_module()
+    watched_directory = tmp_path / "data" / "strategies" / "S23" / "2026-07-08" / "branch"
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+
+    matching = (
+        f'"{Path(module.__file__).resolve()}" '
+        f'--tfis-root "{Path(module.__file__).resolve().parents[1]}" '
+        f'--config "{config_path}" '
+        f'--order-dir "{watched_directory}"'
+    )
+    other_mode = (
+        f'"{Path(module.__file__).resolve()}" '
+        f'--tfis-root "{Path(module.__file__).resolve().parents[1]}" '
+        f'--config "{config_path}" '
+        f'--state-dir "{watched_directory}"'
+    )
+
+    assert module._watch_process_commandline_matches(
+        matching,
+        mode="order",
+        watched_directory=watched_directory,
+        config_path=config_path,
+    )
+    assert not module._watch_process_commandline_matches(
+        other_mode,
+        mode="order",
+        watched_directory=watched_directory,
+        config_path=config_path,
+    )

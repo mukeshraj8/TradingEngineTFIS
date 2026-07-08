@@ -45,6 +45,7 @@ class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             request_path = f"/{self.dashboard_root.relative_to(self.repo_root).as_posix()}/index.html"
         elif (
             request_path.startswith("/strategies/")
+            or request_path.startswith("/trades/")
             or request_path.startswith("/tools/")
             or request_path.startswith("/data/")
         ):
@@ -93,6 +94,12 @@ def _query_value(query: dict[str, list[str]], key: str) -> str | None:
 
 class ReusableTcpServer(socketserver.TCPServer):
     allow_reuse_address = True
+
+    def handle_error(self, request, client_address) -> None:  # type: ignore[override]
+        exc_type, exc, _tb = sys.exc_info()
+        if isinstance(exc, (BrokenPipeError, ConnectionAbortedError, ConnectionResetError)):
+            return
+        super().handle_error(request, client_address)
 
 
 def build_parser() -> argparse.ArgumentParser:

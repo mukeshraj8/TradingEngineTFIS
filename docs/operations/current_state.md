@@ -14,6 +14,9 @@ change in a meaningful way.
 - validate the newly enabled S21 BankNifty monthly paper-mode path tomorrow as
   an `ACTIVE_CANDIDATE`, including reference-packet freshness, monthly-expiry
   selection, dashboard page rendering, and watcher/order-state visibility
+- harden the TFIS-only restart/bootstrap path so rerunning the recovery script
+  after a workstation reboot yields one dashboard server and one watcher per
+  persisted order/position target instead of stacking duplicate processes
 
 ## Money-Ready Phase Milestones
 
@@ -161,6 +164,10 @@ Current S23 paper-mode posture:
   watcher for the same order/position, fails closed before broker connection
   with `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, while stale dead-PID locks are
   reclaimed with `STALE_PROCESS_LOCK_RECLAIMED`.
+- `DONE`: `scripts/reset_tfis_dashboard_and_watchers.ps1` now launches the
+  TFIS dashboard server and TFIS watcher/runtime consoles as visible windows
+  instead of hidden background processes, matching the operator-facing manual
+  watcher launchers so active TFIS runtime can be found after reboot/recovery.
 - `DONE`: The 2026-07-03 scheduled startup failure was traced to a PowerShell
   scalar/array edge case when exactly one open carry-forward state was
   discovered. The wrapper now preserves discovered state paths as arrays in the

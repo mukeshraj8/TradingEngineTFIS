@@ -142,7 +142,7 @@ class S23PaperOrderStateStore:
             last_updated_timestamp=created_at,
             last_reason_code="paper_order_waiting_for_entry_trigger",
             last_message=(
-                "S23 READY decision created a paper sell order. The position will "
+                "READY decision created a paper sell order. The position will "
                 "open only after selected option premium trades at or below entry."
             ),
             provenance_source_ids=provenance_source_ids,

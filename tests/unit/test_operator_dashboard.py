@@ -876,6 +876,80 @@ def test_dashboard_builds_separate_s21_page_with_generic_explanation(tmp_path: P
     assert "bullish S23 group" not in s21_html
 
 
+def test_dashboard_builds_consolidated_trades_page(tmp_path: Path) -> None:
+    s23_root = tmp_path / "s23-artifacts"
+    s23_day_dir = s23_root / "2026-07-07"
+    s23_final_dir = s23_day_dir / "s23-fyers-morning-supervised-decision-2026-07-07"
+    s23_branch_dir = s23_final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    s23_branch_dir.mkdir(parents=True)
+    (s23_final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "READY", "monthly_status": "BEAR"}}),
+        encoding="utf-8",
+    )
+    (s23_final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (s23_branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260714_24150_CE",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "entry_date": "2026-07-07",
+                "order_timestamp": "2026-07-07T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-07T09:31:00+05:30",
+                "planned_entry_price": 194.25,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    s21_root = tmp_path / "s21-artifacts"
+    s21_day_dir = s21_root / "2026-07-06"
+    s21_final_dir = s21_day_dir / "s21-fyers-morning-supervised-decision-2026-07-06"
+    s21_branch_dir = s21_final_dir / "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL"
+    s21_branch_dir.mkdir(parents=True)
+    (s21_final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "NO_GO", "monthly_status": "BULL_CF"}}),
+        encoding="utf-8",
+    )
+    (s21_final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (s21_branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S21",
+                "strategy_branch": "S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+                "selected_contract_symbol": "BANKNIFTY_20260728_57800_CE",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "entry_date": "2026-07-06",
+                "order_timestamp": "2026-07-06T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-08T12:46:03+05:30",
+                "planned_entry_price": 462.50,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(
+            _strategy_config(s23_root),
+            _s21_strategy_config(s21_root),
+        )
+    ).build(output_root=tmp_path / "dashboard")
+
+    index_html = result.index_html.read_text(encoding="utf-8")
+    trades_html = result.trades_page.read_text(encoding="utf-8")
+
+    assert "All Trades Monitor" in index_html
+    assert 'href="trades/index.html"' in index_html
+    assert "All Strategy Trades" in trades_html
+    assert "S23" in trades_html
+    assert "S21" in trades_html
+    assert "NIFTY_20260714_24150_CE" in trades_html
+    assert "BANKNIFTY_20260728_57800_CE" in trades_html
+
+
 def test_dashboard_reconstructs_stage_from_snapshot_dir(tmp_path: Path) -> None:
     artifact_root = tmp_path / "artifacts"
     day_dir = artifact_root / "2026-06-11"

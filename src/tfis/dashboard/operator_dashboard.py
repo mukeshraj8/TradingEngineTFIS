@@ -109,6 +109,7 @@ class DashboardSelectedContractStreamHealth:
 
 @dataclass(frozen=True, slots=True)
 class DashboardTradeLedgerRow:
+    session_date: date | None
     event_timestamp: datetime | None
     event_type: str
     trade_id: str
@@ -146,6 +147,7 @@ class DashboardBuildResult:
     index_html: Path
     manifest_json: Path
     strategy_pages: dict[str, Path]
+    trades_page: Path
     tool_pages: dict[str, Path]
     review_data_pages: dict[str, Path]
 
@@ -178,6 +180,18 @@ class TfisOperatorDashboardBuilder:
             )
             strategy_pages[config.strategy_code] = page_path
 
+        trades_dir = target / "trades"
+        trades_dir.mkdir(parents=True, exist_ok=True)
+        trades_page = trades_dir / "index.html"
+        trades_page.write_text(
+            self._render_all_trades_page(
+                strategy_summaries=list(zip(self._strategy_configs, summaries, strict=False)),
+                dashboard_root=target,
+                page_path=trades_page,
+            ),
+            encoding="utf-8",
+        )
+
         review_data_pages = self._write_review_data_pages(target, summaries)
         tool_pages = self._write_tool_pages(target, review_data_pages=review_data_pages)
 
@@ -205,6 +219,7 @@ class TfisOperatorDashboardBuilder:
                         }
                         for config, sessions in zip(self._strategy_configs, summaries, strict=False)
                     ],
+                    "trades_page": str(Path("trades") / "index.html"),
                     "tools": {
                         name: str(path.relative_to(target))
                         for name, path in sorted(tool_pages.items())
@@ -225,6 +240,7 @@ class TfisOperatorDashboardBuilder:
             index_html=index_html,
             manifest_json=manifest_json,
             strategy_pages=strategy_pages,
+            trades_page=trades_page,
             tool_pages=tool_pages,
             review_data_pages=review_data_pages,
         )
@@ -961,7 +977,7 @@ class TfisOperatorDashboardBuilder:
                     "<div class=\"eyebrow\">Operator View</div>",
                     "<h1>TFIS Operator Dashboard</h1>",
                     "<p>Read-only, artifact-backed strategy pages for morning decision visibility across strategies and sessions.</p>",
-                    '<div class="tool-strip"><a class="tool-link" href="tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                    '<div class="tool-strip"><a class="tool-link" href="trades/index.html">All Trades Monitor</a><a class="tool-link" href="tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
                     "</header>",
                     "<section class=\"grid\">",
                     *(cards if cards else ["<p>No strategy data found.</p>"]),
@@ -1006,7 +1022,7 @@ class TfisOperatorDashboardBuilder:
                 f"<div class=\"eyebrow\">Strategy {html.escape(config.strategy_code)}</div>",
                 f"<h1>{html.escape(config.display_name)}</h1>",
                 f"<p>Operator page for {html.escape(config.strategy_code)}. Each stage is rendered from TFIS artifacts and reconstructed stage logic when stage-level explainers are not yet available.</p>",
-                '<div class="tool-strip"><a class="tool-link" href="../../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                '<div class="tool-strip"><a class="tool-link" href="../../trades/index.html">All Trades Monitor</a><a class="tool-link" href="../../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
                 "</header>",
                 "<section>",
                 "<h2>Latest Session</h2>",
@@ -1026,6 +1042,52 @@ class TfisOperatorDashboardBuilder:
             ]
         )
         return self._render_page(title=config.display_name, body=body)
+
+    def _render_all_trades_page(
+        self,
+        *,
+        strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
+        dashboard_root: Path,
+        page_path: Path,
+    ) -> str:
+        rows: list[DashboardTradeLedgerRow] = []
+        for config, sessions in strategy_summaries:
+            latest_session_date = sessions[0].session_date if sessions else None
+            rows.extend(
+                self._latest_trade_rows(
+                    self._collect_trade_ledger_rows(
+                        config,
+                        latest_session_date=latest_session_date,
+                    ),
+                    latest_session_date=latest_session_date,
+                )
+            )
+        rows = sorted(
+            rows,
+            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+            reverse=True,
+        )
+        body = "\n".join(
+            [
+                '<nav><a href="../index.html">Back to strategy index</a></nav>',
+                "<header class=\"hero\">",
+                "<div class=\"eyebrow\">Operator View</div>",
+                "<h1>All Trades Monitor</h1>",
+                "<p>Consolidated paper-order and position visibility across every configured TFIS strategy.</p>",
+                '<div class="tool-strip"><a class="tool-link" href="../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                "</header>",
+                "<section>",
+                "<h2>All Strategy Trades</h2>",
+                self._render_trade_ledger_section(
+                    rows=rows,
+                    page_path=page_path,
+                    latest_session_date=None,
+                ),
+                "</section>",
+                self._dashboard_refresh_script(),
+            ]
+        )
+        return self._render_page(title="All Trades Monitor", body=body)
 
     @staticmethod
     def _dashboard_refresh_script() -> str:
@@ -1118,6 +1180,7 @@ class TfisOperatorDashboardBuilder:
                 )
                 rows.append(
                     DashboardTradeLedgerRow(
+                        session_date=self._parse_date(raw.get("session_date")),
                         event_timestamp=self._parse_datetime(event_timestamp_raw),
                         event_type=event_type,
                         trade_id=trade_id,
@@ -1193,6 +1256,7 @@ class TfisOperatorDashboardBuilder:
                 )
                 rows.append(
                     DashboardTradeLedgerRow(
+                        session_date=entry_date,
                         event_timestamp=self._parse_datetime(order_timestamp),
                         event_type=(
                             "ORDER_NOT_FILLED"
@@ -1261,25 +1325,7 @@ class TfisOperatorDashboardBuilder:
         if not rows:
             return '<div class="empty-panel">No paper trades have been recorded yet.</div>'
 
-        grouped_rows: dict[str, list[DashboardTradeLedgerRow]] = {}
-        for row in rows:
-            grouped_rows.setdefault(row.trade_id, []).append(row)
-        latest_by_trade = {
-            trade_id: self._display_row_for_trade(trade_rows)
-            for trade_id, trade_rows in grouped_rows.items()
-        }
-        latest_rows = sorted(
-            (
-                row
-                for row in latest_by_trade.values()
-                if self._trade_visible_for_latest_session(
-                    row,
-                    latest_session_date=latest_session_date,
-                )
-            ),
-            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
-            reverse=True,
-        )
+        latest_rows = self._latest_trade_rows(rows, latest_session_date=latest_session_date)
         if not latest_rows:
             return '<div class="empty-panel">No active paper orders or positions for the latest session.</div>'
         open_count = sum(
@@ -1317,6 +1363,32 @@ class TfisOperatorDashboardBuilder:
             ]
         )
 
+    def _latest_trade_rows(
+        self,
+        rows: list[DashboardTradeLedgerRow],
+        *,
+        latest_session_date: date | None,
+    ) -> list[DashboardTradeLedgerRow]:
+        grouped_rows: dict[str, list[DashboardTradeLedgerRow]] = {}
+        for row in rows:
+            grouped_rows.setdefault(row.trade_id, []).append(row)
+        latest_by_trade = {
+            trade_id: self._display_row_for_trade(trade_rows)
+            for trade_id, trade_rows in grouped_rows.items()
+        }
+        return sorted(
+            (
+                row
+                for row in latest_by_trade.values()
+                if self._trade_visible_for_latest_session(
+                    row,
+                    latest_session_date=latest_session_date,
+                )
+            ),
+            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+            reverse=True,
+        )
+
     def _display_row_for_trade(self, rows: list[DashboardTradeLedgerRow]) -> DashboardTradeLedgerRow:
         terminal_rows = [row for row in rows if self._trade_terminal(row)]
         if terminal_rows:
@@ -1352,9 +1424,12 @@ class TfisOperatorDashboardBuilder:
         *,
         latest_session_date: date | None,
     ) -> bool:
-        if latest_session_date is None or row.event_timestamp is None:
+        if latest_session_date is None:
             return True
-        if row.event_timestamp.date() == latest_session_date:
+        row_session_date = row.session_date
+        if row_session_date is None and row.event_timestamp is not None:
+            row_session_date = row.event_timestamp.date()
+        if row_session_date == latest_session_date:
             return True
         if self._trade_terminal(row):
             return False
@@ -1372,8 +1447,9 @@ class TfisOperatorDashboardBuilder:
         status_labels = self._trade_status_labels(row)
         status_parts = [self._badge(label) for label in status_labels]
         reason = html.escape(row.reason_code)
-        if row.message:
-            reason = f"{reason}<br><span class=\"muted-text\">{html.escape(row.message)}</span>"
+        normalized_message = self._normalized_trade_message(row)
+        if normalized_message:
+            reason = f"{reason}<br><span class=\"muted-text\">{html.escape(normalized_message)}</span>"
         followup_note = self._trade_followup_note(row)
         if followup_note:
             reason = f"{reason}<br><span class=\"trade-followup-note\">{html.escape(followup_note)}</span>"
@@ -1400,6 +1476,13 @@ class TfisOperatorDashboardBuilder:
                 "</tr>",
             ]
         )
+
+    @staticmethod
+    def _normalized_trade_message(row: DashboardTradeLedgerRow) -> str:
+        message = str(row.message or "")
+        if not message:
+            return ""
+        return message.replace("S23 READY decision created", "READY decision created")
 
     def _trade_status_labels(self, row: DashboardTradeLedgerRow) -> list[str]:
         if self._trade_terminal(row):

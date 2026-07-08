@@ -127,6 +127,12 @@ way.
    The deterministic fixture set is fully covered at 100.0%; the next safe step is to widen real session coverage while keeping TFIS runtime on the existing contract-intraday CSV contract.
 16. If an OI-enrichment source is found, rerun the TradingEngine capture ingress suite before attempting any fill or lifecycle replay from captures.
    `scripts/run_s23_tradingengine_capture_ingress_suite.py` now proves that the raw capture path itself is operationally read-only and deterministic. The blocker is not prelude pairing, timing, or selected-contract identity alone; it is the absence of usable selected-contract `oi` in the option-quote archives at decision time.
+17. Validate the TFIS-only reboot recovery path after a real operator rerun.
+   `scripts/reset_tfis_dashboard_and_watchers.ps1` now waits for prior TFIS
+   runtime processes to exit and skips starting an already-matching dashboard
+   server or watcher target, but the remaining proof is a live Windows rerun
+   after reboot or delayed dashboard startup to confirm one dashboard server
+   and one watcher per persisted order/position target.
 
 Comparison reporting note:
 

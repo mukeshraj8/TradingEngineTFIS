@@ -15,6 +15,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
+from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 from tfis.paper import S23PaperOrderFinalizer, S23PaperOrderFinalizerSummary
 
 
@@ -67,8 +68,14 @@ def main(argv: list[str] | None = None) -> int:
     else:
         _print_summary(summary)
     if args.rebuild_dashboard and not args.dry_run:
-        result = TfisOperatorDashboardBuilder(
-            strategy_configs=(
+        dashboard_config_path = REPO_ROOT / "config" / "operator_dashboard_strategies.yaml"
+        if dashboard_config_path.exists():
+            strategy_configs = load_dashboard_strategy_configs(
+                dashboard_config_path,
+                repo_root=REPO_ROOT,
+            )
+        else:
+            strategy_configs = (
                 StrategyDashboardConfig(
                     strategy_code="S23",
                     display_name="S23 Operator Dashboard",
@@ -78,6 +85,8 @@ def main(argv: list[str] | None = None) -> int:
                     session_id_prefix=args.session_id_prefix,
                 ),
             )
+        result = TfisOperatorDashboardBuilder(
+            strategy_configs=strategy_configs,
         ).build(output_root=REPO_ROOT / args.dashboard_output_root)
         print(f"Dashboard rebuilt: {result.strategy_pages['S23']}")
     return 0
