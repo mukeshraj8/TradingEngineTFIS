@@ -15,8 +15,9 @@ way.
    reflects current-day artifacts during market hours.
    Recovery now skips prior-session waiting orders during
    `reset_tfis_dashboard_and_watchers.ps1`; the live validation should confirm
-   only true carry-forward positions are restored before 09:14 and that stale
-   waiting-order windows no longer reappear after reboot/reset.
+   only true carry-forward positions are restored before 09:14, including
+   carried states discovered outside the latest session metadata folder, and
+   that stale waiting-order windows no longer reappear after reboot/reset.
 2. Validate S23 live ORPT/RC timing finalization during the next real market
    session. The supervised live decision path now builds a provisional base
    selection at ORPT, finalizes and places the waiting paper order from that

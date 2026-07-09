@@ -116,6 +116,61 @@ function Test-TfisWatchablePositionState {
     )
 }
 
+function Get-TfisLivePositionStateDirectories {
+    param(
+        [string]$ArtifactRoot,
+        [datetime]$EffectiveDate
+    )
+
+    $artifactRootPath = Resolve-TfisPath $ArtifactRoot
+    if (-not (Test-Path $artifactRootPath)) {
+        return @()
+    }
+
+    $stateDirectories = @()
+    Get-ChildItem -Path $artifactRootPath -Recurse -Filter "paper_position_state.json" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        ForEach-Object {
+            $statePath = $_.FullName
+            $stateDir = Split-Path -Parent $statePath
+
+            try {
+                $stateJson = Get-Content -Path $statePath -Raw | ConvertFrom-Json
+            }
+            catch {
+                Write-Host "Skipping unreadable paper position state during recovery scan: $statePath"
+                return
+            }
+
+            $status = [string]$stateJson.lifecycle_status
+            if ($status -notin @("PAPER_POSITION_OPEN", "PAPER_POSITION_CARRIED_FORWARD", "PAPER_POSITION_RESUMED")) {
+                return
+            }
+
+            if ($false -eq [bool]$stateJson.carry_forward_allowed) {
+                Write-Host "Skipping non-carry-forward paper position state during recovery scan: $statePath"
+                return
+            }
+
+            if ($stateJson.expiry_date) {
+                try {
+                    $expiryDate = [datetime]::Parse([string]$stateJson.expiry_date).Date
+                    if ($expiryDate -lt $EffectiveDate.Date) {
+                        Write-Host "Skipping expired paper position state during recovery scan: $statePath"
+                        return
+                    }
+                }
+                catch {
+                    Write-Host "Paper position state has unparseable expiry_date; keeping it eligible for recovery scan: $statePath"
+                }
+            }
+
+            $stateDirectories += $stateDir
+        }
+
+    return $stateDirectories | Select-Object -Unique
+}
+
 function Wait-ForNoTfisRuntimeProcesses {
     param([int]$TimeoutSeconds = 20)
 
@@ -182,54 +237,59 @@ function Stop-TfisRuntimeProcesses {
 function Get-WatchTargets {
     param([string]$ArtifactRoot, [string]$SessionDate)
     $artifactRootPath = Resolve-TfisPath $ArtifactRoot
+    $effectiveDate = [datetime]::Parse($SessionDate)
     $dayRoot = Join-Path $artifactRootPath $SessionDate
-    if (-not (Test-Path $dayRoot)) {
-        return @()
-    }
-    $metadata = Get-ChildItem -Path $dayRoot -Recurse -Filter "scheduled_run_metadata.json" -ErrorAction SilentlyContinue |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-    if (-not $metadata) {
-        return @()
-    }
-    $metadataJson = Get-Content -Path $metadata.FullName -Raw | ConvertFrom-Json
-    $sessionIsToday = $SessionDate -eq (Get-Date).ToString("yyyy-MM-dd")
     $targets = @()
     $stateDirectories = @{}
-    if ($metadataJson.branch_position_state_json) {
-        $metadataJson.branch_position_state_json.PSObject.Properties | ForEach-Object {
-            if ($_.Value) {
-                $stateDir = Split-Path -Parent ([string]$_.Value)
-                if (Test-TfisWatchablePositionState -StateDirectory $stateDir) {
-                    $stateDirectories[$stateDir] = $true
-                    $targets += [pscustomobject]@{ Mode = "state"; Directory = $stateDir }
-                }
-                else {
-                    Write-Host "Skipping non-watchable position state from $SessionDate dir=$stateDir"
-                }
-            }
+
+    foreach ($stateDir in @(Get-TfisLivePositionStateDirectories -ArtifactRoot $ArtifactRoot -EffectiveDate $effectiveDate)) {
+        if (Test-TfisWatchablePositionState -StateDirectory $stateDir) {
+            $stateDirectories[$stateDir] = $true
+            $targets += [pscustomobject]@{ Mode = "state"; Directory = $stateDir }
         }
     }
-    if ($metadataJson.branch_order_state_json -and $sessionIsToday) {
-        $metadataJson.branch_order_state_json.PSObject.Properties | ForEach-Object {
-            if ($_.Value) {
-                $orderDir = Split-Path -Parent ([string]$_.Value)
-                if (-not $stateDirectories.ContainsKey($orderDir)) {
-                    $derivedStatePath = Join-Path $orderDir "paper_position_state.json"
-                    if ((Test-Path $derivedStatePath) -and (Test-TfisWatchablePositionState -StateDirectory $orderDir)) {
-                        $stateDirectories[$orderDir] = $true
-                        $targets += [pscustomobject]@{ Mode = "state"; Directory = $orderDir }
-                    }
-                    else {
-                        $targets += [pscustomobject]@{ Mode = "order"; Directory = $orderDir }
+
+    if (Test-Path $dayRoot) {
+        $metadata = Get-ChildItem -Path $dayRoot -Recurse -Filter "scheduled_run_metadata.json" -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+        if ($metadata) {
+            $metadataJson = Get-Content -Path $metadata.FullName -Raw | ConvertFrom-Json
+            $sessionIsToday = $SessionDate -eq (Get-Date).ToString("yyyy-MM-dd")
+            if ($metadataJson.branch_position_state_json) {
+                $metadataJson.branch_position_state_json.PSObject.Properties | ForEach-Object {
+                    if ($_.Value) {
+                        $stateDir = Split-Path -Parent ([string]$_.Value)
+                        if ((-not $stateDirectories.ContainsKey($stateDir)) -and (Test-TfisWatchablePositionState -StateDirectory $stateDir)) {
+                            $stateDirectories[$stateDir] = $true
+                            $targets += [pscustomobject]@{ Mode = "state"; Directory = $stateDir }
+                        }
                     }
                 }
             }
+            if ($metadataJson.branch_order_state_json -and $sessionIsToday) {
+                $metadataJson.branch_order_state_json.PSObject.Properties | ForEach-Object {
+                    if ($_.Value) {
+                        $orderDir = Split-Path -Parent ([string]$_.Value)
+                        if (-not $stateDirectories.ContainsKey($orderDir)) {
+                            $derivedStatePath = Join-Path $orderDir "paper_position_state.json"
+                            if ((Test-Path $derivedStatePath) -and (Test-TfisWatchablePositionState -StateDirectory $orderDir)) {
+                                $stateDirectories[$orderDir] = $true
+                                $targets += [pscustomobject]@{ Mode = "state"; Directory = $orderDir }
+                            }
+                            else {
+                                $targets += [pscustomobject]@{ Mode = "order"; Directory = $orderDir }
+                            }
+                        }
+                    }
+                }
+            }
+            elseif ($metadataJson.branch_order_state_json) {
+                Write-Host "Skipping stale waiting-order watcher startup for prior session $SessionDate under $ArtifactRoot"
+            }
         }
     }
-    elseif ($metadataJson.branch_order_state_json) {
-        Write-Host "Skipping stale waiting-order watcher startup for prior session $SessionDate under $ArtifactRoot"
-    }
+
     return $targets
 }
 

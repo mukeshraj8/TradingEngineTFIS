@@ -75,7 +75,9 @@ live-order design. This checklist must be updated after each completed slice.
   orders. `scripts/reset_tfis_dashboard_and_watchers.ps1` now restores watcher
   processes only for same-day waiting orders and for genuinely live
   carry-forward/open/resumed position states. Prior-day `paper_order_state.json`
-  files are treated as session-only artifacts and are skipped during reset.
+  files are treated as session-only artifacts and are skipped during reset,
+  while live `paper_position_state.json` files are discovered from the full
+  strategy artifact root instead of only from the latest session metadata.
 - `DONE`: Add a money-readiness operator command reference to
   `docs/operations/tfis_manual_operator_guide.md`. It explains dashboard launch,
   captured-session replay validation, focused tests, syntax checks, scheduled

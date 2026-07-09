@@ -336,7 +336,9 @@
   orders
 - TFIS reset/recovery now restores watcher windows only for same-day waiting
   orders and for live carry-forward/open/resumed positions; prior-session
-  waiting orders are no longer relaunched after reboot/reset
+  waiting orders are no longer relaunched after reboot/reset, and live carried
+  positions are rediscovered from the full strategy artifact root instead of
+  only from the latest session metadata
 - the S23 scheduled-task checker wrappers now use deterministic task lookup and
   the full `System32\\schtasks.exe` path, surfacing access-denied or shell-level
   query failures explicitly instead of silently matching the wrong task-name

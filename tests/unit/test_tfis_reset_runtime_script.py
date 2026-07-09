@@ -41,10 +41,13 @@ def test_reset_script_only_restores_same_day_waiting_orders_and_live_positions()
     script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
 
     assert "function Test-TfisWatchablePositionState" in script
+    assert "function Get-TfisLivePositionStateDirectories" in script
     assert '$sessionIsToday = $SessionDate -eq (Get-Date).ToString("yyyy-MM-dd")' in script
+    assert 'foreach ($stateDir in @(Get-TfisLivePositionStateDirectories -ArtifactRoot $ArtifactRoot -EffectiveDate $effectiveDate))' in script
     assert 'if ($metadataJson.branch_order_state_json -and $sessionIsToday)' in script
     assert "Skipping stale waiting-order watcher startup for prior session $SessionDate" in script
+    assert "Skipping non-carry-forward paper position state during recovery scan" in script
+    assert "Skipping expired paper position state during recovery scan" in script
     assert '"PAPER_POSITION_OPEN"' in script
     assert '"PAPER_POSITION_CARRIED_FORWARD"' in script
     assert '"PAPER_POSITION_RESUMED"' in script
-    assert "Skipping non-watchable position state from $SessionDate" in script
