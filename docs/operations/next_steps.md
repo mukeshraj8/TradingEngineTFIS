@@ -6,13 +6,24 @@ way.
 
 ## Immediate Next Priorities
 
-1. Validate S23 live ORPT/RC timing finalization during the next real market
+1. Run the 2026-07-09 pre-market operator checklist and supervised paper start.
+   The local readiness gate now has a dedicated command:
+   `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token`.
+   Current local output is `PASS`, so the remaining work is operator-time
+   verification that the scheduled wrapper (or manual wrapper) starts cleanly,
+   watchers attach to any produced orders/positions, and the dashboard refresh
+   reflects current-day artifacts during market hours.
+   Recovery now skips prior-session waiting orders during
+   `reset_tfis_dashboard_and_watchers.ps1`; the live validation should confirm
+   only true carry-forward positions are restored before 09:14 and that stale
+   waiting-order windows no longer reappear after reboot/reset.
+2. Validate S23 live ORPT/RC timing finalization during the next real market
    session. The supervised live decision path now builds a provisional base
    selection at ORPT, finalizes and places the waiting paper order from that
    ORPT selection when the selected option has not missed entry, and reserves
    RC for the missed-entry recalculation path only. The remaining work is live
    market evidence across CE/PE and near/next-expiry cases.
-2. Validate S23 next-day SL reset after a 15:00 carry-forward in a real market
+3. Validate S23 next-day SL reset after a 15:00 carry-forward in a real market
    session. The paper position manager now records overnight SL inactive
    carry-forward when price is not above original SL, keeps target active the
    next day, reactivates the original SL at ORPT when `09:15` high does not
@@ -27,7 +38,7 @@ way.
    `READY` decision into a waiting paper order. It must only be used after
    confirming no active S23 paper position remains. The follow-up runtime task
    is to automate this handoff inside the watcher/position-manager flow.
-3. Validate S23 live order-watcher/current-price visibility end to end.
+4. Validate S23 live order-watcher/current-price visibility end to end.
    The scheduled startup wrapper now starts one paper watcher per produced order
    or open position, scans the durable S23 artifact root for persisted
    open/carry-forward positions, and captures the supervised Python process
@@ -68,7 +79,7 @@ way.
    branch only produced `trade_decision_explainer_stage_*.json` and no final
    `trade_decision_summary.json`. The remaining live validation is evidence,
    not a known calculation-visibility blocker.
-4. Validate the first controlled S21 BankNifty monthly paper-mode run.
+5. Validate the first controlled S21 BankNifty monthly paper-mode run.
    S21 is now enabled as an `ACTIVE_CANDIDATE` through
    `config/paper.s21.fyers_connect_test.yaml`,
    `scripts/run_s21_banknifty_0916_supervised_decision.py`, and the shared
@@ -76,12 +87,12 @@ way.
    daily reference packet, confirm the configured monthly expiry and lot size,
    verify that the dashboard builds a separate S21 page, and capture one real
    market-day paper session before broadening runtime support.
-5. Keep monthly status as an independent service and improve its explanation/provenance output.
+6. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
    S21 now has a BankNifty monthly option-selling runtime candidate, but it
    still needs confirmed BankNifty futures-continuous monthly-status sourcing
    and live evidence before it can be treated as an operationally trusted path.
-6. Introduce generic strategy-registry execution for enabled strategies.
+7. Introduce generic strategy-registry execution for enabled strategies.
    The generic execution-plan contract now exists under
    `tfis.strategy.execution_plan`, and current S23 paper configs declare an
    enabled S23 entry with branch registry IDs and strategy paths. It can skip
@@ -91,7 +102,7 @@ way.
    interface. S23/FYERS can remain the first operational path, but not as a core
    engine assumption. S21 must wait for this generic path and BankNifty runtime
    policy confirmation before live/paper enablement.
-7. Validate the new durable S23 artifact layout through the next scheduled
+8. Validate the new durable S23 artifact layout through the next scheduled
    market run. The morning supervised workflow, watcher, dashboard source, and
    finalizer now default to
    `data/strategies/S23/fyers_morning_supervised_decision` for option-chain,

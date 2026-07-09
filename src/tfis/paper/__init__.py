@@ -76,6 +76,13 @@ from .position_discovery import (
     S23OpenPaperPositionCandidate,
     S23OpenPaperPositionDiscovery,
 )
+from .lifecycle_supervisor import (
+    S23PaperLifecycleSupervisor,
+    S23PaperLifecycleSupervisorContext,
+    S23PaperLifecycleSupervisorResult,
+    S23PaperLifecycleSupervisorStep,
+    TERMINAL_POSITION_MANAGER_STATUSES,
+)
 from .trade_ledger import (
     S23PaperTradeLedgerEventType,
     S23PaperTradeLedgerRow,
@@ -410,9 +417,14 @@ __all__ = [
     "S23PaperPositionManagerStatus",
     "S23OpenPaperPositionCandidate",
     "S23OpenPaperPositionDiscovery",
+    "S23PaperLifecycleSupervisor",
+    "S23PaperLifecycleSupervisorContext",
+    "S23PaperLifecycleSupervisorResult",
+    "S23PaperLifecycleSupervisorStep",
     "S23PaperTradeLedgerEventType",
     "S23PaperTradeLedgerRow",
     "S23PaperTradeLedgerStore",
+    "TERMINAL_POSITION_MANAGER_STATUSES",
     "InMemoryS23PaperLiveStateStore",
     "NullS23PaperLiveStateStore",
     "RedisS23PaperLiveStateStore",

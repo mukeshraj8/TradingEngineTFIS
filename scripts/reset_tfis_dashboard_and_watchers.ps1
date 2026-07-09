@@ -92,6 +92,30 @@ function Get-LatestSessionDate {
     return $dir.Name
 }
 
+function Test-TfisWatchablePositionState {
+    param([string]$StateDirectory)
+
+    $statePath = Join-Path (Resolve-TfisPath $StateDirectory) "paper_position_state.json"
+    if (-not (Test-Path $statePath)) {
+        return $false
+    }
+
+    try {
+        $stateJson = Get-Content -Path $statePath -Raw | ConvertFrom-Json
+    }
+    catch {
+        Write-Host "Skipping unreadable paper position state: $statePath"
+        return $false
+    }
+
+    $status = [string]$stateJson.lifecycle_status
+    return $status -in @(
+        "PAPER_POSITION_OPEN",
+        "PAPER_POSITION_CARRIED_FORWARD",
+        "PAPER_POSITION_RESUMED"
+    )
+}
+
 function Wait-ForNoTfisRuntimeProcesses {
     param([int]$TimeoutSeconds = 20)
 
@@ -169,24 +193,30 @@ function Get-WatchTargets {
         return @()
     }
     $metadataJson = Get-Content -Path $metadata.FullName -Raw | ConvertFrom-Json
+    $sessionIsToday = $SessionDate -eq (Get-Date).ToString("yyyy-MM-dd")
     $targets = @()
     $stateDirectories = @{}
     if ($metadataJson.branch_position_state_json) {
         $metadataJson.branch_position_state_json.PSObject.Properties | ForEach-Object {
             if ($_.Value) {
                 $stateDir = Split-Path -Parent ([string]$_.Value)
-                $stateDirectories[$stateDir] = $true
-                $targets += [pscustomobject]@{ Mode = "state"; Directory = $stateDir }
+                if (Test-TfisWatchablePositionState -StateDirectory $stateDir) {
+                    $stateDirectories[$stateDir] = $true
+                    $targets += [pscustomobject]@{ Mode = "state"; Directory = $stateDir }
+                }
+                else {
+                    Write-Host "Skipping non-watchable position state from $SessionDate dir=$stateDir"
+                }
             }
         }
     }
-    if ($metadataJson.branch_order_state_json) {
+    if ($metadataJson.branch_order_state_json -and $sessionIsToday) {
         $metadataJson.branch_order_state_json.PSObject.Properties | ForEach-Object {
             if ($_.Value) {
                 $orderDir = Split-Path -Parent ([string]$_.Value)
                 if (-not $stateDirectories.ContainsKey($orderDir)) {
                     $derivedStatePath = Join-Path $orderDir "paper_position_state.json"
-                    if (Test-Path $derivedStatePath) {
+                    if ((Test-Path $derivedStatePath) -and (Test-TfisWatchablePositionState -StateDirectory $orderDir)) {
                         $stateDirectories[$orderDir] = $true
                         $targets += [pscustomobject]@{ Mode = "state"; Directory = $orderDir }
                     }
@@ -196,6 +226,9 @@ function Get-WatchTargets {
                 }
             }
         }
+    }
+    elseif ($metadataJson.branch_order_state_json) {
+        Write-Host "Skipping stale waiting-order watcher startup for prior session $SessionDate under $ArtifactRoot"
     }
     return $targets
 }

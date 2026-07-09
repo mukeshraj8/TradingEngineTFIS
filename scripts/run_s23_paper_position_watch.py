@@ -26,11 +26,12 @@ from tfis.paper import (
     DeterministicExpiryCalendar,
     S23OpenPaperPositionDiscovery,
     S23PaperExpiryGovernance,
+    S23PaperLifecycleSupervisor,
+    S23PaperLifecycleSupervisorContext,
     S23PaperOrderState,
     S23PaperOrderStateStore,
     S23PaperOrderStatus,
     S23PaperPositionManager,
-    S23PaperPositionManagerStatus,
     S23PaperPositionStateStore,
     S23PaperTradeLedgerStore,
     build_s23_paper_live_state_store_from_yaml,
@@ -44,15 +45,6 @@ from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lo
 
 
 DEFAULT_CONFIG = REPO_ROOT / "config" / "paper.s23.fyers_connect_test.yaml"
-TERMINAL_STATUSES = {
-    S23PaperPositionManagerStatus.PAPER_POSITION_TARGET_HIT,
-    S23PaperPositionManagerStatus.PAPER_POSITION_STOPLOSS_HIT,
-    S23PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED,
-    S23PaperPositionManagerStatus.PAPER_POSITION_ROLLOVER_REQUIRED,
-    S23PaperPositionManagerStatus.PAPER_POSITION_REVERSE_ENTRY_REQUIRED,
-    S23PaperPositionManagerStatus.PAPER_POSITION_FRESH_ENTRY_REQUIRED,
-    S23PaperPositionManagerStatus.PAPER_POSITION_ALREADY_CLOSED,
-}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -138,31 +130,36 @@ def main(argv: list[str] | None = None) -> int:
     else:
         state = S23PaperPositionStateStore().load_state(state_dir)
     live_state_store = build_s23_paper_live_state_store_from_yaml(args.config)
-    trade_id = (
+    lifecycle_context = S23PaperLifecycleSupervisorContext(
+        session_directory=Path(state_dir or order_dir),
+        session_date=session_date,
+        trade_id=(
         S23PaperTradeLedgerStore.trade_id_for_state(state)
         if state is not None
         else _order_id_for_state(order_state)
+        ),
+        selected_contract_symbol=(
+            state.selected_contract_symbol if state is not None else order_state.selected_contract_symbol
+        ),
+        order_state=order_state,
+        position_state=state,
     )
     owner_id = s23_live_state_owner_id()
     process_lock_handle: ProcessLockHandle | None = None
     process_lock_path = _watch_process_lock_path(
-        Path(state_dir or order_dir),
+        lifecycle_context.session_directory,
         lock_root=Path(args.process_lock_root),
     )
     try:
-        watch_mode = "state" if state is not None else "order"
-        watched_directory = Path(state_dir or order_dir).resolve()
+        watch_mode = "state" if lifecycle_context.position_state is not None else "order"
+        watched_directory = lifecycle_context.session_directory.resolve()
         process_lock_handle = acquire_process_lock(
             process_lock_path,
-            label=f"s23-paper-watch:{trade_id}",
+            label=f"s23-paper-watch:{lifecycle_context.trade_id}",
             metadata={
-                "trade_id": trade_id,
+                "trade_id": lifecycle_context.trade_id,
                 "session_date": session_date.isoformat(),
-                "selected_contract_symbol": (
-                    state.selected_contract_symbol
-                    if state is not None
-                    else order_state.selected_contract_symbol
-                ),
+                "selected_contract_symbol": lifecycle_context.selected_contract_symbol,
                 "state_directory": str(watched_directory),
                 "watch_mode": watch_mode,
             },
@@ -179,41 +176,44 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     lock_ttl_seconds = max(30, int(args.poll_seconds * 6))
     if not live_state_store.acquire_trade_lock(
-        trade_id=trade_id,
+        trade_id=lifecycle_context.trade_id,
         owner_id=owner_id,
         ttl_seconds=lock_ttl_seconds,
     ):
         if process_lock_handle is not None:
             process_lock_handle.release()
-        raise RuntimeError(f"Another S23 paper watcher already owns {trade_id}.")
+        raise RuntimeError(f"Another S23 paper watcher already owns {lifecycle_context.trade_id}.")
 
     adapter = FyersBrokerAdapter(source_timezone=timezone_name)
-    manager = S23PaperPositionManager(
+    position_manager = S23PaperPositionManager(
         live_state_store=live_state_store,
         slippage_exit_points=config.costs.slippage_exit_points or 0.0,
     )
     order_store = S23PaperOrderStateStore()
+    supervisor = S23PaperLifecycleSupervisor(
+        order_store=order_store,
+        position_manager=position_manager,
+    )
     expiry_governance = S23PaperExpiryGovernance(DeterministicExpiryCalendar())
 
-    watched_symbol = (
-        state.selected_contract_symbol
-        if state is not None
-        else order_state.selected_contract_symbol
-    )
+    watched_symbol = lifecycle_context.selected_contract_symbol
     try:
-        watch_lock_handle = _acquire_watch_file_lock(Path(state_dir or order_dir))
+        watch_lock_handle = _acquire_watch_file_lock(lifecycle_context.session_directory)
     except RuntimeError as exc:
         print(f"ERROR: {exc}", file=sys.stderr, flush=True)
-        live_state_store.release_trade_lock(trade_id=trade_id, owner_id=owner_id)
+        live_state_store.release_trade_lock(trade_id=lifecycle_context.trade_id, owner_id=owner_id)
         if process_lock_handle is not None:
             process_lock_handle.release()
         return 1
     print("=" * 60, flush=True)
     print("TFIS S23 PAPER POSITION WATCHER", flush=True)
     print(f"Process ID       : {os.getpid()}", flush=True)
-    print(f"Watching         : {'position' if state is not None else 'order'}", flush=True)
+    print(
+        f"Watching         : {'position' if lifecycle_context.position_state is not None else 'order'}",
+        flush=True,
+    )
     print(f"Selected contract: {watched_symbol}", flush=True)
-    print(f"State directory  : {state_dir or order_dir}", flush=True)
+    print(f"State directory  : {lifecycle_context.session_directory}", flush=True)
     print(f"Session date     : {session_date.isoformat()}", flush=True)
     print(f"Poll seconds     : {args.poll_seconds}", flush=True)
     print(f"Cutoff time      : {args.until} {timezone_name}", flush=True)
@@ -227,27 +227,17 @@ def main(argv: list[str] | None = None) -> int:
 
     iterations = 0
     try:
-        if (
-            state is None
-            and order_state is not None
-            and order_dir is not None
-            and order_state.status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
-            and order_state.entry_date < session_date
-        ):
+        previous_session_result = supervisor.expire_waiting_order_from_previous_session(
+            lifecycle_context,
+            evaluated_at=datetime.now(timezone),
+        )
+        if previous_session_result is not None:
+            lifecycle_context = previous_session_result.context
+            final_step = previous_session_result.final_step
             evaluated_at = datetime.now(timezone)
-            order_state, order_event, _order_state_path, _order_events_path = order_store.mark_not_filled(
-                order_dir,
-                marked_at=evaluated_at,
-                reason_code="paper_order_expired_untriggered_previous_session",
-                message=(
-                    "Pending S23 paper entry orders are session-only. This order "
-                    "did not trigger on its entry date, so it was cancelled instead "
-                    "of being carried forward."
-                ),
-            )
             print(
-                f"{evaluated_at.isoformat()} {order_state.status.value} "
-                f"{order_event.reason_code} fill={order_state.fill_price}",
+                f"{evaluated_at.isoformat()} {final_step.status} "
+                f"{final_step.reason_code} fill={final_step.fill_price}",
                 flush=True,
             )
             if not args.disable_dashboard_rebuild:
@@ -278,130 +268,71 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 events = ()
             _append_selected_contract_market_events(
-                Path(state_dir or order_dir),
+                lifecycle_context.session_directory,
                 events=events,
                 observed_at=evaluated_at,
                 watcher_pid=os.getpid(),
-                trade_id=trade_id,
+                trade_id=lifecycle_context.trade_id,
             )
-            if state is None:
-                assert order_dir is not None
-                order_state, order_event, _order_state_path, _order_events_path = order_store.evaluate_waiting_order(
-                    order_dir,
-                    market_events=events,
-                    evaluated_at=evaluated_at,
-                )
-                print(
-                    f"{evaluated_at.isoformat()} {order_state.status.value} "
-                    f"{order_event.reason_code} fill={order_state.fill_price}",
-                    flush=True,
-                )
-                if not args.disable_dashboard_rebuild:
-                    _rebuild_dashboard(
-                        output_root=Path(args.dashboard_output_root),
-                        artifact_root=Path(args.s23_artifact_root),
-                    )
-                live_state_store.set_watch_heartbeat(
-                    session_date=session_date,
-                    trade_id=trade_id,
-                    payload={
-                        "trade_id": trade_id,
-                        "owner_id": owner_id,
-                        "timestamp": evaluated_at.isoformat(),
-                        "status": order_state.status.value,
-                        "selected_contract_symbol": order_state.selected_contract_symbol,
-                        "state_directory": str(order_dir),
-                    },
-                )
-                live_state_store.acquire_trade_lock(
-                    trade_id=trade_id,
-                    owner_id=owner_id,
-                    ttl_seconds=lock_ttl_seconds,
-                )
-                if order_state.status is not S23PaperOrderStatus.PAPER_ORDER_FILLED:
-                    if args.once:
-                        return 0
-                    if args.max_iterations and iterations >= args.max_iterations:
-                        return 0
-                    if evaluated_at.timetz().replace(tzinfo=None) >= until_time:
-                        order_state, order_event, _order_state_path, _order_events_path = order_store.mark_not_filled(
-                            order_dir,
-                            marked_at=evaluated_at,
-                            reason_code="paper_order_not_triggered_by_watch_cutoff",
-                            message=(
-                                "Selected option premium did not reach entry before "
-                                "the paper watch cutoff, so the pending S23 paper order was not filled."
-                            ),
-                        )
-                        print(
-                            f"{evaluated_at.isoformat()} {order_state.status.value} "
-                            f"{order_event.reason_code} fill={order_state.fill_price}",
-                            flush=True,
-                        )
-                        if not args.disable_dashboard_rebuild:
-                            _rebuild_dashboard(
-                                output_root=Path(args.dashboard_output_root),
-                                artifact_root=Path(args.s23_artifact_root),
-                            )
-                        return 0
-                    time_module.sleep(max(1.0, args.poll_seconds))
-                    continue
-                opened = manager.open_from_filled_order(
-                    order_dir,
-                    order_state=order_state,
-                    provenance_source_ids=("paper_order_state.json", "s23_paper_position_watch"),
-                )
-                state = opened.state
-                state_dir = order_dir
-                trade_id = S23PaperTradeLedgerStore.trade_id_for_state(state)
-                watched_symbol = state.selected_contract_symbol
-                print(
-                    f"{evaluated_at.isoformat()} {opened.status.value} "
-                    f"{opened.event.reason_code} entry={state.entry_price}",
-                    flush=True,
-                )
-
-            assert state_dir is not None
-            assert state is not None
-            result = manager.process_session(
-                state_dir,
-                session_date=session_date,
+            previous_trade_id = lifecycle_context.trade_id
+            lifecycle_result = supervisor.supervise(
+                lifecycle_context,
                 market_events=events,
                 evaluated_at=evaluated_at,
+                watch_cutoff_time=until_time,
                 expiry_governance=expiry_governance,
                 allow_reverse_on_stoploss=args.allow_reverse_on_stoploss,
                 provenance_source_ids=("s23_paper_position_watch",),
-            )
+                )
+            lifecycle_context = lifecycle_result.context
+            watched_symbol = lifecycle_context.selected_contract_symbol
+            if lifecycle_context.trade_id != previous_trade_id:
+                live_state_store.release_trade_lock(
+                    trade_id=previous_trade_id,
+                    owner_id=owner_id,
+                )
+            for step in lifecycle_result.steps:
+                detail_name = (
+                    "fill"
+                    if step.fill_price is not None
+                    else "entry"
+                    if step.entry_price is not None
+                    else "exit"
+                )
+                detail_value = step.fill_price
+                if detail_value is None:
+                    detail_value = step.entry_price
+                if detail_value is None:
+                    detail_value = step.exit_price
+                print(
+                    f"{evaluated_at.isoformat()} {step.status} "
+                    f"{step.reason_code} {detail_name}={detail_value}",
+                    flush=True,
+                )
             live_state_store.set_watch_heartbeat(
                 session_date=session_date,
-                trade_id=trade_id,
+                trade_id=lifecycle_context.trade_id,
                 payload={
-                    "trade_id": trade_id,
+                    "trade_id": lifecycle_context.trade_id,
                     "owner_id": owner_id,
                     "timestamp": evaluated_at.isoformat(),
-                    "status": result.status.value,
-                    "selected_contract_symbol": state.selected_contract_symbol,
-                    "state_directory": str(state_dir),
+                    "status": lifecycle_result.final_step.status,
+                    "selected_contract_symbol": lifecycle_context.selected_contract_symbol,
+                    "state_directory": str(lifecycle_context.session_directory),
                 },
             )
             live_state_store.acquire_trade_lock(
-                trade_id=trade_id,
+                trade_id=lifecycle_context.trade_id,
                 owner_id=owner_id,
                 ttl_seconds=lock_ttl_seconds,
-            )
-            print(
-                f"{evaluated_at.isoformat()} {result.status.value} "
-                f"{result.event.reason_code} exit={result.event.exit_price}",
-                flush=True,
             )
             if not args.disable_dashboard_rebuild:
                 _rebuild_dashboard(
                     output_root=Path(args.dashboard_output_root),
                     artifact_root=Path(args.s23_artifact_root),
                 )
-            if result.status in TERMINAL_STATUSES:
+            if lifecycle_result.terminal:
                 return 0
-            state = result.state
             if args.once:
                 return 0
             if args.max_iterations and iterations >= args.max_iterations:
@@ -418,7 +349,7 @@ def main(argv: list[str] | None = None) -> int:
         except Exception:
             pass
         _release_watch_file_lock(watch_lock_handle)
-        live_state_store.release_trade_lock(trade_id=trade_id, owner_id=owner_id)
+        live_state_store.release_trade_lock(trade_id=lifecycle_context.trade_id, owner_id=owner_id)
         if process_lock_handle is not None:
             process_lock_handle.release()
 

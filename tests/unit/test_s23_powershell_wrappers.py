@@ -125,3 +125,17 @@ def test_s23_operational_python_entrypoints_default_to_durable_data_artifact_roo
     for script_name in scripts:
         script = _script_text(script_name)
         assert f'"{DURABLE_S23_ARTIFACT_ROOT}"' in script
+
+
+def test_s23_task_checkers_match_real_task_name_variable() -> None:
+    for script_name in (
+        "check_s23_fyers_morning_supervised_task.ps1",
+        "check_s23_paper_order_finalizer_task.ps1",
+    ):
+        script = _script_text(script_name)
+        assert "Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop" in script
+        assert '$task | Format-List TaskName, TaskPath, State' in script
+        assert '$schtasksExe = Join-Path $env:SystemRoot "System32\\schtasks.exe"' in script
+        assert '& $schtasksExe /Query /V /FO CSV 2>&1' in script
+        assert 'Get-ScheduledTask lookup failed: $taskLookupError' in script
+        assert "\\$TaskName" not in script

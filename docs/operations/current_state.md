@@ -6,6 +6,10 @@ change in a meaningful way.
 
 ## Current Focus
 
+- complete the 2026-07-09 paper-trading readiness check with the new
+  `scripts/pre_live_readiness.py` audit, then validate one real supervised
+  market session for S23 and the S21 candidate path without changing strategy
+  formulas
 - validate the corrected S23 paper-mode flow on the next real NSE trading day,
   especially watcher startup, current-price updates, fill status, P&L, and
   no-carry-forward handling for unfilled orders
@@ -61,6 +65,17 @@ live-order design. This checklist must be updated after each completed slice.
 
 ### Phase 2 - Watcher And Position Reliability
 
+- `DONE`: Centralize S23 waiting-order and open-position lifecycle decisions in
+  `tfis.paper.lifecycle_supervisor`. The watcher script still owns process
+  locks, market-event persistence, and dashboard rebuilds, but the shared
+  supervisor now drives expiry checks, waiting-order fill/not-filled decisions,
+  open-position session handling, and fresh-entry-required transitions through
+  one reusable path that preserves existing paper artifacts and tests.
+- `DONE`: TFIS reboot/recovery no longer revives stale prior-session waiting
+  orders. `scripts/reset_tfis_dashboard_and_watchers.ps1` now restores watcher
+  processes only for same-day waiting orders and for genuinely live
+  carry-forward/open/resumed position states. Prior-day `paper_order_state.json`
+  files are treated as session-only artifacts and are skipped during reset.
 - `DONE`: Add a money-readiness operator command reference to
   `docs/operations/tfis_manual_operator_guide.md`. It explains dashboard launch,
   captured-session replay validation, focused tests, syntax checks, scheduled
@@ -164,6 +179,13 @@ Current S23 paper-mode posture:
   watcher for the same order/position, fails closed before broker connection
   with `CRITICAL_DUPLICATE_PROCESS_SHUTDOWN`, while stale dead-PID locks are
   reclaimed with `STALE_PROCESS_LOCK_RECLAIMED`.
+- `DONE`: S23 paper waiting-order and open-position lifecycle supervision is
+  now centralized in `src/tfis/paper/lifecycle_supervisor.py`. The watcher
+  script still owns process locks, broker connectivity, selected-contract event
+  capture, and dashboard rebuild triggers, but the actual pending-order,
+  fill-to-position promotion, cutoff no-fill handling, and open-position
+  session management now run through one reusable supervisor path without
+  changing the persisted paper artifacts.
 - `DONE`: `scripts/reset_tfis_dashboard_and_watchers.ps1` now launches the
   TFIS dashboard server and TFIS watcher/runtime consoles as visible windows
   instead of hidden background processes, matching the operator-facing manual
@@ -753,6 +775,16 @@ Current notes:
 
 - last full-suite snapshot before the S21 scaffold: tests passing `426`
 - S21/strategy focused validation for this task: `20 passed`
+- readiness-focused regression snapshot after the shared lifecycle supervisor
+  and pre-live audit additions: `77 passed`
+- `python scripts/pre_live_readiness.py --profile prod --json`: `PASS`
+- `python scripts/pre_live_readiness.py --profile prod --require-token --json`:
+  `PASS`
+- `python scripts/build_operator_dashboard.py --output-root tmp/operator_dashboard`:
+  `PASS`
+- `python scripts/run_s23_captured_session_validation.py ...`: latest session
+  `2026-07-08 ORDER_REVIEWABLE` with persisted outcome
+  `REPLAY_CONFIRMED_NOT_FILLED` / `PAPER_ORDER_NOT_FILLED`
 - `python scripts/validate_project.py`: passing
 
 ## Operational Coordination Discipline

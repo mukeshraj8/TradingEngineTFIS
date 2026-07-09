@@ -35,3 +35,16 @@ def test_reset_script_keeps_dashboard_and_watchers_visible() -> None:
     assert "-WindowStyle Hidden" not in script
     assert "Skipping $StrategyCode watcher start because matching process is already running" in script
     assert "Skipping TFIS dashboard start because matching server is already running" in script
+
+
+def test_reset_script_only_restores_same_day_waiting_orders_and_live_positions() -> None:
+    script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
+
+    assert "function Test-TfisWatchablePositionState" in script
+    assert '$sessionIsToday = $SessionDate -eq (Get-Date).ToString("yyyy-MM-dd")' in script
+    assert 'if ($metadataJson.branch_order_state_json -and $sessionIsToday)' in script
+    assert "Skipping stale waiting-order watcher startup for prior session $SessionDate" in script
+    assert '"PAPER_POSITION_OPEN"' in script
+    assert '"PAPER_POSITION_CARRIED_FORWARD"' in script
+    assert '"PAPER_POSITION_RESUMED"' in script
+    assert "Skipping non-watchable position state from $SessionDate" in script

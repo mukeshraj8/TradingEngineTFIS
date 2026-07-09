@@ -327,6 +327,25 @@
 - TFIS reboot recovery now also starts dashboard and watcher/runtime consoles
   as visible windows instead of hidden background processes, making the active
   TFIS runtime discoverable to the operator after restart
+- S23 paper waiting-order and open-position lifecycle handling now runs through
+  one shared supervisor module, reducing watcher-script branching while
+  preserving existing state, ledger, market-event, and dashboard artifacts
+- TFIS now has `scripts/pre_live_readiness.py`, a repo-local pre-market audit
+  that verifies core imports, strategy execution plans, dashboard config,
+  monthly-status config, and optional FYERS token availability without placing
+  orders
+- TFIS reset/recovery now restores watcher windows only for same-day waiting
+  orders and for live carry-forward/open/resumed positions; prior-session
+  waiting orders are no longer relaunched after reboot/reset
+- the S23 scheduled-task checker wrappers now use deterministic task lookup and
+  the full `System32\\schtasks.exe` path, surfacing access-denied or shell-level
+  query failures explicitly instead of silently matching the wrong task-name
+  variable
+- a readiness-focused regression slice now passes with `77` targeted tests, the
+  dashboard build succeeds for S21/S23/all-trades pages, and the latest
+  captured-session validator confirms `2026-07-08` as a clean
+  `PAPER_ORDER_NOT_FILLED` waiting-order outcome from persisted market-event
+  evidence
 
 ## Next Recommended Priorities
 
