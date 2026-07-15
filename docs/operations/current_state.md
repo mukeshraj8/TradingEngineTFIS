@@ -21,6 +21,15 @@ change in a meaningful way.
 - harden the TFIS-only restart/bootstrap path so rerunning the recovery script
   after a workstation reboot yields one dashboard server and one watcher per
   persisted order/position target instead of stacking duplicate processes
+- restore reliable daily supervised startup across both active paper strategies:
+  S23 now registers with `IfPast=run_now` by default so the 09:08 wrapper does
+  not fail late at the 09:30 checkpoint after a normal pre-open wait, and S21
+  now has matching Windows task registration/check/start wrappers instead of
+  relying on ad hoc manual invocation only
+- reduce TFIS dashboard startup delay: the reset flow now builds the operator
+  dashboard once and starts `serve_operator_dashboard.py` in `--skip-build`
+  mode so the local server does not repeat the same expensive artifact rebuild
+  before opening port `8765`
 
 ## Money-Ready Phase Milestones
 

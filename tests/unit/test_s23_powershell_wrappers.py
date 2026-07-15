@@ -113,6 +113,31 @@ def test_s23_operational_wrappers_default_to_durable_data_artifact_root() -> Non
         assert f'$defaultArtifactRoot = "{DURABLE_S23_ARTIFACT_ROOT}"' in script
 
 
+def test_s23_morning_task_registration_defaults_if_past_to_run_now() -> None:
+    script = _script_text("register_s23_fyers_morning_supervised_task.ps1")
+
+    assert '[string]$IfPast = "run_now"' in script
+    assert '$defaultIfPast = "run_now"' in script
+
+
+def test_s21_operational_scripts_exist_for_daily_startup() -> None:
+    start_script = _script_text("start_s21_fyers_morning_supervised_decision.ps1")
+    register_script = _script_text("register_s21_fyers_morning_supervised_task.ps1")
+    check_script = _script_text("check_s21_fyers_morning_supervised_task.ps1")
+
+    assert '[string]$ArtifactRoot = "data/strategies/S21/fyers_morning_supervised_decision"' in start_script
+    assert '[string]$IfPast = "run_now"' in start_script
+    assert "Passing latest discovered open S21 paper position to supervised decision" in start_script
+    assert "& $pythonExe @args > $pythonOutputPath 2> $pythonErrorPath" in start_script
+    assert "run_s21_banknifty_0916_supervised_decision_$stamp.out.log" in start_script
+    assert '[string]$TaskName = "TFIS S21 Morning Supervised Decision"' in register_script
+    assert '[string]$IfPast = "run_now"' in register_script
+    assert "start_s21_fyers_morning_supervised_decision.ps1" in register_script
+    assert 'if ((@($StrategyPath) -join "|") -ne (@($defaultStrategyPath) -join "|")) {' in register_script
+    assert "Get-ScheduledTask -TaskName $TaskName -ErrorAction Stop" in check_script
+    assert '& $schtasksExe /Query /V /FO CSV 2>&1' in check_script
+
+
 def test_s23_operational_python_entrypoints_default_to_durable_data_artifact_root() -> None:
     scripts = (
         "run_s23_fyers_0916_supervised_decision.py",
@@ -125,6 +150,14 @@ def test_s23_operational_python_entrypoints_default_to_durable_data_artifact_roo
     for script_name in scripts:
         script = _script_text(script_name)
         assert f'"{DURABLE_S23_ARTIFACT_ROOT}"' in script
+
+
+def test_dashboard_server_supports_skip_build_mode() -> None:
+    script = _script_text("serve_operator_dashboard.py")
+
+    assert '--skip-build' in script
+    assert 'if args.skip_build:' in script
+    assert 'ERROR: --skip-build was requested but the dashboard index does not exist yet.' in script
 
 
 def test_s23_task_checkers_match_real_task_name_variable() -> None:

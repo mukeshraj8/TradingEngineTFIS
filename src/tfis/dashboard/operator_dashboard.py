@@ -3738,19 +3738,19 @@ class TfisOperatorDashboardBuilder:
     def _iter_jsonl_dicts(path: Path) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
         try:
-            lines = path.read_text(encoding="utf-8").splitlines()
+            with path.open("r", encoding="utf-8") as handle:
+                for line in handle:
+                    stripped = line.strip()
+                    if not stripped:
+                        continue
+                    try:
+                        loaded = json.loads(stripped)
+                    except json.JSONDecodeError:
+                        continue
+                    if isinstance(loaded, dict):
+                        rows.append(loaded)
         except OSError:
             return rows
-        for line in lines:
-            stripped = line.strip()
-            if not stripped:
-                continue
-            try:
-                loaded = json.loads(stripped)
-            except json.JSONDecodeError:
-                continue
-            if isinstance(loaded, dict):
-                rows.append(loaded)
         return rows
 
     @staticmethod

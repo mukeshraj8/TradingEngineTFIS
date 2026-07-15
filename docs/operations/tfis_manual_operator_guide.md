@@ -880,9 +880,12 @@ powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supe
 ```
 
 That task starts at `09:08` and launches the TFIS morning runner early enough
-to refresh FYERS auth before the first checkpoint. It uses `-IfPast abort`, so
-if startup is delayed past a checkpoint, TFIS fails loudly instead of writing a
-late artifact that looks like an on-time snapshot. The runner then:
+to refresh FYERS auth before the first checkpoint. The default registration now
+uses `run_now`, which matches the
+Python entrypoint and allows the 09:08 wrapper to wait through the planned
+09:16/09:25/09:30 checkpoints without falsely aborting the session. If you
+want fail-loud behavior for unusually late manual startup, you can still
+override the task registration with `-IfPast abort`. The runner then:
 
 - waits for `09:16`
 - captures the opening snapshot and immediately writes stage artifacts
@@ -930,7 +933,7 @@ python scripts/build_operator_dashboard.py --output-root tmp/operator_dashboard
 Serve it locally:
 
 ```powershell
-python scripts/serve_operator_dashboard.py --output-root tmp/operator_dashboard --port 8765
+python scripts/serve_operator_dashboard.py --output-root tmp/operator_dashboard --port 8765 --skip-build
 ```
 
 Then open:
@@ -1224,7 +1227,7 @@ run those only when you intend to use the TFIS FYERS paper-data path.
 | `.\.venv\Scripts\python.exe -m pytest tests\unit\test_operator_dashboard.py tests\unit\test_s23_captured_session_validation.py tests\unit\test_s23_paper_watch_market_event_persistence.py` | Run the focused money-readiness regression suite for dashboard stream health, selected-contract evidence persistence, and captured-session replay. | After changing dashboard, watcher evidence, or replay validation code. | All tests should pass. Current focused expectation is `14 passed`. | Fixture-only; no broker/network access. |
 | `.\.venv\Scripts\python.exe -m py_compile scripts\run_s23_captured_session_validation.py src\tfis\dashboard\operator_dashboard.py scripts\run_s23_paper_position_watch.py` | Catch syntax/import errors in the validator, dashboard builder, and watcher entry script. | After editing these operational scripts. | Command exits silently on success. Any traceback must be fixed before market use. | Local-only; no broker/network access. |
 | `.\.venv\Scripts\python.exe scripts\run_s23_captured_session_validation.py --artifact-root data\strategies\S23\fyers_morning_supervised_decision --out-json tmp\s23_captured_session_validation.json --out-md tmp\s23_captured_session_validation.md` | Rebuild the captured-session replay report from durable S23 artifacts. | Post-market, or any time you want to audit saved S23 sessions. | Review `tmp\s23_captured_session_validation.md` for `REPLAY_CONFIRMED_*`, `POSITION_REPLAY_CONFIRMED_*`, mismatch, or gap lines. | Offline artifact replay only; does not call FYERS or start watchers. |
-| `.\.venv\Scripts\python.exe scripts\serve_operator_dashboard.py --output-root tmp\operator_dashboard --port 8765` | Build and serve the operator dashboard locally. | When reviewing S23 session status, calculated CE/PE legs, trade rows, current price, stream status, or monthly-status chart. | Open `http://127.0.0.1:8765/index.html`; for S23 open `http://127.0.0.1:8765/strategies/S23/index.html`. | Reads local artifacts. If old partial artifacts fail, fix post-market; do not touch live processes. |
+| `.\.venv\Scripts\python.exe scripts\serve_operator_dashboard.py --output-root tmp\operator_dashboard --port 8765 --skip-build` | Serve the already-built operator dashboard locally without rebuilding it again. | After `build_operator_dashboard.py` or after the TFIS reset script already rebuilt the dashboard. | Open `http://127.0.0.1:8765/index.html`; for S23 open `http://127.0.0.1:8765/strategies/S23/index.html`. | Reads local artifacts only. Start without `--skip-build` only when you intentionally want the server process to rebuild the dashboard itself. |
 | `powershell -ExecutionPolicy Bypass -File scripts\check_s23_fyers_morning_supervised_task.ps1` | Check the Windows Scheduled Task registration for S23 morning supervised decision. | Before a market day or after changing task scripts. | Task should be enabled, weekday scheduled, and pointing to the TFIS wrapper under `D:\TradingEngineTFIS`. | Read-only scheduled-task check. If this shell reports `Access denied` or a host-level `schtasks` query failure, rerun from a normal interactive PowerShell window outside restricted agent shells. Do not confuse this with TradingEngineProd tasks. |
 | `powershell -ExecutionPolicy Bypass -File scripts\register_s23_fyers_morning_supervised_task.ps1` | Register or refresh the TFIS S23 scheduled task. | Only when the task is missing or wrapper settings changed. | Follow with the check command above. | Changes Windows Task Scheduler for TFIS only. Do not run for sibling projects. |
 | `powershell -ExecutionPolicy Bypass -File scripts\start_s23_fyers_morning_supervised_decision.ps1` | Manually run the same wrapper used by the scheduled task. | Controlled operator test, usually before/after market, or when explicitly starting the TFIS paper path. | Watch visible TFIS PowerShell windows and generated logs under `tmp\s23_fyers_morning_supervised_decision\_task_launch_logs`. | Uses FYERS auth/data path. Do not run if another TFIS run is active unless testing duplicate-process protection. |

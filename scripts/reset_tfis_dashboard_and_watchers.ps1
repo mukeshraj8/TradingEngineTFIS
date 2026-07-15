@@ -55,7 +55,7 @@ function Get-TfisRuntimeProcesses {
 
     $repoPattern = [Regex]::Escape($repoRoot)
     $effectivePattern = if ([string]::IsNullOrWhiteSpace($RuntimePattern)) {
-        'serve_operator_dashboard\.py|run_s23_paper_position_watch\.py|start_s21_paper_watchers_from_metadata\.ps1|start_s23_paper_watchers_from_metadata\.ps1|run_s21_banknifty_0916_supervised_decision\.py|run_s23_fyers_0916_supervised_decision\.py'
+        'build_operator_dashboard\.py|serve_operator_dashboard\.py|run_s23_paper_position_watch\.py|start_s21_paper_watchers_from_metadata\.ps1|start_s23_paper_watchers_from_metadata\.ps1|run_s21_banknifty_0916_supervised_decision\.py|run_s23_fyers_0916_supervised_decision\.py'
     }
     else {
         $RuntimePattern
@@ -365,7 +365,7 @@ if ($existingDashboard.Count -gt 0) {
 else {
     $dashboardProcess = Start-Process `
         -FilePath $pythonExe `
-        -ArgumentList @((Resolve-TfisPath "scripts/serve_operator_dashboard.py"), "--output-root", $DashboardOutputRoot, "--port", "$DashboardPort") `
+        -ArgumentList @((Resolve-TfisPath "scripts/serve_operator_dashboard.py"), "--output-root", $DashboardOutputRoot, "--port", "$DashboardPort", "--skip-build") `
         -WorkingDirectory $repoRoot `
         -WindowStyle Normal `
         -PassThru

@@ -108,6 +108,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--output-root", default="tmp/operator_dashboard")
     parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument(
+        "--skip-build",
+        action="store_true",
+        help="Serve the existing dashboard files without rebuilding them first.",
+    )
     parser.add_argument("--dashboard-config", default="config/operator_dashboard_strategies.yaml")
     parser.add_argument("--s23-artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument(
@@ -142,16 +147,28 @@ def main(argv: list[str] | None = None) -> int:
                 session_id_prefix=args.session_id_prefix,
             ),
         )
-    builder = TfisOperatorDashboardBuilder(strategy_configs=strategy_configs)
-    result = builder.build(output_root=output_root)
+    if args.skip_build:
+        index_html = output_root / "index.html"
+        if not index_html.exists():
+            print(
+                "ERROR: --skip-build was requested but the dashboard index does not exist yet. "
+                "Build it first or start without --skip-build.",
+                file=sys.stderr,
+            )
+            return 1
+        result_index_html = index_html
+    else:
+        builder = TfisOperatorDashboardBuilder(strategy_configs=strategy_configs)
+        result = builder.build(output_root=output_root)
+        result_index_html = result.index_html
     handler = DashboardRequestHandler
     handler.directory = str(REPO_ROOT)
     handler.dashboard_root = output_root
     handler.repo_root = REPO_ROOT
     with ReusableTcpServer(("127.0.0.1", args.port), handler) as httpd:
         print("TFIS operator dashboard ready.")
-        print(f"Serving: {result.index_html}")
-        relative_index = result.index_html.relative_to(REPO_ROOT).as_posix()
+        print(f"Serving: {result_index_html}")
+        relative_index = result_index_html.relative_to(REPO_ROOT).as_posix()
         print(f"URL: http://127.0.0.1:{args.port}/{relative_index}")
         print(f"Shortcut: http://127.0.0.1:{args.port}/index.html")
         try:

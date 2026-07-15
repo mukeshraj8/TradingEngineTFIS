@@ -6,18 +6,30 @@ way.
 
 ## Immediate Next Priorities
 
-1. Run the 2026-07-09 pre-market operator checklist and supervised paper start.
+1. Run the next pre-market operator checklist and supervised paper start.
    The local readiness gate now has a dedicated command:
    `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token`.
    Current local output is `PASS`, so the remaining work is operator-time
    verification that the scheduled wrapper (or manual wrapper) starts cleanly,
    watchers attach to any produced orders/positions, and the dashboard refresh
    reflects current-day artifacts during market hours.
+   Before the next session, refresh the Windows scheduled-task registrations
+   for both live paper candidates:
+   `powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supervised_task.ps1`
+   and
+   `powershell -ExecutionPolicy Bypass -File scripts/register_s21_fyers_morning_supervised_task.ps1`.
+   S23 now defaults the task wrapper to `IfPast=run_now`, which matches the
+   Python runner and prevents the erroneous late `09:30 has already passed`
+   abort seen on 2026-07-14.
    Recovery now skips prior-session waiting orders during
    `reset_tfis_dashboard_and_watchers.ps1`; the live validation should confirm
    only true carry-forward positions are restored before 09:14, including
    carried states discovered outside the latest session metadata folder, and
    that stale waiting-order windows no longer reappear after reboot/reset.
+   The same reset command now starts the local dashboard server with
+   `serve_operator_dashboard.py --skip-build` after the explicit rebuild step,
+   so the expected operator experience is one visible rebuild followed by the
+   dashboard opening on `127.0.0.1:8765` without a second hidden startup build.
 2. Validate S23 live ORPT/RC timing finalization during the next real market
    session. The supervised live decision path now builds a provisional base
    selection at ORPT, finalizes and places the waiting paper order from that
@@ -83,11 +95,13 @@ way.
 5. Validate the first controlled S21 BankNifty monthly paper-mode run.
    S21 is now enabled as an `ACTIVE_CANDIDATE` through
    `config/paper.s21.fyers_connect_test.yaml`,
-   `scripts/run_s21_banknifty_0916_supervised_decision.py`, and the shared
-   supervised paper path. The immediate operator work is to refresh the S21
-   daily reference packet, confirm the configured monthly expiry and lot size,
-   verify that the dashboard builds a separate S21 page, and capture one real
-   market-day paper session before broadening runtime support.
+   `scripts/run_s21_banknifty_0916_supervised_decision.py`, the new
+   `scripts/start_s21_fyers_morning_supervised_decision.ps1` wrapper, and the
+   new scheduled-task registration/check helpers. The immediate operator work
+   is to refresh the S21 daily reference packet, confirm the configured
+   monthly expiry and lot size, verify that the dashboard builds a separate S21
+   page, and capture one real market-day paper session before broadening
+   runtime support.
 6. Keep monthly status as an independent service and improve its explanation/provenance output.
    Monthly-status calculation must support selected instrument, selected date, and configured price source. It must produce one of the four business statuses or `UNKNOWN` only for incomplete/error cases, and it must remain reusable by future strategies such as S21.
    S21 now has a BankNifty monthly option-selling runtime candidate, but it

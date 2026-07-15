@@ -14,6 +14,7 @@ def test_reset_script_waits_for_old_tfis_runtime_before_restarting() -> None:
     script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
 
     assert "function Get-TfisRuntimeProcesses" in script
+    assert "build_operator_dashboard\\.py|serve_operator_dashboard\\.py" in script
     assert "function Wait-ForNoTfisRuntimeProcesses" in script
     assert "throw \"Timed out waiting for TFIS runtime processes to exit" in script
     assert "Wait-ForNoTfisRuntimeProcesses" in script
@@ -33,6 +34,7 @@ def test_reset_script_keeps_dashboard_and_watchers_visible() -> None:
 
     assert script.count("-WindowStyle Normal") >= 2
     assert "-WindowStyle Hidden" not in script
+    assert '"--skip-build"' in script
     assert "Skipping $StrategyCode watcher start because matching process is already running" in script
     assert "Skipping TFIS dashboard start because matching server is already running" in script
 

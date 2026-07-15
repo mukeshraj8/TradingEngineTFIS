@@ -1,12 +1,17 @@
 param(
-    [string]$TaskName = "TFIS S23 Morning Supervised Decision",
+    [string]$TaskName = "TFIS S21 Morning Supervised Decision",
     [string]$RunTime = "09:08",
     [string]$TfisRoot,
-    [string]$Config = "config/paper.s23.fyers_connect_test.yaml",
-    [string]$StrategyPath = "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
-    [string]$ReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json",
-    [string]$ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",
-    [string]$SessionIdPrefix = "s23-fyers-morning-supervised-decision",
+    [string]$Config = "config/paper.s21.fyers_connect_test.yaml",
+    [string[]]$StrategyPath = @(
+        "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+        "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT",
+        "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL",
+        "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT"
+    ),
+    [string]$ReferencePacket = "config/reference_packets/s21_banknifty_monthly_live_decision_reference.json",
+    [string]$ArtifactRoot = "data/strategies/S21/fyers_morning_supervised_decision",
+    [string]$SessionIdPrefix = "s21-fyers-morning-supervised-decision",
     [string]$Timezone = "Asia/Kolkata",
     [ValidateSet("run_now", "abort")]
     [string]$IfPast = "run_now",
@@ -18,7 +23,7 @@ param(
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
-$wrapperPath = Join-Path $repoRoot "scripts\start_s23_fyers_morning_supervised_decision.ps1"
+$wrapperPath = Join-Path $repoRoot "scripts\start_s21_fyers_morning_supervised_decision.ps1"
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
 }
@@ -28,11 +33,16 @@ if (-not (Test-Path $wrapperPath)) {
 }
 
 $defaultTfisRoot = $repoRoot
-$defaultConfig = "config/paper.s23.fyers_connect_test.yaml"
-$defaultStrategyPath = "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
-$defaultReferencePacket = "config/reference_packets/s23_bear_put_live_decision_reference.json"
-$defaultArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision"
-$defaultSessionIdPrefix = "s23-fyers-morning-supervised-decision"
+$defaultConfig = "config/paper.s21.fyers_connect_test.yaml"
+$defaultStrategyPath = @(
+    "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+    "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT",
+    "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL",
+    "config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT"
+)
+$defaultReferencePacket = "config/reference_packets/s21_banknifty_monthly_live_decision_reference.json"
+$defaultArtifactRoot = "data/strategies/S21/fyers_morning_supervised_decision"
+$defaultSessionIdPrefix = "s21-fyers-morning-supervised-decision"
 $defaultTimezone = "Asia/Kolkata"
 $defaultIfPast = "run_now"
 $defaultTradingHolidayCalendar = "config/nse_trading_holidays_2026.json"
@@ -52,9 +62,11 @@ if ($Config -ne $defaultConfig) {
     $actionParts += "-Config"
     $actionParts += ('"{0}"' -f $Config)
 }
-if ($StrategyPath -ne $defaultStrategyPath) {
-    $actionParts += "-StrategyPath"
-    $actionParts += ('"{0}"' -f $StrategyPath)
+if ((@($StrategyPath) -join "|") -ne (@($defaultStrategyPath) -join "|")) {
+    foreach ($strategy in $StrategyPath) {
+        $actionParts += "-StrategyPath"
+        $actionParts += ('"{0}"' -f $strategy)
+    }
 }
 if ($ReferencePacket -ne $defaultReferencePacket) {
     $actionParts += "-ReferencePacket"
@@ -76,7 +88,6 @@ if ($IfPast -ne $defaultIfPast) {
     $actionParts += "-IfPast"
     $actionParts += ('"{0}"' -f $IfPast)
 }
-
 if ($SkipRefresh) {
     $actionParts += "-SkipRefresh"
 }

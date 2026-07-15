@@ -53,6 +53,16 @@
 - S23 Windows Scheduled Task registration now creates a Monday-Friday trigger,
   and the wrapper uses a local NSE holiday calendar to skip weekends/holidays
   before token refresh or watcher startup
+- S23 scheduled-task registration now defaults `IfPast` to `run_now`, matching
+  the Python and wrapper entrypoints and preventing the false late-checkpoint
+  abort that could leave the morning session without fresh artifacts or
+  watchers after a normal 09:08 startup
+- S21 now has TFIS-only Windows startup wrappers for daily supervised paper
+  runs: `start_s21_fyers_morning_supervised_decision.ps1`,
+  `register_s21_fyers_morning_supervised_task.ps1`, and
+  `check_s21_fyers_morning_supervised_task.ps1`. This closes the gap where S21
+  had a runnable Python entrypoint but no durable scheduled-task bootstrap
+  comparable to S23
 - S23 supervised live paper finalization now keeps the ORPT-selected base
   strike/order when the selected option has not missed entry, and uses RC only
   for the revised missed-entry recalculation path
@@ -94,6 +104,14 @@
   age/staleness, watcher PID, source, and a direct Market Events artifact link.
   This makes current-price freshness auditable without changing strategy
   selection, order routing, or watcher lifecycle behavior.
+- Operator dashboard JSONL readers now stream line-by-line instead of loading
+  the whole file into memory first. This reduces reset/build stalls when large
+  selected-contract market-event logs are present beside active paper states.
+- TFIS dashboard startup no longer pays the full rebuild cost twice during the
+  normal reset flow. `reset_tfis_dashboard_and_watchers.ps1` now performs the
+  single explicit build and launches `serve_operator_dashboard.py` with
+  `--skip-build`, so the server opens port `8765` without repeating the same
+  dashboard generation step in-process.
 - S23 captured-session replay validation now covers expiry force-close and
   next-day stoploss reset states. Expiry force-close is confirmed from persisted
   position-manager events plus expiry date/force-close time, and next-day SL
