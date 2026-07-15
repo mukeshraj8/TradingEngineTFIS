@@ -86,7 +86,7 @@ class S23PaperLifecycleSupervisor:
             marked_at=evaluated_at,
             reason_code="paper_order_expired_untriggered_previous_session",
             message=(
-                "Pending S23 paper entry orders are session-only. This order did "
+                "Pending paper entry orders are session-only. This order did "
                 "not trigger on its entry date, so it was cancelled instead of "
                 "being carried forward."
             ),
@@ -158,7 +158,7 @@ class S23PaperLifecycleSupervisor:
                     reason_code="paper_order_not_triggered_by_watch_cutoff",
                     message=(
                         "Selected option premium did not reach entry before the "
-                        "paper watch cutoff, so the pending S23 paper order was "
+                        "paper watch cutoff, so the pending paper order was "
                         "not filled."
                     ),
                 )

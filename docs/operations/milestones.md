@@ -357,6 +357,19 @@
   waiting orders are no longer relaunched after reboot/reset, and live carried
   positions are rediscovered from the full strategy artifact root instead of
   only from the latest session metadata
+- the operator dashboard now resolves stale S23 carry-forward blockers against
+  the latest persisted position state, so closed carry-forward trades show
+  `PAPER_FRESH_ENTRY_REQUIRED` instead of misleading `OPEN_CARRY_FORWARD_POSITION`,
+  and shared paper-order cutoff messages are now strategy-neutral for S21/S23
+- the operator dashboard now includes a dedicated historical closed-trades page
+  under `trades/history/index.html`, with cross-strategy strategy/date filters
+  and consolidated entry/exit/P&L review sourced from persisted trade ledgers
+- the live all-trades monitor now keeps post-session terminal closes visible for
+  multi-session paper trades, so next-day S23 target/SL exits remain visible in
+  `trades/index.html` even when the latest decision session is still the prior day
+- the trade monitors now add consistent row/status color coding for closed,
+  waiting, not-filled, open, and action-needed trade states, improving operator
+  scanability without changing lifecycle logic
 - the S23 scheduled-task checker wrappers now use deterministic task lookup and
   the full `System32\\schtasks.exe` path, surfacing access-denied or shell-level
   query failures explicitly instead of silently matching the wrong task-name

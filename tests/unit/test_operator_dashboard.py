@@ -1141,6 +1141,411 @@ def test_dashboard_reconstructs_stage_from_snapshot_dir(tmp_path: Path) -> None:
     assert "normalized_underlying_bars.json" in strategy_html
 
 
+def test_strategy_page_prefers_current_position_truth_over_stale_carry_forward_block(tmp_path: Path) -> None:
+    artifact_root = tmp_path / "s23-artifacts"
+    latest_day_dir = artifact_root / "2026-07-14"
+    latest_final_dir = latest_day_dir / "s23-fyers-morning-supervised-decision-2026-07-14"
+    latest_final_dir.mkdir(parents=True)
+    (latest_final_dir / "monthly_status_stage_0916.json").write_text(
+        json.dumps({"monthly_status": {"status": "BULL", "trigger_name": "BULLISH"}}),
+        encoding="utf-8",
+    )
+    (latest_final_dir / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "IN_PROGRESS",
+                    "monthly_status": "BULL",
+                    "selected_contract_symbol": "NIFTY_20260721_23950_CE",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (latest_final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    branch_dir = latest_final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    branch_dir.mkdir()
+    (branch_dir / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "READY",
+                    "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                    "selected_contract_symbol": "NIFTY_20260721_23950_CE",
+                    "selected_contract_option_type": "CALL",
+                    "selected_contract_expiry": "2026-07-21",
+                    "selected_contract_strike": 23950,
+                    "selected_contract_ltp": 304.95,
+                    "selected_contract_oi": 50700,
+                    "planned_entry_price": 212.75,
+                    "target_price": 85.10,
+                    "stoploss_price": 258.94,
+                    "order_placement_blocked": True,
+                    "order_placement_block_reason": "OPEN_CARRY_FORWARD_POSITION",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    carried_trade_dir = (
+        artifact_root
+        / "2026-07-08"
+        / "s23-fyers-morning-supervised-decision-2026-07-08"
+        / "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    )
+    carried_trade_dir.mkdir(parents=True)
+    (carried_trade_dir / "paper_position_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                "symbol": "NIFTY",
+                "option_type": "CALL",
+                "selected_contract_symbol": "NIFTY_20260721_24200_CE",
+                "expiry_date": "2026-07-21",
+                "expiry_type": "WEEKLY",
+                "entry_date": "2026-07-08",
+                "entry_timestamp": "2026-07-08T12:24:59+05:30",
+                "entry_price": 209.0,
+                "lots": 1,
+                "quantity": 65,
+                "side": "SELL",
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "fsl_price": None,
+                "trp_price": None,
+                "carry_forward_allowed": False,
+                "no_carry_past_expiry": True,
+                "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                "last_updated_timestamp": "2026-07-15T12:57:59+05:30",
+                "provenance_source_ids": ["paper_order_state.json", "s23_paper_position_watch"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(artifact_root),)).build(
+        output_root=tmp_path / "dashboard"
+    )
+
+    strategy_html = result.strategy_pages["S23"].read_text(encoding="utf-8")
+    assert "PAPER_FRESH_ENTRY_REQUIRED" in strategy_html
+    assert "OPEN_CARRY_FORWARD_POSITION" not in strategy_html
+
+
+def test_dashboard_builds_historical_trades_page_with_filters(tmp_path: Path) -> None:
+    s23_root = tmp_path / "s23-artifacts"
+    s21_root = tmp_path / "s21-artifacts"
+
+    s23_session = s23_root / "2026-07-08" / "s23-fyers-morning-supervised-decision-2026-07-08" / "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    s23_session.mkdir(parents=True)
+    (s23_session / "paper_position_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                "symbol": "NIFTY",
+                "option_type": "CALL",
+                "selected_contract_symbol": "NIFTY_20260721_24200_CE",
+                "expiry_date": "2026-07-21",
+                "expiry_type": "WEEKLY",
+                "entry_date": "2026-07-08",
+                "entry_timestamp": "2026-07-08T12:24:59+05:30",
+                "entry_price": 209.0,
+                "lots": 1,
+                "quantity": 65,
+                "side": "SELL",
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "fsl_price": None,
+                "trp_price": None,
+                "carry_forward_allowed": False,
+                "no_carry_past_expiry": True,
+                "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                "last_updated_timestamp": "2026-07-15T12:57:59+05:30",
+                "provenance_source_ids": ["paper_order_state.json", "s23_paper_position_watch"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (s23_session / "paper_trade_ledger.jsonl").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "event_timestamp": "2026-07-15T12:57:59+05:30",
+                "entry_timestamp": "2026-07-08T12:24:59+05:30",
+                "exit_timestamp": "2026-07-15T12:57:59+05:30",
+                "event_type": "CLOSE",
+                "trade_id": "S23-NIFTY_OP_SELL_WK_DIFF_2D_3D-NIFTY_20260721_24200_CE-20260708T122459",
+                "strategy_id": "S23:NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                "strategy_code": "S23",
+                "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                "selected_contract_symbol": "NIFTY_20260721_24200_CE",
+                "side": "SELL",
+                "lots": 1,
+                "quantity": 65,
+                "entry_price": 209.0,
+                "exit_price": 86.10,
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "gross_points": 122.9,
+                "gross_pnl": 7988.5,
+                "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                "manager_status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                "reason_code": "target_hit",
+                "message": "Selected-contract bar proved target hit.",
+                "fresh_entry_required": True,
+                "reverse_entry_required": False,
+                "rollover_required": False,
+                "state_directory": str(s23_session),
+                "session_date": "2026-07-15",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    s21_session = s21_root / "2026-07-09" / "s21-fyers-morning-supervised-decision-2026-07-09" / "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL"
+    s21_session.mkdir(parents=True)
+    (s21_session / "paper_position_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S21",
+                "unique_code": "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+                "symbol": "BANKNIFTY",
+                "option_type": "CALL",
+                "selected_contract_symbol": "BANKNIFTY_20260728_57200_CE",
+                "expiry_date": "2026-07-28",
+                "expiry_type": "MONTHLY",
+                "entry_date": "2026-07-09",
+                "entry_timestamp": "2026-07-09T10:15:00+05:30",
+                "entry_price": 462.5,
+                "lots": 1,
+                "quantity": 35,
+                "side": "SELL",
+                "target_price": 185.0,
+                "stoploss_price": 740.0,
+                "fsl_price": None,
+                "trp_price": None,
+                "carry_forward_allowed": False,
+                "no_carry_past_expiry": True,
+                "lifecycle_status": "PAPER_POSITION_CLOSED",
+                "last_updated_timestamp": "2026-07-09T14:45:00+05:30",
+                "provenance_source_ids": ["paper_order_state.json", "paper_position_watch"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (s21_session / "paper_trade_ledger.jsonl").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "event_timestamp": "2026-07-09T14:45:00+05:30",
+                "entry_timestamp": "2026-07-09T10:15:00+05:30",
+                "exit_timestamp": "2026-07-09T14:45:00+05:30",
+                "event_type": "CLOSE",
+                "trade_id": "S21-BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL-BANKNIFTY_20260728_57200_CE-20260709T101500",
+                "strategy_id": "S21:BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+                "strategy_code": "S21",
+                "strategy_branch": "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+                "selected_contract_symbol": "BANKNIFTY_20260728_57200_CE",
+                "side": "SELL",
+                "lots": 1,
+                "quantity": 35,
+                "entry_price": 462.5,
+                "exit_price": 220.0,
+                "target_price": 185.0,
+                "stoploss_price": 740.0,
+                "gross_points": 242.5,
+                "gross_pnl": 8487.5,
+                "lifecycle_status": "PAPER_POSITION_CLOSED",
+                "manager_status": "PAPER_POSITION_FORCE_CLOSED",
+                "reason_code": "forced_close",
+                "message": "Session close forced the paper exit.",
+                "fresh_entry_required": False,
+                "reverse_entry_required": False,
+                "rollover_required": False,
+                "state_directory": str(s21_session),
+                "session_date": "2026-07-09",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(
+            _strategy_config(s23_root),
+            _s21_strategy_config(s21_root),
+        )
+    ).build(output_root=tmp_path / "dashboard")
+
+    index_html = result.index_html.read_text(encoding="utf-8")
+    trades_html = result.trades_page.read_text(encoding="utf-8")
+    history_html = result.historical_trades_page.read_text(encoding="utf-8")
+    manifest = json.loads(result.manifest_json.read_text(encoding="utf-8"))
+
+    assert 'href="trades/history/index.html"' in index_html
+    assert 'href="history/index.html"' in trades_html
+    assert "Historical Trades" in history_html
+    assert "historicalStrategyFilter" in history_html
+    assert "historicalRangePreset" in history_html
+    assert "Current Year" in history_html
+    assert "Date Range" in history_html
+    assert "NIFTY_20260721_24200_CE" in history_html
+    assert "BANKNIFTY_20260728_57200_CE" in history_html
+    assert manifest["historical_trades_page"].replace("\\", "/") == "trades/history/index.html"
+
+
+def test_all_trades_monitor_keeps_terminal_close_after_latest_session_date(tmp_path: Path) -> None:
+    s23_root = tmp_path / "s23-artifacts"
+    latest_day = s23_root / "2026-07-14"
+    latest_final = latest_day / "s23-fyers-morning-supervised-decision-2026-07-14"
+    latest_final.mkdir(parents=True)
+    (latest_final / "monthly_status_stage_0916.json").write_text(
+        json.dumps({"monthly_status": {"status": "BULL", "trigger_name": "BULLISH"}}),
+        encoding="utf-8",
+    )
+    (latest_final / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "IN_PROGRESS",
+                    "monthly_status": "BULL",
+                    "selected_contract_symbol": "NIFTY_20260721_23950_CE",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (latest_final / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+
+    trade_dir = (
+        s23_root
+        / "2026-07-08"
+        / "s23-fyers-morning-supervised-decision-2026-07-08"
+        / "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    )
+    trade_dir.mkdir(parents=True)
+    (trade_dir / "paper_position_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                "symbol": "NIFTY",
+                "option_type": "CALL",
+                "selected_contract_symbol": "NIFTY_20260721_24200_CE",
+                "expiry_date": "2026-07-21",
+                "expiry_type": "WEEKLY",
+                "entry_date": "2026-07-08",
+                "entry_timestamp": "2026-07-08T12:24:59+05:30",
+                "entry_price": 209.0,
+                "lots": 1,
+                "quantity": 65,
+                "side": "SELL",
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "fsl_price": None,
+                "trp_price": None,
+                "carry_forward_allowed": False,
+                "no_carry_past_expiry": True,
+                "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                "last_updated_timestamp": "2026-07-15T12:57:59+05:30",
+                "provenance_source_ids": ["paper_order_state.json", "s23_paper_position_watch"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (trade_dir / "paper_trade_ledger.jsonl").write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "artifact_version": 1,
+                        "event_timestamp": "2026-07-14T15:35:26+05:30",
+                        "entry_timestamp": "2026-07-08T12:24:59+05:30",
+                        "event_type": "HOLD",
+                        "trade_id": "S23-NIFTY_OP_SELL_WK_DIFF_2D_3D-NIFTY_20260721_24200_CE-20260708T122459",
+                        "strategy_id": "S23:NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                        "strategy_code": "S23",
+                        "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                        "selected_contract_symbol": "NIFTY_20260721_24200_CE",
+                        "side": "SELL",
+                        "lots": 1,
+                        "quantity": 65,
+                        "entry_price": 209.0,
+                        "target_price": 85.10,
+                        "stoploss_price": 258.94,
+                        "gross_points": 116.95,
+                        "gross_pnl": 7601.75,
+                        "lifecycle_status": "PAPER_POSITION_CARRIED_FORWARD",
+                        "manager_status": "PAPER_POSITION_HELD",
+                        "reason_code": "s23_1500_carry_forward_stop_inactive",
+                        "message": "Position carried forward.",
+                        "fresh_entry_required": False,
+                        "reverse_entry_required": False,
+                        "rollover_required": False,
+                        "state_directory": str(trade_dir),
+                        "session_date": "2026-07-14",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "artifact_version": 1,
+                        "event_timestamp": "2026-07-15T12:57:59+05:30",
+                        "entry_timestamp": "2026-07-08T12:24:59+05:30",
+                        "exit_timestamp": "2026-07-15T12:57:59+05:30",
+                        "event_type": "CLOSE",
+                        "trade_id": "S23-NIFTY_OP_SELL_WK_DIFF_2D_3D-NIFTY_20260721_24200_CE-20260708T122459",
+                        "strategy_id": "S23:NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                        "strategy_code": "S23",
+                        "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                        "selected_contract_symbol": "NIFTY_20260721_24200_CE",
+                        "side": "SELL",
+                        "lots": 1,
+                        "quantity": 65,
+                        "entry_price": 209.0,
+                        "exit_price": 86.10,
+                        "target_price": 85.10,
+                        "stoploss_price": 258.94,
+                        "gross_points": 122.9,
+                        "gross_pnl": 7988.5,
+                        "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                        "manager_status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                        "reason_code": "target_hit",
+                        "message": "Selected-contract bar proved target hit.",
+                        "fresh_entry_required": True,
+                        "reverse_entry_required": False,
+                        "rollover_required": False,
+                        "state_directory": str(trade_dir),
+                        "session_date": "2026-07-15",
+                    }
+                ),
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(_strategy_config(s23_root),)
+    ).build(output_root=tmp_path / "dashboard")
+
+    trades_html = result.trades_page.read_text(encoding="utf-8")
+    assert "NIFTY_20260721_24200_CE" in trades_html
+    assert "POSITION_CLOSED" in trades_html
+    assert "2026-07-15 12:57:59+05:30" in trades_html
+    assert "Closed Trades" in trades_html
+    assert ">1<" in trades_html
+    assert "trade-row-closed" in trades_html
+    assert "badge-position_closed" in trades_html
+
+
 def test_s23_inline_step8_audit_accepts_tuple_candidates() -> None:
     builder = TfisOperatorDashboardBuilder(strategy_configs=())
     leg = {

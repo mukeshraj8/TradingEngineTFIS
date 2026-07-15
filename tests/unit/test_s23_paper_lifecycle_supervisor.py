@@ -10,6 +10,7 @@ from tfis.paper import (
     S23PaperExpiryGovernance,
     S23PaperLifecycleSupervisor,
     S23PaperLifecycleSupervisorContext,
+    S23PaperTradeLedgerStore,
     S23PaperOrderStateStore,
     S23PaperPositionManager,
 )
@@ -44,6 +45,9 @@ def test_supervisor_expires_previous_session_waiting_order(tmp_path: Path) -> No
     assert result.final_step.reason_code == "paper_order_expired_untriggered_previous_session"
     assert result.context.order_state is not None
     assert result.context.order_state.status.value == "PAPER_ORDER_NOT_FILLED"
+    assert result.context.order_state.last_message is not None
+    assert "Pending paper entry orders are session-only." in result.context.order_state.last_message
+    assert "Pending S23 paper entry orders" not in result.context.order_state.last_message
 
 
 def test_supervisor_promotes_filled_order_into_open_position_and_processes_same_batch(tmp_path: Path) -> None:
@@ -56,7 +60,10 @@ def test_supervisor_promotes_filled_order_into_open_position_and_processes_same_
     )
     supervisor = S23PaperLifecycleSupervisor(
         order_store=order_store,
-        position_manager=S23PaperPositionManager(slippage_exit_points=0.0),
+        position_manager=S23PaperPositionManager(
+            ledger_store=S23PaperTradeLedgerStore(global_ledger_root=tmp_path / "global-ledger"),
+            slippage_exit_points=0.0,
+        ),
     )
     context = S23PaperLifecycleSupervisorContext(
         session_directory=tmp_path,
@@ -96,7 +103,10 @@ def test_supervisor_promotes_filled_order_into_open_position_and_processes_same_
 
 
 def test_supervisor_processes_open_position_terminal_exit(tmp_path: Path) -> None:
-    manager = S23PaperPositionManager(slippage_exit_points=0.0)
+    manager = S23PaperPositionManager(
+        ledger_store=S23PaperTradeLedgerStore(global_ledger_root=tmp_path / "global-ledger"),
+        slippage_exit_points=0.0,
+    )
     opened = manager.open_from_live_decision(
         tmp_path,
         strategy_rule=_strategy_rule(),

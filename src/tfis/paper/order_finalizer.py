@@ -117,7 +117,7 @@ class S23PaperOrderFinalizer:
                 else "paper_order_not_triggered_by_cutoff_sweeper"
             )
             message = (
-                "Pending S23 paper entry orders are session-only. The cutoff "
+                "Pending paper entry orders are session-only. The cutoff "
                 "finalizer found this order still waiting after its entry "
                 "session cutoff, so it was marked not filled instead of being "
                 "carried forward."

@@ -31,6 +31,7 @@ def test_finalizer_marks_same_session_waiting_order_after_cutoff(tmp_path: Path)
     assert updated.status is S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED
     assert updated.last_reason_code == "paper_order_not_triggered_by_cutoff_sweeper"
     assert "session-only" in (updated.last_message or "")
+    assert "Pending S23 paper entry orders" not in (updated.last_message or "")
     events = (order_dir / "paper_order_events.jsonl").read_text(encoding="utf-8")
     assert "PAPER_ORDER_NOT_FILLED" in events
 

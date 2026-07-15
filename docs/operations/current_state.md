@@ -866,3 +866,20 @@ Current notes:
   Rebuildable dashboard HTML remains under `tmp/operator_dashboard`, and
   short-lived PowerShell launch diagnostics remain under
   `tmp/s23_fyers_morning_supervised_decision/_task_launch_logs`.
+- The operator dashboard now prefers current persisted paper-position truth over
+  stale decision-time `OPEN_CARRY_FORWARD_POSITION` blockers when an older
+  carry-forward trade has already closed, and shared paper-order cutoff
+  messages no longer hardcode `S23` when rendered for other strategies such as
+  `S21`.
+- The operator dashboard now also publishes a dedicated
+  `trades/history/index.html` page for closed-trade review across all enabled
+  strategies, with client-side strategy and date-range filters plus consolidated
+  entry, exit, contract, quantity, and realized P&L fields sourced from the
+  persisted paper trade ledgers.
+- The live `trades/index.html` monitor now keeps the latest terminal close
+  event visible when a multi-session paper trade exits after the strategy's last
+  decision-session date, so carried-forward S23 exits are not hidden merely
+  because the close happened on the following trading day.
+- The trade monitors now also use soft row tinting and stronger status badge
+  colors to distinguish closed trades, waiting orders, not-filled orders, open
+  positions, and action-required follow-ups more quickly during operator review.

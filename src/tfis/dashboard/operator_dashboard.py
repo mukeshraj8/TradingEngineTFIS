@@ -111,6 +111,8 @@ class DashboardSelectedContractStreamHealth:
 class DashboardTradeLedgerRow:
     session_date: date | None
     event_timestamp: datetime | None
+    entry_timestamp: datetime | None
+    exit_timestamp: datetime | None
     event_type: str
     trade_id: str
     strategy_id: str
@@ -148,6 +150,7 @@ class DashboardBuildResult:
     manifest_json: Path
     strategy_pages: dict[str, Path]
     trades_page: Path
+    historical_trades_page: Path
     tool_pages: dict[str, Path]
     review_data_pages: dict[str, Path]
 
@@ -191,6 +194,17 @@ class TfisOperatorDashboardBuilder:
             ),
             encoding="utf-8",
         )
+        historical_trades_dir = trades_dir / "history"
+        historical_trades_dir.mkdir(parents=True, exist_ok=True)
+        historical_trades_page = historical_trades_dir / "index.html"
+        historical_trades_page.write_text(
+            self._render_historical_trades_page(
+                strategy_summaries=list(zip(self._strategy_configs, summaries, strict=False)),
+                dashboard_root=target,
+                page_path=historical_trades_page,
+            ),
+            encoding="utf-8",
+        )
 
         review_data_pages = self._write_review_data_pages(target, summaries)
         tool_pages = self._write_tool_pages(target, review_data_pages=review_data_pages)
@@ -220,6 +234,7 @@ class TfisOperatorDashboardBuilder:
                         for config, sessions in zip(self._strategy_configs, summaries, strict=False)
                     ],
                     "trades_page": str(Path("trades") / "index.html"),
+                    "historical_trades_page": str(Path("trades") / "history" / "index.html"),
                     "tools": {
                         name: str(path.relative_to(target))
                         for name, path in sorted(tool_pages.items())
@@ -241,6 +256,7 @@ class TfisOperatorDashboardBuilder:
             manifest_json=manifest_json,
             strategy_pages=strategy_pages,
             trades_page=trades_page,
+            historical_trades_page=historical_trades_page,
             tool_pages=tool_pages,
             review_data_pages=review_data_pages,
         )
@@ -977,7 +993,7 @@ class TfisOperatorDashboardBuilder:
                     "<div class=\"eyebrow\">Operator View</div>",
                     "<h1>TFIS Operator Dashboard</h1>",
                     "<p>Read-only, artifact-backed strategy pages for morning decision visibility across strategies and sessions.</p>",
-                    '<div class="tool-strip"><a class="tool-link" href="trades/index.html">All Trades Monitor</a><a class="tool-link" href="tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                    '<div class="tool-strip"><a class="tool-link" href="trades/index.html">All Trades Monitor</a><a class="tool-link" href="trades/history/index.html">Historical Trades</a><a class="tool-link" href="tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
                     "</header>",
                     "<section class=\"grid\">",
                     *(cards if cards else ["<p>No strategy data found.</p>"]),
@@ -1022,7 +1038,7 @@ class TfisOperatorDashboardBuilder:
                 f"<div class=\"eyebrow\">Strategy {html.escape(config.strategy_code)}</div>",
                 f"<h1>{html.escape(config.display_name)}</h1>",
                 f"<p>Operator page for {html.escape(config.strategy_code)}. Each stage is rendered from TFIS artifacts and reconstructed stage logic when stage-level explainers are not yet available.</p>",
-                '<div class="tool-strip"><a class="tool-link" href="../../trades/index.html">All Trades Monitor</a><a class="tool-link" href="../../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                '<div class="tool-strip"><a class="tool-link" href="../../trades/index.html">All Trades Monitor</a><a class="tool-link" href="../../trades/history/index.html">Historical Trades</a><a class="tool-link" href="../../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
                 "</header>",
                 "<section>",
                 "<h2>Latest Session</h2>",
@@ -1074,7 +1090,7 @@ class TfisOperatorDashboardBuilder:
                 "<div class=\"eyebrow\">Operator View</div>",
                 "<h1>All Trades Monitor</h1>",
                 "<p>Consolidated paper-order and position visibility across every configured TFIS strategy.</p>",
-                '<div class="tool-strip"><a class="tool-link" href="../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                '<div class="tool-strip"><a class="tool-link" href="history/index.html">Historical Trades</a><a class="tool-link" href="../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
                 "</header>",
                 "<section>",
                 "<h2>All Strategy Trades</h2>",
@@ -1088,6 +1104,60 @@ class TfisOperatorDashboardBuilder:
             ]
         )
         return self._render_page(title="All Trades Monitor", body=body)
+
+    def _render_historical_trades_page(
+        self,
+        *,
+        strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
+        dashboard_root: Path,
+        page_path: Path,
+    ) -> str:
+        rows = self._collect_historical_trade_rows(strategy_summaries)
+        body = "\n".join(
+            [
+                '<nav><a href="../../index.html">Back to strategy index</a></nav>',
+                "<header class=\"hero\">",
+                "<div class=\"eyebrow\">Operator View</div>",
+                "<h1>Historical Trades</h1>",
+                "<p>Closed-trade history across every configured TFIS strategy, with date and strategy filters for review.</p>",
+                '<div class="tool-strip"><a class="tool-link" href="../index.html">All Trades Monitor</a><a class="tool-link" href="../../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                "</header>",
+                "<section>",
+                "<h2>Closed Trade History</h2>",
+                '<div class="history-filter-shell">'
+                '<div class="history-filter-grid">'
+                '<label><span>Strategy</span><select id="historicalStrategyFilter"><option value="ALL">All Strategies</option></select></label>'
+                '<label><span>Range</span><select id="historicalRangePreset">'
+                '<option value="ALL">All Dates</option>'
+                '<option value="SINGLE_DAY">Single Day</option>'
+                '<option value="DATE_RANGE">Date Range</option>'
+                '<option value="CURRENT_WEEK">Current Week</option>'
+                '<option value="CURRENT_MONTH">Current Month</option>'
+                '<option value="CURRENT_YEAR">Current Year</option>'
+                '<option value="LAST_7_DAYS">Last 7 Days</option>'
+                "</select></label>"
+                '<label id="historicalStartDateWrap"><span>Start Date</span><input id="historicalStartDate" type="date"></label>'
+                '<label id="historicalEndDateWrap"><span>End Date</span><input id="historicalEndDate" type="date"></label>'
+                "</div>"
+                '<div class="summary-grid historical-summary-grid">'
+                '<div class="metric"><span>Trades</span><div class="value" id="historicalTradeCount">0</div></div>'
+                '<div class="metric"><span>Winning Trades</span><div class="value" id="historicalWinCount">0</div></div>'
+                '<div class="metric"><span>Total P&amp;L</span><div class="value" id="historicalTotalPnl">0</div></div>'
+                '<div class="metric"><span>Total Points</span><div class="value" id="historicalTotalPoints">0</div></div>'
+                "</div>"
+                "</div>",
+                '<div class="trade-table-wrap historical-table-wrap">',
+                '<table class="trade-table historical-trade-table">',
+                "<thead><tr><th>Exit Time</th><th>Entry Time</th><th>Strategy</th><th>Contract</th><th>Side / Qty</th><th>Entry</th><th>Exit</th><th>Target / SL</th><th>P&amp;L</th><th>Outcome</th></tr></thead>",
+                '<tbody id="historicalTradesTableBody"><tr><td colspan="10" class="empty-panel">No historical closed trades found.</td></tr></tbody>',
+                "</table>",
+                "</div>",
+                "</section>",
+                self._historical_trades_script(rows),
+                self._dashboard_refresh_script(),
+            ]
+        )
+        return self._render_page(title="Historical Trades", body=body)
 
     @staticmethod
     def _dashboard_refresh_script() -> str:
@@ -1182,6 +1252,8 @@ class TfisOperatorDashboardBuilder:
                     DashboardTradeLedgerRow(
                         session_date=self._parse_date(raw.get("session_date")),
                         event_timestamp=self._parse_datetime(event_timestamp_raw),
+                        entry_timestamp=self._parse_datetime(raw.get("entry_timestamp")),
+                        exit_timestamp=self._parse_datetime(raw.get("exit_timestamp")),
                         event_type=event_type,
                         trade_id=trade_id,
                         strategy_id=str(raw.get("strategy_id") or "n/a"),
@@ -1258,6 +1330,8 @@ class TfisOperatorDashboardBuilder:
                     DashboardTradeLedgerRow(
                         session_date=entry_date,
                         event_timestamp=self._parse_datetime(order_timestamp),
+                        entry_timestamp=self._parse_datetime(raw.get("order_timestamp")),
+                        exit_timestamp=None,
                         event_type=(
                             "ORDER_NOT_FILLED"
                             if status == "PAPER_ORDER_NOT_FILLED"
@@ -1301,6 +1375,31 @@ class TfisOperatorDashboardBuilder:
                 )
         return sorted(
             rows,
+            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+            reverse=True,
+        )
+
+    def _collect_historical_trade_rows(
+        self,
+        strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
+    ) -> list[DashboardTradeLedgerRow]:
+        latest_close_by_trade: dict[tuple[str, str], DashboardTradeLedgerRow] = {}
+        for config, _sessions in strategy_summaries:
+            for row in self._collect_trade_ledger_rows(config, latest_session_date=None):
+                if row.event_type.upper() != "CLOSE":
+                    continue
+                key = (row.strategy_code.upper(), row.trade_id)
+                current = latest_close_by_trade.get(key)
+                if current is None or (
+                    row.event_timestamp is not None
+                    and (
+                        current.event_timestamp is None
+                        or row.event_timestamp > current.event_timestamp
+                    )
+                ):
+                    latest_close_by_trade[key] = row
+        return sorted(
+            latest_close_by_trade.values(),
             key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
             reverse=True,
         )
@@ -1431,6 +1530,12 @@ class TfisOperatorDashboardBuilder:
             row_session_date = row.event_timestamp.date()
         if row_session_date == latest_session_date:
             return True
+        if (
+            row_session_date is not None
+            and row_session_date > latest_session_date
+            and self._trade_terminal(row)
+        ):
+            return True
         if self._trade_terminal(row):
             return False
         return self._trade_open(row) or self._trade_action_required(row)
@@ -1446,6 +1551,8 @@ class TfisOperatorDashboardBuilder:
         event_time = row.event_timestamp.isoformat(sep=" ", timespec="seconds") if row.event_timestamp else "n/a"
         status_labels = self._trade_status_labels(row)
         status_parts = [self._badge(label) for label in status_labels]
+        row_class = self._trade_row_tone_class(row)
+        pnl_class = self._trade_pnl_class(row)
         reason = html.escape(row.reason_code)
         normalized_message = self._normalized_trade_message(row)
         if normalized_message:
@@ -1459,7 +1566,7 @@ class TfisOperatorDashboardBuilder:
         contract_cell = self._render_trade_contract_cell(row)
         return "\n".join(
             [
-                "<tr>",
+                f"<tr class=\"{row_class}\">",
                 f"<td class=\"trade-time\">{html.escape(event_time)}</td>",
                 f"<td class=\"trade-event\">{self._badge(row.event_type)}</td>",
                 f"<td class=\"trade-strategy\">{strategy_cell}</td>",
@@ -1470,7 +1577,7 @@ class TfisOperatorDashboardBuilder:
                 f"<td class=\"trade-stream\">{stream_cell}</td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.exit_price)}</td>",
                 f"<td class=\"trade-number\">{self._fmt_number(row.target_price)}<br><span class=\"muted-text\">/ {self._fmt_number(row.stoploss_price)}</span></td>",
-                f"<td class=\"trade-number\">{self._fmt_number(row.gross_points)} pts<br><span class=\"muted-text\">{self._fmt_number(row.gross_pnl)}</span></td>",
+                f"<td class=\"trade-number {pnl_class}\">{self._fmt_number(row.gross_points)} pts<br><span class=\"muted-text {pnl_class}\">{self._fmt_number(row.gross_pnl)}</span></td>",
                 f"<td class=\"trade-status\"><div class=\"status-badges\">{' '.join(status_parts)}</div><div class=\"trade-reason\">{reason}</div></td>",
                 f"<td class=\"trade-manage\"><div class=\"artifact-links trade-links\">{self._render_links(row.raw_artifact_links, page_path=page_path)}</div></td>",
                 "</tr>",
@@ -1517,6 +1624,28 @@ class TfisOperatorDashboardBuilder:
         if not notes:
             return ""
         return "Follow-up: " + "; ".join(notes) + "."
+
+    def _trade_row_tone_class(self, row: DashboardTradeLedgerRow) -> str:
+        if self._trade_terminal(row):
+            return "trade-row-closed"
+        manager_status = row.manager_status.upper()
+        lifecycle_status = row.lifecycle_status.upper()
+        if row.fresh_entry_required or row.reverse_entry_required or row.rollover_required:
+            return "trade-row-action"
+        if manager_status == "PAPER_ORDER_NOT_FILLED" or lifecycle_status == "ORDER_NOT_FILLED":
+            return "trade-row-not-filled"
+        if manager_status == "PAPER_ORDER_WAITING_FOR_TRIGGER" or lifecycle_status == "ORDER_WAITING_FOR_TRIGGER":
+            return "trade-row-waiting"
+        if self._trade_open(row):
+            return "trade-row-open"
+        return "trade-row-neutral"
+
+    @staticmethod
+    def _trade_pnl_class(row: DashboardTradeLedgerRow) -> str:
+        gross_pnl = row.gross_pnl
+        if gross_pnl is None:
+            return ""
+        return "good-text" if gross_pnl >= 0 else "bad-text"
 
     def _render_trade_strategy_cell(self, row: DashboardTradeLedgerRow) -> str:
         strategy_code = html.escape(str(row.strategy_code or "n/a"))
@@ -3094,6 +3223,11 @@ class TfisOperatorDashboardBuilder:
                     summary.get("order_placement_block_reason")
                     or "ORDER_PLACEMENT_BLOCKED"
                 )
+                if order_status == "OPEN_CARRY_FORWARD_POSITION":
+                    order_status = (
+                        self._latest_strategy_position_override_status(config)
+                        or order_status
+                    )
             option_type = str(summary.get("selected_contract_option_type") or "").upper()
             side = "SELL PE" if option_type in {"PE", "PUT"} else "SELL CE" if option_type in {"CE", "CALL"} else "SELL"
             branch = str(summary.get("strategy_branch") or summary_path.parent.name)
@@ -3137,6 +3271,44 @@ class TfisOperatorDashboardBuilder:
             )
         )
         return tuple(rows)
+
+    def _latest_strategy_position_override_status(
+        self,
+        config: StrategyDashboardConfig,
+    ) -> str | None:
+        artifact_root = config.artifact_root
+        if not artifact_root.exists():
+            return None
+        latest_terminal_status: str | None = None
+        latest_terminal_timestamp: datetime | None = None
+        for state_path in sorted(artifact_root.rglob("paper_position_state.json")):
+            try:
+                raw_state = self._read_json(state_path)
+            except (OSError, json.JSONDecodeError):
+                continue
+            if not isinstance(raw_state, dict):
+                continue
+            strategy_code = str(raw_state.get("strategy_code") or config.strategy_code)
+            if strategy_code.upper() != config.strategy_code.upper():
+                continue
+            lifecycle_status = str(raw_state.get("lifecycle_status") or "")
+            if lifecycle_status in {
+                "PAPER_POSITION_OPEN",
+                "PAPER_POSITION_CARRIED_FORWARD",
+                "PAPER_POSITION_RESUMED",
+            }:
+                return None
+            timestamp = self._parse_datetime(
+                raw_state.get("last_updated_timestamp")
+                or raw_state.get("entry_timestamp")
+                or ""
+            )
+            if timestamp is None:
+                continue
+            if latest_terminal_timestamp is None or timestamp > latest_terminal_timestamp:
+                latest_terminal_timestamp = timestamp
+                latest_terminal_status = lifecycle_status or None
+        return latest_terminal_status
 
     def _session_failed_leg_rows(
         self,
@@ -3837,6 +4009,208 @@ class TfisOperatorDashboardBuilder:
         if value == "PAPER_ORDER_NOT_FILLED":
             return "ORDER_NOT_FILLED"
         return value
+
+    def _historical_trades_script(self, rows: list[DashboardTradeLedgerRow]) -> str:
+        payload = [
+            {
+                "trade_id": row.trade_id,
+                "strategy_code": row.strategy_code,
+                "strategy_branch": row.strategy_branch,
+                "strategy_label": self._short_s23_branch_label(row.strategy_branch),
+                "selected_contract_symbol": row.selected_contract_symbol,
+                "side": row.side,
+                "lots": row.lots,
+                "quantity": row.quantity,
+                "entry_price": row.entry_price,
+                "exit_price": row.exit_price,
+                "target_price": row.target_price,
+                "stoploss_price": row.stoploss_price,
+                "gross_points": row.gross_points,
+                "gross_pnl": row.gross_pnl,
+                "entry_timestamp": row.entry_timestamp.isoformat() if row.entry_timestamp else None,
+                "exit_timestamp": row.exit_timestamp.isoformat() if row.exit_timestamp else (row.event_timestamp.isoformat() if row.event_timestamp else None),
+                "reason_code": row.reason_code,
+                "message": self._normalized_trade_message(row),
+            }
+            for row in rows
+        ]
+        return f"""
+<script>
+(function(){{
+  var allRows = {json.dumps(payload, default=str)};
+  var strategySelect = document.getElementById("historicalStrategyFilter");
+  var rangePreset = document.getElementById("historicalRangePreset");
+  var startInput = document.getElementById("historicalStartDate");
+  var endInput = document.getElementById("historicalEndDate");
+  var startWrap = document.getElementById("historicalStartDateWrap");
+  var endWrap = document.getElementById("historicalEndDateWrap");
+  var tableBody = document.getElementById("historicalTradesTableBody");
+  var tradeCount = document.getElementById("historicalTradeCount");
+  var winCount = document.getElementById("historicalWinCount");
+  var totalPnl = document.getElementById("historicalTotalPnl");
+  var totalPoints = document.getElementById("historicalTotalPoints");
+
+  function fmtNumber(value) {{
+    if (value === null || value === undefined || value === "") return "n/a";
+    var number = Number(value);
+    if (!Number.isFinite(number)) return String(value);
+    if (Math.abs(number - Math.round(number)) < 1e-9) return String(Math.round(number));
+    return number.toFixed(2);
+  }}
+
+  function fmtDateTime(value) {{
+    if (!value) return "n/a";
+    var dt = new Date(value);
+    if (Number.isNaN(dt.getTime())) return String(value);
+    var y = dt.getFullYear();
+    var m = String(dt.getMonth() + 1).padStart(2, "0");
+    var d = String(dt.getDate()).padStart(2, "0");
+    var hh = String(dt.getHours()).padStart(2, "0");
+    var mm = String(dt.getMinutes()).padStart(2, "0");
+    var ss = String(dt.getSeconds()).padStart(2, "0");
+    return y + "-" + m + "-" + d + " " + hh + ":" + mm + ":" + ss;
+  }}
+
+  function fmtDate(value) {{
+    if (!value) return null;
+    var dt = new Date(value);
+    if (Number.isNaN(dt.getTime())) return null;
+    return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+  }}
+
+  function escapeHtml(text) {{
+    return String(text == null ? "" : text)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }}
+
+  function updateStrategyOptions() {{
+    var strategies = Array.from(new Set(allRows.map(function(row) {{ return row.strategy_code; }}))).sort();
+    strategies.forEach(function(strategy) {{
+      var option = document.createElement("option");
+      option.value = strategy;
+      option.textContent = strategy;
+      strategySelect.appendChild(option);
+    }});
+  }}
+
+  function updateDateInputsVisibility() {{
+    var preset = rangePreset.value;
+    var showStart = preset === "SINGLE_DAY" || preset === "DATE_RANGE";
+    var showEnd = preset === "DATE_RANGE";
+    startWrap.style.display = showStart ? "grid" : "none";
+    endWrap.style.display = showEnd ? "grid" : "none";
+  }}
+
+  function resolveRange() {{
+    var preset = rangePreset.value;
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (preset === "ALL") return {{ start: null, end: null }};
+    if (preset === "LAST_7_DAYS") {{
+      var start = new Date(today);
+      start.setDate(start.getDate() - 6);
+      return {{ start: start, end: today }};
+    }}
+    if (preset === "CURRENT_WEEK") {{
+      var day = today.getDay();
+      var mondayOffset = day === 0 ? -6 : 1 - day;
+      var weekStart = new Date(today);
+      weekStart.setDate(today.getDate() + mondayOffset);
+      var weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      return {{ start: weekStart, end: weekEnd }};
+    }}
+    if (preset === "CURRENT_MONTH") {{
+      return {{
+        start: new Date(today.getFullYear(), today.getMonth(), 1),
+        end: new Date(today.getFullYear(), today.getMonth() + 1, 0),
+      }};
+    }}
+    if (preset === "CURRENT_YEAR") {{
+      return {{
+        start: new Date(today.getFullYear(), 0, 1),
+        end: new Date(today.getFullYear(), 11, 31),
+      }};
+    }}
+    if (preset === "SINGLE_DAY") {{
+      var selectedDay = startInput.value ? fmtDate(startInput.value) : null;
+      return {{ start: selectedDay, end: selectedDay }};
+    }}
+    if (preset === "DATE_RANGE") {{
+      return {{
+        start: startInput.value ? fmtDate(startInput.value) : null,
+        end: endInput.value ? fmtDate(endInput.value) : null,
+      }};
+    }}
+    return {{ start: null, end: null }};
+  }}
+
+  function filterRows() {{
+    var strategy = strategySelect.value;
+    var range = resolveRange();
+    return allRows.filter(function(row) {{
+      if (strategy !== "ALL" && row.strategy_code !== strategy) return false;
+      var exitDate = fmtDate(row.exit_timestamp);
+      if (range.start && (!exitDate || exitDate < range.start)) return false;
+      if (range.end && (!exitDate || exitDate > range.end)) return false;
+      return true;
+    }});
+  }}
+
+  function renderRows(rows) {{
+    if (!rows.length) {{
+      tableBody.innerHTML = '<tr><td colspan="10" class="empty-panel">No closed trades match the selected filters.</td></tr>';
+      return;
+    }}
+    tableBody.innerHTML = rows.map(function(row) {{
+      var pnl = Number(row.gross_pnl || 0);
+      var pnlClass = pnl >= 0 ? "good-text" : "bad-text";
+      return [
+        "<tr>",
+        "<td>" + escapeHtml(fmtDateTime(row.exit_timestamp)) + "</td>",
+        "<td>" + escapeHtml(fmtDateTime(row.entry_timestamp)) + "</td>",
+        "<td><div class=\\"compact-cell\\"><strong>" + escapeHtml(row.strategy_code) + "</strong><span class=\\"muted-text\\">" + escapeHtml(row.strategy_label) + "</span></div></td>",
+        "<td><div class=\\"compact-cell contract-compact\\"><strong>" + escapeHtml(row.selected_contract_symbol) + "</strong><span class=\\"muted-text\\">" + escapeHtml(row.trade_id) + "</span></div></td>",
+        "<td><strong>" + escapeHtml(row.side || "n/a") + "</strong><br>" + escapeHtml(fmtNumber(row.lots)) + " lots / " + escapeHtml(fmtNumber(row.quantity)) + "</td>",
+        "<td>" + escapeHtml(fmtNumber(row.entry_price)) + "</td>",
+        "<td>" + escapeHtml(fmtNumber(row.exit_price)) + "</td>",
+        "<td>" + escapeHtml(fmtNumber(row.target_price)) + "<br><span class=\\"muted-text\\">/ " + escapeHtml(fmtNumber(row.stoploss_price)) + "</span></td>",
+        "<td><span class=\\"" + pnlClass + "\\">" + escapeHtml(fmtNumber(row.gross_points)) + " pts</span><br><span class=\\"muted-text " + pnlClass + "\\">" + escapeHtml(fmtNumber(row.gross_pnl)) + "</span></td>",
+        "<td><div class=\\"status-badges\\"><span class=\\"badge badge-position_closed\\">POSITION_CLOSED</span></div><div class=\\"trade-reason\\">" + escapeHtml(row.reason_code || "n/a") + "<br><span class=\\"muted-text\\">" + escapeHtml(row.message || "") + "</span></div></td>",
+        "</tr>"
+      ].join("");
+    }}).join("");
+  }}
+
+  function updateSummary(rows) {{
+    var wins = rows.filter(function(row) {{ return Number(row.gross_pnl || 0) > 0; }}).length;
+    var totalAmount = rows.reduce(function(sum, row) {{ return sum + Number(row.gross_pnl || 0); }}, 0);
+    var totalPts = rows.reduce(function(sum, row) {{ return sum + Number(row.gross_points || 0); }}, 0);
+    tradeCount.textContent = String(rows.length);
+    winCount.textContent = String(wins);
+    totalPnl.textContent = fmtNumber(totalAmount);
+    totalPoints.textContent = fmtNumber(totalPts);
+  }}
+
+  function refresh() {{
+    updateDateInputsVisibility();
+    var filtered = filterRows();
+    renderRows(filtered);
+    updateSummary(filtered);
+  }}
+
+  updateStrategyOptions();
+  [strategySelect, rangePreset, startInput, endInput].forEach(function(element) {{
+    element.addEventListener("change", refresh);
+    element.addEventListener("input", refresh);
+  }});
+  refresh();
+}})();
+</script>"""
 
     def _render_monthly_status_calculator_page(
         self,
@@ -4911,6 +5285,10 @@ calculate();
                 "    .badge-in_progress, .badge-unknown, .badge-no_trigger, .badge-n_a, .badge-none { color: var(--unknown); background: rgba(91,95,151,0.1); }",
                 "    .badge-warning, .badge-pending { color: var(--pending); background: rgba(148,98,0,0.1); }",
                 "    .badge-no_go, .badge-failed, .badge-rejected, .badge-no { color: var(--bad); background: rgba(154,52,18,0.1); }",
+                "    .badge-position_closed, .badge-close { color: #0f766e; background: rgba(15,118,110,0.12); }",
+                "    .badge-order_not_filled { color: #b45309; background: rgba(180,83,9,0.13); }",
+                "    .badge-order_waiting_for_trigger, .badge-order_waiting { color: #4338ca; background: rgba(67,56,202,0.11); }",
+                "    .badge-fresh_entry, .badge-fresh_entry_required, .badge-reverse_entry, .badge-rollover { color: #92400e; background: rgba(217,119,6,0.14); }",
                 "    .focus-panel { margin: 14px 0; padding: 14px 16px; border-radius: 8px; background: #fff9f0; border: 1px solid #e9dcc7; }",
                 "    .focus-panel p { margin: 0 0 10px; } .focus-panel p:last-child { margin-bottom: 0; }",
                 "    .rule-step-panel, .formula-panel, .candidate-panel { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e1d3bd; }",
@@ -5020,6 +5398,19 @@ calculate();
                 "    .trade-table th, .trade-table td { padding: 10px 10px; vertical-align: top; }",
                 "    .trade-table th { color: #3f493f; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }",
                 "    .trade-table .badge { display: inline-flex; max-width: 100%; padding: 4px 8px; font-size: 0.68rem; line-height: 1; white-space: nowrap; }",
+                "    .trade-table tbody tr.trade-row-closed td { background: rgba(15, 118, 110, 0.07); }",
+                "    .trade-table tbody tr.trade-row-action td { background: rgba(217, 119, 6, 0.08); }",
+                "    .trade-table tbody tr.trade-row-not-filled td { background: rgba(180, 83, 9, 0.08); }",
+                "    .trade-table tbody tr.trade-row-waiting td { background: rgba(67, 56, 202, 0.07); }",
+                "    .trade-table tbody tr.trade-row-open td { background: rgba(14, 116, 144, 0.07); }",
+                "    .trade-table tbody tr.trade-row-neutral td { background: transparent; }",
+                "    .history-filter-shell { display: grid; gap: 14px; margin-bottom: 14px; }",
+                "    .history-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }",
+                "    .historical-summary-grid { margin-top: 0; }",
+                "    .historical-table-wrap { margin-top: 8px; }",
+                "    .historical-trade-table { min-width: 1480px; }",
+                "    .good-text { color: #0f766e; }",
+                "    .bad-text { color: #b45309; }",
                 "    .trade-time { width: 105px; white-space: normal; }",
                 "    .trade-event { width: 118px; text-align: center; }",
                 "    .trade-strategy { width: 95px; overflow-wrap: anywhere; }",
