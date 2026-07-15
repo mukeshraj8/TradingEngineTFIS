@@ -160,8 +160,17 @@ class TfisOperatorDashboardBuilder:
         self._strategy_configs = strategy_configs
         self._timeline_builder = S23LiveDecisionTimelineBuilder()
         self._repo_root = Path.cwd().resolve()
+        self._jsonl_cache: dict[Path, list[dict[str, Any]]] = {}
+        self._stream_health_cache: dict[tuple[str, str], DashboardSelectedContractStreamHealth] = {}
+        self._trade_rows_cache: dict[
+            tuple[str, str | None, bool, bool],
+            list[DashboardTradeLedgerRow],
+        ] = {}
 
     def build(self, *, output_root: str | Path) -> DashboardBuildResult:
+        self._jsonl_cache.clear()
+        self._stream_health_cache.clear()
+        self._trade_rows_cache.clear()
         target = Path(output_root)
         target.mkdir(parents=True, exist_ok=True)
         summaries = [self._collect_strategy_sessions(config) for config in self._strategy_configs]
@@ -1205,7 +1214,18 @@ class TfisOperatorDashboardBuilder:
         config: StrategyDashboardConfig,
         *,
         latest_session_date: date | None = None,
+        include_stream_health: bool = True,
+        include_pending_orders: bool = True,
     ) -> list[DashboardTradeLedgerRow]:
+        cache_key = (
+            config.strategy_code.upper(),
+            latest_session_date.isoformat() if latest_session_date is not None else None,
+            include_stream_health,
+            include_pending_orders,
+        )
+        cached_rows = self._trade_rows_cache.get(cache_key)
+        if cached_rows is not None:
+            return cached_rows
         candidate_paths: set[Path] = set()
         if config.artifact_root.exists():
             candidate_paths.update(config.artifact_root.rglob("paper_trade_ledger.jsonl"))
@@ -1244,9 +1264,13 @@ class TfisOperatorDashboardBuilder:
                     continue
                 seen.add(identity)
                 selected_contract = str(raw.get("selected_contract_symbol") or "n/a")
-                stream_health = self._selected_contract_stream_health(
-                    state_directory=state_directory,
-                    selected_contract_symbol=selected_contract,
+                stream_health = (
+                    self._selected_contract_stream_health(
+                        state_directory=state_directory,
+                        selected_contract_symbol=selected_contract,
+                    )
+                    if include_stream_health
+                    else DashboardSelectedContractStreamHealth()
                 )
                 rows.append(
                     DashboardTradeLedgerRow(
@@ -1287,7 +1311,7 @@ class TfisOperatorDashboardBuilder:
                         ),
                     )
                 )
-        if config.artifact_root.exists():
+        if include_pending_orders and config.artifact_root.exists():
             for order_path in sorted(config.artifact_root.rglob("paper_order_state.json")):
                 try:
                     raw = self._read_json(order_path)
@@ -1322,9 +1346,13 @@ class TfisOperatorDashboardBuilder:
                 if identity in seen:
                     continue
                 seen.add(identity)
-                stream_health = self._selected_contract_stream_health(
-                    state_directory=state_directory,
-                    selected_contract_symbol=selected_contract,
+                stream_health = (
+                    self._selected_contract_stream_health(
+                        state_directory=state_directory,
+                        selected_contract_symbol=selected_contract,
+                    )
+                    if include_stream_health
+                    else DashboardSelectedContractStreamHealth()
                 )
                 rows.append(
                     DashboardTradeLedgerRow(
@@ -1373,11 +1401,13 @@ class TfisOperatorDashboardBuilder:
                         ),
                     )
                 )
-        return sorted(
+        sorted_rows = sorted(
             rows,
             key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
             reverse=True,
         )
+        self._trade_rows_cache[cache_key] = sorted_rows
+        return sorted_rows
 
     def _collect_historical_trade_rows(
         self,
@@ -1385,7 +1415,12 @@ class TfisOperatorDashboardBuilder:
     ) -> list[DashboardTradeLedgerRow]:
         latest_close_by_trade: dict[tuple[str, str], DashboardTradeLedgerRow] = {}
         for config, _sessions in strategy_summaries:
-            for row in self._collect_trade_ledger_rows(config, latest_session_date=None):
+            for row in self._collect_trade_ledger_rows(
+                config,
+                latest_session_date=None,
+                include_stream_health=False,
+                include_pending_orders=False,
+            ):
                 if row.event_type.upper() != "CLOSE":
                     continue
                 key = (row.strategy_code.upper(), row.trade_id)
@@ -3852,6 +3887,10 @@ class TfisOperatorDashboardBuilder:
             return DashboardSelectedContractStreamHealth()
         if not state_directory.exists():
             return DashboardSelectedContractStreamHealth()
+        cache_key = (str(state_directory.resolve()), symbol)
+        cached_health = self._stream_health_cache.get(cache_key)
+        if cached_health is not None:
+            return cached_health
 
         matched_events: list[tuple[datetime | None, dict[str, Any]]] = []
         for event_path in sorted(state_directory.glob("selected_contract_market_events*.jsonl")):
@@ -3862,7 +3901,9 @@ class TfisOperatorDashboardBuilder:
                 event_time = self._parse_datetime(self._selected_contract_event_timestamp(event))
                 matched_events.append((event_time, event))
         if not matched_events:
-            return DashboardSelectedContractStreamHealth()
+            health = DashboardSelectedContractStreamHealth()
+            self._stream_health_cache[cache_key] = health
+            return health
 
         latest_time, latest_event = max(
             matched_events,
@@ -3879,7 +3920,7 @@ class TfisOperatorDashboardBuilder:
         payload = latest_event.get("payload") if isinstance(latest_event.get("payload"), dict) else {}
         envelope = payload.get("envelope") if isinstance(payload.get("envelope"), dict) else {}
         source = str(envelope.get("source_id") or envelope.get("source_type") or latest_event.get("source") or "")
-        return DashboardSelectedContractStreamHealth(
+        health = DashboardSelectedContractStreamHealth(
             event_count=len(matched_events),
             latest_event_at=latest_time,
             latest_event_kind=str(latest_event.get("event_kind") or latest_event.get("event_type") or ""),
@@ -3888,6 +3929,8 @@ class TfisOperatorDashboardBuilder:
             age_seconds=age_seconds,
             health_status=health_status,
         )
+        self._stream_health_cache[cache_key] = health
+        return health
 
     @staticmethod
     def _selected_contract_event_symbol(event: dict[str, Any]) -> str:
@@ -3906,9 +3949,12 @@ class TfisOperatorDashboardBuilder:
             or ""
         )
 
-    @staticmethod
-    def _iter_jsonl_dicts(path: Path) -> list[dict[str, Any]]:
+    def _iter_jsonl_dicts(self, path: Path) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
+        resolved_path = path.resolve()
+        cached_rows = self._jsonl_cache.get(resolved_path)
+        if cached_rows is not None:
+            return cached_rows
         try:
             with path.open("r", encoding="utf-8") as handle:
                 for line in handle:
@@ -3922,7 +3968,9 @@ class TfisOperatorDashboardBuilder:
                     if isinstance(loaded, dict):
                         rows.append(loaded)
         except OSError:
+            self._jsonl_cache[resolved_path] = rows
             return rows
+        self._jsonl_cache[resolved_path] = rows
         return rows
 
     @staticmethod

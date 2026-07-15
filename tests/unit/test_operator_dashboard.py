@@ -1141,6 +1141,75 @@ def test_dashboard_reconstructs_stage_from_snapshot_dir(tmp_path: Path) -> None:
     assert "normalized_underlying_bars.json" in strategy_html
 
 
+def test_dashboard_builder_caches_jsonl_reads_within_one_build_session(tmp_path: Path) -> None:
+    artifact_root = tmp_path / "artifacts"
+    artifact_root.mkdir(parents=True)
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(artifact_root),))
+    jsonl_path = artifact_root / "sample.jsonl"
+    jsonl_path.write_text('{"event_type":"HOLD","trade_id":"T1"}\n', encoding="utf-8")
+
+    first_rows = builder._iter_jsonl_dicts(jsonl_path)
+    jsonl_path.write_text('{"event_type":"CLOSE","trade_id":"T2"}\n', encoding="utf-8")
+    second_rows = builder._iter_jsonl_dicts(jsonl_path)
+
+    assert first_rows == second_rows
+    assert second_rows[0]["trade_id"] == "T1"
+
+
+def test_historical_trade_collection_skips_stream_health_scans(tmp_path: Path) -> None:
+    artifact_root = tmp_path / "artifacts"
+    session_dir = artifact_root / "2026-07-15" / "s23-fyers-morning-supervised-decision-2026-07-15" / "LEG"
+    session_dir.mkdir(parents=True)
+    (session_dir / "paper_position_state.json").write_text(
+        json.dumps({"lifecycle_status": "PAPER_POSITION_CLOSED"}),
+        encoding="utf-8",
+    )
+    (session_dir / "paper_trade_ledger.jsonl").write_text(
+        json.dumps(
+            {
+                "event_timestamp": "2026-07-15T12:57:59+05:30",
+                "entry_timestamp": "2026-07-08T12:24:59+05:30",
+                "exit_timestamp": "2026-07-15T12:57:59+05:30",
+                "event_type": "CLOSE",
+                "trade_id": "S23-LEG-NIFTY_20260721_24200_CE-20260708T122459",
+                "strategy_id": "S23:LEG",
+                "strategy_code": "S23",
+                "strategy_branch": "LEG",
+                "selected_contract_symbol": "NIFTY_20260721_24200_CE",
+                "side": "SELL",
+                "lots": 1,
+                "quantity": 65,
+                "entry_price": 209.0,
+                "exit_price": 86.10,
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "gross_points": 122.90,
+                "gross_pnl": 7988.50,
+                "lifecycle_status": "PAPER_POSITION_CLOSED",
+                "manager_status": "PAPER_POSITION_CLOSED",
+                "reason_code": "target_hit",
+                "message": "Closed on target.",
+                "state_directory": str(session_dir),
+                "session_date": "2026-07-15",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(artifact_root),))
+
+    def fail_stream_health(*_args, **_kwargs):
+        raise AssertionError("historical trade collection should not scan stream health")
+
+    builder._selected_contract_stream_health = fail_stream_health  # type: ignore[method-assign]
+
+    rows = builder._collect_historical_trade_rows([(_strategy_config(artifact_root), [])])
+
+    assert len(rows) == 1
+    assert rows[0].trade_id == "S23-LEG-NIFTY_20260721_24200_CE-20260708T122459"
+
+
 def test_strategy_page_prefers_current_position_truth_over_stale_carry_forward_block(tmp_path: Path) -> None:
     artifact_root = tmp_path / "s23-artifacts"
     latest_day_dir = artifact_root / "2026-07-14"

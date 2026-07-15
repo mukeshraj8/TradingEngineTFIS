@@ -26,6 +26,18 @@
 - S23 operator dashboard now also accepts latest stage-level explainers as
   review artifacts for no-contract legs, so failed CE/PE calculations remain
   visible even when no final selected-leg summary artifact was written.
+- TFIS reset/recovery now uses one explicit dashboard build plus
+  `serve_operator_dashboard.py --skip-build`, and the reset script now also
+  narrows process discovery to likely TFIS host processes, stops matched TFIS
+  process trees directly, and waits for the dashboard port to accept
+  connections before declaring startup complete
+- TFIS operator dashboard builds now reuse in-process caches for parsed JSONL
+  artifacts, selected-contract stream health, and trade-row collections, which
+  cuts repeated rereads of large market-event and ledger files during one reset
+  or rebuild cycle
+- Historical-trades dashboard rendering now skips live stream-health and
+  pending-order scans, reducing operator-dashboard rebuild time further on real
+  TFIS artifact sets
 - S23 operator dashboard strike audit now shows rule-sheet search order,
   side-filtered and expiry-scoped full strike scans, derived rejection reasons,
   and explicit qualification reasons for `PASSED` and `SELECTED` rows

@@ -29,6 +29,11 @@ change in a meaningful way.
 - reduce TFIS dashboard startup delay: the reset flow now builds the operator
   dashboard once and starts `serve_operator_dashboard.py` in `--skip-build`
   mode so the local server does not repeat the same expensive artifact rebuild
+- execute the runtime refactor in controlled phases: Phase 1 stabilizes the
+  shared paper lifecycle and dashboard consistency across S21/S23, Phase 2
+  introduces a strategy-neutral trade-intent/runtime contract, Phase 3 replaces
+  scattered watcher thinking with one reusable lifecycle supervisor, and Phase 4
+  separates broker adapters from lifecycle management
   before opening port `8765`
 
 ## Money-Ready Phase Milestones
@@ -201,6 +206,21 @@ Current S23 paper-mode posture:
   TFIS dashboard server and TFIS watcher/runtime consoles as visible windows
   instead of hidden background processes, matching the operator-facing manual
   watcher launchers so active TFIS runtime can be found after reboot/recovery.
+- `DONE`: `scripts/reset_tfis_dashboard_and_watchers.ps1` now narrows runtime
+  discovery to likely TFIS host processes, stops matched TFIS process trees via
+  `taskkill /T /F`, waits on the exact stopped PIDs instead of repeatedly
+  rescanning the whole machine, and confirms when the dashboard port is
+  accepting connections before the reset flow reports success.
+- `DONE`: `src/tfis/dashboard/operator_dashboard.py` now caches parsed JSONL
+  artifacts, selected-contract stream-health calculations, and per-strategy
+  trade-row collections within a single dashboard build so the reset flow does
+  not reread the same large market-event and ledger files repeatedly while
+  rendering strategy, all-trades, and historical-trades pages.
+- `DONE`: Historical closed-trade rendering no longer computes live
+  selected-contract stream health or scans pending-order state while building
+  `trades/history/index.html`. That path now reads only the closed-ledger data
+  it needs, which removes one major rebuild hotspot from
+  `reset_tfis_dashboard_and_watchers.ps1`.
 - `DONE`: The 2026-07-03 scheduled startup failure was traced to a PowerShell
   scalar/array edge case when exactly one open carry-forward state was
   discovered. The wrapper now preserves discovered state paths as arrays in the

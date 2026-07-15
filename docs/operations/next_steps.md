@@ -6,7 +6,14 @@ way.
 
 ## Immediate Next Priorities
 
-1. Run the next pre-market operator checklist and supervised paper start.
+1. Execute the runtime refactor phase by phase, starting with Phase 1
+   stabilization only. Phase 1 should finish shared paper lifecycle ownership,
+   dashboard consistency, and S21/S23 parity on waiting/open/closed trade
+   visibility before any broader architectural move. Phase 2 is the
+   strategy-neutral trade-intent/runtime contract. Phase 3 is the single
+   reusable lifecycle supervisor that replaces scattered watcher thinking.
+   Phase 4 is broker-adapter separation from lifecycle logic.
+2. Run the next pre-market operator checklist and supervised paper start.
    The local readiness gate now has a dedicated command:
    `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token`.
    Current local output is `PASS`, so the remaining work is operator-time
@@ -30,13 +37,13 @@ way.
    `serve_operator_dashboard.py --skip-build` after the explicit rebuild step,
    so the expected operator experience is one visible rebuild followed by the
    dashboard opening on `127.0.0.1:8765` without a second hidden startup build.
-2. Validate S23 live ORPT/RC timing finalization during the next real market
+3. Validate S23 live ORPT/RC timing finalization during the next real market
    session. The supervised live decision path now builds a provisional base
    selection at ORPT, finalizes and places the waiting paper order from that
    ORPT selection when the selected option has not missed entry, and reserves
    RC for the missed-entry recalculation path only. The remaining work is live
    market evidence across CE/PE and near/next-expiry cases.
-3. Validate S23 next-day SL reset after a 15:00 carry-forward in a real market
+4. Validate S23 next-day SL reset after a 15:00 carry-forward in a real market
    session. The paper position manager now records overnight SL inactive
    carry-forward when price is not above original SL, keeps target active the
    next day, reactivates the original SL at ORPT when `09:15` high does not
@@ -51,7 +58,7 @@ way.
    `READY` decision into a waiting paper order. It must only be used after
    confirming no active S23 paper position remains. The follow-up runtime task
    is to automate this handoff inside the watcher/position-manager flow.
-4. Validate S23 live order-watcher/current-price visibility end to end.
+5. Validate S23 live order-watcher/current-price visibility end to end.
    The scheduled startup wrapper now starts one paper watcher per produced order
    or open position, scans the durable S23 artifact root for persisted
    open/carry-forward positions, and captures the supervised Python process
