@@ -16,7 +16,7 @@ if str(SRC_ROOT) not in sys.path:
 
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
-from tfis.paper import S23PaperOrderFinalizer, S23PaperOrderFinalizerSummary
+from tfis.paper import PaperOrderFinalizer, PaperOrderFinalizerSummary
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -54,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     timezone = ZoneInfo(args.timezone)
     session_date = date.fromisoformat(args.session_date) if args.session_date else datetime.now(timezone).date()
     marked_at = datetime.now(timezone)
-    summary = S23PaperOrderFinalizer().finalize(
+    summary = PaperOrderFinalizer().finalize(
         REPO_ROOT / args.artifact_root,
         session_date=session_date,
         marked_at=marked_at,
@@ -100,7 +100,7 @@ def _parse_hhmm(value: str) -> time:
         raise argparse.ArgumentTypeError("--cutoff must be HH:MM") from exc
 
 
-def _summary_json(summary: S23PaperOrderFinalizerSummary) -> str:
+def _summary_json(summary: PaperOrderFinalizerSummary) -> str:
     payload = asdict(summary)
     return json.dumps(_normalize(payload), indent=2, sort_keys=True)
 
@@ -117,7 +117,7 @@ def _normalize(value):
     return value
 
 
-def _print_summary(summary: S23PaperOrderFinalizerSummary) -> None:
+def _print_summary(summary: PaperOrderFinalizerSummary) -> None:
     mode = "DRY RUN" if summary.dry_run else "APPLIED"
     print("TFIS S23 paper order finalizer")
     print(f"Mode       : {mode}")

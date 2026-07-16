@@ -19,12 +19,34 @@ from tfis.paper.expiry_governance import (
 from tfis.paper.fyers_snapshot_collector import S23CollectedSnapshotInputs
 from tfis.paper.live_decision_timeline import S23LiveDecisionTimelineBuilder
 from tfis.paper.live_prelude import S23PaperPreludeSessionContext
+from tfis.paper.order_state import (
+    paper_order_trade_event_type,
+    paper_order_trade_lifecycle_status,
+    paper_order_visible_in_trade_monitor,
+)
+from tfis.paper.position_state import paper_position_is_active
 from tfis.paper.models import (
     EventEnvelope,
     OptionChainContract,
     OptionChainSnapshotEvent,
     PaperEventType,
     UnderlyingQuoteEvent,
+)
+from tfis.paper.trade_ledger import (
+    paper_trade_action_required,
+    paper_trade_branch_label,
+    paper_trade_display_status_label,
+    paper_trade_followup_note,
+    paper_trade_is_open,
+    paper_trade_is_terminal,
+    paper_trade_normalized_message,
+    paper_trade_option_label,
+    paper_trade_pnl_tone,
+    paper_trade_select_display_row,
+    paper_trade_status_labels,
+    paper_trade_summary_counts,
+    paper_trade_status_kind,
+    paper_trade_visible_for_latest_session,
 )
 from tfis.paper.runtime_input_derivation import load_s23_decision_reference_packet
 
@@ -1318,7 +1340,7 @@ class TfisOperatorDashboardBuilder:
                 except (OSError, json.JSONDecodeError):
                     continue
                 status = str(raw.get("status") or "")
-                if status not in {"PAPER_ORDER_WAITING_FOR_TRIGGER", "PAPER_ORDER_NOT_FILLED"}:
+                if not paper_order_visible_in_trade_monitor(status):
                     continue
                 entry_date = self._parse_date(raw.get("entry_date"))
                 if latest_session_date is not None and entry_date != latest_session_date:
@@ -1339,7 +1361,7 @@ class TfisOperatorDashboardBuilder:
                 identity = (
                     trade_id,
                     order_timestamp,
-                    "ORDER_NOT_FILLED" if status == "PAPER_ORDER_NOT_FILLED" else "ORDER_WAITING",
+                    paper_order_trade_event_type(status),
                     status,
                     str(raw.get("last_reason_code") or "paper_order_waiting_for_entry_trigger"),
                 )
@@ -1360,11 +1382,7 @@ class TfisOperatorDashboardBuilder:
                         event_timestamp=self._parse_datetime(order_timestamp),
                         entry_timestamp=self._parse_datetime(raw.get("order_timestamp")),
                         exit_timestamp=None,
-                        event_type=(
-                            "ORDER_NOT_FILLED"
-                            if status == "PAPER_ORDER_NOT_FILLED"
-                            else "ORDER_WAITING"
-                        ),
+                        event_type=paper_order_trade_event_type(status),
                         trade_id=trade_id,
                         strategy_id=f"{strategy_code}:{strategy_branch}",
                         strategy_code=strategy_code,
@@ -1382,11 +1400,7 @@ class TfisOperatorDashboardBuilder:
                         stoploss_price=self._float_or_none(raw.get("stoploss_price")),
                         gross_points=None,
                         gross_pnl=None,
-                        lifecycle_status=(
-                            "ORDER_NOT_FILLED"
-                            if status == "PAPER_ORDER_NOT_FILLED"
-                            else "ORDER_WAITING_FOR_TRIGGER"
-                        ),
+                        lifecycle_status=paper_order_trade_lifecycle_status(status),
                         manager_status=status,
                         reason_code=str(raw.get("last_reason_code") or "paper_order_waiting_for_entry_trigger"),
                         message=str(raw.get("last_message") or "Waiting for selected option premium to reach entry."),
@@ -1462,22 +1476,15 @@ class TfisOperatorDashboardBuilder:
         latest_rows = self._latest_trade_rows(rows, latest_session_date=latest_session_date)
         if not latest_rows:
             return '<div class="empty-panel">No active paper orders or positions for the latest session.</div>'
-        open_count = sum(
-            1
-            for row in latest_rows
-            if "OPEN" in row.lifecycle_status.upper()
-            or row.manager_status.upper() in {"PAPER_POSITION_OPENED", "PAPER_POSITION_HELD"}
-        )
-        action_required_count = sum(1 for row in latest_rows if self._trade_action_required(row))
-        closed_count = sum(1 for row in latest_rows if "CLOSED" in row.lifecycle_status.upper() or row.event_type.upper() == "CLOSE")
+        summary_counts = paper_trade_summary_counts(latest_rows)
         header = "\n".join(
             [
                 '<div class="session-summary summary-shell trade-summary">',
                 '<div class="summary-grid">',
-                self._summary_metric("Unique Trades", str(len(latest_rows))),
-                self._summary_metric("Open Positions", str(open_count)),
-                self._summary_metric("Action Required", str(action_required_count)),
-                self._summary_metric("Closed Trades", str(closed_count)),
+                self._summary_metric("Unique Trades", str(summary_counts["unique_trades"])),
+                self._summary_metric("Open Positions", str(summary_counts["open_positions"])),
+                self._summary_metric("Action Required", str(summary_counts["action_required"])),
+                self._summary_metric("Closed Trades", str(summary_counts["closed_trades"])),
                 "</div>",
                 "</div>",
             ]
@@ -1524,32 +1531,14 @@ class TfisOperatorDashboardBuilder:
         )
 
     def _display_row_for_trade(self, rows: list[DashboardTradeLedgerRow]) -> DashboardTradeLedgerRow:
-        terminal_rows = [row for row in rows if self._trade_terminal(row)]
-        if terminal_rows:
-            return max(
-                terminal_rows,
-                key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
-            )
-        return max(
-            rows,
-            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
-        )
+        return paper_trade_select_display_row(rows)
 
     @staticmethod
     def _trade_terminal(row: DashboardTradeLedgerRow) -> bool:
-        event_type = row.event_type.upper()
-        lifecycle_status = row.lifecycle_status.upper()
-        manager_status = row.manager_status.upper()
-        return (
-            event_type == "CLOSE"
-            or "CLOSED" in lifecycle_status
-            or manager_status
-            in {
-                "PAPER_POSITION_TARGET_HIT",
-                "PAPER_POSITION_STOPLOSS_HIT",
-                "PAPER_POSITION_FORCE_CLOSED",
-                "PAPER_POSITION_ALREADY_CLOSED",
-            }
+        return paper_trade_is_terminal(
+            event_type=row.event_type,
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
         )
 
     def _trade_visible_for_latest_session(
@@ -1558,28 +1547,23 @@ class TfisOperatorDashboardBuilder:
         *,
         latest_session_date: date | None,
     ) -> bool:
-        if latest_session_date is None:
-            return True
-        row_session_date = row.session_date
-        if row_session_date is None and row.event_timestamp is not None:
-            row_session_date = row.event_timestamp.date()
-        if row_session_date == latest_session_date:
-            return True
-        if (
-            row_session_date is not None
-            and row_session_date > latest_session_date
-            and self._trade_terminal(row)
-        ):
-            return True
-        if self._trade_terminal(row):
-            return False
-        return self._trade_open(row) or self._trade_action_required(row)
+        return paper_trade_visible_for_latest_session(
+            row_session_date=row.session_date,
+            event_timestamp=row.event_timestamp,
+            latest_session_date=latest_session_date,
+            event_type=row.event_type,
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
+            fresh_entry_required=row.fresh_entry_required,
+            reverse_entry_required=row.reverse_entry_required,
+            rollover_required=row.rollover_required,
+        )
 
     @staticmethod
     def _trade_open(row: DashboardTradeLedgerRow) -> bool:
-        return (
-            "OPEN" in row.lifecycle_status.upper()
-            or row.manager_status.upper() in {"PAPER_POSITION_OPENED", "PAPER_POSITION_HELD"}
+        return paper_trade_is_open(
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
         )
 
     def _render_trade_ledger_row(self, row: DashboardTradeLedgerRow, *, page_path: Path) -> str:
@@ -1621,71 +1605,39 @@ class TfisOperatorDashboardBuilder:
 
     @staticmethod
     def _normalized_trade_message(row: DashboardTradeLedgerRow) -> str:
-        message = str(row.message or "")
-        if not message:
-            return ""
-        return message.replace("S23 READY decision created", "READY decision created")
+        return paper_trade_normalized_message(row.message)
 
     def _trade_status_labels(self, row: DashboardTradeLedgerRow) -> list[str]:
-        if self._trade_terminal(row):
-            return ["POSITION_CLOSED"]
-        status_labels: list[str] = []
-        for label in (row.lifecycle_status, row.manager_status):
-            normalized = self._normalize_trade_status_label(label)
-            if normalized and normalized not in status_labels:
-                status_labels.append(normalized)
-        action_flags = []
-        if row.fresh_entry_required:
-            action_flags.append("Fresh Entry")
-        if row.reverse_entry_required:
-            action_flags.append("Reverse Entry")
-        if row.rollover_required:
-            action_flags.append("Rollover")
-        action_text = ", ".join(action_flags)
-        if action_text:
-            status_labels.append(action_text)
-        return status_labels
+        return paper_trade_status_labels(row)
 
     def _trade_followup_note(self, row: DashboardTradeLedgerRow) -> str:
-        if not self._trade_terminal(row):
-            return ""
-        notes = []
-        if row.fresh_entry_required:
-            notes.append("fresh entry recalculation required")
-        if row.reverse_entry_required:
-            notes.append("reverse entry review required")
-        if row.rollover_required:
-            notes.append("rollover review required")
-        if not notes:
-            return ""
-        return "Follow-up: " + "; ".join(notes) + "."
+        return paper_trade_followup_note(row)
 
     def _trade_row_tone_class(self, row: DashboardTradeLedgerRow) -> str:
-        if self._trade_terminal(row):
-            return "trade-row-closed"
-        manager_status = row.manager_status.upper()
-        lifecycle_status = row.lifecycle_status.upper()
-        if row.fresh_entry_required or row.reverse_entry_required or row.rollover_required:
-            return "trade-row-action"
-        if manager_status == "PAPER_ORDER_NOT_FILLED" or lifecycle_status == "ORDER_NOT_FILLED":
-            return "trade-row-not-filled"
-        if manager_status == "PAPER_ORDER_WAITING_FOR_TRIGGER" or lifecycle_status == "ORDER_WAITING_FOR_TRIGGER":
-            return "trade-row-waiting"
-        if self._trade_open(row):
-            return "trade-row-open"
-        return "trade-row-neutral"
+        status_kind = paper_trade_status_kind(
+            event_type=row.event_type,
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
+            fresh_entry_required=row.fresh_entry_required,
+            reverse_entry_required=row.reverse_entry_required,
+            rollover_required=row.rollover_required,
+        )
+        return {
+            "closed": "trade-row-closed",
+            "action": "trade-row-action",
+            "not_filled": "trade-row-not-filled",
+            "waiting": "trade-row-waiting",
+            "open": "trade-row-open",
+        }.get(status_kind, "trade-row-neutral")
 
     @staticmethod
     def _trade_pnl_class(row: DashboardTradeLedgerRow) -> str:
-        gross_pnl = row.gross_pnl
-        if gross_pnl is None:
-            return ""
-        return "good-text" if gross_pnl >= 0 else "bad-text"
+        return paper_trade_pnl_tone(row.gross_pnl)
 
     def _render_trade_strategy_cell(self, row: DashboardTradeLedgerRow) -> str:
         strategy_code = html.escape(str(row.strategy_code or "n/a"))
         branch = str(row.strategy_branch or row.strategy_id or "n/a")
-        short_branch = self._short_s23_branch_label(branch)
+        short_branch = paper_trade_branch_label(branch)
         title = html.escape(f"{row.strategy_id} | {branch}")
         return (
             f'<div class="compact-cell" title="{title}">'
@@ -1697,7 +1649,7 @@ class TfisOperatorDashboardBuilder:
     def _render_trade_contract_cell(self, row: DashboardTradeLedgerRow) -> str:
         contract = html.escape(row.selected_contract_symbol)
         title = html.escape(f"{row.selected_contract_symbol} | {row.trade_id}")
-        option_label = self._short_option_label(row.selected_contract_symbol)
+        option_label = paper_trade_option_label(row.selected_contract_symbol)
         return (
             f'<div class="compact-cell contract-compact" title="{title}">'
             f"<strong>{contract}</strong>"
@@ -1706,26 +1658,8 @@ class TfisOperatorDashboardBuilder:
         )
 
     @staticmethod
-    def _short_option_label(symbol: str) -> str:
-        text = str(symbol or "").upper()
-        if text.endswith("_CE") or "_CE-" in text:
-            return "CE"
-        if text.endswith("_PE") or "_PE-" in text:
-            return "PE"
-        return "OPTION"
-
-    @staticmethod
     def _short_s23_branch_label(branch: str) -> str:
-        text = str(branch or "").upper()
-        if "BEAR" in text and ("CALL" in text or text.endswith("_CE")):
-            return "Bear Call"
-        if "BEAR" in text and ("PUT" in text or text.endswith("_PE")):
-            return "Bear Put"
-        if "BULL" in text and ("CALL" in text or text.endswith("_CE")):
-            return "Bull Call"
-        if "BULL" in text and ("PUT" in text or text.endswith("_PE")):
-            return "Bull Put"
-        return str(branch or "n/a").replace("_", " ").title()
+        return paper_trade_branch_label(branch)
 
     def _render_trade_current_cell(self, row: DashboardTradeLedgerRow) -> str:
         current = self._fmt_number(row.current_price)
@@ -3266,7 +3200,12 @@ class TfisOperatorDashboardBuilder:
             option_type = str(summary.get("selected_contract_option_type") or "").upper()
             side = "SELL PE" if option_type in {"PE", "PUT"} else "SELL CE" if option_type in {"CE", "CALL"} else "SELL"
             branch = str(summary.get("strategy_branch") or summary_path.parent.name)
-            selected_branches.add(self._normalize_s23_branch_name(branch))
+            selected_branches.add(
+                self._normalize_strategy_branch_name(
+                    strategy_code=config.strategy_code,
+                    branch=branch,
+                )
+            )
             rows.append(
                 {
                     "branch": branch,
@@ -3327,11 +3266,7 @@ class TfisOperatorDashboardBuilder:
             if strategy_code.upper() != config.strategy_code.upper():
                 continue
             lifecycle_status = str(raw_state.get("lifecycle_status") or "")
-            if lifecycle_status in {
-                "PAPER_POSITION_OPEN",
-                "PAPER_POSITION_CARRIED_FORWARD",
-                "PAPER_POSITION_RESUMED",
-            }:
+            if paper_position_is_active(lifecycle_status):
                 return None
             timestamp = self._parse_datetime(
                 raw_state.get("last_updated_timestamp")
@@ -3359,7 +3294,10 @@ class TfisOperatorDashboardBuilder:
         rows: list[dict[str, Any]] = []
         for explainer_path in self._session_branch_explainer_paths(session_dir):
             branch = explainer_path.parent.name
-            normalized_branch = self._normalize_s23_branch_name(branch)
+            normalized_branch = self._normalize_strategy_branch_name(
+                strategy_code=config.strategy_code,
+                branch=branch,
+            )
             if normalized_branch in selected_branches:
                 continue
             try:
@@ -3376,7 +3314,10 @@ class TfisOperatorDashboardBuilder:
             if not failure_code:
                 continue
             formula_values = self._formula_values(stage)
-            strategy_rule = self._load_s23_branch_rule(config=config, branch=normalized_branch)
+            strategy_rule = self._load_strategy_branch_rule(
+                config=config,
+                branch=normalized_branch,
+            )
             candidates: tuple[dict[str, Any], ...] = ()
             minimum_oi = None
             if strategy_rule is not None:
@@ -3439,8 +3380,15 @@ class TfisOperatorDashboardBuilder:
         return rows
 
     @staticmethod
-    def _normalize_s23_branch_name(branch: str) -> str:
-        return re.sub(r"^S23_", "", str(branch or ""))
+    def _normalize_strategy_branch_name(
+        strategy_code: str,
+        branch: str,
+    ) -> str:
+        normalized_branch = str(branch or "")
+        prefix = f"{str(strategy_code or '').upper()}_"
+        if normalized_branch.upper().startswith(prefix):
+            return normalized_branch[len(prefix) :]
+        return normalized_branch
 
     @staticmethod
     def _branch_matches_monthly_status(branch: str, monthly_status: str | None) -> bool:
@@ -3494,9 +3442,19 @@ class TfisOperatorDashboardBuilder:
                 paths.append(stage_paths[-1])
         return tuple(paths)
 
-    def _load_s23_branch_rule(self, *, config: StrategyDashboardConfig, branch: str) -> Any | None:
+    def _load_strategy_branch_rule(
+        self,
+        *,
+        config: StrategyDashboardConfig,
+        branch: str,
+    ) -> Any | None:
         config_dir = config.strategy_path.parent
-        for name in (branch, f"S23_{branch}"):
+        strategy_code = str(config.strategy_code or "").upper()
+        candidate_names: list[str] = []
+        for name in (branch, f"{strategy_code}_{branch}"):
+            if name and name not in candidate_names:
+                candidate_names.append(name)
+        for name in candidate_names:
             path = config_dir / name
             if path.exists():
                 try:
@@ -4041,22 +3999,17 @@ class TfisOperatorDashboardBuilder:
     def _trade_action_required(row: DashboardTradeLedgerRow) -> bool:
         manager_status = row.manager_status.upper()
         return (
-            row.fresh_entry_required
-            or row.reverse_entry_required
-            or row.rollover_required
+            paper_trade_action_required(
+                fresh_entry_required=row.fresh_entry_required,
+                reverse_entry_required=row.reverse_entry_required,
+                rollover_required=row.rollover_required,
+            )
             or "REQUIRED" in manager_status
         )
 
     @staticmethod
     def _normalize_trade_status_label(label: str) -> str:
-        value = str(label or "").strip()
-        if value in {"", "n/a"}:
-            return ""
-        if value == "PAPER_ORDER_WAITING_FOR_TRIGGER":
-            return "ORDER_WAITING_FOR_TRIGGER"
-        if value == "PAPER_ORDER_NOT_FILLED":
-            return "ORDER_NOT_FILLED"
-        return value
+        return paper_trade_display_status_label(label)
 
     def _historical_trades_script(self, rows: list[DashboardTradeLedgerRow]) -> str:
         payload = [

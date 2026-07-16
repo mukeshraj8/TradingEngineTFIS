@@ -25,6 +25,8 @@ def test_morning_wrapper_does_not_stream_supervised_decision_through_pipeline() 
 def test_morning_wrapper_starts_watchers_from_current_session_metadata_and_open_positions() -> None:
     script = _script_text("start_s23_fyers_morning_supervised_decision.ps1")
 
+    assert '. $paperPositionHelperPath' in script
+    assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $Date" in script
     assert "function Resolve-TfisAbsolutePathText" in script
     assert "function Resolve-TfisPositionStateDirectory" in script
     assert "[System.IO.Path]::GetFullPath" in script
@@ -127,6 +129,8 @@ def test_s21_operational_scripts_exist_for_daily_startup() -> None:
 
     assert '[string]$ArtifactRoot = "data/strategies/S21/fyers_morning_supervised_decision"' in start_script
     assert '[string]$IfPast = "run_now"' in start_script
+    assert '. $paperPositionHelperPath' in start_script
+    assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $EffectiveDate" in start_script
     assert "Passing latest discovered open S21 paper position to supervised decision" in start_script
     assert "& $pythonExe @args > $pythonOutputPath 2> $pythonErrorPath" in start_script
     assert "run_s21_banknifty_0916_supervised_decision_$stamp.out.log" in start_script
@@ -158,6 +162,19 @@ def test_dashboard_server_supports_skip_build_mode() -> None:
     assert '--skip-build' in script
     assert 'if args.skip_build:' in script
     assert 'ERROR: --skip-build was requested but the dashboard index does not exist yet.' in script
+
+
+def test_shared_paper_position_helper_is_used_by_recovery_scripts() -> None:
+    helper_script = _script_text("tfis_paper_position_state_helpers.ps1")
+    reset_script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
+
+    assert "function Test-TfisResumablePaperPositionStateJson" in helper_script
+    assert '"PAPER_POSITION_OPEN"' in helper_script
+    assert '"PAPER_POSITION_CARRIED_FORWARD"' in helper_script
+    assert '"PAPER_POSITION_RESUMED"' in helper_script
+    assert '. $paperPositionHelperPath' in reset_script
+    assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson" in reset_script
+    assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $EffectiveDate" in reset_script
 
 
 def test_s23_task_checkers_match_real_task_name_variable() -> None:

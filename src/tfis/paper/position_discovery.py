@@ -5,16 +5,9 @@ from pathlib import Path
 
 from .position_state import (
     S23PaperPositionState,
-    S23PaperPositionStateStatus,
     S23PaperPositionStateStore,
+    paper_position_is_active,
 )
-
-
-_OPEN_STATUSES = {
-    S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
-    S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
-    S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
-}
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,7 +48,7 @@ class S23OpenPaperPositionDiscovery:
                     state = self._state_store.load_state(state_dir)
                 except Exception:
                     continue
-                if state.lifecycle_status not in _OPEN_STATUSES:
+                if not paper_position_is_active(state.lifecycle_status):
                     continue
                 if not state.carry_forward_allowed:
                     continue
@@ -87,6 +80,12 @@ class S23OpenPaperPositionDiscovery:
 
 
 __all__ = [
+    "PaperOpenPositionCandidate",
+    "PaperOpenPositionDiscovery",
     "S23OpenPaperPositionCandidate",
     "S23OpenPaperPositionDiscovery",
 ]
+
+
+PaperOpenPositionCandidate = S23OpenPaperPositionCandidate
+PaperOpenPositionDiscovery = S23OpenPaperPositionDiscovery

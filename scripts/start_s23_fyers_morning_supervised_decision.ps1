@@ -26,6 +26,8 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 Set-Location $repoRoot
+$paperPositionHelperPath = Join-Path $scriptDir "tfis_paper_position_state_helpers.ps1"
+. $paperPositionHelperPath
 $Host.UI.RawUI.WindowTitle = "TFIS S23 Morning Supervised Decision"
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
@@ -117,11 +119,6 @@ function Get-TfisOpenPositionStatePaths {
         return @()
     }
 
-    $openStatuses = @(
-        "PAPER_POSITION_OPEN",
-        "PAPER_POSITION_CARRIED_FORWARD",
-        "PAPER_POSITION_RESUMED"
-    )
     $paths = @()
     Get-ChildItem -Path $artifactRootPath -Recurse -Filter "paper_position_state.json" -ErrorAction SilentlyContinue |
         Sort-Object LastWriteTime -Descending |
@@ -133,24 +130,20 @@ function Get-TfisOpenPositionStatePaths {
                 Write-LaunchLog "Skipping unreadable S23 paper position state: $($_.FullName)"
                 return
             }
-            $status = [string]$stateJson.lifecycle_status
-            if ($openStatuses -notcontains $status) {
-                return
-            }
-            if ($false -eq [bool]$stateJson.carry_forward_allowed) {
-                return
-            }
-            if ($stateJson.expiry_date) {
-                try {
-                    $expiryDate = [datetime]::Parse([string]$stateJson.expiry_date).Date
-                    if ($expiryDate -lt $Date.Date) {
-                        Write-LaunchLog "Skipping expired S23 paper position state: $($_.FullName)"
-                        return
+            if (-not (Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $Date)) {
+                if ($stateJson.expiry_date) {
+                    try {
+                        $expiryDate = [datetime]::Parse([string]$stateJson.expiry_date).Date
+                        if ($expiryDate -lt $Date.Date) {
+                            Write-LaunchLog "Skipping expired S23 paper position state: $($_.FullName)"
+                            return
+                        }
+                    }
+                    catch {
+                        Write-LaunchLog "S23 paper position state has unparseable expiry_date; leaving it eligible for watcher validation: $($_.FullName)"
                     }
                 }
-                catch {
-                    Write-LaunchLog "S23 paper position state has unparseable expiry_date; leaving it eligible for watcher validation: $($_.FullName)"
-                }
+                return
             }
             $paths += [string]$_.FullName
         }

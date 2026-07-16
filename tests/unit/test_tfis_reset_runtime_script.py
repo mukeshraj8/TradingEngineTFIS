@@ -54,6 +54,6 @@ def test_reset_script_only_restores_same_day_waiting_orders_and_live_positions()
     assert "Skipping stale waiting-order watcher startup for prior session $SessionDate" in script
     assert "Skipping non-carry-forward paper position state during recovery scan" in script
     assert "Skipping expired paper position state during recovery scan" in script
-    assert '"PAPER_POSITION_OPEN"' in script
-    assert '"PAPER_POSITION_CARRIED_FORWARD"' in script
-    assert '"PAPER_POSITION_RESUMED"' in script
+    assert '. $paperPositionHelperPath' in script
+    assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson" in script
+    assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $EffectiveDate" in script

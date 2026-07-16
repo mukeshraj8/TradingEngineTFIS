@@ -21,6 +21,11 @@ change in a meaningful way.
 - harden the TFIS-only restart/bootstrap path so rerunning the recovery script
   after a workstation reboot yields one dashboard server and one watcher per
   persisted order/position target instead of stacking duplicate processes
+- keep the local pre-live gate green before market open: as of `2026-07-16`,
+  `scripts/pre_live_readiness.py --profile prod --require-token --json`
+  returns `overall_status=PASS` with project structure, strategy configs,
+  dashboard config, monthly-status config, and TFIS FYERS token checks all
+  passing
 - restore reliable daily supervised startup across both active paper strategies:
   S23 now registers with `IfPast=run_now` by default so the 09:08 wrapper does
   not fail late at the 09:30 checkpoint after a normal pre-open wait, and S21
@@ -34,7 +39,15 @@ change in a meaningful way.
   introduces a strategy-neutral trade-intent/runtime contract, Phase 3 replaces
   scattered watcher thinking with one reusable lifecycle supervisor, and Phase 4
   separates broker adapters from lifecycle management
-  before opening port `8765`
+- the planned Phase 1 runtime-consistency refactor track is now complete for
+  the current scope:
+  shared lifecycle vocabulary is exercised through dashboard reconstruction,
+  Python runtime entrypoints, blocked-fresh-order recovery, captured-session
+  validation, and S21/S23/reset startup wrappers without changing strategy
+  formulas
+- the next architecture move is Phase 2 rather than more Phase 1 micro-slices:
+  define a strategy-neutral trade-intent/runtime contract first, then use that
+  contract to consolidate lifecycle supervision and later broker separation
 
 ## Money-Ready Phase Milestones
 
@@ -76,6 +89,109 @@ live-order design. This checklist must be updated after each completed slice.
   artifact link for operator audit. This slice only surfaces already-persisted
   watcher evidence; it does not change strategy selection, order routing, or
   watcher lifecycle behavior.
+- `DONE`: Phase 1 now also shares dashboard/runtime paper-trade label and row
+  classification helpers. `src/tfis/paper/trade_ledger.py` exports
+  `paper_trade_display_status_label` and `paper_trade_status_kind`, and the
+  operator dashboard now uses them for waiting/not-filled label normalization
+  plus closed/action/waiting/open/not-filled row classification instead of
+  carrying those decisions inline. Runtime behavior is unchanged.
+- `DONE`: Phase 1 now also shares latest-session trade visibility rules.
+  `src/tfis/paper/trade_ledger.py` exports
+  `paper_trade_visible_for_latest_session`, and the operator dashboard now uses
+  that shared helper for deciding whether a trade row stays visible on the
+  live all-trades monitor when the latest strategy session changes. Runtime
+  behavior is unchanged.
+- `DONE`: Phase 1 now also shares multi-event trade display-row selection.
+  `src/tfis/paper/trade_ledger.py` exports
+  `paper_trade_select_display_row`, and the operator dashboard now uses that
+  shared helper to prefer the latest terminal row for a trade, or the latest
+  row when no terminal event exists. Runtime behavior is unchanged.
+- `DONE`: Phase 1 now also shares latest-trade summary counting.
+  `src/tfis/paper/trade_ledger.py` exports `paper_trade_summary_counts`, and
+  the operator dashboard now uses that shared helper for `Unique Trades`,
+  `Open Positions`, `Action Required`, and `Closed Trades` counts instead of
+  carrying those count rules inline. Runtime behavior is unchanged.
+- `DONE`: Phase 1 now also shares trade status-badge and follow-up-note
+  rendering rules. `src/tfis/paper/trade_ledger.py` exports
+  `paper_trade_status_labels` and `paper_trade_followup_note`, and the
+  operator dashboard now uses those shared helpers instead of carrying the
+  closed-row badge and follow-up-note wording rules inline. Runtime behavior is
+  unchanged.
+- `DONE`: Phase 1 now also shares trade message normalization.
+  `src/tfis/paper/trade_ledger.py` exports
+  `paper_trade_normalized_message`, and the operator dashboard now uses that
+  shared helper instead of carrying the S23-specific `READY decision created`
+  wording cleanup inline. Runtime behavior is unchanged.
+- `DONE`: Phase 1 now also shares option and branch display labels.
+  `src/tfis/paper/trade_ledger.py` exports `paper_trade_option_label` and
+  `paper_trade_branch_label`, and the operator dashboard now uses those shared
+  helpers so live and historical trade views rely on one common option/branch
+  label mapping path. Runtime behavior is unchanged.
+- `DONE`: Phase 1 now also shares P&L tone selection.
+  `src/tfis/paper/trade_ledger.py` exports `paper_trade_pnl_tone`, and the
+  operator dashboard now uses that shared helper instead of carrying the
+  positive/negative P&L CSS-class choice inline. Runtime behavior is unchanged.
+- `DONE`: Phase 1 now also shares paper position-manager status classification
+  used by the trade layer and lifecycle supervisor. `src/tfis/paper/trade_ledger.py`
+  now owns the shared mapping for manager-status open/display-terminal/lifecycle-terminal
+  checks plus trade-event-type conversion, `src/tfis/paper/position_manager.py`
+  now uses that shared mapping for ledger event selection, and
+  `src/tfis/paper/lifecycle_supervisor.py` now derives its terminal manager
+  status set from the same shared lifecycle-terminal helper. Runtime behavior
+  is unchanged after focused runtime tests.
+- `DONE`: Phase 1 now also shares paper-order-to-trade-row mapping.
+  `src/tfis/paper/order_state.py` now exports shared helpers for translating
+  order status into trade-row event type and lifecycle status, and the operator
+  dashboard now uses those helpers instead of carrying waiting/not-filled
+  rewrites inline. Runtime behavior is unchanged after focused tests.
+- `DONE`: Phase 1 now also aligns dashboard carry-forward override checks with
+  the shared position-state vocabulary. The operator dashboard now uses
+  `paper_position_is_active(...)` when deciding whether a strategy still has an
+  active carried/open/resumed position that should preserve
+  `OPEN_CARRY_FORWARD_POSITION`, instead of carrying a local active-status set.
+  Runtime behavior is unchanged after focused tests.
+- `DONE`: Phase 1 now also shares pending-order trade-monitor visibility.
+  `src/tfis/paper/order_state.py` exports
+  `paper_order_visible_in_trade_monitor(...)`, and the operator dashboard now
+  uses that helper instead of carrying a local waiting/not-filled order-status
+  set when reconstructing pending trade rows. Runtime behavior is unchanged
+  after focused tests.
+- `DONE`: Phase 1 now also closes a remaining S21/S23 dashboard parity gap in
+  final-leg reconstruction. The operator dashboard now normalizes branch names
+  and reloads branch rules with the active strategy code instead of assuming an
+  `S23_` prefix, so S21 failed-leg rows still render correctly when summary
+  artifacts, explainer artifacts, and config folders mix prefixed and
+  unprefixed branch names. Runtime behavior is unchanged after focused tests.
+- `DONE`: Phase 1 now also exposes a neutral open-position discovery seam.
+  `src/tfis/paper/position_discovery.py` exports
+  `PaperOpenPositionCandidate` / `PaperOpenPositionDiscovery`, and the S23
+  paper position-watch script now imports that neutral alias without changing
+  watcher runtime behavior. Focused shared-alias, dashboard, and
+  position-manager tests remain green.
+- `DONE`: Phase 1 now also exercises neutral paper entrypoint seams in TFIS
+  scripts. `scripts/run_s23_paper_position_watch.py` now uses
+  `PaperLifecycleSupervisor`, `PaperLifecycleSupervisorContext`, and
+  `PaperOpenPositionDiscovery`, while
+  `scripts/finalize_s23_pending_paper_orders.py` now uses
+  `PaperOrderFinalizer`. Runtime behavior is unchanged; syntax checks and
+  focused shared-alias/position-manager tests remain green.
+- `DONE`: Phase 1 now also centralizes resumable paper-position recovery rules
+  across TFIS startup/reset wrappers. The new shared PowerShell helper
+  `scripts/tfis_paper_position_state_helpers.ps1` owns the common
+  `PAPER_POSITION_OPEN` / `PAPER_POSITION_CARRIED_FORWARD` /
+  `PAPER_POSITION_RESUMED` plus carry-forward/expiry eligibility check, and
+  `start_s23_fyers_morning_supervised_decision.ps1`,
+  `start_s21_fyers_morning_supervised_decision.ps1`, and
+  `reset_tfis_dashboard_and_watchers.ps1` now use that one helper instead of
+  re-declaring the rule separately. Focused wrapper tests and PowerShell parse
+  checks remain green.
+- `DONE`: Phase 1 now also aligns blocked-fresh-order recovery and captured
+  session replay with shared lifecycle vocabulary. `paper_position_blocks_new_entry`
+  now owns the “still blocks a fresh order” status rule, the blocked-fresh
+  promotion script uses it instead of a local status set, and the captured
+  session validator now uses shared position/order status truth where that was
+  already safe. Focused alias, promotion, captured-session, and wrapper tests
+  remain green.
 
 ### Phase 2 - Watcher And Position Reliability
 
@@ -221,6 +337,46 @@ Current S23 paper-mode posture:
   `trades/history/index.html`. That path now reads only the closed-ledger data
   it needs, which removes one major rebuild hotspot from
   `reset_tfis_dashboard_and_watchers.ps1`.
+- `DONE`: Phase 1 shared-lifecycle refactor has started with additive,
+  strategy-neutral module aliases only. `src/tfis/paper/order_finalizer.py`,
+  `src/tfis/paper/lifecycle_supervisor.py`, and `src/tfis/paper/__init__.py`
+  now export generic `PaperOrderFinalizer*` and `PaperLifecycleSupervisor*`
+  names that resolve to the existing S23 implementations. This changes no
+  runtime behavior, but creates a safer module boundary for later S21/Sxx
+  adoption work.
+- `DONE`: The next additive Phase 1 seam extends that neutral boundary to
+  shared order and position state types. `src/tfis/paper/order_state.py`,
+  `src/tfis/paper/position_state.py`, and `src/tfis/paper/__init__.py` now
+  export generic `PaperOrder*` and `PaperPositionState*` names that resolve to
+  the existing S23-backed implementations. This is still a no-behavior-change
+  refactor step meant to keep tomorrow's TFIS run on the proven path while
+  making later multi-strategy adoption less invasive.
+- `DONE`: Phase 1 now includes the first shared paper lifecycle helper
+  extraction. `src/tfis/paper/order_state.py` exports
+  `paper_order_is_waiting_for_trigger` and `paper_order_is_terminal`, and the
+  existing finalizer/supervisor code paths now use that shared helper instead
+  of duplicating literal waiting-status checks. Runtime behavior is unchanged;
+  this just reduces status-check duplication before broader multi-strategy
+  lifecycle work.
+- `DONE`: Phase 1 now has matching shared paper position-status helpers.
+  `src/tfis/paper/position_state.py` exports
+  `paper_position_is_active` and `paper_position_is_no_longer_open`, and the
+  existing open-position discovery / position-manager early-exit paths now use
+  those helpers instead of carrying duplicated literal status sets. Runtime
+  behavior is unchanged; the goal is a cleaner shared seam before broader
+  multi-strategy lifecycle adoption.
+- `DONE`: Phase 1 now includes a shared paper trade-classification helper layer.
+  `src/tfis/paper/trade_ledger.py` exports `paper_trade_is_terminal`,
+  `paper_trade_is_open`, and `paper_trade_action_required`, and the operator
+  dashboard now uses those helpers for open/terminal/action-required summary and
+  row-visibility decisions instead of maintaining its own duplicated
+  classification logic. This is still a no-behavior-change refactor slice.
+- `DONE`: Phase 1 now also shares the dashboard/runtime status-label
+  normalization for paper trade rows. `src/tfis/paper/trade_ledger.py` exports
+  `paper_trade_display_status_label`, and the operator dashboard now uses that
+  helper for `PAPER_ORDER_WAITING_FOR_TRIGGER -> ORDER_WAITING_FOR_TRIGGER` and
+  `PAPER_ORDER_NOT_FILLED -> ORDER_NOT_FILLED` mapping instead of carrying that
+  mapping inline. Runtime behavior is unchanged.
 - `DONE`: The 2026-07-03 scheduled startup failure was traced to a PowerShell
   scalar/array edge case when exactly one open carry-forward state was
   discovered. The wrapper now preserves discovered state paths as arrays in the

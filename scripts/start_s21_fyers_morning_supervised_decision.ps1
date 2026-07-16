@@ -25,6 +25,8 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 Set-Location $repoRoot
+$paperPositionHelperPath = Join-Path $scriptDir "tfis_paper_position_state_helpers.ps1"
+. $paperPositionHelperPath
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
 }
@@ -80,22 +82,8 @@ function Get-TfisOpenPositionStatePaths {
                 return
             }
 
-            $status = [string]$stateJson.lifecycle_status
-            if ($status -notin @("PAPER_POSITION_OPEN", "PAPER_POSITION_CARRIED_FORWARD", "PAPER_POSITION_RESUMED")) {
+            if (-not (Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $EffectiveDate)) {
                 return
-            }
-            if ($false -eq [bool]$stateJson.carry_forward_allowed) {
-                return
-            }
-            if ($stateJson.expiry_date) {
-                try {
-                    $expiryDate = [datetime]::Parse([string]$stateJson.expiry_date).Date
-                    if ($expiryDate -lt $EffectiveDate.Date) {
-                        return
-                    }
-                }
-                catch {
-                }
             }
             $_.FullName
         } |

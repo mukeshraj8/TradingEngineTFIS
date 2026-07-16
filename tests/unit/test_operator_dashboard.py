@@ -8,6 +8,10 @@ from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
+from tfis.dashboard.operator_dashboard import (
+    DashboardSelectedContractStreamHealth,
+    DashboardTradeLedgerRow,
+)
 
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -950,6 +954,110 @@ def test_dashboard_builds_consolidated_trades_page(tmp_path: Path) -> None:
     assert "BANKNIFTY_20260728_57800_CE" in trades_html
 
 
+def test_s21_failed_leg_uses_strategy_aware_branch_normalization(tmp_path: Path) -> None:
+    artifact_root = tmp_path / "s21-artifacts"
+    day_dir = artifact_root / "2026-07-16"
+    final_dir = day_dir / "s21-fyers-morning-supervised-decision-2026-07-16"
+    final_dir.mkdir(parents=True)
+    (final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "READY", "monthly_status": "BULL"}}),
+        encoding="utf-8",
+    )
+    (final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+
+    selected_branch_dir = final_dir / "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL"
+    selected_branch_dir.mkdir()
+    (selected_branch_dir / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "READY",
+                    "strategy_branch": "S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+                    "selected_contract_symbol": "BANKNIFTY_20260730_57800_CE",
+                    "selected_contract_option_type": "CALL",
+                    "selected_contract_strike": 57800,
+                    "selected_contract_ltp": 980.0,
+                    "selected_contract_oi": 210000,
+                    "planned_entry_price": 462.50,
+                    "target_price": 185.0,
+                    "stoploss_price": 740.0,
+                    "selected_contract_expiry": "2026-07-30",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (selected_branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S21",
+                "strategy_branch": "S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+                "selected_contract_symbol": "BANKNIFTY_20260730_57800_CE",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "entry_date": "2026-07-16",
+                "order_timestamp": "2026-07-16T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-16T09:31:00+05:30",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    failed_branch_dir = final_dir / "BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT"
+    failed_branch_dir.mkdir()
+    (failed_branch_dir / "trade_decision_explainer.json").write_text(
+        json.dumps(
+            {
+                "stage": {
+                    "can_finalize_trade_decision": True,
+                    "strategy_branch": "S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT",
+                    "monthly_status": "BULL",
+                    "decision_failure_code": "MINIMUM_PREMIUM_NOT_MET",
+                    "decision_failure_message": "Near monthly contracts did not satisfy minimum premium.",
+                    "decision_failure_attempted_expiries": ["2026-07-30", "2026-08-27"],
+                    "decision_failure_rejected_counts": {
+                        "minimum_premium_not_met": 4,
+                    },
+                    "provisional_trade_decision_summary": {
+                        "selected_contract_option_type": "PUT",
+                        "planned_entry_price": 444.0,
+                        "target_price": 177.6,
+                        "stoploss_price": 710.4,
+                    },
+                    "formula_evaluation": [
+                        {
+                            "name": "entry",
+                            "resolved_formula": "OPT_PRV_2DLL - 7.5%",
+                            "result": 444.0,
+                        }
+                    ],
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(
+            _strategy_config(tmp_path / "unused-s23"),
+            _s21_strategy_config(artifact_root),
+        )
+    ).build(output_root=tmp_path / "dashboard")
+
+    s21_html = result.strategy_pages["S21"].read_text(encoding="utf-8")
+
+    assert "BANKNIFTY_20260730_57800_CE" in s21_html
+    assert "BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT" in s21_html
+    assert "MINIMUM_PREMIUM_NOT_MET" in s21_html
+    assert "Near monthly contracts did not satisfy minimum premium." in s21_html
+    failed_put_row = re.search(
+        r"BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT.*?No contract selected.*?MINIMUM_PREMIUM_NOT_MET",
+        s21_html,
+        flags=re.S,
+    )
+    assert failed_put_row is not None
+
+
 def test_dashboard_reconstructs_stage_from_snapshot_dir(tmp_path: Path) -> None:
     artifact_root = tmp_path / "artifacts"
     day_dir = artifact_root / "2026-06-11"
@@ -1210,6 +1318,290 @@ def test_historical_trade_collection_skips_stream_health_scans(tmp_path: Path) -
     assert rows[0].trade_id == "S23-LEG-NIFTY_20260721_24200_CE-20260708T122459"
 
 
+def test_trade_row_tone_class_uses_shared_trade_status_kind(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
+
+    def row(
+        *,
+        event_type: str,
+        lifecycle_status: str,
+        manager_status: str,
+        fresh_entry_required: bool = False,
+    ) -> DashboardTradeLedgerRow:
+        timestamp = datetime(2026, 7, 15, 12, 0, tzinfo=IST)
+        return DashboardTradeLedgerRow(
+            session_date=timestamp.date(),
+            event_timestamp=timestamp,
+            entry_timestamp=timestamp,
+            exit_timestamp=timestamp if event_type == "CLOSE" else None,
+            event_type=event_type,
+            trade_id="T1",
+            strategy_id="S23:LEG",
+            strategy_code="S23",
+            strategy_branch="LEG",
+            selected_contract_symbol="NIFTY_20260721_24200_CE",
+            side="SELL",
+            lots=1,
+            quantity=65,
+            entry_price=209.0,
+            current_price=180.0,
+            current_bid=179.5,
+            current_ask=180.5,
+            exit_price=86.1 if event_type == "CLOSE" else None,
+            target_price=85.1,
+            stoploss_price=258.94,
+            gross_points=122.9,
+            gross_pnl=7988.5,
+            lifecycle_status=lifecycle_status,
+            manager_status=manager_status,
+            reason_code="reason",
+            message="message",
+            fresh_entry_required=fresh_entry_required,
+            reverse_entry_required=False,
+            rollover_required=False,
+            state_directory=None,
+            stream_health=DashboardSelectedContractStreamHealth(),
+            raw_artifact_links={},
+        )
+
+    assert builder._trade_row_tone_class(
+        row(
+            event_type="CLOSE",
+            lifecycle_status="PAPER_POSITION_CLOSED",
+            manager_status="PAPER_POSITION_CLOSED",
+        )
+    ) == "trade-row-closed"
+    assert builder._trade_row_tone_class(
+        row(
+            event_type="HOLD",
+            lifecycle_status="PAPER_FRESH_ENTRY_REQUIRED",
+            manager_status="PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+            fresh_entry_required=True,
+        )
+    ) == "trade-row-action"
+    assert builder._trade_row_tone_class(
+        row(
+            event_type="OPEN",
+            lifecycle_status="ORDER_NOT_FILLED",
+            manager_status="PAPER_ORDER_NOT_FILLED",
+        )
+    ) == "trade-row-not-filled"
+    assert builder._trade_row_tone_class(
+        row(
+            event_type="OPEN",
+            lifecycle_status="ORDER_WAITING_FOR_TRIGGER",
+            manager_status="PAPER_ORDER_WAITING_FOR_TRIGGER",
+        )
+    ) == "trade-row-waiting"
+    assert builder._trade_row_tone_class(
+        row(
+            event_type="HOLD",
+            lifecycle_status="PAPER_POSITION_OPEN",
+            manager_status="PAPER_POSITION_HELD",
+        )
+    ) == "trade-row-open"
+
+
+def test_trade_visible_for_latest_session_uses_shared_visibility_rule(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
+    latest_session_date = datetime(2026, 7, 15, 9, 30, tzinfo=IST).date()
+    timestamp = datetime(2026, 7, 14, 12, 0, tzinfo=IST)
+
+    row = DashboardTradeLedgerRow(
+        session_date=timestamp.date(),
+        event_timestamp=timestamp,
+        entry_timestamp=timestamp,
+        exit_timestamp=timestamp,
+        event_type="CLOSE",
+        trade_id="T1",
+        strategy_id="S23:LEG",
+        strategy_code="S23",
+        strategy_branch="LEG",
+        selected_contract_symbol="NIFTY_20260721_24200_CE",
+        side="SELL",
+        lots=1,
+        quantity=65,
+        entry_price=209.0,
+        current_price=180.0,
+        current_bid=179.5,
+        current_ask=180.5,
+        exit_price=86.1,
+        target_price=85.1,
+        stoploss_price=258.94,
+        gross_points=122.9,
+        gross_pnl=7988.5,
+        lifecycle_status="PAPER_POSITION_CLOSED",
+        manager_status="PAPER_POSITION_CLOSED",
+        reason_code="reason",
+        message="message",
+        fresh_entry_required=False,
+        reverse_entry_required=False,
+        rollover_required=False,
+        state_directory=None,
+        stream_health=DashboardSelectedContractStreamHealth(),
+        raw_artifact_links={},
+    )
+
+    assert builder._trade_visible_for_latest_session(
+        row,
+        latest_session_date=latest_session_date,
+    ) is False
+
+
+def test_display_row_for_trade_prefers_terminal_row_over_later_action(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
+    open_timestamp = datetime(2026, 7, 15, 9, 30, tzinfo=IST)
+    close_timestamp = datetime(2026, 7, 15, 12, 57, 59, tzinfo=IST)
+    later_action_timestamp = datetime(2026, 7, 16, 9, 30, tzinfo=IST)
+
+    def row(
+        *,
+        event_timestamp: datetime,
+        event_type: str,
+        lifecycle_status: str,
+        manager_status: str,
+    ) -> DashboardTradeLedgerRow:
+        return DashboardTradeLedgerRow(
+            session_date=event_timestamp.date(),
+            event_timestamp=event_timestamp,
+            entry_timestamp=open_timestamp,
+            exit_timestamp=event_timestamp if event_type == "CLOSE" else None,
+            event_type=event_type,
+            trade_id="T1",
+            strategy_id="S23:LEG",
+            strategy_code="S23",
+            strategy_branch="LEG",
+            selected_contract_symbol="NIFTY_20260721_24200_CE",
+            side="SELL",
+            lots=1,
+            quantity=65,
+            entry_price=209.0,
+            current_price=180.0,
+            current_bid=179.5,
+            current_ask=180.5,
+            exit_price=86.1 if event_type == "CLOSE" else None,
+            target_price=85.1,
+            stoploss_price=258.94,
+            gross_points=122.9,
+            gross_pnl=7988.5,
+            lifecycle_status=lifecycle_status,
+            manager_status=manager_status,
+            reason_code="reason",
+            message="message",
+            fresh_entry_required=False,
+            reverse_entry_required=False,
+            rollover_required=manager_status == "PAPER_POSITION_ROLLOVER_REQUIRED",
+            state_directory=None,
+            stream_health=DashboardSelectedContractStreamHealth(),
+            raw_artifact_links={},
+        )
+
+    display_row = builder._display_row_for_trade(
+        [
+            row(
+                event_timestamp=open_timestamp,
+                event_type="OPEN",
+                lifecycle_status="PAPER_POSITION_OPEN",
+                manager_status="PAPER_POSITION_OPENED",
+            ),
+            row(
+                event_timestamp=close_timestamp,
+                event_type="CLOSE",
+                lifecycle_status="PAPER_POSITION_CLOSED",
+                manager_status="PAPER_POSITION_CLOSED",
+            ),
+            row(
+                event_timestamp=later_action_timestamp,
+                event_type="ACTION_REQUIRED",
+                lifecycle_status="PAPER_ROLLOVER_REQUIRED",
+                manager_status="PAPER_POSITION_ROLLOVER_REQUIRED",
+            ),
+        ]
+    )
+
+    assert display_row.event_type == "CLOSE"
+    assert display_row.event_timestamp == close_timestamp
+
+
+def test_trade_ledger_section_summary_uses_shared_trade_counts(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
+    timestamp = datetime(2026, 7, 15, 9, 30, tzinfo=IST)
+
+    def row(
+        *,
+        trade_id: str,
+        event_type: str,
+        lifecycle_status: str,
+        manager_status: str,
+        fresh_entry_required: bool = False,
+    ) -> DashboardTradeLedgerRow:
+        return DashboardTradeLedgerRow(
+            session_date=timestamp.date(),
+            event_timestamp=timestamp,
+            entry_timestamp=timestamp,
+            exit_timestamp=timestamp if event_type == "CLOSE" else None,
+            event_type=event_type,
+            trade_id=trade_id,
+            strategy_id="S23:LEG",
+            strategy_code="S23",
+            strategy_branch="LEG",
+            selected_contract_symbol=f"NIFTY_{trade_id}",
+            side="SELL",
+            lots=1,
+            quantity=65,
+            entry_price=209.0,
+            current_price=180.0,
+            current_bid=179.5,
+            current_ask=180.5,
+            exit_price=86.1 if event_type == "CLOSE" else None,
+            target_price=85.1,
+            stoploss_price=258.94,
+            gross_points=122.9,
+            gross_pnl=7988.5,
+            lifecycle_status=lifecycle_status,
+            manager_status=manager_status,
+            reason_code="reason",
+            message="message",
+            fresh_entry_required=fresh_entry_required,
+            reverse_entry_required=False,
+            rollover_required=False,
+            state_directory=None,
+            stream_health=DashboardSelectedContractStreamHealth(),
+            raw_artifact_links={},
+        )
+
+    html = builder._render_trade_ledger_section(
+        rows=[
+            row(
+                trade_id="OPEN1",
+                event_type="HOLD",
+                lifecycle_status="PAPER_POSITION_OPEN",
+                manager_status="PAPER_POSITION_HELD",
+            ),
+            row(
+                trade_id="ACTION1",
+                event_type="ACTION_REQUIRED",
+                lifecycle_status="PAPER_FRESH_ENTRY_REQUIRED",
+                manager_status="PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                fresh_entry_required=True,
+            ),
+            row(
+                trade_id="CLOSED1",
+                event_type="CLOSE",
+                lifecycle_status="PAPER_POSITION_CLOSED",
+                manager_status="PAPER_POSITION_CLOSED",
+            ),
+        ],
+        page_path=tmp_path / "dashboard" / "trades" / "index.html",
+        latest_session_date=timestamp.date(),
+    )
+
+    assert ">3<" in html
+    assert re.search(r"Open Positions</span><div class=\"value\">1</div>", html)
+    assert re.search(r"Action Required</span><div class=\"value\">1</div>", html)
+    assert re.search(r"Closed Trades</span><div class=\"value\">1</div>", html)
+
+
 def test_strategy_page_prefers_current_position_truth_over_stale_carry_forward_block(tmp_path: Path) -> None:
     artifact_root = tmp_path / "s23-artifacts"
     latest_day_dir = artifact_root / "2026-07-14"
@@ -1302,6 +1694,35 @@ def test_strategy_page_prefers_current_position_truth_over_stale_carry_forward_b
     strategy_html = result.strategy_pages["S23"].read_text(encoding="utf-8")
     assert "PAPER_FRESH_ENTRY_REQUIRED" in strategy_html
     assert "OPEN_CARRY_FORWARD_POSITION" not in strategy_html
+
+
+def test_latest_strategy_position_override_status_returns_none_for_active_carried_forward_state(
+    tmp_path: Path,
+) -> None:
+    artifact_root = tmp_path / "s23-artifacts"
+    state_dir = (
+        artifact_root
+        / "2026-07-15"
+        / "s23-fyers-morning-supervised-decision-2026-07-15"
+        / "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    )
+    state_dir.mkdir(parents=True)
+    (state_dir / "paper_position_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                "lifecycle_status": "PAPER_POSITION_CARRIED_FORWARD",
+                "last_updated_timestamp": "2026-07-15T15:00:00+05:30",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(artifact_root),))
+
+    assert builder._latest_strategy_position_override_status(_strategy_config(artifact_root)) is None
 
 
 def test_dashboard_builds_historical_trades_page_with_filters(tmp_path: Path) -> None:

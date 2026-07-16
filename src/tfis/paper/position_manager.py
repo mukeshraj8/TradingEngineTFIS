@@ -16,10 +16,14 @@ from .models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from .order_state import S23PaperOrderState, S23PaperOrderStatus
 from .position_state import (
     S23PaperPositionState,
-    S23PaperPositionStateStatus,
     S23PaperPositionStateStore,
+    paper_position_is_no_longer_open,
 )
-from .trade_ledger import S23PaperTradeLedgerEventType, S23PaperTradeLedgerStore
+from .trade_ledger import (
+    S23PaperTradeLedgerEventType,
+    S23PaperTradeLedgerStore,
+    paper_trade_event_type_for_manager_status,
+)
 from .live_state_store import NullS23PaperLiveStateStore, S23PaperLiveStateStore
 
 
@@ -317,12 +321,7 @@ class S23PaperPositionManager:
     ) -> S23PaperPositionManagerResult:
         session_dir = Path(session_directory)
         state = self._state_store.load_state(session_dir)
-        if state.lifecycle_status in {
-            S23PaperPositionStateStatus.PAPER_POSITION_CLOSED,
-            S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED,
-            S23PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED,
-            S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
-        }:
+        if paper_position_is_no_longer_open(state.lifecycle_status):
             event = S23PaperPositionManagerEvent(
                 artifact_version=_ARTIFACT_VERSION,
                 timestamp=evaluated_at,
@@ -1270,19 +1269,7 @@ class S23PaperPositionManager:
     def _ledger_event_type(
         status: S23PaperPositionManagerStatus,
     ) -> S23PaperTradeLedgerEventType:
-        if status is S23PaperPositionManagerStatus.PAPER_POSITION_OPENED:
-            return S23PaperTradeLedgerEventType.OPEN
-        if status is S23PaperPositionManagerStatus.PAPER_POSITION_HELD:
-            return S23PaperTradeLedgerEventType.HOLD
-        if status in {
-            S23PaperPositionManagerStatus.PAPER_POSITION_TARGET_HIT,
-            S23PaperPositionManagerStatus.PAPER_POSITION_STOPLOSS_HIT,
-            S23PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED,
-            S23PaperPositionManagerStatus.PAPER_POSITION_FRESH_ENTRY_REQUIRED,
-            S23PaperPositionManagerStatus.PAPER_POSITION_REVERSE_ENTRY_REQUIRED,
-        }:
-            return S23PaperTradeLedgerEventType.CLOSE
-        return S23PaperTradeLedgerEventType.ACTION_REQUIRED
+        return paper_trade_event_type_for_manager_status(status.value)
 
     def _append_jsonl(self, path: Path, event: S23PaperPositionManagerEvent) -> None:
         existing = path.read_text(encoding="utf-8") if path.exists() else ""

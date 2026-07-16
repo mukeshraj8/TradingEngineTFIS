@@ -114,6 +114,69 @@ def test_refuses_promotion_when_active_position_exists(
     assert str(active_dir / "paper_position_state.json") in str(exc_info.value)
 
 
+def test_refuses_promotion_when_reverse_entry_required_position_exists(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    session_dir = _session_dir(tmp_path)
+    session_dir.mkdir(parents=True)
+    (session_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    blocked_dir = tmp_path / "2026-07-05" / "session-2026-07-05" / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+    blocked_dir.mkdir(parents=True)
+    store = S23PaperPositionStateStore()
+    store.save_state(
+        blocked_dir,
+        store.create_open_position_state(
+        strategy_code="S23",
+        unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+        symbol="NIFTY",
+        option_type=OptionType.PUT,
+        selected_contract_symbol="NIFTY_20260714_24200_PE",
+        expiry_date=date(2026, 7, 14),
+        expiry_type=ExpiryType.WEEKLY,
+        rollover_policy=RolloverPolicy.T_MINUS_1,
+        forced_close_time=time(12, 0),
+        no_carry_past_expiry=True,
+        entry_date=date(2026, 7, 5),
+        entry_timestamp=datetime(2026, 7, 5, 9, 46),
+        entry_price=212.35,
+        lots=1,
+        quantity=65,
+        side="SELL",
+        target_price=85.10,
+        stoploss_price=258.94,
+        fsl_price=None,
+        trp_price=None,
+        carry_forward_allowed=True,
+        last_updated_timestamp=datetime(2026, 7, 5, 9, 46),
+    ),
+    )
+    store.mark_position_closed(
+        blocked_dir,
+        session_date=date(2026, 7, 5),
+        closed_at=datetime(2026, 7, 5, 12, 57),
+        reason_code="stoploss_or_fsl_hit",
+        message="Reverse entry required.",
+        reverse_entry_required=True,
+    )
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "promote_s23_blocked_fresh_order.py",
+            "--date",
+            "2026-07-06",
+            "--artifact-root",
+            str(tmp_path),
+        ],
+    )
+
+    with pytest.raises(SystemExit) as exc_info:
+        promote.main()
+
+    assert "active paper position(s) still exist" in str(exc_info.value)
+    assert str(blocked_dir / "paper_position_state.json") in str(exc_info.value)
+
+
 def _session_dir(root: Path) -> Path:
     return (
         root

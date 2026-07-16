@@ -38,6 +38,88 @@
 - Historical-trades dashboard rendering now skips live stream-health and
   pending-order scans, reducing operator-dashboard rebuild time further on real
   TFIS artifact sets
+- Phase 1 shared-paper-lifecycle refactor has started with additive,
+  strategy-neutral entrypoint aliases for the order finalizer and lifecycle
+  supervisor, giving later S21/Sxx work a neutral import seam without changing
+  the current S23 runtime behavior
+- Phase 1 now also exposes strategy-neutral aliases for shared paper order and
+  position state models/stores, extending the neutral seam without changing the
+  current S23-backed runtime behavior
+- Phase 1 now also has its first shared order-status helper extraction, with
+  the existing paper finalizer and lifecycle supervisor switching from
+  duplicated literal waiting-status checks to one shared helper and no runtime
+  behavior change
+- Phase 1 now also has matching shared position-status helpers, with the
+  existing open-position discovery and position-manager closed-state gate
+  switching from duplicated literal status sets to one shared helper layer and
+  no runtime behavior change
+- Phase 1 now also has shared trade terminal/open/action-required helpers, with
+  the operator dashboard switching from duplicated row-classification logic to
+  the shared helper layer and no runtime behavior change
+- Phase 1 now also shares paper-trade status-label normalization and row-state
+  bucketing, with the operator dashboard switching from inline waiting/not-filled
+  label mapping and row-tone decision trees to shared trade-ledger helpers and
+  no runtime behavior change
+- Phase 1 now also shares latest-session trade visibility rules, with the
+  operator dashboard switching from inline session-filter interpretation to a
+  shared trade-ledger helper and no runtime behavior change
+- Phase 1 now also shares multi-event trade display-row preference, with the
+  operator dashboard switching from inline "prefer latest terminal row"
+  selection to a shared trade-ledger helper and no runtime behavior change
+- Phase 1 now also shares latest-trade summary counting, with the operator
+  dashboard switching from inline open/action/closed summary count rules to a
+  shared trade-ledger helper and no runtime behavior change
+- Phase 1 now also shares trade status-label lists and closed-row follow-up
+  note wording, with the operator dashboard switching from inline badge/note
+  construction to shared trade-ledger helpers and no runtime behavior change
+- Phase 1 now also shares trade message normalization, with the operator
+  dashboard switching from inline S23-specific message cleanup to a shared
+  trade-ledger helper and no runtime behavior change
+- Phase 1 now also shares option and branch display labels, with the operator
+  dashboard switching from inline option/branch label mapping to shared
+  trade-ledger helpers and no runtime behavior change
+- Phase 1 now also shares P&L tone selection, with the operator dashboard
+  switching from inline positive/negative CSS-class selection to a shared
+  trade-ledger helper and no runtime behavior change
+- Phase 1 now also shares paper position-manager status classification across
+  the trade layer, position manager, and lifecycle supervisor, replacing
+  duplicated manager-status interpretation with shared helpers and no runtime
+  behavior change
+- Phase 1 now also shares paper-order-to-trade-row mapping, with the operator
+  dashboard switching from inline waiting/not-filled order rewrites to shared
+  order-state helpers and no runtime behavior change
+- Phase 1 now also aligns dashboard carry-forward override checks with the
+  shared position-state active helper, replacing a local active-status list
+  with shared lifecycle vocabulary and no runtime behavior change
+- Phase 1 now also shares pending-order trade-monitor visibility, with the
+  operator dashboard switching from a local waiting/not-filled order-status set
+  to a shared order-state helper and no runtime behavior change
+- Phase 1 now also closes a remaining S21/S23 final-leg parity gap, with the
+  operator dashboard switching from S23-only branch-prefix normalization and
+  rule-folder lookup to strategy-aware branch normalization/loading so S21
+  failed-leg rows still render correctly when artifacts mix prefixed and
+  unprefixed branch names
+- Phase 1 now also exposes neutral open-position discovery aliases, with the
+  S23 position-watch entrypoint switching to that neutral seam while
+  preserving the same watcher behavior and focused test coverage
+- Phase 1 now also exercises neutral lifecycle/finalizer aliases in the live
+  TFIS paper entrypoints, with the S23 position-watch and stale-order
+  finalizer scripts switching to the shared alias layer while preserving the
+  same runtime behavior
+- Phase 1 now also centralizes resumable paper-position eligibility in the
+  recovery/startup wrappers, with S21, S23, and TFIS reset flows switching to
+  one shared PowerShell helper for open/carried/resumed plus carry-forward and
+  expiry checks instead of re-declaring that rule in each wrapper
+- Phase 1 now also aligns blocked-fresh-order recovery and captured-session
+  replay with the shared lifecycle vocabulary, with
+  `paper_position_blocks_new_entry` owning the "still blocks a fresh order"
+  rule and the promotion/validation scripts switching away from local status
+  sets while preserving runtime behavior
+- Phase 1 runtime-consistency refactor is complete for the current scope:
+  shared lifecycle vocabulary now spans the meaningful duplicated S21/S23
+  dashboard read-model, Python entrypoint, replay, and startup/recovery seams,
+  so the next architecture move is Phase 2 contract design rather than more
+  Phase 1 micro-extractions
 - S23 operator dashboard strike audit now shows rule-sheet search order,
   side-filtered and expiry-scoped full strike scans, derived rejection reasons,
   and explicit qualification reasons for `PASSED` and `SELECTED` rows
@@ -124,6 +206,11 @@
   single explicit build and launches `serve_operator_dashboard.py` with
   `--skip-build`, so the server opens port `8765` without repeating the same
   dashboard generation step in-process.
+- The local pre-live readiness gate is currently green for the prod-paper
+  profile. On `2026-07-16`,
+  `scripts/pre_live_readiness.py --profile prod --require-token --json`
+  returned `overall_status=PASS` across project structure, strategy config,
+  dashboard config, monthly-status config, and TFIS FYERS token checks.
 - S23 captured-session replay validation now covers expiry force-close and
   next-day stoploss reset states. Expiry force-close is confirmed from persisted
   position-manager events plus expiry date/force-close time, and next-day SL

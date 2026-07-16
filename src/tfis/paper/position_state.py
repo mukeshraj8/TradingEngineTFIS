@@ -44,6 +44,63 @@ class S23PaperPositionStateEventType(str, Enum):
     PAPER_FRESH_ENTRY_REQUIRED = "PAPER_FRESH_ENTRY_REQUIRED"
 
 
+def paper_position_is_active(
+    status: S23PaperPositionStateStatus | str | None,
+) -> bool:
+    if isinstance(status, S23PaperPositionStateStatus):
+        return status in {
+            S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
+            S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
+            S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
+        }
+    normalized = str(status or "").strip()
+    return normalized in {
+        S23PaperPositionStateStatus.PAPER_POSITION_OPEN.value,
+        S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD.value,
+        S23PaperPositionStateStatus.PAPER_POSITION_RESUMED.value,
+    }
+
+
+def paper_position_is_no_longer_open(
+    status: S23PaperPositionStateStatus | str | None,
+) -> bool:
+    if isinstance(status, S23PaperPositionStateStatus):
+        return status in {
+            S23PaperPositionStateStatus.PAPER_POSITION_CLOSED,
+            S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED,
+            S23PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED,
+            S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
+        }
+    normalized = str(status or "").strip()
+    return normalized in {
+        S23PaperPositionStateStatus.PAPER_POSITION_CLOSED.value,
+        S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED.value,
+        S23PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED.value,
+        S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED.value,
+    }
+
+
+def paper_position_blocks_new_entry(
+    status: S23PaperPositionStateStatus | str | None,
+) -> bool:
+    if isinstance(status, S23PaperPositionStateStatus):
+        return status in {
+            S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
+            S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
+            S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
+            S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED,
+            S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
+        }
+    normalized = str(status or "").strip()
+    return normalized in {
+        S23PaperPositionStateStatus.PAPER_POSITION_OPEN.value,
+        S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD.value,
+        S23PaperPositionStateStatus.PAPER_POSITION_RESUMED.value,
+        S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED.value,
+        S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED.value,
+    }
+
+
 @dataclass(frozen=True, slots=True)
 class S23PaperPositionState:
     artifact_version: int
@@ -1176,3 +1233,30 @@ class S23PaperPositionStateStore:
             raise S23PaperPositionStateError(
                 "rollover_policy must be a valid RolloverPolicy value"
             ) from exc
+
+
+PaperPositionStateError = S23PaperPositionStateError
+PaperPositionStateStatus = S23PaperPositionStateStatus
+PaperPositionStateEventType = S23PaperPositionStateEventType
+PaperPositionState = S23PaperPositionState
+PaperPositionStateEvent = S23PaperPositionStateEvent
+PaperPositionStateStore = S23PaperPositionStateStore
+
+
+__all__ = [
+    "paper_position_is_active",
+    "paper_position_blocks_new_entry",
+    "paper_position_is_no_longer_open",
+    "PaperPositionState",
+    "PaperPositionStateError",
+    "PaperPositionStateEvent",
+    "PaperPositionStateEventType",
+    "PaperPositionStateStatus",
+    "PaperPositionStateStore",
+    "S23PaperPositionState",
+    "S23PaperPositionStateError",
+    "S23PaperPositionStateEvent",
+    "S23PaperPositionStateEventType",
+    "S23PaperPositionStateStatus",
+    "S23PaperPositionStateStore",
+]

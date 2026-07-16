@@ -24,10 +24,10 @@ from tfis.brokers import BrokerAdapterError, FyersBrokerAdapter
 from tfis.brokers.fyers_token import prepare_fyers_env_from_tfis
 from tfis.paper import (
     DeterministicExpiryCalendar,
-    S23OpenPaperPositionDiscovery,
+    PaperLifecycleSupervisor,
+    PaperLifecycleSupervisorContext,
+    PaperOpenPositionDiscovery,
     S23PaperExpiryGovernance,
-    S23PaperLifecycleSupervisor,
-    S23PaperLifecycleSupervisorContext,
     S23PaperOrderState,
     S23PaperOrderStateStore,
     S23PaperOrderStatus,
@@ -130,7 +130,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         state = S23PaperPositionStateStore().load_state(state_dir)
     live_state_store = build_s23_paper_live_state_store_from_yaml(args.config)
-    lifecycle_context = S23PaperLifecycleSupervisorContext(
+    lifecycle_context = PaperLifecycleSupervisorContext(
         session_directory=Path(state_dir or order_dir),
         session_date=session_date,
         trade_id=(
@@ -190,7 +190,7 @@ def main(argv: list[str] | None = None) -> int:
         slippage_exit_points=config.costs.slippage_exit_points or 0.0,
     )
     order_store = S23PaperOrderStateStore()
-    supervisor = S23PaperLifecycleSupervisor(
+    supervisor = PaperLifecycleSupervisor(
         order_store=order_store,
         position_manager=position_manager,
     )
@@ -481,7 +481,7 @@ def _resolve_state_dir(
     if state_dir:
         return Path(state_dir)
     roots = tuple(Path(item) for item in search_roots) or (default_artifact_root,)
-    candidate = S23OpenPaperPositionDiscovery().find_latest_open_position(roots)
+    candidate = PaperOpenPositionDiscovery().find_latest_open_position(roots)
     if candidate is None:
         if no_open_ok:
             return None

@@ -6,7 +6,7 @@ from dataclasses import dataclass, fields, is_dataclass
 from datetime import date, datetime, time
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol, Sequence
 
 from .position_state import S23PaperPositionState
 
@@ -22,6 +22,319 @@ class S23PaperTradeLedgerEventType(str, Enum):
     HOLD = "HOLD"
     CLOSE = "CLOSE"
     ACTION_REQUIRED = "ACTION_REQUIRED"
+
+
+_OPEN_MANAGER_STATUSES = {
+    "PAPER_POSITION_OPENED",
+    "PAPER_POSITION_HELD",
+}
+
+_CLOSE_MANAGER_STATUSES = {
+    "PAPER_POSITION_TARGET_HIT",
+    "PAPER_POSITION_STOPLOSS_HIT",
+    "PAPER_POSITION_FORCE_CLOSED",
+    "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+    "PAPER_POSITION_REVERSE_ENTRY_REQUIRED",
+}
+
+_DISPLAY_TERMINAL_MANAGER_STATUSES = {
+    "PAPER_POSITION_TARGET_HIT",
+    "PAPER_POSITION_STOPLOSS_HIT",
+    "PAPER_POSITION_FORCE_CLOSED",
+    "PAPER_POSITION_ALREADY_CLOSED",
+}
+
+_LIFECYCLE_TERMINAL_MANAGER_STATUSES = _CLOSE_MANAGER_STATUSES | {
+    "PAPER_POSITION_ROLLOVER_REQUIRED",
+    "PAPER_POSITION_ALREADY_CLOSED",
+}
+
+
+def paper_trade_is_terminal(
+    *,
+    event_type: str | None,
+    lifecycle_status: str | None,
+    manager_status: str | None,
+) -> bool:
+    normalized_event_type = str(event_type or "").upper()
+    normalized_lifecycle_status = str(lifecycle_status or "").upper()
+    return (
+        normalized_event_type == "CLOSE"
+        or "CLOSED" in normalized_lifecycle_status
+        or paper_trade_manager_status_is_terminal(manager_status)
+    )
+
+
+def paper_trade_is_open(
+    *,
+    lifecycle_status: str | None,
+    manager_status: str | None,
+) -> bool:
+    normalized_lifecycle_status = str(lifecycle_status or "").upper()
+    return (
+        "OPEN" in normalized_lifecycle_status
+        or paper_trade_manager_status_is_open(manager_status)
+    )
+
+
+def paper_trade_manager_status_is_open(manager_status: str | None) -> bool:
+    return str(manager_status or "").upper() in _OPEN_MANAGER_STATUSES
+
+
+def paper_trade_manager_status_is_terminal(manager_status: str | None) -> bool:
+    return str(manager_status or "").upper() in _DISPLAY_TERMINAL_MANAGER_STATUSES
+
+
+def paper_trade_manager_status_is_lifecycle_terminal(manager_status: str | None) -> bool:
+    return str(manager_status or "").upper() in _LIFECYCLE_TERMINAL_MANAGER_STATUSES
+
+
+def paper_trade_event_type_for_manager_status(
+    manager_status: str | None,
+) -> S23PaperTradeLedgerEventType:
+    normalized = str(manager_status or "").upper()
+    if normalized == "PAPER_POSITION_OPENED":
+        return S23PaperTradeLedgerEventType.OPEN
+    if normalized == "PAPER_POSITION_HELD":
+        return S23PaperTradeLedgerEventType.HOLD
+    if normalized in _CLOSE_MANAGER_STATUSES:
+        return S23PaperTradeLedgerEventType.CLOSE
+    return S23PaperTradeLedgerEventType.ACTION_REQUIRED
+
+
+def paper_trade_action_required(
+    *,
+    fresh_entry_required: bool,
+    reverse_entry_required: bool,
+    rollover_required: bool,
+) -> bool:
+    return fresh_entry_required or reverse_entry_required or rollover_required
+
+
+def paper_trade_display_status_label(label: str | None) -> str:
+    value = str(label or "").strip()
+    if value in {"", "n/a"}:
+        return ""
+    if value == "PAPER_ORDER_WAITING_FOR_TRIGGER":
+        return "ORDER_WAITING_FOR_TRIGGER"
+    if value == "PAPER_ORDER_NOT_FILLED":
+        return "ORDER_NOT_FILLED"
+    return value
+
+
+def paper_trade_status_kind(
+    *,
+    lifecycle_status: str | None,
+    manager_status: str | None,
+    event_type: str | None,
+    fresh_entry_required: bool,
+    reverse_entry_required: bool,
+    rollover_required: bool,
+) -> str:
+    normalized_manager_status = str(manager_status or "").upper()
+    normalized_lifecycle_status = str(lifecycle_status or "").upper()
+    if paper_trade_is_terminal(
+        event_type=event_type,
+        lifecycle_status=lifecycle_status,
+        manager_status=manager_status,
+    ):
+        return "closed"
+    if paper_trade_action_required(
+        fresh_entry_required=fresh_entry_required,
+        reverse_entry_required=reverse_entry_required,
+        rollover_required=rollover_required,
+    ):
+        return "action"
+    if (
+        normalized_manager_status == "PAPER_ORDER_NOT_FILLED"
+        or normalized_lifecycle_status == "ORDER_NOT_FILLED"
+    ):
+        return "not_filled"
+    if (
+        normalized_manager_status == "PAPER_ORDER_WAITING_FOR_TRIGGER"
+        or normalized_lifecycle_status == "ORDER_WAITING_FOR_TRIGGER"
+    ):
+        return "waiting"
+    if paper_trade_is_open(
+        lifecycle_status=lifecycle_status,
+        manager_status=manager_status,
+    ):
+        return "open"
+    return "neutral"
+
+
+def paper_trade_visible_for_latest_session(
+    *,
+    row_session_date: date | None,
+    event_timestamp: datetime | None,
+    latest_session_date: date | None,
+    event_type: str | None,
+    lifecycle_status: str | None,
+    manager_status: str | None,
+    fresh_entry_required: bool,
+    reverse_entry_required: bool,
+    rollover_required: bool,
+) -> bool:
+    if latest_session_date is None:
+        return True
+    effective_row_session_date = row_session_date
+    if effective_row_session_date is None and event_timestamp is not None:
+        effective_row_session_date = event_timestamp.date()
+    if effective_row_session_date == latest_session_date:
+        return True
+    status_kind = paper_trade_status_kind(
+        event_type=event_type,
+        lifecycle_status=lifecycle_status,
+        manager_status=manager_status,
+        fresh_entry_required=fresh_entry_required,
+        reverse_entry_required=reverse_entry_required,
+        rollover_required=rollover_required,
+    )
+    if effective_row_session_date is not None and effective_row_session_date > latest_session_date:
+        return status_kind == "closed"
+    return status_kind in {"open", "action"}
+
+
+class PaperTradeDisplayCandidate(Protocol):
+    event_timestamp: datetime | None
+    event_type: str
+    lifecycle_status: str
+    manager_status: str
+
+
+class PaperTradeStatusCandidate(PaperTradeDisplayCandidate, Protocol):
+    fresh_entry_required: bool
+    reverse_entry_required: bool
+    rollover_required: bool
+
+
+def paper_trade_select_display_row(
+    rows: Sequence[PaperTradeDisplayCandidate],
+) -> PaperTradeDisplayCandidate:
+    terminal_rows = [
+        row
+        for row in rows
+        if paper_trade_is_terminal(
+            event_type=row.event_type,
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
+        )
+    ]
+    candidate_rows = terminal_rows if terminal_rows else rows
+    return max(
+        candidate_rows,
+        key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+    )
+
+
+def paper_trade_summary_counts(
+    rows: Sequence[PaperTradeDisplayCandidate],
+) -> dict[str, int]:
+    counts = {
+        "unique_trades": len(rows),
+        "open_positions": 0,
+        "action_required": 0,
+        "closed_trades": 0,
+    }
+    for row in rows:
+        status_kind = paper_trade_status_kind(
+            event_type=row.event_type,
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
+            fresh_entry_required=getattr(row, "fresh_entry_required", False),
+            reverse_entry_required=getattr(row, "reverse_entry_required", False),
+            rollover_required=getattr(row, "rollover_required", False),
+        )
+        if status_kind == "open":
+            counts["open_positions"] += 1
+        if status_kind == "action":
+            counts["action_required"] += 1
+        if status_kind == "closed":
+            counts["closed_trades"] += 1
+    return counts
+
+
+def paper_trade_status_labels(
+    row: PaperTradeStatusCandidate,
+) -> list[str]:
+    if paper_trade_is_terminal(
+        event_type=row.event_type,
+        lifecycle_status=row.lifecycle_status,
+        manager_status=row.manager_status,
+    ):
+        return ["POSITION_CLOSED"]
+    status_labels: list[str] = []
+    for label in (row.lifecycle_status, row.manager_status):
+        normalized = paper_trade_display_status_label(label)
+        if normalized and normalized not in status_labels:
+            status_labels.append(normalized)
+    action_flags = []
+    if row.fresh_entry_required:
+        action_flags.append("Fresh Entry")
+    if row.reverse_entry_required:
+        action_flags.append("Reverse Entry")
+    if row.rollover_required:
+        action_flags.append("Rollover")
+    action_text = ", ".join(action_flags)
+    if action_text:
+        status_labels.append(action_text)
+    return status_labels
+
+
+def paper_trade_followup_note(
+    row: PaperTradeStatusCandidate,
+) -> str:
+    if not paper_trade_is_terminal(
+        event_type=row.event_type,
+        lifecycle_status=row.lifecycle_status,
+        manager_status=row.manager_status,
+    ):
+        return ""
+    notes = []
+    if row.fresh_entry_required:
+        notes.append("fresh entry recalculation required")
+    if row.reverse_entry_required:
+        notes.append("reverse entry review required")
+    if row.rollover_required:
+        notes.append("rollover review required")
+    if not notes:
+        return ""
+    return "Follow-up: " + "; ".join(notes) + "."
+
+
+def paper_trade_normalized_message(message: str | None) -> str:
+    value = str(message or "")
+    if not value:
+        return ""
+    return value.replace("S23 READY decision created", "READY decision created")
+
+
+def paper_trade_option_label(symbol: str | None) -> str:
+    text = str(symbol or "").upper()
+    if text.endswith("_CE") or "_CE-" in text:
+        return "CE"
+    if text.endswith("_PE") or "_PE-" in text:
+        return "PE"
+    return "OPTION"
+
+
+def paper_trade_branch_label(branch: str | None) -> str:
+    text = str(branch or "").upper()
+    if "BEAR" in text and ("CALL" in text or text.endswith("_CE")):
+        return "Bear Call"
+    if "BEAR" in text and ("PUT" in text or text.endswith("_PE")):
+        return "Bear Put"
+    if "BULL" in text and ("CALL" in text or text.endswith("_CE")):
+        return "Bull Call"
+    if "BULL" in text and ("PUT" in text or text.endswith("_PE")):
+        return "Bull Put"
+    return str(branch or "n/a").replace("_", " ").title()
+
+
+def paper_trade_pnl_tone(gross_pnl: float | None) -> str:
+    if gross_pnl is None:
+        return ""
+    return "good-text" if gross_pnl >= 0 else "bad-text"
 
 
 @dataclass(frozen=True, slots=True)
@@ -219,6 +532,24 @@ class S23PaperTradeLedgerStore:
 
 
 __all__ = [
+    "paper_trade_action_required",
+    "paper_trade_branch_label",
+    "paper_trade_display_status_label",
+    "paper_trade_event_type_for_manager_status",
+    "paper_trade_followup_note",
+    "paper_trade_is_open",
+    "paper_trade_is_terminal",
+    "paper_trade_manager_status_is_open",
+    "paper_trade_manager_status_is_lifecycle_terminal",
+    "paper_trade_manager_status_is_terminal",
+    "paper_trade_normalized_message",
+    "paper_trade_option_label",
+    "paper_trade_pnl_tone",
+    "paper_trade_status_kind",
+    "paper_trade_status_labels",
+    "paper_trade_select_display_row",
+    "paper_trade_summary_counts",
+    "paper_trade_visible_for_latest_session",
     "S23PaperTradeLedgerEventType",
     "S23PaperTradeLedgerRow",
     "S23PaperTradeLedgerStore",

@@ -9,6 +9,7 @@ from .order_state import (
     S23PaperOrderStateError,
     S23PaperOrderStateStore,
     S23PaperOrderStatus,
+    paper_order_is_waiting_for_trigger,
 )
 
 
@@ -166,7 +167,7 @@ class S23PaperOrderFinalizer:
         include_prior_sessions: bool,
         allow_before_cutoff: bool,
     ) -> str | None:
-        if state.status is not S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER:
+        if not paper_order_is_waiting_for_trigger(state.status):
             return "paper_order_not_waiting_for_trigger"
         if state.entry_date > session_date:
             return "paper_order_entry_date_after_session"
@@ -198,7 +199,15 @@ class S23PaperOrderFinalizer:
 
 
 __all__ = [
+    "PaperOrderFinalizer",
+    "PaperOrderFinalizerDecision",
+    "PaperOrderFinalizerSummary",
     "S23PaperOrderFinalizer",
     "S23PaperOrderFinalizerDecision",
     "S23PaperOrderFinalizerSummary",
 ]
+
+
+PaperOrderFinalizerDecision = S23PaperOrderFinalizerDecision
+PaperOrderFinalizerSummary = S23PaperOrderFinalizerSummary
+PaperOrderFinalizer = S23PaperOrderFinalizer

@@ -20,21 +20,12 @@ from tfis.paper.live_decision import S23PaperTradeDecisionSummary
 from tfis.paper.order_state import S23PaperOrderStateStore
 from tfis.paper.position_state import (
     S23PaperPositionStateError,
-    S23PaperPositionStateStatus,
     S23PaperPositionStateStore,
+    paper_position_blocks_new_entry,
 )
 
 
 _DEFAULT_ARTIFACT_ROOT = Path("data/strategies/S23/fyers_morning_supervised_decision")
-_ACTIVE_POSITION_STATUSES = {
-    S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
-    S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
-    S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
-    S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
-    S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED,
-}
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -232,7 +223,7 @@ def _active_position_paths(artifact_root: Path) -> list[Path]:
             state = store.load_state(state_path.parent)
         except S23PaperPositionStateError:
             continue
-        if state.lifecycle_status in _ACTIVE_POSITION_STATUSES:
+        if paper_position_blocks_new_entry(state.lifecycle_status):
             active.append(state_path)
     return active
 

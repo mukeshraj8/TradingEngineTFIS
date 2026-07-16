@@ -30,6 +30,51 @@ class S23PaperOrderStatus(str, Enum):
     PAPER_ORDER_NOT_FILLED = "PAPER_ORDER_NOT_FILLED"
 
 
+def paper_order_is_waiting_for_trigger(status: S23PaperOrderStatus | str | None) -> bool:
+    if isinstance(status, S23PaperOrderStatus):
+        return status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
+    return str(status or "").strip() == S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value
+
+
+def paper_order_is_terminal(status: S23PaperOrderStatus | str | None) -> bool:
+    if isinstance(status, S23PaperOrderStatus):
+        return status in {
+            S23PaperOrderStatus.PAPER_ORDER_FILLED,
+            S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED,
+        }
+    normalized = str(status or "").strip()
+    return normalized in {
+        S23PaperOrderStatus.PAPER_ORDER_FILLED.value,
+        S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value,
+    }
+
+
+def paper_order_trade_event_type(status: S23PaperOrderStatus | str | None) -> str:
+    normalized = str(status or "").strip()
+    if normalized == S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value:
+        return "ORDER_NOT_FILLED"
+    if normalized == S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value:
+        return "ORDER_WAITING"
+    return normalized or "ORDER"
+
+
+def paper_order_trade_lifecycle_status(status: S23PaperOrderStatus | str | None) -> str:
+    normalized = str(status or "").strip()
+    if normalized == S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value:
+        return "ORDER_NOT_FILLED"
+    if normalized == S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value:
+        return "ORDER_WAITING_FOR_TRIGGER"
+    return normalized
+
+
+def paper_order_visible_in_trade_monitor(status: S23PaperOrderStatus | str | None) -> bool:
+    normalized = str(status or "").strip()
+    return normalized in {
+        S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value,
+        S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value,
+    }
+
+
 @dataclass(frozen=True, slots=True)
 class S23PaperOrderState:
     artifact_version: int
@@ -603,9 +648,26 @@ class S23PaperOrderStateStore:
 
 
 __all__ = [
+    "paper_order_is_terminal",
+    "paper_order_trade_event_type",
+    "paper_order_trade_lifecycle_status",
+    "paper_order_visible_in_trade_monitor",
+    "paper_order_is_waiting_for_trigger",
+    "PaperOrderEvent",
+    "PaperOrderState",
+    "PaperOrderStateError",
+    "PaperOrderStateStore",
+    "PaperOrderStatus",
     "S23PaperOrderEvent",
     "S23PaperOrderState",
     "S23PaperOrderStateError",
     "S23PaperOrderStateStore",
     "S23PaperOrderStatus",
 ]
+
+
+PaperOrderEvent = S23PaperOrderEvent
+PaperOrderState = S23PaperOrderState
+PaperOrderStateError = S23PaperOrderStateError
+PaperOrderStateStore = S23PaperOrderStateStore
+PaperOrderStatus = S23PaperOrderStatus

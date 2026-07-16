@@ -20,6 +20,8 @@ if str(SRC_ROOT) not in sys.path:
 from tfis.domain.enums import OptionType
 from tfis.paper.contract_selection import S23PaperContractSelectionRequest, S23PaperContractSelector
 from tfis.paper.models import EventEnvelope, OptionChainContract, OptionChainSnapshotEvent, PaperEventType
+from tfis.paper.order_state import S23PaperOrderStatus
+from tfis.paper.position_state import paper_position_is_active
 
 
 DEFAULT_ARTIFACT_ROOT = Path("data/strategies/S23/fyers_morning_supervised_decision")
@@ -616,7 +618,11 @@ def _replay_waiting_order_from_market_events(
     if not order_state:
         return {}
     order_status = _as_optional_str(order_state.get("status"))
-    if order_status not in {"PAPER_ORDER_WAITING_FOR_TRIGGER", "PAPER_ORDER_FILLED", "PAPER_ORDER_NOT_FILLED"}:
+    if order_status not in {
+        S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value,
+        S23PaperOrderStatus.PAPER_ORDER_FILLED.value,
+        S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value,
+    }:
         return {}
     symbol = _as_optional_str(order_state.get("selected_contract_symbol")) or selected_contract_symbol
     entry = _as_optional_float(order_state.get("planned_entry_price")) or planned_entry_price
@@ -660,7 +666,7 @@ def _replay_waiting_order_from_market_events(
         }
 
     latest = _selected_contract_market_event_stats(matching_events)[1]
-    if order_status == "PAPER_ORDER_FILLED":
+    if order_status == S23PaperOrderStatus.PAPER_ORDER_FILLED.value:
         return {
             "verdict": "REPLAY_MISMATCH_FILLED_WITHOUT_TRIGGER",
             "reason": (
@@ -669,7 +675,7 @@ def _replay_waiting_order_from_market_events(
             ),
             "gap": "order_replay_mismatch_filled_without_trigger",
         }
-    if order_status == "PAPER_ORDER_NOT_FILLED":
+    if order_status == S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value:
         return {
             "verdict": "REPLAY_CONFIRMED_NOT_FILLED",
             "reason": (
@@ -799,7 +805,7 @@ def _replay_position_from_market_events(
         return stoploss_reset_replay
 
     latest = _selected_contract_market_event_stats(matching_events)[1]
-    if lifecycle_status in {"PAPER_POSITION_OPEN", "PAPER_POSITION_CARRIED_FORWARD", "PAPER_POSITION_RESUMED"}:
+    if paper_position_is_active(lifecycle_status):
         return {
             "verdict": "POSITION_REPLAY_CONFIRMED_OPEN",
             "reason": (

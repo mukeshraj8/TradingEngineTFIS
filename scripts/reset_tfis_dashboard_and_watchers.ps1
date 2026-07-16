@@ -13,6 +13,8 @@ $ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
+$paperPositionHelperPath = Join-Path $scriptDir "tfis_paper_position_state_helpers.ps1"
+. $paperPositionHelperPath
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
 }
@@ -115,12 +117,7 @@ function Test-TfisWatchablePositionState {
         return $false
     }
 
-    $status = [string]$stateJson.lifecycle_status
-    return $status -in @(
-        "PAPER_POSITION_OPEN",
-        "PAPER_POSITION_CARRIED_FORWARD",
-        "PAPER_POSITION_RESUMED"
-    )
+    return Test-TfisResumablePaperPositionStateJson -StateJson $stateJson
 }
 
 function Get-TfisLivePositionStateDirectories {
@@ -149,27 +146,24 @@ function Get-TfisLivePositionStateDirectories {
                 return
             }
 
-            $status = [string]$stateJson.lifecycle_status
-            if ($status -notin @("PAPER_POSITION_OPEN", "PAPER_POSITION_CARRIED_FORWARD", "PAPER_POSITION_RESUMED")) {
-                return
-            }
-
-            if ($false -eq [bool]$stateJson.carry_forward_allowed) {
-                Write-Host "Skipping non-carry-forward paper position state during recovery scan: $statePath"
-                return
-            }
-
-            if ($stateJson.expiry_date) {
-                try {
-                    $expiryDate = [datetime]::Parse([string]$stateJson.expiry_date).Date
-                    if ($expiryDate -lt $EffectiveDate.Date) {
-                        Write-Host "Skipping expired paper position state during recovery scan: $statePath"
-                        return
+            if (-not (Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $EffectiveDate)) {
+                if ($false -eq [bool]$stateJson.carry_forward_allowed) {
+                    Write-Host "Skipping non-carry-forward paper position state during recovery scan: $statePath"
+                    return
+                }
+                if ($stateJson.expiry_date) {
+                    try {
+                        $expiryDate = [datetime]::Parse([string]$stateJson.expiry_date).Date
+                        if ($expiryDate -lt $EffectiveDate.Date) {
+                            Write-Host "Skipping expired paper position state during recovery scan: $statePath"
+                            return
+                        }
+                    }
+                    catch {
+                        Write-Host "Paper position state has unparseable expiry_date; keeping it eligible for recovery scan: $statePath"
                     }
                 }
-                catch {
-                    Write-Host "Paper position state has unparseable expiry_date; keeping it eligible for recovery scan: $statePath"
-                }
+                return
             }
 
             $stateDirectories += $stateDir

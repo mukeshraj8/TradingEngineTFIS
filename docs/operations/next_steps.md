@@ -6,20 +6,22 @@ way.
 
 ## Immediate Next Priorities
 
-1. Execute the runtime refactor phase by phase, starting with Phase 1
-   stabilization only. Phase 1 should finish shared paper lifecycle ownership,
-   dashboard consistency, and S21/S23 parity on waiting/open/closed trade
-   visibility before any broader architectural move. Phase 2 is the
-   strategy-neutral trade-intent/runtime contract. Phase 3 is the single
-   reusable lifecycle supervisor that replaces scattered watcher thinking.
-   Phase 4 is broker-adapter separation from lifecycle logic.
+1. Phase 1 runtime-consistency refactor is complete for the current scope.
+   Shared lifecycle vocabulary now covers the meaningful duplicated S21/S23
+   read-model, runtime-entrypoint, blocked-fresh-order, captured-session, and
+   wrapper recovery seams we identified, without changing strategy formulas.
+   The next architecture move is no longer more Phase 1 micro-extraction.
+   When refactor work resumes, it should start at Phase 2:
+   strategy-neutral trade-intent/runtime contract design, followed by the
+   broader lifecycle-supervisor consolidation and broker/lifecycle separation.
 2. Run the next pre-market operator checklist and supervised paper start.
    The local readiness gate now has a dedicated command:
    `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token`.
-   Current local output is `PASS`, so the remaining work is operator-time
-   verification that the scheduled wrapper (or manual wrapper) starts cleanly,
-   watchers attach to any produced orders/positions, and the dashboard refresh
-   reflects current-day artifacts during market hours.
+   The latest local prod-paper run on `2026-07-16` returned
+   `overall_status=PASS`, so the remaining work is operator-time verification
+   that the scheduled wrapper (or manual wrapper) starts cleanly, watchers
+   attach to any produced orders/positions, and the dashboard refresh reflects
+   current-day artifacts during market hours.
    Before the next session, refresh the Windows scheduled-task registrations
    for both live paper candidates:
    `powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supervised_task.ps1`

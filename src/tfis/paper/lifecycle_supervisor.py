@@ -6,7 +6,13 @@ from pathlib import Path
 
 from .expiry_governance import S23PaperExpiryGovernance
 from .models import SelectedContractBarEvent, SelectedContractQuoteEvent
-from .order_state import S23PaperOrderEvent, S23PaperOrderState, S23PaperOrderStateStore, S23PaperOrderStatus
+from .order_state import (
+    S23PaperOrderEvent,
+    S23PaperOrderState,
+    S23PaperOrderStateStore,
+    S23PaperOrderStatus,
+    paper_order_is_waiting_for_trigger,
+)
 from .position_manager import (
     S23PaperPositionManager,
     S23PaperPositionManagerResult,
@@ -14,16 +20,13 @@ from .position_manager import (
 )
 from .position_state import S23PaperPositionState
 from .trade_ledger import S23PaperTradeLedgerStore
+from .trade_ledger import paper_trade_manager_status_is_lifecycle_terminal
 
 
 TERMINAL_POSITION_MANAGER_STATUSES = {
-    S23PaperPositionManagerStatus.PAPER_POSITION_TARGET_HIT,
-    S23PaperPositionManagerStatus.PAPER_POSITION_STOPLOSS_HIT,
-    S23PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED,
-    S23PaperPositionManagerStatus.PAPER_POSITION_ROLLOVER_REQUIRED,
-    S23PaperPositionManagerStatus.PAPER_POSITION_REVERSE_ENTRY_REQUIRED,
-    S23PaperPositionManagerStatus.PAPER_POSITION_FRESH_ENTRY_REQUIRED,
-    S23PaperPositionManagerStatus.PAPER_POSITION_ALREADY_CLOSED,
+    status
+    for status in S23PaperPositionManagerStatus
+    if paper_trade_manager_status_is_lifecycle_terminal(status.value)
 }
 
 
@@ -77,7 +80,7 @@ class S23PaperLifecycleSupervisor:
         if (
             context.position_state is not None
             or order_state is None
-            or order_state.status is not S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
+            or not paper_order_is_waiting_for_trigger(order_state.status)
             or order_state.entry_date >= context.session_date
         ):
             return None
@@ -269,3 +272,22 @@ class S23PaperLifecycleSupervisor:
             entry_price=entry_price,
             exit_price=result.event.exit_price,
         )
+
+
+PaperLifecycleSupervisorContext = S23PaperLifecycleSupervisorContext
+PaperLifecycleSupervisorStep = S23PaperLifecycleSupervisorStep
+PaperLifecycleSupervisorResult = S23PaperLifecycleSupervisorResult
+PaperLifecycleSupervisor = S23PaperLifecycleSupervisor
+
+
+__all__ = [
+    "S23PaperLifecycleSupervisor",
+    "S23PaperLifecycleSupervisorContext",
+    "S23PaperLifecycleSupervisorResult",
+    "S23PaperLifecycleSupervisorStep",
+    "TERMINAL_POSITION_MANAGER_STATUSES",
+    "PaperLifecycleSupervisor",
+    "PaperLifecycleSupervisorContext",
+    "PaperLifecycleSupervisorResult",
+    "PaperLifecycleSupervisorStep",
+]
