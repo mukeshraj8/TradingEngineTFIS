@@ -1891,7 +1891,7 @@ def test_dashboard_builds_historical_trades_page_with_filters(tmp_path: Path) ->
     assert manifest["historical_trades_page"].replace("\\", "/") == "trades/history/index.html"
 
 
-def test_all_trades_monitor_keeps_terminal_close_after_latest_session_date(tmp_path: Path) -> None:
+def test_all_trades_monitor_hides_terminal_close_after_latest_session_date(tmp_path: Path) -> None:
     s23_root = tmp_path / "s23-artifacts"
     latest_day = s23_root / "2026-07-14"
     latest_final = latest_day / "s23-fyers-morning-supervised-decision-2026-07-14"
@@ -2027,13 +2027,13 @@ def test_all_trades_monitor_keeps_terminal_close_after_latest_session_date(tmp_p
     ).build(output_root=tmp_path / "dashboard")
 
     trades_html = result.trades_page.read_text(encoding="utf-8")
-    assert "NIFTY_20260721_24200_CE" in trades_html
-    assert "POSITION_CLOSED" in trades_html
-    assert "2026-07-15 12:57:59+05:30" in trades_html
-    assert "Closed Trades" in trades_html
-    assert ">1<" in trades_html
-    assert "trade-row-closed" in trades_html
-    assert "badge-position_closed" in trades_html
+    assert "NIFTY_20260721_24200_CE" not in trades_html
+    assert "POSITION_CLOSED" not in trades_html
+    assert "2026-07-15 12:57:59+05:30" not in trades_html
+
+    history_html = result.historical_trades_page.read_text(encoding="utf-8")
+    assert "NIFTY_20260721_24200_CE" in history_html
+    assert "POSITION_CLOSED" in history_html
 
 
 def test_s23_inline_step8_audit_accepts_tuple_candidates() -> None:

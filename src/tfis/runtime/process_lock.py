@@ -122,16 +122,21 @@ def _process_exists(pid: int) -> bool:
         import ctypes
 
         process_query_limited_information = 0x1000
+        still_active = 259
         handle = ctypes.windll.kernel32.OpenProcess(
             process_query_limited_information,
             False,
             pid,
         )
         if handle:
-            ctypes.windll.kernel32.CloseHandle(handle)
-            return True
-        access_denied = 5
-        return ctypes.windll.kernel32.GetLastError() == access_denied
+            exit_code = ctypes.c_ulong()
+            try:
+                if ctypes.windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+                    return exit_code.value == still_active
+                return False
+            finally:
+                ctypes.windll.kernel32.CloseHandle(handle)
+        return False
     try:
         os.kill(pid, 0)
     except OSError:

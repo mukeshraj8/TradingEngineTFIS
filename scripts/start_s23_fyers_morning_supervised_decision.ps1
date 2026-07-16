@@ -367,8 +367,16 @@ try {
     Write-LaunchLog "Supervised decision stdout: $pythonOutputPath"
     Write-LaunchLog "Supervised decision stderr: $pythonErrorPath"
     Write-LaunchLog "Starting supervised decision Python process."
-    & $pythonExe @args > $pythonOutputPath 2> $pythonErrorPath
-    $exitCode = $LASTEXITCODE
+    $process = Start-Process `
+        -FilePath $pythonExe `
+        -ArgumentList $args `
+        -WorkingDirectory $repoRoot `
+        -RedirectStandardOutput $pythonOutputPath `
+        -RedirectStandardError $pythonErrorPath `
+        -Wait `
+        -PassThru `
+        -WindowStyle Hidden
+    $exitCode = $process.ExitCode
     if ($null -eq $exitCode) {
         $exitCode = 0
     }

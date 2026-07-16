@@ -22,6 +22,13 @@ way.
    that the scheduled wrapper (or manual wrapper) starts cleanly, watchers
    attach to any produced orders/positions, and the dashboard refresh reflects
    current-day artifacts during market hours.
+   The latest Thursday, July 16, 2026 runtime fix specifically addressed the
+   case where the S23 morning wrapper encountered a stale process-lock reclaim
+   message on stderr and aborted before writing a fresh same-day session.
+   That proof point is now complete: the wrapper continues through the reclaim
+   path, produces a fresh `2026-07-16` S23 session when no S23 position is
+   open, starts fresh S23 order watchers, and leaves the July 15, 2026 closed
+   S23 trade in historical review rather than the live monitor.
    Before the next session, refresh the Windows scheduled-task registrations
    for both live paper candidates:
    `powershell -ExecutionPolicy Bypass -File scripts/register_s23_fyers_morning_supervised_task.ps1`
@@ -39,6 +46,8 @@ way.
    `serve_operator_dashboard.py --skip-build` after the explicit rebuild step,
    so the expected operator experience is one visible rebuild followed by the
    dashboard opening on `127.0.0.1:8765` without a second hidden startup build.
+   The remaining operator-time validation is to confirm the next scheduled
+   market-open run behaves the same way without manual wrapper intervention.
 3. Validate S23 live ORPT/RC timing finalization during the next real market
    session. The supervised live decision path now builds a provisional base
    selection at ORPT, finalizes and places the waiting paper order from that

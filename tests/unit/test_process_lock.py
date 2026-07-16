@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+import tfis.runtime.process_lock as process_lock_module
 from tfis.runtime import (
     CRITICAL_DUPLICATE_PROCESS_SHUTDOWN,
     STALE_PROCESS_LOCK_RECLAIMED,
@@ -78,3 +80,82 @@ def test_release_does_not_remove_foreign_lock(tmp_path: Path) -> None:
 
     assert lock_path.exists()
     assert json.loads(lock_path.read_text(encoding="utf-8"))["pid"] == 2222
+
+
+def test_windows_process_exists_treats_access_denied_without_handle_as_not_running(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _Kernel32:
+        @staticmethod
+        def OpenProcess(_access: int, _inherit: bool, _pid: int) -> int:
+            return 0
+
+        @staticmethod
+        def CloseHandle(_handle: int) -> None:
+            return None
+
+        @staticmethod
+        def GetLastError() -> int:
+            return 5
+
+    fake_ctypes = SimpleNamespace(windll=SimpleNamespace(kernel32=_Kernel32()))
+    monkeypatch.setattr(process_lock_module.os, "name", "nt", raising=False)
+    monkeypatch.setitem(__import__("sys").modules, "ctypes", fake_ctypes)
+
+    assert process_lock_module._process_exists(15048) is False
+
+
+def test_windows_process_exists_treats_exited_handle_as_not_running(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _Kernel32:
+        @staticmethod
+        def OpenProcess(_access: int, _inherit: bool, _pid: int) -> int:
+            return 123
+
+        @staticmethod
+        def GetExitCodeProcess(_handle: int, exit_code_pointer: object) -> int:
+            exit_code_pointer._obj.value = 0
+            return 1
+
+        @staticmethod
+        def CloseHandle(_handle: int) -> None:
+            return None
+
+    fake_ctypes = SimpleNamespace(
+        c_ulong=lambda: SimpleNamespace(value=0),
+        byref=lambda value: SimpleNamespace(_obj=value),
+        windll=SimpleNamespace(kernel32=_Kernel32()),
+    )
+    monkeypatch.setattr(process_lock_module.os, "name", "nt", raising=False)
+    monkeypatch.setitem(__import__("sys").modules, "ctypes", fake_ctypes)
+
+    assert process_lock_module._process_exists(15048) is False
+
+
+def test_windows_process_exists_treats_still_active_handle_as_running(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _Kernel32:
+        @staticmethod
+        def OpenProcess(_access: int, _inherit: bool, _pid: int) -> int:
+            return 123
+
+        @staticmethod
+        def GetExitCodeProcess(_handle: int, exit_code_pointer: object) -> int:
+            exit_code_pointer._obj.value = 259
+            return 1
+
+        @staticmethod
+        def CloseHandle(_handle: int) -> None:
+            return None
+
+    fake_ctypes = SimpleNamespace(
+        c_ulong=lambda: SimpleNamespace(value=0),
+        byref=lambda value: SimpleNamespace(_obj=value),
+        windll=SimpleNamespace(kernel32=_Kernel32()),
+    )
+    monkeypatch.setattr(process_lock_module.os, "name", "nt", raising=False)
+    monkeypatch.setitem(__import__("sys").modules, "ctypes", fake_ctypes)
+
+    assert process_lock_module._process_exists(15048) is True

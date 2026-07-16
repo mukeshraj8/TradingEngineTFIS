@@ -180,8 +180,16 @@ if ($carryForwardStateDirArg) {
 }
 
 Write-LaunchLog "Starting S21 supervised decision Python process."
-& $pythonExe @args > $pythonOutputPath 2> $pythonErrorPath
-$exitCode = $LASTEXITCODE
+$process = Start-Process `
+    -FilePath $pythonExe `
+    -ArgumentList $args `
+    -WorkingDirectory $repoRoot `
+    -RedirectStandardOutput $pythonOutputPath `
+    -RedirectStandardError $pythonErrorPath `
+    -Wait `
+    -PassThru `
+    -WindowStyle Hidden
+$exitCode = $process.ExitCode
 Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."
 
 if ($exitCode -ne 0) {

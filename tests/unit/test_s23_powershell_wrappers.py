@@ -18,7 +18,14 @@ def test_morning_wrapper_does_not_stream_supervised_decision_through_pipeline() 
     assert "2>&1 | ForEach-Object" not in script
     assert "run_s23_fyers_0916_supervised_decision_$stamp.out.log" in script
     assert "run_s23_fyers_0916_supervised_decision_$stamp.err.log" in script
-    assert "& $pythonExe @args > $pythonOutputPath 2> $pythonErrorPath" in script
+    assert "Start-Process `" in script
+    assert "-FilePath $pythonExe `" in script
+    assert "-ArgumentList $args `" in script
+    assert "-RedirectStandardOutput $pythonOutputPath `" in script
+    assert "-RedirectStandardError $pythonErrorPath `" in script
+    assert "-Wait `" in script
+    assert "-PassThru `" in script
+    assert "-WindowStyle Hidden" in script
     assert 'Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."' in script
 
 
@@ -82,7 +89,6 @@ def test_tfis_watcher_windows_are_visible_and_self_identifying() -> None:
     assert "This window belongs to TradingEngineTFIS only." in script
     assert "TFIS S23 PAPER WATCHER" in script
     assert "-WindowStyle Normal" in script
-    assert "-WindowStyle Hidden" not in script
 
 
 def test_morning_wrapper_launches_watcher_script_as_encoded_command() -> None:
@@ -132,7 +138,14 @@ def test_s21_operational_scripts_exist_for_daily_startup() -> None:
     assert '. $paperPositionHelperPath' in start_script
     assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $EffectiveDate" in start_script
     assert "Passing latest discovered open S21 paper position to supervised decision" in start_script
-    assert "& $pythonExe @args > $pythonOutputPath 2> $pythonErrorPath" in start_script
+    assert "Start-Process `" in start_script
+    assert "-FilePath $pythonExe `" in start_script
+    assert "-ArgumentList $args `" in start_script
+    assert "-RedirectStandardOutput $pythonOutputPath `" in start_script
+    assert "-RedirectStandardError $pythonErrorPath `" in start_script
+    assert "-Wait `" in start_script
+    assert "-PassThru `" in start_script
+    assert "-WindowStyle Hidden" in start_script
     assert "run_s21_banknifty_0916_supervised_decision_$stamp.out.log" in start_script
     assert '[string]$TaskName = "TFIS S21 Morning Supervised Decision"' in register_script
     assert '[string]$IfPast = "run_now"' in register_script

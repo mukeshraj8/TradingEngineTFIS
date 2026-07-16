@@ -63,6 +63,12 @@
 - Phase 1 now also shares latest-session trade visibility rules, with the
   operator dashboard switching from inline session-filter interpretation to a
   shared trade-ledger helper and no runtime behavior change
+- the July 16, 2026 S23 runtime recovery path is now proven on real TFIS
+  artifacts: Windows dead-PID process locks are reclaimed correctly, the S23
+  supervised wrapper writes a fresh same-day session again, the TFIS-only reset
+  script restarts one dashboard plus fresh S21/S23 order watchers, and the
+  live monitor now keeps prior closed S23 rows in historical review instead of
+  showing them beside current-day waiting entries
 - Phase 1 now also shares multi-event trade display-row preference, with the
   operator dashboard switching from inline "prefer latest terminal row"
   selection to a shared trade-ledger helper and no runtime behavior change
@@ -211,6 +217,12 @@
   `scripts/pre_live_readiness.py --profile prod --require-token --json`
   returned `overall_status=PASS` across project structure, strategy config,
   dashboard config, monthly-status config, and TFIS FYERS token checks.
+- On `2026-07-16`, TFIS also closed a same-day runtime/dashboard consistency
+  gap: the S23 morning wrapper now allows benign stale-lock reclaim stderr to
+  pass through normal exit-code handling instead of aborting the wrapper early,
+  and the shared live-monitor visibility rule now keeps closed rows with event
+  dates newer than the latest completed strategy session out of the live trades
+  view so they remain historical-only until a fresh session is produced
 - S23 captured-session replay validation now covers expiry force-close and
   next-day stoploss reset states. Expiry force-close is confirmed from persisted
   position-manager events plus expiry date/force-close time, and next-day SL

@@ -191,7 +191,7 @@ def paper_trade_visible_for_latest_session(
         rollover_required=rollover_required,
     )
     if effective_row_session_date is not None and effective_row_session_date > latest_session_date:
-        return status_kind == "closed"
+        return False
     return status_kind in {"open", "action"}
 
 

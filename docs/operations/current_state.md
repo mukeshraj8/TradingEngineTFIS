@@ -26,6 +26,20 @@ change in a meaningful way.
   returns `overall_status=PASS` with project structure, strategy configs,
   dashboard config, monthly-status config, and TFIS FYERS token checks all
   passing
+- keep same-day runtime and dashboard truth aligned when a strategy session
+  stalls: as of `2026-07-16`, the S23 morning wrapper now suppresses
+  PowerShell native-command exceptions from benign stderr-only process-lock
+  reclaim messages, and the shared live-trade visibility rule now hides closed
+  rows whose event date is newer than the latest completed strategy session so
+  stale closed trades stay in historical review instead of leaking into the
+  live monitor
+- prove the corrected July 16, 2026 S21/S23 paper runtime on real artifacts:
+  the S23 supervised wrapper now reclaims dead Windows process-lock PIDs
+  correctly by checking process exit state instead of handle existence alone,
+  writes a fresh `2026-07-16` session when no S23 position is open, and starts
+  fresh S23 order watchers; after a TFIS-only reset, the live trades monitor
+  now shows fresh `ORDER_WAITING_FOR_TRIGGER` rows for both S21 and S23 while
+  the prior S23 close remains only on `trades/history/index.html`
 - restore reliable daily supervised startup across both active paper strategies:
   S23 now registers with `IfPast=run_now` by default so the 09:08 wrapper does
   not fail late at the 09:30 checkpoint after a normal pre-open wait, and S21
