@@ -20,7 +20,6 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from tfis.brokers import BrokerAdapter, BrokerAdapterError
-from tfis.brokers.fyers_token import prepare_fyers_env_from_tfis
 from tfis.dashboard import TfisOperatorDashboardBuilder
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 from tfis.paper import (
@@ -35,13 +34,15 @@ from tfis.paper import (
     PaperPositionState,
     PaperPositionStateStore,
     PaperTradeLedgerStore,
-    S23PaperExpiryGovernance,
-    S23PaperPositionManager,
-    PaperLifecycleRuntimeConfig,
+    build_paper_expiry_governance,
+    build_paper_position_manager,
     build_paper_live_state_store_from_yaml,
-    build_paper_broker_adapter,
+    fetch_selected_contract_market_events,
     load_paper_lifecycle_supervisor_target_specs,
+    load_paper_broker_runtime,
     paper_live_state_owner_id,
+    PaperSelectedContractEventRequest,
+    prepare_paper_broker_runtime_environment,
 )
 from tfis.paper.models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
@@ -129,7 +130,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     _print_start_banner(args=args, runtimes=runtimes)
-    prepare_fyers_env_from_tfis(tfis_root=args.tfis_root, skip_refresh=args.skip_refresh)
+    _prepare_runtime_environments(
+        runtimes,
+        tfis_root=args.tfis_root,
+        skip_refresh=args.skip_refresh,
+    )
     for runtime in runtimes:
         runtime.adapter.connect()
 
@@ -226,9 +231,10 @@ def _build_runtimes(
 ) -> tuple[_TargetRuntime, ...]:
     runtimes: list[_TargetRuntime] = []
     for spec in targets:
-        config = PaperLifecycleRuntimeConfig.from_yaml(spec.config_path)
-        timezone_name = config.broker.timezone
-        timezone = ZoneInfo(timezone_name)
+        broker_runtime = load_paper_broker_runtime(spec.config_path)
+        config = broker_runtime.config
+        timezone_name = broker_runtime.timezone_name
+        timezone = broker_runtime.timezone
         live_state_store = build_paper_live_state_store_from_yaml(spec.config_path)
         runtimes.append(
             _TargetRuntime(
@@ -236,11 +242,12 @@ def _build_runtimes(
                 config=config,
                 timezone_name=timezone_name,
                 timezone=timezone,
-                adapter=build_paper_broker_adapter(config),
+                adapter=broker_runtime.adapter,
                 live_state_store=live_state_store,
                 supervisor=PaperLifecycleSupervisor(
                     order_store=PaperOrderStateStore(),
-                    position_manager=S23PaperPositionManager(
+                    position_manager=build_paper_position_manager(
+                        strategy_code=spec.strategy_code,
                         live_state_store=live_state_store,
                         slippage_exit_points=config.costs.slippage_exit_points or 0.0,
                     ),
@@ -248,6 +255,25 @@ def _build_runtimes(
             )
         )
     return tuple(runtimes)
+
+
+def _prepare_runtime_environments(
+    runtimes: tuple[_TargetRuntime, ...],
+    *,
+    tfis_root: str,
+    skip_refresh: bool,
+) -> None:
+    prepared_providers: set[str] = set()
+    for runtime in runtimes:
+        provider = runtime.config.broker.provider.strip().lower()
+        if provider in prepared_providers:
+            continue
+        prepare_paper_broker_runtime_environment(
+            runtime.config,
+            tfis_root=tfis_root,
+            skip_refresh=skip_refresh,
+        )
+        prepared_providers.add(provider)
 
 
 def _process_target(
@@ -324,7 +350,10 @@ def _process_target(
         market_events=events,
         evaluated_at=evaluated_at,
         watch_cutoff_time=watch_cutoff_time,
-        expiry_governance=S23PaperExpiryGovernance(DeterministicExpiryCalendar()),
+        expiry_governance=build_paper_expiry_governance(
+            strategy_code=runtime.spec.strategy_code,
+            calendar=DeterministicExpiryCalendar(),
+        ),
         allow_reverse_on_stoploss=True,
         provenance_source_ids=("tfis_paper_lifecycle_supervisor", runtime.spec.strategy_code),
     )
@@ -436,37 +465,25 @@ def _fetch_selected_contract_events(
     evaluated_at: datetime,
     state: PaperPositionState | None,
 ) -> tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...]:
-    events: list[SelectedContractQuoteEvent | SelectedContractBarEvent] = []
-    if (
-        state is not None
-        and getattr(state, "stoploss_reset_pending", False)
-        and not getattr(state, "stoploss_active", True)
-        and session_date > (getattr(state, "stoploss_reset_session_date", None) or state.entry_date)
-    ):
-        rc_time = getattr(state, "stoploss_reset_rc_time", None) or time(9, 29, 59)
-        to_time = max(evaluated_at.timetz().replace(tzinfo=None), rc_time)
-        try:
-            events.extend(
-                adapter.get_option_bars(
-                    selected_contract_symbol,
-                    session_date=session_date,
-                    from_time=time(9, 15),
-                    to_time=to_time,
-                    interval_minutes=1,
-                )
-            )
-        except (AttributeError, BrokerAdapterError) as exc:
-            print(
-                f"{evaluated_at.isoformat()} WARNING sl_reset_bar_fetch_failed "
-                f"{exc}; target-only watch continues",
-                flush=True,
-            )
-    quote = adapter.get_option_quote(
-        selected_contract_symbol,
+    request = PaperSelectedContractEventRequest(
+        selected_contract_symbol=selected_contract_symbol,
         session_date=session_date,
+        evaluated_at=evaluated_at,
+        stoploss_reset_pending=bool(getattr(state, "stoploss_reset_pending", False)),
+        stoploss_active=bool(getattr(state, "stoploss_active", True)),
+        stoploss_reset_session_date=getattr(state, "stoploss_reset_session_date", None),
+        entry_date=getattr(state, "entry_date", None),
+        stoploss_reset_rc_time=getattr(state, "stoploss_reset_rc_time", None),
     )
-    events.append(quote)
-    return tuple(events)
+    return fetch_selected_contract_market_events(
+        adapter,
+        request,
+        on_bar_fetch_error=lambda exc: print(
+            f"{evaluated_at.isoformat()} WARNING sl_reset_bar_fetch_failed "
+            f"{exc}; target-only watch continues",
+            flush=True,
+        ),
+    )
 
 
 def _append_selected_contract_market_events(

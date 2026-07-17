@@ -44,19 +44,19 @@ _PRELUDE_ALLOWED_EVENT_TYPES = {
 }
 
 
-class S23LivePaperIngressError(RuntimeError):
+class PaperLiveIngressError(RuntimeError):
     """Raised when broker-backed S23 paper ingress cannot be produced safely."""
 
 
 @dataclass(frozen=True, slots=True)
-class S23LivePaperIngressPreflightIssue:
+class PaperLiveIngressPreflightIssue:
     code: str
     message: str
     severity: str
 
 
 @dataclass(frozen=True, slots=True)
-class S23BrokerAdapterConfig:
+class PaperBrokerAdapterConfig:
     provider: str
     timezone: str
     payload_fixture_path: str | None = None
@@ -65,7 +65,7 @@ class S23BrokerAdapterConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperBrokerScopeConfig:
+class PaperBrokerScopeConfig:
     strategy_code: str
     symbol: str
     contract_cycle: str
@@ -81,14 +81,14 @@ class S23PaperBrokerScopeConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class S23BrokerSelectionConfig:
+class PaperBrokerSelectionConfig:
     underlying_symbol: str
     weekly_expiry: date
     selected_contract_symbol: str
 
 
 @dataclass(frozen=True, slots=True)
-class S23BrokerCostSettingsConfig:
+class PaperBrokerCostSettingsConfig:
     brokerage_per_lot: float | None
     slippage_entry_points: float | None
     slippage_exit_points: float | None
@@ -97,7 +97,7 @@ class S23BrokerCostSettingsConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class S23BrokerIngressThresholdConfig:
+class PaperBrokerIngressThresholdConfig:
     max_quote_age_seconds: float
     max_timing_drift_seconds: float
     max_stale_events: int
@@ -107,20 +107,20 @@ class S23BrokerIngressThresholdConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class S23LivePaperIngressConfig:
-    broker: S23BrokerAdapterConfig
-    paper: S23PaperBrokerScopeConfig
-    market: S23BrokerSelectionConfig
-    costs: S23BrokerCostSettingsConfig
-    thresholds: S23BrokerIngressThresholdConfig
+class PaperLiveIngressConfig:
+    broker: PaperBrokerAdapterConfig
+    paper: PaperBrokerScopeConfig
+    market: PaperBrokerSelectionConfig
+    costs: PaperBrokerCostSettingsConfig
+    thresholds: PaperBrokerIngressThresholdConfig
     source_mode: str = "broker_fyers_live_paper_ingress"
 
     @classmethod
-    def from_yaml(cls, path: str | Path) -> "S23LivePaperIngressConfig":
+    def from_yaml(cls, path: str | Path) -> "PaperLiveIngressConfig":
         target = Path(path)
         data = yaml.safe_load(target.read_text(encoding="utf-8")) or {}
         if not isinstance(data, dict):
-            raise S23LivePaperIngressError(
+            raise PaperLiveIngressError(
                 f"Live-paper ingress config must be a YAML object: {target}"
             )
         broker = data.get("broker") or {}
@@ -134,7 +134,7 @@ class S23LivePaperIngressConfig:
             if not payload_path.is_absolute():
                 payload_fixture_path = str((target.parent / payload_path).resolve())
         return cls(
-            broker=S23BrokerAdapterConfig(
+            broker=PaperBrokerAdapterConfig(
                 provider=str(broker.get("provider", "fyers")).strip().lower(),
                 timezone=str(broker.get("timezone", "Asia/Kolkata")),
                 payload_fixture_path=payload_fixture_path,
@@ -144,7 +144,7 @@ class S23LivePaperIngressConfig:
                     int(broker.get("option_chain_strike_count", 80)),
                 ),
             ),
-            paper=S23PaperBrokerScopeConfig(
+            paper=PaperBrokerScopeConfig(
                 strategy_code=str(paper.get("strategy_code", "S23")),
                 symbol=str(paper.get("symbol", "NIFTY")),
                 contract_cycle=str(paper.get("contract_cycle", "WEEKLY")),
@@ -162,7 +162,7 @@ class S23LivePaperIngressConfig:
                 ),
                 no_live_orders_allowed=bool(paper.get("no_live_orders_allowed", True)),
             ),
-            market=S23BrokerSelectionConfig(
+            market=PaperBrokerSelectionConfig(
                 underlying_symbol=str(market.get("underlying_symbol", "NIFTY")),
                 weekly_expiry=_parse_date_required(
                     market.get("weekly_expiry"),
@@ -172,7 +172,7 @@ class S23LivePaperIngressConfig:
                     market.get("selected_contract_symbol", "")
                 ).strip(),
             ),
-            costs=S23BrokerCostSettingsConfig(
+            costs=PaperBrokerCostSettingsConfig(
                 brokerage_per_lot=_optional_float(costs.get("brokerage_per_lot")),
                 slippage_entry_points=_optional_float(costs.get("slippage_entry_points")),
                 slippage_exit_points=_optional_float(costs.get("slippage_exit_points")),
@@ -181,7 +181,7 @@ class S23LivePaperIngressConfig:
                 ),
                 version_label=str(costs.get("version_label", "paper-cost-v1")),
             ),
-            thresholds=S23BrokerIngressThresholdConfig(
+            thresholds=PaperBrokerIngressThresholdConfig(
                 max_quote_age_seconds=float(thresholds.get("max_quote_age_seconds", 5.0)),
                 max_timing_drift_seconds=float(
                     thresholds.get("max_timing_drift_seconds", 5.0)
@@ -266,7 +266,7 @@ class S23LivePaperIngressConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class S23LivePaperIngressSummary:
+class PaperLiveIngressSummary:
     artifact_version: int
     broker_name: str
     source_mode: str
@@ -292,7 +292,7 @@ class S23LivePaperIngressSummary:
 
 
 @dataclass(frozen=True, slots=True)
-class S23LivePaperIngressPreflightSummary:
+class PaperLiveIngressPreflightSummary:
     artifact_version: int
     broker_name: str
     provider: str
@@ -327,22 +327,22 @@ class S23LivePaperIngressPreflightSummary:
     lifecycle_simulation_enabled: bool
     preflight_status: str
     can_run: bool
-    issues: tuple[S23LivePaperIngressPreflightIssue, ...]
+    issues: tuple[PaperLiveIngressPreflightIssue, ...]
     explicit_disclaimer: str
 
 
 @dataclass(frozen=True, slots=True)
-class S23LivePaperIngressArtifactSet:
+class PaperLiveIngressArtifactSet:
     session_directory: Path
     dry_run_artifacts: S23PaperIngressDryRunArtifactSet
     broker_health_path: Path
     normalized_events_path: Path
     ingress_summary_path: Path
     no_trade_or_order_plan_summary_path: Path
-    summary: S23LivePaperIngressSummary
+    summary: PaperLiveIngressSummary
 
 
-class S23BrokerPaperIngressRunner:
+class PaperBrokerPaperIngressRunner:
     def __init__(
         self,
         *,
@@ -361,7 +361,7 @@ class S23BrokerPaperIngressRunner:
         prelude_jsonl: str | Path,
         session_id: str | None = None,
         adapter: BrokerAdapter | None = None,
-    ) -> S23LivePaperIngressArtifactSet:
+    ) -> PaperLiveIngressArtifactSet:
         config, prelude_events, session_date = self._load_config_and_prelude(
             config_path=config_path,
             prelude_jsonl=prelude_jsonl,
@@ -436,7 +436,7 @@ class S23BrokerPaperIngressRunner:
                     fetch_warnings.append(f"stream_ticks:{exc}")
             final_health = active_adapter.health()
         except BrokerAdapterError as exc:
-            raise S23LivePaperIngressError(str(exc)) from exc
+            raise PaperLiveIngressError(str(exc)) from exc
         finally:
             try:
                 active_adapter.disconnect()
@@ -504,7 +504,7 @@ class S23BrokerPaperIngressRunner:
             no_trade_or_order_plan_summary,
         )
 
-        summary = S23LivePaperIngressSummary(
+        summary = PaperLiveIngressSummary(
             artifact_version=_ARTIFACT_VERSION,
             broker_name=final_health.broker_name,
             source_mode=config.source_mode,
@@ -537,7 +537,7 @@ class S23BrokerPaperIngressRunner:
         )
         self._write_json(ingress_summary_path, summary)
 
-        return S23LivePaperIngressArtifactSet(
+        return PaperLiveIngressArtifactSet(
             session_directory=artifact_set.session_directory,
             dry_run_artifacts=artifact_set,
             broker_health_path=broker_health_path,
@@ -553,7 +553,7 @@ class S23BrokerPaperIngressRunner:
         config_path: str | Path,
         prelude_jsonl: str | Path,
         session_id: str | None = None,
-    ) -> S23LivePaperIngressPreflightSummary:
+    ) -> PaperLiveIngressPreflightSummary:
         config, prelude_events, session_date = self._load_config_and_prelude(
             config_path=config_path,
             prelude_jsonl=prelude_jsonl,
@@ -567,16 +567,16 @@ class S23BrokerPaperIngressRunner:
             session_id=session_id,
         )
 
-    def render_json(self, summary: S23LivePaperIngressSummary) -> str:
+    def render_json(self, summary: PaperLiveIngressSummary) -> str:
         return json.dumps(_normalize(summary), indent=2, sort_keys=True) + "\n"
 
     def render_preflight_json(
         self,
-        summary: S23LivePaperIngressPreflightSummary,
+        summary: PaperLiveIngressPreflightSummary,
     ) -> str:
         return json.dumps(_normalize(summary), indent=2, sort_keys=True) + "\n"
 
-    def render_markdown(self, summary: S23LivePaperIngressSummary) -> str:
+    def render_markdown(self, summary: PaperLiveIngressSummary) -> str:
         lines = [
             "# S23 Fyers Live-Paper Ingress Summary",
             "",
@@ -614,7 +614,7 @@ class S23BrokerPaperIngressRunner:
 
     def render_preflight_markdown(
         self,
-        summary: S23LivePaperIngressPreflightSummary,
+        summary: PaperLiveIngressPreflightSummary,
     ) -> str:
         lines = [
             "# S23 Fyers Live-Paper Ingress Preflight",
@@ -675,9 +675,9 @@ class S23BrokerPaperIngressRunner:
         )
         return "\n".join(lines) + "\n"
 
-    def _build_adapter(self, config: S23LivePaperIngressConfig) -> BrokerAdapter:
+    def _build_adapter(self, config: PaperLiveIngressConfig) -> BrokerAdapter:
         if config.broker.provider != "fyers":
-            raise S23LivePaperIngressError(
+            raise PaperLiveIngressError(
                 f"Unsupported broker provider for the first live-paper ingress rollout: "
                 f"{config.broker.provider}"
             )
@@ -708,10 +708,10 @@ class S23BrokerPaperIngressRunner:
 
     def _validate_prelude_events(self, events: tuple[PaperEvent, ...]) -> None:
         if not events:
-            raise S23LivePaperIngressError("Prelude event stream is empty.")
+            raise PaperLiveIngressError("Prelude event stream is empty.")
         session_dates = {event.envelope.session_date for event in events}
         if len(session_dates) != 1:
-            raise S23LivePaperIngressError(
+            raise PaperLiveIngressError(
                 "Prelude event stream must contain exactly one session date."
             )
         invalid_types = {
@@ -720,7 +720,7 @@ class S23BrokerPaperIngressRunner:
         }
         if invalid_types:
             joined = ", ".join(sorted(event_type.value for event_type in invalid_types))
-            raise S23LivePaperIngressError(
+            raise PaperLiveIngressError(
                 "Prelude JSONL must contain only normalized non-broker planning events. "
                 f"Found unsupported event types: {joined}"
             )
@@ -730,8 +730,8 @@ class S23BrokerPaperIngressRunner:
         *,
         config_path: str | Path,
         prelude_jsonl: str | Path,
-    ) -> tuple[S23LivePaperIngressConfig, tuple[PaperEvent, ...], date | None]:
-        config = S23LivePaperIngressConfig.from_yaml(config_path)
+    ) -> tuple[PaperLiveIngressConfig, tuple[PaperEvent, ...], date | None]:
+        config = PaperLiveIngressConfig.from_yaml(config_path)
         prelude_events = self._loader.load_jsonl(prelude_jsonl)
         session_date = prelude_events[0].envelope.session_date if prelude_events else None
         return config, prelude_events, session_date
@@ -742,9 +742,9 @@ class S23BrokerPaperIngressRunner:
         config_path: str | Path,
         prelude_jsonl: str | Path,
         session_id: str | None,
-        loaded: tuple[S23LivePaperIngressConfig, tuple[PaperEvent, ...], date | None] | None = None,
+        loaded: tuple[PaperLiveIngressConfig, tuple[PaperEvent, ...], date | None] | None = None,
         adapter_supplied: bool = False,
-    ) -> S23LivePaperIngressPreflightSummary:
+    ) -> PaperLiveIngressPreflightSummary:
         if loaded is None:
             summary = self.preflight(
                 config_path=config_path,
@@ -768,7 +768,7 @@ class S23BrokerPaperIngressRunner:
                 for issue in summary.issues
                 if issue.severity == "NO_GO"
             ]
-            raise S23LivePaperIngressError(
+            raise PaperLiveIngressError(
                 "Live-paper ingress preflight failed: " + "; ".join(blocking)
             )
         return summary
@@ -776,14 +776,14 @@ class S23BrokerPaperIngressRunner:
     def _build_preflight_summary(
         self,
         *,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         prelude_events: tuple[PaperEvent, ...],
         session_date: date | None,
         config_path: str | Path,
         prelude_jsonl: str | Path,
         session_id: str | None,
         adapter_supplied: bool = False,
-    ) -> S23LivePaperIngressPreflightSummary:
+    ) -> PaperLiveIngressPreflightSummary:
         issues = self._collect_preflight_issues(
             config=config,
             prelude_events=prelude_events,
@@ -826,7 +826,7 @@ class S23BrokerPaperIngressRunner:
                 ),
             )
         preflight_status = self._derive_preflight_status(issues)
-        return S23LivePaperIngressPreflightSummary(
+        return PaperLiveIngressPreflightSummary(
             artifact_version=_ARTIFACT_VERSION,
             broker_name=config.broker.provider,
             provider=config.broker.provider,
@@ -879,12 +879,12 @@ class S23BrokerPaperIngressRunner:
     def _collect_preflight_issues(
         self,
         *,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         prelude_events: tuple[PaperEvent, ...],
         session_date: date | None,
         adapter_supplied: bool = False,
-    ) -> tuple[S23LivePaperIngressPreflightIssue, ...]:
-        issues: list[S23LivePaperIngressPreflightIssue] = []
+    ) -> tuple[PaperLiveIngressPreflightIssue, ...]:
+        issues: list[PaperLiveIngressPreflightIssue] = []
         timezone_info = self._resolve_timezone(config.broker.timezone)
         if timezone_info is None:
             issues.append(
@@ -1031,15 +1031,14 @@ class S23BrokerPaperIngressRunner:
             )
         )
         return tuple(issues)
-
     def _collect_prelude_issues(
         self,
         *,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         prelude_events: tuple[PaperEvent, ...],
         session_date: date | None,
-    ) -> tuple[S23LivePaperIngressPreflightIssue, ...]:
-        issues: list[S23LivePaperIngressPreflightIssue] = []
+    ) -> tuple[PaperLiveIngressPreflightIssue, ...]:
+        issues: list[PaperLiveIngressPreflightIssue] = []
         if not prelude_events:
             issues.append(
                 self._issue(
@@ -1115,7 +1114,7 @@ class S23BrokerPaperIngressRunner:
 
     def _required_snapshot_labels(
         self,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         session_date: date,
     ) -> tuple[SnapshotLabel, ...]:
         config_event = config.build_paper_session_config_event(
@@ -1135,7 +1134,7 @@ class S23BrokerPaperIngressRunner:
                 labels.append(event.snapshot_label)
         return tuple(dict.fromkeys(labels))
 
-    def _credentials_present(self, config: S23LivePaperIngressConfig) -> bool:
+    def _credentials_present(self, config: PaperLiveIngressConfig) -> bool:
         if config.broker.payload_fixture_path is not None:
             return False
         try:
@@ -1148,7 +1147,7 @@ class S23BrokerPaperIngressRunner:
 
     def _derive_preflight_status(
         self,
-        issues: tuple[S23LivePaperIngressPreflightIssue, ...],
+        issues: tuple[PaperLiveIngressPreflightIssue, ...],
     ) -> str:
         severities = {issue.severity for issue in issues}
         if "NO_GO" in severities:
@@ -1180,8 +1179,8 @@ class S23BrokerPaperIngressRunner:
         message: str,
         *,
         severity: str = "NO_GO",
-    ) -> S23LivePaperIngressPreflightIssue:
-        return S23LivePaperIngressPreflightIssue(
+    ) -> PaperLiveIngressPreflightIssue:
+        return PaperLiveIngressPreflightIssue(
             code=code,
             message=message,
             severity=severity,
@@ -1296,7 +1295,7 @@ def _session_datetime(session_date: date, clock_time: time, timezone: str) -> da
 
 def _parse_date_required(value: Any, *, field_name: str) -> date:
     if value in (None, ""):
-        raise S23LivePaperIngressError(f"Missing required config field: {field_name}")
+        raise PaperLiveIngressError(f"Missing required config field: {field_name}")
     if isinstance(value, date):
         return value
     return date.fromisoformat(str(value))
@@ -1333,3 +1332,17 @@ def _normalize(value: Any) -> Any:
     if hasattr(value, "value"):
         return getattr(value, "value")
     return value
+
+
+S23LivePaperIngressError = PaperLiveIngressError
+S23LivePaperIngressPreflightIssue = PaperLiveIngressPreflightIssue
+S23BrokerAdapterConfig = PaperBrokerAdapterConfig
+S23PaperBrokerScopeConfig = PaperBrokerScopeConfig
+S23BrokerSelectionConfig = PaperBrokerSelectionConfig
+S23BrokerCostSettingsConfig = PaperBrokerCostSettingsConfig
+S23BrokerIngressThresholdConfig = PaperBrokerIngressThresholdConfig
+S23LivePaperIngressConfig = PaperLiveIngressConfig
+S23LivePaperIngressSummary = PaperLiveIngressSummary
+S23LivePaperIngressPreflightSummary = PaperLiveIngressPreflightSummary
+S23LivePaperIngressArtifactSet = PaperLiveIngressArtifactSet
+S23BrokerPaperIngressRunner = PaperBrokerPaperIngressRunner

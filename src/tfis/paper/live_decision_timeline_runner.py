@@ -11,8 +11,8 @@ from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 
 from .fyers_snapshot_collector import S23FyersSnapshotArtifactSet, S23FyersSnapshotCollector
 from .live_decision import S23PaperLiveDecisionBuilder
-from .live_ingress import S23LivePaperIngressConfig
-from .live_decision_runner import prepare_fyers_env_from_tfis_auth
+from .live_ingress import PaperLiveIngressConfig
+from .live_decision_runner import prepare_live_decision_runtime_environment
 from .live_decision_schedule import build_schedule_note, compute_schedule_delay_seconds
 from .live_decision_timeline import (
     S23LiveDecisionTimelineBuilder,
@@ -123,14 +123,18 @@ def run_s23_morning_supervised_decision(
     now_fn = now_provider or (lambda: datetime.now(timezone))
     sleep_fn = sleeper or time_module.sleep
     stage_checkpoints = checkpoints or default_morning_decision_checkpoints()
-    prepare_fyers_env_from_tfis_auth(tfis_root=tfis_root, skip_refresh=skip_refresh)
+    prepare_live_decision_runtime_environment(
+        tfis_root=tfis_root,
+        config_path=config_path,
+        skip_refresh=skip_refresh,
+    )
     selected_strategy_paths = tuple(strategy_paths or (strategy_path,))
     if not selected_strategy_paths:
         raise RuntimeError("At least one S23 strategy path is required.")
     strategy_rules = tuple(load_strategy_rule(path) for path in selected_strategy_paths)
     primary_strategy_rule = strategy_rules[0]
     primary_strategy_path = selected_strategy_paths[0]
-    ingress_config = S23LivePaperIngressConfig.from_yaml(config_path)
+    ingress_config = PaperLiveIngressConfig.from_yaml(config_path)
     base_reference_packet = load_s23_decision_reference_packet(reference_packet_path)
     collector = S23FyersSnapshotCollector(artifact_root=artifact_root)
     decision_builder = S23PaperLiveDecisionBuilder()

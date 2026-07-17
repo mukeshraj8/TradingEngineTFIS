@@ -30,7 +30,7 @@ DEFAULT_STRATEGIES = (
     "S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT",
 )
 DEFAULT_STRATEGY_ROOT = REPO_ROOT / "config" / "strategies" / "options_sell" / "banknifty"
-DEFAULT_WATCHER_WRAPPER = REPO_ROOT / "scripts" / "start_tfis_paper_lifecycle_supervisor.ps1"
+DEFAULT_SUPERVISOR_LAUNCHER = REPO_ROOT / "scripts" / "start_tfis_paper_lifecycle_supervisor.ps1"
 _MARKET_CLOSED_NO_CANDLE_MESSAGES = (
     "FYERS underlying history payload returned no candles",
     "No underlying history candles matched the requested TFIS session window",
@@ -120,8 +120,8 @@ def main(argv: list[str] | None = None) -> int:
         if _is_market_closed_no_action(code=code, message=str(exc)):
             print(
                 "MARKET_CLOSED_NO_ACTION: No intraday market candles were available "
-                "for the supervised S21 snapshot window. No trade decision or watcher "
-                "was started."
+                "for the supervised S21 snapshot window. No trade decision or supervisor "
+                "startup was triggered."
             )
             return 0
         print(f"ERROR [{code}]: {exc}", file=sys.stderr)
@@ -141,7 +141,7 @@ def main(argv: list[str] | None = None) -> int:
         not args.disable_position_watch
         and (result.branch_order_state_json or result.branch_position_state_json)
     ):
-        _start_s21_watchers(
+        _start_s21_supervisor(
             tfis_root=Path(args.tfis_root),
             config_path=Path(args.config),
             artifact_root=Path(args.artifact_root),
@@ -167,16 +167,16 @@ def _supervised_decision_process_lock_path(
     return lock_root / f"s21_supervised_decision_{digest}.pid.json"
 
 
-def _start_s21_watchers(
+def _start_s21_supervisor(
     *,
     tfis_root: Path,
     config_path: Path,
     artifact_root: Path,
     session_date: str,
 ) -> None:
-    if not DEFAULT_WATCHER_WRAPPER.exists():
+    if not DEFAULT_SUPERVISOR_LAUNCHER.exists():
         print(
-            f"WARNING: TFIS lifecycle supervisor launcher not found: {DEFAULT_WATCHER_WRAPPER}",
+            f"WARNING: TFIS lifecycle supervisor launcher not found: {DEFAULT_SUPERVISOR_LAUNCHER}",
             file=sys.stderr,
         )
         return
@@ -186,7 +186,7 @@ def _start_s21_watchers(
         "-ExecutionPolicy",
         "Bypass",
         "-File",
-        str(DEFAULT_WATCHER_WRAPPER),
+        str(DEFAULT_SUPERVISOR_LAUNCHER),
         "-TfisRoot",
         str(tfis_root),
         "-SessionDate",

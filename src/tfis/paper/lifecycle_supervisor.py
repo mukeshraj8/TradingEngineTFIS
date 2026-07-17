@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, time
 from pathlib import Path
 
-from .expiry_governance import S23PaperExpiryGovernance
+from .expiry_governance import PaperExpiryGovernance
 from .models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from .order_state import (
     S23PaperOrderEvent,
@@ -14,9 +14,10 @@ from .order_state import (
     paper_order_is_waiting_for_trigger,
 )
 from .position_manager import (
-    S23PaperPositionManager,
-    S23PaperPositionManagerResult,
-    S23PaperPositionManagerStatus,
+    build_paper_position_manager,
+    PaperPositionManager,
+    PaperPositionManagerResult,
+    PaperPositionManagerStatus,
 )
 from .position_state import S23PaperPositionState
 from .trade_ledger import S23PaperTradeLedgerStore
@@ -25,7 +26,7 @@ from .trade_ledger import paper_trade_manager_status_is_lifecycle_terminal
 
 TERMINAL_POSITION_MANAGER_STATUSES = {
     status
-    for status in S23PaperPositionManagerStatus
+    for status in PaperPositionManagerStatus
     if paper_trade_manager_status_is_lifecycle_terminal(status.value)
 }
 
@@ -64,11 +65,14 @@ class S23PaperLifecycleSupervisor:
     def __init__(
         self,
         *,
+        strategy_code: str = "S23",
         order_store: S23PaperOrderStateStore | None = None,
-        position_manager: S23PaperPositionManager | None = None,
+        position_manager: PaperPositionManager | None = None,
     ) -> None:
         self._order_store = order_store or S23PaperOrderStateStore()
-        self._position_manager = position_manager or S23PaperPositionManager()
+        self._position_manager = position_manager or build_paper_position_manager(
+            strategy_code=strategy_code,
+        )
 
     def expire_waiting_order_from_previous_session(
         self,
@@ -107,7 +111,7 @@ class S23PaperLifecycleSupervisor:
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
         watch_cutoff_time: time,
-        expiry_governance: S23PaperExpiryGovernance,
+        expiry_governance: PaperExpiryGovernance,
         allow_reverse_on_stoploss: bool = False,
         provenance_source_ids: tuple[str, ...] = (),
     ) -> S23PaperLifecycleSupervisorResult:
@@ -137,7 +141,7 @@ class S23PaperLifecycleSupervisor:
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
         watch_cutoff_time: time,
-        expiry_governance: S23PaperExpiryGovernance,
+        expiry_governance: PaperExpiryGovernance,
         allow_reverse_on_stoploss: bool,
         provenance_source_ids: tuple[str, ...],
     ) -> S23PaperLifecycleSupervisorResult:
@@ -210,7 +214,7 @@ class S23PaperLifecycleSupervisor:
         *,
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
-        expiry_governance: S23PaperExpiryGovernance,
+        expiry_governance: PaperExpiryGovernance,
         allow_reverse_on_stoploss: bool,
         provenance_source_ids: tuple[str, ...],
     ) -> S23PaperLifecycleSupervisorResult:
@@ -262,7 +266,7 @@ class S23PaperLifecycleSupervisor:
 
     @staticmethod
     def _step_from_position_manager_result(
-        result: S23PaperPositionManagerResult,
+        result: PaperPositionManagerResult,
         *,
         entry_price: float | None = None,
     ) -> S23PaperLifecycleSupervisorStep:

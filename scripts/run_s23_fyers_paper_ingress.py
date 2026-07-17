@@ -10,10 +10,7 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from tfis.paper.live_ingress import (
-    S23BrokerPaperIngressRunner,
-    S23LivePaperIngressError,
-)
+from tfis.paper import PaperBrokerPaperIngressRunner, PaperLiveIngressError
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -64,7 +61,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    runner = S23BrokerPaperIngressRunner(artifact_root=args.artifact_root)
+    runner = PaperBrokerPaperIngressRunner(artifact_root=args.artifact_root)
     try:
         if args.preflight_only:
             preflight_summary = runner.preflight(
@@ -94,7 +91,7 @@ def main(argv: list[str] | None = None) -> int:
             prelude_jsonl=args.prelude_jsonl,
             session_id=args.session_id,
         )
-    except S23LivePaperIngressError as exc:
+    except PaperLiveIngressError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 

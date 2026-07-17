@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from dataclasses import replace
@@ -613,14 +613,14 @@ def test_morning_supervised_runner_collects_all_three_stages(monkeypatch, tmp_pa
         )
     )
 
-    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_fyers_env_from_tfis_auth", lambda **kwargs: None)
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_live_decision_runtime_environment", lambda **kwargs: None)
     monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.load_strategy_rule", lambda path: _strategy_rule())
     monkeypatch.setattr(
         "tfis.paper.live_decision_timeline_runner.load_s23_decision_reference_packet",
         lambda path: _reference_packet(),
     )
     monkeypatch.setattr(
-        "tfis.paper.live_decision_timeline_runner.S23LivePaperIngressConfig.from_yaml",
+        "tfis.paper.live_decision_timeline_runner.PaperLiveIngressConfig.from_yaml",
         lambda path: SimpleNamespace(market=SimpleNamespace(selected_contract_symbol="NIFTY_20260604_23750_PE")),
     )
     monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.S23FyersSnapshotCollector", FakeCollector)
@@ -753,14 +753,14 @@ def test_morning_supervised_runner_computes_but_blocks_fresh_order_when_position
         )
     )
 
-    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_fyers_env_from_tfis_auth", lambda **kwargs: None)
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_live_decision_runtime_environment", lambda **kwargs: None)
     monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.load_strategy_rule", lambda path: _strategy_rule())
     monkeypatch.setattr(
         "tfis.paper.live_decision_timeline_runner.load_s23_decision_reference_packet",
         lambda path: _reference_packet(),
     )
     monkeypatch.setattr(
-        "tfis.paper.live_decision_timeline_runner.S23LivePaperIngressConfig.from_yaml",
+        "tfis.paper.live_decision_timeline_runner.PaperLiveIngressConfig.from_yaml",
         lambda path: SimpleNamespace(market=SimpleNamespace(selected_contract_symbol="NIFTY_20260604_23750_PE")),
     )
     monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.S23FyersSnapshotCollector", FakeCollector)
@@ -873,14 +873,14 @@ def test_morning_supervised_runner_fans_out_shared_snapshots_to_multiple_branche
         )
     )
 
-    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_fyers_env_from_tfis_auth", lambda **kwargs: None)
+    monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.prepare_live_decision_runtime_environment", lambda **kwargs: None)
     monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.load_strategy_rule", fake_strategy_rule)
     monkeypatch.setattr(
         "tfis.paper.live_decision_timeline_runner.load_s23_decision_reference_packet",
         lambda path: _reference_packet(),
     )
     monkeypatch.setattr(
-        "tfis.paper.live_decision_timeline_runner.S23LivePaperIngressConfig.from_yaml",
+        "tfis.paper.live_decision_timeline_runner.PaperLiveIngressConfig.from_yaml",
         lambda path: SimpleNamespace(market=SimpleNamespace(selected_contract_symbol="NIFTY_20260604_23750_PE")),
     )
     monkeypatch.setattr("tfis.paper.live_decision_timeline_runner.S23FyersSnapshotCollector", FakeCollector)
@@ -915,3 +915,4 @@ def test_morning_supervised_runner_fans_out_shared_snapshots_to_multiple_branche
         / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
         / "trade_decision_explainer.md"
     ).exists()
+

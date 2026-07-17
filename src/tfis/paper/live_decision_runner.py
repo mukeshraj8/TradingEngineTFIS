@@ -12,7 +12,11 @@ from .fyers_snapshot_collector import (
     S23FyersSnapshotCollectorError,
 )
 from .live_decision import S23PaperLiveDecisionBuilder, S23PaperLiveDecisionError
-from .live_ingress import S23LivePaperIngressConfig
+from .live_ingress import PaperLiveIngressConfig
+from .lifecycle_runtime_config import (
+    PaperLifecycleRuntimeConfig,
+    prepare_paper_broker_runtime_environment,
+)
 from .runtime_input_derivation import load_s23_decision_reference_packet
 
 
@@ -41,6 +45,20 @@ def prepare_fyers_env_from_tfis_auth(
     _prepare_fyers_env_from_tfis_auth(tfis_root=tfis_root, skip_refresh=skip_refresh)
 
 
+def prepare_live_decision_runtime_environment(
+    *,
+    tfis_root: str | Path | None = None,
+    config_path: str | Path,
+    skip_refresh: bool = False,
+) -> None:
+    runtime_config = PaperLifecycleRuntimeConfig.from_yaml(config_path)
+    prepare_paper_broker_runtime_environment(
+        runtime_config,
+        tfis_root=tfis_root or Path.cwd(),
+        skip_refresh=skip_refresh,
+    )
+
+
 def run_s23_live_decision_check(
     *,
     tfis_root: str | Path | None = None,
@@ -53,14 +71,15 @@ def run_s23_live_decision_check(
     enable_smoke_override: bool = False,
     skip_refresh: bool = False,
 ) -> S23LiveDecisionRunResult:
-    prepare_fyers_env_from_tfis_auth(
+    prepare_live_decision_runtime_environment(
         tfis_root=tfis_root,
+        config_path=config_path,
         skip_refresh=skip_refresh,
     )
     _require_exists(Path(reference_packet_path), "TFIS reference packet")
 
     collector = S23FyersSnapshotCollector(artifact_root=artifact_root)
-    ingress_config = S23LivePaperIngressConfig.from_yaml(config_path)
+    ingress_config = PaperLiveIngressConfig.from_yaml(config_path)
     snapshot_artifacts = collector.collect_from_files(
         config_path=config_path,
         strategy_path=strategy_path,
@@ -103,6 +122,7 @@ def _require_exists(path: Path, label: str) -> None:
 
 
 __all__ = [
+    "prepare_live_decision_runtime_environment",
     "S23LiveDecisionRunResult",
     "prepare_fyers_env_from_tfis",
     "prepare_fyers_env_from_tfis_auth",

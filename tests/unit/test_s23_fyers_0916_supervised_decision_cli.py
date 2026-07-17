@@ -44,7 +44,7 @@ def test_market_closed_no_candles_returns_success_without_starting_watcher(
 
     captured = capsys.readouterr()
     assert "MARKET_CLOSED_NO_ACTION" in captured.out
-    assert "No trade decision or watcher was started" in captured.out
+    assert "No trade decision or supervisor startup was triggered" in captured.out
     assert captured.err == ""
 
 

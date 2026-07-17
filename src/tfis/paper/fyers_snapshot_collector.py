@@ -17,8 +17,8 @@ from tfis.importers import load_strategy_rule
 from tfis.market_data import UnderlyingHistoryBar
 from tfis.monthly_status import MonthlyStatusResult
 
-from .expiry_governance import DeterministicExpiryCalendar, S23PaperExpiryGovernance
-from .live_ingress import S23LivePaperIngressConfig
+from .expiry_governance import DeterministicExpiryCalendar, PaperExpiryGovernance
+from .live_ingress import PaperLiveIngressConfig
 from .live_prelude import (
     S23LivePreludeError,
     S23PaperLivePreludeBuilder,
@@ -129,7 +129,7 @@ class S23CollectedSnapshotInputs:
     underlying_bars: tuple[UnderlyingHistoryBar, ...]
     daily_bars: tuple[UnderlyingHistoryBar, ...]
     option_chain_snapshot: OptionChainSnapshotEvent
-    expiry_governance: S23PaperExpiryGovernance
+    expiry_governance: PaperExpiryGovernance
     weekly_expiry: date
     selected_contract_bars: tuple[SelectedContractBarEvent, ...] = ()
 
@@ -158,7 +158,7 @@ class S23FyersSnapshotCollector:
         enable_smoke_override: bool = False,
         adapter: BrokerAdapter | None = None,
     ) -> S23FyersSnapshotArtifactSet:
-        config = S23LivePaperIngressConfig.from_yaml(config_path)
+        config = PaperLiveIngressConfig.from_yaml(config_path)
         strategy = load_strategy_rule(strategy_path)
         runtime_fixture = (
             self._load_runtime_fixture(runtime_fixture_path)
@@ -460,7 +460,7 @@ class S23FyersSnapshotCollector:
     def _collect_preflight_issues(
         self,
         *,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         strategy: StrategyRule,
         session_date: date,
         dry_run_build_prelude: bool,
@@ -606,7 +606,7 @@ class S23FyersSnapshotCollector:
     def _resolve_session_context(
         self,
         *,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         runtime_fixture: dict[str, Any] | None,
     ) -> S23PaperPreludeSessionContext:
         if runtime_fixture is not None:
@@ -639,11 +639,11 @@ class S23FyersSnapshotCollector:
     def _build_expiry_governance(
         self,
         *,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         strategy: StrategyRule,
         session_date: date,
         runtime_fixture: dict[str, Any] | None,
-    ) -> tuple[S23PaperExpiryGovernance, date]:
+    ) -> tuple[PaperExpiryGovernance, date]:
         weekly_expiry = (
             self._optional_date(runtime_fixture.get("weekly_expiry"))
             if runtime_fixture is not None
@@ -658,7 +658,7 @@ class S23FyersSnapshotCollector:
         explicit_expiries = {
             (strategy.expiry_policy.expiry_type, session_date): weekly_expiry,
         }
-        governance = S23PaperExpiryGovernance(
+        governance = PaperExpiryGovernance(
             DeterministicExpiryCalendar(explicit_expiries=explicit_expiries)
         )
         return governance, weekly_expiry
@@ -666,7 +666,7 @@ class S23FyersSnapshotCollector:
     def _resolve_configured_weekly_expiry(
         self,
         *,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         strategy: StrategyRule,
         session_date: date,
     ) -> date:
@@ -822,7 +822,7 @@ class S23FyersSnapshotCollector:
         interval_minutes: int = 1,
         adapter: BrokerAdapter | None = None,
     ) -> tuple[SelectedContractBarEvent, ...]:
-        config = S23LivePaperIngressConfig.from_yaml(config_path)
+        config = PaperLiveIngressConfig.from_yaml(config_path)
         active_adapter = adapter or self._build_adapter(config)
         connected_here = False
         try:
@@ -908,7 +908,7 @@ class S23FyersSnapshotCollector:
         except ValueError:
             return None
 
-    def _build_adapter(self, config: S23LivePaperIngressConfig) -> BrokerAdapter:
+    def _build_adapter(self, config: PaperLiveIngressConfig) -> BrokerAdapter:
         if config.broker.provider != "fyers":
             raise S23FyersSnapshotCollectorError(
                 "UNSUPPORTED_BROKER_PROVIDER",

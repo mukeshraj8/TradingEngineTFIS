@@ -38,6 +38,190 @@ change in a meaningful way.
   longer hardcodes `FyersBrokerAdapter` or the S23 ingress config type inside
   its runtime bootstrap path, and now resolves its broker adapter plus minimal
   runtime config through a strategy-neutral shared paper lifecycle config layer
+- keep that same Phase 4 bootstrap refactor moving without disturbing the live
+  market session: as of Friday, July 17, 2026, the shared lifecycle runtime
+  config layer now also owns broker-runtime environment preparation, so
+  `scripts/run_tfis_paper_lifecycle_supervisor.py` no longer imports FYERS
+  token/bootstrap helpers directly and now deduplicates broker-environment
+  preparation once per provider before connecting adapters
+- continue the same Phase 4 work in additive, non-cutover slices during market
+  hours: as of Friday, July 17, 2026, TFIS now also has a shared
+  `lifecycle_market_events.py` abstraction for selected-contract quote/bar
+  fetch policy, including next-day SL-reset bar-fetch gating; after market,
+  the shared paper lifecycle supervisor was cut over to that shared fetch path
+  while preserving the existing SL-reset bar-fetch warning behavior
+- the remaining legacy S23 compatibility watcher now also uses that shared
+  selected-contract fetch-policy path for fetched quote/bar behavior while
+  preserving its separate stream-tick-first fallback logic, so the selected-
+  contract fetch policy is no longer duplicated across the consolidated
+  supervisor and the older S23 watch script
+- the remaining S21/S23 recovery launchers now identify themselves explicitly
+  as supervisor-compatibility launchers instead of watcher launchers, so the
+  operator-facing wrapper layer matches the current one-supervisor runtime
+  model more closely during restart and recovery flows
+- the S23 morning supervised wrapper no longer carries its dead pre-supervisor
+  `Start-S23PaperWatchProcess` fallback, and its remaining startup logs now
+  describe supervisor startup rather than watcher startup, further reducing
+  wrapper-era drift from the current shared-supervisor runtime model
+- that same S23 morning wrapper now also routes all shared-supervisor starts
+  through one local `Start-TfisSharedSupervisor` helper instead of duplicating
+  the same launcher block across metadata and discovery-mode branches
+- the S21 supervised Python entrypoint now names its shared lifecycle bootstrap
+  path as supervisor startup rather than watcher startup, and the market-closed
+  no-action messages for both S21 and S23 now state that no supervisor startup
+  was triggered, which better matches the current runtime model
+- the TFIS reset/recovery script now describes stale waiting-order skips,
+  duplicate targets, and launched compatibility processes as supervisor
+  recovery actions rather than watcher startup, which brings the recovery
+  console output closer to the actual one-supervisor runtime model
+- the same reset/recovery script now also uses `Recovery` helper naming
+  internally instead of `Watcher` helper naming for those compatibility-target
+  scans and launches, reducing another small source of watcher-era drift in the
+  implementation
+- that same reset/recovery script no longer carries its old inline
+  order/position-target discovery branch at all; it now rebuilds the dashboard,
+  starts the local dashboard server, and hands all waiting-order/open-position
+  recovery to `start_tfis_paper_lifecycle_supervisor.ps1`, which keeps reset
+  ownership aligned with the current one-supervisor runtime model
+- the reset flow, S21/S23 supervisor-compatibility launchers, and S23 morning
+  wrapper now all share one tiny PowerShell launcher seam in
+  `scripts/tfis_paper_lifecycle_supervisor_helpers.ps1`, so the visible
+  supervisor process startup contract now lives in one place instead of being
+  rebuilt by hand in each wrapper
+- the shared paper-position helper now also owns the generic resumable-position
+  filesystem scan in `Get-TfisResumablePaperPositionStatePaths`, and both the
+  S21 and S23 morning wrappers now use that shared scan instead of each
+  carrying its own recurse/read/filter eligibility loop locally
+- the wrapper-level path normalization has also moved into the shared
+  paper-position helper: both S21 and S23 morning wrappers now use the shared
+  `Resolve-TfisAbsolutePathText` and
+  `Resolve-TfisPositionStateDirectoryPath` helpers instead of maintaining
+  separate local path-resolution functions
+- the trading-holiday calendar read path now lives in one shared PowerShell
+  helper, `scripts/tfis_trading_calendar_helpers.ps1`, and both S21/S23
+  morning wrappers now use that shared helper for holiday-date checks instead
+  of parsing the holiday JSON separately
+- that same shared trading-calendar helper now also owns the generic
+  `Get-TfisEffectiveRunDate` and `Get-TfisNoRunReason` logic used by the S23
+  morning wrapper and S23 paper-order finalizer, so weekend/holiday no-run
+  gating no longer lives in two separate S23 wrapper scripts
+- the remaining Python/bootstrap task setup is also starting to consolidate:
+  S21 morning, S23 morning, and the S23 paper-order finalizer now use shared
+  wrapper-task helpers for Python executable resolution and timestamped task
+  log-context creation instead of hand-rolling those steps separately
+- the wrapper-task helper now also owns the common task-log write path, so the
+  S21 morning wrapper, S23 morning wrapper, and S23 paper-order finalizer no
+  longer each maintain their own timestamped log-write implementation
+- the shared wrapper-task helper now also owns latest-session metadata file
+  lookup for day-scoped strategy artifact roots, and the S23 morning wrapper
+  now uses that helper instead of maintaining its own inline
+  `scheduled_run_metadata.json` discovery walk
+- the operator-facing task banner is now shared as well: the S23 morning
+  wrapper and S23 paper-order finalizer both use one shared
+  `Show-TfisTaskBanner` helper instead of duplicating the same visible banner
+  block
+- the two morning wrappers now also share the hidden Python subprocess launch
+  helper in `scripts/tfis_wrapper_task_helpers.ps1`, so redirected
+  stdout/stderr process startup no longer lives in duplicate S21/S23 wrapper
+  blocks
+- the legacy S23 compatibility watch script now also uses the shared paper
+  runtime-config bootstrap path for broker-environment preparation and broker
+  adapter construction, so that fallback operational path no longer imports
+  `prepare_fyers_env_from_tfis` or constructs `FyersBrokerAdapter` directly in
+  its top-level bootstrap
+- the shared paper runtime-config layer now also owns broker-runtime assembly
+  as one reusable bundle: config load, timezone resolution, and broker adapter
+  construction now come from `load_paper_broker_runtime`, and both the shared
+  supervisor plus the legacy S23 compatibility watch script now use that
+  shared builder instead of reassembling those pieces inline
+- the shared lifecycle runtime paths no longer hardwire
+  `S23PaperPositionManager` directly inside the supervisor/watch bootstrap:
+  both now route through an explicit shared `build_paper_position_manager`
+  factory keyed by strategy code, with current S21/S23 behavior preserved
+- the same shared-runtime bootstrap cleanup now also covers the remaining live
+  state and expiry-governance seams: the legacy S23 compatibility watch now
+  uses `build_paper_live_state_store_from_yaml(...)` instead of the S23-named
+  builder alias directly, the shared lifecycle supervisor now resolves its
+  default position manager through the explicit strategy-code factory instead
+  of instantiating `S23PaperPositionManager()` inline, and both the shared
+  supervisor plus the legacy compatibility watch now resolve expiry governance
+  through a shared `build_paper_expiry_governance(...)` factory keyed by
+  strategy code
+- the shared lifecycle type surface is also becoming less S23-shaped where the
+  behavior is already shared: TFIS now exports neutral
+  `PaperPositionManager*` aliases over the existing S23 implementation, and
+  `src/tfis/paper/lifecycle_supervisor.py` now uses those neutral aliases plus
+  the neutral `PaperExpiryGovernance` alias in its reusable type surface
+- the legacy S23 compatibility watch has now also dropped its remaining
+  bootstrap dependency on `S23LivePaperIngressConfig` for timezone/runtime
+  setup: it now resolves timezone, broker runtime, and lifecycle cost settings
+  directly from the shared paper runtime-config layer, leaving the older watch
+  path more aligned with the consolidated supervisor bootstrap
+- the S23 live-decision/timeline bootstrap now also shares broker-runtime
+  environment preparation through the paper runtime-config layer: the live
+  decision runner exposes `prepare_live_decision_runtime_environment(...)`,
+  `run_s23_live_decision_check(...)` now uses that shared helper instead of
+  direct FYERS auth bootstrap, and the morning timeline runner now uses the
+  same helper for its pre-collector runtime prep
+- the operator dashboard monthly-status API path now also uses that shared
+  live-decision runtime-prep helper instead of calling FYERS auth bootstrap
+  directly, with `scripts/serve_operator_dashboard.py` accepting an explicit
+  `--runtime-config` path so the shared runtime-config layer owns broker-env
+  preparation consistently across dashboard, lifecycle, watch, and live-
+  decision entrypoints
+- the remaining S23-only ingress config surface is now also starting to thin
+  where it is truly just runtime/config shape rather than strategy behavior:
+  TFIS now exports neutral `Paper*IngressConfig` aliases over the existing S23
+  live-ingress config dataclasses, and the S23 live-decision runner plus
+  morning timeline runner now consume the neutral `PaperLiveIngressConfig`
+  alias for config loading instead of naming the S23 ingress config directly
+- that same ingress/runtime neutralization has now advanced one layer deeper as
+  of Friday, July 17, 2026: the FYERS snapshot collector and generated-prelude
+  dry-run runner now use the neutral `PaperLiveIngressConfig` and
+  `PaperExpiryGovernance` aliases for shared config/governance plumbing, so the
+  remaining S23-shaped ingress surface is narrowing toward truly strategy-
+  specific prelude/read-model behavior rather than reusable runtime bootstrap
+- the reusable prelude/position-management layer has now taken the same neutral
+  typing step as of Friday, July 17, 2026: `src/tfis/paper/live_prelude.py`
+  and `src/tfis/paper/position_manager.py` now type their shared expiry
+  governance dependency through `PaperExpiryGovernance`, leaving the remaining
+  direct S23 naming concentrated in the still-intentionally strategy-shaped
+  live-ingress implementation itself
+- the live-ingress module has now taken that same low-risk internal signature
+  cleanup as of Friday, July 17, 2026: the reusable loader/preflight/helper
+  methods inside `src/tfis/paper/live_ingress.py` now type their config
+  dependency through `PaperLiveIngressConfig`, while the module still keeps its
+  S23-specific runtime behavior and outward class names intact
+- the shared import surface now matches that cleanup too as of Friday,
+  July 17, 2026: `tfis.paper` now exports neutral `PaperBrokerPaperIngressRunner`
+  plus `PaperLiveIngress*` aliases over the existing S23 ingress runner and
+  preflight types, so future strategies can import the reusable seam without
+  binding directly to S23 names
+- the same ingress surface is now neutral end to end for its non-strategy-
+  specific summary/artifact types as of Friday, July 17, 2026:
+  `src/tfis/paper/live_ingress.py` and `tfis.paper` now expose
+  `PaperLiveIngressSummary` and `PaperLiveIngressArtifactSet` aliases and use
+  those neutral names in runner signatures, which effectively completes the
+  current low-risk Phase 4 naming/plumbing cleanup around paper ingress
+- the reusable ingress seam is now also exercised that way in tests as of
+  Friday, July 17, 2026: the focused live-paper ingress regression file now
+  imports and runs through the neutral `PaperBrokerPaperIngressRunner`,
+  `PaperLiveIngressConfig`, and `PaperLiveIngressError` symbols instead of the
+  S23-named imports, which proves the shared ingress surface is consumable
+  without binding callers to S23 naming
+- the last safe shared-surface consumers have now followed on Friday,
+  July 17, 2026 as well: `scripts/run_s23_fyers_paper_ingress.py` now drives
+  the ingress CLI through the neutral paper-ingress runner/error symbols, and
+  the operator dashboard now resolves shared expiry-governance behavior through
+  `PaperExpiryGovernance` rather than the S23-named class, leaving the
+  remaining direct S23 names concentrated in the intentionally strategy-shaped
+  class definitions and compatibility exports
+- the shared paper ingress and expiry-governance layers have now crossed the
+  final low-risk refactor boundary as of Friday, July 17, 2026: their canonical
+  class definitions are now the neutral `Paper*` types in
+  `src/tfis/paper/live_ingress.py` and `src/tfis/paper/expiry_governance.py`,
+  with the older `S23*` names preserved strictly as compatibility aliases for
+  existing callers and tests
 - prove the corrected July 16, 2026 S21/S23 paper runtime on real artifacts:
   the S23 supervised wrapper now reclaims dead Windows process-lock PIDs
   correctly by checking process exit state instead of handle existence alone,

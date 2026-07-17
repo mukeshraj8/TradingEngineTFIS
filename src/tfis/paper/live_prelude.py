@@ -20,7 +20,7 @@ from .contract_selection import (
     S23PaperContractSelectionResult,
     S23PaperContractSelector,
 )
-from .expiry_governance import S23PaperExpiryGovernance
+from .expiry_governance import PaperExpiryGovernance
 from .models import (
     CalendarContextEvent,
     EventEnvelope,
@@ -93,7 +93,7 @@ class S23PaperLivePreludeRequest:
     option_chain_snapshot: OptionChainSnapshotEvent | None
     snapshots: tuple[S23PaperSnapshotInput, ...]
     session_context: S23PaperPreludeSessionContext
-    expiry_governance: S23PaperExpiryGovernance
+    expiry_governance: PaperExpiryGovernance
     lots: int
     quantity: int
     monthly_status_reference_date: date | None = None

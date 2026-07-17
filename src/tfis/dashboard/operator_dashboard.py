@@ -14,7 +14,7 @@ from tfis.importers import load_strategy_rule
 from tfis.market_data import UnderlyingHistoryBar
 from tfis.paper.expiry_governance import (
     DeterministicExpiryCalendar,
-    S23PaperExpiryGovernance,
+    PaperExpiryGovernance,
 )
 from tfis.paper.fyers_snapshot_collector import S23CollectedSnapshotInputs
 from tfis.paper.live_decision_timeline import S23LiveDecisionTimelineBuilder
@@ -933,7 +933,7 @@ class TfisOperatorDashboardBuilder:
             underlying_bars=intraday_bars,
             daily_bars=daily_bars,
             option_chain_snapshot=option_chain,
-            expiry_governance=S23PaperExpiryGovernance(
+            expiry_governance=PaperExpiryGovernance(
                 DeterministicExpiryCalendar(
                     explicit_expiries={(ExpiryType.WEEKLY, session_date): weekly_expiry}
                 )

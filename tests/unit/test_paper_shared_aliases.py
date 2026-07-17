@@ -4,9 +4,18 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from tfis.paper import (
+    PaperBrokerAdapterConfig,
+    PaperBrokerPaperIngressRunner,
+    PaperBrokerCostSettingsConfig,
+    PaperBrokerIngressThresholdConfig,
+    PaperBrokerScopeConfig,
+    PaperBrokerSelectionConfig,
+    PaperLiveIngressArtifactSet,
     build_paper_live_state_store,
     build_paper_live_state_store_from_yaml,
+    build_paper_expiry_governance,
     build_paper_broker_adapter,
+    build_paper_position_manager,
     build_s23_paper_live_state_store,
     build_s23_paper_live_state_store_from_yaml,
     InMemoryPaperLiveStateStore,
@@ -14,6 +23,13 @@ from tfis.paper import (
     load_paper_lifecycle_supervisor_target_specs,
     NullPaperLiveStateStore,
     NullS23PaperLiveStateStore,
+    PaperExpiryGovernance,
+    PaperExpiryGovernanceDecision,
+    PaperLiveIngressConfig,
+    PaperLiveIngressError,
+    PaperLiveIngressPreflightIssue,
+    PaperLiveIngressPreflightSummary,
+    PaperLiveIngressSummary,
     PaperLifecycleSupervisor,
     PaperLifecycleSupervisorContext,
     PaperLifecycleSupervisorResult,
@@ -72,12 +88,31 @@ from tfis.paper import (
     PaperPositionStateEventType,
     PaperPositionStateStatus,
     PaperPositionStateStore,
+    PaperPositionManager,
+    PaperPositionManagerError,
+    PaperPositionManagerEvent,
+    PaperPositionManagerResult,
+    PaperPositionManagerStatus,
     S23PaperLifecycleSupervisor,
     S23PaperLifecycleSupervisorContext,
     S23PaperLifecycleSupervisorResult,
     S23PaperLifecycleSupervisorStep,
+    S23BrokerAdapterConfig,
+    S23BrokerPaperIngressRunner,
+    S23BrokerCostSettingsConfig,
+    S23BrokerIngressThresholdConfig,
+    S23PaperBrokerScopeConfig,
+    S23BrokerSelectionConfig,
+    S23PaperExpiryGovernance,
+    S23PaperExpiryGovernanceDecision,
     S23PaperLiveStateSettings,
     S23PaperLiveStateStore,
+    S23LivePaperIngressArtifactSet,
+    S23LivePaperIngressConfig,
+    S23LivePaperIngressError,
+    S23LivePaperIngressPreflightIssue,
+    S23LivePaperIngressPreflightSummary,
+    S23LivePaperIngressSummary,
     S23OpenPaperPositionCandidate,
     S23OpenPaperPositionDiscovery,
     S23PaperOrderEvent,
@@ -94,6 +129,11 @@ from tfis.paper import (
     S23PaperPositionStateEventType,
     S23PaperPositionStateStatus,
     S23PaperPositionStateStore,
+    S23PaperPositionManager,
+    S23PaperPositionManagerError,
+    S23PaperPositionManagerEvent,
+    S23PaperPositionManagerResult,
+    S23PaperPositionManagerStatus,
     s23_live_state_owner_id,
 )
 
@@ -141,6 +181,36 @@ def test_phase3_supervisor_runtime_symbols_are_exported() -> None:
     assert PaperLifecycleRuntimeConfig.__name__ == "PaperLifecycleRuntimeConfig"
     assert PaperLifecycleRuntimeConfigError.__name__ == "PaperLifecycleRuntimeConfigError"
     assert callable(build_paper_broker_adapter)
+
+
+def test_paper_expiry_governance_aliases_point_to_existing_s23_types() -> None:
+    assert PaperExpiryGovernance is S23PaperExpiryGovernance
+    assert PaperExpiryGovernanceDecision is S23PaperExpiryGovernanceDecision
+    assert callable(build_paper_expiry_governance)
+
+
+def test_paper_position_manager_aliases_point_to_existing_s23_types() -> None:
+    assert PaperPositionManager is S23PaperPositionManager
+    assert PaperPositionManagerError is S23PaperPositionManagerError
+    assert PaperPositionManagerEvent is S23PaperPositionManagerEvent
+    assert PaperPositionManagerResult is S23PaperPositionManagerResult
+    assert PaperPositionManagerStatus is S23PaperPositionManagerStatus
+    assert callable(build_paper_position_manager)
+
+
+def test_paper_live_ingress_config_aliases_point_to_existing_s23_types() -> None:
+    assert PaperBrokerAdapterConfig is S23BrokerAdapterConfig
+    assert PaperBrokerScopeConfig is S23PaperBrokerScopeConfig
+    assert PaperBrokerSelectionConfig is S23BrokerSelectionConfig
+    assert PaperBrokerCostSettingsConfig is S23BrokerCostSettingsConfig
+    assert PaperBrokerIngressThresholdConfig is S23BrokerIngressThresholdConfig
+    assert PaperBrokerPaperIngressRunner is S23BrokerPaperIngressRunner
+    assert PaperLiveIngressArtifactSet is S23LivePaperIngressArtifactSet
+    assert PaperLiveIngressConfig is S23LivePaperIngressConfig
+    assert PaperLiveIngressError is S23LivePaperIngressError
+    assert PaperLiveIngressPreflightIssue is S23LivePaperIngressPreflightIssue
+    assert PaperLiveIngressPreflightSummary is S23LivePaperIngressPreflightSummary
+    assert PaperLiveIngressSummary is S23LivePaperIngressSummary
 
 
 def test_paper_order_state_aliases_point_to_existing_s23_types() -> None:

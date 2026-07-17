@@ -22,38 +22,35 @@ def test_reset_script_waits_for_old_tfis_runtime_before_restarting() -> None:
     assert "taskkill.exe" in script
 
 
-def test_reset_script_skips_duplicate_dashboard_and_watcher_processes() -> None:
+def test_reset_script_skips_duplicate_dashboard_and_supervisor_recovery_processes() -> None:
     script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
 
     assert "function Get-TfisExistingDashboardProcess" in script
-    assert "function Get-TfisExistingWatcherProcess" in script
-    assert '$seenTargets = @{}' in script
-    assert "Skipping duplicate $StrategyCode watcher target" in script
+    assert "run_tfis_paper_lifecycle_supervisor\\.py" in script
+    assert ". $supervisorHelperPath" in script
+    assert "Start-TfisPaperLifecycleSupervisorProcess" in script
+    assert "Started shared TFIS paper lifecycle supervisor PID=" in script
 
 
-def test_reset_script_keeps_dashboard_and_watchers_visible() -> None:
+def test_reset_script_keeps_dashboard_and_supervisor_recovery_windows_visible() -> None:
     script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
+    supervisor_helper_script = _script_text("tfis_paper_lifecycle_supervisor_helpers.ps1")
 
-    assert script.count("-WindowStyle Normal") >= 2
+    assert script.count("-WindowStyle Normal") >= 1
+    assert supervisor_helper_script.count("-WindowStyle Normal") >= 1
     assert "-WindowStyle Hidden" not in script
     assert '"--skip-build"' in script
     assert "function Wait-ForDashboardReady" in script
     assert "TFIS dashboard is accepting connections." in script
-    assert "Skipping $StrategyCode watcher start because matching process is already running" in script
     assert "Skipping TFIS dashboard start because matching server is already running" in script
 
 
-def test_reset_script_only_restores_same_day_waiting_orders_and_live_positions() -> None:
+def test_reset_script_delegates_recovery_to_shared_supervisor() -> None:
     script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
 
-    assert "function Test-TfisWatchablePositionState" in script
-    assert "function Get-TfisLivePositionStateDirectories" in script
-    assert '$sessionIsToday = $SessionDate -eq (Get-Date).ToString("yyyy-MM-dd")' in script
-    assert 'foreach ($stateDir in @(Get-TfisLivePositionStateDirectories -ArtifactRoot $ArtifactRoot -EffectiveDate $effectiveDate))' in script
-    assert 'if ($metadataJson.branch_order_state_json -and $sessionIsToday)' in script
-    assert "Skipping stale waiting-order watcher startup for prior session $SessionDate" in script
-    assert "Skipping non-carry-forward paper position state during recovery scan" in script
-    assert "Skipping expired paper position state during recovery scan" in script
     assert '. $paperPositionHelperPath' in script
-    assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson" in script
-    assert "Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $EffectiveDate" in script
+    assert '. $supervisorHelperPath' in script
+    assert '"-TargetsConfig (Resolve-TfisPath $TargetsConfig)' not in script
+    assert "Start-TfisPaperLifecycleSupervisorProcess" in script
+    assert "Started shared TFIS paper lifecycle supervisor PID=" in script
+    assert "Get-TfisLivePositionStateDirectories" not in script

@@ -16,82 +16,42 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 Set-Location $repoRoot
+$tradingCalendarHelperPath = Join-Path $scriptDir "tfis_trading_calendar_helpers.ps1"
+$wrapperTaskHelperPath = Join-Path $scriptDir "tfis_wrapper_task_helpers.ps1"
+. $tradingCalendarHelperPath
+. $wrapperTaskHelperPath
 $Host.UI.RawUI.WindowTitle = "TFIS S23 Paper Order Finalizer"
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
 }
 
-$logDir = Join-Path $repoRoot "tmp\s23_fyers_morning_supervised_decision\_task_launch_logs"
-New-Item -ItemType Directory -Path $logDir -Force | Out-Null
-$stamp = "{0}_{1}" -f (Get-Date -Format "yyyyMMdd_HHmmssfff"), $PID
-$logPath = Join-Path $logDir "s23_paper_order_finalizer_$stamp.log"
+$taskContext = New-TfisTaskLaunchContext `
+    -RepoRoot $repoRoot `
+    -RelativeLogDirectory "tmp\s23_fyers_morning_supervised_decision\_task_launch_logs" `
+    -LogFilePrefix "s23_paper_order_finalizer"
+$logDir = $taskContext.LogDirectory
+$stamp = $taskContext.Stamp
+$logPath = $taskContext.LogPath
 
 function Write-FinalizerLog {
     param([string]$Message)
-    $line = "{0} {1}" -f (Get-Date -Format "yyyy-MM-ddTHH:mm:ssK"), $Message
-    Add-Content -Path $logPath -Value $line
-    Write-Host "[TFIS S23 Finalizer] $Message"
+    Write-TfisTaskLogMessage -LogPath $logPath -Message $Message -ConsolePrefix "[TFIS S23 Finalizer] "
 }
 
-function Get-TfisRunDate {
-    if ($RunDate) {
-        return $RunDate.Date
-    }
-    return (Get-Date).Date
-}
+$pythonExe = Resolve-TfisPythonExecutable -RepoRoot $repoRoot -AllowSystemPythonFallback
 
-function Get-TfisTradingHoliday {
-    param([datetime]$Date)
-
-    $calendarPath = $TradingHolidayCalendar
-    if (-not [System.IO.Path]::IsPathRooted($calendarPath)) {
-        $calendarPath = Join-Path $repoRoot $calendarPath
-    }
-    if (-not (Test-Path $calendarPath)) {
-        return $null
-    }
-    $calendar = Get-Content -Path $calendarPath -Raw | ConvertFrom-Json
-    $dateText = $Date.ToString("yyyy-MM-dd")
-    foreach ($holiday in $calendar.holidays) {
-        if ([string]$holiday.date -eq $dateText) {
-            return $holiday
-        }
-    }
-    return $null
-}
-
-function Get-TfisNoRunReason {
-    param([datetime]$Date)
-
-    if ($Date.DayOfWeek -eq [System.DayOfWeek]::Saturday -or $Date.DayOfWeek -eq [System.DayOfWeek]::Sunday) {
-        return "WEEKEND_NO_ACTION: $($Date.ToString('yyyy-MM-dd')) is $($Date.DayOfWeek); NSE equity/F&O market is closed."
-    }
-    $holiday = Get-TfisTradingHoliday -Date $Date
-    if ($holiday) {
-        return "NSE_HOLIDAY_NO_ACTION: $($Date.ToString('yyyy-MM-dd')) is configured as NSE holiday '$($holiday.name)'."
-    }
-    return $null
-}
-
-$pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
-if (-not (Test-Path $pythonExe)) {
-    $pythonExe = "python"
-}
-
-Write-Host "============================================================"
-Write-Host "TFIS S23 PAPER ORDER FINALIZER"
-Write-Host "This window belongs to TradingEngineTFIS only."
-Write-Host "Repo: $repoRoot"
-Write-Host "Log : $logPath"
-Write-Host "============================================================"
+Show-TfisTaskBanner `
+    -Title "TFIS S23 PAPER ORDER FINALIZER" `
+    -RepoRoot $repoRoot `
+    -LogPath $logPath
 Write-FinalizerLog "Starting TFIS S23 paper order finalizer."
 Write-FinalizerLog "Python executable: $pythonExe"
 Write-FinalizerLog "ArtifactRoot: $ArtifactRoot"
 Write-FinalizerLog "DashboardOutputRoot: $DashboardOutputRoot"
 Write-FinalizerLog "Cutoff: $Cutoff"
 
-$effectiveRunDate = Get-TfisRunDate
-$noRunReason = Get-TfisNoRunReason -Date $effectiveRunDate
+$effectiveRunDate = Get-TfisEffectiveRunDate -RunDate $RunDate
+$noRunReason = Get-TfisNoRunReason -RepoRoot $repoRoot -EffectiveDate $effectiveRunDate -CalendarPath $TradingHolidayCalendar
 if ($noRunReason) {
     Write-FinalizerLog $noRunReason
     Write-FinalizerLog "Skipping TFIS S23 paper order finalization."

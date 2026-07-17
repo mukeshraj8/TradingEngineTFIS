@@ -117,8 +117,8 @@ def main(argv: list[str] | None = None) -> int:
         if _is_market_closed_no_action(code=code, message=str(exc)):
             print(
                 "MARKET_CLOSED_NO_ACTION: No intraday market candles were available "
-                "for the supervised S23 snapshot window. No trade decision or watcher "
-                "was started."
+                "for the supervised S23 snapshot window. No trade decision or supervisor "
+                "startup was triggered."
             )
             return 0
         print(f"ERROR [{code}]: {exc}", file=sys.stderr)

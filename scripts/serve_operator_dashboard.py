@@ -22,12 +22,13 @@ from tfis.monthly_status import (
     fetch_current_monthly_status,
     load_monthly_status_instrument_registry,
 )
-from tfis.paper.live_decision_runner import prepare_fyers_env_from_tfis_auth
+from tfis.paper import prepare_live_decision_runtime_environment
 
 
 class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
     dashboard_root: Path
     repo_root: Path
+    runtime_config_path: Path
 
     def do_GET(self) -> None:
         request = urlsplit(self.path)
@@ -59,7 +60,11 @@ class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             price_source = _query_value(query, "price_source") or registry.default_price_source
             as_of_text = _query_value(query, "as_of") or date.today().isoformat()
             effective_status = _query_value(query, "effective_status") or "UNKNOWN"
-            prepare_fyers_env_from_tfis_auth(tfis_root=self.repo_root, skip_refresh=True)
+            prepare_live_decision_runtime_environment(
+                tfis_root=self.repo_root,
+                config_path=self.runtime_config_path,
+                skip_refresh=True,
+            )
             result = fetch_current_monthly_status(
                 symbol=symbol,
                 price_source=price_source,
@@ -114,6 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Serve the existing dashboard files without rebuilding them first.",
     )
     parser.add_argument("--dashboard-config", default="config/operator_dashboard_strategies.yaml")
+    parser.add_argument("--runtime-config", default="config/paper.s23.fyers_connect_test.yaml")
     parser.add_argument("--s23-artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument(
         "--s23-strategy-path",
@@ -165,6 +171,7 @@ def main(argv: list[str] | None = None) -> int:
     handler.directory = str(REPO_ROOT)
     handler.dashboard_root = output_root
     handler.repo_root = REPO_ROOT
+    handler.runtime_config_path = REPO_ROOT / args.runtime_config
     with ReusableTcpServer(("127.0.0.1", args.port), handler) as httpd:
         print("TFIS operator dashboard ready.")
         print(f"Serving: {result_index_html}")

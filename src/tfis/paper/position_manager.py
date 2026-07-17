@@ -10,7 +10,7 @@ from typing import Any
 
 from tfis.domain import ExpiryType, OptionType, RolloverPolicy, StrategyRule
 
-from .expiry_governance import S23PaperExpiryGovernance
+from .expiry_governance import PaperExpiryGovernance
 from .live_decision import S23PaperLiveDecisionResult, S23PaperTradeDecisionSummary
 from .models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from .order_state import S23PaperOrderState, S23PaperOrderStatus
@@ -315,7 +315,7 @@ class S23PaperPositionManager:
         session_date: date,
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
-        expiry_governance: S23PaperExpiryGovernance | None = None,
+        expiry_governance: PaperExpiryGovernance | None = None,
         allow_reverse_on_stoploss: bool = True,
         provenance_source_ids: tuple[str, ...] = (),
     ) -> S23PaperPositionManagerResult:
@@ -1321,7 +1321,37 @@ class S23PaperPositionManager:
         return value
 
 
+def build_paper_position_manager(
+    *,
+    strategy_code: str,
+    live_state_store: S23PaperLiveStateStore | None = None,
+    slippage_exit_points: float = 0.0,
+) -> S23PaperPositionManager:
+    normalized_strategy_code = strategy_code.strip().upper()
+    if normalized_strategy_code in {"S21", "S23"}:
+        return S23PaperPositionManager(
+            live_state_store=live_state_store,
+            slippage_exit_points=slippage_exit_points,
+        )
+    raise S23PaperPositionManagerError(
+        f"Unsupported paper position manager strategy code: {strategy_code}"
+    )
+
+
+PaperPositionManager = S23PaperPositionManager
+PaperPositionManagerError = S23PaperPositionManagerError
+PaperPositionManagerEvent = S23PaperPositionManagerEvent
+PaperPositionManagerResult = S23PaperPositionManagerResult
+PaperPositionManagerStatus = S23PaperPositionManagerStatus
+
+
 __all__ = [
+    "build_paper_position_manager",
+    "PaperPositionManager",
+    "PaperPositionManagerError",
+    "PaperPositionManagerEvent",
+    "PaperPositionManagerResult",
+    "PaperPositionManagerStatus",
     "S23PaperPositionManager",
     "S23PaperPositionManagerError",
     "S23PaperPositionManagerEvent",

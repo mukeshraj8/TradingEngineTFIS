@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from datetime import date, datetime
@@ -9,14 +9,12 @@ import yaml
 
 from tfis.brokers import BrokerAdapter, BrokerConnectionState, BrokerHealthEvent
 from tfis.paper import (
+    PaperBrokerPaperIngressRunner,
     PaperEventType,
+    PaperLiveIngressConfig,
+    PaperLiveIngressError,
     PaperSessionState,
     S23NormalizedPaperEventLoader,
-)
-from tfis.paper.live_ingress import (
-    S23BrokerPaperIngressRunner,
-    S23LivePaperIngressError,
-    S23LivePaperIngressConfig,
 )
 
 
@@ -98,6 +96,17 @@ class _FakeBrokerAdapter(BrokerAdapter):
 
     def get_option_quote(self, option_symbol: str, *, session_date: date):
         return self._selected
+
+    def get_option_bars(
+        self,
+        option_symbol: str,
+        *,
+        session_date: date,
+        from_time,
+        to_time,
+        interval_minutes: int = 1,
+    ):
+        return ()
 
     def stream_ticks(self):
         return ()
@@ -209,7 +218,7 @@ def test_config_parses_option_chain_strike_count(tmp_path: Path) -> None:
         broker_overrides={"option_chain_strike_count": 80},
     )
 
-    config = S23LivePaperIngressConfig.from_yaml(config_path)
+    config = PaperLiveIngressConfig.from_yaml(config_path)
 
     assert config.broker.option_chain_strike_count == 80
 
@@ -219,7 +228,7 @@ def test_preflight_missing_fyers_credentials_fails(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config_path = _write_config(tmp_path, payload_fixture_path=None)
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
     monkeypatch.delenv("FYERS_APP_ID", raising=False)
     monkeypatch.delenv("FYERS_ACCESS_TOKEN", raising=False)
     monkeypatch.delenv("FYERS_CLIENT_ID", raising=False)
@@ -240,7 +249,7 @@ def test_preflight_fails_when_order_placement_block_is_disabled(tmp_path: Path) 
         tmp_path,
         paper_overrides={"no_live_orders_allowed": False},
     )
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     summary = runner.preflight(
         config_path=config_path,
@@ -257,7 +266,7 @@ def test_preflight_fails_for_wrong_strategy(tmp_path: Path) -> None:
         tmp_path,
         paper_overrides={"strategy_code": "S99"},
     )
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     summary = runner.preflight(
         config_path=config_path,
@@ -274,7 +283,7 @@ def test_preflight_fails_for_non_paper_mode(tmp_path: Path) -> None:
         tmp_path,
         paper_overrides={"mode": "live"},
     )
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     summary = runner.preflight(
         config_path=config_path,
@@ -288,7 +297,7 @@ def test_preflight_fails_for_non_paper_mode(tmp_path: Path) -> None:
 
 def test_valid_mock_config_passes_preflight_with_warning(tmp_path: Path) -> None:
     config_path = _write_config(tmp_path)
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     summary = runner.preflight(
         config_path=config_path,
@@ -311,7 +320,7 @@ def test_preflight_only_does_not_build_or_connect_broker(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config_path = _write_config(tmp_path)
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     def _fail_if_called(*args, **kwargs):
         raise AssertionError("Broker adapter must not be built during preflight-only mode.")
@@ -338,7 +347,7 @@ def test_preflight_fails_for_non_ingress_only_source_mode(tmp_path: Path) -> Non
         yaml.safe_dump(config_payload, sort_keys=False),
         encoding="utf-8",
     )
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     summary = runner.preflight(
         config_path=config_path,
@@ -354,7 +363,7 @@ def test_preflight_fails_when_artifact_root_is_not_writable(tmp_path: Path) -> N
     config_path = _write_config(tmp_path)
     blocked_root = tmp_path / "artifact-root-file"
     blocked_root.write_text("not-a-directory", encoding="utf-8")
-    runner = S23BrokerPaperIngressRunner(artifact_root=blocked_root)
+    runner = PaperBrokerPaperIngressRunner(artifact_root=blocked_root)
 
     summary = runner.preflight(
         config_path=config_path,
@@ -374,7 +383,7 @@ def test_live_broker_ingress_reaches_order_planned_and_persists_artifacts(
         tmp_path,
         capture_stream_events=True,
     )
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     artifact_set = runner.run(
         config_path=config_path,
@@ -411,7 +420,7 @@ def test_live_broker_ingress_reaches_order_planned_and_persists_artifacts(
 
 def test_live_broker_ingress_accepts_generic_broker_adapter(tmp_path: Path) -> None:
     config_path = _write_config(tmp_path, payload_fixture_path=None)
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     artifact_set = runner.run(
         config_path=config_path,
@@ -430,7 +439,7 @@ def test_missing_selected_contract_quote_becomes_no_trade(tmp_path: Path) -> Non
         drop_keys=("selected_contract_quote",),
     )
     config_path = _write_config(tmp_path, payload_fixture_path=payload_path)
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     artifact_set = runner.run(
         config_path=config_path,
@@ -462,7 +471,7 @@ def test_stale_selected_contract_quote_becomes_terminal_guardrail(tmp_path: Path
         payload_fixture_path=payload_path,
         max_quote_age_seconds=5.0,
     )
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
     artifact_set = runner.run(
         config_path=config_path,
@@ -486,11 +495,12 @@ def test_stale_selected_contract_quote_becomes_terminal_guardrail(tmp_path: Path
 
 def test_prelude_rejects_broker_market_event_types(tmp_path: Path) -> None:
     config_path = _write_config(tmp_path)
-    runner = S23BrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
+    runner = PaperBrokerPaperIngressRunner(artifact_root=tmp_path / "artifacts")
 
-    with pytest.raises(S23LivePaperIngressError):
+    with pytest.raises(PaperLiveIngressError):
         runner.run(
             config_path=config_path,
             prelude_jsonl=FULL_NORMALIZED_FIXTURE,
             session_id="invalid-prelude",
         )
+

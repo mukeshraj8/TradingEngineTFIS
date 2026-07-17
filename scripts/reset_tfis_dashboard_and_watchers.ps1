@@ -15,7 +15,9 @@ $ErrorActionPreference = "Stop"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 $paperPositionHelperPath = Join-Path $scriptDir "tfis_paper_position_state_helpers.ps1"
+$supervisorHelperPath = Join-Path $scriptDir "tfis_paper_lifecycle_supervisor_helpers.ps1"
 . $paperPositionHelperPath
+. $supervisorHelperPath
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
 }
@@ -84,93 +86,6 @@ function Get-TfisRuntimeProcesses {
         } |
         Sort-Object ProcessId
     )
-}
-
-function Get-LatestSessionDate {
-    param([string]$ArtifactRoot)
-    $artifactRootPath = Resolve-TfisPath $ArtifactRoot
-    if (-not (Test-Path $artifactRootPath)) {
-        return $null
-    }
-    $dir = Get-ChildItem -Directory $artifactRootPath |
-        Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}$' } |
-        Sort-Object Name -Descending |
-        Select-Object -First 1
-    if (-not $dir) {
-        return $null
-    }
-    return $dir.Name
-}
-
-function Test-TfisWatchablePositionState {
-    param([string]$StateDirectory)
-
-    $statePath = Join-Path (Resolve-TfisPath $StateDirectory) "paper_position_state.json"
-    if (-not (Test-Path $statePath)) {
-        return $false
-    }
-
-    try {
-        $stateJson = Get-Content -Path $statePath -Raw | ConvertFrom-Json
-    }
-    catch {
-        Write-Host "Skipping unreadable paper position state: $statePath"
-        return $false
-    }
-
-    return Test-TfisResumablePaperPositionStateJson -StateJson $stateJson
-}
-
-function Get-TfisLivePositionStateDirectories {
-    param(
-        [string]$ArtifactRoot,
-        [datetime]$EffectiveDate
-    )
-
-    $artifactRootPath = Resolve-TfisPath $ArtifactRoot
-    if (-not (Test-Path $artifactRootPath)) {
-        return @()
-    }
-
-    $stateDirectories = @()
-    Get-ChildItem -Path $artifactRootPath -Recurse -Filter "paper_position_state.json" -ErrorAction SilentlyContinue |
-        Sort-Object LastWriteTime -Descending |
-        ForEach-Object {
-            $statePath = $_.FullName
-            $stateDir = Split-Path -Parent $statePath
-
-            try {
-                $stateJson = Get-Content -Path $statePath -Raw | ConvertFrom-Json
-            }
-            catch {
-                Write-Host "Skipping unreadable paper position state during recovery scan: $statePath"
-                return
-            }
-
-            if (-not (Test-TfisResumablePaperPositionStateJson -StateJson $stateJson -EffectiveDate $EffectiveDate)) {
-                if ($false -eq [bool]$stateJson.carry_forward_allowed) {
-                    Write-Host "Skipping non-carry-forward paper position state during recovery scan: $statePath"
-                    return
-                }
-                if ($stateJson.expiry_date) {
-                    try {
-                        $expiryDate = [datetime]::Parse([string]$stateJson.expiry_date).Date
-                        if ($expiryDate -lt $EffectiveDate.Date) {
-                            Write-Host "Skipping expired paper position state during recovery scan: $statePath"
-                            return
-                        }
-                    }
-                    catch {
-                        Write-Host "Paper position state has unparseable expiry_date; keeping it eligible for recovery scan: $statePath"
-                    }
-                }
-                return
-            }
-
-            $stateDirectories += $stateDir
-        }
-
-    return $stateDirectories | Select-Object -Unique
 }
 
 function Wait-ForNoTfisRuntimeProcesses {
@@ -259,21 +174,6 @@ function Get-TfisExistingDashboardProcess {
     return @(Get-TfisRuntimeProcesses -RuntimePattern $pattern)
 }
 
-function Get-TfisExistingWatcherProcess {
-    param(
-        [string]$Mode,
-        [string]$Directory,
-        [string]$ConfigPath
-    )
-
-    $modeFlag = if ($Mode -eq "state") { "--state-dir" } else { "--order-dir" }
-    $modePattern = [Regex]::Escape($modeFlag)
-    $directoryPattern = New-TfisRegexAlternation @($Directory, (Resolve-TfisPath $Directory))
-    $configPattern = New-TfisRegexAlternation @($ConfigPath, (Resolve-TfisPath $ConfigPath))
-    $pattern = "run_s23_paper_position_watch\.py.*$([Regex]::Escape('--config'))\s+$configPattern.*$modePattern\s+$directoryPattern(?:\s|$)"
-    return @(Get-TfisRuntimeProcesses -RuntimePattern $pattern)
-}
-
 function Stop-TfisRuntimeProcesses {
     $processes = @(Get-TfisRuntimeProcesses)
     $targetProcessIds = @()
@@ -294,126 +194,6 @@ function Stop-TfisRuntimeProcesses {
 
     if ($targetProcessIds.Count -gt 0) {
         Wait-ForNoTfisRuntimeProcesses -ProcessIds $targetProcessIds
-    }
-}
-
-function Get-WatchTargets {
-    param([string]$ArtifactRoot, [string]$SessionDate)
-    $artifactRootPath = Resolve-TfisPath $ArtifactRoot
-    $effectiveDate = [datetime]::Parse($SessionDate)
-    $dayRoot = Join-Path $artifactRootPath $SessionDate
-    $targets = @()
-    $stateDirectories = @{}
-
-    foreach ($stateDir in @(Get-TfisLivePositionStateDirectories -ArtifactRoot $ArtifactRoot -EffectiveDate $effectiveDate)) {
-        if (Test-TfisWatchablePositionState -StateDirectory $stateDir) {
-            $stateDirectories[$stateDir] = $true
-            $targets += [pscustomobject]@{ Mode = "state"; Directory = $stateDir }
-        }
-    }
-
-    if (Test-Path $dayRoot) {
-        $metadata = Get-ChildItem -Path $dayRoot -Recurse -Filter "scheduled_run_metadata.json" -ErrorAction SilentlyContinue |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1
-        if ($metadata) {
-            $metadataJson = Get-Content -Path $metadata.FullName -Raw | ConvertFrom-Json
-            $sessionIsToday = $SessionDate -eq (Get-Date).ToString("yyyy-MM-dd")
-            if ($metadataJson.branch_position_state_json) {
-                $metadataJson.branch_position_state_json.PSObject.Properties | ForEach-Object {
-                    if ($_.Value) {
-                        $stateDir = Split-Path -Parent ([string]$_.Value)
-                        if ((-not $stateDirectories.ContainsKey($stateDir)) -and (Test-TfisWatchablePositionState -StateDirectory $stateDir)) {
-                            $stateDirectories[$stateDir] = $true
-                            $targets += [pscustomobject]@{ Mode = "state"; Directory = $stateDir }
-                        }
-                    }
-                }
-            }
-            if ($metadataJson.branch_order_state_json -and $sessionIsToday) {
-                $metadataJson.branch_order_state_json.PSObject.Properties | ForEach-Object {
-                    if ($_.Value) {
-                        $orderDir = Split-Path -Parent ([string]$_.Value)
-                        if (-not $stateDirectories.ContainsKey($orderDir)) {
-                            $derivedStatePath = Join-Path $orderDir "paper_position_state.json"
-                            if ((Test-Path $derivedStatePath) -and (Test-TfisWatchablePositionState -StateDirectory $orderDir)) {
-                                $stateDirectories[$orderDir] = $true
-                                $targets += [pscustomobject]@{ Mode = "state"; Directory = $orderDir }
-                            }
-                            else {
-                                $targets += [pscustomobject]@{ Mode = "order"; Directory = $orderDir }
-                            }
-                        }
-                    }
-                }
-            }
-            elseif ($metadataJson.branch_order_state_json) {
-                Write-Host "Skipping stale waiting-order watcher startup for prior session $SessionDate under $ArtifactRoot"
-            }
-        }
-    }
-
-    return $targets
-}
-
-function Start-WatcherProcesses {
-    param(
-        [string]$StrategyCode,
-        [string]$ConfigPath,
-        [string]$ArtifactRoot,
-        [string]$ProcessLockRoot,
-        [string]$SessionDate
-    )
-
-    $targets = Get-WatchTargets -ArtifactRoot $ArtifactRoot -SessionDate $SessionDate
-    if ($targets.Count -eq 0) {
-        Write-Host "No watcher targets found for $StrategyCode on $SessionDate"
-        return
-    }
-
-    $seenTargets = @{}
-    foreach ($target in $targets) {
-        $resolvedTargetDirectory = Resolve-TfisPath $target.Directory
-        $targetKey = "{0}|{1}" -f $target.Mode, $resolvedTargetDirectory
-        if ($seenTargets.ContainsKey($targetKey)) {
-            Write-Host "Skipping duplicate $StrategyCode watcher target mode=$($target.Mode) dir=$resolvedTargetDirectory"
-            continue
-        }
-        $seenTargets[$targetKey] = $true
-
-        $existingProcess = @(Get-TfisExistingWatcherProcess -Mode $target.Mode -Directory $target.Directory -ConfigPath $ConfigPath)
-        if ($existingProcess.Count -gt 0) {
-            Write-Host "Skipping $StrategyCode watcher start because matching process is already running: PID=$($existingProcess[0].ProcessId) mode=$($target.Mode) dir=$resolvedTargetDirectory"
-            continue
-        }
-
-        $args = @(
-            (Resolve-TfisPath "scripts/run_s23_paper_position_watch.py"),
-            "--tfis-root", $TfisRoot,
-            "--config", (Resolve-TfisPath $ConfigPath),
-            "--skip-refresh",
-            "--timezone", $Timezone,
-            "--process-lock-root", $ProcessLockRoot,
-            "--dashboard-output-root", $DashboardOutputRoot,
-            "--s23-artifact-root", $ArtifactRoot
-        )
-        if ($target.Mode -eq "state") {
-            $args += "--state-dir"
-            $args += $target.Directory
-        }
-        else {
-            $args += "--order-dir"
-            $args += $target.Directory
-        }
-
-        $process = Start-Process `
-            -FilePath $pythonExe `
-            -ArgumentList $args `
-            -WorkingDirectory $repoRoot `
-            -WindowStyle Normal `
-            -PassThru
-
-        Write-Host "Started $StrategyCode watcher PID=$($process.Id) mode=$($target.Mode) dir=$($target.Directory)"
     }
 }
 
@@ -445,27 +225,13 @@ else {
     }
 }
 
-$supervisorLauncherPath = Resolve-TfisPath "scripts/start_tfis_paper_lifecycle_supervisor.ps1"
-if (-not (Test-Path $supervisorLauncherPath)) {
-    throw "Missing TFIS paper lifecycle supervisor launcher: $supervisorLauncherPath"
-}
-
-$supervisorArgs = @(
-    "-ExecutionPolicy", "Bypass",
-    "-File", $supervisorLauncherPath,
-    "-TfisRoot", $TfisRoot,
-    "-TargetsConfig", (Resolve-TfisPath $TargetsConfig),
-    "-DashboardOutputRoot", $DashboardOutputRoot,
-    "-DashboardPort", "$DashboardPort",
-    "-SessionDate", (Get-Date).ToString("yyyy-MM-dd")
-)
-
-$supervisorProcess = Start-Process `
-    -FilePath "powershell.exe" `
-    -ArgumentList $supervisorArgs `
-    -WorkingDirectory $repoRoot `
-    -WindowStyle Normal `
-    -PassThru
+$supervisorProcess = Start-TfisPaperLifecycleSupervisorProcess `
+    -RepoRoot $repoRoot `
+    -TfisRoot $TfisRoot `
+    -TargetsConfig (Resolve-TfisPath $TargetsConfig) `
+    -DashboardOutputRoot $DashboardOutputRoot `
+    -DashboardPort $DashboardPort `
+    -SessionDate (Get-Date)
 
 Write-Host "Started shared TFIS paper lifecycle supervisor PID=$($supervisorProcess.Id)"
 Write-Host ("TFIS dashboard/supervisor reset complete in {0:n1}s." -f $resetStopwatch.Elapsed.TotalSeconds)

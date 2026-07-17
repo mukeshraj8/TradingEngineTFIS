@@ -91,7 +91,7 @@ class DeterministicExpiryCalendar:
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperExpiryGovernanceDecision:
+class PaperExpiryGovernanceDecision:
     can_carry_forward: bool
     must_force_close: bool
     should_select_next_expiry: bool
@@ -99,7 +99,7 @@ class S23PaperExpiryGovernanceDecision:
     message: str
 
 
-class S23PaperExpiryGovernance:
+class PaperExpiryGovernance:
     def __init__(self, calendar: ExpiryCalendar) -> None:
         self._calendar = calendar
 
@@ -174,7 +174,7 @@ class S23PaperExpiryGovernance:
         *,
         session_date: date,
         current_time: time,
-    ) -> S23PaperExpiryGovernanceDecision:
+    ) -> PaperExpiryGovernanceDecision:
         should_next = self.should_select_next_expiry(position, session_date)
         force_close = self.must_force_close(position, session_date, current_time)
         carry_allowed = self.can_carry_forward(position, session_date)
@@ -197,7 +197,7 @@ class S23PaperExpiryGovernance:
         if not messages:
             messages.append("Carry-forward remains allowed for the current expiry.")
 
-        return S23PaperExpiryGovernanceDecision(
+        return PaperExpiryGovernanceDecision(
             can_carry_forward=carry_allowed,
             must_force_close=force_close,
             should_select_next_expiry=should_next,
@@ -291,3 +291,21 @@ class S23PaperExpiryGovernance:
             S23PaperPositionStateEventType.PAPER_ROLLOVER_POLICY_APPLIED: "rollover_policy_applied",
         }
         return mapping[event_type]
+
+
+def build_paper_expiry_governance(
+    *,
+    strategy_code: str,
+    calendar: ExpiryCalendar | None = None,
+) -> PaperExpiryGovernance:
+    normalized_strategy_code = strategy_code.strip().upper()
+    shared_calendar = calendar or DeterministicExpiryCalendar()
+    if normalized_strategy_code in {"S21", "S23"}:
+        return PaperExpiryGovernance(shared_calendar)
+    raise ValueError(
+        f"Unsupported paper expiry governance strategy code: {strategy_code}"
+    )
+
+
+S23PaperExpiryGovernanceDecision = PaperExpiryGovernanceDecision
+S23PaperExpiryGovernance = PaperExpiryGovernance

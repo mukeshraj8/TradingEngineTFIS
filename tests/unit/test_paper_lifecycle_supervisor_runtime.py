@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib.util
+import sys
 from datetime import date, datetime, time
 from pathlib import Path
 
@@ -8,13 +10,19 @@ import pytest
 from tfis.brokers import FyersBrokerAdapter
 from tfis.domain import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment, StrategyExpiryPolicy, StrategyRule
 from tfis.paper import (
+    build_paper_expiry_governance,
+    build_paper_position_manager,
+    PaperLifecycleBrokerRuntime,
     PaperLifecycleRuntimeConfig,
+    PaperLifecycleSupervisor,
     PaperLifecycleSupervisorTargetDiscovery,
     PaperOrderStateStore,
     S23PaperPositionManager,
     S23PaperTradeDecisionSummary,
     build_paper_broker_adapter,
+    load_paper_broker_runtime,
     load_paper_lifecycle_supervisor_target_specs,
+    prepare_paper_broker_runtime_environment,
 )
 
 
@@ -138,6 +146,62 @@ def test_build_paper_broker_adapter_returns_fyers_adapter_for_supported_provider
     assert isinstance(adapter, FyersBrokerAdapter)
 
 
+def test_load_paper_broker_runtime_builds_timezone_and_adapter(tmp_path: Path) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    runtime = load_paper_broker_runtime(config_path)
+
+    assert isinstance(runtime, PaperLifecycleBrokerRuntime)
+    assert runtime.config.broker.provider == "fyers"
+    assert runtime.timezone_name == "Asia/Kolkata"
+    assert runtime.timezone.key == "Asia/Kolkata"
+    assert isinstance(runtime.adapter, FyersBrokerAdapter)
+
+
+def test_build_paper_position_manager_routes_supported_strategy_codes() -> None:
+    s23_manager = build_paper_position_manager(strategy_code="S23")
+    s21_manager = build_paper_position_manager(strategy_code="S21")
+
+    assert isinstance(s23_manager, S23PaperPositionManager)
+    assert isinstance(s21_manager, S23PaperPositionManager)
+
+
+def test_build_paper_expiry_governance_routes_supported_strategy_codes() -> None:
+    s23_governance = build_paper_expiry_governance(strategy_code="S23")
+    s21_governance = build_paper_expiry_governance(strategy_code="S21")
+
+    assert s23_governance.__class__.__name__ == "PaperExpiryGovernance"
+    assert s21_governance.__class__.__name__ == "PaperExpiryGovernance"
+
+
+def test_paper_lifecycle_supervisor_default_manager_uses_strategy_factory() -> None:
+    s21_supervisor = PaperLifecycleSupervisor(strategy_code="S21")
+    s23_supervisor = PaperLifecycleSupervisor(strategy_code="S23")
+
+    assert isinstance(s21_supervisor._position_manager, S23PaperPositionManager)
+    assert isinstance(s23_supervisor._position_manager, S23PaperPositionManager)
+
+
+def test_build_paper_position_manager_fails_closed_for_unknown_strategy() -> None:
+    with pytest.raises(RuntimeError, match="Unsupported paper position manager strategy code"):
+        build_paper_position_manager(strategy_code="S99")
+
+
+def test_build_paper_expiry_governance_fails_closed_for_unknown_strategy() -> None:
+    with pytest.raises(ValueError, match="Unsupported paper expiry governance strategy code"):
+        build_paper_expiry_governance(strategy_code="S99")
+
+
 def test_build_paper_broker_adapter_fails_closed_for_unknown_provider(tmp_path: Path) -> None:
     config_path = tmp_path / "config.yaml"
     config_path.write_text(
@@ -155,6 +219,96 @@ def test_build_paper_broker_adapter_fails_closed_for_unknown_provider(tmp_path: 
 
     with pytest.raises(RuntimeError, match="Unsupported paper lifecycle broker provider"):
         build_paper_broker_adapter(config)
+
+
+def test_prepare_paper_broker_runtime_environment_uses_fyers_auth(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+    config = PaperLifecycleRuntimeConfig.from_yaml(config_path)
+    calls: list[tuple[object, bool]] = []
+
+    def _fake_prepare(*, tfis_root, skip_refresh):
+        calls.append((tfis_root, skip_refresh))
+
+    monkeypatch.setattr(
+        "tfis.brokers.fyers_token.prepare_fyers_env_from_tfis",
+        _fake_prepare,
+    )
+
+    prepare_paper_broker_runtime_environment(
+        config,
+        tfis_root=tmp_path,
+        skip_refresh=True,
+    )
+
+    assert calls == [(tmp_path, True)]
+
+
+def test_runtime_environment_preparation_is_deduped_per_provider(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+    config = PaperLifecycleRuntimeConfig.from_yaml(config_path)
+    calls: list[tuple[str, bool]] = []
+
+    def _fake_prepare(runtime_config, *, tfis_root, skip_refresh):
+        calls.append((runtime_config.broker.provider, skip_refresh))
+
+    monkeypatch.setattr(module, "prepare_paper_broker_runtime_environment", _fake_prepare)
+    runtime = module._TargetRuntime(
+        spec=load_paper_lifecycle_supervisor_target_specs(
+            _targets_yaml(
+                tmp_path,
+                config_path=config_path,
+                artifact_root=tmp_path / "data" / "strategies" / "S23",
+            ),
+            repo_root=tmp_path,
+        )[0],
+        config=config,
+        timezone_name="Asia/Kolkata",
+        timezone=module.ZoneInfo("Asia/Kolkata"),
+        adapter=object(),
+        live_state_store=object(),
+        supervisor=object(),
+    )
+
+    module._prepare_runtime_environments(
+        (runtime, runtime),
+        tfis_root=str(tmp_path),
+        skip_refresh=False,
+    )
+
+    assert calls == [("fyers", False)]
 
 
 def _targets_yaml(tmp_path: Path, *, config_path: Path, artifact_root: Path) -> Path:

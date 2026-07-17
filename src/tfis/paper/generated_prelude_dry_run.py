@@ -19,7 +19,7 @@ from .ingress_dry_run import (
     S23PaperIngressDryRunArtifactSet,
     S23PaperIngressDryRunRunner,
 )
-from .live_ingress import S23LivePaperIngressConfig
+from .live_ingress import PaperLiveIngressConfig
 from .live_prelude import (
     S23LivePreludeError,
     S23PaperLivePreludeBuilder,
@@ -37,7 +37,7 @@ from .models import (
 )
 from .position_state import S23PaperPositionStateStore
 from .review import S23PaperSessionReviewer
-from .expiry_governance import DeterministicExpiryCalendar, S23PaperExpiryGovernance
+from .expiry_governance import DeterministicExpiryCalendar, PaperExpiryGovernance
 
 
 class S23GeneratedPreludeDryRunError(RuntimeError):
@@ -95,7 +95,7 @@ class S23GeneratedPreludeDryRunRunner:
         enable_smoke_override: bool = False,
     ) -> S23GeneratedPreludeDryRunArtifactSet:
         strategy = load_strategy_rule(strategy_path)
-        config = S23LivePaperIngressConfig.from_yaml(ingress_config_path)
+        config = PaperLiveIngressConfig.from_yaml(ingress_config_path)
         runtime_fixture = self._load_runtime_fixture(runtime_fixture_path)
         market_events = S23NormalizedPaperEventLoader().load_jsonl(market_events_jsonl)
 
@@ -230,7 +230,7 @@ class S23GeneratedPreludeDryRunRunner:
     def _build_generated_event_stream(
         self,
         *,
-        config: S23LivePaperIngressConfig,
+        config: PaperLiveIngressConfig,
         prelude_result: Any,
         session_context: S23PaperPreludeSessionContext,
     ) -> tuple[PaperEvent, ...]:
@@ -372,7 +372,7 @@ class S23GeneratedPreludeDryRunRunner:
     def _build_expiry_governance(
         self,
         payload: dict[str, Any],
-    ) -> S23PaperExpiryGovernance:
+    ) -> PaperExpiryGovernance:
         weekly_expiry = self._optional_date(payload.get("weekly_expiry"))
         session_date = self._parse_date(payload["session_date"])
         explicit = {}
@@ -380,7 +380,7 @@ class S23GeneratedPreludeDryRunRunner:
             from tfis.domain import ExpiryType
 
             explicit = {(ExpiryType.WEEKLY, session_date): weekly_expiry}
-        return S23PaperExpiryGovernance(
+        return PaperExpiryGovernance(
             DeterministicExpiryCalendar(explicit_expiries=explicit)
         )
 

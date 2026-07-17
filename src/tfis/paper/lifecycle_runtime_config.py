@@ -2,14 +2,23 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import yaml
 
-from tfis.brokers import BrokerAdapter, FyersBrokerAdapter
+from tfis.brokers import BrokerAdapter
 
 
 class PaperLifecycleRuntimeConfigError(RuntimeError):
     """Raised when the shared paper lifecycle runtime config is invalid."""
+
+
+@dataclass(frozen=True, slots=True)
+class PaperLifecycleBrokerRuntime:
+    config: "PaperLifecycleRuntimeConfig"
+    timezone_name: str
+    timezone: ZoneInfo
+    adapter: BrokerAdapter
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,17 +79,58 @@ class PaperLifecycleRuntimeConfig:
 def build_paper_broker_adapter(config: PaperLifecycleRuntimeConfig) -> BrokerAdapter:
     provider = config.broker.provider.strip().lower()
     if provider == "fyers":
-        if config.broker.payload_fixture_path:
-            return FyersBrokerAdapter.from_payload_file(
-                config.broker.payload_fixture_path,
-                source_timezone=config.broker.timezone,
-            )
-        return FyersBrokerAdapter(
-            source_timezone=config.broker.timezone,
-            option_chain_strike_count=config.broker.option_chain_strike_count,
-        )
+        return _build_fyers_broker_adapter(config)
     raise PaperLifecycleRuntimeConfigError(
         f"Unsupported paper lifecycle broker provider: {config.broker.provider}"
+    )
+
+
+def load_paper_broker_runtime(
+    config_path: str | Path,
+    *,
+    timezone_name: str | None = None,
+) -> PaperLifecycleBrokerRuntime:
+    config = PaperLifecycleRuntimeConfig.from_yaml(config_path)
+    resolved_timezone_name = timezone_name or config.broker.timezone
+    return PaperLifecycleBrokerRuntime(
+        config=config,
+        timezone_name=resolved_timezone_name,
+        timezone=ZoneInfo(resolved_timezone_name),
+        adapter=build_paper_broker_adapter(config),
+    )
+
+
+def prepare_paper_broker_runtime_environment(
+    config: PaperLifecycleRuntimeConfig,
+    *,
+    tfis_root: str | Path,
+    skip_refresh: bool = False,
+) -> None:
+    provider = config.broker.provider.strip().lower()
+    if provider == "fyers":
+        from tfis.brokers.fyers_token import prepare_fyers_env_from_tfis
+
+        prepare_fyers_env_from_tfis(
+            tfis_root=tfis_root,
+            skip_refresh=skip_refresh,
+        )
+        return
+    raise PaperLifecycleRuntimeConfigError(
+        f"Unsupported paper lifecycle broker provider: {config.broker.provider}"
+    )
+
+
+def _build_fyers_broker_adapter(config: PaperLifecycleRuntimeConfig) -> BrokerAdapter:
+    from tfis.brokers import FyersBrokerAdapter
+
+    if config.broker.payload_fixture_path:
+        return FyersBrokerAdapter.from_payload_file(
+            config.broker.payload_fixture_path,
+            source_timezone=config.broker.timezone,
+        )
+    return FyersBrokerAdapter(
+        source_timezone=config.broker.timezone,
+        option_chain_strike_count=config.broker.option_chain_strike_count,
     )
 
 
@@ -98,9 +148,12 @@ def _optional_float(value: object) -> float | None:
 
 
 __all__ = [
+    "PaperLifecycleBrokerRuntime",
     "PaperLifecycleBrokerConfig",
     "PaperLifecycleCostConfig",
     "PaperLifecycleRuntimeConfig",
     "PaperLifecycleRuntimeConfigError",
     "build_paper_broker_adapter",
+    "load_paper_broker_runtime",
+    "prepare_paper_broker_runtime_environment",
 ]
