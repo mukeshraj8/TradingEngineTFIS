@@ -6,37 +6,31 @@ way.
 
 ## Immediate Next Priorities
 
-1. Phase 1 runtime-consistency refactor is complete for the current scope, and
-   Phase 2 is now complete for the intended runtime-contract/read-model scope.
-   TFIS now has shared neutral paper contracts for intent, fill, lifecycle,
-   and post-planning shell state, and those contracts are consumed across
-   review, paper-vs-historical parity, fill simulation, lifecycle simulation,
-   and post-planning execution-journal boundaries without changing strategy
-   formulas or live paper behavior. Equivalent persisted
-   arm/dispatch/handoff/fill/exit artifacts now outrank fragile single-source
-   dependence on partial `execution_summary.json` payloads. The next
-   architecture move should therefore be Phase 3 lifecycle-supervisor
-   consolidation rather than more Phase 2 micro-slices.
-2. Start Phase 3 lifecycle-supervisor consolidation in the smallest safe slice.
-   The first Phase 3 step should define one reusable supervisor boundary that
-   owns pending-order and open-position polling/transition rules while keeping
-   strategy formulas unchanged. That supervisor should consume the Phase 2
-   neutral contracts and existing persisted artifacts, so S21/S23 can share
-   lifecycle control logic without multiplying watcher-specific behavior.
-3. Run the next pre-market operator checklist and supervised paper start.
+1. Phase 1 runtime-consistency refactor, Phase 2 runtime-contract/read-model
+   consolidation, and the first full Phase 3 lifecycle-supervisor cutover are
+   now complete for the current scope. As of Friday, July 17, 2026, TFIS uses
+   one shared paper lifecycle supervisor process across the supported S21/S23
+   operational paths, compatibility launcher shims keep the older watcher
+   commands usable, and the local readiness gate now validates
+   `config/paper_lifecycle_supervisor_targets.yaml` in addition to dashboard
+   and strategy config health. The next architecture move should therefore be
+   Phase 4 broker/data-source separation rather than more Phase 3 micro-slices.
+2. Run the next pre-market operator checklist and supervised paper start
+   against the shared supervisor path.
    The local readiness gate now has a dedicated command:
    `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token`.
-   The latest local prod-paper run on `2026-07-16` returned
+   The latest local prod-paper run on Friday, July 17, 2026 returned
    `overall_status=PASS`, so the remaining work is operator-time verification
-   that the scheduled wrapper (or manual wrapper) starts cleanly, watchers
-   attach to any produced orders/positions, and the dashboard refresh reflects
-   current-day artifacts during market hours.
+   that the scheduled wrapper (or manual wrapper) starts cleanly, the shared
+   supervisor attaches to any produced orders or positions, and the dashboard
+   refresh reflects same-day artifacts during market hours.
    The latest Thursday, July 16, 2026 runtime fix specifically addressed the
    case where the S23 morning wrapper encountered a stale process-lock reclaim
    message on stderr and aborted before writing a fresh same-day session.
    That proof point is now complete: the wrapper continues through the reclaim
    path, produces a fresh `2026-07-16` S23 session when no S23 position is
-   open, starts fresh S23 order watchers, and leaves the July 15, 2026 closed
+   open, starts fresh S23 order visibility through the shared supervisor path,
+   and leaves the July 15, 2026 closed
    S23 trade in historical review rather than the live monitor.
    Before the next session, refresh the Windows scheduled-task registrations
    for both live paper candidates:
@@ -50,20 +44,23 @@ way.
    `reset_tfis_dashboard_and_watchers.ps1`; the live validation should confirm
    only true carry-forward positions are restored before 09:14, including
    carried states discovered outside the latest session metadata folder, and
-   that stale waiting-order windows no longer reappear after reboot/reset.
+   that stale waiting orders are swept or ignored by the shared supervisor
+   instead of reappearing as separate watcher windows after reboot/reset.
    The same reset command now starts the local dashboard server with
    `serve_operator_dashboard.py --skip-build` after the explicit rebuild step,
    so the expected operator experience is one visible rebuild followed by the
    dashboard opening on `127.0.0.1:8765` without a second hidden startup build.
+   It now also starts one shared supervisor console instead of one watcher
+   window per target.
    The remaining operator-time validation is to confirm the next scheduled
    market-open run behaves the same way without manual wrapper intervention.
-4. Validate S23 live ORPT/RC timing finalization during the next real market
+3. Validate S23 live ORPT/RC timing finalization during the next real market
    session. The supervised live decision path now builds a provisional base
    selection at ORPT, finalizes and places the waiting paper order from that
    ORPT selection when the selected option has not missed entry, and reserves
    RC for the missed-entry recalculation path only. The remaining work is live
    market evidence across CE/PE and near/next-expiry cases.
-5. Validate S23 next-day SL reset after a 15:00 carry-forward in a real market
+4. Validate S23 next-day SL reset after a 15:00 carry-forward in a real market
    session. The paper position manager now records overnight SL inactive
    carry-forward when price is not above original SL, keeps target active the
    next day, reactivates the original SL at ORPT when `09:15` high does not
@@ -78,21 +75,20 @@ way.
    `READY` decision into a waiting paper order. It must only be used after
    confirming no active S23 paper position remains. The follow-up runtime task
    is to automate this handoff inside the watcher/position-manager flow.
-6. Validate S23 live order-watcher/current-price visibility end to end.
-   The scheduled startup wrapper now starts one paper watcher per produced order
-   or open position, scans the durable S23 artifact root for persisted
-   open/carry-forward positions, and captures the supervised Python process
-   through TFIS stdout/stderr log files before scanning the current run-date metadata.
-   This should prevent a stalled PowerShell output pipeline or later-touched
-   stale session from leaving valid waiting orders without the correct watcher.
-   A separate post-cutoff finalizer marks still-waiting same-session orders as
-   `PAPER_ORDER_NOT_FILLED` if a watcher exits before cutoff. The remaining
-   operational validation is to prove automatic watcher startup, quote updates,
-   fill status, dashboard rebuilds, and finalizer cleanup from live FYERS
+5. Validate shared-supervisor current-price visibility and cutoff handling end
+   to end.
+   The scheduled startup wrapper now hands paper lifecycle supervision to one
+   shared TFIS process instead of one watcher per produced order or open
+   position. That supervisor scans the durable S21/S23 artifact roots for
+   persisted open/carry-forward positions and waiting orders, appends
+   selected-contract market events, and marks stale previous-session waiting
+   orders or same-session cutoff misses from one shared loop. The remaining
+   operational validation is to prove automatic supervisor startup, quote
+   updates, fill status, dashboard rebuilds, and cutoff cleanup from live FYERS
    quotes/artifacts during market hours, and to confirm that the FYERS
    option-chain snapshot passes the new true-next-expiry verification instead
    of failing closed with `NEXT_WEEKLY_OPTION_CHAIN_UNAVAILABLE`, without
-   changing strategy rules. The watcher now persists selected-contract
+   changing strategy rules. The supervisor now persists selected-contract
    quote/bar observations to `selected_contract_market_events.jsonl`, and the
    captured-session validator can replay waiting-order fill/not-filled/waiting
    outcomes from that evidence. The validator now also replays persisted
@@ -104,12 +100,12 @@ way.
    live validation should check those fields alongside price and P&L. The
    captured-session validator now also recognizes expiry force-close and
    next-day SL reset replay outcomes from persisted artifacts. Improve
-   TFIS-only watcher observability so an
-   operator can see branch, contract, parent/child process relationship, and
-   last quote timestamp without confusing a normal wrapper/child pair for two
-   independent strategy watchers. Offline unit tests now prove the watcher and
-   supervised-decision PID-lock identities and duplicate live-PID fail-closed
-   behavior; remaining proof is a real Windows restart attempt with live
+   TFIS-only supervisor observability so an
+   operator can see branch, contract, managed directory, and last quote
+   timestamp without confusing wrapper/child pairs for multiple independent
+   strategy watchers. Offline unit tests now prove the watcher and
+   supervised-decision PID-lock identities plus the new shared-supervisor
+   launch path; remaining proof is a real Windows restart attempt with live
    process inspection. The manual operator guide now has a
    money-readiness command table for the dashboard, replay validator, focused
    tests, syntax checks, scheduled-task checks, watcher recovery, and pre-live

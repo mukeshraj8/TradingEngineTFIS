@@ -30,7 +30,7 @@ DEFAULT_STRATEGIES = (
     "S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT",
 )
 DEFAULT_STRATEGY_ROOT = REPO_ROOT / "config" / "strategies" / "options_sell" / "banknifty"
-DEFAULT_WATCHER_WRAPPER = REPO_ROOT / "scripts" / "start_s21_paper_watchers_from_metadata.ps1"
+DEFAULT_WATCHER_WRAPPER = REPO_ROOT / "scripts" / "start_tfis_paper_lifecycle_supervisor.ps1"
 _MARKET_CLOSED_NO_CANDLE_MESSAGES = (
     "FYERS underlying history payload returned no candles",
     "No underlying history candles matched the requested TFIS session window",
@@ -176,7 +176,7 @@ def _start_s21_watchers(
 ) -> None:
     if not DEFAULT_WATCHER_WRAPPER.exists():
         print(
-            f"WARNING: S21 watcher wrapper not found: {DEFAULT_WATCHER_WRAPPER}",
+            f"WARNING: TFIS lifecycle supervisor launcher not found: {DEFAULT_WATCHER_WRAPPER}",
             file=sys.stderr,
         )
         return
@@ -189,10 +189,6 @@ def _start_s21_watchers(
         str(DEFAULT_WATCHER_WRAPPER),
         "-TfisRoot",
         str(tfis_root),
-        "-Config",
-        str(config_path),
-        "-ArtifactRoot",
-        str(artifact_root),
         "-SessionDate",
         session_date,
     ]
@@ -205,14 +201,14 @@ def _start_s21_watchers(
             text=True,
         )
     except OSError as exc:
-        print(f"WARNING: failed to launch S21 watcher bootstrap: {exc}", file=sys.stderr)
+        print(f"WARNING: failed to launch TFIS lifecycle supervisor bootstrap: {exc}", file=sys.stderr)
         return
     if completed.stdout.strip():
         print(completed.stdout.strip())
     if completed.returncode != 0:
-        stderr_text = completed.stderr.strip() or "unknown watcher bootstrap failure"
+        stderr_text = completed.stderr.strip() or "unknown lifecycle supervisor bootstrap failure"
         print(
-            f"WARNING: S21 watcher bootstrap exited with code {completed.returncode}: {stderr_text}",
+            f"WARNING: TFIS lifecycle supervisor bootstrap exited with code {completed.returncode}: {stderr_text}",
             file=sys.stderr,
         )
 

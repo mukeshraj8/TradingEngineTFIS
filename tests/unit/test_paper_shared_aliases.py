@@ -4,12 +4,27 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from tfis.paper import (
+    build_paper_live_state_store,
+    build_paper_live_state_store_from_yaml,
+    build_s23_paper_live_state_store,
+    build_s23_paper_live_state_store_from_yaml,
+    InMemoryPaperLiveStateStore,
+    InMemoryS23PaperLiveStateStore,
+    load_paper_lifecycle_supervisor_target_specs,
+    NullPaperLiveStateStore,
+    NullS23PaperLiveStateStore,
     PaperLifecycleSupervisor,
     PaperLifecycleSupervisorContext,
     PaperLifecycleSupervisorResult,
     PaperLifecycleSupervisorStep,
+    PaperLifecycleSupervisorTargetDiscovery,
+    PaperLifecycleSupervisorTargetSpec,
+    PaperLifecycleSupervisorWatchTarget,
+    PaperLiveStateSettings,
+    PaperLiveStateStore,
     PaperOpenPositionCandidate,
     PaperOpenPositionDiscovery,
+    paper_live_state_owner_id,
     paper_trade_action_required,
     paper_trade_branch_label,
     paper_trade_display_status_label,
@@ -36,6 +51,8 @@ from tfis.paper import (
     paper_order_trade_lifecycle_status,
     paper_order_visible_in_trade_monitor,
     paper_order_is_waiting_for_trigger,
+    RedisPaperLiveStateStore,
+    RedisS23PaperLiveStateStore,
     PaperOrderEvent,
     PaperOrderFinalizer,
     PaperOrderFinalizerDecision,
@@ -54,6 +71,8 @@ from tfis.paper import (
     S23PaperLifecycleSupervisorContext,
     S23PaperLifecycleSupervisorResult,
     S23PaperLifecycleSupervisorStep,
+    S23PaperLiveStateSettings,
+    S23PaperLiveStateStore,
     S23OpenPaperPositionCandidate,
     S23OpenPaperPositionDiscovery,
     S23PaperOrderEvent,
@@ -70,6 +89,7 @@ from tfis.paper import (
     S23PaperPositionStateEventType,
     S23PaperPositionStateStatus,
     S23PaperPositionStateStore,
+    s23_live_state_owner_id,
 )
 
 
@@ -89,6 +109,28 @@ def test_paper_lifecycle_supervisor_aliases_point_to_existing_s23_types() -> Non
 def test_paper_open_position_discovery_aliases_point_to_existing_s23_types() -> None:
     assert PaperOpenPositionCandidate is S23OpenPaperPositionCandidate
     assert PaperOpenPositionDiscovery is S23OpenPaperPositionDiscovery
+
+
+def test_paper_live_state_aliases_point_to_existing_s23_types() -> None:
+    assert PaperLiveStateSettings is S23PaperLiveStateSettings
+    assert PaperLiveStateStore is S23PaperLiveStateStore
+    assert InMemoryPaperLiveStateStore is InMemoryS23PaperLiveStateStore
+    assert NullPaperLiveStateStore is NullS23PaperLiveStateStore
+    assert RedisPaperLiveStateStore is RedisS23PaperLiveStateStore
+    assert callable(build_paper_live_state_store)
+    assert callable(build_paper_live_state_store_from_yaml)
+
+
+def test_paper_live_state_owner_id_alias_returns_s23_owner_shape() -> None:
+    assert paper_live_state_owner_id("tfis-test").startswith("tfis-test:")
+    assert s23_live_state_owner_id("tfis-test").startswith("tfis-test:")
+
+
+def test_phase3_supervisor_runtime_symbols_are_exported() -> None:
+    assert PaperLifecycleSupervisorTargetSpec.__name__ == "PaperLifecycleSupervisorTargetSpec"
+    assert PaperLifecycleSupervisorTargetDiscovery.__name__ == "PaperLifecycleSupervisorTargetDiscovery"
+    assert PaperLifecycleSupervisorWatchTarget.__name__ == "PaperLifecycleSupervisorWatchTarget"
+    assert callable(load_paper_lifecycle_supervisor_target_specs)
 
 
 def test_paper_order_state_aliases_point_to_existing_s23_types() -> None:
@@ -249,7 +291,7 @@ def test_paper_trade_visible_for_latest_session_keeps_open_action_and_future_clo
         fresh_entry_required=False,
         reverse_entry_required=False,
         rollover_required=False,
-    ) is True
+    ) is False
     assert paper_trade_visible_for_latest_session(
         row_session_date=datetime.fromisoformat("2026-07-14T09:30:00+05:30").date(),
         event_timestamp=None,

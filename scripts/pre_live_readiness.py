@@ -16,6 +16,7 @@ if str(SRC_ROOT) not in sys.path:
 from tfis.brokers.fyers_token import FyersTokenRefreshError, prepare_fyers_env_from_tfis
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 from tfis.monthly_status import load_monthly_status_instrument_registry, load_monthly_status_thresholds
+from tfis.paper import load_paper_lifecycle_supervisor_target_specs
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +60,7 @@ def run_checks(*, require_token: bool) -> tuple[ReadinessCheck, ...]:
         _project_structure_check(),
         _strategy_config_validation_check(),
         _dashboard_config_check(),
+        _paper_lifecycle_supervisor_config_check(),
         _monthly_status_config_check(),
         _token_check(required=require_token),
     )
@@ -162,6 +164,27 @@ def _monthly_status_config_check() -> ReadinessCheck:
             f"Monthly-status thresholds loaded ({len(thresholds)} groups); "
             f"instrument registry loaded for {', '.join(instrument_symbols)}."
         ),
+    )
+
+
+def _paper_lifecycle_supervisor_config_check() -> ReadinessCheck:
+    config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    try:
+        specs = load_paper_lifecycle_supervisor_target_specs(config_path, repo_root=REPO_ROOT)
+    except Exception as exc:
+        return ReadinessCheck(
+            name="paper_lifecycle_supervisor",
+            status="FAIL",
+            message=f"Paper lifecycle supervisor target config failed to load: {exc}",
+        )
+    summary = ", ".join(
+        f"{item.strategy_code}=>{item.artifact_root.name}"
+        for item in specs
+    )
+    return ReadinessCheck(
+        name="paper_lifecycle_supervisor",
+        status="PASS",
+        message="Paper lifecycle supervisor targets loaded: " + summary,
     )
 
 

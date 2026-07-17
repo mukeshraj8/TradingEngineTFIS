@@ -48,6 +48,15 @@ change in a meaningful way.
 - reduce TFIS dashboard startup delay: the reset flow now builds the operator
   dashboard once and starts `serve_operator_dashboard.py` in `--skip-build`
   mode so the local server does not repeat the same expensive artifact rebuild
+- as of Friday, July 17, 2026, the first full Phase 3 lifecycle-supervisor
+  cutover is in place: TFIS now has one shared paper lifecycle supervisor
+  process that discovers and manages S21/S23 waiting orders plus open positions
+  from persisted artifacts, the S21/S23 recovery launchers now act as
+  compatibility shims into that shared supervisor, the TFIS reset flow now
+  starts one shared supervisor instead of one watcher process per target, and
+  the local readiness gate now validates the new
+  `config/paper_lifecycle_supervisor_targets.yaml` entrypoint alongside the
+  dashboard and strategy configs
 - execute the runtime refactor in controlled phases: Phase 1 stabilizes the
   shared paper lifecycle and dashboard consistency across S21/S23, Phase 2
   introduces a strategy-neutral trade-intent/runtime contract, Phase 3 replaces
@@ -59,11 +68,13 @@ change in a meaningful way.
   Python runtime entrypoints, blocked-fresh-order recovery, captured-session
   validation, and S21/S23/reset startup wrappers without changing strategy
   formulas
-- the next architecture move is now Phase 3 rather than more Phase 2
+- the next architecture move is now Phase 4 rather than more Phase 3
   micro-slices: the strategy-neutral paper runtime/read contract is in place
-  across the intended Phase 2 boundaries, so the next architectural gain comes
-  from consolidating pending/open lifecycle supervision behind one reusable
-  manager before later broker separation
+  across the intended Phase 2 boundaries, and the current S21/S23 paper
+  lifecycle now runs through one shared supervisor process for the supported
+  TFIS operational paths. The next architectural gain comes from separating
+  broker/data-source adapters more cleanly from that shared lifecycle engine
+  while continuing real-market validation of the new supervisor path
 - Phase 2 began with its first additive contract slice: TFIS has a
   new shared paper runtime-contract layer for trade intent, fill outcome, and
   lifecycle outcome plus S23 adapter helpers that map the existing S23
@@ -202,6 +213,14 @@ change in a meaningful way.
   dependence on partial `execution_summary.json` payloads. Focused Phase 2
   regressions and the TFIS guard suite remain the acceptance gate before the
   Phase 3 lifecycle-supervisor consolidation starts
+- the planned Phase 3 lifecycle-supervisor cutover is now complete for the
+  current scope: TFIS has a shared multi-target paper lifecycle supervisor
+  entrypoint, shared target-config/discovery loading, generic live-state alias
+  imports, compatibility launcher shims for the older S21/S23 watcher
+  commands, and a reset/startup path that now launches one shared supervisor
+  process instead of one watcher process per order or position. Focused Phase 3
+  runtime/config tests, the TFIS guard suite, and the Friday, July 17, 2026
+  prod-paper readiness run are green
 
 ## Money-Ready Phase Milestones
 

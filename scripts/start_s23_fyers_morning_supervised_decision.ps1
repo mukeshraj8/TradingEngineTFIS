@@ -447,45 +447,55 @@ try {
                     }
                 }
             }
-            $watcherStartCount = 0
-            if ($statePaths.Count -gt 0) {
-                foreach ($statePath in $statePaths) {
-                    $stateDir = Split-Path -Parent $statePath
-                    Write-LaunchLog "Starting S23 paper position watch for state directory: $stateDir"
-                    Start-S23PaperWatchProcess -Mode "state" -WatchDirectory $stateDir
-                    $watcherStartCount += 1
-                }
-                Write-LaunchLog "Started $($statePaths.Count) S23 paper position watch process(es)."
+            $supervisorLauncherPath = Join-Path $repoRoot "scripts\start_tfis_paper_lifecycle_supervisor.ps1"
+            if (-not (Test-Path $supervisorLauncherPath)) {
+                throw "Missing TFIS lifecycle supervisor launcher: $supervisorLauncherPath"
             }
-            if ($orderPaths.Count -gt 0) {
-                foreach ($orderPath in $orderPaths) {
-                    $orderDir = Split-Path -Parent $orderPath
-                    Write-LaunchLog "Starting S23 paper order watch for order directory: $orderDir"
-                    Start-S23PaperWatchProcess -Mode "order" -WatchDirectory $orderDir
-                    $watcherStartCount += 1
-                }
-                Write-LaunchLog "Started $($orderPaths.Count) S23 paper order watch process(es)."
-            }
-            if ($watcherStartCount -eq 0) {
-                Write-LaunchLog "No new S23 paper position/order state was produced; attempting latest state discovery under $ArtifactRoot."
-                Start-S23PaperWatchProcess -Mode "discover" -SearchRoot $ArtifactRoot
-            }
-        }
-        else {
-            Write-LaunchLog "No scheduled_run_metadata.json found for $($effectiveRunDate.ToString('yyyy-MM-dd')); attempting open-position discovery under $ArtifactRoot."
-            $openStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)
-            if ($openStatePaths.Count -gt 0) {
-                foreach ($openStatePath in $openStatePaths) {
-                    $openStateDir = Split-Path -Parent $openStatePath
-                    Write-LaunchLog "Starting S23 paper position watch for discovered open state directory: $openStateDir"
-                    Start-S23PaperWatchProcess -Mode "state" -WatchDirectory $openStateDir
-                }
-                Write-LaunchLog "Started $($openStatePaths.Count) discovered S23 paper position watch process(es)."
+            if (($statePaths.Count + $orderPaths.Count) -gt 0) {
+                Write-LaunchLog "Starting shared TFIS paper lifecycle supervisor for discovered S23/S21 paper targets."
             }
             else {
-                Write-LaunchLog "No open S23 paper positions found; attempting latest-open-state discovery under $ArtifactRoot."
-                Start-S23PaperWatchProcess -Mode "discover" -SearchRoot $ArtifactRoot
+                Write-LaunchLog "No new S23 paper position/order state was produced; starting shared TFIS lifecycle supervisor in discovery mode."
             }
+            $supervisorArgs = @(
+                "-ExecutionPolicy", "Bypass",
+                "-File", $supervisorLauncherPath,
+                "-TfisRoot", $TfisRoot,
+                "-SessionDate", $effectiveRunDate.ToString("yyyy-MM-dd")
+            )
+            if ($DisableDashboardRebuild) {
+                $supervisorArgs += "-DisableDashboardRebuild"
+            }
+            $supervisorProcess = Start-Process `
+                -FilePath "powershell.exe" `
+                -ArgumentList $supervisorArgs `
+                -WorkingDirectory $repoRoot `
+                -WindowStyle Normal `
+                -PassThru
+            Write-LaunchLog "Started shared TFIS paper lifecycle supervisor PID=$($supervisorProcess.Id)."
+        }
+        else {
+            Write-LaunchLog "No scheduled_run_metadata.json found for $($effectiveRunDate.ToString('yyyy-MM-dd')); starting shared TFIS lifecycle supervisor in discovery mode."
+            $supervisorLauncherPath = Join-Path $repoRoot "scripts\start_tfis_paper_lifecycle_supervisor.ps1"
+            if (-not (Test-Path $supervisorLauncherPath)) {
+                throw "Missing TFIS lifecycle supervisor launcher: $supervisorLauncherPath"
+            }
+            $supervisorArgs = @(
+                "-ExecutionPolicy", "Bypass",
+                "-File", $supervisorLauncherPath,
+                "-TfisRoot", $TfisRoot,
+                "-SessionDate", $effectiveRunDate.ToString("yyyy-MM-dd")
+            )
+            if ($DisableDashboardRebuild) {
+                $supervisorArgs += "-DisableDashboardRebuild"
+            }
+            $supervisorProcess = Start-Process `
+                -FilePath "powershell.exe" `
+                -ArgumentList $supervisorArgs `
+                -WorkingDirectory $repoRoot `
+                -WindowStyle Normal `
+                -PassThru
+            Write-LaunchLog "Started shared TFIS paper lifecycle supervisor PID=$($supervisorProcess.Id)."
         }
     }
     elseif ($DisablePositionWatch) {

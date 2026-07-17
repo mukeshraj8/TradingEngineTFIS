@@ -2,6 +2,7 @@ param(
     [string]$TfisRoot,
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
     [int]$DashboardPort = 8765,
+    [string]$TargetsConfig = "config/paper_lifecycle_supervisor_targets.yaml",
     [string]$S23Config = "config/paper.s23.fyers_connect_test.yaml",
     [string]$S23ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",
     [string]$S21Config = "config/paper.s21.fyers_connect_test.yaml",
@@ -64,7 +65,7 @@ function Get-TfisRuntimeProcesses {
 
     $repoPattern = [Regex]::Escape($repoRoot)
     $effectivePattern = if ([string]::IsNullOrWhiteSpace($RuntimePattern)) {
-        'build_operator_dashboard\.py|serve_operator_dashboard\.py|run_s23_paper_position_watch\.py|start_s21_paper_watchers_from_metadata\.ps1|start_s23_paper_watchers_from_metadata\.ps1|run_s21_banknifty_0916_supervised_decision\.py|run_s23_fyers_0916_supervised_decision\.py'
+        'build_operator_dashboard\.py|serve_operator_dashboard\.py|run_s23_paper_position_watch\.py|run_tfis_paper_lifecycle_supervisor\.py|start_tfis_paper_lifecycle_supervisor\.ps1|start_s21_paper_watchers_from_metadata\.ps1|start_s23_paper_watchers_from_metadata\.ps1|run_s21_banknifty_0916_supervised_decision\.py|run_s23_fyers_0916_supervised_decision\.py'
     }
     else {
         $RuntimePattern
@@ -444,30 +445,27 @@ else {
     }
 }
 
-$s23SessionDate = Get-LatestSessionDate -ArtifactRoot $S23ArtifactRoot
-if ($s23SessionDate) {
-    Start-WatcherProcesses `
-        -StrategyCode "S23" `
-        -ConfigPath $S23Config `
-        -ArtifactRoot $S23ArtifactRoot `
-        -ProcessLockRoot "tmp/process_locks/s23_paper_watch" `
-        -SessionDate $s23SessionDate
-}
-else {
-    Write-Host "No S23 session directory found under $S23ArtifactRoot"
+$supervisorLauncherPath = Resolve-TfisPath "scripts/start_tfis_paper_lifecycle_supervisor.ps1"
+if (-not (Test-Path $supervisorLauncherPath)) {
+    throw "Missing TFIS paper lifecycle supervisor launcher: $supervisorLauncherPath"
 }
 
-$s21SessionDate = Get-LatestSessionDate -ArtifactRoot $S21ArtifactRoot
-if ($s21SessionDate) {
-    Start-WatcherProcesses `
-        -StrategyCode "S21" `
-        -ConfigPath $S21Config `
-        -ArtifactRoot $S21ArtifactRoot `
-        -ProcessLockRoot "tmp/process_locks/s21_paper_watch" `
-        -SessionDate $s21SessionDate
-}
-else {
-    Write-Host "No S21 session directory found under $S21ArtifactRoot"
-}
+$supervisorArgs = @(
+    "-ExecutionPolicy", "Bypass",
+    "-File", $supervisorLauncherPath,
+    "-TfisRoot", $TfisRoot,
+    "-TargetsConfig", (Resolve-TfisPath $TargetsConfig),
+    "-DashboardOutputRoot", $DashboardOutputRoot,
+    "-DashboardPort", "$DashboardPort",
+    "-SessionDate", (Get-Date).ToString("yyyy-MM-dd")
+)
 
-Write-Host ("TFIS dashboard/watcher reset complete in {0:n1}s." -f $resetStopwatch.Elapsed.TotalSeconds)
+$supervisorProcess = Start-Process `
+    -FilePath "powershell.exe" `
+    -ArgumentList $supervisorArgs `
+    -WorkingDirectory $repoRoot `
+    -WindowStyle Normal `
+    -PassThru
+
+Write-Host "Started shared TFIS paper lifecycle supervisor PID=$($supervisorProcess.Id)"
+Write-Host ("TFIS dashboard/supervisor reset complete in {0:n1}s." -f $resetStopwatch.Elapsed.TotalSeconds)

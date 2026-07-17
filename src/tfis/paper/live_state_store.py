@@ -329,6 +329,25 @@ def s23_live_state_owner_id(prefix: str = "tfis-s23-paper-watch") -> str:
     return f"{prefix}:{os.getpid()}"
 
 
+PaperLiveStateSettings = S23PaperLiveStateSettings
+PaperLiveStateStore = S23PaperLiveStateStore
+InMemoryPaperLiveStateStore = InMemoryS23PaperLiveStateStore
+NullPaperLiveStateStore = NullS23PaperLiveStateStore
+RedisPaperLiveStateStore = RedisS23PaperLiveStateStore
+
+
+def build_paper_live_state_store(settings: PaperLiveStateSettings) -> PaperLiveStateStore:
+    return build_s23_paper_live_state_store(settings)
+
+
+def build_paper_live_state_store_from_yaml(path: str | Path) -> PaperLiveStateStore:
+    return build_s23_paper_live_state_store_from_yaml(path)
+
+
+def paper_live_state_owner_id(prefix: str = "tfis-paper-watch") -> str:
+    return s23_live_state_owner_id(prefix)
+
+
 __all__ = [
     "InMemoryS23PaperLiveStateStore",
     "NullS23PaperLiveStateStore",
@@ -338,4 +357,12 @@ __all__ = [
     "build_s23_paper_live_state_store",
     "build_s23_paper_live_state_store_from_yaml",
     "s23_live_state_owner_id",
+    "PaperLiveStateSettings",
+    "PaperLiveStateStore",
+    "InMemoryPaperLiveStateStore",
+    "NullPaperLiveStateStore",
+    "RedisPaperLiveStateStore",
+    "build_paper_live_state_store",
+    "build_paper_live_state_store_from_yaml",
+    "paper_live_state_owner_id",
 ]

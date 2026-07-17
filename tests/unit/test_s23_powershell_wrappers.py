@@ -29,7 +29,7 @@ def test_morning_wrapper_does_not_stream_supervised_decision_through_pipeline() 
     assert 'Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."' in script
 
 
-def test_morning_wrapper_starts_watchers_from_current_session_metadata_and_open_positions() -> None:
+def test_morning_wrapper_starts_supervisor_from_current_session_metadata_and_open_positions() -> None:
     script = _script_text("start_s23_fyers_morning_supervised_decision.ps1")
 
     assert '. $paperPositionHelperPath' in script
@@ -47,10 +47,11 @@ def test_morning_wrapper_starts_watchers_from_current_session_metadata_and_open_
     assert "Passing latest discovered open S23 paper position to supervised decision" in script
     assert "$discoveredCarryForwardStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)" in script
     assert "$openCarryForwardStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)" in script
-    assert "$openStatePaths = @(Get-TfisOpenPositionStatePaths -Date $effectiveRunDate)" in script
     assert "$discoveredCarryForwardStatePath = Resolve-TfisAbsolutePathText -PathText ([string]$discoveredCarryForwardStatePaths[0])" in script
     assert "$discoveredCarryForwardStateDir = Resolve-TfisPositionStateDirectory -PathText $discoveredCarryForwardStatePath" in script
     assert "$args += $discoveredCarryForwardStateDir" in script
+    assert 'Join-Path $repoRoot "scripts\\start_tfis_paper_lifecycle_supervisor.ps1"' in script
+    assert "Starting shared TFIS paper lifecycle supervisor" in script
 
 
 def test_morning_wrapper_normalizes_carry_forward_paths_before_subprocess_handoff() -> None:
@@ -59,44 +60,34 @@ def test_morning_wrapper_normalizes_carry_forward_paths_before_subprocess_handof
     assert "$carryForwardStateDirArg = Resolve-TfisPositionStateDirectory -PathText $CarryForwardStateDir" in script
     assert "$args += $carryForwardStateDirArg" in script
     assert "Carry-forward state directory argument: $discoveredCarryForwardStateDir" in script
-    assert "$watchArgs += $normalizedWatchDirectory" in script
-    assert "$watchArgs += $normalizedSearchRoot" in script
-    assert "directory=$normalizedWatchDirectory, searchRoot=$normalizedSearchRoot" in script
+    assert '"-SessionDate", $effectiveRunDate.ToString("yyyy-MM-dd")' in script
 
 
-def test_s23_watcher_launchers_start_mixed_position_and_order_branches() -> None:
+def test_s23_compatibility_launchers_delegate_to_shared_supervisor() -> None:
     morning_wrapper = _script_text("start_s23_fyers_morning_supervised_decision.ps1")
     recovery_launcher = _script_text("start_s23_paper_watchers_from_metadata.ps1")
 
-    for script in (morning_wrapper, recovery_launcher):
-        assert "$stateDirectories" in script
-        assert "branch_position_state_json" in script
-        assert "branch_order_state_json" in script
-        assert "ContainsKey($orderDir)" in script
-        assert 'Join-Path $orderDir "paper_position_state.json"' in script
-
-    assert 'if ($orderPaths.Count -gt 0)' in morning_wrapper
-    assert 'elseif ($orderPaths.Count -gt 0)' not in morning_wrapper
-    assert '$watcherStartCount -eq 0' in morning_wrapper
-    assert 'if ($metadataJson.branch_order_state_json)' in recovery_launcher
-    assert 'if ($watchTargets.Count -eq 0 -and $metadataJson.branch_order_state_json)' not in recovery_launcher
+    assert 'Join-Path $repoRoot "scripts\\start_tfis_paper_lifecycle_supervisor.ps1"' in morning_wrapper
+    assert "Started shared TFIS paper lifecycle supervisor PID=" in morning_wrapper
+    assert 'Join-Path $repoRoot "scripts\\start_tfis_paper_lifecycle_supervisor.ps1"' in recovery_launcher
+    assert "This launcher now starts one supervisor process for S21 and S23 together." in recovery_launcher
 
 
-def test_tfis_watcher_windows_are_visible_and_self_identifying() -> None:
-    script = _script_text("start_s23_fyers_morning_supervised_decision.ps1")
+def test_tfis_supervisor_window_is_visible_and_self_identifying() -> None:
+    script = _script_text("start_tfis_paper_lifecycle_supervisor.ps1")
 
-    assert '$Host.UI.RawUI.WindowTitle = "TFIS S23 Morning Supervised Decision"' in script
+    assert '$Host.UI.RawUI.WindowTitle = "TFIS Paper Lifecycle Supervisor Launcher"' in script
     assert "This window belongs to TradingEngineTFIS only." in script
-    assert "TFIS S23 PAPER WATCHER" in script
+    assert "TFIS PAPER LIFECYCLE SUPERVISOR" in script
     assert "-WindowStyle Normal" in script
 
 
-def test_morning_wrapper_launches_watcher_script_as_encoded_command() -> None:
-    script = _script_text("start_s23_fyers_morning_supervised_decision.ps1")
+def test_shared_supervisor_launcher_runs_python_supervisor_script() -> None:
+    script = _script_text("start_tfis_paper_lifecycle_supervisor.ps1")
 
-    assert "[System.Text.Encoding]::Unicode.GetBytes($watchCommand)" in script
-    assert '"-EncodedCommand", $encodedWatchCommand' in script
-    assert '"-Command", $watchCommand' not in script
+    assert "run_tfis_paper_lifecycle_supervisor.py" in script
+    assert '"--targets-config"' in script or "'--targets-config'" in script
+    assert '"--session-date"' in script or "'--session-date'" in script
     assert "This window is held open for review; it is safe to close" in script
 
 
@@ -132,6 +123,7 @@ def test_s21_operational_scripts_exist_for_daily_startup() -> None:
     start_script = _script_text("start_s21_fyers_morning_supervised_decision.ps1")
     register_script = _script_text("register_s21_fyers_morning_supervised_task.ps1")
     check_script = _script_text("check_s21_fyers_morning_supervised_task.ps1")
+    launcher_script = _script_text("start_tfis_paper_lifecycle_supervisor.ps1")
 
     assert '[string]$ArtifactRoot = "data/strategies/S21/fyers_morning_supervised_decision"' in start_script
     assert '[string]$IfPast = "run_now"' in start_script
@@ -147,6 +139,7 @@ def test_s21_operational_scripts_exist_for_daily_startup() -> None:
     assert "-PassThru `" in start_script
     assert "-WindowStyle Hidden" in start_script
     assert "run_s21_banknifty_0916_supervised_decision_$stamp.out.log" in start_script
+    assert "run_tfis_paper_lifecycle_supervisor.py" in launcher_script
     assert '[string]$TaskName = "TFIS S21 Morning Supervised Decision"' in register_script
     assert '[string]$IfPast = "run_now"' in register_script
     assert "start_s21_fyers_morning_supervised_decision.ps1" in register_script

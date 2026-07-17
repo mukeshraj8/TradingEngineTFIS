@@ -33,6 +33,15 @@
   single-source dependence on partial `execution_summary.json` payloads.
   Focused runtime regressions and the TFIS guard suite remain the acceptance
   gate before the later Phase 3 lifecycle-supervisor consolidation begins.
+- As of Friday, July 17, 2026, the first full Phase 3 lifecycle-supervisor
+  cutover is now complete for the current TFIS paper scope: one shared
+  lifecycle supervisor process discovers and manages S21/S23 waiting orders
+  plus open positions from persisted artifacts, the legacy S21/S23 watcher
+  launcher commands now delegate to that shared supervisor as compatibility
+  shims, `reset_tfis_dashboard_and_watchers.ps1` now starts one shared
+  supervisor instead of one watcher per target, and the prod-paper readiness
+  gate now validates `config/paper_lifecycle_supervisor_targets.yaml` along
+  with the existing strategy and dashboard configs.
 - TFIS reset/recovery now uses one explicit dashboard build plus
   `serve_operator_dashboard.py --skip-build`, and the reset script now also
   narrows process discovery to likely TFIS host processes, stops matched TFIS

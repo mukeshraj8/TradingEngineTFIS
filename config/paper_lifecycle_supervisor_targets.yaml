@@ -1,0 +1,9 @@
+targets:
+  - strategy_code: S23
+    config_path: config/paper.s23.fyers_connect_test.yaml
+    artifact_root: data/strategies/S23/fyers_morning_supervised_decision
+    process_lock_root: tmp/process_locks/s23_paper_watch
+  - strategy_code: S21
+    config_path: config/paper.s21.fyers_connect_test.yaml
+    artifact_root: data/strategies/S21/fyers_morning_supervised_decision
+    process_lock_root: tmp/process_locks/s21_paper_watch
