@@ -21,6 +21,7 @@ from .models import (
 )
 from .replay_bundle import S23PaperReplayBundleManager
 from .review import S23PaperReviewError, S23PaperSessionReviewer
+from .runtime_contract import PaperTradeShellContract
 from .validation import DEFAULT_MAX_QUOTE_AGE
 
 _ARTIFACT_VERSION = 1
@@ -124,6 +125,7 @@ class _FillContext:
     replay_bundle_validation_performed: bool
     replay_bundle_errors: tuple[str, ...]
     handoff_boundary_timestamp: datetime
+    runtime_shell: PaperTradeShellContract | None
 
 
 class S23PaperFillSimulator:
@@ -171,31 +173,23 @@ class S23PaperFillSimulator:
             replay_bundle_validation_performed=context.replay_bundle_validation_performed,
             replay_bundle_valid=context.replay_bundle_valid,
             replay_bundle_errors=context.replay_bundle_errors,
-            handoff_shell_status=self._text_or_none(
-                context.execution_summary_payload.get("handoff_shell_status")
-            ),
+            handoff_shell_status=self._handoff_shell_status(context),
             selected_contract_symbol=context.selected_contract_symbol,
             order_plan_selected_contract_symbol=context.selected_contract_symbol,
             intent_selected_contract_symbol=context.selected_contract_symbol,
-            execution_summary_selected_contract_symbol=self._text_or_none(
-                context.execution_summary_payload.get("selected_contract_symbol")
-            )
-            or context.selected_contract_symbol,
+            execution_summary_selected_contract_symbol=(
+                self._execution_summary_selected_contract_symbol(context)
+                or context.selected_contract_symbol
+            ),
             handoff_summary_selected_contract_symbol=self._load_optional_summary_symbol(
                 context.session_directory / "execution_handoff_summary.json"
             ),
-            historical_comparison_performed=bool(
-                context.execution_summary_payload.get("historical_comparison_status")
+            historical_comparison_performed=(
+                self._historical_comparison_status(context) is not None
             ),
-            historical_comparison_status=self._text_or_none(
-                context.execution_summary_payload.get("historical_comparison_status")
-            ),
-            execution_shell_status=self._text_or_none(
-                context.execution_summary_payload.get("execution_shell_status")
-            ),
-            dispatch_shell_status=self._text_or_none(
-                context.execution_summary_payload.get("dispatch_shell_status")
-            ),
+            historical_comparison_status=self._historical_comparison_status(context),
+            execution_shell_status=self._execution_shell_status(context),
+            dispatch_shell_status=self._dispatch_shell_status(context),
             duplicate_fill_attempt=duplicate_fill_attempt,
         )
         if guardrail is not None:
@@ -265,11 +259,32 @@ class S23PaperFillSimulator:
             raise S23PaperFillSimulatorError(
                 "S23 Phase 1 fill simulation requires a persisted paper order plan."
             )
-        if review_summary.order_intent.handoff_shell_status != "PAPER_EXECUTION_HANDOFF_READY":
+        handoff_shell_status = (
+            review_summary.runtime_contracts.shell.handoff_shell_status
+            if review_summary.runtime_contracts.shell is not None
+            else review_summary.order_intent.handoff_shell_status
+        )
+        if handoff_shell_status != "PAPER_EXECUTION_HANDOFF_READY":
             raise S23PaperFillSimulatorError(
                 "S23 Phase 1 fill simulation requires PAPER_EXECUTION_HANDOFF_READY."
             )
-        if review_summary.order_intent.planned_entry_price is None:
+        intent_contract = review_summary.runtime_contracts.intent
+        planned_entry_price = (
+            intent_contract.planned_entry_price
+            if intent_contract is not None
+            else review_summary.order_intent.planned_entry_price
+        )
+        order_reference_time = (
+            intent_contract.order_reference_time
+            if intent_contract is not None
+            else review_summary.order_intent.order_reference_time
+        )
+        order_reference_label = (
+            intent_contract.order_reference_label
+            if intent_contract is not None
+            else review_summary.order_intent.order_reference_label
+        )
+        if planned_entry_price is None:
             raise S23PaperFillSimulatorError(
                 "Planned entry price is missing from the S23 paper order intent."
             )
@@ -298,9 +313,9 @@ class S23PaperFillSimulator:
             selected_contract_option_type=review_summary.selected_contract.option_type,
             selected_contract_expiry=review_summary.selected_contract.expiry,
             selected_contract_effective_timestamp=review_summary.selected_contract.effective_timestamp,
-            planned_entry_price=review_summary.order_intent.planned_entry_price,
-            order_reference_time=review_summary.order_intent.order_reference_time,
-            order_reference_label=review_summary.order_intent.order_reference_label,
+            planned_entry_price=planned_entry_price,
+            order_reference_time=order_reference_time,
+            order_reference_label=order_reference_label,
             slippage_entry_points=float(manifest.get("slippage_entry_points") or 0.0),
             execution_summary_payload=execution_summary,
             execution_journal_rows=execution_journal_rows,
@@ -309,9 +324,35 @@ class S23PaperFillSimulator:
             replay_bundle_errors=replay_errors,
             handoff_boundary_timestamp=self._handoff_boundary_timestamp(
                 execution_journal_rows=execution_journal_rows,
-                order_reference_time=review_summary.order_intent.order_reference_time,
+                order_reference_time=order_reference_time,
             ),
+            runtime_shell=review_summary.runtime_contracts.shell,
         )
+
+    def _handoff_shell_status(self, context: _FillContext) -> str | None:
+        if context.runtime_shell is not None and context.runtime_shell.handoff_shell_status is not None:
+            return self._text_or_none(context.runtime_shell.handoff_shell_status)
+        return self._text_or_none(context.execution_summary_payload.get("handoff_shell_status"))
+
+    def _execution_shell_status(self, context: _FillContext) -> str | None:
+        if context.runtime_shell is not None and context.runtime_shell.execution_shell_status is not None:
+            return self._text_or_none(context.runtime_shell.execution_shell_status)
+        return self._text_or_none(context.execution_summary_payload.get("execution_shell_status"))
+
+    def _dispatch_shell_status(self, context: _FillContext) -> str | None:
+        if context.runtime_shell is not None and context.runtime_shell.dispatch_shell_status is not None:
+            return self._text_or_none(context.runtime_shell.dispatch_shell_status)
+        return self._text_or_none(context.execution_summary_payload.get("dispatch_shell_status"))
+
+    def _historical_comparison_status(self, context: _FillContext) -> str | None:
+        if context.runtime_shell is not None and context.runtime_shell.historical_comparison_status is not None:
+            return self._text_or_none(context.runtime_shell.historical_comparison_status)
+        return self._text_or_none(context.execution_summary_payload.get("historical_comparison_status"))
+
+    def _execution_summary_selected_contract_symbol(self, context: _FillContext) -> str | None:
+        if context.runtime_shell is not None and context.runtime_shell.selected_contract_symbol is not None:
+            return self._text_or_none(context.runtime_shell.selected_contract_symbol)
+        return self._text_or_none(context.execution_summary_payload.get("selected_contract_symbol"))
 
     def _evaluate_market_events(
         self,

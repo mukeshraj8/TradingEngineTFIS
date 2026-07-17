@@ -24,6 +24,7 @@ from .review import (
     S23PaperReviewSummary,
     S23PaperSessionReviewer,
 )
+from .runtime_contract import PaperTradeShellContract
 from .validation import DEFAULT_MAX_QUOTE_AGE
 
 
@@ -284,6 +285,8 @@ class _PostPlanningContext:
     replay_validation: S23PaperReplayBundleValidationResult | None
     intent_payload: dict[str, Any] | None
     intent_artifact_issue: str | None
+    runtime_shell: PaperTradeShellContract | None
+    runtime_intent_selected_contract_symbol: str | None
 
 
 class S23PaperExecutionJournalWriter:
@@ -688,11 +691,7 @@ class S23PaperExecutionJournalWriter:
             selected_contract_symbol=context.selected_contract_symbol,
             selected_contract_effective_timestamp=context.selected_contract_effective_timestamp,
             order_plan_selected_contract_symbol=context.order_plan_selected_contract_symbol,
-            intent_selected_contract_symbol=(
-                self._optional_text(context.intent_payload.get("selected_contract_symbol"))
-                if context.intent_payload is not None
-                else None
-            ),
+            intent_selected_contract_symbol=self._current_intent_selected_contract_symbol(context),
             require_intent_artifact=True,
             intent_exists=context.intent_payload is not None,
             intent_artifact_issue=context.intent_artifact_issue,
@@ -830,11 +829,7 @@ class S23PaperExecutionJournalWriter:
             selected_contract_symbol=context.selected_contract_symbol,
             selected_contract_effective_timestamp=context.selected_contract_effective_timestamp,
             order_plan_selected_contract_symbol=context.order_plan_selected_contract_symbol,
-            intent_selected_contract_symbol=(
-                self._optional_text(context.intent_payload.get("selected_contract_symbol"))
-                if context.intent_payload is not None
-                else None
-            ),
+            intent_selected_contract_symbol=self._current_intent_selected_contract_symbol(context),
             intent_exists=context.intent_payload is not None,
             intent_artifact_issue=context.intent_artifact_issue,
             historical_comparison_performed=comparison_payload is not None,
@@ -917,15 +912,9 @@ class S23PaperExecutionJournalWriter:
                     if context.replay_validation is not None
                     else None
                 ),
-                historical_comparison_status=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_status")
-                ),
-                historical_comparison_reason=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_reason")
-                ),
-                historical_comparison_go_no_go=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-                ),
+                historical_comparison_status=self._current_historical_comparison_status(context),
+                historical_comparison_reason=self._current_historical_comparison_reason(context),
+                historical_comparison_go_no_go=self._current_historical_comparison_go_no_go(context),
             )
             return self._persist_dispatch_shell_outcome(
                 context=context,
@@ -956,15 +945,9 @@ class S23PaperExecutionJournalWriter:
                     if context.replay_validation is not None
                     else None
                 ),
-                historical_comparison_status=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_status")
-                ),
-                historical_comparison_reason=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_reason")
-                ),
-                historical_comparison_go_no_go=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-                ),
+                historical_comparison_status=self._current_historical_comparison_status(context),
+                historical_comparison_reason=self._current_historical_comparison_reason(context),
+                historical_comparison_go_no_go=self._current_historical_comparison_go_no_go(context),
             )
             return self._persist_dispatch_shell_outcome(
                 context=context,
@@ -993,28 +976,15 @@ class S23PaperExecutionJournalWriter:
             selected_contract_symbol=context.selected_contract_symbol,
             selected_contract_effective_timestamp=context.selected_contract_effective_timestamp,
             order_plan_selected_contract_symbol=context.order_plan_selected_contract_symbol,
-            intent_selected_contract_symbol=(
-                self._optional_text(context.intent_payload.get("selected_contract_symbol"))
-                if context.intent_payload is not None
-                else None
-            ),
-            execution_summary_selected_contract_symbol=self._optional_text(
-                (context.execution_summary_payload or {}).get("selected_contract_symbol")
+            intent_selected_contract_symbol=self._current_intent_selected_contract_symbol(context),
+            execution_summary_selected_contract_symbol=(
+                self._current_execution_summary_selected_contract_symbol(context)
             ),
             intent_exists=context.intent_payload is not None,
             intent_artifact_issue=context.intent_artifact_issue,
-            historical_comparison_performed=(
-                self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_status")
-                )
-                is not None
-            ),
-            historical_comparison_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_status")
-            ),
-            execution_shell_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("execution_shell_status")
-            ),
+            historical_comparison_performed=self._historical_comparison_performed(context),
+            historical_comparison_status=self._current_historical_comparison_status(context),
+            execution_shell_status=self._current_execution_shell_status(context),
             duplicate_dispatch_attempt=self._has_existing_dispatch_outcome(context),
         )
         if decision is not None:
@@ -1047,15 +1017,9 @@ class S23PaperExecutionJournalWriter:
                 if context.replay_validation is not None
                 else None
             ),
-            historical_comparison_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_status")
-            ),
-            historical_comparison_reason=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_reason")
-            ),
-            historical_comparison_go_no_go=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-            ),
+            historical_comparison_status=self._current_historical_comparison_status(context),
+            historical_comparison_reason=self._current_historical_comparison_reason(context),
+            historical_comparison_go_no_go=self._current_historical_comparison_go_no_go(context),
         )
         return self._persist_dispatch_shell_outcome(
             context=context,
@@ -1094,15 +1058,9 @@ class S23PaperExecutionJournalWriter:
                     if context.replay_validation is not None
                     else None
                 ),
-                historical_comparison_status=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_status")
-                ),
-                historical_comparison_reason=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_reason")
-                ),
-                historical_comparison_go_no_go=self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-                ),
+                historical_comparison_status=self._current_historical_comparison_status(context),
+                historical_comparison_reason=self._current_historical_comparison_reason(context),
+                historical_comparison_go_no_go=self._current_historical_comparison_go_no_go(context),
             )
             return self._persist_handoff_shell_outcome(
                 context=context,
@@ -1130,31 +1088,18 @@ class S23PaperExecutionJournalWriter:
             selected_contract_symbol=context.selected_contract_symbol,
             selected_contract_effective_timestamp=context.selected_contract_effective_timestamp,
             order_plan_selected_contract_symbol=context.order_plan_selected_contract_symbol,
-            intent_selected_contract_symbol=(
-                self._optional_text(context.intent_payload.get("selected_contract_symbol"))
-                if context.intent_payload is not None
-                else None
+            intent_selected_contract_symbol=self._current_intent_selected_contract_symbol(context),
+            execution_summary_selected_contract_symbol=(
+                self._current_execution_summary_selected_contract_symbol(context)
             ),
-            execution_summary_selected_contract_symbol=self._optional_text(
-                (context.execution_summary_payload or {}).get("selected_contract_symbol")
-            ),
-            dispatch_summary_selected_contract_symbol=self._optional_text(
-                (context.intent_dispatch_summary_payload or {}).get("selected_contract_symbol")
+            dispatch_summary_selected_contract_symbol=(
+                self._current_dispatch_summary_selected_contract_symbol(context)
             ),
             intent_exists=context.intent_payload is not None,
             intent_artifact_issue=context.intent_artifact_issue,
-            historical_comparison_performed=(
-                self._optional_text(
-                    (context.execution_summary_payload or {}).get("historical_comparison_status")
-                )
-                is not None
-            ),
-            historical_comparison_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_status")
-            ),
-            execution_shell_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("execution_shell_status")
-            ),
+            historical_comparison_performed=self._historical_comparison_performed(context),
+            historical_comparison_status=self._current_historical_comparison_status(context),
+            execution_shell_status=self._current_execution_shell_status(context),
             dispatch_shell_status=self._current_dispatch_status(context),
             duplicate_handoff_attempt=self._has_existing_handoff_outcome(context),
         )
@@ -1187,15 +1132,9 @@ class S23PaperExecutionJournalWriter:
                 if context.replay_validation is not None
                 else None
             ),
-            historical_comparison_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_status")
-            ),
-            historical_comparison_reason=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_reason")
-            ),
-            historical_comparison_go_no_go=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-            ),
+            historical_comparison_status=self._current_historical_comparison_status(context),
+            historical_comparison_reason=self._current_historical_comparison_reason(context),
+            historical_comparison_go_no_go=self._current_historical_comparison_go_no_go(context),
         )
         return self._persist_handoff_shell_outcome(
             context=context,
@@ -1401,9 +1340,7 @@ class S23PaperExecutionJournalWriter:
             created_order_intent=context.intent_payload is not None,
             journal_event_count=len(total_rows),
             intent_status=self._current_intent_status(context),
-            execution_shell_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("execution_shell_status")
-            ),
+            execution_shell_status=self._current_execution_shell_status(context),
         )
 
         execution_journal_path = context.session_directory / "execution_journal.jsonl"
@@ -1472,9 +1409,7 @@ class S23PaperExecutionJournalWriter:
             created_order_intent=context.intent_payload is not None,
             journal_event_count=len(total_rows),
             intent_status=self._current_intent_status(context),
-            execution_shell_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("execution_shell_status")
-            ),
+            execution_shell_status=self._current_execution_shell_status(context),
             dispatch_shell_status=self._current_dispatch_status(context),
         )
 
@@ -1556,21 +1491,34 @@ class S23PaperExecutionJournalWriter:
         return payload, None
 
     def _current_intent_status(self, context: _PostPlanningContext) -> str | None:
-        if context.execution_summary_payload is None:
-            return None
-        return self._optional_text(
-            context.execution_summary_payload.get("intent_status")
-        ) or self._optional_text(context.execution_summary_payload.get("status"))
+        if context.execution_summary_payload is not None:
+            explicit = self._optional_text(context.execution_summary_payload.get("intent_status"))
+            if explicit is not None:
+                return explicit
+            fallback = self._optional_text(context.execution_summary_payload.get("status"))
+            if fallback is not None:
+                return fallback
+        if context.runtime_shell is not None and context.runtime_shell.intent_status is not None:
+            return context.runtime_shell.intent_status
+        if context.intent_payload is not None:
+            return S23PaperIntentPhaseStatus.INTENT_READY.value
+        return None
 
     def _current_dispatch_status(self, context: _PostPlanningContext) -> str | None:
-        if context.execution_summary_payload is None:
-            return None
-        explicit = self._optional_text(
-            context.execution_summary_payload.get("dispatch_shell_status")
+        explicit = (
+            self._optional_text(context.execution_summary_payload.get("dispatch_shell_status"))
+            if context.execution_summary_payload is not None
+            else None
         )
         if explicit is not None:
             return explicit
-        status = self._optional_text(context.execution_summary_payload.get("status"))
+        if context.runtime_shell is not None and context.runtime_shell.dispatch_shell_status is not None:
+            return context.runtime_shell.dispatch_shell_status
+        status = (
+            self._optional_text(context.execution_summary_payload.get("status"))
+            if context.execution_summary_payload is not None
+            else None
+        )
         if status in {
             S23PaperDispatchShellStatus.ORDER_INTENT_DISPATCH_READY.value,
             S23PaperDispatchShellStatus.ORDER_INTENT_DISPATCHED.value,
@@ -1582,14 +1530,20 @@ class S23PaperExecutionJournalWriter:
         return None
 
     def _current_handoff_status(self, context: _PostPlanningContext) -> str | None:
-        if context.execution_summary_payload is None:
-            return None
-        explicit = self._optional_text(
-            context.execution_summary_payload.get("handoff_shell_status")
+        explicit = (
+            self._optional_text(context.execution_summary_payload.get("handoff_shell_status"))
+            if context.execution_summary_payload is not None
+            else None
         )
         if explicit is not None:
             return explicit
-        status = self._optional_text(context.execution_summary_payload.get("status"))
+        if context.runtime_shell is not None and context.runtime_shell.handoff_shell_status is not None:
+            return context.runtime_shell.handoff_shell_status
+        status = (
+            self._optional_text(context.execution_summary_payload.get("status"))
+            if context.execution_summary_payload is not None
+            else None
+        )
         if status in {
             S23PaperHandoffShellStatus.PAPER_EXECUTION_HANDOFF_READY.value,
             S23PaperHandoffShellStatus.PAPER_EXECUTION_HANDOFF_BLOCKED.value,
@@ -1599,10 +1553,112 @@ class S23PaperExecutionJournalWriter:
             return status
         return None
 
+    def _current_execution_shell_status(self, context: _PostPlanningContext) -> str | None:
+        explicit = (
+            self._optional_text(context.execution_summary_payload.get("execution_shell_status"))
+            if context.execution_summary_payload is not None
+            else None
+        )
+        if explicit is not None:
+            return explicit
+        if context.runtime_shell is not None:
+            return context.runtime_shell.execution_shell_status
+        return None
+
+    def _current_intent_selected_contract_symbol(
+        self,
+        context: _PostPlanningContext,
+    ) -> str | None:
+        if context.intent_payload is not None:
+            explicit = self._optional_text(context.intent_payload.get("selected_contract_symbol"))
+            if explicit is not None:
+                return explicit
+        return context.runtime_intent_selected_contract_symbol
+
+    def _current_execution_summary_selected_contract_symbol(
+        self,
+        context: _PostPlanningContext,
+    ) -> str | None:
+        explicit = (
+            self._optional_text(context.execution_summary_payload.get("selected_contract_symbol"))
+            if context.execution_summary_payload is not None
+            else None
+        )
+        if explicit is not None:
+            return explicit
+        if context.runtime_shell is not None:
+            return context.runtime_shell.selected_contract_symbol
+        return None
+
+    def _current_dispatch_summary_selected_contract_symbol(
+        self,
+        context: _PostPlanningContext,
+    ) -> str | None:
+        if context.intent_dispatch_summary_payload is None:
+            return None
+        return self._optional_text(
+            context.intent_dispatch_summary_payload.get("selected_contract_symbol")
+        )
+
+    def _current_historical_comparison_status(
+        self,
+        context: _PostPlanningContext,
+    ) -> str | None:
+        explicit = (
+            self._optional_text(
+                context.execution_summary_payload.get("historical_comparison_status")
+            )
+            if context.execution_summary_payload is not None
+            else None
+        )
+        if explicit is not None:
+            return explicit
+        if context.runtime_shell is not None:
+            return context.runtime_shell.historical_comparison_status
+        return None
+
+    def _historical_comparison_performed(
+        self,
+        context: _PostPlanningContext,
+    ) -> bool:
+        return self._current_historical_comparison_status(context) is not None
+
+    def _current_historical_comparison_reason(
+        self,
+        context: _PostPlanningContext,
+    ) -> str | None:
+        explicit = (
+            self._optional_text(
+                context.execution_summary_payload.get("historical_comparison_reason")
+            )
+            if context.execution_summary_payload is not None
+            else None
+        )
+        if explicit is not None:
+            return explicit
+        if context.runtime_shell is not None:
+            return context.runtime_shell.historical_comparison_reason
+        return None
+
+    def _current_historical_comparison_go_no_go(
+        self,
+        context: _PostPlanningContext,
+    ) -> str | None:
+        explicit = (
+            self._optional_text(
+                context.execution_summary_payload.get("historical_comparison_go_no_go")
+            )
+            if context.execution_summary_payload is not None
+            else None
+        )
+        if explicit is not None:
+            return explicit
+        if context.runtime_shell is not None:
+            return context.runtime_shell.historical_comparison_go_no_go
+        return None
+
     def _has_existing_execution_shell_outcome(self, context: _PostPlanningContext) -> bool:
-        if context.execution_summary_payload is None:
-            return False
-        status = self._optional_text(context.execution_summary_payload.get("execution_shell_status"))
+        status = self._current_execution_shell_status(context)
         return status == S23PaperExecutionShellStatus.EXECUTION_ARMED.value
 
     def _has_existing_dispatch_outcome(self, context: _PostPlanningContext) -> bool:
@@ -1679,6 +1735,15 @@ class S23PaperExecutionJournalWriter:
         if bundle_directory is not None:
             replay_validation = self._replay_bundle_manager.validate_bundle(bundle_directory)
 
+        review_summary: S23PaperReviewSummary | None = None
+        try:
+            review_summary = self._reviewer.review_session(
+                session_directory,
+                bundle_directory=bundle_directory,
+            )
+        except S23PaperReviewError:
+            review_summary = None
+
         selected_contract_envelope = selected_contract_payload.get("envelope", {}) if selected_contract_payload is not None else {}
         order_plan = order_plan_payload.get("order_plan", {}) if order_plan_payload is not None else {}
         data_sources = tuple(
@@ -1735,6 +1800,17 @@ class S23PaperExecutionJournalWriter:
             replay_validation=replay_validation,
             intent_payload=intent_payload,
             intent_artifact_issue=intent_artifact_issue,
+            runtime_shell=(
+                review_summary.runtime_contracts.shell
+                if review_summary is not None
+                else None
+            ),
+            runtime_intent_selected_contract_symbol=(
+                review_summary.runtime_contracts.intent.selected_contract_symbol
+                if review_summary is not None
+                and review_summary.runtime_contracts.intent is not None
+                else None
+            ),
         )
 
     def _evaluate_post_planning_from_review(
@@ -1878,15 +1954,9 @@ class S23PaperExecutionJournalWriter:
                 if context.replay_validation is not None
                 else None
             ),
-            historical_comparison_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_status")
-            ),
-            historical_comparison_reason=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_reason")
-            ),
-            historical_comparison_go_no_go=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-            ),
+            historical_comparison_status=self._current_historical_comparison_status(context),
+            historical_comparison_reason=self._current_historical_comparison_reason(context),
+            historical_comparison_go_no_go=self._current_historical_comparison_go_no_go(context),
             guardrail_decision=decision,
         )
 
@@ -1916,15 +1986,9 @@ class S23PaperExecutionJournalWriter:
                 if context.replay_validation is not None
                 else None
             ),
-            historical_comparison_status=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_status")
-            ),
-            historical_comparison_reason=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_reason")
-            ),
-            historical_comparison_go_no_go=self._optional_text(
-                (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-            ),
+            historical_comparison_status=self._current_historical_comparison_status(context),
+            historical_comparison_reason=self._current_historical_comparison_reason(context),
+            historical_comparison_go_no_go=self._current_historical_comparison_go_no_go(context),
             guardrail_decision=decision,
         )
 

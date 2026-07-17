@@ -10,6 +10,12 @@ from typing import Any
 
 from .models import PaperReadinessStatus, PaperSessionState
 from .replay_bundle import S23PaperReplayBundleManager
+from .runtime_contract import (
+    PaperTradeFillContract,
+    PaperTradeIntentContract,
+    PaperTradeLifecycleContract,
+    PaperTradeShellContract,
+)
 
 
 _NO_EXECUTION_DISCLAIMER = (
@@ -205,6 +211,14 @@ class S23PaperReviewBundleStatus:
 
 
 @dataclass(frozen=True, slots=True)
+class S23PaperReviewRuntimeContracts:
+    shell: PaperTradeShellContract | None
+    intent: PaperTradeIntentContract | None
+    fill: PaperTradeFillContract | None
+    lifecycle: PaperTradeLifecycleContract | None
+
+
+@dataclass(frozen=True, slots=True)
 class S23PaperReviewSummary:
     session_directory: str
     bundle_directory: str | None
@@ -226,6 +240,7 @@ class S23PaperReviewSummary:
     data_provenance: S23PaperReviewDataProvenance
     freshness: S23PaperReviewFreshness
     replay_bundle: S23PaperReviewBundleStatus
+    runtime_contracts: S23PaperReviewRuntimeContracts
     no_execution_disclaimer: str
 
 
@@ -327,6 +342,37 @@ class S23PaperSessionReviewer:
             session_dir=session_dir,
             bundle_directory=bundle_directory,
         )
+        order_intent = self._build_order_intent_summary(
+            order_intent_payload=order_intent_payload,
+            execution_summary_payload=execution_summary_payload,
+            execution_arm_summary_payload=self._load_optional_json(
+                session_dir / "execution_arm_summary.json"
+            ),
+            intent_dispatch_summary_payload=self._load_optional_json(
+                session_dir / "intent_dispatch_summary.json"
+            ),
+            execution_handoff_summary_payload=self._load_optional_json(
+                session_dir / "execution_handoff_summary.json"
+            ),
+            replay_bundle_valid=replay_bundle.is_valid,
+        )
+        runtime_contracts = self._build_runtime_contracts(
+            session_id=str(decision["session_id"]),
+            session_date=self._parse_date(decision["session_date"]),
+            strategy_code=strategy_code,
+            terminal_state=terminal_state,
+            selected_contract_symbol=(
+                self._optional_text(
+                    selected_contract_payload.get("symbol")
+                    if selected_contract_payload is not None
+                    else decision.get("selected_contract_symbol")
+                )
+            ),
+            order_plan=order_plan,
+            order_intent=order_intent,
+            fill_phase=fill_phase,
+            lifecycle_phase=lifecycle_phase,
+        )
 
         terminal_reason_code = self._resolve_terminal_reason_code(
             terminal_state,
@@ -358,11 +404,7 @@ class S23PaperSessionReviewer:
                 order_plan=order_plan,
             ),
             order_plan=order_plan,
-            order_intent=self._build_order_intent_summary(
-                order_intent_payload=order_intent_payload,
-                execution_summary_payload=execution_summary_payload,
-                replay_bundle_valid=replay_bundle.is_valid,
-            ),
+            order_intent=order_intent,
             fill_phase=fill_phase,
             lifecycle_phase=lifecycle_phase,
             audit_transition_count=len(audit_steps),
@@ -370,6 +412,7 @@ class S23PaperSessionReviewer:
             data_provenance=provenance,
             freshness=freshness,
             replay_bundle=replay_bundle,
+            runtime_contracts=runtime_contracts,
             no_execution_disclaimer=(
                 lifecycle_phase.disclaimer
                 if lifecycle_phase is not None and lifecycle_phase.disclaimer
@@ -377,6 +420,250 @@ class S23PaperSessionReviewer:
                 if fill_phase is not None and fill_phase.disclaimer
                 else _NO_EXECUTION_DISCLAIMER
             ),
+        )
+
+    def _build_runtime_contracts(
+        self,
+        *,
+        session_id: str,
+        session_date: date,
+        strategy_code: str,
+        terminal_state: PaperSessionState,
+        selected_contract_symbol: str | None,
+        order_plan: S23PaperReviewOrderPlan | None,
+        order_intent: S23PaperReviewOrderIntent | None,
+        fill_phase: S23PaperReviewFillPhase | None,
+        lifecycle_phase: S23PaperReviewLifecyclePhase | None,
+    ) -> S23PaperReviewRuntimeContracts:
+        shell_contract = None
+        if order_intent is not None:
+            shell_contract = PaperTradeShellContract(
+                session_id=session_id,
+                session_date=session_date,
+                strategy_code=strategy_code,
+                terminal_state=terminal_state,
+                selected_contract_symbol=selected_contract_symbol or "n/a",
+                intent_status=order_intent.status,
+                execution_shell_status=order_intent.execution_shell_status,
+                dispatch_shell_status=order_intent.dispatch_shell_status,
+                handoff_shell_status=order_intent.handoff_shell_status,
+                historical_comparison_status=order_intent.historical_comparison_status,
+                historical_comparison_reason=order_intent.historical_comparison_reason,
+                historical_comparison_go_no_go=order_intent.historical_comparison_go_no_go,
+            )
+
+        intent_contract = None
+        if (
+            (
+                order_intent is not None
+                and order_intent.available
+                and order_intent.planned_entry_price is not None
+                and order_intent.target_price is not None
+                and order_intent.stoploss_price is not None
+                and order_intent.order_reference_time is not None
+                and order_intent.order_side is not None
+                and order_intent.lots is not None
+                and order_intent.quantity is not None
+            )
+            or (
+                order_plan is not None
+                and order_plan.available
+                and order_plan.planned_entry_price is not None
+                and order_plan.target_price is not None
+                and order_plan.stoploss_price is not None
+                and order_plan.order_reference_time is not None
+                and order_plan.order_side is not None
+                and order_plan.lots is not None
+                and order_plan.quantity is not None
+            )
+        ):
+            intent_contract = PaperTradeIntentContract(
+                session_id=session_id,
+                session_date=session_date,
+                strategy_code=strategy_code,
+                terminal_state=terminal_state,
+                status=(
+                    order_intent.status
+                    if order_intent is not None and order_intent.status is not None
+                    else terminal_state.value
+                ),
+                selected_contract_symbol=(
+                    order_plan.selected_contract_symbol
+                    if order_plan is not None and order_plan.selected_contract_symbol is not None
+                    else "n/a"
+                ),
+                selected_contract_option_type=(
+                    order_plan.selected_contract_option_type if order_plan is not None else None
+                ),
+                selected_contract_expiry=(
+                    order_plan.selected_contract_expiry if order_plan is not None else None
+                ),
+                side=(
+                    order_intent.order_side
+                    if order_intent is not None and order_intent.order_side is not None
+                    else order_plan.order_side
+                ),
+                lots=(
+                    order_intent.lots
+                    if order_intent is not None and order_intent.lots is not None
+                    else order_plan.lots
+                ),
+                quantity=(
+                    order_intent.quantity
+                    if order_intent is not None and order_intent.quantity is not None
+                    else order_plan.quantity
+                ),
+                planned_entry_price=(
+                    order_intent.planned_entry_price
+                    if order_intent is not None and order_intent.planned_entry_price is not None
+                    else order_plan.planned_entry_price
+                ),
+                target_price=(
+                    order_intent.target_price
+                    if order_intent is not None and order_intent.target_price is not None
+                    else order_plan.target_price
+                ),
+                stoploss_price=(
+                    order_intent.stoploss_price
+                    if order_intent is not None and order_intent.stoploss_price is not None
+                    else order_plan.stoploss_price
+                ),
+                fsl_price=(
+                    order_intent.fsl_price
+                    if order_intent is not None
+                    else order_plan.fsl_price
+                ),
+                order_reference_time=(
+                    order_intent.order_reference_time
+                    if order_intent is not None and order_intent.order_reference_time is not None
+                    else order_plan.order_reference_time
+                ),
+                order_reference_label=(
+                    order_intent.order_reference_label
+                    if order_intent is not None and order_intent.order_reference_label is not None
+                    else order_plan.order_reference_label or "n/a"
+                ),
+                source_branch=(
+                    order_intent.source_branch
+                    if order_intent is not None and order_intent.source_branch is not None
+                    else order_plan.strategy_branch
+                ),
+                source_workbook_rule=(
+                    order_intent.source_workbook_rule
+                    if order_intent is not None and order_intent.source_workbook_rule is not None
+                    else order_plan.source_workbook_rule
+                ),
+                workbook_row_number=(
+                    order_intent.workbook_row_number
+                    if order_intent is not None and order_intent.workbook_row_number is not None
+                    else order_plan.workbook_row_number
+                ),
+            )
+
+        fill_contract = None
+        if (
+            fill_phase is not None
+            and fill_phase.available
+            and order_intent is not None
+            and order_intent.planned_entry_price is not None
+            and order_intent.order_reference_time is not None
+        ):
+            fill_contract = PaperTradeFillContract(
+                session_id=session_id,
+                session_date=session_date,
+                strategy_code=strategy_code,
+                status=fill_phase.status or "n/a",
+                selected_contract_symbol=(
+                    fill_phase.selected_contract_symbol
+                    or (
+                        order_plan.selected_contract_symbol
+                        if order_plan is not None and order_plan.selected_contract_symbol is not None
+                        else "n/a"
+                    )
+                ),
+                selected_contract_option_type=(
+                    order_plan.selected_contract_option_type if order_plan is not None else None
+                ),
+                selected_contract_expiry=(
+                    order_plan.selected_contract_expiry if order_plan is not None else None
+                ),
+                planned_entry_price=order_intent.planned_entry_price,
+                handoff_boundary_timestamp=order_intent.order_reference_time,
+                fill_price=fill_phase.fill_price,
+                fill_timestamp=fill_phase.fill_timestamp,
+                source_kind=fill_phase.source_kind,
+                source_type=fill_phase.source_type,
+                source_id=fill_phase.source_id,
+                source_effective_timestamp=fill_phase.source_effective_timestamp,
+                reason_code=fill_phase.reason_code or "n/a",
+                message=fill_phase.message or "",
+                no_fill_reason=fill_phase.no_fill_reason,
+                operator_action_required=None,
+            )
+
+        lifecycle_contract = None
+        if (
+            lifecycle_phase is not None
+            and lifecycle_phase.available
+            and lifecycle_phase.entry_price is not None
+            and lifecycle_phase.target_price is not None
+            and lifecycle_phase.entry_timestamp is not None
+        ):
+            lifecycle_contract = PaperTradeLifecycleContract(
+                session_id=session_id,
+                session_date=session_date,
+                strategy_code=strategy_code,
+                status=lifecycle_phase.status or "n/a",
+                selected_contract_symbol=(
+                    fill_phase.selected_contract_symbol
+                    if fill_phase is not None and fill_phase.selected_contract_symbol is not None
+                    else (
+                        order_plan.selected_contract_symbol
+                        if order_plan is not None and order_plan.selected_contract_symbol is not None
+                        else "n/a"
+                    )
+                ),
+                selected_contract_option_type=(
+                    order_plan.selected_contract_option_type if order_plan is not None else None
+                ),
+                selected_contract_expiry=(
+                    order_plan.selected_contract_expiry if order_plan is not None else None
+                ),
+                side=order_intent.order_side if order_intent is not None and order_intent.order_side else "n/a",
+                lots=order_intent.lots if order_intent is not None and order_intent.lots is not None else 0,
+                quantity=order_intent.quantity if order_intent is not None and order_intent.quantity is not None else 0,
+                entry_price=lifecycle_phase.entry_price,
+                target_price=lifecycle_phase.target_price,
+                stoploss_price=lifecycle_phase.stoploss_price,
+                fsl_price=lifecycle_phase.fsl_price,
+                effective_stop_price=(
+                    lifecycle_phase.stoploss_price
+                    if lifecycle_phase.stoploss_price is not None
+                    else lifecycle_phase.entry_price
+                ),
+                entry_timestamp=lifecycle_phase.entry_timestamp,
+                exit_price=lifecycle_phase.exit_price,
+                exit_timestamp=lifecycle_phase.exit_timestamp,
+                exit_reason_code=lifecycle_phase.exit_reason_code or "n/a",
+                message=lifecycle_phase.message or "",
+                source_kind=fill_phase.source_kind if fill_phase is not None else None,
+                source_type=fill_phase.source_type if fill_phase is not None else None,
+                source_id=fill_phase.source_id if fill_phase is not None else None,
+                source_effective_timestamp=(
+                    fill_phase.source_effective_timestamp if fill_phase is not None else None
+                ),
+                gross_pnl_rupees=lifecycle_phase.gross_pnl_rupees,
+                brokerage_rupees=None,
+                net_pnl_rupees=lifecycle_phase.net_pnl_rupees,
+                operator_action_required=None,
+                warning_flags=lifecycle_phase.warning_flags,
+            )
+
+        return S23PaperReviewRuntimeContracts(
+            shell=shell_contract,
+            intent=intent_contract,
+            fill=fill_contract,
+            lifecycle=lifecycle_contract,
         )
 
     def review_bundle(
@@ -775,30 +1062,47 @@ class S23PaperSessionReviewer:
         *,
         order_intent_payload: dict[str, Any] | None,
         execution_summary_payload: dict[str, Any] | None,
+        execution_arm_summary_payload: dict[str, Any] | None,
+        intent_dispatch_summary_payload: dict[str, Any] | None,
+        execution_handoff_summary_payload: dict[str, Any] | None,
         replay_bundle_valid: bool | None,
     ) -> S23PaperReviewOrderIntent | None:
-        if order_intent_payload is None and execution_summary_payload is None:
+        if (
+            order_intent_payload is None
+            and execution_summary_payload is None
+            and execution_arm_summary_payload is None
+            and intent_dispatch_summary_payload is None
+            and execution_handoff_summary_payload is None
+        ):
             return None
+        status_source = (
+            execution_handoff_summary_payload
+            or intent_dispatch_summary_payload
+            or execution_arm_summary_payload
+            or execution_summary_payload
+            or {}
+        )
+        explicit_summary = execution_summary_payload or {}
+        intent_status = self._optional_text(explicit_summary.get("intent_status"))
+        if intent_status is None and order_intent_payload is not None:
+            intent_status = "INTENT_READY"
         return S23PaperReviewOrderIntent(
             available=order_intent_payload is not None,
-            status=self._optional_text(
-                execution_summary_payload.get("intent_status") if execution_summary_payload is not None else None
-            ),
+            status=intent_status,
             execution_shell_status=self._optional_text(
-                execution_summary_payload.get("execution_shell_status") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("execution_shell_status")
+            ) or self._optional_text(status_source.get("execution_shell_status")),
             dispatch_shell_status=self._optional_text(
-                execution_summary_payload.get("dispatch_shell_status") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("dispatch_shell_status")
+            ) or self._optional_text(status_source.get("dispatch_shell_status")),
             handoff_shell_status=self._optional_text(
-                execution_summary_payload.get("handoff_shell_status") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("handoff_shell_status")
+            ) or self._optional_text(status_source.get("handoff_shell_status")),
             reason_code=self._optional_text(
-                execution_summary_payload.get("terminal_reason_code") if execution_summary_payload is not None else None
-            ),
-            message=self._optional_text(
-                execution_summary_payload.get("message") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("terminal_reason_code")
+            ) or self._optional_text(status_source.get("terminal_reason_code")),
+            message=self._optional_text(explicit_summary.get("message"))
+            or self._optional_text(status_source.get("message")),
             order_side=self._optional_text(
                 order_intent_payload.get("side") if order_intent_payload is not None else None
             ),
@@ -837,37 +1141,37 @@ class S23PaperSessionReviewer:
             ),
             bundle_validated=replay_bundle_valid,
             historical_comparison_status=self._optional_text(
-                execution_summary_payload.get("historical_comparison_status") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("historical_comparison_status")
+            ) or self._optional_text(status_source.get("historical_comparison_status")),
             historical_comparison_go_no_go=self._optional_text(
-                execution_summary_payload.get("historical_comparison_go_no_go") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("historical_comparison_go_no_go")
+            ) or self._optional_text(status_source.get("historical_comparison_go_no_go")),
             historical_comparison_reason=self._optional_text(
-                execution_summary_payload.get("historical_comparison_reason") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("historical_comparison_reason")
+            ) or self._optional_text(status_source.get("historical_comparison_reason")),
             guardrail_code=self._optional_text(
-                execution_summary_payload.get("guardrail_code") if execution_summary_payload is not None else None
-            ),
-            guardrail_message=self._optional_text(
-                execution_summary_payload.get("guardrail_message") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("guardrail_code")
+            ) or self._optional_text(status_source.get("guardrail_code")),
+            guardrail_message=self._optional_text(explicit_summary.get("guardrail_message"))
+            or self._optional_text(status_source.get("guardrail_message")),
             blocking_event_type=self._optional_text(
-                execution_summary_payload.get("blocking_event_type") if execution_summary_payload is not None else None
-            ),
-            blocking_source_id=self._optional_text(
-                execution_summary_payload.get("blocking_source_id") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("blocking_event_type")
+            ) or self._optional_text(status_source.get("blocking_event_type")),
+            blocking_source_id=self._optional_text(explicit_summary.get("blocking_source_id"))
+            or self._optional_text(status_source.get("blocking_source_id")),
             operator_action_required=self._optional_text(
-                execution_summary_payload.get("operator_action_required") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("operator_action_required")
+            ) or self._optional_text(status_source.get("operator_action_required")),
             future_fill_simulation_eligible=self._optional_bool(
-                execution_summary_payload.get("future_fill_simulation_eligible") if execution_summary_payload is not None else None
-            ),
+                explicit_summary.get("future_fill_simulation_eligible")
+            )
+            if explicit_summary.get("future_fill_simulation_eligible") is not None
+            else self._optional_bool(status_source.get("future_fill_simulation_eligible")),
             disclaimer=self._optional_text(
                 order_intent_payload.get("disclaimer") if order_intent_payload is not None else (
-                    execution_summary_payload.get("disclaimer") if execution_summary_payload is not None else None
+                    explicit_summary.get("disclaimer")
                 )
-            ),
+            ) or self._optional_text(status_source.get("disclaimer")),
         )
 
     def _build_fill_phase_summary(
@@ -908,49 +1212,50 @@ class S23PaperSessionReviewer:
             or execution_summary_payload
             or {}
         )
+        explicit_summary = execution_summary_payload or {}
         status = self._optional_text(
-            (execution_summary_payload or {}).get("fill_status")
+            explicit_summary.get("fill_status")
         ) or self._optional_text(payload.get("status"))
         return S23PaperReviewFillPhase(
             available=payload is not None,
             status=status,
             reason_code=self._optional_text(
-                (execution_summary_payload or {}).get("fill_reason_code")
+                explicit_summary.get("fill_reason_code")
             ) or self._optional_text(payload.get("reason_code")),
             message=self._optional_text(
-                (execution_summary_payload or {}).get("fill_message")
+                explicit_summary.get("fill_message")
             ) or self._optional_text(payload.get("message")),
             fill_price=self._optional_float(
-                (execution_summary_payload or {}).get("fill_price")
-            ) if execution_summary_payload is not None and (execution_summary_payload.get("fill_price") is not None) else self._optional_float(payload.get("fill_price")),
+                explicit_summary.get("fill_price")
+            ) if explicit_summary.get("fill_price") is not None else self._optional_float(payload.get("fill_price")),
             fill_timestamp=self._optional_datetime(
-                (execution_summary_payload or {}).get("fill_timestamp")
-            ) if execution_summary_payload is not None and (execution_summary_payload.get("fill_timestamp") not in (None, "")) else self._optional_datetime(payload.get("fill_timestamp")),
+                explicit_summary.get("fill_timestamp")
+            ) if explicit_summary.get("fill_timestamp") not in (None, "") else self._optional_datetime(payload.get("fill_timestamp")),
             selected_contract_symbol=self._optional_text(payload.get("selected_contract_symbol")),
             source_kind=self._optional_text(
-                (execution_summary_payload or {}).get("fill_source_kind")
+                explicit_summary.get("fill_source_kind")
             ) or self._optional_text(payload.get("source_kind")),
             source_type=self._optional_text(
-                (execution_summary_payload or {}).get("fill_source_type")
+                explicit_summary.get("fill_source_type")
             ) or self._optional_text(payload.get("source_type")),
             source_id=self._optional_text(
-                (execution_summary_payload or {}).get("fill_source_id")
+                explicit_summary.get("fill_source_id")
             ) or self._optional_text(payload.get("source_id")),
             source_effective_timestamp=self._optional_datetime(
-                (execution_summary_payload or {}).get("fill_source_effective_timestamp")
-            ) if execution_summary_payload is not None and (execution_summary_payload.get("fill_source_effective_timestamp") not in (None, "")) else self._optional_datetime(payload.get("source_effective_timestamp")),
+                explicit_summary.get("fill_source_effective_timestamp")
+            ) if explicit_summary.get("fill_source_effective_timestamp") not in (None, "") else self._optional_datetime(payload.get("source_effective_timestamp")),
             spread_points=self._optional_float(
-                (execution_summary_payload or {}).get("fill_spread_points")
-            ) if execution_summary_payload is not None and (execution_summary_payload.get("fill_spread_points") is not None) else self._optional_float(payload.get("spread_points")),
+                explicit_summary.get("fill_spread_points")
+            ) if explicit_summary.get("fill_spread_points") is not None else self._optional_float(payload.get("spread_points")),
             slippage_entry_points=self._optional_float(
-                (execution_summary_payload or {}).get("fill_slippage_entry_points")
-            ) if execution_summary_payload is not None and (execution_summary_payload.get("fill_slippage_entry_points") is not None) else self._optional_float(payload.get("slippage_entry_points")),
+                explicit_summary.get("fill_slippage_entry_points")
+            ) if explicit_summary.get("fill_slippage_entry_points") is not None else self._optional_float(payload.get("slippage_entry_points")),
             no_fill_reason=self._optional_text(
                 payload.get("no_fill_reason")
             ),
             disclaimer=self._optional_text(payload.get("disclaimer"))
             or self._optional_text(
-                (execution_summary_payload or {}).get("disclaimer")
+                explicit_summary.get("disclaimer")
             )
             or _PHASE1_FILL_DISCLAIMER,
         )
@@ -977,6 +1282,7 @@ class S23PaperSessionReviewer:
             (execution_summary_payload or {}).get("lifecycle_status")
         )
         payload = paper_exit_payload or paper_pnl_summary_payload or paper_position_payload or {}
+        explicit_summary = execution_summary_payload or {}
         status = explicit_status or self._optional_text(payload.get("status"))
         if status is None and not lifecycle_event_rows:
             return None
@@ -984,7 +1290,7 @@ class S23PaperSessionReviewer:
         warning_flags = tuple(
             str(item)
             for item in (
-                (execution_summary_payload or {}).get("lifecycle_warning_flags")
+                explicit_summary.get("lifecycle_warning_flags")
                 or payload.get("warning_flags")
                 or ()
             )
@@ -994,10 +1300,10 @@ class S23PaperSessionReviewer:
             available=True,
             status=status,
             exit_reason_code=self._optional_text(
-                (execution_summary_payload or {}).get("exit_reason_code")
+                explicit_summary.get("exit_reason_code")
             ) or self._optional_text(payload.get("exit_reason_code")),
             message=self._optional_text(
-                (execution_summary_payload or {}).get("lifecycle_message")
+                explicit_summary.get("lifecycle_message")
             ) or self._optional_text(payload.get("message")),
             entry_price=self._optional_float(
                 (paper_position_payload or {}).get("entry_price")
@@ -1015,15 +1321,11 @@ class S23PaperSessionReviewer:
                 (paper_position_payload or {}).get("fsl_price")
             ),
             exit_price=self._optional_float(
-                (execution_summary_payload or {}).get("exit_price")
-            ) if execution_summary_payload is not None and (
-                execution_summary_payload.get("exit_price") is not None
-            ) else self._optional_float((paper_exit_payload or {}).get("exit_price")),
+                explicit_summary.get("exit_price")
+            ) if explicit_summary.get("exit_price") is not None else self._optional_float((paper_exit_payload or {}).get("exit_price")),
             exit_timestamp=self._optional_datetime(
-                (execution_summary_payload or {}).get("exit_timestamp")
-            ) if execution_summary_payload is not None and (
-                execution_summary_payload.get("exit_timestamp") not in (None, "")
-            ) else self._optional_datetime((paper_exit_payload or {}).get("exit_timestamp")),
+                explicit_summary.get("exit_timestamp")
+            ) if explicit_summary.get("exit_timestamp") not in (None, "") else self._optional_datetime((paper_exit_payload or {}).get("exit_timestamp")),
             gross_pnl_rupees=self._optional_float(
                 (paper_pnl_summary_payload or {}).get("gross_pnl_rupees")
             ) if paper_pnl_summary_payload is not None else self._optional_float(
@@ -1039,7 +1341,7 @@ class S23PaperSessionReviewer:
             disclaimer=self._optional_text((paper_exit_payload or {}).get("disclaimer"))
             or self._optional_text((paper_pnl_summary_payload or {}).get("disclaimer"))
             or self._optional_text((paper_position_payload or {}).get("disclaimer"))
-            or self._optional_text((execution_summary_payload or {}).get("disclaimer"))
+            or self._optional_text(explicit_summary.get("disclaimer"))
             or _PHASE2_LIFECYCLE_DISCLAIMER,
         )
 

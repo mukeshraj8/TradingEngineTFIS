@@ -861,8 +861,53 @@ def test_review_shows_execution_shell_readiness(tmp_path: Path) -> None:
     assert review_summary.order_intent.status == "INTENT_READY"
     assert review_summary.order_intent.execution_shell_status == "EXECUTION_ARMED"
     assert review_summary.order_intent.historical_comparison_status == "MATCH"
+    assert review_summary.runtime_contracts.shell is not None
+    assert review_summary.runtime_contracts.shell.intent_status == "INTENT_READY"
+    assert review_summary.runtime_contracts.shell.execution_shell_status == "EXECUTION_ARMED"
+    assert review_summary.runtime_contracts.shell.historical_comparison_status == "MATCH"
+    assert review_summary.runtime_contracts.intent is not None
+    assert review_summary.runtime_contracts.intent.selected_contract_symbol == "NIFTY_20260528_22400_PE"
+    assert review_summary.runtime_contracts.intent.planned_entry_price == 199.5
     assert "EXECUTION_ARMED" in markdown
     assert "Historical Comparison Status" in markdown
+
+
+def test_arm_execution_uses_runtime_intent_status_when_summary_intent_status_missing(
+    tmp_path: Path,
+) -> None:
+    session_dir = _write_snapshot(_planned_snapshot(), tmp_path, "arm-runtime-intent-status")
+    _create_bundle(session_dir)
+    writer = S23PaperExecutionJournalWriter()
+    writer.write_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        created_at=_ts(9, 30, 20),
+    )
+
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = _read_json(execution_summary_path)
+    execution_summary.pop("intent_status", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    artifact_set = writer.arm_execution_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        historical_comparison_path=_write_historical_comparison(
+            session_dir,
+            status="MATCH",
+            go_no_go="GO",
+        ),
+        created_at=_ts(9, 30, 40),
+    )
+
+    summary = _read_json(artifact_set.execution_summary_path)
+    assert summary["status"] == "EXECUTION_ARMED"
+    assert summary["intent_status"] == "INTENT_READY"
+    assert summary["execution_shell_status"] == "EXECUTION_ARMED"
 
 
 def test_armed_session_can_dispatch_fillless_intent(tmp_path: Path) -> None:
@@ -897,6 +942,44 @@ def test_armed_session_can_dispatch_fillless_intent(tmp_path: Path) -> None:
     ]
     assert journal_rows[-2]["event_type"] == "ORDER_INTENT_DISPATCH_READY"
     assert journal_rows[-1]["event_type"] == "ORDER_INTENT_DISPATCHED"
+
+
+def test_dispatch_uses_runtime_shell_when_execution_summary_shell_fields_missing(
+    tmp_path: Path,
+) -> None:
+    session_dir = _write_snapshot(_planned_snapshot(), tmp_path, "dispatch-runtime-shell")
+    _create_bundle(session_dir)
+    writer = S23PaperExecutionJournalWriter()
+    writer.write_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        created_at=_ts(9, 30, 20),
+    )
+    writer = _arm_execution_shell(session_dir, created_at=_ts(9, 30, 40))
+
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = _read_json(execution_summary_path)
+    execution_summary.pop("execution_shell_status", None)
+    execution_summary.pop("historical_comparison_status", None)
+    execution_summary.pop("historical_comparison_reason", None)
+    execution_summary.pop("historical_comparison_go_no_go", None)
+    execution_summary.pop("selected_contract_symbol", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    artifact_set = writer.dispatch_order_intent_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        created_at=_ts(9, 30, 50),
+    )
+
+    summary = _read_json(artifact_set.execution_summary_path)
+    assert summary["status"] == "ORDER_INTENT_DISPATCHED"
+    assert summary["execution_shell_status"] == "EXECUTION_ARMED"
+    assert summary["dispatch_shell_status"] == "ORDER_INTENT_DISPATCHED"
 
 
 def test_duplicate_dispatch_attempt_is_blocked(tmp_path: Path) -> None:

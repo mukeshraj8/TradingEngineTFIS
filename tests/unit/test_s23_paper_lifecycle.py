@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from datetime import date, timedelta
 
 from tfis.domain.enums import OptionType
@@ -99,6 +100,72 @@ def test_fill_starts_position_then_target_hit_closes_position(tmp_path) -> None:
     assert summary["net_pnl_rupees"] == 11860.0
     assert pnl["gross_pnl_rupees"] == 11900.0
     assert pnl["net_pnl_rupees"] == 11860.0
+
+
+def test_lifecycle_uses_runtime_fill_status_when_execution_summary_field_missing(
+    tmp_path,
+) -> None:
+    session_dir = _filled_session(tmp_path, session_id="runtime-fill-status-fallback")
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = _read_json(execution_summary_path)
+    execution_summary.pop("fill_status", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    simulator = S23PaperLifecycleSimulator()
+    artifact_set = simulator.simulate_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        market_events=(
+            _selected_contract_quote(
+                effective_timestamp=_ts(9, 31, 30),
+                bid=78.0,
+                ask=79.0,
+                ltp=78.5,
+            ),
+        ),
+        created_at=_ts(9, 31, 31),
+    )
+
+    summary = _read_json(artifact_set.execution_summary_path)
+    assert summary["status"] == "PAPER_POSITION_CLOSED"
+    assert summary["lifecycle_status"] == "PAPER_POSITION_CLOSED"
+    assert summary["exit_reason_code"] == "target_hit"
+
+
+def test_lifecycle_uses_fill_artifact_provenance_when_summary_fields_missing(
+    tmp_path,
+) -> None:
+    session_dir = _filled_session(tmp_path, session_id="runtime-fill-provenance-fallback")
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = _read_json(execution_summary_path)
+    execution_summary.pop("fill_source_type", None)
+    execution_summary.pop("fill_source_id", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    simulator = S23PaperLifecycleSimulator()
+    artifact_set = simulator.simulate_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        market_events=(
+            _selected_contract_quote(
+                effective_timestamp=_ts(9, 31, 30),
+                bid=78.0,
+                ask=79.0,
+                ltp=78.5,
+            ),
+        ),
+        created_at=_ts(9, 31, 31),
+    )
+
+    paper_position = _read_json(artifact_set.paper_position_path)
+    assert paper_position["provenance_source_type"] == "paper_fixture"
+    assert paper_position["provenance_source_id"] == "selected-contract-NIFTY_20260528_22400_PE"
 
 
 def test_stoploss_hit_closes_position(tmp_path) -> None:
@@ -285,9 +352,55 @@ def test_review_shows_lifecycle_and_pnl(tmp_path) -> None:
     assert review_summary.lifecycle_phase is not None
     assert review_summary.lifecycle_phase.status == "PAPER_POSITION_CLOSED"
     assert review_summary.lifecycle_phase.net_pnl_rupees == 11860.0
+    assert review_summary.runtime_contracts.lifecycle is not None
+    assert review_summary.runtime_contracts.lifecycle.status == "PAPER_POSITION_CLOSED"
+    assert review_summary.runtime_contracts.lifecycle.selected_contract_symbol == "NIFTY_20260528_22400_PE"
     assert "## Lifecycle Phase 2" in markdown
     assert "PAPER_POSITION_CLOSED" in markdown
     assert "Gross P&L" in markdown
+
+
+def test_review_uses_lifecycle_artifacts_when_execution_summary_fields_missing(
+    tmp_path,
+) -> None:
+    session_dir = _filled_session(tmp_path, session_id="review-lifecycle-fallback")
+    simulator = S23PaperLifecycleSimulator()
+    artifact_set = simulator.simulate_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        market_events=(
+            _selected_contract_quote(
+                effective_timestamp=_ts(9, 31, 30),
+                bid=78.0,
+                ask=79.0,
+                ltp=78.5,
+            ),
+        ),
+        created_at=_ts(9, 31, 31),
+    )
+
+    execution_summary = _read_json(artifact_set.execution_summary_path)
+    execution_summary.pop("lifecycle_status", None)
+    execution_summary.pop("exit_reason_code", None)
+    execution_summary.pop("lifecycle_message", None)
+    execution_summary.pop("exit_price", None)
+    execution_summary.pop("exit_timestamp", None)
+    execution_summary.pop("lifecycle_warning_flags", None)
+    artifact_set.execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    reviewer = S23PaperSessionReviewer()
+    review_summary = reviewer.review_session(session_dir, bundle_directory=session_dir)
+
+    assert review_summary.lifecycle_phase is not None
+    assert review_summary.lifecycle_phase.status == "PAPER_POSITION_CLOSED"
+    assert review_summary.lifecycle_phase.exit_reason_code == "target_hit"
+    assert review_summary.lifecycle_phase.exit_price == 81.0
+    assert review_summary.runtime_contracts.lifecycle is not None
+    assert review_summary.runtime_contracts.lifecycle.status == "PAPER_POSITION_CLOSED"
+    assert review_summary.runtime_contracts.lifecycle.exit_reason_code == "target_hit"
 
 
 def test_paper_vs_historical_includes_lifecycle_outcome(tmp_path) -> None:

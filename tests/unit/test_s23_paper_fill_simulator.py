@@ -464,6 +464,42 @@ def test_missing_market_data_produces_paper_order_not_filled(tmp_path: Path) -> 
     assert artifact_set.paper_no_fill_path is not None
 
 
+def test_fill_simulation_uses_runtime_shell_when_summary_shell_fields_missing(
+    tmp_path: Path,
+) -> None:
+    session_dir = _handoff_ready_session(tmp_path, session_id="shell-fallback")
+    simulator = S23PaperFillSimulator()
+
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = _read_json(execution_summary_path)
+    execution_summary.pop("handoff_shell_status", None)
+    execution_summary.pop("execution_shell_status", None)
+    execution_summary.pop("dispatch_shell_status", None)
+    execution_summary.pop("historical_comparison_status", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    artifact_set = simulator.simulate_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        market_events=(
+            _selected_contract_quote(
+                effective_timestamp=_ts(9, 30, 56),
+                bid=201.0,
+                ask=202.0,
+            ),
+        ),
+        created_at=_ts(9, 30, 57),
+    )
+
+    summary = _read_json(artifact_set.execution_summary_path)
+    assert summary["status"] == "PAPER_ORDER_FILLED"
+    assert summary["fill_status"] == "PAPER_ORDER_FILLED"
+
+
 def test_stale_quote_produces_paper_order_not_filled(tmp_path: Path) -> None:
     session_dir = _handoff_ready_session(tmp_path, session_id="stale-quote")
     simulator = S23PaperFillSimulator()
@@ -608,9 +644,59 @@ def test_review_shows_fill_status(tmp_path: Path) -> None:
 
     assert review_summary.fill_phase is not None
     assert review_summary.fill_phase.status == "PAPER_ORDER_FILLED"
+    assert review_summary.runtime_contracts.fill is not None
+    assert review_summary.runtime_contracts.fill.status == "PAPER_ORDER_FILLED"
+    assert review_summary.runtime_contracts.fill.selected_contract_symbol == "NIFTY_20260528_22400_PE"
     assert "## Fill Phase 1" in markdown
     assert "PAPER_ORDER_FILLED" in markdown
     assert "no target/SL lifecycle monitoring occurred yet" in markdown
+
+
+def test_review_uses_fill_artifacts_when_execution_summary_fields_missing(
+    tmp_path: Path,
+) -> None:
+    session_dir = _handoff_ready_session(tmp_path, session_id="review-fill-fallback")
+    simulator = S23PaperFillSimulator()
+    artifact_set = simulator.simulate_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        market_events=(
+            _selected_contract_quote(
+                effective_timestamp=_ts(9, 30, 56),
+                bid=201.0,
+                ask=202.0,
+            ),
+        ),
+        created_at=_ts(9, 30, 57),
+    )
+
+    execution_summary = _read_json(artifact_set.execution_summary_path)
+    execution_summary.pop("fill_status", None)
+    execution_summary.pop("fill_reason_code", None)
+    execution_summary.pop("fill_message", None)
+    execution_summary.pop("fill_price", None)
+    execution_summary.pop("fill_timestamp", None)
+    execution_summary.pop("fill_source_kind", None)
+    execution_summary.pop("fill_source_type", None)
+    execution_summary.pop("fill_source_id", None)
+    execution_summary.pop("fill_source_effective_timestamp", None)
+    execution_summary.pop("fill_spread_points", None)
+    execution_summary.pop("fill_slippage_entry_points", None)
+    artifact_set.execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+
+    reviewer = S23PaperSessionReviewer()
+    review_summary = reviewer.review_session(session_dir, bundle_directory=session_dir)
+
+    assert review_summary.fill_phase is not None
+    assert review_summary.fill_phase.status == "PAPER_ORDER_FILLED"
+    assert review_summary.fill_phase.fill_price == 200.0
+    assert review_summary.fill_phase.source_type == "paper_fixture"
+    assert review_summary.runtime_contracts.fill is not None
+    assert review_summary.runtime_contracts.fill.status == "PAPER_ORDER_FILLED"
+    assert review_summary.runtime_contracts.fill.fill_price == 200.0
 
 
 def test_paper_vs_historical_includes_fill_status(tmp_path: Path) -> None:

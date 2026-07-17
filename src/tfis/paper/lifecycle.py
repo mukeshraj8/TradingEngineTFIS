@@ -155,6 +155,7 @@ class _LifecycleContext:
     workbook_row_number: int | None
     brokerage_per_lot: float
     slippage_exit_points: float
+    runtime_fill_status: str | None
     execution_summary_payload: dict[str, Any]
     execution_journal_rows: tuple[dict[str, Any], ...]
     replay_bundle_valid: bool | None
@@ -208,8 +209,9 @@ class S23PaperLifecycleSimulator:
             replay_bundle_validation_performed=context.replay_bundle_validation_performed,
             replay_bundle_valid=context.replay_bundle_valid,
             replay_bundle_errors=context.replay_bundle_errors,
-            fill_status=self._text_or_none(
-                context.execution_summary_payload.get("fill_status")
+            fill_status=(
+                context.runtime_fill_status
+                or self._text_or_none(context.execution_summary_payload.get("fill_status"))
             ),
             selected_contract_symbol=context.selected_contract_symbol,
             fill_selected_contract_symbol=context.fill_selected_contract_symbol,
@@ -337,6 +339,8 @@ class S23PaperLifecycleSimulator:
             raise S23PaperLifecycleError(
                 "S23 Phase 2 lifecycle simulation requires persisted paper order plan and intent artifacts."
             )
+        intent_contract = review_summary.runtime_contracts.intent
+        fill_contract = review_summary.runtime_contracts.fill
 
         manifest = self._load_json_required(session_dir / "session_manifest.json")
         execution_summary = self._load_json_required(session_dir / "execution_summary.json")
@@ -347,8 +351,16 @@ class S23PaperLifecycleSimulator:
         replay_valid = review_summary.replay_bundle.is_valid
         replay_errors = review_summary.replay_bundle.errors
 
-        stoploss_price = review_summary.order_intent.stoploss_price
-        fsl_price = review_summary.order_intent.fsl_price
+        stoploss_price = (
+            intent_contract.stoploss_price
+            if intent_contract is not None
+            else review_summary.order_intent.stoploss_price
+        )
+        fsl_price = (
+            intent_contract.fsl_price
+            if intent_contract is not None
+            else review_summary.order_intent.fsl_price
+        )
         effective_stop_price = self._effective_stop_price(stoploss_price, fsl_price)
 
         return _LifecycleContext(
@@ -359,40 +371,85 @@ class S23PaperLifecycleSimulator:
             selected_contract_symbol=review_summary.selected_contract.symbol,
             selected_contract_option_type=review_summary.selected_contract.option_type,
             selected_contract_expiry=review_summary.selected_contract.expiry,
-            side=review_summary.order_intent.order_side or "SELL",
-            lots=int(review_summary.order_intent.lots or 0),
-            quantity=int(review_summary.order_intent.quantity or 0),
-            entry_price=review_summary.fill_phase.fill_price if review_summary.fill_phase else None,
-            target_price=review_summary.order_intent.target_price,
+            side=(
+                intent_contract.side if intent_contract is not None else review_summary.order_intent.order_side
+            ) or "SELL",
+            lots=int(
+                intent_contract.lots if intent_contract is not None else (review_summary.order_intent.lots or 0)
+            ),
+            quantity=int(
+                intent_contract.quantity
+                if intent_contract is not None
+                else (review_summary.order_intent.quantity or 0)
+            ),
+            entry_price=(
+                fill_contract.fill_price
+                if fill_contract is not None
+                else (review_summary.fill_phase.fill_price if review_summary.fill_phase else None)
+            ),
+            target_price=(
+                intent_contract.target_price
+                if intent_contract is not None
+                else review_summary.order_intent.target_price
+            ),
             stoploss_price=stoploss_price,
             fsl_price=fsl_price,
             effective_stop_price=effective_stop_price,
             fill_timestamp=(
-                review_summary.fill_phase.fill_timestamp
+                fill_contract.fill_timestamp
+                if fill_contract is not None
+                else review_summary.fill_phase.fill_timestamp
                 if review_summary.fill_phase is not None
                 else None
             ),
             fill_source_kind=(
-                review_summary.fill_phase.source_kind
+                fill_contract.source_kind
+                if fill_contract is not None
+                else review_summary.fill_phase.source_kind
                 if review_summary.fill_phase is not None
                 else None
             ),
             fill_source_type=(
-                self._text_or_none(execution_summary.get("fill_source_type"))
+                fill_contract.source_type
+                if fill_contract is not None
+                else review_summary.fill_phase.source_type
+                if review_summary.fill_phase is not None
+                else self._text_or_none(execution_summary.get("fill_source_type"))
             ),
             fill_source_id=(
-                self._text_or_none(execution_summary.get("fill_source_id"))
+                fill_contract.source_id
+                if fill_contract is not None
+                else review_summary.fill_phase.source_id
+                if review_summary.fill_phase is not None
+                else self._text_or_none(execution_summary.get("fill_source_id"))
             ),
             fill_selected_contract_symbol=(
-                self._text_or_none(paper_fill_payload.get("selected_contract_symbol"))
+                fill_contract.selected_contract_symbol
+                if fill_contract is not None
+                else self._text_or_none(paper_fill_payload.get("selected_contract_symbol"))
                 if paper_fill_payload is not None
                 else None
             ),
-            source_branch=review_summary.order_intent.source_branch,
-            source_workbook_rule=review_summary.order_intent.source_workbook_rule,
-            workbook_row_number=review_summary.order_intent.workbook_row_number,
+            source_branch=(
+                intent_contract.source_branch
+                if intent_contract is not None
+                else review_summary.order_intent.source_branch
+            ),
+            source_workbook_rule=(
+                intent_contract.source_workbook_rule
+                if intent_contract is not None
+                else review_summary.order_intent.source_workbook_rule
+            ),
+            workbook_row_number=(
+                intent_contract.workbook_row_number
+                if intent_contract is not None
+                else review_summary.order_intent.workbook_row_number
+            ),
             brokerage_per_lot=float(manifest.get("brokerage_per_lot") or 0.0),
             slippage_exit_points=float(manifest.get("slippage_exit_points") or 0.0),
+            runtime_fill_status=(
+                fill_contract.status if fill_contract is not None else None
+            ),
             execution_summary_payload=execution_summary,
             execution_journal_rows=execution_journal_rows,
             replay_bundle_valid=replay_valid,

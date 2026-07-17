@@ -33,6 +33,16 @@ from .lifecycle import (
     S23PaperLifecycleStatus,
     S23PaperPosition,
 )
+from .runtime_contract import (
+    PaperTradeFillContract,
+    PaperTradeIntentContract,
+    PaperTradeLifecycleContract,
+)
+from .s23_runtime_contract import (
+    build_paper_trade_fill_contract,
+    build_paper_trade_intent_contract,
+    build_paper_trade_lifecycle_contract,
+)
 from .paper_vs_historical import (
     PaperHistoricalComparisonStatus,
     PaperHistoricalMismatchSeverity,
@@ -376,6 +386,9 @@ __all__ = [
     "S23PaperFillSimulator",
     "S23PaperFillSimulatorError",
     "S23PaperFillStatus",
+    "PaperTradeFillContract",
+    "PaperTradeIntentContract",
+    "PaperTradeLifecycleContract",
     "S23PaperHandoffShellStatus",
     "S23PaperHandoffShellValidationResult",
     "S23PaperGuardrailEvaluator",
@@ -557,6 +570,9 @@ __all__ = [
     "S23NormalizedPaperEventLoader",
     "S23RuntimeInputDerivationError",
     "S23RuntimeInputDeriver",
+    "build_paper_trade_fill_contract",
+    "build_paper_trade_intent_contract",
+    "build_paper_trade_lifecycle_contract",
     "build_schedule_note",
     "compare_paper_bundle_to_historical",
     "compare_paper_session_to_historical",

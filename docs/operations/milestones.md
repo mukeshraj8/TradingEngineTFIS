@@ -26,6 +26,13 @@
 - S23 operator dashboard now also accepts latest stage-level explainers as
   review artifacts for no-contract legs, so failed CE/PE calculations remain
   visible even when no final selected-leg summary artifact was written.
+- Phase 2 paper runtime-contract/read-model consolidation is now complete for
+  the current scope: TFIS has neutral intent/fill/lifecycle/shell contracts,
+  review/parity/fill-simulation/lifecycle/execution-journal consumers now use
+  those contracts, and persisted stage-specific artifacts now outrank fragile
+  single-source dependence on partial `execution_summary.json` payloads.
+  Focused runtime regressions and the TFIS guard suite remain the acceptance
+  gate before the later Phase 3 lifecycle-supervisor consolidation begins.
 - TFIS reset/recovery now uses one explicit dashboard build plus
   `serve_operator_dashboard.py --skip-build`, and the reset script now also
   narrows process discovery to likely TFIS host processes, stops matched TFIS
@@ -69,6 +76,116 @@
   script restarts one dashboard plus fresh S21/S23 order watchers, and the
   live monitor now keeps prior closed S23 rows in historical review instead of
   showing them beside current-day waiting entries
+- Phase 2 contract work has now begun with a small additive shared runtime
+  layer: TFIS now exposes strategy-neutral paper trade intent, fill, and
+  lifecycle contract dataclasses plus S23 adapter builders that project the
+  current S23 execution-journal, fill, and lifecycle artifacts onto that
+  neutral shape without changing live paper behavior
+- Phase 2 now also has its first real consumer boundary: the S23 paper review
+  surface projects available intent/fill/lifecycle artifacts into the neutral
+  runtime-contract shape for operator/read-model use, while incomplete
+  planned-only review sessions deliberately keep those contract slots empty
+  instead of inventing partial runtime data
+- Phase 2 now also has its next read-side consumer boundary: the
+  paper-vs-historical/parity layer prefers neutral runtime-contract fields for
+  intent/fill/lifecycle facts and only falls back to older S23 payload reads
+  when needed, while still preserving the stricter rule that a planned-only
+  session is not execution-journal `INTENT_READY`
+- Phase 2 now also reaches the simulator runtime loaders: the Phase 1 fill
+  simulator and Phase 2 lifecycle simulator prefer neutral review/runtime
+  contracts for intent/fill/lifecycle inputs and only fall back to older
+  S23-shaped review fields when needed, keeping current TFIS behavior stable
+  while shrinking direct strategy-shaped reads
+- Phase 2 now also reaches one narrow post-planning execution-journal seam:
+  `execution_journal.py` now preserves `INTENT_READY` shell continuity from an
+  intact persisted intent artifact when `execution_summary.json` is missing
+  only that status field, and it uses the neutral runtime-contract intent
+  symbol as a fallback only when the raw intent artifact is unavailable,
+  reducing one more brittle dependency on scattered S23-shaped summary fields
+  without changing live paper behavior
+- Phase 2 now also centralizes the first remaining execution-journal
+  post-planning summary reads: dispatch/handoff handling and the related
+  guardrail-validation paths now share helper methods for current
+  execution-shell and historical-comparison fields instead of repeatedly
+  reading those values inline from `execution_summary.json`, shrinking the
+  remaining status-reconstruction surface without changing live paper behavior
+- Phase 2 now also centralizes the remaining selected-contract symbol and
+  comparison-presence reads in the post-planning execution-journal flow:
+  execution arming, dispatch, and handoff now share helper methods for current
+  intent symbol, execution-summary selected contract, dispatch-summary
+  selected contract, and whether historical comparison has already been
+  recorded, reducing another batch of inline S23-shaped summary reads without
+  changing live paper behavior
+- Phase 2 now also adds a neutral post-planning shell contract:
+  `PaperTradeShellContract` now carries intent/execution/dispatch/handoff
+  status plus historical-comparison state, the S23 review layer projects that
+  contract, and `execution_journal.py` uses it as a fallback post-planning
+  status source when raw summary artifacts are absent, extending the shared
+  runtime boundary without changing live paper behavior
+- Phase 2 now also moves the paper-vs-historical comparison layer onto that
+  shell contract for post-planning readiness state: `paper_vs_historical.py`
+  now prefers the neutral shell contract for execution/dispatch/handoff and
+  historical-comparison fields before falling back to raw summary payloads,
+  shrinking another shared S23-shaped read surface without changing live paper
+  comparison behavior
+- Phase 2 now also moves the Phase 1 fill simulator onto that shell contract
+  for post-planning readiness state: `fill_simulator.py` now prefers the
+  neutral shell contract for handoff/execution/dispatch and
+  historical-comparison checks before falling back to raw summary payloads,
+  and the review layer can now rebuild missing shell fields from
+  dispatch/handoff summary artifacts when `execution_summary.json` is
+  incomplete
+- Phase 2 now also closes one more lifecycle guardrail dependency on raw
+  summary payloads: `lifecycle.py` now prefers the neutral runtime fill
+  contract for `fill_status` before falling back to
+  `execution_summary.json`, and a focused regression proves same-day lifecycle
+  simulation still reaches the correct close outcome when that one raw field
+  is missing
+- Phase 2 now also hardens armed-session shell reconstruction: `review.py`
+  now uses `execution_arm_summary.json` as a fallback source for shell and
+  historical-comparison state when `execution_summary.json` is incomplete, and
+  `execution_journal.py` now prefers the projected shell contract when a
+  present-but-partial execution summary loses execution-shell,
+  dispatch/handoff, selected-contract, or historical-comparison fields
+- Phase 2 now also broadens that same fallback rule across operator review
+  fields: `review.py` now rebuilds armed-session order-intent message, reason,
+  guardrail, operator-action, disclaimer, and future-fill-eligibility fields
+  from persisted arm/dispatch/handoff summaries when `execution_summary.json`
+  is partial, and a direct review regression proves armed-session shell state
+  still reconstructs from `execution_arm_summary.json`
+- Phase 2 now also extends partial-summary recovery into lifecycle review:
+  `review.py` now rebuilds lifecycle status, exit reason/message, exit
+  price/timestamp, warning flags, and disclaimer from `paper_exit.json`,
+  `paper_pnl_summary.json`, and `paper_position.json` when
+  `execution_summary.json` is partial, and a direct lifecycle-review
+  regression proves a closed paper session still reconstructs the correct exit
+  outcome from those stage-specific artifacts
+- Phase 2 now also extends partial-summary recovery into fill review:
+  `review.py` now rebuilds fill status, reason/message, fill price/timestamp,
+  provenance, spread/slippage, and disclaimer from `paper_fill.json`,
+  `paper_no_fill.json`, `paper_fill_abort_summary.json`, or
+  `paper_order_pending.json` when `execution_summary.json` is partial, and a
+  direct fill-review regression proves a filled paper session still
+  reconstructs the correct Phase 1 outcome from the persisted fill artifact
+- Phase 2 now also restores persisted-intent continuity in review/parity
+  summaries: `review.py` now treats a persisted paper intent artifact as
+  enough proof to keep `order_intent.status=INTENT_READY` when
+  `execution_summary.json` loses only `intent_status`, and
+  `paper_vs_historical.py` now preserves that same intent-ready view in a
+  later handoff-ready comparison
+- Phase 2 now also hardens parity-summary fallback for staged shell-comparison
+  fields: `paper_vs_historical.py` now reuses the staged shell/comparison
+  helper path for `historical_comparison_status_used`,
+  `historical_comparison_go_no_go_used`, and
+  `historical_comparison_reason_used` instead of reading those fields only
+  from `execution_summary.json`, so a handoff-ready comparison still reports
+  the persisted comparison outcome when the raw summary loses only those
+  fields
+- Phase 2 now also hardens lifecycle provenance fallback from the persisted
+  fill artifact path: `lifecycle.py` now rebuilds `fill_source_type` and
+  `fill_source_id` from the reviewed fill-phase artifact when
+  `execution_summary.json` is partial, so the opened paper position still
+  records correct provenance in the lifecycle artifacts
 - Phase 1 now also shares multi-event trade display-row preference, with the
   operator dashboard switching from inline "prefer latest terminal row"
   selection to a shared trade-ledger helper and no runtime behavior change

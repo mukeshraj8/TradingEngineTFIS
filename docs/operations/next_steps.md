@@ -6,15 +6,24 @@ way.
 
 ## Immediate Next Priorities
 
-1. Phase 1 runtime-consistency refactor is complete for the current scope.
-   Shared lifecycle vocabulary now covers the meaningful duplicated S21/S23
-   read-model, runtime-entrypoint, blocked-fresh-order, captured-session, and
-   wrapper recovery seams we identified, without changing strategy formulas.
-   The next architecture move is no longer more Phase 1 micro-extraction.
-   When refactor work resumes, it should start at Phase 2:
-   strategy-neutral trade-intent/runtime contract design, followed by the
-   broader lifecycle-supervisor consolidation and broker/lifecycle separation.
-2. Run the next pre-market operator checklist and supervised paper start.
+1. Phase 1 runtime-consistency refactor is complete for the current scope, and
+   Phase 2 is now complete for the intended runtime-contract/read-model scope.
+   TFIS now has shared neutral paper contracts for intent, fill, lifecycle,
+   and post-planning shell state, and those contracts are consumed across
+   review, paper-vs-historical parity, fill simulation, lifecycle simulation,
+   and post-planning execution-journal boundaries without changing strategy
+   formulas or live paper behavior. Equivalent persisted
+   arm/dispatch/handoff/fill/exit artifacts now outrank fragile single-source
+   dependence on partial `execution_summary.json` payloads. The next
+   architecture move should therefore be Phase 3 lifecycle-supervisor
+   consolidation rather than more Phase 2 micro-slices.
+2. Start Phase 3 lifecycle-supervisor consolidation in the smallest safe slice.
+   The first Phase 3 step should define one reusable supervisor boundary that
+   owns pending-order and open-position polling/transition rules while keeping
+   strategy formulas unchanged. That supervisor should consume the Phase 2
+   neutral contracts and existing persisted artifacts, so S21/S23 can share
+   lifecycle control logic without multiplying watcher-specific behavior.
+3. Run the next pre-market operator checklist and supervised paper start.
    The local readiness gate now has a dedicated command:
    `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token`.
    The latest local prod-paper run on `2026-07-16` returned
@@ -48,13 +57,13 @@ way.
    dashboard opening on `127.0.0.1:8765` without a second hidden startup build.
    The remaining operator-time validation is to confirm the next scheduled
    market-open run behaves the same way without manual wrapper intervention.
-3. Validate S23 live ORPT/RC timing finalization during the next real market
+4. Validate S23 live ORPT/RC timing finalization during the next real market
    session. The supervised live decision path now builds a provisional base
    selection at ORPT, finalizes and places the waiting paper order from that
    ORPT selection when the selected option has not missed entry, and reserves
    RC for the missed-entry recalculation path only. The remaining work is live
    market evidence across CE/PE and near/next-expiry cases.
-4. Validate S23 next-day SL reset after a 15:00 carry-forward in a real market
+5. Validate S23 next-day SL reset after a 15:00 carry-forward in a real market
    session. The paper position manager now records overnight SL inactive
    carry-forward when price is not above original SL, keeps target active the
    next day, reactivates the original SL at ORPT when `09:15` high does not
@@ -69,7 +78,7 @@ way.
    `READY` decision into a waiting paper order. It must only be used after
    confirming no active S23 paper position remains. The follow-up runtime task
    is to automate this handoff inside the watcher/position-manager flow.
-5. Validate S23 live order-watcher/current-price visibility end to end.
+6. Validate S23 live order-watcher/current-price visibility end to end.
    The scheduled startup wrapper now starts one paper watcher per produced order
    or open position, scans the durable S23 artifact root for persisted
    open/carry-forward positions, and captures the supervised Python process

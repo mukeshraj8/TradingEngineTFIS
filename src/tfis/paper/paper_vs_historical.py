@@ -252,15 +252,9 @@ def compare_paper_session_to_historical(
     execution_guardrail_code = _execution_guardrail_code(context)
     execution_guardrail_message = _execution_guardrail_message(context)
     execution_operator_action = _execution_operator_action(context)
-    historical_comparison_status_used = _text_or_none(
-        (context.execution_summary_payload or {}).get("historical_comparison_status")
-    )
-    historical_comparison_go_no_go_used = _text_or_none(
-        (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-    )
-    historical_comparison_reason_used = _text_or_none(
-        (context.execution_summary_payload or {}).get("historical_comparison_reason")
-    )
+    historical_comparison_status_used = _paper_historical_comparison_status(context)
+    historical_comparison_go_no_go_used = _paper_historical_comparison_go_no_go(context)
+    historical_comparison_reason_used = _paper_historical_comparison_reason(context)
 
     if (
         effective_bundle is not None
@@ -890,6 +884,7 @@ def _paper_values(context: _PaperComparisonContext) -> dict[str, Any]:
     decision = context.decision_summary
     order_plan = context.order_plan
     order_intent = context.order_intent_payload or {}
+    intent_contract = context.review_summary.runtime_contracts.intent
     manifest = context.session_manifest
     overlays = {
         str(item)
@@ -915,11 +910,28 @@ def _paper_values(context: _PaperComparisonContext) -> dict[str, Any]:
         "source_rule": _text_or_none(
             order_intent.get("source_workbook_rule")
             or order_plan.get("source_workbook_rule")
+            or (intent_contract.source_workbook_rule if intent_contract is not None else None)
         ),
-        "entry_price": _float_or_none(order_intent.get("planned_entry_price")),
-        "target_price": _float_or_none(order_intent.get("target_price")),
-        "stoploss_price": _float_or_none(order_intent.get("stoploss_price")),
-        "fsl_price": _float_or_none(order_intent.get("fsl_price")),
+        "entry_price": (
+            intent_contract.planned_entry_price
+            if intent_contract is not None
+            else _float_or_none(order_intent.get("planned_entry_price"))
+        ),
+        "target_price": (
+            intent_contract.target_price
+            if intent_contract is not None
+            else _float_or_none(order_intent.get("target_price"))
+        ),
+        "stoploss_price": (
+            intent_contract.stoploss_price
+            if intent_contract is not None
+            else _float_or_none(order_intent.get("stoploss_price"))
+        ),
+        "fsl_price": (
+            intent_contract.fsl_price
+            if intent_contract is not None
+            else _float_or_none(order_intent.get("fsl_price"))
+        ),
         "start_strike": _float_or_none(order_plan.get("start_strike")),
         "end_strike": _float_or_none(order_plan.get("end_strike")),
         "ideal_premium": _float_or_none(order_plan.get("ideal_premium")),
@@ -933,6 +945,9 @@ def _paper_values(context: _PaperComparisonContext) -> dict[str, Any]:
 
 
 def _paper_intent_status(context: _PaperComparisonContext) -> str | None:
+    intent_contract = context.review_summary.runtime_contracts.intent
+    if intent_contract is not None and context.review_summary.order_intent is not None:
+        return _text_or_none(intent_contract.status)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("intent_status"))
     if explicit is not None:
@@ -949,6 +964,9 @@ def _paper_intent_status(context: _PaperComparisonContext) -> str | None:
 
 
 def _paper_execution_shell_status(context: _PaperComparisonContext) -> str | None:
+    shell_contract = context.review_summary.runtime_contracts.shell
+    if shell_contract is not None and _text_or_none(shell_contract.execution_shell_status) is not None:
+        return _text_or_none(shell_contract.execution_shell_status)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("execution_shell_status"))
     if explicit is not None:
@@ -965,6 +983,9 @@ def _paper_execution_shell_status(context: _PaperComparisonContext) -> str | Non
 
 
 def _paper_dispatch_shell_status(context: _PaperComparisonContext) -> str | None:
+    shell_contract = context.review_summary.runtime_contracts.shell
+    if shell_contract is not None and _text_or_none(shell_contract.dispatch_shell_status) is not None:
+        return _text_or_none(shell_contract.dispatch_shell_status)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("dispatch_shell_status"))
     if explicit is not None:
@@ -982,6 +1003,9 @@ def _paper_dispatch_shell_status(context: _PaperComparisonContext) -> str | None
 
 
 def _paper_handoff_shell_status(context: _PaperComparisonContext) -> str | None:
+    shell_contract = context.review_summary.runtime_contracts.shell
+    if shell_contract is not None and _text_or_none(shell_contract.handoff_shell_status) is not None:
+        return _text_or_none(shell_contract.handoff_shell_status)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("handoff_shell_status"))
     if explicit is not None:
@@ -997,7 +1021,31 @@ def _paper_handoff_shell_status(context: _PaperComparisonContext) -> str | None:
     return None
 
 
+def _paper_historical_comparison_status(context: _PaperComparisonContext) -> str | None:
+    shell_contract = context.review_summary.runtime_contracts.shell
+    if shell_contract is not None and _text_or_none(shell_contract.historical_comparison_status) is not None:
+        return _text_or_none(shell_contract.historical_comparison_status)
+    return _text_or_none((context.execution_summary_payload or {}).get("historical_comparison_status"))
+
+
+def _paper_historical_comparison_reason(context: _PaperComparisonContext) -> str | None:
+    shell_contract = context.review_summary.runtime_contracts.shell
+    if shell_contract is not None and _text_or_none(shell_contract.historical_comparison_reason) is not None:
+        return _text_or_none(shell_contract.historical_comparison_reason)
+    return _text_or_none((context.execution_summary_payload or {}).get("historical_comparison_reason"))
+
+
+def _paper_historical_comparison_go_no_go(context: _PaperComparisonContext) -> str | None:
+    shell_contract = context.review_summary.runtime_contracts.shell
+    if shell_contract is not None and _text_or_none(shell_contract.historical_comparison_go_no_go) is not None:
+        return _text_or_none(shell_contract.historical_comparison_go_no_go)
+    return _text_or_none((context.execution_summary_payload or {}).get("historical_comparison_go_no_go"))
+
+
 def _paper_fill_status(context: _PaperComparisonContext) -> str | None:
+    fill_contract = context.review_summary.runtime_contracts.fill
+    if fill_contract is not None:
+        return _text_or_none(fill_contract.status)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("fill_status"))
     if explicit is not None:
@@ -1024,6 +1072,9 @@ def _paper_fill_status(context: _PaperComparisonContext) -> str | None:
 
 
 def _paper_fill_reason_code(context: _PaperComparisonContext) -> str | None:
+    fill_contract = context.review_summary.runtime_contracts.fill
+    if fill_contract is not None:
+        return _text_or_none(fill_contract.reason_code)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("fill_reason_code"))
     if explicit is not None:
@@ -1042,6 +1093,9 @@ def _paper_fill_reason_code(context: _PaperComparisonContext) -> str | None:
 
 
 def _paper_fill_message(context: _PaperComparisonContext) -> str | None:
+    fill_contract = context.review_summary.runtime_contracts.fill
+    if fill_contract is not None:
+        return _text_or_none(fill_contract.message)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("fill_message"))
     if explicit is not None:
@@ -1060,6 +1114,9 @@ def _paper_fill_message(context: _PaperComparisonContext) -> str | None:
 
 
 def _paper_fill_price(context: _PaperComparisonContext) -> float | None:
+    fill_contract = context.review_summary.runtime_contracts.fill
+    if fill_contract is not None:
+        return fill_contract.fill_price
     execution_summary = context.execution_summary_payload or {}
     explicit = execution_summary.get("fill_price")
     if explicit is not None:
@@ -1068,6 +1125,9 @@ def _paper_fill_price(context: _PaperComparisonContext) -> float | None:
 
 
 def _paper_fill_timestamp(context: _PaperComparisonContext) -> str | None:
+    fill_contract = context.review_summary.runtime_contracts.fill
+    if fill_contract is not None and fill_contract.fill_timestamp is not None:
+        return fill_contract.fill_timestamp.isoformat()
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("fill_timestamp"))
     if explicit is not None:
@@ -1076,6 +1136,9 @@ def _paper_fill_timestamp(context: _PaperComparisonContext) -> str | None:
 
 
 def _paper_lifecycle_status(context: _PaperComparisonContext) -> str | None:
+    lifecycle_contract = context.review_summary.runtime_contracts.lifecycle
+    if lifecycle_contract is not None:
+        return _text_or_none(lifecycle_contract.status)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("lifecycle_status"))
     if explicit is not None:
@@ -1087,6 +1150,9 @@ def _paper_lifecycle_status(context: _PaperComparisonContext) -> str | None:
 
 
 def _paper_exit_reason_code(context: _PaperComparisonContext) -> str | None:
+    lifecycle_contract = context.review_summary.runtime_contracts.lifecycle
+    if lifecycle_contract is not None:
+        return _text_or_none(lifecycle_contract.exit_reason_code)
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("exit_reason_code"))
     if explicit is not None:
@@ -1095,6 +1161,9 @@ def _paper_exit_reason_code(context: _PaperComparisonContext) -> str | None:
 
 
 def _paper_exit_price(context: _PaperComparisonContext) -> float | None:
+    lifecycle_contract = context.review_summary.runtime_contracts.lifecycle
+    if lifecycle_contract is not None:
+        return lifecycle_contract.exit_price
     execution_summary = context.execution_summary_payload or {}
     explicit = execution_summary.get("exit_price")
     if explicit is not None:
@@ -1104,6 +1173,9 @@ def _paper_exit_price(context: _PaperComparisonContext) -> float | None:
 
 
 def _paper_exit_timestamp(context: _PaperComparisonContext) -> str | None:
+    lifecycle_contract = context.review_summary.runtime_contracts.lifecycle
+    if lifecycle_contract is not None and lifecycle_contract.exit_timestamp is not None:
+        return lifecycle_contract.exit_timestamp.isoformat()
     execution_summary = context.execution_summary_payload or {}
     explicit = _text_or_none(execution_summary.get("exit_timestamp"))
     if explicit is not None:
@@ -1112,6 +1184,9 @@ def _paper_exit_timestamp(context: _PaperComparisonContext) -> str | None:
 
 
 def _paper_gross_pnl_rupees(context: _PaperComparisonContext) -> float | None:
+    lifecycle_contract = context.review_summary.runtime_contracts.lifecycle
+    if lifecycle_contract is not None:
+        return lifecycle_contract.gross_pnl_rupees
     execution_summary = context.execution_summary_payload or {}
     explicit = execution_summary.get("gross_pnl_rupees")
     if explicit is not None:
@@ -1121,6 +1196,9 @@ def _paper_gross_pnl_rupees(context: _PaperComparisonContext) -> float | None:
 
 
 def _paper_net_pnl_rupees(context: _PaperComparisonContext) -> float | None:
+    lifecycle_contract = context.review_summary.runtime_contracts.lifecycle
+    if lifecycle_contract is not None:
+        return lifecycle_contract.net_pnl_rupees
     execution_summary = context.execution_summary_payload or {}
     explicit = execution_summary.get("net_pnl_rupees")
     if explicit is not None:
@@ -1130,6 +1208,9 @@ def _paper_net_pnl_rupees(context: _PaperComparisonContext) -> float | None:
 
 
 def _paper_quantity(context: _PaperComparisonContext) -> int:
+    intent_contract = context.review_summary.runtime_contracts.intent
+    if intent_contract is not None:
+        return intent_contract.quantity
     order_intent = context.order_intent_payload or {}
     order_plan = context.order_plan
     return _int_or_none(order_intent.get("quantity") or order_plan.get("quantity")) or 0
@@ -1179,6 +1260,25 @@ def _execution_operator_action(context: _PaperComparisonContext) -> str | None:
         or {}
     )
     return _text_or_none(payload.get("operator_action_required"))
+
+
+def _execution_shell_reason_code(context: _PaperComparisonContext) -> str | None:
+    for payload in (
+        context.execution_handoff_summary_payload,
+        context.intent_dispatch_summary_payload,
+        context.execution_block_summary_payload,
+        context.execution_arm_summary_payload,
+        context.execution_summary_payload,
+    ):
+        if payload is None:
+            continue
+        explicit = _text_or_none(payload.get("terminal_reason_code"))
+        if explicit is not None:
+            return explicit
+        fallback = _text_or_none(payload.get("reason_code"))
+        if fallback is not None:
+            return fallback
+    return None
 
 
 def _execution_shell_artifact_issue(context: _PaperComparisonContext) -> str | None:
@@ -1981,21 +2081,13 @@ def _terminal_uncomparable_summary(
         historical_exit_timestamp=None,
         historical_exit_outcome=None,
         historical_net_pnl_rupees=None,
-        execution_shell_reason_code=_text_or_none(
-            (context.execution_summary_payload or {}).get("terminal_reason_code")
-        ),
+        execution_shell_reason_code=_execution_shell_reason_code(context),
         execution_shell_guardrail_code=_execution_guardrail_code(context),
         execution_shell_guardrail_message=_execution_guardrail_message(context),
         execution_shell_operator_action_required=_execution_operator_action(context),
-        historical_comparison_status_used=_text_or_none(
-            (context.execution_summary_payload or {}).get("historical_comparison_status")
-        ),
-        historical_comparison_go_no_go_used=_text_or_none(
-            (context.execution_summary_payload or {}).get("historical_comparison_go_no_go")
-        ),
-        historical_comparison_reason_used=_text_or_none(
-            (context.execution_summary_payload or {}).get("historical_comparison_reason")
-        ),
+        historical_comparison_status_used=_paper_historical_comparison_status(context),
+        historical_comparison_go_no_go_used=_paper_historical_comparison_go_no_go(context),
+        historical_comparison_reason_used=_paper_historical_comparison_reason(context),
         matched_historical_trade_key=None,
         matched_historical_trade_timestamp=None,
         bundle_validation_performed=review_summary.replay_bundle.validation_performed,

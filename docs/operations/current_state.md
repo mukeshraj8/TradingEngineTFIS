@@ -59,9 +59,149 @@ change in a meaningful way.
   Python runtime entrypoints, blocked-fresh-order recovery, captured-session
   validation, and S21/S23/reset startup wrappers without changing strategy
   formulas
-- the next architecture move is Phase 2 rather than more Phase 1 micro-slices:
-  define a strategy-neutral trade-intent/runtime contract first, then use that
-  contract to consolidate lifecycle supervision and later broker separation
+- the next architecture move is now Phase 3 rather than more Phase 2
+  micro-slices: the strategy-neutral paper runtime/read contract is in place
+  across the intended Phase 2 boundaries, so the next architectural gain comes
+  from consolidating pending/open lifecycle supervision behind one reusable
+  manager before later broker separation
+- Phase 2 began with its first additive contract slice: TFIS has a
+  new shared paper runtime-contract layer for trade intent, fill outcome, and
+  lifecycle outcome plus S23 adapter helpers that map the existing S23
+  execution-journal, fill-simulator, and lifecycle artifacts onto that neutral
+  shape; this is scaffolding only and does not change the current S21/S23 live
+  paper behavior
+- Phase 2 now also has its first consumer boundary on the read side:
+  `S23PaperSessionReviewer` projects intent/fill/lifecycle review summaries
+  into the neutral runtime-contract shape when the underlying persisted
+  artifacts contain enough data, while incomplete planned-only review fixtures
+  continue to return `None` rather than invent partial contracts; this keeps
+  current TFIS runtime behavior unchanged and makes the review surface less
+  S23-shaped internally
+- Phase 2 now also has its second read-side consumer boundary:
+  `paper_vs_historical.py` prefers the neutral review/runtime contracts for
+  intent, fill, and lifecycle facts before falling back to older scattered
+  S23 payload reads, while still preserving the distinction between a planned
+  session and a true execution-journal `INTENT_READY` state; current TFIS live
+  paper behavior remains unchanged
+- Phase 2 now also reaches the simulator runtime loaders:
+  `fill_simulator.py` and `lifecycle.py` prefer the neutral review/runtime
+  contracts for planned entry, reference time, side/size, fill details,
+  targets, stop levels, and provenance fields while keeping the old review
+  fields as fallback; this moves another shared runtime boundary off
+  S23-shaped reads without changing current TFIS behavior
+- Phase 2 now also reaches the post-planning execution-journal runtime path in
+  one small slice: `execution_journal.py` now treats an intact persisted paper
+  intent artifact as enough proof to keep the post-planning shell
+  `INTENT_READY` when `execution_summary.json` is missing only that field, and
+  it now uses the neutral runtime-contract intent symbol only as a fallback
+  when the raw intent artifact is unavailable; this preserves current TFIS
+  behavior while shrinking one more fragile dependency on scattered S23-shaped
+  summary reads
+- Phase 2 now also centralizes the first remaining execution-journal
+  post-planning summary reads: dispatch/handoff paths and their guardrail
+  validations now go through shared helper methods for current execution-shell
+  status and historical-comparison fields instead of repeatedly reading those
+  values inline from `execution_summary.json`; runtime behavior remains
+  unchanged while the remaining status reconstruction surface gets smaller
+- Phase 2 now also centralizes the remaining selected-contract symbol and
+  comparison-presence reads across the post-planning execution-journal path:
+  execution arming, dispatch, and handoff checks now use shared helpers for
+  current intent symbol, execution-summary selected contract, dispatch-summary
+  selected contract, and whether historical comparison has already been
+  recorded, further shrinking inline S23-shaped summary reads without changing
+  TFIS runtime behavior
+- Phase 2 now also introduces a neutral post-planning shell contract:
+  `runtime_contract.py` defines `PaperTradeShellContract`, the S23 review layer
+  now projects shell status and comparison state into that shared contract, and
+  `execution_journal.py` uses the projected shell as a fallback source for
+  post-planning intent/execution/dispatch/handoff status and comparison fields
+  when raw summary artifacts are absent; this extends the neutral runtime
+  boundary without changing live paper behavior
+- Phase 2 now also has the next shared consumer of that shell contract:
+  `paper_vs_historical.py` prefers the neutral shell contract for
+  execution/dispatch/handoff readiness plus historical-comparison status
+  fields before falling back to raw `execution_summary.json` payload reads,
+  extending the strategy-neutral post-planning read boundary without changing
+  TFIS paper-vs-historical comparison outcomes
+- Phase 2 now also moves the Phase 1 fill simulator onto the neutral shell
+  contract for post-planning shell state: `fill_simulator.py` now prefers the
+  projected shell contract for handoff/execution/dispatch and
+  historical-comparison readiness checks before falling back to raw
+  `execution_summary.json` fields, and the review layer now rebuilds missing
+  shell fields from dispatch/handoff summary artifacts when possible; runtime
+  behavior remains unchanged after focused validation
+- Phase 2 now also closes one more lifecycle guardrail dependency on scattered
+  S23-shaped summary fields: `lifecycle.py` now prefers the neutral runtime
+  fill contract for `fill_status` before falling back to
+  `execution_summary.json`, so a same-day lifecycle simulation still proceeds
+  correctly when the raw summary loses only that field; focused runtime
+  regressions and the TFIS guard suite remain green
+- Phase 2 now also hardens armed-session shell reconstruction across review and
+  execution-journal paths: `review.py` now uses
+  `execution_arm_summary.json` as an intermediate fallback source for
+  post-planning shell/comparison fields, and `execution_journal.py` now
+  prefers the projected shell contract whenever `execution_summary.json`
+  exists but is missing execution-shell, dispatch/handoff, selected-contract,
+  or historical-comparison fields; focused runtime regressions and the TFIS
+  guard suite remain green
+- Phase 2 now also broadens that armed-session fallback rule across the review
+  summary itself: `review.py` now rebuilds order-intent message, reason,
+  guardrail, operator-action, disclaimer, and future-fill-eligibility fields
+  from persisted arm/dispatch/handoff summary artifacts when
+  `execution_summary.json` is present but partial, and a direct review
+  regression now proves an armed session still reconstructs its shell state
+  from `execution_arm_summary.json`; focused runtime regressions and the TFIS
+  guard suite remain green
+- Phase 2 now also extends that partial-summary recovery into lifecycle review:
+  `review.py` now rebuilds lifecycle status, exit reason/message, exit price,
+  exit timestamp, warning flags, and disclaimer from `paper_exit.json`,
+  `paper_pnl_summary.json`, and `paper_position.json` when
+  `execution_summary.json` is present but missing lifecycle fields, and a
+  direct lifecycle-review regression proves a closed paper session still
+  reconstructs the correct exit outcome from those stage-specific artifacts;
+  focused runtime regressions and the TFIS guard suite remain green
+- Phase 2 now also extends partial-summary recovery into fill review:
+  `review.py` now rebuilds fill status, reason/message, fill price/timestamp,
+  provenance, spread/slippage, and disclaimer from `paper_fill.json`,
+  `paper_no_fill.json`, `paper_fill_abort_summary.json`, or
+  `paper_order_pending.json` when `execution_summary.json` is present but
+  missing fill fields, and a direct fill-review regression proves a filled
+  paper session still reconstructs the correct Phase 1 outcome from the
+  persisted fill artifact; focused runtime regressions and the TFIS guard
+  suite remain green
+- Phase 2 now also restores persisted-intent continuity in review/parity
+  summaries: `review.py` now treats a persisted paper intent artifact as
+  enough proof to keep `order_intent.status=INTENT_READY` when
+  `execution_summary.json` loses only `intent_status`, and
+  `paper_vs_historical.py` now preserves that same intent-ready view in a
+  later handoff-ready comparison. Direct review and parity regressions confirm
+  the fallback, and focused runtime regressions plus the TFIS guard suite
+  remain green
+- Phase 2 now also hardens parity-summary fallback for staged shell-comparison
+  fields: `paper_vs_historical.py` now reuses the existing shell/comparison
+  helper path for `historical_comparison_status_used`,
+  `historical_comparison_go_no_go_used`, and
+  `historical_comparison_reason_used` instead of reading those fields only
+  from `execution_summary.json`, so a later handoff-ready comparison still
+  reports the persisted comparison outcome when the raw summary loses only
+  those fields; direct parity regression plus focused runtime regressions and
+  the TFIS guard suite remain green
+- Phase 2 now also hardens lifecycle provenance fallback from the persisted
+  fill artifact path: `lifecycle.py` now rebuilds `fill_source_type` and
+  `fill_source_id` from the reviewed fill-phase artifact when
+  `execution_summary.json` is present but missing those fields, so the opened
+  paper position still records correct provenance in the lifecycle artifacts.
+  A direct lifecycle regression proves the persisted position keeps the fill
+  provenance from the Phase 1 fill artifact, and focused runtime regressions
+  plus the TFIS guard suite remain green
+- the planned Phase 2 runtime-contract/refactor track is now complete for the
+  current scope: the shared paper intent/fill/lifecycle/shell contracts are
+  consumed across review, parity, fill-simulation, lifecycle, and
+  post-planning execution-journal boundaries, while equivalent persisted
+  arm/dispatch/handoff/fill/exit artifacts now outrank fragile single-source
+  dependence on partial `execution_summary.json` payloads. Focused Phase 2
+  regressions and the TFIS guard suite remain the acceptance gate before the
+  Phase 3 lifecycle-supervisor consolidation starts
 
 ## Money-Ready Phase Milestones
 

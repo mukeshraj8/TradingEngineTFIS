@@ -17,7 +17,9 @@ from tfis.paper import (
     OptionChainSnapshotEvent,
     PaperEventType,
     PaperSessionConfigEvent,
+    PaperTradePlanEvent,
     S23PaperGuardrailSettings,
+    S23PaperExecutionJournalWriter,
     S23PaperReplayBundleManager,
     S23PaperReviewError,
     S23PaperSessionArtifactWriter,
@@ -178,6 +180,27 @@ def _selected_contract_quote(*, effective_timestamp: datetime | None = None) -> 
     )
 
 
+def _trade_plan_input() -> PaperTradePlanEvent:
+    return PaperTradePlanEvent(
+        envelope=_envelope(
+            PaperEventType.TRADE_PLAN_INPUT,
+            effective_timestamp=_ts(9, 29, 59),
+        ),
+        strategy_branch="S23_BEAR_PUT",
+        order_side="SELL",
+        lots=2,
+        quantity=100,
+        planned_entry_price=199.5,
+        target_price=80.0,
+        stoploss_price=320.0,
+        order_reference_time=_ts(9, 24, 59),
+        order_reference_label="ORPT",
+        source_workbook_rule="AB6_OS_Z184",
+        workbook_row_number=184,
+        fsl_price=352.0,
+    )
+
+
 def _planned_snapshot():
     orchestrator = S23PaperSessionOrchestrator()
     events = (
@@ -191,6 +214,26 @@ def _planned_snapshot():
         _underlying_quote(effective_timestamp=_ts(9, 29, 59)),
         _option_chain_snapshot(),
         _selected_contract_quote(effective_timestamp=_ts(9, 29, 59)),
+    )
+    for event in events:
+        orchestrator.ingest_event(event, now=event.envelope.captured_at)
+    return orchestrator.finalize(now=_ts(9, 30, 10))
+
+
+def _planned_trade_snapshot():
+    orchestrator = S23PaperSessionOrchestrator()
+    events = (
+        _calendar_context(),
+        _monthly_status(),
+        _paper_config(allow_current_day_fsl_trp=True),
+        _cost_settings(),
+        _snapshot(SnapshotLabel.AT_0915),
+        _snapshot(SnapshotLabel.ORPT),
+        _snapshot(SnapshotLabel.RC),
+        _underlying_quote(effective_timestamp=_ts(9, 29, 59)),
+        _option_chain_snapshot(),
+        _selected_contract_quote(effective_timestamp=_ts(9, 29, 59)),
+        _trade_plan_input(),
     )
     for event in events:
         orchestrator.ingest_event(event, now=event.envelope.captured_at)
@@ -238,6 +281,26 @@ def _write_snapshot(snapshot, root: Path, session_id: str) -> Path:
     return artifact_set.session_directory
 
 
+def _write_historical_comparison(session_dir: Path) -> Path:
+    decision = json.loads((session_dir / "decision_summary.json").read_text(encoding="utf-8"))
+    payload = {
+        "artifact_version": 1,
+        "status": "MATCH",
+        "go_no_go": "GO",
+        "comparison_reason": "Paper and historical planning fields matched.",
+        "session_id": decision["session_id"],
+        "session_date": decision["session_date"],
+        "strategy_code": decision["strategy_code"],
+    }
+    path = session_dir / "paper_vs_historical_comparison.json"
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    return path
+
+
 def test_order_planned_review_summary(tmp_path: Path) -> None:
     reviewer = S23PaperSessionReviewer()
     manager = S23PaperReplayBundleManager()
@@ -251,6 +314,10 @@ def test_order_planned_review_summary(tmp_path: Path) -> None:
     assert summary.selected_contract.symbol == "NIFTY_20260528_22400_PE"
     assert summary.replay_bundle.manifest_present is True
     assert summary.replay_bundle.is_valid is True
+    assert summary.runtime_contracts.shell is None
+    assert summary.runtime_contracts.intent is None
+    assert summary.runtime_contracts.fill is None
+    assert summary.runtime_contracts.lifecycle is None
     assert summary.no_execution_disclaimer.startswith("No order was placed")
 
 
@@ -264,6 +331,10 @@ def test_no_trade_review_summary(tmp_path: Path) -> None:
     assert summary.terminal_reason_code == "monthly_status_unknown"
     assert summary.guardrail.code == "monthly_status_unknown"
     assert summary.order_plan is None
+    assert summary.runtime_contracts.shell is None
+    assert summary.runtime_contracts.intent is None
+    assert summary.runtime_contracts.fill is None
+    assert summary.runtime_contracts.lifecycle is None
 
 
 def test_aborted_review_summary(tmp_path: Path) -> None:
@@ -276,6 +347,91 @@ def test_aborted_review_summary(tmp_path: Path) -> None:
     assert summary.terminal_reason_code == "manual_operator_abort"
     assert summary.guardrail.code == "manual_operator_abort"
     assert summary.order_plan is None
+
+
+def test_review_uses_execution_arm_summary_when_execution_summary_fields_missing(
+    tmp_path: Path,
+) -> None:
+    reviewer = S23PaperSessionReviewer()
+    manager = S23PaperReplayBundleManager()
+    session_dir = _write_snapshot(
+        _planned_trade_snapshot(),
+        tmp_path,
+        "review-arm-summary-fallback",
+    )
+    manager.create_bundle(session_dir, created_at=_ts(9, 31, 0))
+
+    writer = S23PaperExecutionJournalWriter(reviewer=reviewer)
+    writer.write_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        created_at=_ts(9, 30, 20),
+    )
+    writer.arm_execution_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        historical_comparison_path=_write_historical_comparison(session_dir),
+        created_at=_ts(9, 30, 40),
+    )
+
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = json.loads(execution_summary_path.read_text(encoding="utf-8"))
+    execution_summary.pop("execution_shell_status", None)
+    execution_summary.pop("historical_comparison_status", None)
+    execution_summary.pop("historical_comparison_reason", None)
+    execution_summary.pop("historical_comparison_go_no_go", None)
+    execution_summary.pop("message", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    summary = reviewer.review_session(session_dir)
+
+    assert summary.order_intent is not None
+    assert summary.order_intent.execution_shell_status == "EXECUTION_ARMED"
+    assert summary.order_intent.historical_comparison_status == "MATCH"
+    assert summary.order_intent.historical_comparison_go_no_go == "GO"
+    assert summary.order_intent.message is not None
+    assert summary.runtime_contracts.shell is not None
+    assert summary.runtime_contracts.shell.execution_shell_status == "EXECUTION_ARMED"
+
+
+def test_review_uses_persisted_intent_when_summary_intent_status_missing(
+    tmp_path: Path,
+) -> None:
+    reviewer = S23PaperSessionReviewer()
+    manager = S23PaperReplayBundleManager()
+    session_dir = _write_snapshot(
+        _planned_trade_snapshot(),
+        tmp_path,
+        "review-intent-status-fallback",
+    )
+    manager.create_bundle(session_dir, created_at=_ts(9, 31, 0))
+
+    writer = S23PaperExecutionJournalWriter(reviewer=reviewer)
+    writer.write_from_session(
+        session_dir,
+        bundle_directory=session_dir,
+        created_at=_ts(9, 30, 20),
+    )
+
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = json.loads(execution_summary_path.read_text(encoding="utf-8"))
+    execution_summary.pop("intent_status", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    summary = reviewer.review_session(session_dir)
+
+    assert summary.order_intent is not None
+    assert summary.order_intent.status == "INTENT_READY"
+    assert summary.runtime_contracts.shell is not None
+    assert summary.runtime_contracts.shell.intent_status == "INTENT_READY"
 
 
 def test_bundle_validation_status_included(tmp_path: Path) -> None:
@@ -337,3 +493,5 @@ def test_review_summary_is_deterministic(tmp_path: Path) -> None:
     assert json_a == json_b
     payload = json.loads(json_a)
     assert payload["replay_bundle"]["is_valid"] is True
+    assert payload["runtime_contracts"]["shell"] is None
+    assert payload["runtime_contracts"]["intent"] is None

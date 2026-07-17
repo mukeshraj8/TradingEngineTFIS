@@ -707,6 +707,73 @@ def test_paper_session_without_intent_ready_is_uncomparable(tmp_path: Path) -> N
     assert summary.paper_intent_status is None
 
 
+def test_comparison_uses_persisted_intent_when_summary_intent_status_missing(
+    tmp_path: Path,
+) -> None:
+    session_dir = _handoff_ready_session(
+        tmp_path,
+        session_id="intent-status-fallback",
+    )
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = json.loads(execution_summary_path.read_text(encoding="utf-8"))
+    execution_summary.pop("intent_status", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    historical_report = _write_historical_report(
+        tmp_path,
+        "historical_intent_status_fallback.json",
+        _historical_report(),
+    )
+
+    summary = compare_paper_session_to_historical(
+        session_dir,
+        historical_report,
+        bundle_directory=session_dir,
+    )
+
+    assert summary.paper_intent_status == "INTENT_READY"
+    assert summary.status is PaperHistoricalComparisonStatus.MATCH
+
+
+def test_comparison_uses_staged_shell_artifacts_when_summary_fields_missing(
+    tmp_path: Path,
+) -> None:
+    session_dir = _handoff_ready_session(
+        tmp_path,
+        session_id="comparison-shell-fallback",
+    )
+    execution_summary_path = session_dir / "execution_summary.json"
+    execution_summary = json.loads(execution_summary_path.read_text(encoding="utf-8"))
+    execution_summary.pop("historical_comparison_status", None)
+    execution_summary.pop("historical_comparison_go_no_go", None)
+    execution_summary.pop("historical_comparison_reason", None)
+    execution_summary.pop("terminal_reason_code", None)
+    execution_summary_path.write_text(
+        json.dumps(execution_summary, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    historical_report = _write_historical_report(
+        tmp_path,
+        "historical_shell_fallback.json",
+        _historical_report(),
+    )
+
+    summary = compare_paper_session_to_historical(
+        session_dir,
+        historical_report,
+        bundle_directory=session_dir,
+    )
+
+    assert summary.historical_comparison_status_used == "MATCH"
+    assert summary.historical_comparison_go_no_go_used is not None
+    assert summary.historical_comparison_reason_used is not None
+    assert summary.status is PaperHistoricalComparisonStatus.MATCH
+
+
 def test_planning_match_but_execution_blocked_is_partial_match(tmp_path: Path) -> None:
     session_dir = _write_session(_planned_snapshot(), tmp_path, session_id="execution-blocked")
     _arm_execution_shell(
