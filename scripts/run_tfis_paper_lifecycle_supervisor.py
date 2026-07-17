@@ -19,7 +19,7 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from tfis.brokers import BrokerAdapterError, FyersBrokerAdapter
+from tfis.brokers import BrokerAdapter, BrokerAdapterError
 from tfis.brokers.fyers_token import prepare_fyers_env_from_tfis
 from tfis.dashboard import TfisOperatorDashboardBuilder
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
@@ -37,11 +37,12 @@ from tfis.paper import (
     PaperTradeLedgerStore,
     S23PaperExpiryGovernance,
     S23PaperPositionManager,
+    PaperLifecycleRuntimeConfig,
     build_paper_live_state_store_from_yaml,
+    build_paper_broker_adapter,
     load_paper_lifecycle_supervisor_target_specs,
     paper_live_state_owner_id,
 )
-from tfis.paper.live_ingress import S23LivePaperIngressConfig
 from tfis.paper.models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 
@@ -52,10 +53,10 @@ DEFAULT_TARGETS_CONFIG = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targ
 @dataclass(slots=True)
 class _TargetRuntime:
     spec: PaperLifecycleSupervisorTargetSpec
-    config: S23LivePaperIngressConfig
+    config: PaperLifecycleRuntimeConfig
     timezone_name: str
     timezone: ZoneInfo
-    adapter: FyersBrokerAdapter
+    adapter: BrokerAdapter
     live_state_store: Any
     supervisor: PaperLifecycleSupervisor
 
@@ -225,7 +226,7 @@ def _build_runtimes(
 ) -> tuple[_TargetRuntime, ...]:
     runtimes: list[_TargetRuntime] = []
     for spec in targets:
-        config = S23LivePaperIngressConfig.from_yaml(spec.config_path)
+        config = PaperLifecycleRuntimeConfig.from_yaml(spec.config_path)
         timezone_name = config.broker.timezone
         timezone = ZoneInfo(timezone_name)
         live_state_store = build_paper_live_state_store_from_yaml(spec.config_path)
@@ -235,7 +236,7 @@ def _build_runtimes(
                 config=config,
                 timezone_name=timezone_name,
                 timezone=timezone,
-                adapter=FyersBrokerAdapter(source_timezone=timezone_name),
+                adapter=build_paper_broker_adapter(config),
                 live_state_store=live_state_store,
                 supervisor=PaperLifecycleSupervisor(
                     order_store=PaperOrderStateStore(),
@@ -429,7 +430,7 @@ def _build_lifecycle_context(
 
 def _fetch_selected_contract_events(
     *,
-    adapter: FyersBrokerAdapter,
+    adapter: BrokerAdapter,
     selected_contract_symbol: str,
     session_date: date,
     evaluated_at: datetime,

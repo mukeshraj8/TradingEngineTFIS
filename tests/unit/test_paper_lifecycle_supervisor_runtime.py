@@ -3,12 +3,17 @@ from __future__ import annotations
 from datetime import date, datetime, time
 from pathlib import Path
 
+import pytest
+
+from tfis.brokers import FyersBrokerAdapter
 from tfis.domain import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment, StrategyExpiryPolicy, StrategyRule
 from tfis.paper import (
+    PaperLifecycleRuntimeConfig,
     PaperLifecycleSupervisorTargetDiscovery,
     PaperOrderStateStore,
     S23PaperPositionManager,
     S23PaperTradeDecisionSummary,
+    build_paper_broker_adapter,
     load_paper_lifecycle_supervisor_target_specs,
 )
 
@@ -84,6 +89,72 @@ def test_target_discovery_finds_active_positions_and_waiting_orders(tmp_path: Pa
         ("order", "wait-branch"),
         ("order", "stale-branch"),
     }
+
+
+def test_paper_lifecycle_runtime_config_loads_relative_payload_fixture(tmp_path: Path) -> None:
+    fixture_path = tmp_path / "fixtures" / "sample_payload.json"
+    fixture_path.parent.mkdir(parents=True, exist_ok=True)
+    fixture_path.write_text("{}", encoding="utf-8")
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "  payload_fixture_path: fixtures/sample_payload.json",
+                "  option_chain_strike_count: 120",
+                "costs:",
+                "  slippage_exit_points: 1.5",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    config = PaperLifecycleRuntimeConfig.from_yaml(config_path)
+
+    assert config.broker.provider == "fyers"
+    assert config.broker.timezone == "Asia/Kolkata"
+    assert config.broker.payload_fixture_path == str(fixture_path.resolve())
+    assert config.broker.option_chain_strike_count == 120
+    assert config.costs.slippage_exit_points == 1.5
+
+
+def test_build_paper_broker_adapter_returns_fyers_adapter_for_supported_provider(tmp_path: Path) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    adapter = build_paper_broker_adapter(PaperLifecycleRuntimeConfig.from_yaml(config_path))
+
+    assert isinstance(adapter, FyersBrokerAdapter)
+
+
+def test_build_paper_broker_adapter_fails_closed_for_unknown_provider(tmp_path: Path) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: unsupported",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    config = PaperLifecycleRuntimeConfig.from_yaml(config_path)
+
+    with pytest.raises(RuntimeError, match="Unsupported paper lifecycle broker provider"):
+        build_paper_broker_adapter(config)
 
 
 def _targets_yaml(tmp_path: Path, *, config_path: Path, artifact_root: Path) -> Path:

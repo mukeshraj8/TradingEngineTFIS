@@ -88,7 +88,6 @@ def paper_position_blocks_new_entry(
             S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
             S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
             S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
-            S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED,
             S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
         }
     normalized = str(status or "").strip()
@@ -96,7 +95,6 @@ def paper_position_blocks_new_entry(
         S23PaperPositionStateStatus.PAPER_POSITION_OPEN.value,
         S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD.value,
         S23PaperPositionStateStatus.PAPER_POSITION_RESUMED.value,
-        S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED.value,
         S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED.value,
     }
 

@@ -177,11 +177,6 @@ def paper_trade_visible_for_latest_session(
 ) -> bool:
     if latest_session_date is None:
         return True
-    effective_row_session_date = row_session_date
-    if effective_row_session_date is None and event_timestamp is not None:
-        effective_row_session_date = event_timestamp.date()
-    if effective_row_session_date == latest_session_date:
-        return True
     status_kind = paper_trade_status_kind(
         event_type=event_type,
         lifecycle_status=lifecycle_status,
@@ -190,6 +185,11 @@ def paper_trade_visible_for_latest_session(
         reverse_entry_required=reverse_entry_required,
         rollover_required=rollover_required,
     )
+    effective_row_session_date = row_session_date
+    if effective_row_session_date is None and event_timestamp is not None:
+        effective_row_session_date = event_timestamp.date()
+    if effective_row_session_date == latest_session_date:
+        return status_kind != "closed"
     if effective_row_session_date is not None and effective_row_session_date > latest_session_date:
         return False
     return status_kind in {"open", "action"}

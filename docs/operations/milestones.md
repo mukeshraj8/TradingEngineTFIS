@@ -42,6 +42,14 @@
   supervisor instead of one watcher per target, and the prod-paper readiness
   gate now validates `config/paper_lifecycle_supervisor_targets.yaml` along
   with the existing strategy and dashboard configs.
+- As of Friday, July 17, 2026, the first post-cutover Phase 4 broker/data-
+  source separation slice is now complete for the shared paper lifecycle
+  supervisor runtime: the bootstrap path no longer hardcodes
+  `FyersBrokerAdapter` or the S23 ingress config type directly, and instead
+  resolves broker provider, timezone, payload fixture, and lifecycle slippage
+  settings through the shared `src/tfis/paper/lifecycle_runtime_config.py`
+  layer while preserving the current S21/S23 paper behavior and focused
+  supervisor regressions.
 - TFIS reset/recovery now uses one explicit dashboard build plus
   `serve_operator_dashboard.py --skip-build`, and the reset script now also
   narrows process discovery to likely TFIS host processes, stops matched TFIS

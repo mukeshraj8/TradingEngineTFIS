@@ -13,8 +13,13 @@ way.
    operational paths, compatibility launcher shims keep the older watcher
    commands usable, and the local readiness gate now validates
    `config/paper_lifecycle_supervisor_targets.yaml` in addition to dashboard
-   and strategy config health. The next architecture move should therefore be
-   Phase 4 broker/data-source separation rather than more Phase 3 micro-slices.
+   and strategy config health. The first Phase 4 slice is also now in place:
+   the shared supervisor bootstrap resolves its broker adapter and minimal
+   runtime settings through `src/tfis/paper/lifecycle_runtime_config.py`
+   instead of hardcoding `FyersBrokerAdapter` plus the S23 ingress config type
+   directly in the runtime entrypoint. The next architecture move should
+   therefore stay focused on Phase 4 broker/data-source separation rather than
+   more Phase 3 micro-slices.
 2. Run the next pre-market operator checklist and supervised paper start
    against the shared supervisor path.
    The local readiness gate now has a dedicated command:

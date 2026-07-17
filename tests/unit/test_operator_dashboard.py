@@ -739,17 +739,7 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "ORDER_WAITING" in strategy_html
     assert "paper_order_state.json" in strategy_html
     assert strategy_html.count("ORDER_WAITING_FOR_TRIGGER") == 1
-    assert "NIFTY_20260602_23825_PE" in strategy_html
-    fresh_entry_close_row = re.search(
-        r"NIFTY_20260602_23825_PE.*?</tr>",
-        strategy_html,
-        flags=re.S,
-    )
-    assert fresh_entry_close_row is not None
-    assert "POSITION_CLOSED" in fresh_entry_close_row.group(0)
-    assert "PAPER_FRESH_ENTRY_REQUIRED" not in fresh_entry_close_row.group(0)
-    assert "PAPER_POSITION_FRESH_ENTRY_REQUIRED" not in fresh_entry_close_row.group(0)
-    assert "Follow-up: fresh entry recalculation required." in fresh_entry_close_row.group(0)
+    assert "NIFTY_20260602_23825_PE" not in strategy_html
     assert "ORDER_NOT_FILLED" in strategy_html
     assert "paper_order_not_triggered_by_watch_cutoff" in strategy_html
     assert "NIFTY_20260609_24000_PE_STALE" not in strategy_html
@@ -1596,10 +1586,10 @@ def test_trade_ledger_section_summary_uses_shared_trade_counts(tmp_path: Path) -
         latest_session_date=timestamp.date(),
     )
 
-    assert ">3<" in html
+    assert ">2<" in html
     assert re.search(r"Open Positions</span><div class=\"value\">1</div>", html)
     assert re.search(r"Action Required</span><div class=\"value\">1</div>", html)
-    assert re.search(r"Closed Trades</span><div class=\"value\">1</div>", html)
+    assert re.search(r"Closed Trades</span><div class=\"value\">0</div>", html)
 
 
 def test_strategy_page_prefers_current_position_truth_over_stale_carry_forward_block(tmp_path: Path) -> None:

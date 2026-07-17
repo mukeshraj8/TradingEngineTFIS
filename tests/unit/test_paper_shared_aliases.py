@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 
 from tfis.paper import (
     build_paper_live_state_store,
     build_paper_live_state_store_from_yaml,
+    build_paper_broker_adapter,
     build_s23_paper_live_state_store,
     build_s23_paper_live_state_store_from_yaml,
     InMemoryPaperLiveStateStore,
@@ -20,6 +21,10 @@ from tfis.paper import (
     PaperLifecycleSupervisorTargetDiscovery,
     PaperLifecycleSupervisorTargetSpec,
     PaperLifecycleSupervisorWatchTarget,
+    PaperLifecycleBrokerConfig,
+    PaperLifecycleCostConfig,
+    PaperLifecycleRuntimeConfig,
+    PaperLifecycleRuntimeConfigError,
     PaperLiveStateSettings,
     PaperLiveStateStore,
     PaperOpenPositionCandidate,
@@ -131,6 +136,11 @@ def test_phase3_supervisor_runtime_symbols_are_exported() -> None:
     assert PaperLifecycleSupervisorTargetDiscovery.__name__ == "PaperLifecycleSupervisorTargetDiscovery"
     assert PaperLifecycleSupervisorWatchTarget.__name__ == "PaperLifecycleSupervisorWatchTarget"
     assert callable(load_paper_lifecycle_supervisor_target_specs)
+    assert PaperLifecycleBrokerConfig.__name__ == "PaperLifecycleBrokerConfig"
+    assert PaperLifecycleCostConfig.__name__ == "PaperLifecycleCostConfig"
+    assert PaperLifecycleRuntimeConfig.__name__ == "PaperLifecycleRuntimeConfig"
+    assert PaperLifecycleRuntimeConfigError.__name__ == "PaperLifecycleRuntimeConfigError"
+    assert callable(build_paper_broker_adapter)
 
 
 def test_paper_order_state_aliases_point_to_existing_s23_types() -> None:
@@ -171,11 +181,36 @@ def test_paper_position_status_helpers_cover_enum_and_string_inputs() -> None:
     assert paper_position_is_active("PAPER_POSITION_CARRIED_FORWARD") is True
     assert paper_position_is_active(S23PaperPositionStateStatus.PAPER_POSITION_CLOSED) is False
     assert paper_position_blocks_new_entry("PAPER_POSITION_RESUMED") is True
-    assert paper_position_blocks_new_entry("PAPER_REVERSE_ENTRY_REQUIRED") is True
+    assert paper_position_blocks_new_entry("PAPER_REVERSE_ENTRY_REQUIRED") is False
     assert paper_position_blocks_new_entry("PAPER_FRESH_ENTRY_REQUIRED") is False
     assert paper_position_is_no_longer_open(S23PaperPositionStateStatus.PAPER_POSITION_CLOSED) is True
     assert paper_position_is_no_longer_open("PAPER_REVERSE_ENTRY_REQUIRED") is True
     assert paper_position_is_no_longer_open("PAPER_POSITION_OPEN") is False
+
+
+def test_paper_trade_latest_session_visibility_hides_terminal_rows() -> None:
+    assert paper_trade_visible_for_latest_session(
+        row_session_date=date(2026, 7, 17),
+        event_timestamp=datetime(2026, 7, 17, 9, 17, 59),
+        latest_session_date=date(2026, 7, 17),
+        event_type="CLOSE",
+        lifecycle_status="PAPER_REVERSE_ENTRY_REQUIRED",
+        manager_status="PAPER_POSITION_REVERSE_ENTRY_REQUIRED",
+        fresh_entry_required=False,
+        reverse_entry_required=True,
+        rollover_required=False,
+    ) is False
+    assert paper_trade_visible_for_latest_session(
+        row_session_date=date(2026, 7, 17),
+        event_timestamp=datetime(2026, 7, 17, 10, 23, 15),
+        latest_session_date=date(2026, 7, 17),
+        event_type="ORDER_WAITING",
+        lifecycle_status="ORDER_WAITING_FOR_TRIGGER",
+        manager_status="PAPER_ORDER_WAITING_FOR_TRIGGER",
+        fresh_entry_required=False,
+        reverse_entry_required=False,
+        rollover_required=False,
+    ) is True
 
 
 def test_paper_trade_classification_helpers_cover_terminal_open_and_action_required() -> None:

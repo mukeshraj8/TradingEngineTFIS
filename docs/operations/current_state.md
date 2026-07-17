@@ -33,6 +33,11 @@ change in a meaningful way.
   rows whose event date is newer than the latest completed strategy session so
   stale closed trades stay in historical review instead of leaking into the
   live monitor
+- keep Phase 4 broker/data-source separation moving in small safe slices: as
+  of Friday, July 17, 2026, the shared TFIS paper lifecycle supervisor no
+  longer hardcodes `FyersBrokerAdapter` or the S23 ingress config type inside
+  its runtime bootstrap path, and now resolves its broker adapter plus minimal
+  runtime config through a strategy-neutral shared paper lifecycle config layer
 - prove the corrected July 16, 2026 S21/S23 paper runtime on real artifacts:
   the S23 supervised wrapper now reclaims dead Windows process-lock PIDs
   correctly by checking process exit state instead of handle existence alone,
@@ -427,6 +432,11 @@ live-order design. This checklist must be updated after each completed slice.
 
 ### Phase 4 - Broker Reconciliation Before Any Live Money
 
+- `DONE`: The first Phase 4 separation slice is now in place for the shared
+  paper lifecycle supervisor runtime. It no longer hardcodes the FYERS adapter
+  class or the S23 ingress config type directly in its bootstrap path, and now
+  resolves broker provider, timezone, payload fixture, and lifecycle slippage
+  settings through `src/tfis/paper/lifecycle_runtime_config.py`.
 - `TODO`: Design live-order adapter boundary behind explicit config flags; do
   not reuse paper state as live truth.
 - `TODO`: Add broker order/position reconciliation model before any real order
