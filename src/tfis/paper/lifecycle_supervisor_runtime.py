@@ -17,6 +17,10 @@ class PaperLifecycleSupervisorTargetSpec:
     config_path: Path
     artifact_root: Path
     process_lock_root: Path
+    strategy_path: Path | None = None
+    reference_packet_path: Path | None = None
+    session_id_prefix: str | None = None
+    executor: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +59,26 @@ def load_paper_lifecycle_supervisor_target_specs(
                 config_path=_resolve_repo_path(repo_root, item["config_path"]),
                 artifact_root=_resolve_repo_path(repo_root, item["artifact_root"]),
                 process_lock_root=_resolve_repo_path(repo_root, item["process_lock_root"]),
+                strategy_path=(
+                    _resolve_repo_path(repo_root, item["strategy_path"])
+                    if item.get("strategy_path")
+                    else None
+                ),
+                reference_packet_path=(
+                    _resolve_repo_path(repo_root, item["reference_packet_path"])
+                    if item.get("reference_packet_path")
+                    else None
+                ),
+                session_id_prefix=(
+                    str(item["session_id_prefix"]).strip()
+                    if item.get("session_id_prefix")
+                    else None
+                ),
+                executor=(
+                    str(item["executor"]).strip()
+                    if item.get("executor")
+                    else None
+                ),
             )
         )
     return tuple(specs)

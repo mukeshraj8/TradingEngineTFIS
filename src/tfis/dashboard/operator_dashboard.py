@@ -1459,6 +1459,7 @@ class TfisOperatorDashboardBuilder:
         rows: list[DashboardTradeLedgerRow],
         page_path: Path,
         latest_session_date: date | None = None,
+        include_terminal_rows: bool = False,
     ) -> str:
         if latest_session_date is not None:
             rows = [
@@ -1474,6 +1475,8 @@ class TfisOperatorDashboardBuilder:
             return '<div class="empty-panel">No paper trades have been recorded yet.</div>'
 
         latest_rows = self._latest_trade_rows(rows, latest_session_date=latest_session_date)
+        if not include_terminal_rows:
+            latest_rows = [row for row in latest_rows if not self._trade_terminal(row)]
         if not latest_rows:
             return '<div class="empty-panel">No active paper orders or positions for the latest session.</div>'
         summary_counts = paper_trade_summary_counts(latest_rows)
@@ -1662,6 +1665,17 @@ class TfisOperatorDashboardBuilder:
         return paper_trade_branch_label(branch)
 
     def _render_trade_current_cell(self, row: DashboardTradeLedgerRow) -> str:
+        status_kind = paper_trade_status_kind(
+            event_type=row.event_type,
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
+            fresh_entry_required=row.fresh_entry_required,
+            reverse_entry_required=row.reverse_entry_required,
+            rollover_required=row.rollover_required,
+        )
+        is_live_monitor_row = status_kind in {"open", "waiting", "action"}
+        if is_live_monitor_row and row.stream_health.event_count <= 0:
+            return '<span class="muted-text">n/a</span><br><span class="muted-text">No current stream quote</span>'
         current = self._fmt_number(row.current_price)
         bid = self._fmt_number(row.current_bid)
         ask = self._fmt_number(row.current_ask)
@@ -1672,7 +1686,10 @@ class TfisOperatorDashboardBuilder:
             if bid == "n/a" and ask == "n/a"
             else f'<span class="muted-text">Bid / Ask {bid} / {ask}</span>'
         )
-        return f'<span class="price-label">LTP</span> {current}<br>{bid_ask}'
+        freshness_note = ""
+        if is_live_monitor_row and row.stream_health.health_status == "STALE":
+            freshness_note = '<br><span class="muted-text">Stale selected-contract quote</span>'
+        return f'<span class="price-label">LTP</span> {current}<br>{bid_ask}{freshness_note}'
 
     def _render_trade_stream_cell(self, row: DashboardTradeLedgerRow) -> str:
         stream = row.stream_health

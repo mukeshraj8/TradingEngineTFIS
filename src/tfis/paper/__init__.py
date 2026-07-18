@@ -179,6 +179,17 @@ from .lifecycle_market_events import (
     PaperSelectedContractEventRequest,
     fetch_selected_contract_market_events,
 )
+from .fresh_entry_promotion import (
+    PaperFreshEntryPromotionError,
+    PaperFreshEntryPromotionRecord,
+    PaperFreshEntryPromotionSummary,
+    active_position_paths,
+    latest_session_dir,
+    mark_metadata_promoted,
+    promote_blocked_fresh_entries,
+    promotion_candidates,
+    summary_from_payload,
+)
 from .order_state import (
     PaperOrderEvent,
     PaperOrderState,
@@ -327,6 +338,9 @@ from .live_decision_timeline_runner import (
     run_s23_morning_supervised_decision,
 )
 from .live_decision_task import (
+    PaperMorningSupervisedTaskSpec,
+    build_paper_morning_runner_arguments,
+    build_paper_morning_wrapper_command,
     S23MorningSupervisedTaskSpec,
     build_s23_morning_runner_arguments,
     build_s23_morning_wrapper_command,
@@ -540,6 +554,7 @@ __all__ = [
     "S23MorningDecisionCheckpoint",
     "S23MorningDecisionRunResult",
     "S23MorningDecisionStageRun",
+    "PaperMorningSupervisedTaskSpec",
     "S23MorningSupervisedTaskSpec",
     "S23MonthlyStatusReferencePacket",
     "S23PaperLivePreludeBuilder",
@@ -695,6 +710,8 @@ __all__ = [
     "compare_paper_bundle_to_historical",
     "compare_paper_session_to_historical",
     "build_capture_audit",
+    "build_paper_morning_runner_arguments",
+    "build_paper_morning_wrapper_command",
     "default_morning_decision_checkpoints",
     "build_s23_morning_runner_arguments",
     "build_s23_morning_wrapper_command",

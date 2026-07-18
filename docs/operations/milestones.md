@@ -7,6 +7,34 @@
   blocks silent live enablement until the remaining paper-runtime,
   reconciliation, ingress, and operator-control gaps are closed and explicitly
   reviewed
+- the first weekend Step 2 lifecycle-correctness fix is now in place: active
+  dashboard trade monitors suppress terminal trade rows by default, leaving
+  closed trades to the historical view instead of presenting live and closed
+  truths at the same time
+- the next weekend Step 2 groundwork slice is now in place too: lifecycle
+  supervisor target specs can carry supervised-decision relaunch metadata, and
+  TFIS now has a generic paper morning supervised-task launcher seam with S23
+  compatibility aliases preserved
+- the next weekend Step 2 runtime slice is now in place as well: the shared
+  lifecycle supervisor can react to `PAPER_POSITION_FRESH_ENTRY_REQUIRED` by
+  launching one fresh supervised decision request through shared target
+  metadata plus the generic paper-task launcher seam, with focused runtime,
+  launcher, supervisor, and dashboard regressions still green
+- the next weekend Step 2 hardening slice is now in place too: fresh-entry
+  relaunch from the shared supervisor is now idempotent per terminal session
+  directory, with a durable `fresh_decision_launch.json` marker preventing the
+  same closed trade from spawning duplicate fresh supervised-decision runs
+  after restart or repeat polling, and focused runtime regressions remain green
+- the next weekend Step 2 lifecycle handoff slice is now in place as well: the
+  shared supervisor now prefers promoting an already-calculated blocked same-
+  day READY decision through one shared fresh-entry promotion helper before it
+  falls back to launching a brand-new supervised decision, while preserving the
+  old fail-closed rule that reverse-entry-required states still block that
+  promotion path
+- the final weekend Step 2 dashboard-truth slice is now in place too: live
+  monitor rows now suppress concrete current-price display when no selected-
+  contract stream evidence exists, and they explicitly label stale live quotes
+  instead of presenting them as silently current
 - offline TFIS architecture and backtest foundation is in place
 - corrected S23 weekly option selling contract is documented and now supersedes
   older inferred branch mappings

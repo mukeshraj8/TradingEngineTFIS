@@ -23,6 +23,31 @@ change in a meaningful way.
 - improve the operator dashboard into a multi-strategy control surface with
   clear navigation for strategy pages, all trades, historical trades, and
   chart review, including selected-scrip and NIFTY chart visibility
+- as of Saturday, July 18, 2026, the live trade-monitor rendering now treats
+  terminal trade rows as historical-only display candidates by default, so
+  closed rows no longer compete with waiting/open/action-needed rows inside the
+  active strategy and all-trades monitors; the remaining Step 2 work is the
+  actual fresh-entry handoff and supervisor-state correctness after terminal
+  exits
+- the shared lifecycle supervisor groundwork now also carries explicit
+  relaunch metadata per strategy target and exposes a broker-neutral paper
+  supervised-task launcher seam for both S21 and S23, so the remaining Step 2
+  runtime work can wire fresh-entry handoff through shared runtime metadata
+  instead of wrapper-specific script assumptions
+- the shared lifecycle supervisor now also has a first automated
+  `PAPER_POSITION_FRESH_ENTRY_REQUIRED` handoff path: when a terminal fresh
+  entry result is emitted, TFIS can build and launch one fresh supervised
+  decision request through shared per-strategy runtime metadata rather than
+  stopping at a passive terminal flag; as of Saturday, July 18, 2026, that
+  launch is also guarded by a durable per-session marker so restart or repeat
+  polling cannot spawn the same fresh decision twice for one closed trade;
+  and the supervisor now prefers promoting an already-calculated blocked
+  same-day READY decision through the shared fresh-entry promotion helper
+  before it falls back to spawning a brand-new supervised run
+- the final weekend Step 2 dashboard-truth slice is now in place too: live
+  trade rows no longer present a concrete current price when no selected-
+  contract stream evidence exists, and stale live quotes are explicitly marked
+  as stale instead of looking silently current
 - keep monthly status independent and reusable while improving generic
   enabled-strategy execution and durable calculation storage
 - validate the newly enabled S21 BankNifty monthly paper-mode path tomorrow as
@@ -914,11 +939,15 @@ Current S23 paper-mode posture:
   6. unfilled waiting orders are cancelled/not-filled after the entry session by
      the watcher or by the post-cutoff finalizer task
   7. filled/open positions persist for valid multi-day management
-- `TODO`: Automate the post-target/post-SL fresh-entry handoff inside the S23
-  watcher or position-manager workflow. The current promotion script is a safe
-  operator recovery path, but the next runtime improvement is for TFIS to
-  promote the already-calculated blocked same-day decision automatically once
-  the carried position exits and no active position remains.
+- `TODO`: Finish the post-target/post-SL fresh-entry automation path inside the
+  shared supervisor flow. TFIS can now launch one fresh supervised decision
+  automatically when a terminal fresh-entry-required result is emitted, and it
+  persists a session-local marker so that relaunch is restart-safe. The
+  shared supervisor can now also promote an already-calculated blocked same-day
+  READY decision before spawning a new fresh run, using the same guarded rules
+  as the operator promotion script. The remaining improvement is to broaden
+  that shared promotion path beyond the current S23-shaped blocked-decision
+  artifact conventions as more strategies come online.
 - `TODO`: Move durable S23 option-chain, decision, order, trade-ledger, and
   monthly-status capture records out of temp-only storage into a structured
   `data` layout with strategy/date/instrument provenance.

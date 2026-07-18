@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import subprocess
 import sys
 import time as time_module
 from dataclasses import asdict, dataclass, is_dataclass
@@ -24,6 +25,8 @@ from tfis.dashboard import TfisOperatorDashboardBuilder
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 from tfis.paper import (
     DeterministicExpiryCalendar,
+    PaperFreshEntryPromotionError,
+    PaperMorningSupervisedTaskSpec,
     PaperLifecycleSupervisor,
     PaperLifecycleSupervisorContext,
     PaperLifecycleSupervisorTargetDiscovery,
@@ -35,11 +38,14 @@ from tfis.paper import (
     PaperPositionStateStore,
     PaperTradeLedgerStore,
     build_paper_expiry_governance,
+    build_paper_morning_runner_arguments,
     build_paper_position_manager,
     build_paper_live_state_store_from_yaml,
     fetch_selected_contract_market_events,
     load_paper_lifecycle_supervisor_target_specs,
     load_paper_broker_runtime,
+    promote_blocked_fresh_entries,
+    build_paper_morning_runner_arguments,
     paper_live_state_owner_id,
     PaperSelectedContractEventRequest,
     prepare_paper_broker_runtime_environment,
@@ -49,6 +55,7 @@ from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lo
 
 
 DEFAULT_TARGETS_CONFIG = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
+_FRESH_DECISION_LAUNCH_MARKER = "fresh_decision_launch.json"
 
 
 @dataclass(slots=True)
@@ -173,6 +180,7 @@ def main(argv: list[str] | None = None) -> int:
                         watch_cutoff_time=until_time,
                         dashboard_rebuild_disabled=args.disable_dashboard_rebuild,
                         evaluated_at=evaluated_at,
+                        tfis_root=Path(args.tfis_root),
                     )
 
             _release_stale_handles(
@@ -285,6 +293,7 @@ def _process_target(
     watch_cutoff_time: time,
     dashboard_rebuild_disabled: bool,
     evaluated_at: datetime,
+    tfis_root: Path,
 ) -> None:
     key = (runtime.spec.strategy_code, str(target.directory))
     context = _build_lifecycle_context(target, session_date=target.session_date)
@@ -409,6 +418,13 @@ def _process_target(
         ttl_seconds=lock_ttl_seconds,
     )
     if lifecycle_result.terminal:
+        _launch_fresh_decision_if_required(
+            runtime=runtime,
+            context=context,
+            lifecycle_result=lifecycle_result,
+            tfis_root=tfis_root,
+            evaluated_at=evaluated_at,
+        )
         runtime.live_state_store.release_trade_lock(
             trade_id=held_trade_ids.pop(key, context.trade_id),
             owner_id=owner_id,
@@ -455,6 +471,160 @@ def _build_lifecycle_context(
         order_state=order_state,
         position_state=position_state,
     )
+
+
+def _build_fresh_decision_task_spec(
+    *,
+    spec: PaperLifecycleSupervisorTargetSpec,
+    tfis_root: Path,
+    carry_forward_state_dir: Path | None,
+) -> PaperMorningSupervisedTaskSpec | None:
+    if (
+        spec.strategy_path is None
+        or spec.reference_packet_path is None
+        or not spec.session_id_prefix
+        or not spec.executor
+    ):
+        return None
+    runner_script_name = {
+        "S23": "run_s23_fyers_0916_supervised_decision.py",
+        "S21": "run_s21_banknifty_0916_supervised_decision.py",
+    }.get(spec.strategy_code.upper())
+    wrapper_script_name = {
+        "S23": "start_s23_fyers_morning_supervised_decision.ps1",
+        "S21": "start_s21_fyers_morning_supervised_decision.ps1",
+    }.get(spec.strategy_code.upper())
+    if runner_script_name is None or wrapper_script_name is None:
+        return None
+    return PaperMorningSupervisedTaskSpec(
+        task_name=f"TFIS {spec.strategy_code.upper()} Morning Supervised Decision",
+        repo_root=REPO_ROOT,
+        tfis_root=tfis_root,
+        config_path=spec.config_path,
+        strategy_path=spec.strategy_path,
+        reference_packet_path=spec.reference_packet_path,
+        artifact_root=spec.artifact_root,
+        session_id_prefix=spec.session_id_prefix,
+        runner_script_path=REPO_ROOT / "scripts" / runner_script_name,
+        wrapper_script_path=REPO_ROOT / "scripts" / wrapper_script_name,
+        skip_refresh=True,
+        carry_forward_state_dir=carry_forward_state_dir,
+    )
+
+
+def _launch_fresh_decision_if_required(
+    *,
+    runtime: _TargetRuntime,
+    context: PaperLifecycleSupervisorContext,
+    lifecycle_result,
+    tfis_root: Path,
+    evaluated_at: datetime,
+) -> None:
+    if lifecycle_result.final_step.status != "PAPER_POSITION_FRESH_ENTRY_REQUIRED":
+        return
+    marker_path = _fresh_decision_launch_marker_path(context.session_directory)
+    if marker_path.exists():
+        print(
+            f"{evaluated_at.isoformat()} INFO fresh_decision_launch_already_recorded "
+            f"strategy={runtime.spec.strategy_code} directory={context.session_directory}",
+            flush=True,
+        )
+        return
+    if _promote_blocked_fresh_decision_if_available(
+        runtime=runtime,
+        context=context,
+        evaluated_at=evaluated_at,
+        marker_path=marker_path,
+    ):
+        return
+    task_spec = _build_fresh_decision_task_spec(
+        spec=runtime.spec,
+        tfis_root=tfis_root,
+        carry_forward_state_dir=None,
+    )
+    if task_spec is None:
+        print(
+            f"{evaluated_at.isoformat()} WARNING fresh_decision_launch_unavailable "
+            f"strategy={runtime.spec.strategy_code} directory={context.session_directory}",
+            flush=True,
+        )
+        return
+    args = build_paper_morning_runner_arguments(task_spec)
+    process = subprocess.Popen(args, cwd=str(REPO_ROOT))
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    marker_path.write_text(
+        json.dumps(
+            {
+                "launched_at": evaluated_at.isoformat(),
+                "strategy_code": runtime.spec.strategy_code,
+                "trade_id": context.trade_id,
+                "runner_script": task_spec.runner_script_path.name,
+                "pid": getattr(process, "pid", None),
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    print(
+        f"{evaluated_at.isoformat()} INFO fresh_decision_launched "
+        f"strategy={runtime.spec.strategy_code} directory={context.session_directory} "
+        f"runner={task_spec.runner_script_path.name}",
+        flush=True,
+    )
+
+
+def _fresh_decision_launch_marker_path(session_directory: Path) -> Path:
+    return session_directory / _FRESH_DECISION_LAUNCH_MARKER
+
+
+def _promote_blocked_fresh_decision_if_available(
+    *,
+    runtime: _TargetRuntime,
+    context: PaperLifecycleSupervisorContext,
+    evaluated_at: datetime,
+    marker_path: Path,
+) -> bool:
+    session_id_prefix = runtime.spec.session_id_prefix
+    if not session_id_prefix:
+        return False
+    try:
+        summary = promote_blocked_fresh_entries(
+            runtime.spec.artifact_root,
+            session_date=context.session_date,
+            created_at=evaluated_at,
+            session_id_prefix=session_id_prefix,
+        )
+    except PaperFreshEntryPromotionError:
+        return False
+    marker_path.parent.mkdir(parents=True, exist_ok=True)
+    marker_path.write_text(
+        json.dumps(
+            {
+                "launched_at": evaluated_at.isoformat(),
+                "strategy_code": runtime.spec.strategy_code,
+                "trade_id": context.trade_id,
+                "mode": "promoted_existing_blocked_decision",
+                "promoted_session_dir": str(summary.session_dir),
+                "promotions": [
+                    {
+                        "branch": item.branch,
+                        "status": item.status,
+                        "order_state_json": item.order_state_json,
+                    }
+                    for item in summary.promotions
+                ],
+            },
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    print(
+        f"{evaluated_at.isoformat()} INFO blocked_fresh_decision_promoted "
+        f"strategy={runtime.spec.strategy_code} directory={context.session_directory} "
+        f"promotion_session={summary.session_dir}",
+        flush=True,
+    )
+    return True
 
 
 def _fetch_selected_contract_events(

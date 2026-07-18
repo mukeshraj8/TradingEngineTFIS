@@ -305,16 +305,26 @@ Use this checklist as the active execution order for Saturday, July 18, 2026
 and Sunday, July 19, 2026. Mark items complete only after code, focused tests,
 and operator-facing verification all pass.
 
-1. `IN_PROGRESS` Establish the guarded readiness track in docs.
+1. `DONE` Establish the guarded readiness track in docs.
    Acceptance gate:
    the contract conflict is called out clearly, the execution order is
    documented, and the current-state snapshot points to this checklist as the
    controlling queue.
-2. `TODO` Audit and close remaining paper lifecycle correctness gaps.
+2. `DONE` Audit and close remaining paper lifecycle correctness gaps.
    Scope:
    waiting-order aging rules, carry-forward recovery rules, close-to-history
    promotion, fresh-calculation handoff, stale current-price states, duplicate
    supervision, and dashboard trade classification.
+   Latest slice:
+   closed-trade rows are now historical-only by default in live monitors, the
+   shared supervisor can trigger fresh supervised decisions from
+   `PAPER_POSITION_FRESH_ENTRY_REQUIRED`, and that relaunch path is now
+   idempotent per terminal session directory via a durable launch marker. The
+   same shared supervisor path now also prefers promoting an already-
+   calculated blocked same-day READY decision before it falls back to spawning
+   a brand-new supervised run. Live rows also no longer show a concrete
+   current price without selected-contract stream evidence, and stale live
+   quotes are now labeled explicitly.
    Acceptance gate:
    same-day and next-day paper artifacts render one consistent story across
    strategy pages, all-trades monitor, and historical-trades page.

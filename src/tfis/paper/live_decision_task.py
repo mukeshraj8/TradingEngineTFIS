@@ -6,7 +6,7 @@ import sys
 
 
 @dataclass(frozen=True, slots=True)
-class S23MorningSupervisedTaskSpec:
+class PaperMorningSupervisedTaskSpec:
     task_name: str
     repo_root: Path
     tfis_root: Path
@@ -15,6 +15,8 @@ class S23MorningSupervisedTaskSpec:
     reference_packet_path: Path
     artifact_root: Path
     session_id_prefix: str
+    runner_script_path: Path
+    wrapper_script_path: Path
     timezone_name: str = "Asia/Kolkata"
     if_past: str = "run_now"
     skip_refresh: bool = False
@@ -23,13 +25,12 @@ class S23MorningSupervisedTaskSpec:
     python_executable: Path = Path(sys.executable)
 
 
-def build_s23_morning_runner_arguments(
-    spec: S23MorningSupervisedTaskSpec,
+def build_paper_morning_runner_arguments(
+    spec: PaperMorningSupervisedTaskSpec,
 ) -> tuple[str, ...]:
-    script_path = spec.repo_root / "scripts" / "run_s23_fyers_0916_supervised_decision.py"
     args: list[str] = [
         str(spec.python_executable),
-        str(script_path),
+        str(spec.runner_script_path),
         "--tfis-root",
         str(spec.tfis_root),
         "--config",
@@ -56,12 +57,11 @@ def build_s23_morning_runner_arguments(
     return tuple(args)
 
 
-def build_s23_morning_wrapper_command(
-    spec: S23MorningSupervisedTaskSpec,
+def build_paper_morning_wrapper_command(
+    spec: PaperMorningSupervisedTaskSpec,
 ) -> str:
-    wrapper_path = spec.repo_root / "scripts" / "start_s23_fyers_morning_supervised_decision.ps1"
     command = (
-        f'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{wrapper_path}" '
+        f'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{spec.wrapper_script_path}" '
         f'-TfisRoot "{spec.tfis_root}" '
         f'-Config "{spec.config_path}" '
         f'-StrategyPath "{spec.strategy_path}" '
@@ -80,7 +80,25 @@ def build_s23_morning_wrapper_command(
     return command
 
 
+S23MorningSupervisedTaskSpec = PaperMorningSupervisedTaskSpec
+
+
+def build_s23_morning_runner_arguments(
+    spec: PaperMorningSupervisedTaskSpec,
+) -> tuple[str, ...]:
+    return build_paper_morning_runner_arguments(spec)
+
+
+def build_s23_morning_wrapper_command(
+    spec: PaperMorningSupervisedTaskSpec,
+) -> str:
+    return build_paper_morning_wrapper_command(spec)
+
+
 __all__ = [
+    "PaperMorningSupervisedTaskSpec",
+    "build_paper_morning_runner_arguments",
+    "build_paper_morning_wrapper_command",
     "S23MorningSupervisedTaskSpec",
     "build_s23_morning_runner_arguments",
     "build_s23_morning_wrapper_command",

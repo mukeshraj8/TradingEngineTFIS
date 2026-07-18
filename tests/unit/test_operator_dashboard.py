@@ -1392,6 +1392,102 @@ def test_trade_row_tone_class_uses_shared_trade_status_kind(tmp_path: Path) -> N
     ) == "trade-row-open"
 
 
+def test_render_trade_current_cell_hides_live_price_without_stream_evidence(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
+    timestamp = datetime(2026, 7, 15, 12, 0, tzinfo=IST)
+    row = DashboardTradeLedgerRow(
+        session_date=timestamp.date(),
+        event_timestamp=timestamp,
+        entry_timestamp=timestamp,
+        exit_timestamp=None,
+        event_type="HOLD",
+        trade_id="T1",
+        strategy_id="S23:LEG",
+        strategy_code="S23",
+        strategy_branch="LEG",
+        selected_contract_symbol="NIFTY_20260721_24200_CE",
+        side="SELL",
+        lots=1,
+        quantity=65,
+        entry_price=209.0,
+        current_price=180.0,
+        current_bid=179.5,
+        current_ask=180.5,
+        exit_price=None,
+        target_price=85.1,
+        stoploss_price=258.94,
+        gross_points=122.9,
+        gross_pnl=7988.5,
+        lifecycle_status="PAPER_POSITION_OPEN",
+        manager_status="PAPER_POSITION_HELD",
+        reason_code="reason",
+        message="message",
+        fresh_entry_required=False,
+        reverse_entry_required=False,
+        rollover_required=False,
+        state_directory=None,
+        stream_health=DashboardSelectedContractStreamHealth(),
+        raw_artifact_links={},
+    )
+
+    html = builder._render_trade_current_cell(row)
+
+    assert "No current stream quote" in html
+    assert "180.0" not in html
+    assert "179.5" not in html
+    assert "180.5" not in html
+
+
+def test_render_trade_current_cell_labels_stale_live_quote(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
+    timestamp = datetime(2026, 7, 15, 12, 0, tzinfo=IST)
+    row = DashboardTradeLedgerRow(
+        session_date=timestamp.date(),
+        event_timestamp=timestamp,
+        entry_timestamp=timestamp,
+        exit_timestamp=None,
+        event_type="OPEN",
+        trade_id="T1",
+        strategy_id="S23:LEG",
+        strategy_code="S23",
+        strategy_branch="LEG",
+        selected_contract_symbol="NIFTY_20260721_24200_CE",
+        side="SELL",
+        lots=1,
+        quantity=65,
+        entry_price=209.0,
+        current_price=180.0,
+        current_bid=179.5,
+        current_ask=180.5,
+        exit_price=None,
+        target_price=85.1,
+        stoploss_price=258.94,
+        gross_points=122.9,
+        gross_pnl=7988.5,
+        lifecycle_status="ORDER_WAITING_FOR_TRIGGER",
+        manager_status="PAPER_ORDER_WAITING_FOR_TRIGGER",
+        reason_code="reason",
+        message="message",
+        fresh_entry_required=False,
+        reverse_entry_required=False,
+        rollover_required=False,
+        state_directory=None,
+        stream_health=DashboardSelectedContractStreamHealth(
+            event_count=5,
+            latest_event_at=timestamp,
+            health_status="STALE",
+        ),
+        raw_artifact_links={},
+    )
+
+    html = builder._render_trade_current_cell(row)
+
+    assert "LTP" in html
+    assert "180" in html
+    assert "Bid / Ask 179.50 / 180.50" in html
+    assert "Stale selected-contract quote" in html
+
+
 def test_trade_visible_for_latest_session_uses_shared_visibility_rule(tmp_path: Path) -> None:
     builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
     latest_session_date = datetime(2026, 7, 15, 9, 30, tzinfo=IST).date()
@@ -1589,6 +1685,77 @@ def test_trade_ledger_section_summary_uses_shared_trade_counts(tmp_path: Path) -
     assert ">2<" in html
     assert re.search(r"Open Positions</span><div class=\"value\">1</div>", html)
     assert re.search(r"Action Required</span><div class=\"value\">1</div>", html)
+    assert re.search(r"Closed Trades</span><div class=\"value\">0</div>", html)
+
+
+def test_trade_ledger_section_without_latest_session_hides_terminal_rows(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    timestamp = datetime.fromisoformat("2026-07-15T12:57:59+05:30")
+
+    def row(
+        *,
+        trade_id: str,
+        event_type: str,
+        lifecycle_status: str,
+        manager_status: str,
+    ) -> DashboardTradeLedgerRow:
+        return DashboardTradeLedgerRow(
+            session_date=timestamp.date(),
+            event_timestamp=timestamp,
+            entry_timestamp=timestamp,
+            exit_timestamp=timestamp if event_type == "CLOSE" else None,
+            event_type=event_type,
+            trade_id=trade_id,
+            strategy_id="S23:TEST",
+            strategy_code="S23",
+            strategy_branch="TEST",
+            selected_contract_symbol=f"NIFTY_{trade_id}",
+            side="SELL",
+            lots=1,
+            quantity=65,
+            entry_price=209.0,
+            current_price=180.0,
+            current_bid=179.5,
+            current_ask=180.5,
+            exit_price=86.1 if event_type == "CLOSE" else None,
+            target_price=85.1,
+            stoploss_price=258.94,
+            gross_points=122.9,
+            gross_pnl=7988.5,
+            lifecycle_status=lifecycle_status,
+            manager_status=manager_status,
+            reason_code="reason",
+            message="message",
+            fresh_entry_required=False,
+            reverse_entry_required=False,
+            rollover_required=False,
+            state_directory=None,
+            stream_health=DashboardSelectedContractStreamHealth(),
+            raw_artifact_links={},
+        )
+
+    html = builder._render_trade_ledger_section(
+        rows=[
+            row(
+                trade_id="OPEN1",
+                event_type="HOLD",
+                lifecycle_status="PAPER_POSITION_OPEN",
+                manager_status="PAPER_POSITION_HELD",
+            ),
+            row(
+                trade_id="CLOSED1",
+                event_type="CLOSE",
+                lifecycle_status="PAPER_POSITION_CLOSED",
+                manager_status="PAPER_POSITION_CLOSED",
+            ),
+        ],
+        page_path=tmp_path / "dashboard" / "trades" / "index.html",
+        latest_session_date=None,
+    )
+
+    assert "OPEN1" in html
+    assert "CLOSED1" not in html
+    assert re.search(r"Open Positions</span><div class=\"value\">1</div>", html)
     assert re.search(r"Closed Trades</span><div class=\"value\">0</div>", html)
 
 
@@ -1878,6 +2045,8 @@ def test_dashboard_builds_historical_trades_page_with_filters(tmp_path: Path) ->
     assert "Date Range" in history_html
     assert "NIFTY_20260721_24200_CE" in history_html
     assert "BANKNIFTY_20260728_57200_CE" in history_html
+    assert "NIFTY_20260721_24200_CE" not in trades_html
+    assert "BANKNIFTY_20260728_57200_CE" not in trades_html
     assert manifest["historical_trades_page"].replace("\\", "/") == "trades/history/index.html"
 
 

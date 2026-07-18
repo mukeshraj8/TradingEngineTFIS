@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from datetime import date, datetime, time
 from pathlib import Path
@@ -18,12 +19,14 @@ from tfis.paper import (
     PaperLifecycleSupervisorTargetDiscovery,
     PaperOrderStateStore,
     S23PaperPositionManager,
+    S23PaperTradeLedgerStore,
     S23PaperTradeDecisionSummary,
     build_paper_broker_adapter,
     load_paper_broker_runtime,
     load_paper_lifecycle_supervisor_target_specs,
     prepare_paper_broker_runtime_environment,
 )
+from tfis.paper.fresh_entry_promotion import promote_blocked_fresh_entries as shared_promote_blocked_fresh_entries
 
 
 def test_load_paper_lifecycle_supervisor_target_specs(tmp_path: Path) -> None:
@@ -36,6 +39,10 @@ def test_load_paper_lifecycle_supervisor_target_specs(tmp_path: Path) -> None:
                 "    config_path: config/paper.s23.fyers_connect_test.yaml",
                 "    artifact_root: data/strategies/S23/fyers_morning_supervised_decision",
                 "    process_lock_root: tmp/process_locks/s23_paper_watch",
+                "    strategy_path: config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                "    reference_packet_path: config/reference_packets/s23_bear_put_live_decision_reference.json",
+                "    session_id_prefix: s23-fyers-morning-supervised-decision",
+                "    executor: s23_morning_supervised",
             )
         ),
         encoding="utf-8",
@@ -46,6 +53,16 @@ def test_load_paper_lifecycle_supervisor_target_specs(tmp_path: Path) -> None:
     assert len(specs) == 1
     assert specs[0].strategy_code == "S23"
     assert specs[0].config_path == (tmp_path / "config/paper.s23.fyers_connect_test.yaml").resolve()
+    assert specs[0].artifact_root == (tmp_path / "data/strategies/S23/fyers_morning_supervised_decision").resolve()
+    assert specs[0].process_lock_root == (tmp_path / "tmp/process_locks/s23_paper_watch").resolve()
+    assert specs[0].strategy_path == (
+        tmp_path / "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    ).resolve()
+    assert specs[0].reference_packet_path == (
+        tmp_path / "config/reference_packets/s23_bear_put_live_decision_reference.json"
+    ).resolve()
+    assert specs[0].session_id_prefix == "s23-fyers-morning-supervised-decision"
+    assert specs[0].executor == "s23_morning_supervised"
 
 
 def test_target_discovery_finds_active_positions_and_waiting_orders(tmp_path: Path) -> None:
@@ -57,7 +74,9 @@ def test_target_discovery_finds_active_positions_and_waiting_orders(tmp_path: Pa
     wait_dir.mkdir(parents=True, exist_ok=True)
     stale_dir.mkdir(parents=True, exist_ok=True)
 
-    manager = S23PaperPositionManager()
+    manager = S23PaperPositionManager(
+        ledger_store=S23PaperTradeLedgerStore(global_ledger_root=tmp_path / "global-ledger"),
+    )
     manager.open_from_live_decision(
         open_dir,
         strategy_rule=_strategy_rule(),
@@ -97,6 +116,24 @@ def test_target_discovery_finds_active_positions_and_waiting_orders(tmp_path: Pa
         ("order", "wait-branch"),
         ("order", "stale-branch"),
     }
+
+
+def test_repo_supervisor_targets_yaml_carries_relaunch_metadata() -> None:
+    repo_root = Path(__file__).resolve().parents[2]
+    specs = load_paper_lifecycle_supervisor_target_specs(
+        repo_root / "config" / "paper_lifecycle_supervisor_targets.yaml",
+        repo_root=repo_root,
+    )
+
+    by_code = {spec.strategy_code: spec for spec in specs}
+    assert by_code["S23"].strategy_path is not None
+    assert by_code["S23"].reference_packet_path is not None
+    assert by_code["S23"].session_id_prefix == "s23-fyers-morning-supervised-decision"
+    assert by_code["S23"].executor == "s23_morning_supervised"
+    assert by_code["S21"].strategy_path is not None
+    assert by_code["S21"].reference_packet_path is not None
+    assert by_code["S21"].session_id_prefix == "s21-fyers-morning-supervised-decision"
+    assert by_code["S21"].executor == "s23_morning_supervised"
 
 
 def test_paper_lifecycle_runtime_config_loads_relative_payload_fixture(tmp_path: Path) -> None:
@@ -311,6 +348,301 @@ def test_runtime_environment_preparation_is_deduped_per_provider(
     assert calls == [("fyers", False)]
 
 
+def test_build_fresh_decision_task_spec_from_target_metadata(tmp_path: Path) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config" / "paper.s23.fyers_connect_test.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    target_spec = load_paper_lifecycle_supervisor_target_specs(
+        _targets_yaml(
+            tmp_path,
+            config_path=config_path,
+            artifact_root=tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision",
+        ),
+        repo_root=tmp_path,
+    )[0]
+
+    task_spec = module._build_fresh_decision_task_spec(
+        spec=target_spec,
+        tfis_root=tmp_path,
+        carry_forward_state_dir=None,
+    )
+
+    assert task_spec is not None
+    assert task_spec.strategy_path == target_spec.strategy_path
+    assert task_spec.reference_packet_path == target_spec.reference_packet_path
+    assert task_spec.session_id_prefix == "s23-fyers-morning-supervised-decision"
+    assert task_spec.runner_script_path.name == "run_s23_fyers_0916_supervised_decision.py"
+
+
+def test_launch_fresh_decision_if_required_spawns_runner(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config" / "paper.s23.fyers_connect_test.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    target_spec = load_paper_lifecycle_supervisor_target_specs(
+        _targets_yaml(
+            tmp_path,
+            config_path=config_path,
+            artifact_root=tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision",
+        ),
+        repo_root=tmp_path,
+    )[0]
+    runtime = module._TargetRuntime(
+        spec=target_spec,
+        config=PaperLifecycleRuntimeConfig.from_yaml(config_path),
+        timezone_name="Asia/Kolkata",
+        timezone=module.ZoneInfo("Asia/Kolkata"),
+        adapter=object(),
+        live_state_store=object(),
+        supervisor=object(),
+    )
+    context = module.PaperLifecycleSupervisorContext(
+        session_directory=tmp_path / "data" / "strategies" / "S23" / "session",
+        session_date=date(2026, 7, 18),
+        trade_id="trade-1",
+        selected_contract_symbol="NIFTY_20260721_24200_CE",
+        order_state=None,
+        position_state=None,
+    )
+
+    launched: list[tuple[tuple[str, ...], str]] = []
+
+    class _FakeResult:
+        final_step = type("Step", (), {"status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED"})()
+
+    def _fake_popen(args, cwd):
+        launched.append((tuple(args), cwd))
+        class _Proc:
+            pid = 1234
+        return _Proc()
+
+    monkeypatch.setattr(module.subprocess, "Popen", _fake_popen)
+
+    module._launch_fresh_decision_if_required(
+        runtime=runtime,
+        context=context,
+        lifecycle_result=_FakeResult(),
+        tfis_root=tmp_path,
+        evaluated_at=datetime(2026, 7, 18, 10, 5),
+    )
+
+    assert len(launched) == 1
+    assert launched[0][0][1].endswith("run_s23_fyers_0916_supervised_decision.py")
+    marker_path = context.session_directory / "fresh_decision_launch.json"
+    assert marker_path.exists()
+    marker_payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    assert marker_payload["strategy_code"] == "S23"
+    assert marker_payload["trade_id"] == "trade-1"
+    assert marker_payload["pid"] == 1234
+
+
+def test_launch_fresh_decision_if_required_skips_non_fresh_terminal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    launched: list[tuple[tuple[str, ...], str]] = []
+
+    def _fake_popen(args, cwd):
+        launched.append((tuple(args), cwd))
+        class _Proc:
+            pid = 1234
+        return _Proc()
+
+    monkeypatch.setattr(module.subprocess, "Popen", _fake_popen)
+
+    module._launch_fresh_decision_if_required(
+        runtime=type("Runtime", (), {"spec": type("Spec", (), {"strategy_code": "S23"})()})(),
+        context=type("Context", (), {"session_directory": tmp_path})(),
+        lifecycle_result=type("Result", (), {"final_step": type("Step", (), {"status": "PAPER_POSITION_STOPLOSS_HIT"})()})(),
+        tfis_root=tmp_path,
+        evaluated_at=datetime(2026, 7, 18, 10, 5),
+    )
+
+    assert launched == []
+
+
+def test_launch_fresh_decision_if_required_is_idempotent_per_session_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config" / "paper.s23.fyers_connect_test.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    target_spec = load_paper_lifecycle_supervisor_target_specs(
+        _targets_yaml(
+            tmp_path,
+            config_path=config_path,
+            artifact_root=tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision",
+        ),
+        repo_root=tmp_path,
+    )[0]
+    runtime = module._TargetRuntime(
+        spec=target_spec,
+        config=PaperLifecycleRuntimeConfig.from_yaml(config_path),
+        timezone_name="Asia/Kolkata",
+        timezone=module.ZoneInfo("Asia/Kolkata"),
+        adapter=object(),
+        live_state_store=object(),
+        supervisor=object(),
+    )
+    context = module.PaperLifecycleSupervisorContext(
+        session_directory=tmp_path / "data" / "strategies" / "S23" / "session",
+        session_date=date(2026, 7, 18),
+        trade_id="trade-1",
+        selected_contract_symbol="NIFTY_20260721_24200_CE",
+        order_state=None,
+        position_state=None,
+    )
+
+    launched: list[tuple[tuple[str, ...], str]] = []
+
+    class _FakeResult:
+        final_step = type("Step", (), {"status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED"})()
+
+    def _fake_popen(args, cwd):
+        launched.append((tuple(args), cwd))
+        class _Proc:
+            pid = 1234
+        return _Proc()
+
+    monkeypatch.setattr(module.subprocess, "Popen", _fake_popen)
+
+    module._launch_fresh_decision_if_required(
+        runtime=runtime,
+        context=context,
+        lifecycle_result=_FakeResult(),
+        tfis_root=tmp_path,
+        evaluated_at=datetime(2026, 7, 18, 10, 5),
+    )
+    module._launch_fresh_decision_if_required(
+        runtime=runtime,
+        context=context,
+        lifecycle_result=_FakeResult(),
+        tfis_root=tmp_path,
+        evaluated_at=datetime(2026, 7, 18, 10, 6),
+    )
+
+    assert len(launched) == 1
+
+
+def test_launch_fresh_decision_if_required_promotes_existing_blocked_decision_before_spawning_runner(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config" / "paper.s23.fyers_connect_test.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision"
+    target_spec = load_paper_lifecycle_supervisor_target_specs(
+        _targets_yaml(
+            tmp_path,
+            config_path=config_path,
+            artifact_root=artifact_root,
+        ),
+        repo_root=tmp_path,
+    )[0]
+    runtime = module._TargetRuntime(
+        spec=target_spec,
+        config=PaperLifecycleRuntimeConfig.from_yaml(config_path),
+        timezone_name="Asia/Kolkata",
+        timezone=module.ZoneInfo("Asia/Kolkata"),
+        adapter=object(),
+        live_state_store=object(),
+        supervisor=object(),
+    )
+    blocked_session = (
+        artifact_root
+        / "2026-07-18"
+        / "s23-fyers-morning-supervised-decision-2026-07-18"
+        / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    )
+    blocked_session.mkdir(parents=True, exist_ok=True)
+    (blocked_session.parent / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (blocked_session / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": _blocked_ready_summary_payload()}),
+        encoding="utf-8",
+    )
+    context = module.PaperLifecycleSupervisorContext(
+        session_directory=tmp_path / "data" / "strategies" / "S23" / "closed-session",
+        session_date=date(2026, 7, 18),
+        trade_id="trade-1",
+        selected_contract_symbol="NIFTY_20260721_24200_CE",
+        order_state=None,
+        position_state=None,
+    )
+
+    launched: list[tuple[tuple[str, ...], str]] = []
+
+    class _FakeResult:
+        final_step = type("Step", (), {"status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED"})()
+
+    def _fake_popen(args, cwd):
+        launched.append((tuple(args), cwd))
+        class _Proc:
+            pid = 1234
+        return _Proc()
+
+    monkeypatch.setattr(module.subprocess, "Popen", _fake_popen)
+    monkeypatch.setattr(
+        module,
+        "promote_blocked_fresh_entries",
+        lambda artifact_root, *, session_date, created_at, session_id_prefix: shared_promote_blocked_fresh_entries(
+            artifact_root,
+            session_date=session_date,
+            created_at=created_at,
+            session_id_prefix=session_id_prefix,
+            strategy_loader=lambda _branch: _strategy_rule(),
+        ),
+    )
+
+    module._launch_fresh_decision_if_required(
+        runtime=runtime,
+        context=context,
+        lifecycle_result=_FakeResult(),
+        tfis_root=tmp_path,
+        evaluated_at=datetime(2026, 7, 18, 10, 5),
+    )
+
+    assert launched == []
+    promoted_order_state = PaperOrderStateStore().load_state(blocked_session)
+    assert promoted_order_state.status.value == "PAPER_ORDER_WAITING_FOR_TRIGGER"
+    marker_payload = json.loads(
+        (context.session_directory / "fresh_decision_launch.json").read_text(encoding="utf-8")
+    )
+    assert marker_payload["mode"] == "promoted_existing_blocked_decision"
+
+
 def _targets_yaml(tmp_path: Path, *, config_path: Path, artifact_root: Path) -> Path:
     target_path = tmp_path / "targets.yaml"
     target_path.write_text(
@@ -321,6 +653,10 @@ def _targets_yaml(tmp_path: Path, *, config_path: Path, artifact_root: Path) -> 
                 f"    config_path: {config_path.relative_to(tmp_path).as_posix()}",
                 f"    artifact_root: {artifact_root.relative_to(tmp_path).as_posix()}",
                 "    process_lock_root: tmp/process_locks/s23_paper_watch",
+                "    strategy_path: config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+                "    reference_packet_path: config/reference_packets/s23_bear_put_live_decision_reference.json",
+                "    session_id_prefix: s23-fyers-morning-supervised-decision",
+                "    executor: s23_morning_supervised",
             )
         ),
         encoding="utf-8",
@@ -393,3 +729,45 @@ def _ready_summary(*, session_date: date) -> S23PaperTradeDecisionSummary:
         workbook_row_number=1,
         notes=(),
     )
+
+
+def _blocked_ready_summary_payload() -> dict[str, object]:
+    return {
+        "status": "READY",
+        "session_date": "2026-07-18",
+        "mode": "fresh_entry",
+        "strategy_code": "S23",
+        "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "monthly_status": "BEAR",
+        "monthly_status_trigger": "BEAR_CONTINUES",
+        "monthly_status_notes": "test",
+        "required_market_aliases": [],
+        "required_option_aliases": [],
+        "checkpoint_labels": ["0915", "ORPT", "RC"],
+        "market_levels": {},
+        "runtime_values": {},
+        "lots": 1,
+        "quantity": 65,
+        "selected_contract_symbol": "NIFTY_20260714_24150_CE",
+        "selected_contract_expiry": "2026-07-14",
+        "selected_contract_strike": 24150,
+        "selected_contract_option_type": "CALL",
+        "selected_contract_ltp": 292.35,
+        "selected_contract_oi": 139945,
+        "contract_selection_reason": "Selected first strike meeting ideal premium.",
+        "contract_selection_failure_code": None,
+        "contract_selection_attempted_expiries": ["2026-07-14"],
+        "rejected_candidate_counts": {},
+        "ranked_candidates": [],
+        "planned_entry_price": 194.25,
+        "target_price": 77.70,
+        "stoploss_price": 242.00,
+        "fsl_price": None,
+        "source_workbook_rule": "unit-test",
+        "workbook_row_number": 1,
+        "governance_event_types": [],
+        "resume_event_type": None,
+        "notes": [],
+        "order_placement_blocked": True,
+        "order_placement_block_reason": "OPEN_CARRY_FORWARD_POSITION",
+    }
