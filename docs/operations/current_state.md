@@ -48,6 +48,11 @@ change in a meaningful way.
   trade rows no longer present a concrete current price when no selected-
   contract stream evidence exists, and stale live quotes are explicitly marked
   as stale instead of looking silently current
+- the first weekend Step 3 operator-control slice is now in place as well:
+  TFIS now has a dedicated `scripts/stop_tfis_runtime.ps1` command, and the
+  runtime-process detection/stop logic used by dashboard reset now lives in one
+  shared PowerShell helper so reset and manual stop follow the same TFIS-only
+  process ownership rules
 - keep monthly status independent and reusable while improving generic
   enabled-strategy execution and durable calculation storage
 - validate the newly enabled S21 BankNifty monthly paper-mode path tomorrow as

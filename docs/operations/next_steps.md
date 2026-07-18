@@ -328,11 +328,16 @@ and operator-facing verification all pass.
    Acceptance gate:
    same-day and next-day paper artifacts render one consistent story across
    strategy pages, all-trades monitor, and historical-trades page.
-3. `TODO` Harden shared supervisor startup, stop, reset, and reboot recovery.
+3. `DONE` Harden shared supervisor startup, stop, reset, and reboot recovery.
    Scope:
    slow reset paths, duplicate child windows/processes, scheduled-task restart
    semantics, and deterministic supervisor visibility after reboot or manual
    reset.
+   Latest slice:
+   TFIS now has one explicit operator stop command in
+   `scripts\stop_tfis_runtime.ps1`, and the runtime-process detection/stop
+   rules used by dashboard reset now live in one shared PowerShell helper so
+   reset and manual stop use the same TFIS-only process ownership rules.
    Acceptance gate:
    one documented operator path starts TFIS cleanly, one documented operator
    path stops TFIS cleanly, and restart behavior is repeatable.

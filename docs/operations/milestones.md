@@ -35,6 +35,10 @@
   monitor rows now suppress concrete current-price display when no selected-
   contract stream evidence exists, and they explicitly label stale live quotes
   instead of presenting them as silently current
+- the first weekend Step 3 operator-control slice is now in place too: TFIS
+  now has a dedicated `stop_tfis_runtime.ps1` command, and the reset path now
+  shares one runtime-process helper with that stop command so manual stop and
+  restart/recovery follow the same TFIS-only process ownership rules
 - offline TFIS architecture and backtest foundation is in place
 - corrected S23 weekly option selling contract is documented and now supersedes
   older inferred branch mappings
