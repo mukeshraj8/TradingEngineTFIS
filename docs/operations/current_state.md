@@ -6,13 +6,23 @@ change in a meaningful way.
 
 ## Current Focus
 
-- complete the 2026-07-09 paper-trading readiness check with the new
-  `scripts/pre_live_readiness.py` audit, then validate one real supervised
-  market session for S23 and the S21 candidate path without changing strategy
-  formulas
-- validate the corrected S23 paper-mode flow on the next real NSE trading day,
-  especially watcher startup, current-price updates, fill status, P&L, and
-  no-carry-forward handling for unfilled orders
+- execute the weekend live-money-readiness track in
+  [`docs/operations/next_steps.md`](docs/operations/next_steps.md), while
+  respecting the repository contract that TFIS remains paper-safe until live
+  capability is explicitly proven and approved
+- close remaining paper-runtime gaps that would block a credible live-money
+  decision: lifecycle correctness, trade-state reconciliation, supervisor
+  recovery, broker-ingress failure handling, and operator guardrails
+- keep broker neutrality intact while hardening live readiness: FYERS remains
+  the default configured provider, but reusable runtime, dashboard, and chart
+  flows must stay provider-agnostic; `D:\TradingEngineProd` may be used only
+  as read-only implementation reference
+- complete each checklist item with focused tests and operator-facing
+  verification before moving to the next item, then finish with a broader
+  readiness pass and explicit go/no-go risk review
+- improve the operator dashboard into a multi-strategy control surface with
+  clear navigation for strategy pages, all trades, historical trades, and
+  chart review, including selected-scrip and NIFTY chart visibility
 - keep monthly status independent and reusable while improving generic
   enabled-strategy execution and durable calculation storage
 - validate the newly enabled S21 BankNifty monthly paper-mode path tomorrow as

@@ -2,6 +2,11 @@
 
 ## Current Snapshot
 
+- as of Saturday, July 18, 2026, TFIS is entering a weekend
+  live-money-readiness hardening track, but the repository contract still
+  blocks silent live enablement until the remaining paper-runtime,
+  reconciliation, ingress, and operator-control gaps are closed and explicitly
+  reviewed
 - offline TFIS architecture and backtest foundation is in place
 - corrected S23 weekly option selling contract is documented and now supersedes
   older inferred branch mappings

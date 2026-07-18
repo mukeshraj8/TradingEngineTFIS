@@ -6,6 +6,46 @@ way.
 
 ## Immediate Next Priorities
 
+0. Execute the weekend live-money-readiness track in strict order, without
+   bypassing paper-safety gates.
+   The repository contract still applies: TFIS must remain safe for paper
+   trading and research before any live-order capability is considered.
+   Therefore this weekend's goal is not to silently flip TFIS into live mode;
+   it is to close the operational, architectural, observability, and recovery
+   gaps that currently block a credible live-money decision. Work this list in
+   order, and do not mark the system live-money ready until every gate below
+   has passed:
+   1. Freeze the execution track in docs before code changes. Keep
+      `docs/operations/current_state.md`, this queue, and any focused status
+      notes aligned so an operator can tell what weekend step is in progress.
+   2. Re-verify paper runtime invariants for the current supported paths
+      (shared supervisor startup, dashboard rebuild/serve, S21/S23 waiting
+      order recovery rules, carry-forward-only recovery, stale waiting-order
+      suppression, and historical-trade separation).
+   3. Close same-day lifecycle correctness gaps that would be unacceptable in
+      live money, especially duplicate supervision, stale quote handling,
+      cutoff behavior, fresh-recalculation handoff after position close, and
+      dashboard/operator consistency.
+   4. Harden process recovery and operator control paths so reboot, reset, and
+      scheduled-task restart behavior are deterministic and observable from one
+      TFIS console path rather than scattered wrapper behavior.
+   5. Harden broker/runtime ingress boundaries: configuration validation,
+      adapter bootstrap, reconnect/failure posture, missing-stream fallback,
+      and explicit preflight evidence for token/runtime readiness.
+   6. Tighten state reconciliation rules for waiting orders, open positions,
+      closed positions, carry-forward positions, and historical-ledger
+      promotion so no trade can appear active and historical at the same time.
+   7. Strengthen live guardrails before any live-order consideration:
+      explicit dry-run/live toggle enforcement, fail-closed startup on missing
+      prerequisites, operator-visible kill/pause/recovery steps, and audit
+      logging for every lifecycle transition.
+   8. Re-run focused tests after each step, then re-run the broader readiness
+      suite at the end of the weekend track. A step is not complete until its
+      tests and operational spot-checks pass and the docs say so.
+   9. Only after all prior steps pass, prepare a final go/no-go review that
+      lists the remaining live-money risks, open questions, and what manual
+      controls still exist.
+
 1. Phase 1 runtime-consistency refactor, Phase 2 runtime-contract/read-model
    consolidation, and the first full Phase 3 lifecycle-supervisor cutover are
    now complete for the current scope. As of Friday, July 17, 2026, TFIS uses
@@ -258,6 +298,89 @@ way.
    validation. S23 and similar option-selling strategies are carry-forward
    capable before expiry. The paper runtime now has multi-day foundation
    pieces, visible watcher windows, expiry force-close governance,
+
+## Weekend Live-Money-Readiness Checklist
+
+Use this checklist as the active execution order for Saturday, July 18, 2026
+and Sunday, July 19, 2026. Mark items complete only after code, focused tests,
+and operator-facing verification all pass.
+
+1. `IN_PROGRESS` Establish the guarded readiness track in docs.
+   Acceptance gate:
+   the contract conflict is called out clearly, the execution order is
+   documented, and the current-state snapshot points to this checklist as the
+   controlling queue.
+2. `TODO` Audit and close remaining paper lifecycle correctness gaps.
+   Scope:
+   waiting-order aging rules, carry-forward recovery rules, close-to-history
+   promotion, fresh-calculation handoff, stale current-price states, duplicate
+   supervision, and dashboard trade classification.
+   Acceptance gate:
+   same-day and next-day paper artifacts render one consistent story across
+   strategy pages, all-trades monitor, and historical-trades page.
+3. `TODO` Harden shared supervisor startup, stop, reset, and reboot recovery.
+   Scope:
+   slow reset paths, duplicate child windows/processes, scheduled-task restart
+   semantics, and deterministic supervisor visibility after reboot or manual
+   reset.
+   Acceptance gate:
+   one documented operator path starts TFIS cleanly, one documented operator
+   path stops TFIS cleanly, and restart behavior is repeatable.
+4. `TODO` Harden broker/data ingress failure handling for live-readiness.
+   Scope:
+   adapter bootstrap errors, token/preflight failures, missing quote evidence,
+   stale stream detection, missing bar fallback policy, and fail-closed
+   behavior when market data is not trustworthy.
+   Acceptance gate:
+   readiness and runtime paths both surface provider health explicitly and do
+   not silently continue into ambiguous trade-management states.
+   Design constraint:
+   `D:\TradingEngineProd` may be consulted as read-only reference for proven
+   socket/live-market patterns, but TFIS must not copy in unrelated code or
+   modify that repository. Any reused idea must be re-expressed through TFIS
+   broker-neutral interfaces with FYERS as the default configured provider,
+   not as a hardcoded engine assumption.
+5. `TODO` Harden trade-state reconciliation and ledger authority.
+   Scope:
+   active-vs-historical classification, waiting/open/closed/carry-forward
+   identity, re-entry after close, and supervisor-owned transition rules.
+   Acceptance gate:
+   every lifecycle state has one durable source of truth, and dashboard views
+   agree with it.
+6. `TODO` Add explicit live-mode guardrails and operator controls.
+   Scope:
+   dry-run/live configuration boundaries, manual stop/pause/recovery guidance,
+   kill-switch expectations, live-order preconditions, and audit/event
+   visibility.
+   Acceptance gate:
+   the system can fail closed safely, and an operator can understand what to
+   do during partial failure without code inspection.
+7. `TODO` Redesign the operator dashboard for multi-strategy operational use.
+   Scope:
+   strategy navigation that scales beyond S21/S23, a stable top-level operator
+   home, clear entry points for live monitor, historical trades, strategy
+   pages, and charts, plus operator-friendly labels and layout that stay easy
+   to scan as more strategies and instruments are added.
+   Acceptance gate:
+   an operator can move between strategies, all trades, historical review, and
+   chart review without hunting through page-local links or strategy-specific
+   assumptions.
+8. `TODO` Add chart-review capability for selected scrips and core indices.
+   Scope:
+   operator-selectable chart views for a chosen tradeable scrip and NIFTY at
+   minimum, designed through the same broker-agnostic market-data boundary so
+   future brokers can supply the same review surface.
+   Acceptance gate:
+   the dashboard exposes a clear charts section with navigable chart views and
+   no FYERS-only assumptions leaking into the operator workflow.
+9. `TODO` Run the final weekend validation pack.
+   Scope:
+   focused unit/integration regressions, readiness audit, dashboard rebuild,
+   supervisor startup/recovery checks, and selected artifact replay or captured
+   session validation where relevant.
+   Acceptance gate:
+   all required checks pass, documents are updated, and remaining risk is
+   stated explicitly rather than implied away.
    session-only waiting-order behavior, and next-day SL reset. The next
    architecture step is to lift shared lifecycle concepts into strategy-neutral
    services only after the S23 behavior is proven in live paper operation.
