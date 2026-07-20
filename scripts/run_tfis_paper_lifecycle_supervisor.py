@@ -42,6 +42,7 @@ from tfis.paper import (
     build_paper_position_manager,
     build_paper_live_state_store_from_yaml,
     connect_paper_broker_runtime,
+    ensure_paper_broker_runtime_healthy,
     inspect_paper_live_state_store_from_yaml,
     fetch_selected_contract_market_events,
     load_paper_lifecycle_supervisor_target_specs,
@@ -168,6 +169,7 @@ def main(argv: list[str] | None = None) -> int:
                 )
                 if targets_for_runtime:
                     any_targets = True
+                    _ensure_runtime_adapter_health(runtime=runtime, evaluated_at=evaluated_at)
                 for target in targets_for_runtime:
                     key = (runtime.spec.strategy_code, str(target.directory))
                     active_keys.add(key)
@@ -314,6 +316,43 @@ def _connect_runtime_adapters(
             f"state={health.connection_state.value}",
             flush=True,
         )
+
+
+def _ensure_runtime_adapter_health(
+    *,
+    runtime: _TargetRuntime,
+    evaluated_at: datetime,
+):
+    try:
+        initial_health = runtime.adapter.health()
+    except Exception as exc:
+        raise RuntimeError(
+            f"{runtime.spec.strategy_code} broker health check failed for "
+            f"{runtime.config.broker.provider}: {type(exc).__name__}: {exc}"
+        ) from exc
+    if _broker_health_is_healthy(initial_health):
+        return initial_health
+    print(
+        f"{evaluated_at.isoformat()} WARNING broker_runtime_degraded "
+        f"strategy={runtime.spec.strategy_code} "
+        f"provider={runtime.config.broker.provider} "
+        f"{_describe_broker_health(initial_health)}",
+        flush=True,
+    )
+    recovered_health = ensure_paper_broker_runtime_healthy(
+        strategy_code=runtime.spec.strategy_code,
+        provider=runtime.config.broker.provider,
+        adapter=runtime.adapter,
+        initial_health=initial_health,
+    )
+    print(
+        f"{evaluated_at.isoformat()} INFO broker_runtime_recovered "
+        f"strategy={runtime.spec.strategy_code} "
+        f"provider={runtime.config.broker.provider} "
+        f"{_describe_broker_health(recovered_health)}",
+        flush=True,
+    )
+    return recovered_health
 
 
 def _process_target(
@@ -748,6 +787,22 @@ def _to_jsonable(value: Any) -> Any:
     if isinstance(value, (list, tuple)):
         return [_to_jsonable(item) for item in value]
     return value
+
+
+def _broker_health_is_healthy(health) -> bool:
+    return health.is_connected and health.connection_state.value == "CONNECTED"
+
+
+def _describe_broker_health(health) -> str:
+    warnings = ",".join(health.warnings) if getattr(health, "warnings", ()) else "none"
+    diagnostics = ",".join(health.diagnostics) if getattr(health, "diagnostics", ()) else "none"
+    return (
+        f"state={health.connection_state.value} "
+        f"is_connected={health.is_connected} "
+        f"reconnect_attempts={health.reconnect_attempts} "
+        f"warnings={warnings} "
+        f"diagnostics={diagnostics}"
+    )
 
 
 def _rebuild_dashboard(*, output_root: Path, dashboard_config_path: Path) -> None:

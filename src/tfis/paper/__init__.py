@@ -181,6 +181,7 @@ from .lifecycle_runtime_config import (
     PaperLifecycleRuntimeConfigError,
     build_paper_broker_adapter,
     connect_paper_broker_runtime,
+    ensure_paper_broker_runtime_healthy,
     load_paper_broker_runtime,
     prepare_paper_broker_runtime_environment,
 )
@@ -684,6 +685,7 @@ __all__ = [
     "PaperLifecycleRuntimeConfigError",
     "build_paper_broker_adapter",
     "connect_paper_broker_runtime",
+    "ensure_paper_broker_runtime_healthy",
     "PaperSelectedContractEventRequest",
     "fetch_selected_contract_market_events",
     "prepare_paper_broker_runtime_environment",

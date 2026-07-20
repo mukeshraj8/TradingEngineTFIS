@@ -23,6 +23,7 @@ from tfis.paper import (
     S23PaperTradeLedgerStore,
     S23PaperTradeDecisionSummary,
     build_paper_broker_adapter,
+    ensure_paper_broker_runtime_healthy,
     inspect_paper_live_state_store_from_yaml,
     load_paper_broker_runtime,
     load_paper_lifecycle_supervisor_target_specs,
@@ -454,6 +455,126 @@ def test_connect_paper_broker_runtime_returns_health() -> None:
     assert health.is_connected is True
 
 
+def test_connect_paper_broker_runtime_reconnects_when_initial_health_is_degraded() -> None:
+    from tfis.brokers import BrokerConnectionState, BrokerHealthEvent
+    from tfis.paper import connect_paper_broker_runtime
+
+    class DegradedThenHealthyAdapter:
+        def __init__(self) -> None:
+            self.connected = False
+            self.reconnect_calls = 0
+
+        def connect(self) -> None:
+            self.connected = True
+
+        def health(self):
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 20, 9, 15),
+                connection_state=BrokerConnectionState.DEGRADED,
+                source_id="test:health",
+                is_connected=False,
+                diagnostics=("stream stalled",),
+            )
+
+        def reconnect(self):
+            self.reconnect_calls += 1
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 20, 9, 16),
+                connection_state=BrokerConnectionState.CONNECTED,
+                source_id="test:reconnect",
+                is_connected=True,
+                reconnect_attempts=self.reconnect_calls,
+            )
+
+    adapter = DegradedThenHealthyAdapter()
+
+    health = connect_paper_broker_runtime(
+        strategy_code="S23",
+        provider="fyers",
+        adapter=adapter,
+    )
+
+    assert health.connection_state.value == "CONNECTED"
+    assert health.is_connected is True
+    assert adapter.reconnect_calls == 1
+
+
+def test_ensure_paper_broker_runtime_healthy_reconnects_once_when_degraded() -> None:
+    from tfis.brokers import BrokerConnectionState, BrokerHealthEvent
+
+    class DegradedThenHealthyAdapter:
+        def __init__(self) -> None:
+            self.reconnect_calls = 0
+
+        def health(self):
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 20, 9, 15),
+                connection_state=BrokerConnectionState.DEGRADED,
+                source_id="test:health",
+                is_connected=False,
+                diagnostics=("stream stalled",),
+            )
+
+        def reconnect(self):
+            self.reconnect_calls += 1
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 20, 9, 16),
+                connection_state=BrokerConnectionState.CONNECTED,
+                source_id="test:reconnect",
+                is_connected=True,
+                reconnect_attempts=self.reconnect_calls,
+            )
+
+    adapter = DegradedThenHealthyAdapter()
+
+    health = ensure_paper_broker_runtime_healthy(
+        strategy_code="S23",
+        provider="fyers",
+        adapter=adapter,
+    )
+
+    assert health.connection_state.value == "CONNECTED"
+    assert health.is_connected is True
+    assert adapter.reconnect_calls == 1
+
+
+def test_ensure_paper_broker_runtime_healthy_fails_closed_when_reconnect_stays_unhealthy() -> None:
+    from tfis.brokers import BrokerConnectionState, BrokerHealthEvent
+
+    class AlwaysUnhealthyAdapter:
+        def health(self):
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 20, 9, 15),
+                connection_state=BrokerConnectionState.DEGRADED,
+                source_id="test:health",
+                is_connected=False,
+                warnings=("selected_contract_stream_unavailable",),
+            )
+
+        def reconnect(self):
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 20, 9, 16),
+                connection_state=BrokerConnectionState.ERROR,
+                source_id="test:reconnect",
+                is_connected=False,
+                reconnect_attempts=1,
+                diagnostics=("socket unavailable",),
+            )
+
+    with pytest.raises(RuntimeError, match="broker runtime is unhealthy for fyers after reconnect"):
+        ensure_paper_broker_runtime_healthy(
+            strategy_code="S23",
+            provider="fyers",
+            adapter=AlwaysUnhealthyAdapter(),
+        )
+
+
 def test_runtime_adapter_connection_failures_are_contextualized(
     tmp_path: Path,
 ) -> None:
@@ -500,6 +621,84 @@ def test_runtime_adapter_connection_failures_are_contextualized(
 
     with pytest.raises(RuntimeError, match="S23 broker connect failed for fyers"):
         module._connect_runtime_adapters((runtime,))
+
+
+def test_runtime_health_check_logs_degraded_and_recovered_state(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    from tfis.brokers import BrokerConnectionState, BrokerHealthEvent
+
+    class DegradedThenHealthyAdapter:
+        def __init__(self) -> None:
+            self.reconnect_calls = 0
+
+        def health(self):
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 20, 10, 0),
+                connection_state=BrokerConnectionState.DEGRADED,
+                source_id="test:health",
+                is_connected=False,
+                warnings=("selected_contract_stream_unavailable",),
+            )
+
+        def reconnect(self):
+            self.reconnect_calls += 1
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 20, 10, 1),
+                connection_state=BrokerConnectionState.CONNECTED,
+                source_id="test:reconnect",
+                is_connected=True,
+                reconnect_attempts=self.reconnect_calls,
+            )
+
+    runtime = module._TargetRuntime(
+        spec=load_paper_lifecycle_supervisor_target_specs(
+            _targets_yaml(
+                tmp_path,
+                config_path=config_path,
+                artifact_root=tmp_path / "data" / "strategies" / "S23",
+            ),
+            repo_root=tmp_path,
+        )[0],
+        config=PaperLifecycleRuntimeConfig.from_yaml(config_path),
+        timezone_name="Asia/Kolkata",
+        timezone=module.ZoneInfo("Asia/Kolkata"),
+        adapter=DegradedThenHealthyAdapter(),
+        live_state_store=object(),
+        supervisor=object(),
+    )
+
+    health = module._ensure_runtime_adapter_health(
+        runtime=runtime,
+        evaluated_at=datetime(2026, 7, 20, 10, 2),
+    )
+
+    output = capsys.readouterr().out
+    assert "WARNING broker_runtime_degraded" in output
+    assert "INFO broker_runtime_recovered" in output
+    assert health.connection_state.value == "CONNECTED"
 
 
 def test_connect_paper_broker_runtime_contextualizes_health_failures() -> None:

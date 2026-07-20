@@ -45,6 +45,12 @@
   dashboard rebuilds without stopping the shared paper supervisor, and the
   existing reset command now explicitly warns that it is a full runtime
   restart path rather than a dashboard-only refresh
+- the next broker/runtime failure-posture slice is now also in place as of
+  Monday, July 20, 2026: the shared paper lifecycle runtime now rechecks
+  broker health during supervisor loops, drives one reconnect attempt through
+  the shared broker-neutral runtime helper when the adapter reports an
+  unhealthy state, and fails closed with explicit strategy/provider context if
+  the runtime remains unhealthy after that reconnect
 - offline TFIS architecture and backtest foundation is in place
 - corrected S23 weekly option selling contract is documented and now supersedes
   older inferred branch mappings

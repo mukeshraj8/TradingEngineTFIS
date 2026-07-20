@@ -114,6 +114,12 @@ change in a meaningful way.
   could leave the S23 watcher alive without trustworthy fresh evidence; if the
   watcher has no usable stream evidence and the shared quote fetch fails, it
   now fails closed instead of idling optimistically
+- the next shared-runtime failure-posture slice is now in place as of Monday,
+  July 20, 2026: the shared paper lifecycle runtime now routes broker-health
+  recovery through one shared broker-neutral helper, rechecks broker health
+  during supervisor loops, attempts one reconnect when the adapter reports an
+  unhealthy state, and fails closed with explicit strategy/provider context if
+  the runtime remains degraded after that reconnect attempt
 - the operator control surface now also distinguishes between full TFIS reset
   and dashboard-only refresh as of Monday, July 20, 2026. A new
   `scripts/refresh_tfis_operator_dashboard.ps1` rebuilds/reuses the operator
@@ -121,6 +127,12 @@ change in a meaningful way.
   `scripts/reset_tfis_dashboard_and_watchers.ps1` now explicitly warns that it
   is a full runtime restart command intended for pre-market recovery rather
   than in-market dashboard refresh
+- the next runtime-failure hardening slice is now in place as of Monday,
+  July 20, 2026 as well: the shared broker-runtime connect helper no longer
+  skips its own reconnect/fail-closed path after the first health probe, and
+  the shared paper lifecycle supervisor now re-checks broker runtime health
+  before supervising active targets, logging degraded and recovered states
+  explicitly instead of assuming startup health remains trustworthy forever
 - the remaining legacy S23 compatibility watcher now also uses that shared
   selected-contract fetch-policy path for fetched quote/bar behavior while
   preserving its separate stream-tick-first fallback logic, so the selected-

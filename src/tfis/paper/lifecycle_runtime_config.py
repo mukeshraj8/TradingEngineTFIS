@@ -134,12 +134,67 @@ def connect_paper_broker_runtime(
             f"{type(exc).__name__}: {exc}"
         ) from exc
     try:
-        return adapter.health()
+        initial_health = adapter.health()
     except Exception as exc:
         raise RuntimeError(
             f"{strategy_code} broker health check failed for {provider}: "
             f"{type(exc).__name__}: {exc}"
         ) from exc
+    return ensure_paper_broker_runtime_healthy(
+        strategy_code=strategy_code,
+        provider=provider,
+        adapter=adapter,
+        initial_health=initial_health,
+    )
+
+
+def ensure_paper_broker_runtime_healthy(
+    *,
+    strategy_code: str,
+    provider: str,
+    adapter: BrokerAdapter,
+    initial_health: BrokerHealthEvent | None = None,
+) -> BrokerHealthEvent:
+    health = initial_health
+    if health is None:
+        try:
+            health = adapter.health()
+        except Exception as exc:
+            raise RuntimeError(
+                f"{strategy_code} broker health check failed for {provider}: "
+                f"{type(exc).__name__}: {exc}"
+            ) from exc
+    if _paper_broker_health_is_healthy(health):
+        return health
+    try:
+        reconnected_health = adapter.reconnect()
+    except Exception as exc:
+        raise RuntimeError(
+            f"{strategy_code} broker reconnect failed for {provider}: "
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
+    if _paper_broker_health_is_healthy(reconnected_health):
+        return reconnected_health
+    raise RuntimeError(
+        f"{strategy_code} broker runtime is unhealthy for {provider} after reconnect: "
+        f"{_describe_broker_health(reconnected_health)}"
+    )
+
+
+def _paper_broker_health_is_healthy(health: BrokerHealthEvent) -> bool:
+    return health.is_connected and health.connection_state.value == "CONNECTED"
+
+
+def _describe_broker_health(health: BrokerHealthEvent) -> str:
+    warnings = ", ".join(health.warnings) if health.warnings else "none"
+    diagnostics = ", ".join(health.diagnostics) if health.diagnostics else "none"
+    return (
+        f"state={health.connection_state.value} "
+        f"is_connected={health.is_connected} "
+        f"reconnect_attempts={health.reconnect_attempts} "
+        f"warnings={warnings} "
+        f"diagnostics={diagnostics}"
+    )
 
 
 def _build_fyers_broker_adapter(config: PaperLifecycleRuntimeConfig) -> BrokerAdapter:
@@ -177,6 +232,7 @@ __all__ = [
     "PaperLifecycleRuntimeConfigError",
     "build_paper_broker_adapter",
     "connect_paper_broker_runtime",
+    "ensure_paper_broker_runtime_healthy",
     "load_paper_broker_runtime",
     "prepare_paper_broker_runtime_environment",
 ]

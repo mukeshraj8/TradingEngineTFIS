@@ -92,9 +92,14 @@ way.
    quote fetch failure could leave the S23 watcher alive without trustworthy
    evidence; if no usable stream evidence exists and the shared quote fetch
    fails, that watcher now fails closed. The next Step 4 slice should stay on
-   operator-visible runtime failure posture after reconnect trouble and on
-   broader market-data-trustworthiness policy, before moving on to state-
-   reconciliation work. The
+   broader market-data-trustworthiness policy plus operator-visible runtime
+   health surfacing, before moving on to state-reconciliation work. The
+   immediate reconnect/failure-posture sub-slice is now in place as of
+   Monday, July 20, 2026: the shared lifecycle runtime rechecks broker health
+   during supervisor loops, attempts one reconnect through the shared
+   broker-neutral helper when an adapter reports an unhealthy state, and
+   fails closed with explicit strategy/provider context if the runtime stays
+   unhealthy after that reconnect. The
    S21/S23 recovery launchers now also identify
    themselves explicitly as supervisor-compatibility launchers rather than
    watcher launchers. The S23 morning wrapper has now also dropped its dead
@@ -371,6 +376,12 @@ and operator-facing verification all pass.
    adapter bootstrap errors, token/preflight failures, missing quote evidence,
    stale stream detection, missing bar fallback policy, and fail-closed
    behavior when market data is not trustworthy.
+   Latest slice:
+   the shared broker-runtime connect helper now actually honors its reconnect
+   and fail-closed path after the first health probe, and the shared paper
+   lifecycle supervisor now re-checks broker runtime health before managing
+   active targets, emitting explicit degraded/recovered logs with
+   strategy/provider context instead of trusting startup health indefinitely.
    Acceptance gate:
    readiness and runtime paths both surface provider health explicitly and do
    not silently continue into ambiguous trade-management states.
