@@ -8,11 +8,13 @@ from types import SimpleNamespace
 import pytest
 
 from tfis.paper import (
+    FilesystemS23PaperLiveStateStore,
     InMemoryS23PaperLiveStateStore,
     NullS23PaperLiveStateStore,
     RedisS23PaperLiveStateStore,
     S23PaperLiveStateSettings,
     build_s23_paper_live_state_store,
+    inspect_s23_paper_live_state_store,
 )
 
 
@@ -104,6 +106,7 @@ def _settings(**overrides) -> S23PaperLiveStateSettings:
     base = {
         "enabled": True,
         "provider": "redis",
+        "root": "tmp/live_state",
         "namespace": "tfis",
         "environment": "paper",
         "strategy_id": "s23",
@@ -165,6 +168,31 @@ def test_disabled_or_unavailable_redis_uses_null_store(monkeypatch) -> None:
     assert isinstance(build_s23_paper_live_state_store(_settings()), NullS23PaperLiveStateStore)
 
 
+def test_live_state_diagnostics_fail_when_enabled_backend_is_unavailable(monkeypatch) -> None:
+    class BrokenRedis:
+        def __init__(self, **kwargs):
+            raise RuntimeError("redis unavailable")
+
+    monkeypatch.setitem(sys.modules, "redis", SimpleNamespace(Redis=BrokenRedis))
+    diagnostics = inspect_s23_paper_live_state_store(_settings())
+
+    assert diagnostics.status == "FAIL"
+    assert diagnostics.backend == "null"
+    assert diagnostics.exception_type == "RuntimeError"
+    assert "unavailable" in diagnostics.message.lower()
+
+
+def test_strict_live_state_build_raises_when_enabled_backend_is_unavailable(monkeypatch) -> None:
+    class BrokenRedis:
+        def __init__(self, **kwargs):
+            raise RuntimeError("redis unavailable")
+
+    monkeypatch.setitem(sys.modules, "redis", SimpleNamespace(Redis=BrokenRedis))
+
+    with pytest.raises(RuntimeError, match="live-state storage is unavailable"):
+        build_s23_paper_live_state_store(_settings(), strict=True)
+
+
 def test_in_memory_live_state_uses_same_key_shape() -> None:
     store = InMemoryS23PaperLiveStateStore(_settings(provider="memory"))
 
@@ -176,3 +204,37 @@ def test_in_memory_live_state_uses_same_key_shape() -> None:
 
     raw = store.values["tfis:paper:session:2026-06-23:strategy:s23:state:open_position:trade-2"]
     assert json.loads(raw) == {"status": "OPEN"}
+
+
+def test_filesystem_live_state_persists_values_and_locks(tmp_path) -> None:
+    settings = _settings(provider="filesystem", root=str(tmp_path / "live_state"))
+    store = build_s23_paper_live_state_store(settings, strict=True)
+
+    assert isinstance(store, FilesystemS23PaperLiveStateStore)
+    store.mirror_position_state(
+        session_date=date(2026, 6, 23),
+        trade_id="trade-3",
+        payload={"status": "OPEN"},
+    )
+    store.mirror_trade_event(
+        session_date=date(2026, 6, 23),
+        trade_id="trade-3",
+        payload={"status": "OPEN"},
+    )
+    assert store.acquire_trade_lock(trade_id="trade-3", owner_id="owner-a", ttl_seconds=30) is True
+    assert store.acquire_trade_lock(trade_id="trade-3", owner_id="owner-b", ttl_seconds=30) is False
+    store.release_trade_lock(trade_id="trade-3", owner_id="owner-a")
+    assert store.acquire_trade_lock(trade_id="trade-3", owner_id="owner-b", ttl_seconds=30) is True
+
+    files = list((tmp_path / "live_state").rglob("*"))
+    assert any(path.name.endswith(".json") for path in files)
+    assert any(path.name.endswith(".jsonl") for path in files)
+
+
+def test_live_state_diagnostics_pass_for_filesystem_provider(tmp_path) -> None:
+    diagnostics = inspect_s23_paper_live_state_store(
+        _settings(provider="filesystem", root=str(tmp_path / "live_state"))
+    )
+
+    assert diagnostics.status == "PASS"
+    assert diagnostics.backend == "filesystem"

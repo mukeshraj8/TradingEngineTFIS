@@ -70,7 +70,32 @@ way.
    uses that same shared fetched quote/bar policy while preserving its
    stream-tick-first fallback. The next architecture move should therefore
    stay focused on Phase 4 broker/data-source separation rather than more
-   Phase 3 micro-slices. The S21/S23 recovery launchers now also identify
+   Phase 3 micro-slices. As of Saturday, July 18, 2026, the first explicit
+   Step 4 ingress-health slice is also complete: TFIS now has shared live-
+   state store diagnostics, pre-live readiness now fails clearly when a
+   configured live-state backend is unavailable, and both the shared
+   supervisor and the S23 compatibility watcher now fail closed during
+   bootstrap instead of silently degrading to a null live-state store when
+   Redis was configured but unreachable. As of Sunday, July 19, 2026, the
+   next Step 4 slice is also complete: TFIS now supports a local filesystem
+   live-state backend for the active paper configs, so supported paper startup
+   no longer depends on Redis being up on the workstation, and the
+   pre-live-readiness gate now verifies that each configured paper broker
+   runtime can be assembled through the shared bootstrap seam, including auth
+   prerequisite preparation when `--require-token` is supplied. As of Sunday,
+   July 19, 2026, the next runtime-posture slice is also complete: both the
+   shared supervisor and the S23 compatibility watcher now use one shared
+   broker runtime connect/health helper, so actual adapter startup failures
+   are reported with strategy/provider context instead of surfacing as generic
+   runtime errors. The same Sunday, July 19, 2026 runtime-safety pass now
+   also removes the old compatibility-watch loophole where selected-contract
+   quote fetch failure could leave the S23 watcher alive without trustworthy
+   evidence; if no usable stream evidence exists and the shared quote fetch
+   fails, that watcher now fails closed. The next Step 4 slice should stay on
+   operator-visible runtime failure posture after reconnect trouble and on
+   broader market-data-trustworthiness policy, before moving on to state-
+   reconciliation work. The
+   S21/S23 recovery launchers now also identify
    themselves explicitly as supervisor-compatibility launchers rather than
    watcher launchers. The S23 morning wrapper has now also dropped its dead
    pre-supervisor watcher-launch fallback and updated its surviving startup

@@ -41,6 +41,8 @@ from tfis.paper import (
     build_paper_morning_runner_arguments,
     build_paper_position_manager,
     build_paper_live_state_store_from_yaml,
+    connect_paper_broker_runtime,
+    inspect_paper_live_state_store_from_yaml,
     fetch_selected_contract_market_events,
     load_paper_lifecycle_supervisor_target_specs,
     load_paper_broker_runtime,
@@ -142,8 +144,7 @@ def main(argv: list[str] | None = None) -> int:
         tfis_root=args.tfis_root,
         skip_refresh=args.skip_refresh,
     )
-    for runtime in runtimes:
-        runtime.adapter.connect()
+    _connect_runtime_adapters(runtimes)
 
     iterations = 0
     try:
@@ -243,7 +244,21 @@ def _build_runtimes(
         config = broker_runtime.config
         timezone_name = broker_runtime.timezone_name
         timezone = broker_runtime.timezone
-        live_state_store = build_paper_live_state_store_from_yaml(spec.config_path)
+        live_state_diagnostics = inspect_paper_live_state_store_from_yaml(spec.config_path)
+        if live_state_diagnostics.status != "PASS":
+            raise RuntimeError(
+                f"{spec.strategy_code} live-state bootstrap failed: {live_state_diagnostics.message}"
+            )
+        print(
+            f"INFO live_state_ready strategy={spec.strategy_code} "
+            f"provider={live_state_diagnostics.provider} "
+            f"backend={live_state_diagnostics.backend}",
+            flush=True,
+        )
+        live_state_store = build_paper_live_state_store_from_yaml(
+            spec.config_path,
+            strict=True,
+        )
         runtimes.append(
             _TargetRuntime(
                 spec=spec,
@@ -282,6 +297,23 @@ def _prepare_runtime_environments(
             skip_refresh=skip_refresh,
         )
         prepared_providers.add(provider)
+
+
+def _connect_runtime_adapters(
+    runtimes: tuple[_TargetRuntime, ...],
+) -> None:
+    for runtime in runtimes:
+        health = connect_paper_broker_runtime(
+            strategy_code=runtime.spec.strategy_code,
+            provider=runtime.config.broker.provider,
+            adapter=runtime.adapter,
+        )
+        print(
+            f"INFO broker_runtime_ready strategy={runtime.spec.strategy_code} "
+            f"provider={runtime.config.broker.provider} "
+            f"state={health.connection_state.value}",
+            flush=True,
+        )
 
 
 def _process_target(

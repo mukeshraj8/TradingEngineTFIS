@@ -134,6 +134,30 @@ def test_fetch_selected_contract_events_returns_stream_when_shared_fetch_fails(m
     assert events == (stream_event,)
 
 
+def test_fetch_selected_contract_events_raises_when_no_stream_evidence_exists(monkeypatch) -> None:
+    module = _load_watch_module()
+
+    class _Adapter:
+        def stream_ticks(self):
+            return ()
+
+    def _fake_fetch(adapter, request, on_bar_fetch_error=None):
+        raise BrokerAdapterError("quote fetch failed")
+
+    monkeypatch.setattr(module, "fetch_selected_contract_market_events", _fake_fetch)
+
+    import pytest
+
+    with pytest.raises(BrokerAdapterError, match="quote fetch failed"):
+        module._fetch_selected_contract_events(
+            adapter=_Adapter(),
+            selected_contract_symbol="NIFTY_20260707_24100_CE",
+            session_date=date(2026, 7, 3),
+            evaluated_at=datetime(2026, 7, 3, 9, 31, 5),
+            state=None,
+        )
+
+
 def test_watch_runtime_bootstrap_uses_shared_paper_runtime_config(monkeypatch) -> None:
     module = _load_watch_module()
     calls: list[tuple[str, object]] = []
@@ -163,8 +187,18 @@ def test_watch_runtime_bootstrap_uses_shared_paper_runtime_config(monkeypatch) -
     monkeypatch.setattr(module, "prepare_paper_broker_runtime_environment", _fake_prepare)
     monkeypatch.setattr(
         module,
+        "inspect_paper_live_state_store_from_yaml",
+        lambda path: SimpleNamespace(
+            status="PASS",
+            provider="redis",
+            backend="redis",
+            message="ready",
+        ),
+    )
+    monkeypatch.setattr(
+        module,
         "build_paper_live_state_store_from_yaml",
-        lambda path: live_state_store,
+        lambda path, strict=False: live_state_store,
     )
 
     result = module._load_watch_runtime_components(
@@ -181,6 +215,137 @@ def test_watch_runtime_bootstrap_uses_shared_paper_runtime_config(monkeypatch) -
     assert result.timezone_name == "Asia/Kolkata"
     assert result.adapter is adapter
     assert result.live_state_store is live_state_store
+
+
+def test_watch_runtime_uses_shared_broker_runtime_connect_helper(monkeypatch) -> None:
+    module = _load_watch_module()
+    calls: list[tuple[str, str, object]] = []
+
+    class FakeStateStore:
+        def load_state(self, _path):
+            return SimpleNamespace(
+                selected_contract_symbol="NIFTY_20260707_24100_CE",
+                entry_date=date(2026, 7, 3),
+                stoploss_reset_pending=False,
+                stoploss_active=True,
+                stoploss_reset_session_date=None,
+                stoploss_reset_rc_time=None,
+            )
+
+    class FakeAdapter:
+        def subscribe_symbols(self, symbols):
+            return symbols
+
+        def disconnect(self):
+            return None
+
+    fake_adapter = FakeAdapter()
+
+    monkeypatch.setattr(
+        module,
+        "_load_watch_runtime_components",
+        lambda args: SimpleNamespace(
+            runtime_config=SimpleNamespace(
+                broker=SimpleNamespace(provider="fyers"),
+                costs=SimpleNamespace(slippage_exit_points=0.0),
+            ),
+            timezone_name="Asia/Kolkata",
+            timezone=module.ZoneInfo("Asia/Kolkata"),
+            adapter=fake_adapter,
+            live_state_store=SimpleNamespace(
+                acquire_trade_lock=lambda **kwargs: True,
+                release_trade_lock=lambda **kwargs: None,
+                set_watch_heartbeat=lambda **kwargs: None,
+            ),
+        ),
+    )
+    monkeypatch.setattr(module, "_resolve_state_dir", lambda **kwargs: Path("D:/tmp/state"))
+    monkeypatch.setattr(module, "S23PaperPositionStateStore", lambda: FakeStateStore())
+    monkeypatch.setattr(
+        module,
+        "PaperLifecycleSupervisorContext",
+        lambda **kwargs: SimpleNamespace(**kwargs),
+    )
+    monkeypatch.setattr(module, "_watch_process_lock_path", lambda *_args, **_kwargs: Path("D:/tmp/watch.pid.json"))
+    monkeypatch.setattr(
+        module,
+        "acquire_process_lock",
+        lambda *args, **kwargs: SimpleNamespace(release=lambda: None),
+    )
+    monkeypatch.setattr(module, "_acquire_watch_file_lock", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(module, "_release_watch_file_lock", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        module,
+        "build_paper_position_manager",
+        lambda **kwargs: object(),
+    )
+    monkeypatch.setattr(
+        module,
+        "PaperLifecycleSupervisor",
+        lambda **kwargs: SimpleNamespace(expire_waiting_order_from_previous_session=lambda *a, **k: None),
+    )
+    monkeypatch.setattr(module, "build_paper_expiry_governance", lambda **kwargs: object())
+    monkeypatch.setattr(
+        module,
+        "connect_paper_broker_runtime",
+        lambda *, strategy_code, provider, adapter: calls.append((strategy_code, provider, adapter))
+        or SimpleNamespace(connection_state=SimpleNamespace(value="CONNECTED")),
+    )
+    monkeypatch.setattr(module, "_fetch_selected_contract_events", lambda **kwargs: ())
+    monkeypatch.setattr(module, "_append_selected_contract_market_events", lambda *args, **kwargs: Path("D:/tmp/events.jsonl"))
+    monkeypatch.setattr(
+        module,
+        "_rebuild_dashboard",
+        lambda **kwargs: None,
+    )
+    monkeypatch.setattr(
+        module,
+        "s23_live_state_owner_id",
+        lambda prefix="tfis-s23-paper-watch": "owner-1",
+    )
+    monkeypatch.setattr(
+        module,
+        "S23PaperTradeLedgerStore",
+        SimpleNamespace(trade_id_for_state=lambda state: "trade-1"),
+    )
+    monkeypatch.setattr(
+        module,
+        "datetime",
+        SimpleNamespace(
+            now=lambda tz=None: datetime(2026, 7, 3, 9, 31),
+        ),
+    )
+
+    lifecycle_result = SimpleNamespace(
+        context=SimpleNamespace(
+            trade_id="trade-1",
+            selected_contract_symbol="NIFTY_20260707_24100_CE",
+            session_directory=Path("D:/tmp/state"),
+        ),
+        steps=(),
+        final_step=SimpleNamespace(status="HOLD"),
+        terminal=False,
+    )
+    monkeypatch.setattr(
+        module,
+        "PaperLifecycleSupervisor",
+        lambda **kwargs: SimpleNamespace(
+            expire_waiting_order_from_previous_session=lambda *a, **k: None,
+            supervise=lambda *a, **k: lifecycle_result,
+        ),
+    )
+
+    result = module.main(
+        [
+            "--state-dir",
+            "D:/tmp/state",
+            "--once",
+            "--disable-dashboard-rebuild",
+        ]
+    )
+
+    assert result == 0
+    assert calls == [("S23", "fyers", fake_adapter)]
 
 
 def _quote_event(*, symbol: str, effective_timestamp: datetime, ltp: float) -> SelectedContractQuoteEvent:

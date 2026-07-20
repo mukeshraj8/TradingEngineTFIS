@@ -34,8 +34,10 @@ from tfis.paper import (
     S23PaperPositionStateStore,
     S23PaperTradeLedgerStore,
     build_paper_live_state_store_from_yaml,
+    connect_paper_broker_runtime,
     build_paper_position_manager,
     fetch_selected_contract_market_events,
+    inspect_paper_live_state_store_from_yaml,
     load_paper_broker_runtime,
     prepare_paper_broker_runtime_environment,
     s23_live_state_owner_id,
@@ -131,7 +133,15 @@ def _load_watch_runtime_components(args: argparse.Namespace) -> _WatchRuntimeCom
         skip_refresh=args.skip_refresh,
     )
     adapter = broker_runtime.adapter
-    live_state_store = build_paper_live_state_store_from_yaml(args.config)
+    live_state_diagnostics = inspect_paper_live_state_store_from_yaml(args.config)
+    if live_state_diagnostics.status != "PASS":
+        raise RuntimeError(f"S23 live-state bootstrap failed: {live_state_diagnostics.message}")
+    print(
+        f"INFO live_state_ready strategy=S23 provider={live_state_diagnostics.provider} "
+        f"backend={live_state_diagnostics.backend}",
+        flush=True,
+    )
+    live_state_store = build_paper_live_state_store_from_yaml(args.config, strict=True)
     return _WatchRuntimeComponents(
         (
             runtime_config,
@@ -304,26 +314,27 @@ def main(argv: list[str] | None = None) -> int:
                     artifact_root=Path(args.s23_artifact_root),
                 )
             return 0
-        adapter.connect()
+        health = connect_paper_broker_runtime(
+            strategy_code="S23",
+            provider=config.broker.provider,
+            adapter=adapter,
+        )
+        print(
+            f"INFO broker_runtime_ready strategy=S23 provider={config.broker.provider} "
+            f"state={health.connection_state.value}",
+            flush=True,
+        )
         adapter.subscribe_symbols((watched_symbol,))
         while True:
             iterations += 1
             evaluated_at = datetime.now(timezone)
-            try:
-                events = _fetch_selected_contract_events(
-                    adapter=adapter,
-                    selected_contract_symbol=watched_symbol,
-                    session_date=session_date,
-                    evaluated_at=evaluated_at,
-                    state=state,
-                )
-            except BrokerAdapterError as exc:
-                print(
-                    f"{evaluated_at.isoformat()} WARNING quote_fetch_failed "
-                    f"{exc}; keeping watcher alive",
-                    flush=True,
-                )
-                events = ()
+            events = _fetch_selected_contract_events(
+                adapter=adapter,
+                selected_contract_symbol=watched_symbol,
+                session_date=session_date,
+                evaluated_at=evaluated_at,
+                state=state,
+            )
             _append_selected_contract_market_events(
                 lifecycle_context.session_directory,
                 events=events,

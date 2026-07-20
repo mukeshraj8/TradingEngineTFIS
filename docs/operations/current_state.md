@@ -90,6 +90,30 @@ change in a meaningful way.
   fetch policy, including next-day SL-reset bar-fetch gating; after market,
   the shared paper lifecycle supervisor was cut over to that shared fetch path
   while preserving the existing SL-reset bar-fetch warning behavior
+- the first explicit weekend Step 4 ingress-health slice is now also in place:
+  as of Saturday, July 18, 2026, TFIS has shared live-state store diagnostics,
+  pre-live readiness now reports and fails clearly when a configured live-
+  state backend is unavailable, and both the shared supervisor plus the S23
+  compatibility watcher now fail closed during bootstrap instead of silently
+  falling back to a null live-state store when Redis was configured but
+  unreachable
+- the next Step 4 readiness slice is now in place as of Sunday, July 19,
+  2026: TFIS has a local filesystem live-state backend for the supported paper
+  configs, so Monday paper startup no longer depends on a local Redis service;
+  the same readiness gate now also verifies that each configured paper broker
+  runtime can be assembled through the shared runtime path, and when
+  `--require-token` is supplied it also prepares broker auth prerequisites
+  through that same shared bootstrap seam
+- the next runtime-posture slice is now in place too as of Sunday, July 19,
+  2026: both the shared supervisor and the S23 compatibility watcher now use
+  the same shared broker runtime connect/health helper, so actual adapter
+  startup failures are surfaced with strategy/provider context instead of
+  falling through as generic runtime errors during live paper startup
+- the same Sunday, July 19, 2026 runtime-safety pass now also removes the
+  old compatibility-watch loophole where selected-contract quote fetch failure
+  could leave the S23 watcher alive without trustworthy fresh evidence; if the
+  watcher has no usable stream evidence and the shared quote fetch fails, it
+  now fails closed instead of idling optimistically
 - the remaining legacy S23 compatibility watcher now also uses that shared
   selected-contract fetch-policy path for fetched quote/bar behavior while
   preserving its separate stream-tick-first fallback logic, so the selected-

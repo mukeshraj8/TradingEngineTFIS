@@ -16,6 +16,8 @@ from tfis.paper import (
     build_paper_expiry_governance,
     build_paper_broker_adapter,
     build_paper_position_manager,
+    FilesystemPaperLiveStateStore,
+    FilesystemS23PaperLiveStateStore,
     build_s23_paper_live_state_store,
     build_s23_paper_live_state_store_from_yaml,
     InMemoryPaperLiveStateStore,
@@ -160,6 +162,7 @@ def test_paper_live_state_aliases_point_to_existing_s23_types() -> None:
     assert PaperLiveStateSettings is S23PaperLiveStateSettings
     assert PaperLiveStateStore is S23PaperLiveStateStore
     assert InMemoryPaperLiveStateStore is InMemoryS23PaperLiveStateStore
+    assert FilesystemPaperLiveStateStore is FilesystemS23PaperLiveStateStore
     assert NullPaperLiveStateStore is NullS23PaperLiveStateStore
     assert RedisPaperLiveStateStore is RedisS23PaperLiveStateStore
     assert callable(build_paper_live_state_store)

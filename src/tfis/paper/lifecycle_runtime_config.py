@@ -6,7 +6,7 @@ from zoneinfo import ZoneInfo
 
 import yaml
 
-from tfis.brokers import BrokerAdapter
+from tfis.brokers import BrokerAdapter, BrokerHealthEvent
 
 
 class PaperLifecycleRuntimeConfigError(RuntimeError):
@@ -120,6 +120,28 @@ def prepare_paper_broker_runtime_environment(
     )
 
 
+def connect_paper_broker_runtime(
+    *,
+    strategy_code: str,
+    provider: str,
+    adapter: BrokerAdapter,
+) -> BrokerHealthEvent:
+    try:
+        adapter.connect()
+    except Exception as exc:
+        raise RuntimeError(
+            f"{strategy_code} broker connect failed for {provider}: "
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
+    try:
+        return adapter.health()
+    except Exception as exc:
+        raise RuntimeError(
+            f"{strategy_code} broker health check failed for {provider}: "
+            f"{type(exc).__name__}: {exc}"
+        ) from exc
+
+
 def _build_fyers_broker_adapter(config: PaperLifecycleRuntimeConfig) -> BrokerAdapter:
     from tfis.brokers import FyersBrokerAdapter
 
@@ -154,6 +176,7 @@ __all__ = [
     "PaperLifecycleRuntimeConfig",
     "PaperLifecycleRuntimeConfigError",
     "build_paper_broker_adapter",
+    "connect_paper_broker_runtime",
     "load_paper_broker_runtime",
     "prepare_paper_broker_runtime_environment",
 ]

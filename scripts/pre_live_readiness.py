@@ -16,7 +16,12 @@ if str(SRC_ROOT) not in sys.path:
 from tfis.brokers.fyers_token import FyersTokenRefreshError, prepare_fyers_env_from_tfis
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 from tfis.monthly_status import load_monthly_status_instrument_registry, load_monthly_status_thresholds
-from tfis.paper import load_paper_lifecycle_supervisor_target_specs
+from tfis.paper import (
+    inspect_paper_live_state_store_from_yaml,
+    load_paper_broker_runtime,
+    load_paper_lifecycle_supervisor_target_specs,
+    prepare_paper_broker_runtime_environment,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +66,8 @@ def run_checks(*, require_token: bool) -> tuple[ReadinessCheck, ...]:
         _strategy_config_validation_check(),
         _dashboard_config_check(),
         _paper_lifecycle_supervisor_config_check(),
+        _paper_broker_runtime_check(require_token=require_token),
+        _paper_live_state_check(),
         _monthly_status_config_check(),
         _token_check(required=require_token),
     )
@@ -185,6 +192,88 @@ def _paper_lifecycle_supervisor_config_check() -> ReadinessCheck:
         name="paper_lifecycle_supervisor",
         status="PASS",
         message="Paper lifecycle supervisor targets loaded: " + summary,
+    )
+
+
+def _paper_live_state_check() -> ReadinessCheck:
+    config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    try:
+        specs = load_paper_lifecycle_supervisor_target_specs(config_path, repo_root=REPO_ROOT)
+    except Exception as exc:
+        return ReadinessCheck(
+            name="paper_live_state",
+            status="FAIL",
+            message=f"Paper live-state readiness could not load target config: {exc}",
+        )
+
+    failures: list[str] = []
+    summaries: list[str] = []
+    for spec in specs:
+        diagnostics = inspect_paper_live_state_store_from_yaml(spec.config_path)
+        label = f"{spec.strategy_code}=>{diagnostics.provider}/{diagnostics.backend}"
+        if diagnostics.status != "PASS":
+            failures.append(f"{spec.strategy_code}: {diagnostics.message}")
+        else:
+            summaries.append(label)
+    if failures:
+        return ReadinessCheck(
+            name="paper_live_state",
+            status="FAIL",
+            message="; ".join(failures),
+        )
+    return ReadinessCheck(
+        name="paper_live_state",
+        status="PASS",
+        message="Paper live-state providers ready: " + ", ".join(summaries),
+    )
+
+
+def _paper_broker_runtime_check(*, require_token: bool) -> ReadinessCheck:
+    config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    try:
+        specs = load_paper_lifecycle_supervisor_target_specs(config_path, repo_root=REPO_ROOT)
+    except Exception as exc:
+        return ReadinessCheck(
+            name="paper_broker_runtime",
+            status="FAIL",
+            message=f"Paper broker runtime readiness could not load target config: {exc}",
+        )
+
+    failures: list[str] = []
+    summaries: list[str] = []
+    prepared_providers: set[str] = set()
+    for spec in specs:
+        try:
+            runtime = load_paper_broker_runtime(spec.config_path)
+            provider = runtime.config.broker.provider.strip().lower()
+            summaries.append(
+                f"{spec.strategy_code}=>{provider}/{runtime.timezone_name}/{runtime.config.source_mode}"
+            )
+            if require_token and provider not in prepared_providers:
+                prepare_paper_broker_runtime_environment(
+                    runtime.config,
+                    tfis_root=REPO_ROOT,
+                    skip_refresh=True,
+                )
+                prepared_providers.add(provider)
+        except Exception as exc:
+            failures.append(f"{spec.strategy_code}: {type(exc).__name__}: {exc}")
+    if failures:
+        return ReadinessCheck(
+            name="paper_broker_runtime",
+            status="FAIL",
+            message="; ".join(failures),
+        )
+    if require_token:
+        return ReadinessCheck(
+            name="paper_broker_runtime",
+            status="PASS",
+            message="Paper broker runtimes assembled and auth prerequisites prepared: " + ", ".join(summaries),
+        )
+    return ReadinessCheck(
+        name="paper_broker_runtime",
+        status="PASS",
+        message="Paper broker runtimes assembled: " + ", ".join(summaries),
     )
 
 

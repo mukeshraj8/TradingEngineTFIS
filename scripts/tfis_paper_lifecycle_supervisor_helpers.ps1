@@ -19,6 +19,7 @@ function Start-TfisPaperLifecycleSupervisorProcess {
         [string]$TfisRoot,
         [Parameter(Mandatory = $true)]
         [datetime]$SessionDate,
+        [switch]$SkipRefresh,
         [switch]$DisableDashboardRebuild,
         [string]$TargetsConfig,
         [string]$DashboardOutputRoot,
@@ -47,6 +48,9 @@ function Start-TfisPaperLifecycleSupervisorProcess {
     }
     if ($DisableDashboardRebuild) {
         $supervisorArgs += "-DisableDashboardRebuild"
+    }
+    if ($SkipRefresh) {
+        $supervisorArgs += "-SkipRefresh"
     }
 
     return Start-Process `

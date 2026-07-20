@@ -62,10 +62,14 @@ def test_reset_script_keeps_dashboard_and_supervisor_recovery_windows_visible() 
 
 def test_reset_script_delegates_recovery_to_shared_supervisor() -> None:
     script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
+    supervisor_helper_script = _script_text("tfis_paper_lifecycle_supervisor_helpers.ps1")
 
     assert '. $paperPositionHelperPath' in script
     assert '. $supervisorHelperPath' in script
     assert '"-TargetsConfig (Resolve-TfisPath $TargetsConfig)' not in script
     assert "Start-TfisPaperLifecycleSupervisorProcess" in script
+    assert "-SkipRefresh" in script
     assert "Started shared TFIS paper lifecycle supervisor PID=" in script
     assert "Get-TfisLivePositionStateDirectories" not in script
+    assert '[switch]$SkipRefresh' in supervisor_helper_script
+    assert '$supervisorArgs += "-SkipRefresh"' in supervisor_helper_script

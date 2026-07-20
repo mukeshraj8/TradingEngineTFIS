@@ -109,7 +109,8 @@ $supervisorProcess = Start-TfisPaperLifecycleSupervisorProcess `
     -TargetsConfig (Resolve-TfisPath $TargetsConfig) `
     -DashboardOutputRoot $DashboardOutputRoot `
     -DashboardPort $DashboardPort `
-    -SessionDate (Get-Date)
+    -SessionDate (Get-Date) `
+    -SkipRefresh
 
 Write-Host "Started shared TFIS paper lifecycle supervisor PID=$($supervisorProcess.Id)"
 Write-Host ("TFIS dashboard/supervisor reset complete in {0:n1}s." -f $resetStopwatch.Elapsed.TotalSeconds)

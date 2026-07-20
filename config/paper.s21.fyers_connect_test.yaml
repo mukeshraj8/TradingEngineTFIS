@@ -18,7 +18,8 @@ strategies:
 storage:
   live_state:
     enabled: true
-    provider: redis
+    provider: filesystem
+    root: tmp/live_state/s21
     namespace: tfis
     environment: paper
     strategy_id: s21

@@ -30,7 +30,8 @@ strategies:
 storage:
   live_state:
     enabled: true
-    provider: redis
+    provider: filesystem
+    root: tmp/live_state/s23
     namespace: tfis
     environment: paper
     strategy_id: s23

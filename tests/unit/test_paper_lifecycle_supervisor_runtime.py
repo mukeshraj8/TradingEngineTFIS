@@ -12,6 +12,7 @@ from tfis.brokers import FyersBrokerAdapter
 from tfis.domain import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment, StrategyExpiryPolicy, StrategyRule
 from tfis.paper import (
     build_paper_expiry_governance,
+    build_paper_live_state_store_from_yaml,
     build_paper_position_manager,
     PaperLifecycleBrokerRuntime,
     PaperLifecycleRuntimeConfig,
@@ -22,6 +23,7 @@ from tfis.paper import (
     S23PaperTradeLedgerStore,
     S23PaperTradeDecisionSummary,
     build_paper_broker_adapter,
+    inspect_paper_live_state_store_from_yaml,
     load_paper_broker_runtime,
     load_paper_lifecycle_supervisor_target_specs,
     prepare_paper_broker_runtime_environment,
@@ -293,6 +295,79 @@ def test_prepare_paper_broker_runtime_environment_uses_fyers_auth(
     assert calls == [(tmp_path, True)]
 
 
+def test_inspect_paper_live_state_store_from_yaml_reports_enabled_redis_ready(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "storage:",
+                "  live_state:",
+                "    enabled: true",
+                "    provider: redis",
+                "    namespace: tfis",
+                "    environment: paper",
+                "    strategy_id: s23",
+                "  redis:",
+                "    host: localhost",
+                "    port: 6379",
+                "    db: 1",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    class FakeRedis:
+        def __init__(self, **kwargs):
+            self.kwargs = kwargs
+
+        def ping(self):
+            return True
+
+    monkeypatch.setitem(sys.modules, "redis", type("RedisModule", (), {"Redis": FakeRedis}))
+
+    diagnostics = inspect_paper_live_state_store_from_yaml(config_path)
+
+    assert diagnostics.status == "PASS"
+    assert diagnostics.backend == "redis"
+
+
+def test_build_paper_live_state_store_from_yaml_strict_raises_when_backend_unavailable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "storage:",
+                "  live_state:",
+                "    enabled: true",
+                "    provider: redis",
+                "    namespace: tfis",
+                "    environment: paper",
+                "    strategy_id: s23",
+                "  redis:",
+                "    host: localhost",
+                "    port: 6379",
+                "    db: 1",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    class BrokenRedis:
+        def __init__(self, **kwargs):
+            raise RuntimeError("redis unavailable")
+
+    monkeypatch.setitem(sys.modules, "redis", type("RedisModule", (), {"Redis": BrokenRedis}))
+
+    with pytest.raises(RuntimeError, match="live-state storage is unavailable"):
+        build_paper_live_state_store_from_yaml(config_path, strict=True)
+
+
 def test_runtime_environment_preparation_is_deduped_per_provider(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -346,6 +421,103 @@ def test_runtime_environment_preparation_is_deduped_per_provider(
     )
 
     assert calls == [("fyers", False)]
+
+
+def test_connect_paper_broker_runtime_returns_health() -> None:
+    class HealthyAdapter:
+        def __init__(self) -> None:
+            self.connected = False
+
+        def connect(self) -> None:
+            self.connected = True
+
+        def health(self):
+            from tfis.brokers import BrokerConnectionState, BrokerHealthEvent
+
+            return BrokerHealthEvent(
+                broker_name="fyers",
+                as_of=datetime(2026, 7, 19, 9, 15),
+                connection_state=BrokerConnectionState.CONNECTED,
+                source_id="test:health",
+                is_connected=self.connected,
+            )
+
+    from tfis.paper import connect_paper_broker_runtime
+
+    health = connect_paper_broker_runtime(
+        strategy_code="S23",
+        provider="fyers",
+        adapter=HealthyAdapter(),
+    )
+
+    assert health.connection_state.value == "CONNECTED"
+    assert health.is_connected is True
+
+
+def test_runtime_adapter_connection_failures_are_contextualized(
+    tmp_path: Path,
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+    config = PaperLifecycleRuntimeConfig.from_yaml(config_path)
+
+    class BrokenAdapter:
+        def connect(self):
+            raise RuntimeError("socket unavailable")
+
+    runtime = module._TargetRuntime(
+        spec=load_paper_lifecycle_supervisor_target_specs(
+            _targets_yaml(
+                tmp_path,
+                config_path=config_path,
+                artifact_root=tmp_path / "data" / "strategies" / "S23",
+            ),
+            repo_root=tmp_path,
+        )[0],
+        config=config,
+        timezone_name="Asia/Kolkata",
+        timezone=module.ZoneInfo("Asia/Kolkata"),
+        adapter=BrokenAdapter(),
+        live_state_store=object(),
+        supervisor=object(),
+    )
+
+    with pytest.raises(RuntimeError, match="S23 broker connect failed for fyers"):
+        module._connect_runtime_adapters((runtime,))
+
+
+def test_connect_paper_broker_runtime_contextualizes_health_failures() -> None:
+    class AdapterWithBrokenHealth:
+        def connect(self) -> None:
+            return None
+
+        def health(self):
+            raise RuntimeError("health unavailable")
+
+    from tfis.paper import connect_paper_broker_runtime
+
+    with pytest.raises(RuntimeError, match="S23 broker health check failed for fyers"):
+        connect_paper_broker_runtime(
+            strategy_code="S23",
+            provider="fyers",
+            adapter=AdapterWithBrokenHealth(),
+        )
 
 
 def test_build_fresh_decision_task_spec_from_target_metadata(tmp_path: Path) -> None:
