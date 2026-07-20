@@ -39,6 +39,12 @@
   now has a dedicated `stop_tfis_runtime.ps1` command, and the reset path now
   shares one runtime-process helper with that stop command so manual stop and
   restart/recovery follow the same TFIS-only process ownership rules
+- the next operator-control slice is now in place as of Monday, July 20,
+  2026: TFIS now has a dedicated
+  `scripts/refresh_tfis_operator_dashboard.ps1` command for in-market
+  dashboard rebuilds without stopping the shared paper supervisor, and the
+  existing reset command now explicitly warns that it is a full runtime
+  restart path rather than a dashboard-only refresh
 - offline TFIS architecture and backtest foundation is in place
 - corrected S23 weekly option selling contract is documented and now supersedes
   older inferred branch mappings

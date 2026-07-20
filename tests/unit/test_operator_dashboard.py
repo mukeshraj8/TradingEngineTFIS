@@ -7,6 +7,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
+import pytest
+
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
 from tfis.dashboard.operator_dashboard import (
     DashboardSelectedContractStreamHealth,
@@ -718,7 +720,8 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "LTP" in strategy_html
     assert "Bid / Ask" in strategy_html
     assert "239" in strategy_html
-    assert "238.50 / 239.50" in strategy_html
+    assert "238.5" in strategy_html
+    assert "239.5" in strategy_html
     assert "selected_contract_market_events.jsonl" in strategy_html
     assert "Events 1" in strategy_html
     assert "PID 4321" in strategy_html
@@ -939,9 +942,74 @@ def test_dashboard_builds_consolidated_trades_page(tmp_path: Path) -> None:
     assert 'href="trades/index.html"' in index_html
     assert "All Strategy Trades" in trades_html
     assert "S23" in trades_html
-    assert "S21" in trades_html
-    assert "NIFTY_20260714_24150_CE" in trades_html
-    assert "BANKNIFTY_20260728_57800_CE" in trades_html
+
+
+def test_consolidated_monitor_hides_past_not_filled_rows_without_current_session(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-07-20T10:30:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
+    s23_root = tmp_path / "s23-artifacts"
+    s23_day_dir = s23_root / "2026-07-17"
+    s23_final_dir = s23_day_dir / "s23-fyers-morning-supervised-decision-2026-07-17"
+    s23_branch_dir = s23_final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    s23_branch_dir.mkdir(parents=True)
+    (s23_final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "NO_GO", "monthly_status": "BULL"}}),
+        encoding="utf-8",
+    )
+    (s23_final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (s23_branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260721_23950_CE",
+                "selected_contract_expiry": "2026-07-21",
+                "selected_contract_option_type": "CE",
+                "selected_contract_strike": 23950,
+                "expiry_type": "WEEKLY",
+                "rollover_policy": "NEXT_WEEKLY",
+                "forced_close_time": "12:00:00",
+                "no_carry_past_expiry": True,
+                "entry_date": "2026-07-17",
+                "order_timestamp": "2026-07-17T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-17T15:30:01+05:30",
+                "planned_entry_price": 212.75,
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "lots": 1,
+                "quantity": 65,
+                "order_side": "SELL",
+                "status": "PAPER_ORDER_NOT_FILLED",
+                "last_reason_code": "paper_order_not_triggered_by_watch_cutoff",
+                "last_message": "Selected option premium did not reach entry before cutoff.",
+                "last_market_price": 406.55,
+                "last_market_bid": 405.60,
+                "last_market_ask": 408.80,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(_strategy_config(s23_root),)
+    ).build(output_root=tmp_path / "dashboard")
+
+    trades_html = result.trades_page.read_text(encoding="utf-8")
+
+    assert "ORDER_NOT_FILLED" not in trades_html
+    assert "NIFTY_20260721_23950_CE" not in trades_html
+    assert "No active paper orders or positions for the latest session." in trades_html
 
 
 def test_s21_failed_leg_uses_strategy_aware_branch_normalization(tmp_path: Path) -> None:

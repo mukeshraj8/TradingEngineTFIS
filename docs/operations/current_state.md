@@ -114,6 +114,13 @@ change in a meaningful way.
   could leave the S23 watcher alive without trustworthy fresh evidence; if the
   watcher has no usable stream evidence and the shared quote fetch fails, it
   now fails closed instead of idling optimistically
+- the operator control surface now also distinguishes between full TFIS reset
+  and dashboard-only refresh as of Monday, July 20, 2026. A new
+  `scripts/refresh_tfis_operator_dashboard.ps1` rebuilds/reuses the operator
+  dashboard without stopping the shared supervisor, while
+  `scripts/reset_tfis_dashboard_and_watchers.ps1` now explicitly warns that it
+  is a full runtime restart command intended for pre-market recovery rather
+  than in-market dashboard refresh
 - the remaining legacy S23 compatibility watcher now also uses that shared
   selected-contract fetch-policy path for fetched quote/bar behavior while
   preserving its separate stream-tick-first fallback logic, so the selected-

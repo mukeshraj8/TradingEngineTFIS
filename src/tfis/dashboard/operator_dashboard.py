@@ -1129,6 +1129,7 @@ class TfisOperatorDashboardBuilder:
                     rows=rows,
                     page_path=page_path,
                     latest_session_date=None,
+                    anchor_to_current_session=True,
                 ),
                 "</section>",
                 self._dashboard_refresh_script(),
@@ -1460,21 +1461,33 @@ class TfisOperatorDashboardBuilder:
         page_path: Path,
         latest_session_date: date | None = None,
         include_terminal_rows: bool = False,
+        anchor_to_current_session: bool = False,
     ) -> str:
-        if latest_session_date is not None:
+        effective_latest_session_date = latest_session_date
+        if anchor_to_current_session:
+            current_session_date = datetime.now().date()
+            if (
+                effective_latest_session_date is None
+                or effective_latest_session_date < current_session_date
+            ):
+                effective_latest_session_date = current_session_date
+        if effective_latest_session_date is not None:
             rows = [
                 row
                 for row in rows
                 if row.event_type != "ORDER_WAITING"
                 or (
                     row.event_timestamp is not None
-                    and row.event_timestamp.date() == latest_session_date
+                    and row.event_timestamp.date() == effective_latest_session_date
                 )
             ]
         if not rows:
             return '<div class="empty-panel">No paper trades have been recorded yet.</div>'
 
-        latest_rows = self._latest_trade_rows(rows, latest_session_date=latest_session_date)
+        latest_rows = self._latest_trade_rows(
+            rows,
+            latest_session_date=effective_latest_session_date,
+        )
         if not include_terminal_rows:
             latest_rows = [row for row in latest_rows if not self._trade_terminal(row)]
         if not latest_rows:

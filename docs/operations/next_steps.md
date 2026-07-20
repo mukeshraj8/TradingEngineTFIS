@@ -421,6 +421,10 @@ and operator-facing verification all pass.
    Acceptance gate:
    all required checks pass, documents are updated, and remaining risk is
    stated explicitly rather than implied away.
+   Operator note:
+   use `scripts/refresh_tfis_operator_dashboard.ps1` for in-market dashboard
+   rebuilds and reserve `scripts/reset_tfis_dashboard_and_watchers.ps1` for
+   full TFIS runtime restart/recovery only.
    session-only waiting-order behavior, and next-day SL reset. The next
    architecture step is to lift shared lifecycle concepts into strategy-neutral
    services only after the S23 behavior is proven in live paper operation.

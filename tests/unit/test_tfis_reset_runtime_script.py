@@ -22,6 +22,8 @@ def test_reset_script_waits_for_old_tfis_runtime_before_restarting() -> None:
     assert "throw \"Timed out waiting for TFIS runtime processes to exit" in helper_script
     assert "taskkill.exe" in helper_script
     assert "Stop-TfisRuntimeProcesses -RepoRoot $repoRoot -CurrentProcessId $PID" in script
+    assert "This command stops and restarts the TFIS paper runtime." in script
+    assert "refresh_tfis_operator_dashboard.ps1" in script
 
 
 def test_reset_script_skips_duplicate_dashboard_and_supervisor_recovery_processes() -> None:
@@ -73,3 +75,16 @@ def test_reset_script_delegates_recovery_to_shared_supervisor() -> None:
     assert "Get-TfisLivePositionStateDirectories" not in script
     assert '[switch]$SkipRefresh' in supervisor_helper_script
     assert '$supervisorArgs += "-SkipRefresh"' in supervisor_helper_script
+
+
+def test_refresh_script_rebuilds_dashboard_without_stopping_runtime() -> None:
+    script = _script_text("refresh_tfis_operator_dashboard.ps1")
+
+    assert '. $runtimeProcessHelperPath' in script
+    assert "TFIS OPERATOR DASHBOARD REFRESH" in script
+    assert "It does not stop or restart the shared TFIS paper runtime." in script
+    assert 'build_operator_dashboard.py' in script
+    assert 'serve_operator_dashboard.py' in script
+    assert 'Stop-TfisRuntimeProcesses' not in script
+    assert "Reusing existing TFIS dashboard server PID=" in script
+    assert "TFIS operator dashboard refresh complete in" in script

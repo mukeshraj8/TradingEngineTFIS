@@ -1,28 +1,16 @@
 param(
-    [string]$TfisRoot,
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
-    [int]$DashboardPort = 8765,
-    [string]$TargetsConfig = "config/paper_lifecycle_supervisor_targets.yaml",
-    [string]$S23Config = "config/paper.s23.fyers_connect_test.yaml",
-    [string]$S23ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",
-    [string]$S21Config = "config/paper.s21.fyers_connect_test.yaml",
-    [string]$S21ArtifactRoot = "data/strategies/S21/fyers_morning_supervised_decision",
-    [string]$Timezone = "Asia/Kolkata"
+    [int]$DashboardPort = 8765
 )
 
 $ErrorActionPreference = "Stop"
+$Host.UI.RawUI.WindowTitle = "TFIS Operator Dashboard Refresh"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
-$paperPositionHelperPath = Join-Path $scriptDir "tfis_paper_position_state_helpers.ps1"
-$supervisorHelperPath = Join-Path $scriptDir "tfis_paper_lifecycle_supervisor_helpers.ps1"
 $runtimeProcessHelperPath = Join-Path $scriptDir "tfis_runtime_process_helpers.ps1"
-. $paperPositionHelperPath
-. $supervisorHelperPath
 . $runtimeProcessHelperPath
-if (-not $TfisRoot) {
-    $TfisRoot = $repoRoot
-}
+
 Set-Location $repoRoot
 
 $pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
@@ -75,23 +63,20 @@ function Get-TfisExistingDashboardProcess {
     return @(Get-TfisRuntimeProcesses -RepoRoot $repoRoot -RuntimePattern $pattern)
 }
 
-$resetStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$refreshStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 Write-Host "============================================================"
-Write-Host "TFIS DASHBOARD/SUPERVISOR RESET"
-Write-Host "This command stops and restarts the TFIS paper runtime."
-Write-Host "Use scripts\refresh_tfis_operator_dashboard.ps1 when you only want a dashboard rebuild during market hours."
+Write-Host "TFIS OPERATOR DASHBOARD REFRESH"
+Write-Host "This command rebuilds/serves the dashboard only."
+Write-Host "It does not stop or restart the shared TFIS paper runtime."
 Write-Host "============================================================"
-
-Stop-TfisRuntimeProcesses -RepoRoot $repoRoot -CurrentProcessId $PID
-Write-Host ("Stopped prior TFIS runtime in {0:n1}s" -f $resetStopwatch.Elapsed.TotalSeconds)
 
 & $pythonExe (Resolve-TfisPath "scripts/build_operator_dashboard.py") --output-root $DashboardOutputRoot
-Write-Host ("Built TFIS dashboard in {0:n1}s total" -f $resetStopwatch.Elapsed.TotalSeconds)
+Write-Host ("Built TFIS dashboard in {0:n1}s total" -f $refreshStopwatch.Elapsed.TotalSeconds)
 
 $existingDashboard = @(Get-TfisExistingDashboardProcess)
 if ($existingDashboard.Count -gt 0) {
-    Write-Host "Skipping TFIS dashboard start because matching server is already running: PID=$($existingDashboard[0].ProcessId) URL=http://127.0.0.1:$DashboardPort/index.html"
+    Write-Host "Reusing existing TFIS dashboard server PID=$($existingDashboard[0].ProcessId) URL=http://127.0.0.1:$DashboardPort/index.html"
 }
 else {
     $dashboardProcess = Start-Process `
@@ -101,22 +86,13 @@ else {
         -WindowStyle Normal `
         -PassThru
     Write-Host "Started TFIS dashboard PID=$($dashboardProcess.Id) URL=http://127.0.0.1:$DashboardPort/index.html"
-    if (Wait-ForDashboardReady -Port $DashboardPort) {
-        Write-Host "TFIS dashboard is accepting connections."
-    }
-    else {
-        Write-Host "WARNING: TFIS dashboard process started but port $DashboardPort is not accepting connections yet."
-    }
 }
 
-$supervisorProcess = Start-TfisPaperLifecycleSupervisorProcess `
-    -RepoRoot $repoRoot `
-    -TfisRoot $TfisRoot `
-    -TargetsConfig (Resolve-TfisPath $TargetsConfig) `
-    -DashboardOutputRoot $DashboardOutputRoot `
-    -DashboardPort $DashboardPort `
-    -SessionDate (Get-Date) `
-    -SkipRefresh
+if (Wait-ForDashboardReady -Port $DashboardPort) {
+    Write-Host "TFIS dashboard is accepting connections."
+}
+else {
+    Write-Host "WARNING: TFIS dashboard was rebuilt but port $DashboardPort is not accepting connections yet."
+}
 
-Write-Host "Started shared TFIS paper lifecycle supervisor PID=$($supervisorProcess.Id)"
-Write-Host ("TFIS dashboard/supervisor reset complete in {0:n1}s." -f $resetStopwatch.Elapsed.TotalSeconds)
+Write-Host ("TFIS operator dashboard refresh complete in {0:n1}s." -f $refreshStopwatch.Elapsed.TotalSeconds)
