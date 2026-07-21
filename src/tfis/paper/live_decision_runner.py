@@ -7,9 +7,9 @@ from tfis.brokers.fyers_token import prepare_fyers_env_from_tfis as _prepare_fye
 from tfis.importers import load_strategy_rule
 
 from .fyers_snapshot_collector import (
-    S23FyersSnapshotArtifactSet,
-    S23FyersSnapshotCollector,
-    S23FyersSnapshotCollectorError,
+    PaperFyersSnapshotArtifactSet,
+    PaperFyersSnapshotCollector,
+    PaperFyersSnapshotCollectorError,
 )
 from .live_decision import S23PaperLiveDecisionBuilder, S23PaperLiveDecisionError
 from .live_ingress import PaperLiveIngressConfig
@@ -17,16 +17,19 @@ from .lifecycle_runtime_config import (
     PaperLifecycleRuntimeConfig,
     prepare_paper_broker_runtime_environment,
 )
-from .runtime_input_derivation import load_s23_decision_reference_packet
+from .runtime_input_derivation import load_paper_decision_reference_packet
 
 
 @dataclass(frozen=True, slots=True)
 class S23LiveDecisionRunResult:
-    snapshot_artifacts: S23FyersSnapshotArtifactSet
+    snapshot_artifacts: PaperFyersSnapshotArtifactSet
     decision_summary_json: Path
     decision_summary_markdown: Path
     decision_explainer_json: Path
     decision_explainer_markdown: Path
+
+
+PaperLiveDecisionRunResult = S23LiveDecisionRunResult
 
 
 def prepare_fyers_env_from_tfis(
@@ -78,7 +81,7 @@ def run_s23_live_decision_check(
     )
     _require_exists(Path(reference_packet_path), "TFIS reference packet")
 
-    collector = S23FyersSnapshotCollector(artifact_root=artifact_root)
+    collector = PaperFyersSnapshotCollector(artifact_root=artifact_root)
     ingress_config = PaperLiveIngressConfig.from_yaml(config_path)
     snapshot_artifacts = collector.collect_from_files(
         config_path=config_path,
@@ -91,7 +94,7 @@ def run_s23_live_decision_check(
         raise RuntimeError("Snapshot collector did not return collected inputs.")
 
     strategy_rule = load_strategy_rule(strategy_path)
-    reference_packet = load_s23_decision_reference_packet(reference_packet_path)
+    reference_packet = load_paper_decision_reference_packet(reference_packet_path)
     decision_builder = S23PaperLiveDecisionBuilder()
     decision = decision_builder.build(
         strategy_rule=strategy_rule,
@@ -116,6 +119,9 @@ def run_s23_live_decision_check(
     )
 
 
+run_paper_live_decision_check = run_s23_live_decision_check
+
+
 def _require_exists(path: Path, label: str) -> None:
     if not path.exists():
         raise SystemExit(f"Missing {label}: {path}")
@@ -123,8 +129,10 @@ def _require_exists(path: Path, label: str) -> None:
 
 __all__ = [
     "prepare_live_decision_runtime_environment",
+    "PaperLiveDecisionRunResult",
     "S23LiveDecisionRunResult",
     "prepare_fyers_env_from_tfis",
     "prepare_fyers_env_from_tfis_auth",
+    "run_paper_live_decision_check",
     "run_s23_live_decision_check",
 ]

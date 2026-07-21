@@ -16,15 +16,37 @@ from tfis.paper.expiry_governance import (
     DeterministicExpiryCalendar,
     PaperExpiryGovernance,
 )
-from tfis.paper.fyers_snapshot_collector import S23CollectedSnapshotInputs
-from tfis.paper.live_decision_timeline import S23LiveDecisionTimelineBuilder
-from tfis.paper.live_prelude import S23PaperPreludeSessionContext
+from tfis.paper.fyers_snapshot_collector import PaperCollectedSnapshotInputs
+from tfis.paper.live_decision_timeline import PaperLiveDecisionTimelineBuilder
+from tfis.paper.live_prelude import PaperPreludeSessionContext
 from tfis.paper.order_state import (
+    PaperOrderStateDiscovery,
+    paper_order_state_candidate_paths,
     paper_order_trade_event_type,
     paper_order_trade_lifecycle_status,
+    paper_order_visible_for_latest_session,
     paper_order_visible_in_trade_monitor,
 )
-from tfis.paper.position_state import paper_position_is_active
+from tfis.paper.position_discovery import PaperOpenPositionDiscovery
+from tfis.paper.decision_summary_discovery import (
+    discover_trade_decision_summaries,
+    resolve_final_trade_decision_summary,
+)
+from tfis.paper.session_contract_discovery import discover_session_contract_symbols
+from tfis.paper.session_discovery import (
+    find_supervised_final_session_dir,
+    find_preferred_supervised_stage_dir,
+    find_supervised_stage_dirs,
+    resolve_supervised_stage_artifact_paths,
+    supervised_session_is_complete,
+    supervised_session_metadata_path,
+    iter_session_branch_explainer_paths,
+    iter_strategy_day_dirs,
+)
+from tfis.paper.selected_contract_market_events import (
+    selected_contract_market_event_paths,
+    selected_contract_market_event_process_pid,
+)
 from tfis.paper.models import (
     EventEnvelope,
     OptionChainContract,
@@ -35,20 +57,22 @@ from tfis.paper.models import (
 from tfis.paper.trade_ledger import (
     paper_trade_action_required,
     paper_trade_branch_label,
+    paper_trade_has_display_backing,
+    paper_trade_ledger_candidate_paths,
     paper_trade_display_status_label,
     paper_trade_followup_note,
     paper_trade_is_open,
     paper_trade_is_terminal,
+    paper_trade_latest_active_rows,
+    paper_trade_latest_historical_close_rows,
     paper_trade_normalized_message,
     paper_trade_option_label,
     paper_trade_pnl_tone,
-    paper_trade_select_display_row,
     paper_trade_status_labels,
     paper_trade_summary_counts,
     paper_trade_status_kind,
-    paper_trade_visible_for_latest_session,
 )
-from tfis.paper.runtime_input_derivation import load_s23_decision_reference_packet
+from tfis.paper.runtime_input_derivation import load_paper_decision_reference_packet
 
 
 _STAGE_SNAPSHOT_RE = re.compile(r"-(\d{4})-(\d{4}-\d{2}-\d{2})$")
@@ -124,7 +148,7 @@ class DashboardSelectedContractStreamHealth:
     latest_event_at: datetime | None = None
     latest_event_kind: str | None = None
     latest_event_source: str | None = None
-    watcher_pid: int | None = None
+    process_pid: int | None = None
     age_seconds: float | None = None
     health_status: str = "NO_STREAM"
 
@@ -180,7 +204,9 @@ class DashboardBuildResult:
 class TfisOperatorDashboardBuilder:
     def __init__(self, *, strategy_configs: tuple[StrategyDashboardConfig, ...]) -> None:
         self._strategy_configs = strategy_configs
-        self._timeline_builder = S23LiveDecisionTimelineBuilder()
+        self._timeline_builder = PaperLiveDecisionTimelineBuilder()
+        self._order_discovery = PaperOrderStateDiscovery()
+        self._position_discovery = PaperOpenPositionDiscovery()
         self._repo_root = Path.cwd().resolve()
         self._jsonl_cache: dict[Path, list[dict[str, Any]]] = {}
         self._stream_health_cache: dict[tuple[str, str], DashboardSelectedContractStreamHealth] = {}
@@ -510,13 +536,8 @@ class TfisOperatorDashboardBuilder:
         self,
         config: StrategyDashboardConfig,
     ) -> list[DashboardSessionSummary]:
-        if not config.artifact_root.exists():
-            return []
         sessions: list[DashboardSessionSummary] = []
-        for day_dir in sorted(
-            [path for path in config.artifact_root.iterdir() if path.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.name)],
-            reverse=True,
-        ):
+        for day_dir in iter_strategy_day_dirs(config.artifact_root):
             sessions.append(self._build_session_summary(config=config, day_dir=day_dir))
         return sessions
 
@@ -527,19 +548,29 @@ class TfisOperatorDashboardBuilder:
         day_dir: Path,
     ) -> DashboardSessionSummary:
         session_date = date.fromisoformat(day_dir.name)
-        final_session_dir = self._find_final_session_dir(config=config, day_dir=day_dir)
-        final_artifact_dir = self._resolve_final_artifact_dir(
+        final_session_dir = find_supervised_final_session_dir(
+            day_dir,
+            session_id_prefix=config.session_id_prefix,
+        )
+        final_summary_candidate = self._resolve_final_trade_decision_summary(
             config=config,
             final_session_dir=final_session_dir,
         )
-        stage_dirs = self._find_stage_dirs(config=config, day_dir=day_dir)
-        session_complete = bool(
-            final_session_dir is not None
-            and (final_session_dir / "scheduled_run_metadata.json").exists()
+        final_artifact_dir = (
+            final_summary_candidate.artifact_directory
+            if final_summary_candidate is not None
+            else None
         )
+        stage_dirs = list(
+            find_supervised_stage_dirs(
+                day_dir,
+                session_id_prefix=config.session_id_prefix,
+            )
+        )
+        session_complete = supervised_session_is_complete(final_session_dir)
         final_summary_exists = bool(
-            final_artifact_dir is not None
-            and (final_artifact_dir / "trade_decision_summary.json").exists()
+            final_summary_candidate is not None
+            and final_summary_candidate.summary_path is not None
         )
         prefer_reconstruction = not session_complete or (
             session_complete and not final_summary_exists
@@ -555,8 +586,11 @@ class TfisOperatorDashboardBuilder:
             )
             for stage_dir in sorted(stage_dirs, key=lambda item: _STAGE_ORDER.get(self._extract_stage_key(item.name), 99))
         )
-        final_summary = self._read_json(final_artifact_dir / "trade_decision_summary.json") if final_artifact_dir and (final_artifact_dir / "trade_decision_summary.json").exists() else None
-        final_summary_view = final_summary.get("summary", final_summary) if isinstance(final_summary, dict) else None
+        final_summary_view = (
+            final_summary_candidate.summary
+            if final_summary_candidate is not None
+            else None
+        )
         final_decision_status = final_summary_view.get("status") if isinstance(final_summary_view, dict) else None
         final_monthly_status = final_summary_view.get("monthly_status") if isinstance(final_summary_view, dict) else None
         final_selected_contract_symbol = final_summary_view.get("selected_contract_symbol") if isinstance(final_summary_view, dict) else None
@@ -585,8 +619,14 @@ class TfisOperatorDashboardBuilder:
             session_status = "NO_DATA"
         raw_links: dict[str, str] = {}
         if final_session_dir is not None:
-            for filename in ("trade_decision_summary.md", "trade_decision_explainer.md", "scheduled_run_metadata.json"):
-                file_path = final_session_dir / filename
+            metadata_path = supervised_session_metadata_path(final_session_dir)
+            for filename, file_path in (
+                ("trade_decision_summary.md", final_session_dir / "trade_decision_summary.md"),
+                ("trade_decision_explainer.md", final_session_dir / "trade_decision_explainer.md"),
+                ("scheduled_run_metadata.json", metadata_path),
+            ):
+                if file_path is None:
+                    continue
                 if file_path.exists():
                     raw_links[filename] = str(file_path)
         if final_artifact_dir is not None and final_artifact_dir != final_session_dir:
@@ -620,16 +660,12 @@ class TfisOperatorDashboardBuilder:
         stage_key = self._extract_stage_key(stage_dir.name)
         if stage_key is None:
             raise ValueError(f"Could not determine stage key from {stage_dir.name}")
-        monthly_status_stage_json = (
-            final_session_dir / f"monthly_status_stage_{stage_key}.json"
-            if final_session_dir is not None
-            else None
+        stage_artifacts = resolve_supervised_stage_artifact_paths(
+            final_session_dir,
+            stage_key=stage_key,
         )
-        stage_explainer_json = (
-            final_session_dir / f"trade_decision_explainer_stage_{stage_key}.json"
-            if final_session_dir is not None
-            else None
-        )
+        monthly_status_stage_json = stage_artifacts.monthly_status_stage_json
+        stage_explainer_json = stage_artifacts.trade_decision_explainer_stage_json
         snapshot_summary = self._read_json(stage_dir / "snapshot_preflight_summary.json")
         option_chain_contract_count = snapshot_summary.get("option_chain_contract_count")
         option_chain_complete_oi = snapshot_summary.get("option_chain_has_complete_oi")
@@ -732,23 +768,23 @@ class TfisOperatorDashboardBuilder:
         )
 
     @staticmethod
-    def _resolve_final_artifact_dir(
+    def _resolve_final_trade_decision_summary(
         *,
         config: StrategyDashboardConfig,
         final_session_dir: Path | None,
-    ) -> Path | None:
+    ):
         if final_session_dir is None:
             return None
-        if (final_session_dir / "trade_decision_summary.json").exists():
-            return final_session_dir
         try:
             strategy_rule = load_strategy_rule(config.strategy_path)
         except Exception:
-            return final_session_dir
-        branch_dir = final_session_dir / strategy_rule.unique_code
-        if branch_dir.exists():
-            return branch_dir
-        return final_session_dir
+            strategy_unique_code = None
+        else:
+            strategy_unique_code = str(getattr(strategy_rule, "unique_code", "") or None)
+        return resolve_final_trade_decision_summary(
+            final_session_dir,
+            preferred_branch=strategy_unique_code,
+        )
 
     @staticmethod
     def _formula_values(stage_payload: dict[str, Any]) -> dict[str, Any]:
@@ -848,7 +884,7 @@ class TfisOperatorDashboardBuilder:
         stage_key: str,
     ) -> Any:
         strategy_rule = load_strategy_rule(config.strategy_path)
-        reference_packet = load_s23_decision_reference_packet(config.reference_packet_path)
+        reference_packet = load_paper_decision_reference_packet(config.reference_packet_path)
         collected_inputs = self._load_snapshot_inputs(stage_dir=stage_dir, strategy_rule=strategy_rule)
         stage_build = self._timeline_builder.build_stage(
             stage_name=_STAGE_LABELS[stage_key],
@@ -860,7 +896,7 @@ class TfisOperatorDashboardBuilder:
         )
         return stage_build.stage
 
-    def _load_snapshot_inputs(self, *, stage_dir: Path, strategy_rule: Any) -> S23CollectedSnapshotInputs:
+    def _load_snapshot_inputs(self, *, stage_dir: Path, strategy_rule: Any) -> PaperCollectedSnapshotInputs:
         quote_payload = self._read_json(stage_dir / "normalized_underlying_snapshot.json")
         bars_payload = self._read_json(stage_dir / "normalized_underlying_bars.json")
         daily_payload = self._read_json(stage_dir / "normalized_underlying_daily_bars.json")
@@ -922,8 +958,8 @@ class TfisOperatorDashboardBuilder:
             expiry=weekly_expiry,
             contracts=contracts,
         )
-        return S23CollectedSnapshotInputs(
-            session_context=S23PaperPreludeSessionContext(
+        return PaperCollectedSnapshotInputs(
+            session_context=PaperPreludeSessionContext(
                 session_date=session_date,
                 timezone=timezone,
                 generated_at=datetime.fromisoformat(quote_payload["captured_at"]),
@@ -954,29 +990,6 @@ class TfisOperatorDashboardBuilder:
             volume=float(item["volume"]) if item.get("volume") is not None else None,
             source_id=item.get("source_id"),
         )
-
-    @staticmethod
-    def _find_final_session_dir(*, config: StrategyDashboardConfig, day_dir: Path) -> Path | None:
-        for child in day_dir.iterdir():
-            if not child.is_dir():
-                continue
-            if child.name == f"{config.session_id_prefix}-{day_dir.name}":
-                return child
-        return None
-
-    @staticmethod
-    def _find_stage_dirs(*, config: StrategyDashboardConfig, day_dir: Path) -> list[Path]:
-        results: list[Path] = []
-        for child in day_dir.iterdir():
-            if not child.is_dir():
-                continue
-            if (
-                child.name.startswith(config.session_id_prefix)
-                and _STAGE_SNAPSHOT_RE.search(child.name)
-                and (child / "snapshot_preflight_summary.json").exists()
-            ):
-                results.append(child)
-        return results
 
     @staticmethod
     def _extract_stage_key(name: str) -> str | None:
@@ -1101,7 +1114,7 @@ class TfisOperatorDashboardBuilder:
         for config, sessions in strategy_summaries:
             latest_session_date = sessions[0].session_date if sessions else None
             rows.extend(
-                self._latest_trade_rows(
+                paper_trade_latest_active_rows(
                     self._collect_trade_ledger_rows(
                         config,
                         latest_session_date=latest_session_date,
@@ -1249,16 +1262,13 @@ class TfisOperatorDashboardBuilder:
         cached_rows = self._trade_rows_cache.get(cache_key)
         if cached_rows is not None:
             return cached_rows
-        candidate_paths: set[Path] = set()
-        if config.artifact_root.exists():
-            candidate_paths.update(config.artifact_root.rglob("paper_trade_ledger.jsonl"))
-        global_ledger = self._repo_root / "tmp" / "paper_trade_ledger" / f"{config.strategy_code.lower()}_paper_trade_ledger.jsonl"
-        if global_ledger.exists():
-            candidate_paths.add(global_ledger)
-
         rows: list[DashboardTradeLedgerRow] = []
         seen: set[tuple[str, str, str, str, str]] = set()
-        for ledger_path in sorted(candidate_paths):
+        for ledger_path in paper_trade_ledger_candidate_paths(
+            artifact_root=config.artifact_root,
+            strategy_code=config.strategy_code,
+            repo_root=self._repo_root,
+        ):
             for raw in self._iter_jsonl_dicts(ledger_path):
                 strategy_code = str(raw.get("strategy_code") or "")
                 if strategy_code and strategy_code.upper() != config.strategy_code.upper():
@@ -1267,9 +1277,15 @@ class TfisOperatorDashboardBuilder:
                 event_type = str(raw.get("event_type") or "n/a")
                 trade_id = str(raw.get("trade_id") or raw.get("selected_contract_symbol") or "n/a")
                 manager_status = str(raw.get("manager_status") or "n/a")
+                lifecycle_status = str(raw.get("lifecycle_status") or "n/a")
                 reason_code = str(raw.get("reason_code") or "n/a")
                 state_directory = self._path_or_none(raw.get("state_directory"))
-                if state_directory is not None and not (state_directory / "paper_position_state.json").exists():
+                if not paper_trade_has_display_backing(
+                    state_directory,
+                    event_type=event_type,
+                    lifecycle_status=lifecycle_status,
+                    manager_status=manager_status,
+                ):
                     continue
                 if state_directory is not None and not self._is_relative_to(
                     state_directory,
@@ -1319,7 +1335,7 @@ class TfisOperatorDashboardBuilder:
                         stoploss_price=self._float_or_none(raw.get("stoploss_price")),
                         gross_points=self._float_or_none(raw.get("gross_points")),
                         gross_pnl=self._float_or_none(raw.get("gross_pnl")),
-                        lifecycle_status=str(raw.get("lifecycle_status") or "n/a"),
+                        lifecycle_status=lifecycle_status,
                         manager_status=manager_status,
                         reason_code=reason_code,
                         message=str(raw.get("message") or ""),
@@ -1335,18 +1351,109 @@ class TfisOperatorDashboardBuilder:
                     )
                 )
         if include_pending_orders and config.artifact_root.exists():
-            for order_path in sorted(config.artifact_root.rglob("paper_order_state.json")):
+            discovered_order_dirs: set[Path] = set()
+            for order_candidate in self._order_discovery.find_orders(
+                (config.artifact_root,),
+                strategy_code=config.strategy_code,
+            ):
+                state = order_candidate.state
+                discovered_order_dirs.add(state_directory := order_candidate.state_directory.resolve())
+                status = state.status.value
+                entry_date = state.entry_date
+                if not paper_order_visible_for_latest_session(
+                    status=status,
+                    entry_date=entry_date,
+                    latest_session_date=latest_session_date,
+                ):
+                    continue
+                if not self._is_relative_to(state_directory, config.artifact_root):
+                    continue
+                strategy_code = str(state.strategy_code or config.strategy_code)
+                if strategy_code.upper() != config.strategy_code.upper():
+                    continue
+                order_timestamp = state.last_updated_timestamp.isoformat()
+                selected_contract = str(state.selected_contract_symbol or "n/a")
+                strategy_branch = str(state.strategy_branch or "n/a")
+                trade_id = (
+                    f"{strategy_code}-{strategy_branch}-{selected_contract}-"
+                    f"ORDER-{state.order_timestamp.isoformat().replace(':', '').replace('-', '')}"
+                )
+                identity = (
+                    trade_id,
+                    order_timestamp,
+                    paper_order_trade_event_type(status),
+                    status,
+                    str(state.last_reason_code or "paper_order_waiting_for_entry_trigger"),
+                )
+                if identity in seen:
+                    continue
+                seen.add(identity)
+                stream_health = (
+                    self._selected_contract_stream_health(
+                        state_directory=state_directory,
+                        selected_contract_symbol=selected_contract,
+                    )
+                    if include_stream_health
+                    else DashboardSelectedContractStreamHealth()
+                )
+                rows.append(
+                    DashboardTradeLedgerRow(
+                        session_date=entry_date,
+                        event_timestamp=self._parse_datetime(order_timestamp),
+                        entry_timestamp=state.order_timestamp,
+                        exit_timestamp=None,
+                        event_type=paper_order_trade_event_type(status),
+                        trade_id=trade_id,
+                        strategy_id=f"{strategy_code}:{strategy_branch}",
+                        strategy_code=strategy_code,
+                        strategy_branch=strategy_branch,
+                        selected_contract_symbol=selected_contract,
+                        side=str(state.order_side or "SELL"),
+                        lots=state.lots,
+                        quantity=state.quantity,
+                        entry_price=state.planned_entry_price,
+                        current_price=state.last_market_price,
+                        current_bid=state.last_market_bid,
+                        current_ask=state.last_market_ask,
+                        exit_price=None,
+                        target_price=state.target_price,
+                        stoploss_price=state.stoploss_price,
+                        gross_points=None,
+                        gross_pnl=None,
+                        lifecycle_status=paper_order_trade_lifecycle_status(status),
+                        manager_status=status,
+                        reason_code=str(state.last_reason_code or "paper_order_waiting_for_entry_trigger"),
+                        message=str(state.last_message or "Waiting for selected option premium to reach entry."),
+                        fresh_entry_required=False,
+                        reverse_entry_required=False,
+                        rollover_required=False,
+                        state_directory=state_directory,
+                        stream_health=stream_health,
+                        raw_artifact_links=self._trade_artifact_links(
+                            ledger_path=None,
+                            state_directory=state_directory,
+                        ),
+                    )
+                )
+            for order_path in paper_order_state_candidate_paths((config.artifact_root,)):
+                try:
+                    state_directory = order_path.parent.resolve()
+                except OSError:
+                    continue
+                if state_directory in discovered_order_dirs:
+                    continue
                 try:
                     raw = self._read_json(order_path)
                 except (OSError, json.JSONDecodeError):
                     continue
                 status = str(raw.get("status") or "")
-                if not paper_order_visible_in_trade_monitor(status):
-                    continue
                 entry_date = self._parse_date(raw.get("entry_date"))
-                if latest_session_date is not None and entry_date != latest_session_date:
+                if not paper_order_visible_for_latest_session(
+                    status=status,
+                    entry_date=entry_date,
+                    latest_session_date=latest_session_date,
+                ):
                     continue
-                state_directory = order_path.parent
                 if not self._is_relative_to(state_directory, config.artifact_root):
                     continue
                 strategy_code = str(raw.get("strategy_code") or config.strategy_code)
@@ -1428,30 +1535,18 @@ class TfisOperatorDashboardBuilder:
         self,
         strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
     ) -> list[DashboardTradeLedgerRow]:
-        latest_close_by_trade: dict[tuple[str, str], DashboardTradeLedgerRow] = {}
+        rows: list[DashboardTradeLedgerRow] = []
         for config, _sessions in strategy_summaries:
-            for row in self._collect_trade_ledger_rows(
-                config,
-                latest_session_date=None,
-                include_stream_health=False,
-                include_pending_orders=False,
-            ):
-                if row.event_type.upper() != "CLOSE":
-                    continue
-                key = (row.strategy_code.upper(), row.trade_id)
-                current = latest_close_by_trade.get(key)
-                if current is None or (
-                    row.event_timestamp is not None
-                    and (
-                        current.event_timestamp is None
-                        or row.event_timestamp > current.event_timestamp
-                    )
-                ):
-                    latest_close_by_trade[key] = row
-        return sorted(
-            latest_close_by_trade.values(),
-            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
-            reverse=True,
+            rows.extend(
+                self._collect_trade_ledger_rows(
+                    config,
+                    latest_session_date=None,
+                    include_stream_health=False,
+                    include_pending_orders=False,
+                )
+            )
+        return list(
+            paper_trade_latest_historical_close_rows(rows)
         )
 
     def _render_trade_ledger_section(
@@ -1484,9 +1579,11 @@ class TfisOperatorDashboardBuilder:
         if not rows:
             return '<div class="empty-panel">No paper trades have been recorded yet.</div>'
 
-        latest_rows = self._latest_trade_rows(
-            rows,
-            latest_session_date=effective_latest_session_date,
+        latest_rows = list(
+            paper_trade_latest_active_rows(
+                rows,
+                latest_session_date=effective_latest_session_date,
+            )
         )
         if not include_terminal_rows:
             latest_rows = [row for row in latest_rows if not self._trade_terminal(row)]
@@ -1520,59 +1617,12 @@ class TfisOperatorDashboardBuilder:
             ]
         )
 
-    def _latest_trade_rows(
-        self,
-        rows: list[DashboardTradeLedgerRow],
-        *,
-        latest_session_date: date | None,
-    ) -> list[DashboardTradeLedgerRow]:
-        grouped_rows: dict[str, list[DashboardTradeLedgerRow]] = {}
-        for row in rows:
-            grouped_rows.setdefault(row.trade_id, []).append(row)
-        latest_by_trade = {
-            trade_id: self._display_row_for_trade(trade_rows)
-            for trade_id, trade_rows in grouped_rows.items()
-        }
-        return sorted(
-            (
-                row
-                for row in latest_by_trade.values()
-                if self._trade_visible_for_latest_session(
-                    row,
-                    latest_session_date=latest_session_date,
-                )
-            ),
-            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
-            reverse=True,
-        )
-
-    def _display_row_for_trade(self, rows: list[DashboardTradeLedgerRow]) -> DashboardTradeLedgerRow:
-        return paper_trade_select_display_row(rows)
-
     @staticmethod
     def _trade_terminal(row: DashboardTradeLedgerRow) -> bool:
         return paper_trade_is_terminal(
             event_type=row.event_type,
             lifecycle_status=row.lifecycle_status,
             manager_status=row.manager_status,
-        )
-
-    def _trade_visible_for_latest_session(
-        self,
-        row: DashboardTradeLedgerRow,
-        *,
-        latest_session_date: date | None,
-    ) -> bool:
-        return paper_trade_visible_for_latest_session(
-            row_session_date=row.session_date,
-            event_timestamp=row.event_timestamp,
-            latest_session_date=latest_session_date,
-            event_type=row.event_type,
-            lifecycle_status=row.lifecycle_status,
-            manager_status=row.manager_status,
-            fresh_entry_required=row.fresh_entry_required,
-            reverse_entry_required=row.reverse_entry_required,
-            rollover_required=row.rollover_required,
         )
 
     @staticmethod
@@ -1718,7 +1768,7 @@ class TfisOperatorDashboardBuilder:
         else:
             age = self._fmt_seconds(stream.age_seconds)
         source = stream.latest_event_source or stream.latest_event_kind or "n/a"
-        pid = str(stream.watcher_pid) if stream.watcher_pid is not None else "n/a"
+        pid = str(stream.process_pid) if stream.process_pid is not None else "n/a"
         return "\n".join(
             [
                 '<div class="stream-cell">',
@@ -3188,14 +3238,9 @@ class TfisOperatorDashboardBuilder:
             return ()
         rows: list[dict[str, Any]] = []
         selected_branches: set[str] = set()
-        for summary_path in sorted(session_dir.rglob("trade_decision_summary.json")):
-            try:
-                raw_summary = self._read_json(summary_path)
-            except (OSError, json.JSONDecodeError):
-                continue
-            summary = raw_summary.get("summary", raw_summary) if isinstance(raw_summary, dict) else {}
-            if not isinstance(summary, dict):
-                continue
+        for candidate in discover_trade_decision_summaries(session_dir):
+            raw_summary = candidate.payload
+            summary = candidate.summary
             contract = str(summary.get("selected_contract_symbol") or "")
             if not contract or contract == "n/a":
                 continue
@@ -3209,8 +3254,8 @@ class TfisOperatorDashboardBuilder:
             if not isinstance(thresholds, dict):
                 thresholds = {}
             order_status = None
-            order_path = summary_path.parent / "paper_order_state.json"
-            if order_path.exists():
+            order_path = candidate.order_state_path
+            if order_path is not None and order_path.exists():
                 try:
                     raw_order = self._read_json(order_path)
                 except (OSError, json.JSONDecodeError):
@@ -3229,7 +3274,7 @@ class TfisOperatorDashboardBuilder:
                     )
             option_type = str(summary.get("selected_contract_option_type") or "").upper()
             side = "SELL PE" if option_type in {"PE", "PUT"} else "SELL CE" if option_type in {"CE", "CALL"} else "SELL"
-            branch = str(summary.get("strategy_branch") or summary_path.parent.name)
+            branch = candidate.branch
             selected_branches.add(
                 self._normalize_strategy_branch_name(
                     strategy_code=config.strategy_code,
@@ -3283,32 +3328,15 @@ class TfisOperatorDashboardBuilder:
         artifact_root = config.artifact_root
         if not artifact_root.exists():
             return None
-        latest_terminal_status: str | None = None
-        latest_terminal_timestamp: datetime | None = None
-        for state_path in sorted(artifact_root.rglob("paper_position_state.json")):
-            try:
-                raw_state = self._read_json(state_path)
-            except (OSError, json.JSONDecodeError):
-                continue
-            if not isinstance(raw_state, dict):
-                continue
-            strategy_code = str(raw_state.get("strategy_code") or config.strategy_code)
-            if strategy_code.upper() != config.strategy_code.upper():
-                continue
-            lifecycle_status = str(raw_state.get("lifecycle_status") or "")
-            if paper_position_is_active(lifecycle_status):
-                return None
-            timestamp = self._parse_datetime(
-                raw_state.get("last_updated_timestamp")
-                or raw_state.get("entry_timestamp")
-                or ""
-            )
-            if timestamp is None:
-                continue
-            if latest_terminal_timestamp is None or timestamp > latest_terminal_timestamp:
-                latest_terminal_timestamp = timestamp
-                latest_terminal_status = lifecycle_status or None
-        return latest_terminal_status
+        if self._position_discovery.find_open_positions((artifact_root,)):
+            return None
+        latest_terminal = self._position_discovery.find_latest_terminal_position(
+            (artifact_root,),
+            strategy_code=config.strategy_code,
+        )
+        if latest_terminal is None:
+            return None
+        return latest_terminal.lifecycle_status
 
     def _session_failed_leg_rows(
         self,
@@ -3322,7 +3350,7 @@ class TfisOperatorDashboardBuilder:
             return []
         stage_dir = self._session_final_stage_dir(config=config, session=session)
         rows: list[dict[str, Any]] = []
-        for explainer_path in self._session_branch_explainer_paths(session_dir):
+        for explainer_path in iter_session_branch_explainer_paths(session_dir):
             branch = explainer_path.parent.name
             normalized_branch = self._normalize_strategy_branch_name(
                 strategy_code=config.strategy_code,
@@ -3453,24 +3481,11 @@ class TfisOperatorDashboardBuilder:
         if session_dir is None:
             return None
         day_dir = session_dir.parent
-        for stage_dir in self._find_stage_dirs(config=config, day_dir=day_dir):
-            if self._extract_stage_key(stage_dir.name) == "0930":
-                return stage_dir
-        stage_dirs = self._find_stage_dirs(config=config, day_dir=day_dir)
-        return stage_dirs[-1] if stage_dirs else None
-
-    @staticmethod
-    def _session_branch_explainer_paths(session_dir: Path) -> tuple[Path, ...]:
-        paths: list[Path] = []
-        for branch_dir in sorted(item for item in session_dir.iterdir() if item.is_dir()):
-            final_path = branch_dir / "trade_decision_explainer.json"
-            if final_path.exists():
-                paths.append(final_path)
-                continue
-            stage_paths = sorted(branch_dir.glob("trade_decision_explainer_stage_*.json"))
-            if stage_paths:
-                paths.append(stage_paths[-1])
-        return tuple(paths)
+        return find_preferred_supervised_stage_dir(
+            day_dir,
+            session_id_prefix=config.session_id_prefix,
+            preferred_stage_key="0930",
+        )
 
     def _load_strategy_branch_rule(
         self,
@@ -3582,25 +3597,14 @@ class TfisOperatorDashboardBuilder:
         contracts: list[str] = []
         session_dir = session.session_directory
         if session_dir is not None and session_dir.exists():
-            for order_path in sorted(session_dir.rglob("paper_order_state.json")):
-                try:
-                    raw = self._read_json(order_path)
-                except (OSError, json.JSONDecodeError):
-                    continue
-                symbol = str(raw.get("selected_contract_symbol") or "")
-                if symbol and symbol != "n/a" and symbol not in contracts:
-                    contracts.append(symbol)
-            for summary_path in sorted(session_dir.rglob("trade_decision_summary.json")):
-                try:
-                    raw = self._read_json(summary_path)
-                except (OSError, json.JSONDecodeError):
-                    continue
-                view = raw.get("summary", raw) if isinstance(raw, dict) else {}
-                if not isinstance(view, dict):
-                    continue
-                symbol = str(view.get("selected_contract_symbol") or "")
-                if symbol and symbol != "n/a" and symbol not in contracts:
-                    contracts.append(symbol)
+            contracts.extend(
+                symbol
+                for symbol in discover_session_contract_symbols(
+                    session_dir,
+                    order_discovery=self._order_discovery,
+                )
+                if symbol not in contracts
+            )
         if not contracts and session.final_selected_contract_symbol:
             contracts.append(session.final_selected_contract_symbol)
         return tuple(contracts)
@@ -3881,7 +3885,7 @@ class TfisOperatorDashboardBuilder:
             return cached_health
 
         matched_events: list[tuple[datetime | None, dict[str, Any]]] = []
-        for event_path in sorted(state_directory.glob("selected_contract_market_events*.jsonl")):
+        for event_path in selected_contract_market_event_paths(state_directory):
             for event in self._iter_jsonl_dicts(event_path):
                 event_symbol = self._selected_contract_event_symbol(event)
                 if event_symbol and event_symbol != symbol:
@@ -3913,7 +3917,7 @@ class TfisOperatorDashboardBuilder:
             latest_event_at=latest_time,
             latest_event_kind=str(latest_event.get("event_kind") or latest_event.get("event_type") or ""),
             latest_event_source=source or None,
-            watcher_pid=self._int_or_none(latest_event.get("watcher_pid")),
+            process_pid=selected_contract_market_event_process_pid(latest_event),
             age_seconds=age_seconds,
             health_status=health_status,
         )

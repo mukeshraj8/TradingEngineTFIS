@@ -11,9 +11,9 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from tfis.paper import (
-    S23FyersSnapshotCollectorError,
+    PaperFyersSnapshotCollectorError,
     S23PaperLiveDecisionError,
-    run_s23_live_decision_check,
+    run_paper_live_decision_check,
 )
 
 
@@ -53,7 +53,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
-        result = run_s23_live_decision_check(
+        result = run_paper_live_decision_check(
             tfis_root=args.tfis_root,
             config_path=args.config,
             strategy_path=args.strategy_path,
@@ -64,7 +64,7 @@ def main(argv: list[str] | None = None) -> int:
             enable_smoke_override=args.enable_smoke_override,
             skip_refresh=args.skip_refresh,
         )
-    except (S23FyersSnapshotCollectorError, S23PaperLiveDecisionError, RuntimeError) as exc:
+    except (PaperFyersSnapshotCollectorError, S23PaperLiveDecisionError, RuntimeError) as exc:
         code = getattr(exc, "code", "LIVE_DECISION_FAILED")
         print(f"ERROR [{code}]: {exc}", file=sys.stderr)
         return 1

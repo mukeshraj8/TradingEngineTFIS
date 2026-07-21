@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import sys
+from typing import Protocol
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,6 +24,48 @@ class PaperMorningSupervisedTaskSpec:
     enable_smoke_override: bool = False
     carry_forward_state_dir: Path | None = None
     python_executable: Path = Path(sys.executable)
+
+
+class PaperMorningSupervisedTargetMetadata(Protocol):
+    strategy_code: str
+    config_path: Path
+    strategy_path: Path | None
+    reference_packet_path: Path | None
+    artifact_root: Path
+    session_id_prefix: str | None
+    runner_script_path: Path | None
+    wrapper_script_path: Path | None
+
+
+def build_paper_morning_task_spec_from_target(
+    *,
+    target: PaperMorningSupervisedTargetMetadata,
+    repo_root: Path,
+    tfis_root: Path,
+    carry_forward_state_dir: Path | None = None,
+) -> PaperMorningSupervisedTaskSpec | None:
+    if (
+        target.strategy_path is None
+        or target.reference_packet_path is None
+        or not target.session_id_prefix
+        or target.runner_script_path is None
+        or target.wrapper_script_path is None
+    ):
+        return None
+    return PaperMorningSupervisedTaskSpec(
+        task_name=f"TFIS {target.strategy_code.upper()} Morning Supervised Decision",
+        repo_root=repo_root,
+        tfis_root=tfis_root,
+        config_path=target.config_path,
+        strategy_path=target.strategy_path,
+        reference_packet_path=target.reference_packet_path,
+        artifact_root=target.artifact_root,
+        session_id_prefix=target.session_id_prefix,
+        runner_script_path=target.runner_script_path,
+        wrapper_script_path=target.wrapper_script_path,
+        skip_refresh=True,
+        carry_forward_state_dir=carry_forward_state_dir,
+    )
 
 
 def build_paper_morning_runner_arguments(
@@ -97,6 +140,7 @@ def build_s23_morning_wrapper_command(
 
 __all__ = [
     "PaperMorningSupervisedTaskSpec",
+    "build_paper_morning_task_spec_from_target",
     "build_paper_morning_runner_arguments",
     "build_paper_morning_wrapper_command",
     "S23MorningSupervisedTaskSpec",

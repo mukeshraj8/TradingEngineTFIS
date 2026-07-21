@@ -8,7 +8,7 @@ source_mode: broker_fyers_live_paper_ingress
 strategies:
   - strategy_code: S23
     enabled: true
-    executor: s23_morning_supervised
+    executor: paper_morning_supervised
     registry_ids:
       - S23_NIFTY_OP_SELL_WK_DIFF_2D_3D
       - S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL

@@ -2217,3 +2217,8 @@ def _markdown_value(value: Any) -> str:
     if isinstance(value, int):
         return f"`{value}`"
     return f"`{value}`"
+
+
+PaperHistoricalComparisonError = S23PaperHistoricalComparisonError
+PaperHistoricalFieldComparison = S23PaperHistoricalFieldComparison
+PaperHistoricalComparisonSummary = S23PaperHistoricalComparisonSummary

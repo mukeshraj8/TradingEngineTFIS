@@ -18,6 +18,7 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from tfis.domain.enums import OptionType
+from tfis.paper import load_selected_contract_market_events
 from tfis.paper.contract_selection import S23PaperContractSelectionRequest, S23PaperContractSelector
 from tfis.paper.models import EventEnvelope, OptionChainContract, OptionChainSnapshotEvent, PaperEventType
 from tfis.paper.order_state import S23PaperOrderStatus
@@ -279,7 +280,7 @@ def _summarize_branch(
     position_state = _read_json(branch_dir / "paper_position_state.json")
     position_manager_events = _load_jsonl_dicts(branch_dir / "paper_position_manager_events.jsonl")
     evidence_files = tuple(sorted(path.name for path in branch_dir.iterdir() if path.is_file()))
-    selected_market_events = _load_selected_contract_market_events(branch_dir)
+    selected_market_events = load_selected_contract_market_events(branch_dir)
     market_event_count, latest_market_event_at = _selected_contract_market_event_stats(selected_market_events)
     gaps: list[str] = []
     selected_symbol = _as_optional_str(summary.get("selected_contract_symbol"))
@@ -570,14 +571,6 @@ def _read_json(path: Path) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return payload if isinstance(payload, dict) else {}
-
-
-def _load_selected_contract_market_events(branch_dir: Path) -> tuple[dict[str, Any], ...]:
-    paths = sorted(branch_dir.glob("selected_contract_market_events*.jsonl"))
-    events: list[dict[str, Any]] = []
-    for path in paths:
-        events.extend(_load_jsonl_dicts(path))
-    return tuple(events)
 
 
 def _load_jsonl_dicts(path: Path) -> list[dict[str, Any]]:

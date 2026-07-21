@@ -7,11 +7,11 @@ from tfis.market_data import UnderlyingHistoryBar
 from tfis.market_structure import MarketStructureCalculator, OhlcBar
 from tfis.monthly_status import MonthlyStatusReferenceLevels
 
-from .fyers_snapshot_collector import S23CollectedSnapshotInputs
+from .fyers_snapshot_collector import PaperCollectedSnapshotInputs
 from .runtime_input_derivation import (
-    S23DecisionReferencePacket,
-    S23MarketReferencePacket,
-    S23MonthlyStatusReferencePacket,
+    PaperDecisionReferencePacket,
+    PaperMarketReferencePacket,
+    PaperMonthlyStatusReferencePacket,
 )
 
 
@@ -25,7 +25,7 @@ class S23LiveReferenceDerivationError(RuntimeError):
 
 @dataclass(frozen=True, slots=True)
 class S23LiveReferenceDerivationResult:
-    effective_reference_packet: S23DecisionReferencePacket
+    effective_reference_packet: PaperDecisionReferencePacket
     monthly_status_levels: MonthlyStatusReferenceLevels
     current_day_high_used: float
     current_day_low_used: float
@@ -44,8 +44,8 @@ class S23LiveReferenceDeriver:
     def derive(
         self,
         *,
-        base_reference_packet: S23DecisionReferencePacket,
-        collected_inputs: S23CollectedSnapshotInputs,
+        base_reference_packet: PaperDecisionReferencePacket,
+        collected_inputs: PaperCollectedSnapshotInputs,
     ) -> S23LiveReferenceDerivationResult:
         daily_bars = collected_inputs.daily_bars
         if not daily_bars:
@@ -109,10 +109,10 @@ class S23LiveReferenceDeriver:
             current_price=float(current_price),
         )
 
-        effective_packet = S23DecisionReferencePacket(
+        effective_packet = PaperDecisionReferencePacket(
             instrument_group=base_reference_packet.instrument_group,
             strategy_branch=base_reference_packet.strategy_branch,
-            monthly_status_levels=S23MonthlyStatusReferencePacket(
+            monthly_status_levels=PaperMonthlyStatusReferencePacket(
                 PMH=monthly_status_levels.PMH,
                 PML=monthly_status_levels.PML,
                 CMH=monthly_status_levels.CMH,
@@ -122,7 +122,7 @@ class S23LiveReferenceDeriver:
                 CWH=monthly_status_levels.CWH,
                 CWL=monthly_status_levels.CWL,
             ),
-            market_reference_levels=S23MarketReferencePacket(
+            market_reference_levels=PaperMarketReferencePacket(
                 d2hh=market_levels.d2hh,
                 d2ll=market_levels.d2ll,
                 d3hh=market_levels.d3hh,
@@ -262,4 +262,9 @@ class S23LiveReferenceDeriver:
     @staticmethod
     def _same_iso_week(timestamp: datetime, session_date) -> bool:
         return timestamp.date().isocalendar()[:2] == session_date.isocalendar()[:2]
+
+
+PaperLiveReferenceDerivationError = S23LiveReferenceDerivationError
+PaperLiveReferenceDerivationResult = S23LiveReferenceDerivationResult
+PaperLiveReferenceDeriver = S23LiveReferenceDeriver
 

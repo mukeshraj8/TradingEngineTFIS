@@ -6,7 +6,14 @@ from pathlib import Path
 
 import yaml
 
-from .order_state import PaperOrderState, PaperOrderStateStore, paper_order_is_waiting_for_trigger
+from tfis.strategy import canonical_executor_name
+
+from .order_state import (
+    PaperOrderStateDiscovery,
+    PaperOrderState,
+    PaperOrderStateStore,
+    paper_order_watchable_for_session,
+)
 from .position_discovery import PaperOpenPositionDiscovery
 from .position_state import PaperPositionState
 
@@ -21,6 +28,8 @@ class PaperLifecycleSupervisorTargetSpec:
     reference_packet_path: Path | None = None
     session_id_prefix: str | None = None
     executor: str | None = None
+    runner_script_path: Path | None = None
+    wrapper_script_path: Path | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -75,8 +84,18 @@ def load_paper_lifecycle_supervisor_target_specs(
                     else None
                 ),
                 executor=(
-                    str(item["executor"]).strip()
+                    canonical_executor_name(item["executor"])
                     if item.get("executor")
+                    else None
+                ),
+                runner_script_path=(
+                    _resolve_repo_path(repo_root, item["runner_script_path"])
+                    if item.get("runner_script_path")
+                    else None
+                ),
+                wrapper_script_path=(
+                    _resolve_repo_path(repo_root, item["wrapper_script_path"])
+                    if item.get("wrapper_script_path")
                     else None
                 ),
             )
@@ -89,9 +108,11 @@ class PaperLifecycleSupervisorTargetDiscovery:
         self,
         *,
         order_store: PaperOrderStateStore | None = None,
+        order_discovery: PaperOrderStateDiscovery | None = None,
         position_discovery: PaperOpenPositionDiscovery | None = None,
     ) -> None:
         self._order_store = order_store or PaperOrderStateStore()
+        self._order_discovery = order_discovery or PaperOrderStateDiscovery(order_store=self._order_store)
         self._position_discovery = position_discovery or PaperOpenPositionDiscovery()
 
     def discover_targets(
@@ -118,17 +139,19 @@ class PaperLifecycleSupervisorTargetDiscovery:
                 )
             )
 
-        for state_path in sorted(spec.artifact_root.rglob("paper_order_state.json")):
-            directory = state_path.parent.resolve()
+        for candidate in self._order_discovery.find_orders(
+            (spec.artifact_root,),
+            strategy_code=spec.strategy_code,
+        ):
+            directory = candidate.state_directory.resolve()
             if directory in state_directories:
                 continue
-            try:
-                order_state = self._order_store.load_state(directory)
-            except Exception:
-                continue
-            if not paper_order_is_waiting_for_trigger(order_state.status):
-                continue
-            if order_state.entry_date > effective_session_date:
+            order_state = candidate.state
+            if not paper_order_watchable_for_session(
+                status=order_state.status,
+                entry_date=order_state.entry_date,
+                effective_session_date=effective_session_date,
+            ):
                 continue
             targets.append(
                 PaperLifecycleSupervisorWatchTarget(

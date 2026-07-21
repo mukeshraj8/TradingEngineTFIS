@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import sys
 from pathlib import Path
 
@@ -13,7 +12,9 @@ if str(SRC_ROOT) not in sys.path:
 
 from tfis.paper import (
     S23FyersSnapshotCollectorError,
-    run_s23_morning_supervised_decision,
+    paper_morning_supervised_market_closed_no_action,
+    paper_morning_supervised_process_lock_path,
+    run_paper_morning_supervised_decision,
 )
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 
@@ -29,12 +30,6 @@ DEFAULT_STRATEGIES = (
     "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
 )
 DEFAULT_STRATEGY_ROOT = REPO_ROOT / "config" / "strategies" / "options_sell" / "nifty"
-_MARKET_CLOSED_NO_CANDLE_MESSAGES = (
-    "FYERS underlying history payload returned no candles",
-    "No underlying history candles matched the requested TFIS session window",
-)
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
@@ -80,10 +75,11 @@ def main(argv: list[str] | None = None) -> int:
     process_lock_handle: ProcessLockHandle | None = None
     try:
         process_lock_handle = acquire_process_lock(
-            _supervised_decision_process_lock_path(
+            paper_morning_supervised_process_lock_path(
                 artifact_root=Path(args.artifact_root),
                 session_id_prefix=args.session_id_prefix,
                 lock_root=Path(args.process_lock_root),
+                strategy_code="S23",
             ),
             label=f"s23-supervised-decision:{args.session_id_prefix}",
             metadata={
@@ -97,7 +93,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr, flush=True)
         return 1
     try:
-        result = run_s23_morning_supervised_decision(
+        result = run_paper_morning_supervised_decision(
             tfis_root=args.tfis_root,
             config_path=args.config,
             strategy_path=strategy_paths[0],
@@ -114,7 +110,7 @@ def main(argv: list[str] | None = None) -> int:
         )
     except (S23FyersSnapshotCollectorError, RuntimeError) as exc:
         code = getattr(exc, "code", "MORNING_SUPERVISED_DECISION_FAILED")
-        if _is_market_closed_no_action(code=code, message=str(exc)):
+        if paper_morning_supervised_market_closed_no_action(code=code, message=str(exc)):
             print(
                 "MARKET_CLOSED_NO_ACTION: No intraday market candles were available "
                 "for the supervised S23 snapshot window. No trade decision or supervisor "
@@ -135,24 +131,6 @@ def main(argv: list[str] | None = None) -> int:
     if result.final_summary_markdown is not None:
         print(f"Final decision summary: {result.final_summary_markdown}")
     return 0
-
-
-def _is_market_closed_no_action(*, code: str, message: str) -> bool:
-    return code == "BROKER_SNAPSHOT_FAILED" and any(
-        marker in message for marker in _MARKET_CLOSED_NO_CANDLE_MESSAGES
-    )
-
-
-def _supervised_decision_process_lock_path(
-    *,
-    artifact_root: Path,
-    session_id_prefix: str,
-    lock_root: Path,
-) -> Path:
-    identity = f"{artifact_root.resolve()}::{session_id_prefix}"
-    digest = hashlib.sha256(identity.encode("utf-8")).hexdigest()[:24]
-    return lock_root / f"s23_supervised_decision_{digest}.pid.json"
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -21,12 +21,12 @@ from .ingress_dry_run import (
 )
 from .live_ingress import PaperLiveIngressConfig
 from .live_prelude import (
-    S23LivePreludeError,
-    S23PaperLivePreludeBuilder,
-    S23PaperLivePreludeRequest,
-    S23PaperPreludeMode,
-    S23PaperPreludeSessionContext,
-    S23PaperSnapshotInput,
+    PaperLivePreludeBuilder,
+    PaperLivePreludeError,
+    PaperLivePreludeRequest,
+    PaperPreludeMode,
+    PaperPreludeSessionContext,
+    PaperSnapshotInput,
 )
 from .models import (
     OptionChainSnapshotEvent,
@@ -67,19 +67,24 @@ class S23GeneratedPreludeDryRunArtifactSet:
     provenance: S23GeneratedPreludeDryRunProvenance
 
 
+PaperGeneratedPreludeDryRunError = S23GeneratedPreludeDryRunError
+PaperGeneratedPreludeDryRunProvenance = S23GeneratedPreludeDryRunProvenance
+PaperGeneratedPreludeDryRunArtifactSet = S23GeneratedPreludeDryRunArtifactSet
+
+
 class S23GeneratedPreludeDryRunRunner:
     def __init__(
         self,
         *,
         dry_run_runner: S23PaperIngressDryRunRunner | None = None,
-        prelude_builder: S23PaperLivePreludeBuilder | None = None,
+        prelude_builder: PaperLivePreludeBuilder | None = None,
         reviewer: S23PaperSessionReviewer | None = None,
         position_state_store: S23PaperPositionStateStore | None = None,
     ) -> None:
         self._dry_run_runner = dry_run_runner or S23PaperIngressDryRunRunner(
             source_mode="generated_live_prelude_dry_run"
         )
-        self._prelude_builder = prelude_builder or S23PaperLivePreludeBuilder()
+        self._prelude_builder = prelude_builder or PaperLivePreludeBuilder()
         self._reviewer = reviewer or S23PaperSessionReviewer()
         self._position_state_store = position_state_store or S23PaperPositionStateStore()
 
@@ -112,7 +117,7 @@ class S23GeneratedPreludeDryRunRunner:
 
         try:
             prelude_result = self._prelude_builder.build(
-                S23PaperLivePreludeRequest(
+                PaperLivePreludeRequest(
                     strategy_rule=strategy,
                     strategy_branch=str(runtime_fixture["strategy_branch"]),
                     monthly_status_result=self._build_monthly_status_result(
@@ -149,7 +154,7 @@ class S23GeneratedPreludeDryRunRunner:
                     ),
                 )
             )
-        except S23LivePreludeError as exc:
+        except PaperLivePreludeError as exc:
             raise S23GeneratedPreludeDryRunError(str(exc)) from exc
 
         generated_events = self._build_generated_event_stream(
@@ -232,7 +237,7 @@ class S23GeneratedPreludeDryRunRunner:
         *,
         config: PaperLiveIngressConfig,
         prelude_result: Any,
-        session_context: S23PaperPreludeSessionContext,
+        session_context: PaperPreludeSessionContext,
     ) -> tuple[PaperEvent, ...]:
         config_event = config.build_paper_session_config_event(
             session_date=session_context.session_date,
@@ -263,7 +268,7 @@ class S23GeneratedPreludeDryRunRunner:
         generated_events: tuple[PaperEvent, ...],
         market_events: tuple[PaperEvent, ...],
         session_date: date,
-        mode: S23PaperPreludeMode,
+        mode: PaperPreludeMode,
     ) -> tuple[PaperEvent, ...]:
         filtered_market_events: list[PaperEvent] = []
         for event in market_events:
@@ -290,7 +295,7 @@ class S23GeneratedPreludeDryRunRunner:
         ordered.extend(
             event for event in filtered_market_events if event.envelope.event_type is PaperEventType.OPTION_CHAIN_SNAPSHOT
         )
-        if mode is S23PaperPreludeMode.FRESH_ENTRY:
+        if mode is PaperPreludeMode.FRESH_ENTRY:
             ordered.extend(generated_selected)
         return tuple(ordered)
 
@@ -306,10 +311,10 @@ class S23GeneratedPreludeDryRunRunner:
     def _build_session_context(
         self,
         payload: dict[str, Any],
-    ) -> S23PaperPreludeSessionContext:
+    ) -> PaperPreludeSessionContext:
         session_date = self._parse_date(payload["session_date"])
         generated_at = self._parse_datetime(payload["generated_at"])
-        return S23PaperPreludeSessionContext(
+        return PaperPreludeSessionContext(
             session_date=session_date,
             timezone=str(payload["timezone"]),
             generated_at=generated_at,
@@ -352,11 +357,11 @@ class S23GeneratedPreludeDryRunRunner:
     def _build_snapshots(
         self,
         payload: list[dict[str, Any]],
-    ) -> tuple[S23PaperSnapshotInput, ...]:
-        snapshots: list[S23PaperSnapshotInput] = []
+    ) -> tuple[PaperSnapshotInput, ...]:
+        snapshots: list[PaperSnapshotInput] = []
         for item in payload:
             snapshots.append(
-                S23PaperSnapshotInput(
+                PaperSnapshotInput(
                     snapshot_label=SnapshotLabel(str(item["snapshot_label"])),
                     open=self._optional_float(item.get("open")),
                     high=self._optional_float(item.get("high")),
@@ -498,3 +503,6 @@ class S23GeneratedPreludeDryRunRunner:
         if value in (None, ""):
             return None
         return str(value)
+
+
+PaperGeneratedPreludeDryRunRunner = S23GeneratedPreludeDryRunRunner

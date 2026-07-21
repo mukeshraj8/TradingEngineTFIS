@@ -3,7 +3,7 @@ source_mode: broker_fyers_live_paper_ingress
 strategies:
   - strategy_code: S21
     enabled: true
-    executor: s23_morning_supervised
+    executor: paper_morning_supervised
     registry_ids:
       - S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL
       - S21_BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT

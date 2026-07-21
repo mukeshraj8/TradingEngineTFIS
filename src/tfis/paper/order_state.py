@@ -30,19 +30,21 @@ class S23PaperOrderStatus(str, Enum):
     PAPER_ORDER_NOT_FILLED = "PAPER_ORDER_NOT_FILLED"
 
 
-def paper_order_is_waiting_for_trigger(status: S23PaperOrderStatus | str | None) -> bool:
+def _normalized_order_status_value(status: S23PaperOrderStatus | str | None) -> str:
     if isinstance(status, S23PaperOrderStatus):
-        return status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
-    return str(status or "").strip() == S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value
+        return status.value
+    return str(status or "").strip()
+
+
+def paper_order_is_waiting_for_trigger(status: S23PaperOrderStatus | str | None) -> bool:
+    return (
+        _normalized_order_status_value(status)
+        == S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value
+    )
 
 
 def paper_order_is_terminal(status: S23PaperOrderStatus | str | None) -> bool:
-    if isinstance(status, S23PaperOrderStatus):
-        return status in {
-            S23PaperOrderStatus.PAPER_ORDER_FILLED,
-            S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED,
-        }
-    normalized = str(status or "").strip()
+    normalized = _normalized_order_status_value(status)
     return normalized in {
         S23PaperOrderStatus.PAPER_ORDER_FILLED.value,
         S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value,
@@ -50,7 +52,7 @@ def paper_order_is_terminal(status: S23PaperOrderStatus | str | None) -> bool:
 
 
 def paper_order_trade_event_type(status: S23PaperOrderStatus | str | None) -> str:
-    normalized = str(status or "").strip()
+    normalized = _normalized_order_status_value(status)
     if normalized == S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value:
         return "ORDER_NOT_FILLED"
     if normalized == S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value:
@@ -59,7 +61,7 @@ def paper_order_trade_event_type(status: S23PaperOrderStatus | str | None) -> st
 
 
 def paper_order_trade_lifecycle_status(status: S23PaperOrderStatus | str | None) -> str:
-    normalized = str(status or "").strip()
+    normalized = _normalized_order_status_value(status)
     if normalized == S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value:
         return "ORDER_NOT_FILLED"
     if normalized == S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value:
@@ -68,11 +70,48 @@ def paper_order_trade_lifecycle_status(status: S23PaperOrderStatus | str | None)
 
 
 def paper_order_visible_in_trade_monitor(status: S23PaperOrderStatus | str | None) -> bool:
-    normalized = str(status or "").strip()
+    normalized = _normalized_order_status_value(status)
     return normalized in {
         S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER.value,
         S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value,
     }
+
+
+def paper_order_watchable_for_session(
+    *,
+    status: S23PaperOrderStatus | str | None,
+    entry_date: date,
+    effective_session_date: date,
+) -> bool:
+    return (
+        paper_order_is_waiting_for_trigger(status)
+        and entry_date == effective_session_date
+    )
+
+
+def paper_order_visible_for_latest_session(
+    *,
+    status: S23PaperOrderStatus | str | None,
+    entry_date: date | None,
+    latest_session_date: date | None,
+) -> bool:
+    if not paper_order_visible_in_trade_monitor(status):
+        return False
+    if latest_session_date is None:
+        return True
+    return entry_date == latest_session_date
+
+
+def paper_order_state_candidate_paths(
+    artifact_roots: tuple[str | Path, ...],
+) -> tuple[Path, ...]:
+    candidate_paths: set[Path] = set()
+    for artifact_root in artifact_roots:
+        root = Path(artifact_root)
+        if not root.exists():
+            continue
+        candidate_paths.update(root.rglob(_STATE_FILENAME))
+    return tuple(sorted(candidate_paths))
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,6 +178,12 @@ class S23PaperOrderEvent:
     ask: float | None = None
     low: float | None = None
     high: float | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class S23PaperOrderStateCandidate:
+    state_directory: Path
+    state: S23PaperOrderState
 
 
 class S23PaperOrderStateStore:
@@ -647,18 +692,63 @@ class S23PaperOrderStateStore:
         return value
 
 
+class S23PaperOrderStateDiscovery:
+    def __init__(self, *, order_store: S23PaperOrderStateStore | None = None) -> None:
+        self._order_store = order_store or S23PaperOrderStateStore()
+
+    def find_orders(
+        self,
+        artifact_roots: tuple[str | Path, ...],
+        *,
+        strategy_code: str | None = None,
+    ) -> tuple[S23PaperOrderStateCandidate, ...]:
+        candidates: list[S23PaperOrderStateCandidate] = []
+        seen: set[Path] = set()
+        normalized_strategy_code = (
+            str(strategy_code).strip().upper() if strategy_code is not None else None
+        )
+        for state_path in paper_order_state_candidate_paths(artifact_roots):
+            state_directory = state_path.parent.resolve()
+            if state_directory in seen:
+                continue
+            seen.add(state_directory)
+            try:
+                state = self._order_store.load_state(state_directory)
+            except Exception:
+                continue
+            if (
+                normalized_strategy_code is not None
+                and state.strategy_code.strip().upper() != normalized_strategy_code
+            ):
+                continue
+            candidates.append(
+                S23PaperOrderStateCandidate(
+                    state_directory=state_directory,
+                    state=state,
+                )
+            )
+        return tuple(candidates)
+
+
 __all__ = [
     "paper_order_is_terminal",
     "paper_order_trade_event_type",
     "paper_order_trade_lifecycle_status",
+    "paper_order_state_candidate_paths",
+    "paper_order_visible_for_latest_session",
     "paper_order_visible_in_trade_monitor",
+    "paper_order_watchable_for_session",
     "paper_order_is_waiting_for_trigger",
+    "PaperOrderStateCandidate",
+    "PaperOrderStateDiscovery",
     "PaperOrderEvent",
     "PaperOrderState",
     "PaperOrderStateError",
     "PaperOrderStateStore",
     "PaperOrderStatus",
     "S23PaperOrderEvent",
+    "S23PaperOrderStateCandidate",
+    "S23PaperOrderStateDiscovery",
     "S23PaperOrderState",
     "S23PaperOrderStateError",
     "S23PaperOrderStateStore",
@@ -667,6 +757,8 @@ __all__ = [
 
 
 PaperOrderEvent = S23PaperOrderEvent
+PaperOrderStateCandidate = S23PaperOrderStateCandidate
+PaperOrderStateDiscovery = S23PaperOrderStateDiscovery
 PaperOrderState = S23PaperOrderState
 PaperOrderStateError = S23PaperOrderStateError
 PaperOrderStateStore = S23PaperOrderStateStore

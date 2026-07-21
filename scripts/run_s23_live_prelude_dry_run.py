@@ -11,8 +11,8 @@ if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
 from tfis.paper import (
-    S23GeneratedPreludeDryRunError,
-    S23GeneratedPreludeDryRunRunner,
+    PaperGeneratedPreludeDryRunError,
+    PaperGeneratedPreludeDryRunRunner,
 )
 
 
@@ -47,7 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    runner = S23GeneratedPreludeDryRunRunner()
+    runner = PaperGeneratedPreludeDryRunRunner()
     try:
         artifact_set = runner.run_from_files(
             strategy_path=args.strategy_path,
@@ -58,7 +58,7 @@ def main(argv: list[str] | None = None) -> int:
             session_id=args.session_id,
             enable_smoke_override=args.enable_smoke_override,
         )
-    except S23GeneratedPreludeDryRunError as exc:
+    except PaperGeneratedPreludeDryRunError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 

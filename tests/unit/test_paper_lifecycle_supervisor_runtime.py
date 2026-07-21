@@ -46,6 +46,8 @@ def test_load_paper_lifecycle_supervisor_target_specs(tmp_path: Path) -> None:
                 "    reference_packet_path: config/reference_packets/s23_bear_put_live_decision_reference.json",
                 "    session_id_prefix: s23-fyers-morning-supervised-decision",
                 "    executor: s23_morning_supervised",
+                "    runner_script_path: scripts/run_s23_fyers_0916_supervised_decision.py",
+                "    wrapper_script_path: scripts/start_s23_fyers_morning_supervised_decision.ps1",
             )
         ),
         encoding="utf-8",
@@ -65,7 +67,13 @@ def test_load_paper_lifecycle_supervisor_target_specs(tmp_path: Path) -> None:
         tmp_path / "config/reference_packets/s23_bear_put_live_decision_reference.json"
     ).resolve()
     assert specs[0].session_id_prefix == "s23-fyers-morning-supervised-decision"
-    assert specs[0].executor == "s23_morning_supervised"
+    assert specs[0].executor == "paper_morning_supervised"
+    assert specs[0].runner_script_path == (
+        tmp_path / "scripts/run_s23_fyers_0916_supervised_decision.py"
+    ).resolve()
+    assert specs[0].wrapper_script_path == (
+        tmp_path / "scripts/start_s23_fyers_morning_supervised_decision.ps1"
+    ).resolve()
 
 
 def test_target_discovery_finds_active_positions_and_waiting_orders(tmp_path: Path) -> None:
@@ -117,7 +125,6 @@ def test_target_discovery_finds_active_positions_and_waiting_orders(tmp_path: Pa
     assert {(item.mode, item.directory.name) for item in targets} == {
         ("state", "open-branch"),
         ("order", "wait-branch"),
-        ("order", "stale-branch"),
     }
 
 
@@ -132,11 +139,15 @@ def test_repo_supervisor_targets_yaml_carries_relaunch_metadata() -> None:
     assert by_code["S23"].strategy_path is not None
     assert by_code["S23"].reference_packet_path is not None
     assert by_code["S23"].session_id_prefix == "s23-fyers-morning-supervised-decision"
-    assert by_code["S23"].executor == "s23_morning_supervised"
+    assert by_code["S23"].executor == "paper_morning_supervised"
+    assert by_code["S23"].runner_script_path is not None
+    assert by_code["S23"].wrapper_script_path is not None
     assert by_code["S21"].strategy_path is not None
     assert by_code["S21"].reference_packet_path is not None
     assert by_code["S21"].session_id_prefix == "s21-fyers-morning-supervised-decision"
-    assert by_code["S21"].executor == "s23_morning_supervised"
+    assert by_code["S21"].executor == "paper_morning_supervised"
+    assert by_code["S21"].runner_script_path is not None
+    assert by_code["S21"].wrapper_script_path is not None
 
 
 def test_paper_lifecycle_runtime_config_loads_relative_payload_fixture(tmp_path: Path) -> None:
@@ -750,6 +761,7 @@ def test_build_fresh_decision_task_spec_from_target_metadata(tmp_path: Path) -> 
     assert task_spec.reference_packet_path == target_spec.reference_packet_path
     assert task_spec.session_id_prefix == "s23-fyers-morning-supervised-decision"
     assert task_spec.runner_script_path.name == "run_s23_fyers_0916_supervised_decision.py"
+    assert task_spec.wrapper_script_path.name == "start_s23_fyers_morning_supervised_decision.ps1"
 
 
 def test_launch_fresh_decision_if_required_spawns_runner(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -1027,7 +1039,9 @@ def _targets_yaml(tmp_path: Path, *, config_path: Path, artifact_root: Path) -> 
                 "    strategy_path: config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
                 "    reference_packet_path: config/reference_packets/s23_bear_put_live_decision_reference.json",
                 "    session_id_prefix: s23-fyers-morning-supervised-decision",
-                "    executor: s23_morning_supervised",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s23_fyers_0916_supervised_decision.py",
+                "    wrapper_script_path: scripts/start_s23_fyers_morning_supervised_decision.ps1",
             )
         ),
         encoding="utf-8",

@@ -7,9 +7,7 @@ import os
 import subprocess
 import sys
 import time as time_module
-from dataclasses import asdict, is_dataclass
 from datetime import date, datetime, time
-from enum import Enum
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -26,6 +24,7 @@ from tfis.paper import (
     DeterministicExpiryCalendar,
     PaperLifecycleSupervisor,
     PaperLifecycleSupervisorContext,
+    PaperOrderStateDiscovery,
     PaperSelectedContractEventRequest,
     PaperOpenPositionDiscovery,
     S23PaperOrderState,
@@ -36,11 +35,12 @@ from tfis.paper import (
     build_paper_live_state_store_from_yaml,
     connect_paper_broker_runtime,
     build_paper_position_manager,
+    append_selected_contract_market_events,
     fetch_selected_contract_market_events,
     inspect_paper_live_state_store_from_yaml,
     load_paper_broker_runtime,
+    paper_live_state_owner_id,
     prepare_paper_broker_runtime_environment,
-    s23_live_state_owner_id,
 )
 from tfis.paper.models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
@@ -207,7 +207,7 @@ def main(argv: list[str] | None = None) -> int:
         order_state=order_state,
         position_state=state,
     )
-    owner_id = s23_live_state_owner_id()
+    owner_id = paper_live_state_owner_id()
     process_lock_handle: ProcessLockHandle | None = None
     process_lock_path = _watch_process_lock_path(
         lifecycle_context.session_directory,
@@ -335,12 +335,13 @@ def main(argv: list[str] | None = None) -> int:
                 evaluated_at=evaluated_at,
                 state=state,
             )
-            _append_selected_contract_market_events(
+            append_selected_contract_market_events(
                 lifecycle_context.session_directory,
                 events=events,
                 observed_at=evaluated_at,
-                watcher_pid=os.getpid(),
+                process_pid=os.getpid(),
                 trade_id=lifecycle_context.trade_id,
+                process_role="watcher",
             )
             previous_trade_id = lifecycle_context.trade_id
             lifecycle_result = supervisor.supervise(
@@ -468,68 +469,6 @@ def _fetch_selected_contract_events(
     return tuple(events)
 
 
-def _append_selected_contract_market_events(
-    directory: Path,
-    *,
-    events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
-    observed_at: datetime,
-    watcher_pid: int,
-    trade_id: str,
-) -> Path:
-    path = directory / "selected_contract_market_events.jsonl"
-    if not events:
-        return path
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
-        for event in events:
-            payload = _serialize_selected_contract_market_event(
-                event,
-                observed_at=observed_at,
-                watcher_pid=watcher_pid,
-                trade_id=trade_id,
-            )
-            handle.write(json.dumps(payload, sort_keys=True) + "\n")
-    return path
-
-
-def _serialize_selected_contract_market_event(
-    event: SelectedContractQuoteEvent | SelectedContractBarEvent,
-    *,
-    observed_at: datetime,
-    watcher_pid: int,
-    trade_id: str,
-) -> dict[str, Any]:
-    payload = _to_jsonable(asdict(event) if is_dataclass(event) else event)
-    event_kind = (
-        "selected_contract_quote"
-        if isinstance(event, SelectedContractQuoteEvent)
-        else "selected_contract_bar"
-    )
-    return {
-        "artifact_version": 1,
-        "event_kind": event_kind,
-        "observed_at": observed_at.isoformat(),
-        "watcher_pid": watcher_pid,
-        "trade_id": trade_id,
-        "symbol": event.symbol,
-        "payload": payload,
-    }
-
-
-def _to_jsonable(value: Any) -> Any:
-    if isinstance(value, (datetime, date, time)):
-        return value.isoformat()
-    if isinstance(value, Enum):
-        return value.value
-    if isinstance(value, Path):
-        return str(value)
-    if isinstance(value, dict):
-        return {str(key): _to_jsonable(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_to_jsonable(item) for item in value]
-    return value
-
-
 def _resolve_state_dir(
     *,
     state_dir: str | None,
@@ -629,19 +568,17 @@ def _resolve_order_dir(
     roots = tuple(Path(item) for item in search_roots) or (default_artifact_root,)
     candidates: list[tuple[datetime, Path]] = []
     store = S23PaperOrderStateStore()
-    for root in roots:
-        if not root.exists():
-            continue
-        for path in root.rglob("paper_order_state.json"):
-            try:
-                state = store.load_state(path.parent)
-            except Exception:
-                continue
-            if (
-                state.status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
-                and state.entry_date == session_date
-            ):
-                candidates.append((state.last_updated_timestamp, path.parent))
+    discovery = PaperOrderStateDiscovery(order_store=store)
+    for candidate in discovery.find_orders(
+        tuple(str(root) for root in roots),
+        strategy_code="S23",
+    ):
+        state = candidate.state
+        if (
+            state.status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
+            and state.entry_date == session_date
+        ):
+            candidates.append((state.last_updated_timestamp, candidate.state_directory))
     if candidates:
         return sorted(candidates, key=lambda item: item[0])[-1][1]
     if no_open_ok:

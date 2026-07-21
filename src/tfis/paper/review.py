@@ -1633,3 +1633,19 @@ class S23PaperSessionReviewer:
         if isinstance(value, Path):
             return str(value)
         return value
+
+
+PaperReviewError = S23PaperReviewError
+PaperReviewAuditStep = S23PaperReviewAuditStep
+PaperReviewGuardrail = S23PaperReviewGuardrail
+PaperReviewSelectedContract = S23PaperReviewSelectedContract
+PaperReviewOrderPlan = S23PaperReviewOrderPlan
+PaperReviewOrderIntent = S23PaperReviewOrderIntent
+PaperReviewFillPhase = S23PaperReviewFillPhase
+PaperReviewLifecyclePhase = S23PaperReviewLifecyclePhase
+PaperReviewDataProvenance = S23PaperReviewDataProvenance
+PaperReviewFreshness = S23PaperReviewFreshness
+PaperReviewBundleStatus = S23PaperReviewBundleStatus
+PaperReviewRuntimeContracts = S23PaperReviewRuntimeContracts
+PaperReviewSummary = S23PaperReviewSummary
+PaperSessionReviewer = S23PaperSessionReviewer

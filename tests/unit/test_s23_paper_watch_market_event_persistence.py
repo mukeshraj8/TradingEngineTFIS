@@ -10,6 +10,11 @@ from types import SimpleNamespace
 from tfis.brokers import BrokerAdapterError
 from tfis.domain.enums import OptionType
 from tfis.normalized_events import EventEnvelope, PaperEventType, SelectedContractQuoteEvent
+from tfis.paper import (
+    S23PaperOrderStateStore,
+    S23PaperTradeDecisionSummary,
+    append_selected_contract_market_events,
+)
 
 
 def _load_watch_module():
@@ -49,12 +54,13 @@ def test_selected_contract_market_events_are_appended_as_jsonl(tmp_path: Path) -
         volume=100.0,
     )
 
-    path = module._append_selected_contract_market_events(
+    path = append_selected_contract_market_events(
         tmp_path,
         events=(event,),
         observed_at=observed_at,
-        watcher_pid=12345,
+        process_pid=12345,
         trade_id="trade-1",
+        process_role="watcher",
     )
 
     rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
@@ -156,6 +162,38 @@ def test_fetch_selected_contract_events_raises_when_no_stream_evidence_exists(mo
             evaluated_at=datetime(2026, 7, 3, 9, 31, 5),
             state=None,
         )
+
+
+def test_resolve_order_dir_uses_shared_order_discovery_for_same_day_waiting_order(tmp_path: Path) -> None:
+    module = _load_watch_module()
+    today_dir = tmp_path / "2026-07-21" / "order-today"
+    old_dir = tmp_path / "2026-07-20" / "order-old"
+    today_dir.mkdir(parents=True)
+    old_dir.mkdir(parents=True)
+
+    store = S23PaperOrderStateStore()
+    store.create_waiting_order_from_live_decision(
+        today_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 21)),
+        created_at=datetime(2026, 7, 21, 9, 30),
+    )
+    store.create_waiting_order_from_live_decision(
+        old_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 20)),
+        created_at=datetime(2026, 7, 20, 9, 30),
+    )
+
+    resolved = module._resolve_order_dir(
+        order_dir=None,
+        search_roots=(str(tmp_path),),
+        default_artifact_root=tmp_path,
+        no_open_ok=False,
+        session_date=date(2026, 7, 21),
+    )
+
+    assert resolved == today_dir.resolve()
 
 
 def test_watch_runtime_bootstrap_uses_shared_paper_runtime_config(monkeypatch) -> None:
@@ -292,7 +330,7 @@ def test_watch_runtime_uses_shared_broker_runtime_connect_helper(monkeypatch) ->
         or SimpleNamespace(connection_state=SimpleNamespace(value="CONNECTED")),
     )
     monkeypatch.setattr(module, "_fetch_selected_contract_events", lambda **kwargs: ())
-    monkeypatch.setattr(module, "_append_selected_contract_market_events", lambda *args, **kwargs: Path("D:/tmp/events.jsonl"))
+    monkeypatch.setattr(module, "append_selected_contract_market_events", lambda *args, **kwargs: Path("D:/tmp/events.jsonl"))
     monkeypatch.setattr(
         module,
         "_rebuild_dashboard",
@@ -300,7 +338,7 @@ def test_watch_runtime_uses_shared_broker_runtime_connect_helper(monkeypatch) ->
     )
     monkeypatch.setattr(
         module,
-        "s23_live_state_owner_id",
+        "paper_live_state_owner_id",
         lambda prefix="tfis-s23-paper-watch": "owner-1",
     )
     monkeypatch.setattr(
@@ -371,4 +409,83 @@ def _quote_event(*, symbol: str, effective_timestamp: datetime, ltp: float) -> S
         ltp=ltp,
         oi=3734250.0,
         volume=100.0,
+    )
+
+
+def _strategy_rule():
+    from datetime import time
+
+    from tfis.domain import (
+        ExpiryType,
+        MonthlyStatus,
+        OptionType as DomainOptionType,
+        RolloverPolicy,
+        Segment,
+        StrategyExpiryPolicy,
+        StrategyRule,
+    )
+
+    return StrategyRule(
+        strategy_code="S23",
+        unique_code="S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        symbol="NIFTY",
+        segment=Segment.OPTIONS_SELL,
+        expiry_policy=StrategyExpiryPolicy(
+            expiry_type=ExpiryType.WEEKLY,
+            rollover_policy=RolloverPolicy.T_MINUS_1,
+            forced_close_time=time(12, 0),
+            no_carry_past_expiry=True,
+        ),
+        allowed_monthly_statuses=(MonthlyStatus.BEAR,),
+        option_type=DomainOptionType.PUT,
+        entry_time=time(9, 24, 59),
+        recalculation_time=time(9, 29, 59),
+        start_strike_formula="1",
+        end_strike_formula="1",
+        ideal_premium_formula="1",
+        minimum_premium_formula="1",
+        minimum_oi=500,
+        entry_formula="1",
+        target_formula="1",
+        stoploss_formula="1",
+        carry_forward_allowed=True,
+        parameters={"sl_reference_pct": 7.0},
+    )
+
+
+def _ready_summary(*, session_date: date) -> S23PaperTradeDecisionSummary:
+    return S23PaperTradeDecisionSummary(
+        status="READY",
+        session_date=session_date,
+        mode="fresh_entry",
+        strategy_code="S23",
+        strategy_branch="S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        monthly_status="BEAR",
+        monthly_status_trigger="BEAR_CONTINUES",
+        monthly_status_notes="test",
+        required_market_aliases=(),
+        required_option_aliases=(),
+        checkpoint_labels=("0915", "ORPT", "RC"),
+        market_levels={},
+        runtime_values={},
+        lots=1,
+        quantity=65,
+        selected_contract_symbol="NIFTY_20260723_24150_PE",
+        selected_contract_expiry="2026-07-23",
+        selected_contract_strike=24150.0,
+        selected_contract_option_type="PUT",
+        selected_contract_ltp=194.25,
+        selected_contract_oi=1000000.0,
+        contract_selection_reason="test",
+        contract_selection_failure_code=None,
+        contract_selection_attempted_expiries=("2026-07-23",),
+        rejected_candidate_counts={},
+        ranked_candidates=(),
+        planned_entry_price=194.25,
+        target_price=77.70,
+        stoploss_price=242.0,
+        fsl_price=258.94,
+        source_workbook_rule="test",
+        workbook_row_number=1,
+        notes=(),
     )

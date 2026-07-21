@@ -83,6 +83,10 @@ class S23PaperPreludeSessionContext:
     source_id_prefix: str = "live-prelude"
 
 
+PaperSnapshotInput = S23PaperSnapshotInput
+PaperPreludeSessionContext = S23PaperPreludeSessionContext
+
+
 @dataclass(frozen=True, slots=True)
 class S23PaperLivePreludeRequest:
     strategy_rule: StrategyRule
@@ -136,6 +140,12 @@ class S23PaperLivePreludeResult:
         if self.selected_contract_event is not None:
             events.append(self.selected_contract_event)
         return tuple(events)
+
+
+PaperLivePreludeError = S23LivePreludeError
+PaperPreludeMode = S23PaperPreludeMode
+PaperLivePreludeRequest = S23PaperLivePreludeRequest
+PaperLivePreludeResult = S23PaperLivePreludeResult
 
 
 _BLOCKED_WORKBOOK_ROWS = frozenset({190, 191})
@@ -662,3 +672,6 @@ def _validate_supported_strategy_rule(rule: StrategyRule) -> tuple[str, ...]:
         "UNSUPPORTED_STRATEGY",
         f"Prelude generation currently supports S23 and S21 only, received {rule.strategy_code}.",
     )
+
+
+PaperLivePreludeBuilder = S23PaperLivePreludeBuilder

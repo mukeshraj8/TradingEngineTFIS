@@ -16,23 +16,23 @@ from tfis.strategy.s23_recalculation import (
     S23RecalculationEngine,
 )
 
-from .fyers_snapshot_collector import S23CollectedSnapshotInputs
+from .fyers_snapshot_collector import PaperCollectedSnapshotInputs
 from .live_reference_derivation import (
-    S23LiveReferenceDerivationResult,
-    S23LiveReferenceDeriver,
+    PaperLiveReferenceDerivationResult,
+    PaperLiveReferenceDeriver,
 )
 from .live_prelude import (
-    S23PaperLivePreludeBuilder,
-    S23PaperLivePreludeRequest,
-    S23PaperLivePreludeResult,
-    S23PaperPreludeMode,
+    PaperLivePreludeBuilder,
+    PaperLivePreludeRequest,
+    PaperLivePreludeResult,
+    PaperPreludeMode,
 )
 from .models import SelectedContractBarEvent, SnapshotLabel
 from .position_state import S23PaperPositionState
 from .runtime_input_derivation import (
-    S23DecisionReferencePacket,
-    S23DerivedRuntimeInputs,
-    S23RuntimeInputDeriver,
+    PaperDecisionReferencePacket,
+    PaperDerivedRuntimeInputs,
+    PaperRuntimeInputDeriver,
 )
 
 
@@ -87,8 +87,8 @@ class S23PaperTradeDecisionSummary:
 
 @dataclass(frozen=True, slots=True)
 class S23PaperLiveDecisionResult:
-    derived_runtime_inputs: S23DerivedRuntimeInputs
-    prelude_result: S23PaperLivePreludeResult
+    derived_runtime_inputs: PaperDerivedRuntimeInputs
+    prelude_result: PaperLivePreludeResult
     summary: S23PaperTradeDecisionSummary
     explanation: dict[str, Any]
 
@@ -149,20 +149,20 @@ class S23PaperLiveDecisionBuilder:
     def __init__(
         self,
         *,
-        runtime_input_deriver: S23RuntimeInputDeriver | None = None,
-        prelude_builder: S23PaperLivePreludeBuilder | None = None,
-        live_reference_deriver: S23LiveReferenceDeriver | None = None,
+        runtime_input_deriver: PaperRuntimeInputDeriver | None = None,
+        prelude_builder: PaperLivePreludeBuilder | None = None,
+        live_reference_deriver: PaperLiveReferenceDeriver | None = None,
     ) -> None:
-        self._runtime_input_deriver = runtime_input_deriver or S23RuntimeInputDeriver()
-        self._prelude_builder = prelude_builder or S23PaperLivePreludeBuilder()
-        self._live_reference_deriver = live_reference_deriver or S23LiveReferenceDeriver()
+        self._runtime_input_deriver = runtime_input_deriver or PaperRuntimeInputDeriver()
+        self._prelude_builder = prelude_builder or PaperLivePreludeBuilder()
+        self._live_reference_deriver = live_reference_deriver or PaperLiveReferenceDeriver()
 
     def build(
         self,
         *,
         strategy_rule: StrategyRule,
-        reference_packet: S23DecisionReferencePacket,
-        collected_inputs: S23CollectedSnapshotInputs,
+        reference_packet: PaperDecisionReferencePacket,
+        collected_inputs: PaperCollectedSnapshotInputs,
         carry_forward_position: S23PaperPositionState | None = None,
         smoke_override_enabled: bool = False,
         smoke_override_selected_contract_symbol: str | None = None,
@@ -239,15 +239,15 @@ class S23PaperLiveDecisionBuilder:
         self,
         *,
         strategy_rule: StrategyRule,
-        reference_packet: S23DecisionReferencePacket,
-        derived_inputs: S23DerivedRuntimeInputs,
-        collected_inputs: S23CollectedSnapshotInputs,
+        reference_packet: PaperDecisionReferencePacket,
+        derived_inputs: PaperDerivedRuntimeInputs,
+        collected_inputs: PaperCollectedSnapshotInputs,
         carry_forward_position: S23PaperPositionState | None,
         smoke_override_enabled: bool,
         smoke_override_selected_contract_symbol: str | None,
         allow_branch_pinned_unknown_monthly_status: bool,
-    ) -> S23PaperLivePreludeRequest:
-        return S23PaperLivePreludeRequest(
+    ) -> PaperLivePreludeRequest:
+        return PaperLivePreludeRequest(
             strategy_rule=strategy_rule,
             strategy_branch=reference_packet.strategy_branch or strategy_rule.unique_code,
             monthly_status_result=derived_inputs.monthly_status_result,
@@ -275,9 +275,9 @@ class S23PaperLiveDecisionBuilder:
         self,
         *,
         strategy_rule: StrategyRule,
-        prelude_result: S23PaperLivePreludeResult,
-        derived_inputs: S23DerivedRuntimeInputs,
-        collected_inputs: S23CollectedSnapshotInputs,
+        prelude_result: PaperLivePreludeResult,
+        derived_inputs: PaperDerivedRuntimeInputs,
+        collected_inputs: PaperCollectedSnapshotInputs,
     ) -> dict[str, Any]:
         trade_plan = prelude_result.trade_plan
         selected_contract = prelude_result.contract_selection.selected_contract if prelude_result.contract_selection else None
@@ -434,7 +434,7 @@ class S23PaperLiveDecisionBuilder:
 
     @staticmethod
     def _find_snapshot(
-        derived_inputs: S23DerivedRuntimeInputs,
+        derived_inputs: PaperDerivedRuntimeInputs,
         label: SnapshotLabel,
     ):
         for snapshot in derived_inputs.snapshots:
@@ -643,9 +643,9 @@ class S23PaperLiveDecisionBuilder:
         self,
         *,
         strategy_rule: StrategyRule,
-        reference_packet: S23DecisionReferencePacket,
-        derived_inputs: S23DerivedRuntimeInputs,
-        prelude_result: S23PaperLivePreludeResult,
+        reference_packet: PaperDecisionReferencePacket,
+        derived_inputs: PaperDerivedRuntimeInputs,
+        prelude_result: PaperLivePreludeResult,
         allow_branch_pinned_unknown_monthly_status: bool,
     ) -> S23PaperTradeDecisionSummary:
         contract_selection = prelude_result.contract_selection
@@ -669,7 +669,7 @@ class S23PaperLiveDecisionBuilder:
         notes: list[str] = []
         order_placement_blocked = False
         order_placement_block_reason = None
-        if prelude_result.mode is S23PaperPreludeMode.CARRY_FORWARD_RESUME:
+        if prelude_result.mode is PaperPreludeMode.CARRY_FORWARD_RESUME:
             if strategy_rule.allow_fresh_entry_with_open_position:
                 notes.append(
                     "Fresh entry planning was computed while an open carry-forward position exists; config allows a fresh paper order."
@@ -687,7 +687,7 @@ class S23PaperLiveDecisionBuilder:
                 "Branch-pinned supervised analysis override allowed decision generation while the current TFIS monthly-status engine remained UNKNOWN."
             )
         return S23PaperTradeDecisionSummary(
-            status="READY" if selected_contract is not None or prelude_result.mode is S23PaperPreludeMode.CARRY_FORWARD_RESUME else "NO_GO",
+            status="READY" if selected_contract is not None or prelude_result.mode is PaperPreludeMode.CARRY_FORWARD_RESUME else "NO_GO",
             session_date=prelude_result.calendar_context_event.envelope.session_date,
             mode=prelude_result.mode.value,
             strategy_code=strategy_rule.strategy_code,
@@ -746,12 +746,12 @@ class S23PaperLiveDecisionBuilder:
         self,
         *,
         strategy_rule: StrategyRule,
-        reference_packet: S23DecisionReferencePacket,
-        derived_inputs: S23DerivedRuntimeInputs,
-        prelude_result: S23PaperLivePreludeResult,
-        collected_inputs: S23CollectedSnapshotInputs,
+        reference_packet: PaperDecisionReferencePacket,
+        derived_inputs: PaperDerivedRuntimeInputs,
+        prelude_result: PaperLivePreludeResult,
+        collected_inputs: PaperCollectedSnapshotInputs,
         summary: S23PaperTradeDecisionSummary,
-        reference_derivation: S23LiveReferenceDerivationResult,
+        reference_derivation: PaperLiveReferenceDerivationResult,
     ) -> dict[str, Any]:
         formula_items = self._build_formula_explanations(
             strategy_rule=strategy_rule,
@@ -872,7 +872,7 @@ class S23PaperLiveDecisionBuilder:
 
     def _monthly_status_price_used(
         self,
-        derived_inputs: S23DerivedRuntimeInputs,
+        derived_inputs: PaperDerivedRuntimeInputs,
     ) -> float | None:
         latest_snapshot = max(
             derived_inputs.snapshots,
@@ -886,8 +886,8 @@ class S23PaperLiveDecisionBuilder:
     def _build_market_reference_values(
         self,
         *,
-        reference_packet: S23DecisionReferencePacket,
-        derived_inputs: S23DerivedRuntimeInputs,
+        reference_packet: PaperDecisionReferencePacket,
+        derived_inputs: PaperDerivedRuntimeInputs,
     ) -> dict[str, dict[str, Any]]:
         values: dict[str, dict[str, Any]] = {}
         for alias, field_name in sorted(FormulaEngine.ALIAS_TO_MARKET_LEVEL.items()):
@@ -905,7 +905,7 @@ class S23PaperLiveDecisionBuilder:
     def _build_current_day_level_explanations(
         self,
         *,
-        derived_inputs: S23DerivedRuntimeInputs,
+        derived_inputs: PaperDerivedRuntimeInputs,
     ) -> dict[str, dict[str, Any]]:
         high_terms = ", ".join(
             f"{snapshot.snapshot_label.value}.high={snapshot.high}"
@@ -930,7 +930,7 @@ class S23PaperLiveDecisionBuilder:
         self,
         *,
         strategy_rule: StrategyRule,
-        derived_inputs: S23DerivedRuntimeInputs,
+        derived_inputs: PaperDerivedRuntimeInputs,
     ) -> tuple[dict[str, Any], ...]:
         return tuple(
             self._explain_formula(
@@ -956,7 +956,7 @@ class S23PaperLiveDecisionBuilder:
         name: str,
         formula: str,
         strategy_rule: StrategyRule,
-        derived_inputs: S23DerivedRuntimeInputs,
+        derived_inputs: PaperDerivedRuntimeInputs,
     ) -> dict[str, Any]:
         resolved_formula = self._resolve_formula_text(
             formula=formula,
@@ -1011,7 +1011,7 @@ class S23PaperLiveDecisionBuilder:
 
     def _build_contract_selection_request(
         self,
-        prelude_result: S23PaperLivePreludeResult,
+        prelude_result: PaperLivePreludeResult,
     ) -> dict[str, Any]:
         trade_plan = prelude_result.trade_plan
         if trade_plan is None:
@@ -1027,7 +1027,7 @@ class S23PaperLiveDecisionBuilder:
         self,
         *,
         strategy_rule: StrategyRule,
-        prelude_result: S23PaperLivePreludeResult,
+        prelude_result: PaperLivePreludeResult,
         option_chain_snapshot: Any,
         summary: S23PaperTradeDecisionSummary,
     ) -> tuple[dict[str, Any], ...]:

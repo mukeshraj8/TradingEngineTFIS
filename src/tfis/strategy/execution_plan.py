@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from .executor_names import canonical_executor_name, optional_executor_name
 
 EXECUTION_ALLOWED_REGISTRY_STATUSES = frozenset({"ACTIVE", "ACTIVE_CANDIDATE"})
 
@@ -52,7 +53,7 @@ def build_strategy_execution_plan(
     configured strategies are runnable, skipped, or blocked.
     """
 
-    supported = frozenset(str(item) for item in supported_executors)
+    supported = frozenset(canonical_executor_name(item) for item in supported_executors)
     registry_entries = _registry_entries(registry)
     items = tuple(
         _build_item(entry, registry_entries=registry_entries, supported_executors=supported)
@@ -84,7 +85,7 @@ def _configured_strategy_entries(config: Mapping[str, Any]) -> tuple[Mapping[str
             {
                 "strategy_code": paper["strategy_code"],
                 "enabled": bool(paper.get("paper_mode_enabled", True)),
-                "executor": str(paper.get("strategy_code")).lower(),
+                "executor": canonical_executor_name(str(paper.get("strategy_code")).lower()),
                 "registry_ids": (),
                 "strategy_paths": (),
             },
@@ -107,10 +108,10 @@ def _build_item(
     if not strategy_code:
         raise ValueError("Configured strategy entry is missing strategy_code")
     enabled = bool(entry.get("enabled", True))
-    executor = _optional_text(entry.get("executor"))
+    executor = canonical_executor_name(optional_executor_name(entry.get("executor")))
     registry_ids = _tuple_text(entry.get("registry_ids"))
-    if not registry_ids and _optional_text(entry.get("registry_id")):
-        registry_ids = (_optional_text(entry.get("registry_id")) or "",)
+    if not registry_ids and optional_executor_name(entry.get("registry_id")):
+        registry_ids = (optional_executor_name(entry.get("registry_id")) or "",)
     strategy_paths = _tuple_text(entry.get("strategy_paths"))
 
     if not enabled:
@@ -192,13 +193,6 @@ def _registry_entries(registry: Mapping[str, Any]) -> Mapping[str, Mapping[str, 
         for key, value in strategies.items()
         if isinstance(value, Mapping)
     }
-
-
-def _optional_text(value: Any) -> str | None:
-    if value is None:
-        return None
-    rendered = str(value).strip()
-    return rendered or None
 
 
 def _tuple_text(value: Any) -> tuple[str, ...]:

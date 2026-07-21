@@ -20,6 +20,12 @@ change in a meaningful way.
 - complete each checklist item with focused tests and operator-facing
   verification before moving to the next item, then finish with a broader
   readiness pass and explicit go/no-go risk review
+- as of Tuesday, July 21, 2026, the shared paper public surface now also has
+  neutral aliases through the review, replay-bundle, and
+  paper-vs-historical comparison layer, preserving the legacy S23 names for
+  compatibility while removing the last strategy-specific naming seam from
+  that read-model contract slice; the focused regression pack for that slice
+  passed at `92 passed`
 - improve the operator dashboard into a multi-strategy control surface with
   clear navigation for strategy pages, all trades, historical trades, and
   chart review, including selected-scrip and NIFTY chart visibility
@@ -53,6 +59,157 @@ change in a meaningful way.
   runtime-process detection/stop logic used by dashboard reset now lives in one
   shared PowerShell helper so reset and manual stop follow the same TFIS-only
   process ownership rules
+- the next Monday, July 20, 2026 refactor slice now also removes another
+  duplicate artifact-discovery seam: shared paper-session helpers now own
+  strategy-day ordering, latest supervised-session lookup, stage-session
+  lookup, and branch summary enumeration, and both the operator dashboard plus
+  blocked fresh-entry promotion now consume that same discovery path instead
+  of maintaining separate `iterdir()` / `rglob()` scans
+- the next Monday, July 20, 2026 dashboard/runtime slice now also cuts the
+  active dashboard monitors over to the shared typed paper-order discovery
+  path first, while preserving a raw-artifact fallback for sparse historical
+  order JSON; the same pass fixed a shared helper bug where enum-backed order
+  statuses were being normalized differently from raw strings, which had been
+  suppressing valid waiting/not-filled rows after the typed discovery cutover
+- the next Monday, July 20, 2026 artifact-read-model slice now also centralizes
+  trade-decision summary discovery: shared helpers now parse branch summary
+  payloads from `trade_decision_summary.json`, and both the operator dashboard
+  plus blocked fresh-entry promotion now consume that same payload/summary
+  interpretation path instead of each reopening and reshaping those artifacts
+  locally
+- the next Monday, July 20, 2026 ledger-read slice now also lifts session and
+  global `paper_trade_ledger.jsonl` discovery out of the dashboard into the
+  shared paper trade-ledger surface, so the operator UI no longer owns its own
+  session-plus-global ledger path reconstruction for active trade monitors
+- the next Tuesday, July 21, 2026 ledger-authority slice now also centralizes
+  trade-row backing truth: shared paper trade-ledger helpers now decide when a
+  trade row remains displayable even after the live
+  `paper_position_state.json` has been cleaned up, so terminal closed rows stay
+  available for historical review without the dashboard owning its own
+  filesystem-backed validity rule
+- the same Tuesday, July 21, 2026 discovery slice now also centralizes
+  preferred supervised-stage selection: the rule to prefer the `09:30` stage
+  snapshot and otherwise fall back to the latest available stage for a session
+  day now lives in shared paper-session discovery instead of the dashboard
+- the next Tuesday, July 21, 2026 decision-summary slice now also centralizes
+  selected-contract symbol harvesting from branch summaries: the dashboard no
+  longer re-loops parsed summary payloads just to rebuild session contract
+  symbols, and now consumes a shared decision-summary symbol helper instead
+- the same Tuesday, July 21, 2026 session-read-model slice now also
+  centralizes session contract-symbol discovery itself: the dashboard no
+  longer merges typed order-state symbols, raw order fallbacks, and
+  branch-summary symbols inline when reconstructing final session contracts,
+  and now consumes one shared session-contract discovery helper instead
+- the next Tuesday, July 21, 2026 final-summary slice now also centralizes
+  final trade-decision summary resolution: the paper decision-summary layer
+  now owns the artifact-directory selection plus parsed summary-view loading
+  for a completed supervised session, and the dashboard consumes that shared
+  resolver instead of reopening `trade_decision_summary.json` and reshaping
+  the final summary locally
+- the next Monday, July 20, 2026 dashboard-read-model slice now also removes
+  two more dashboard-local filesystem rules: the shared paper session layer
+  now owns branch-explainer path discovery for final-vs-latest-stage
+  `trade_decision_explainer*.json` artifacts, and the shared paper order layer
+  now owns reusable raw `paper_order_state.json` candidate-path discovery, so
+  the operator dashboard no longer redefines those path walks inline when it
+  falls back from typed order loading or reconstructs failed-leg explainers
+- the next Monday, July 20, 2026 decision-summary read-model slice now also
+  centralizes branch-sibling artifact layout: shared decision-summary
+  candidates now carry their resolved branch directory and sibling
+  `paper_order_state.json` path, so both the operator dashboard and blocked
+  fresh-entry promotion stop inferring neighboring artifact locations from
+  `summary_path.parent`
+- the next Tuesday, July 21, 2026 stage-artifact slice now also removes one
+  more dashboard-local naming rule: the shared paper session layer now owns
+  the resolved `monthly_status_stage_<key>.json` and
+  `trade_decision_explainer_stage_<key>.json` paths for a finalized
+  supervised session, so the operator dashboard no longer reconstructs those
+  filenames inline while building stage summaries
+- the next Tuesday, July 21, 2026 final-artifact resolution slice now also
+  removes one more dashboard-local ownership rule: the shared
+  decision-summary layer now resolves the authoritative final trade-decision
+  artifact directory for a supervised session, preferring the session-level
+  summary when present and otherwise falling back to the matching branch
+  summary directory, so the operator dashboard no longer carries that final
+  artifact-location policy inline
+- the next Tuesday, July 21, 2026 session-completeness slice now also removes
+  one more dashboard-local session-state rule: the shared paper session layer
+  now owns `scheduled_run_metadata.json` path resolution and the derived
+  "is this supervised session complete" check, so the operator dashboard no
+  longer defines completion off that metadata filename inline
+- the next Tuesday, July 21, 2026 executor-contract slice now also removes one
+  more half-shared runtime seam: canonical paper supervised executor naming now
+  lives in one shared `tfis.strategy` helper, both strategy execution-plan
+  validation and lifecycle-supervisor target loading normalize the old
+  `s23_morning_supervised` label onto `paper_morning_supervised`, and the repo
+  paper configs plus supervisor-target metadata now declare the generic
+  executor name directly while still tolerating legacy metadata during load
+- the same Tuesday, July 21, 2026 selected-contract event slice now also
+  centralizes selected-contract market-event persistence and discovery: the
+  shared paper layer now owns `selected_contract_market_events.jsonl` path
+  discovery, JSONL append/load behavior, and supervisor-vs-watcher PID
+  interpretation, while the shared supervisor, legacy S23 compatibility
+  watcher, operator dashboard, and captured-session validator all consume that
+  same helper instead of maintaining separate local artifact logic
+- the same Tuesday, July 21, 2026 watcher-recovery slice now also removes one
+  more compatibility-only discovery rule: the legacy S23 watch script now
+  resolves same-day waiting orders through the shared paper-order discovery
+  helper instead of scanning `paper_order_state.json` files inline, so stale
+  previous-session waiting-order recovery and current-session order selection
+  follow the same shared selection rule
+- the same Tuesday, July 21, 2026 morning-bootstrap slice now also removes
+  one more S23-shaped public seam: shared paper aliases now expose a neutral
+  paper morning supervised decision runner plus checkpoint/result names, S21
+  and S23 morning launcher scripts now call that generic runner directly, and
+  both launchers now share one market-closed/no-action rule plus one
+  process-lock path helper instead of carrying separate script-local copies
+- the same Tuesday, July 21, 2026 timeline-and-live-check slice now also
+  neutralizes two more shared paper APIs: the timeline builder/checkpoint/
+  stage/result contract now has generic paper aliases consumed by the
+  operator dashboard and morning supervised runner, the legacy S23 watch path
+  now uses the shared live-state owner helper name directly, and the paper
+  live-decision check now also exposes a neutral runner/result alias that the
+  CLI entrypoint uses instead of binding directly to an S23-only public name
+- the same Tuesday, July 21, 2026 snapshot-and-prelude slice now also removes
+  one more shared-paper naming seam: the reusable prelude builder/error/
+  request/result/mode contract now has neutral paper aliases, the shared
+  decision builder, timeline builder, FYERS snapshot collector, generated
+  prelude dry-run runner, and operator dashboard now consume those neutral
+  prelude plus snapshot-session read-model names directly, and the legacy S23
+  compatibility names remain as backward-compatible aliases instead of being
+  the only public contract for shared paper runtime code
+- the same Tuesday, July 21, 2026 collector-and-preflight slice now also
+  neutralizes one more shared paper runtime surface: the FYERS snapshot
+  collector/preflight artifact, error, issue, summary, and provenance types
+  now have neutral paper aliases, and the shared live-decision runner,
+  snapshot-validation harness, and live-decision-check CLI now consume those
+  neutral collector aliases directly instead of binding only to S23-prefixed
+  public names
+- the next Tuesday, July 21, 2026 runtime-input and live-reference slice now
+  also removes another shared-paper naming seam: the decision-reference
+  loader, decision/monthly-status/market reference packets, derived runtime
+  inputs, runtime-input derivation error/deriver, and live reference
+  derivation error/result/deriver now all expose neutral paper aliases, while
+  the shared live-decision builder, timeline builder, live-decision runner,
+  operator dashboard, and S21 morning supervised wrapper now consume those
+  shared names directly. The morning timeline runner keeps one compatibility
+  loader alias so older S23 monkeypatch hooks remain valid while the shared
+  runtime contract moves to the paper-neutral surface.
+- the same Tuesday, July 21, 2026 planning-foundation slice now also removes
+  another shared-paper naming seam: guardrail evaluator/settings, paper
+  contract validation, paper session-manifest builder, paper order-plan,
+  paper session orchestrator, and paper session snapshot now all expose
+  neutral paper aliases in `tfis.paper`, while shared consumers such as the
+  ingress dry-run runner and artifact writer now consume those neutral
+  planning-surface names directly instead of binding only to S23-prefixed
+  public contracts.
+- the next Tuesday, July 21, 2026 ingress dry-run/read-model slice now also
+  removes another shared-paper naming seam: ingress dry-run error/readiness,
+  thresholds, timing audit, ingress health metrics, selected-contract audit,
+  dry-run summary/artifact-set, normalized event loader, and ingress dry-run
+  runner now all expose neutral paper aliases, while the shared `tfis.paper`
+  import surface can expose those shared ingress contracts without pretending
+  they are S23-only primitives.
 - keep monthly status independent and reusable while improving generic
   enabled-strategy execution and durable calculation storage
 - validate the newly enabled S21 BankNifty monthly paper-mode path tomorrow as
@@ -120,6 +277,58 @@ change in a meaningful way.
   during supervisor loops, attempts one reconnect when the adapter reports an
   unhealthy state, and fails closed with explicit strategy/provider context if
   the runtime remains degraded after that reconnect attempt
+- the next trade-state reconciliation slice is now in place as of Monday,
+  July 20, 2026 as well: authoritative active-row and historical-close-row
+  selection now lives in shared trade-ledger helpers rather than partly inside
+  the dashboard class, so the all-trades monitor, strategy trade sections, and
+  historical closed-trade view all read from the same latest-row selection
+  rules for active-vs-historical display truth
+- the same Monday, July 20, 2026 reconciliation pass now also hardens runtime
+  target truth: same-day waiting orders are watchable by the shared supervisor,
+  but prior-session waiting orders are no longer eligible supervision targets,
+  so TFIS will carry forward only real open positions and not stale unfilled
+  paper orders from older sessions
+- the next Monday, July 20, 2026 reconciliation slice now also unifies the
+  fresh-entry promotion gate with shared position discovery: the blocked-READY
+  promotion path no longer scans paper-position files with its own ad hoc
+  predicate, and now uses the same shared blocking-position discovery rules
+  that govern reusable lifecycle state checks for open and reverse-entry-
+  required positions
+- the next Monday, July 20, 2026 runtime slice now also removes another
+  supervisor-script ownership seam: fresh-entry-required handoff marker logic,
+  blocked-decision promotion-first behavior, and spawned-runner marker writes
+  now live in a shared paper helper module, with the TFIS supervisor script
+  reduced to wiring task-spec creation and subprocess launch into that shared
+  handoff path
+- the next Monday, July 20, 2026 runtime slice now also moves fresh-decision
+  relaunch metadata into shared target configuration: the lifecycle-supervisor
+  target model now carries per-strategy runner and wrapper script paths, the
+  fresh-entry relaunch task builder now consumes that shared metadata instead
+  of a hardcoded S21/S23 script map inside the supervisor script, and the
+  strategy execution-plan surface now normalizes the legacy
+  `s23_morning_supervised` label to the generic
+  `paper_morning_supervised` executor name so the reusable runtime contract is
+  less S23-shaped while current configs remain compatible
+- the next Monday, July 20, 2026 reconciliation slice now also moves live
+  paper-order visibility into the shared order-state layer: the rule that only
+  current-session waiting or not-filled orders belong in the active trade
+  monitor no longer lives as a dashboard-only filter, so dashboard live-order
+  visibility and shared paper-order semantics now read from the same helper
+- the next Monday, July 20, 2026 reconciliation slice now also centralizes
+  order-state filesystem discovery: the shared paper-order layer now exposes a
+  reusable order-discovery helper, and both lifecycle-supervisor target
+  discovery plus waiting-order finalization now consume that same scan path
+  instead of each walking `paper_order_state.json` artifacts independently
+- the next Monday, July 20, 2026 reconciliation slice now also centralizes the
+  stale-carry-forward override lookup used by strategy dashboard pages: shared
+  position discovery now provides a lenient latest-terminal-position lookup for
+  sparse historical position-state files, and the dashboard uses that shared
+  lookup instead of maintaining its own raw `paper_position_state.json` scan
+- the next Monday, July 20, 2026 fresh-entry slice now also consolidates
+  blocked READY promotion candidates: the promotion path no longer loops over
+  raw summary-path tuples alone, and now builds shared blocked-decision
+  candidate records that carry the parsed READY summary plus any already-
+  discovered order-state path for that branch before promotion or handoff
 - the operator control surface now also distinguishes between full TFIS reset
   and dashboard-only refresh as of Monday, July 20, 2026. A new
   `scripts/refresh_tfis_operator_dashboard.ps1` rebuilds/reuses the operator

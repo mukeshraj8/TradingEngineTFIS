@@ -46,6 +46,12 @@ way.
       lists the remaining live-money risks, open questions, and what manual
       controls still exist.
 
+   Update as of Tuesday, July 21, 2026:
+   the shared paper naming refactor now reaches through review summaries,
+   replay-bundle management, and paper-vs-historical comparison contracts.
+   The next immediate action is to run the current readiness audit on that
+   shared surface and fix any paper-trading blockers the audit exposes.
+
 1. Phase 1 runtime-consistency refactor, Phase 2 runtime-contract/read-model
    consolidation, and the first full Phase 3 lifecycle-supervisor cutover are
    now complete for the current scope. As of Friday, July 17, 2026, TFIS uses
@@ -118,6 +124,25 @@ way.
    startup. The same reset/recovery script now also uses `Recovery` helper
    naming internally instead of `Watcher` helper naming for those
    compatibility-target scans and launches. Its last dead inline target-scan
+   logic should now give way to the next explicit refactor seam: shared
+   session/trade-state authority across finalization, dashboard rendering, and
+   promotion flows wherever they still reconstruct “latest authoritative
+   session or latest authoritative trade state” independently beyond the new
+   shared paper-session discovery helpers.
+   The next small candidate inside that seam is the remaining mix of direct
+   position/trade-history scans and dashboard-local sparse-artifact fallback
+   truth for historical versus active trade-state authority, now that session
+   discovery, active pending-order discovery, branch decision-summary
+   discovery, branch-explainer path discovery, raw order-state
+   candidate-path discovery, session/global trade-ledger path discovery,
+   decision-summary sibling-artifact discovery, terminal-row backing truth,
+   preferred supervised-stage selection, finalized-session stage-artifact path
+   naming, authoritative final trade-decision artifact-directory resolution,
+   shared supervised-session completion checks, session-contract symbol
+   discovery, canonical paper supervised executor naming across strategy
+   execution-plan plus supervisor-target loading, and selected-contract market-
+   event path plus PID handling have all now been centralized as of Tuesday,
+   July 21, 2026.
    branch has now also been removed, so reset once again has one narrow role:
    rebuild the dashboard, start the dashboard server, and launch the shared
    supervisor. The reset path, S21/S23 supervisor-compatibility launchers, and
@@ -130,12 +155,44 @@ way.
    Python runtime now also resolves live-state store and expiry-governance
    bootstrap through generic factories, and the shared lifecycle supervisor no
    longer defaults straight to `S23PaperPositionManager()` inline. The next
-   likely Phase 4 cleanup is deciding whether the remaining S23-only wrapper
-   metadata/output-review logic is truly generic enough to extract, while also
-   reviewing whether the remaining reusable lifecycle/review/live-paper layers
-   still expose any S23-shaped type names that should become neutral aliases
-   or factories before adding more strategies. The lifecycle supervisor itself
-   has now moved to neutral paper expiry-governance and paper position-manager
+   same-day waiting-order recovery in the legacy S23 watch path now also uses
+   shared paper-order discovery instead of inline `paper_order_state.json`
+   scanning, and the morning supervised launch path now exposes a neutral
+   paper runner/checkpoint/result contract while both S21 and S23 launcher
+   scripts share one market-closed no-action rule plus one process-lock path
+   helper. As of Tuesday, July 21, 2026, the shared prelude builder/error/
+   request/result/mode contract plus the shared snapshot-session read-models
+   now also have neutral paper aliases consumed by the shared decision
+   builder, timeline builder, FYERS snapshot collector, generated prelude
+   dry-run runner, and operator dashboard. The next likely Phase 4 cleanup is
+   the collector/preflight public surface: as of Tuesday, July 21, 2026, the
+   FYERS snapshot collector/preflight artifact, error, issue, summary, and
+   provenance types now also have neutral paper aliases consumed by the
+   shared live-decision runner, snapshot-validation harness, and
+   live-decision-check CLI. The next Tuesday, July 21, 2026 runtime-input and
+   live-reference slice is now also complete: the decision-reference loader,
+   decision/monthly-status/market reference packets, derived runtime inputs,
+   runtime-input derivation error/deriver, and live reference derivation
+   error/result/deriver now expose neutral paper aliases, and the shared
+   live-decision builder, timeline builder, live-decision runner, operator
+   dashboard, and S21 morning wrapper now consume those shared names directly.
+   The next Tuesday, July 21, 2026 planning-foundation slice is now also
+   complete: guardrail evaluator/settings, paper contract validator, paper
+   session-manifest builder, paper order-plan, paper session orchestrator, and
+   paper session snapshot now all expose neutral paper aliases, and the shared
+   ingress dry-run plus paper-artifact surfaces now consume those planning
+   aliases directly. The next Tuesday, July 21, 2026 ingress dry-run/read-
+   model slice is now also complete: ingress dry-run error/readiness,
+   thresholds, timing audit, ingress health metrics, selected-contract audit,
+   dry-run summary/artifact-set, normalized event loader, and ingress dry-run
+   runner now all expose neutral paper aliases on the shared import surface.
+   The next likely Phase 4 cleanup is deciding whether the remaining S23-only
+   wrapper metadata/output-review
+   logic is truly generic enough to extract, while also reviewing whether the
+   remaining reusable lifecycle/review/live-paper layers still expose any
+   S23-shaped type names that should become neutral aliases or factories
+   before adding more strategies. The lifecycle supervisor itself has now
+   moved to neutral paper expiry-governance and paper position-manager
    aliases, and the legacy S23 compatibility watch no longer depends on
    `S23LivePaperIngressConfig` for bootstrap. The next likely seam is
    therefore the remaining S23-only live-ingress/live-decision bootstrap side
@@ -391,10 +448,54 @@ and operator-facing verification all pass.
    modify that repository. Any reused idea must be re-expressed through TFIS
    broker-neutral interfaces with FYERS as the default configured provider,
    not as a hardcoded engine assumption.
-5. `TODO` Harden trade-state reconciliation and ledger authority.
+5. `IN PROGRESS` Harden trade-state reconciliation and ledger authority.
    Scope:
    active-vs-historical classification, waiting/open/closed/carry-forward
    identity, re-entry after close, and supervisor-owned transition rules.
+   Current status as of Monday, July 20, 2026:
+   shared trade-ledger helpers now own latest active-row selection and latest
+   historical-close selection, and the dashboard consumes those shared rules
+   instead of maintaining its own duplicate per-page latest-row logic. The
+   same shared-state pass now also makes waiting-order recovery explicit:
+   only same-day waiting orders are watchable supervisor targets, while
+   prior-session waiting orders remain review artifacts rather than live
+   supervision candidates.
+   Blocked fresh-entry promotion now also uses the shared position-discovery
+   layer for its "positions still block new entry" gate instead of carrying a
+   separate filesystem scan and predicate.
+   Fresh-entry-required handoff now also runs through one shared paper helper
+   that owns idempotent launch-marker behavior and promotion-first handoff
+   rules, instead of keeping that decision tree in the supervisor script.
+   The fresh-decision relaunch task builder now also consumes per-strategy
+   runner/wrapper script metadata directly from the shared supervisor-target
+   config, so the supervisor no longer keeps a hardcoded S21/S23 script map,
+   and the strategy execution-plan surface now normalizes the legacy
+   `s23_morning_supervised` executor label onto the generic
+   `paper_morning_supervised` name while preserving compatibility with current
+   configs.
+   Live-trade monitor order visibility now also comes from a shared
+   paper-order helper keyed by latest-session date instead of a dashboard-only
+   inline filter, so the current-session boundary for waiting/not-filled paper
+   orders is now owned by the same reusable order-state layer that already
+   defines watchability and monitor-visible order statuses.
+   The shared paper-order layer now also owns reusable order-state discovery,
+   and both lifecycle-supervisor target discovery plus waiting-order
+   finalization now consume that same scan path instead of each walking
+   `paper_order_state.json` artifacts separately.
+   Shared position discovery now also owns the dashboard's stale-carry-forward
+   override lookup through a lenient latest-terminal-position helper, so the
+   strategy pages no longer keep a separate raw `paper_position_state.json`
+   scan just to suppress stale carry-forward blockers after a terminal close.
+   Blocked READY fresh-entry promotion now also works from shared promotion
+   candidate records that carry parsed summary data plus any already-
+   discovered order-state path for the branch, rather than passing raw
+   summary-path tuples through the promotion loop.
+   The
+   remaining work in this step is the runtime side of that truth model:
+   explicit ledger/state authority across open-position persistence,
+   post-close fresh-entry promotion flows, and final ledger promotion rules
+   so one lifecycle transition cannot leave conflicting active/historical
+   evidence behind.
    Acceptance gate:
    every lifecycle state has one durable source of truth, and dashboard views
    agree with it.

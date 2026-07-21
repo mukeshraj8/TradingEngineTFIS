@@ -33,10 +33,13 @@ from .models import (
     UnderlyingQuoteEvent,
     UnderlyingSnapshotEvent,
 )
-from .orchestrator import S23PaperSessionOrchestrator, S23PaperSessionSnapshot
+from .orchestrator import (
+    S23PaperSessionOrchestrator as PaperSessionOrchestrator,
+    S23PaperSessionSnapshot as PaperSessionSnapshot,
+)
 from .replay_bundle import S23PaperReplayBundleManager
 from .review import S23PaperSessionReviewer
-from .validation import DEFAULT_MAX_QUOTE_AGE, PaperEvent, S23PaperContractValidator
+from .validation import DEFAULT_MAX_QUOTE_AGE, PaperContractValidator, PaperEvent
 
 
 _ARTIFACT_VERSION = 1
@@ -381,8 +384,8 @@ class S23PaperIngressDryRunRunner:
     def __init__(
         self,
         *,
-        validator: S23PaperContractValidator | None = None,
-        orchestrator_factory: type[S23PaperSessionOrchestrator] = S23PaperSessionOrchestrator,
+        validator: PaperContractValidator | None = None,
+        orchestrator_factory: type[PaperSessionOrchestrator] = PaperSessionOrchestrator,
         artifact_writer: S23PaperSessionArtifactWriter | None = None,
         replay_bundle_manager: S23PaperReplayBundleManager | None = None,
         execution_journal_writer: S23PaperExecutionJournalWriter | None = None,
@@ -392,7 +395,7 @@ class S23PaperIngressDryRunRunner:
         late_event_threshold: timedelta = _DEFAULT_EVENT_LAG_THRESHOLD,
         source_mode: str = "normalized_archive_export_jsonl",
     ) -> None:
-        self._validator = validator or S23PaperContractValidator()
+        self._validator = validator or PaperContractValidator()
         self._orchestrator_factory = orchestrator_factory
         self._artifact_writer = artifact_writer or S23PaperSessionArtifactWriter(
             _DEFAULT_ARTIFACT_ROOT
@@ -452,7 +455,7 @@ class S23PaperIngressDryRunRunner:
         selected_contract_quote: SelectedContractQuoteEvent | None = None
         option_chain_snapshot: OptionChainSnapshotEvent | None = None
 
-        snapshot: S23PaperSessionSnapshot | None = None
+        snapshot: PaperSessionSnapshot | None = None
         processed_events = 0
         for event in events:
             event_validation = self._validator.validate_event(
@@ -889,7 +892,7 @@ class S23PaperIngressDryRunRunner:
     def _write_pre_manifest_terminal_artifacts(
         self,
         *,
-        snapshot: S23PaperSessionSnapshot,
+        snapshot: PaperSessionSnapshot,
         events: tuple[PaperEvent, ...],
         session_id: str | None,
     ) -> S23PaperArtifactSet:
@@ -1133,3 +1136,15 @@ class S23PaperIngressDryRunRunner:
         if isinstance(value, Path):
             return str(value)
         return value
+
+
+PaperIngressDryRunError = S23PaperIngressDryRunError
+PaperIngressReadiness = S23PaperIngressReadiness
+PaperIngressDryRunThresholds = S23PaperIngressDryRunThresholds
+PaperSnapshotTimingAudit = S23PaperSnapshotTimingAudit
+PaperIngressHealthMetrics = S23PaperIngressHealthMetrics
+PaperSelectedContractAudit = S23PaperSelectedContractAudit
+PaperIngressDryRunSummary = S23PaperIngressDryRunSummary
+PaperIngressDryRunArtifactSet = S23PaperIngressDryRunArtifactSet
+PaperNormalizedEventLoader = S23NormalizedPaperEventLoader
+PaperIngressDryRunRunner = S23PaperIngressDryRunRunner

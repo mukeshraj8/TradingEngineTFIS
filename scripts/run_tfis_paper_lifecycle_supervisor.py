@@ -7,9 +7,8 @@ import os
 import subprocess
 import sys
 import time as time_module
-from dataclasses import asdict, dataclass, is_dataclass
+from dataclasses import dataclass
 from datetime import date, datetime, time
-from enum import Enum
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -25,7 +24,6 @@ from tfis.dashboard import TfisOperatorDashboardBuilder
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 from tfis.paper import (
     DeterministicExpiryCalendar,
-    PaperFreshEntryPromotionError,
     PaperMorningSupervisedTaskSpec,
     PaperLifecycleSupervisor,
     PaperLifecycleSupervisorContext,
@@ -38,6 +36,7 @@ from tfis.paper import (
     PaperPositionStateStore,
     PaperTradeLedgerStore,
     build_paper_expiry_governance,
+    build_paper_morning_task_spec_from_target,
     build_paper_morning_runner_arguments,
     build_paper_position_manager,
     build_paper_live_state_store_from_yaml,
@@ -45,10 +44,11 @@ from tfis.paper import (
     ensure_paper_broker_runtime_healthy,
     inspect_paper_live_state_store_from_yaml,
     fetch_selected_contract_market_events,
+    append_selected_contract_market_events,
+    handoff_fresh_entry_requirement,
     load_paper_lifecycle_supervisor_target_specs,
     load_paper_broker_runtime,
     promote_blocked_fresh_entries,
-    build_paper_morning_runner_arguments,
     paper_live_state_owner_id,
     PaperSelectedContractEventRequest,
     prepare_paper_broker_runtime_environment,
@@ -58,9 +58,6 @@ from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lo
 
 
 DEFAULT_TARGETS_CONFIG = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
-_FRESH_DECISION_LAUNCH_MARKER = "fresh_decision_launch.json"
-
-
 @dataclass(slots=True)
 class _TargetRuntime:
     spec: PaperLifecycleSupervisorTargetSpec
@@ -417,11 +414,11 @@ def _process_target(
         evaluated_at=evaluated_at,
         state=context.position_state,
     )
-    _append_selected_contract_market_events(
+    append_selected_contract_market_events(
         context.session_directory,
         events=events,
         observed_at=evaluated_at,
-        watcher_pid=os.getpid(),
+        process_pid=os.getpid(),
         trade_id=context.trade_id,
     )
     previous_trade_id = context.trade_id
@@ -550,35 +547,12 @@ def _build_fresh_decision_task_spec(
     tfis_root: Path,
     carry_forward_state_dir: Path | None,
 ) -> PaperMorningSupervisedTaskSpec | None:
-    if (
-        spec.strategy_path is None
-        or spec.reference_packet_path is None
-        or not spec.session_id_prefix
-        or not spec.executor
-    ):
+    if not spec.executor:
         return None
-    runner_script_name = {
-        "S23": "run_s23_fyers_0916_supervised_decision.py",
-        "S21": "run_s21_banknifty_0916_supervised_decision.py",
-    }.get(spec.strategy_code.upper())
-    wrapper_script_name = {
-        "S23": "start_s23_fyers_morning_supervised_decision.ps1",
-        "S21": "start_s21_fyers_morning_supervised_decision.ps1",
-    }.get(spec.strategy_code.upper())
-    if runner_script_name is None or wrapper_script_name is None:
-        return None
-    return PaperMorningSupervisedTaskSpec(
-        task_name=f"TFIS {spec.strategy_code.upper()} Morning Supervised Decision",
+    return build_paper_morning_task_spec_from_target(
+        target=spec,
         repo_root=REPO_ROOT,
         tfis_root=tfis_root,
-        config_path=spec.config_path,
-        strategy_path=spec.strategy_path,
-        reference_packet_path=spec.reference_packet_path,
-        artifact_root=spec.artifact_root,
-        session_id_prefix=spec.session_id_prefix,
-        runner_script_path=REPO_ROOT / "scripts" / runner_script_name,
-        wrapper_script_path=REPO_ROOT / "scripts" / wrapper_script_name,
-        skip_refresh=True,
         carry_forward_state_dir=carry_forward_state_dir,
     )
 
@@ -593,109 +567,67 @@ def _launch_fresh_decision_if_required(
 ) -> None:
     if lifecycle_result.final_step.status != "PAPER_POSITION_FRESH_ENTRY_REQUIRED":
         return
-    marker_path = _fresh_decision_launch_marker_path(context.session_directory)
-    if marker_path.exists():
+    task_spec = _build_fresh_decision_task_spec(
+        spec=runtime.spec,
+        tfis_root=tfis_root,
+        carry_forward_state_dir=None,
+    )
+
+    def _spawn_runner() -> int | None:
+        assert task_spec is not None
+        args = build_paper_morning_runner_arguments(task_spec)
+        process = subprocess.Popen(args, cwd=str(REPO_ROOT))
+        return getattr(process, "pid", None)
+
+    result = handoff_fresh_entry_requirement(
+        strategy_code=runtime.spec.strategy_code,
+        session_directory=context.session_directory,
+        session_date=context.session_date,
+        trade_id=context.trade_id,
+        final_step_status=lifecycle_result.final_step.status,
+        evaluated_at=evaluated_at,
+        artifact_root=runtime.spec.artifact_root,
+        session_id_prefix=runtime.spec.session_id_prefix,
+        promotion_loader=lambda artifact_root, **kwargs: promote_blocked_fresh_entries(
+            artifact_root,
+            **kwargs,
+        ),
+        runner_name=task_spec.runner_script_path.name if task_spec is not None else None,
+        spawn_runner=_spawn_runner if task_spec is not None else None,
+    )
+    if result.action == "not_required":
+        return
+    if result.action == "already_recorded":
         print(
             f"{evaluated_at.isoformat()} INFO fresh_decision_launch_already_recorded "
             f"strategy={runtime.spec.strategy_code} directory={context.session_directory}",
             flush=True,
         )
         return
-    if _promote_blocked_fresh_decision_if_available(
-        runtime=runtime,
-        context=context,
-        evaluated_at=evaluated_at,
-        marker_path=marker_path,
-    ):
+    if result.action == "promoted_existing_blocked_decision":
+        assert result.promotion_summary is not None
+        print(
+            f"{evaluated_at.isoformat()} INFO blocked_fresh_decision_promoted "
+            f"strategy={runtime.spec.strategy_code} directory={context.session_directory} "
+            f"promotion_session={result.promotion_summary.session_dir}",
+            flush=True,
+        )
         return
-    task_spec = _build_fresh_decision_task_spec(
-        spec=runtime.spec,
-        tfis_root=tfis_root,
-        carry_forward_state_dir=None,
-    )
-    if task_spec is None:
+    if result.action == "launch_unavailable":
         print(
             f"{evaluated_at.isoformat()} WARNING fresh_decision_launch_unavailable "
             f"strategy={runtime.spec.strategy_code} directory={context.session_directory}",
             flush=True,
         )
         return
-    args = build_paper_morning_runner_arguments(task_spec)
-    process = subprocess.Popen(args, cwd=str(REPO_ROOT))
-    marker_path.parent.mkdir(parents=True, exist_ok=True)
-    marker_path.write_text(
-        json.dumps(
-            {
-                "launched_at": evaluated_at.isoformat(),
-                "strategy_code": runtime.spec.strategy_code,
-                "trade_id": context.trade_id,
-                "runner_script": task_spec.runner_script_path.name,
-                "pid": getattr(process, "pid", None),
-            },
-            sort_keys=True,
-        ),
-        encoding="utf-8",
-    )
+    assert result.action == "spawned_fresh_supervised_runner"
+    assert task_spec is not None
     print(
         f"{evaluated_at.isoformat()} INFO fresh_decision_launched "
         f"strategy={runtime.spec.strategy_code} directory={context.session_directory} "
         f"runner={task_spec.runner_script_path.name}",
         flush=True,
     )
-
-
-def _fresh_decision_launch_marker_path(session_directory: Path) -> Path:
-    return session_directory / _FRESH_DECISION_LAUNCH_MARKER
-
-
-def _promote_blocked_fresh_decision_if_available(
-    *,
-    runtime: _TargetRuntime,
-    context: PaperLifecycleSupervisorContext,
-    evaluated_at: datetime,
-    marker_path: Path,
-) -> bool:
-    session_id_prefix = runtime.spec.session_id_prefix
-    if not session_id_prefix:
-        return False
-    try:
-        summary = promote_blocked_fresh_entries(
-            runtime.spec.artifact_root,
-            session_date=context.session_date,
-            created_at=evaluated_at,
-            session_id_prefix=session_id_prefix,
-        )
-    except PaperFreshEntryPromotionError:
-        return False
-    marker_path.parent.mkdir(parents=True, exist_ok=True)
-    marker_path.write_text(
-        json.dumps(
-            {
-                "launched_at": evaluated_at.isoformat(),
-                "strategy_code": runtime.spec.strategy_code,
-                "trade_id": context.trade_id,
-                "mode": "promoted_existing_blocked_decision",
-                "promoted_session_dir": str(summary.session_dir),
-                "promotions": [
-                    {
-                        "branch": item.branch,
-                        "status": item.status,
-                        "order_state_json": item.order_state_json,
-                    }
-                    for item in summary.promotions
-                ],
-            },
-            sort_keys=True,
-        ),
-        encoding="utf-8",
-    )
-    print(
-        f"{evaluated_at.isoformat()} INFO blocked_fresh_decision_promoted "
-        f"strategy={runtime.spec.strategy_code} directory={context.session_directory} "
-        f"promotion_session={summary.session_dir}",
-        flush=True,
-    )
-    return True
 
 
 def _fetch_selected_contract_events(
@@ -725,68 +657,6 @@ def _fetch_selected_contract_events(
             flush=True,
         ),
     )
-
-
-def _append_selected_contract_market_events(
-    directory: Path,
-    *,
-    events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
-    observed_at: datetime,
-    watcher_pid: int,
-    trade_id: str,
-) -> Path:
-    path = directory / "selected_contract_market_events.jsonl"
-    if not events:
-        return path
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as handle:
-        for event in events:
-            payload = _serialize_selected_contract_market_event(
-                event,
-                observed_at=observed_at,
-                watcher_pid=watcher_pid,
-                trade_id=trade_id,
-            )
-            handle.write(json.dumps(payload, sort_keys=True) + "\n")
-    return path
-
-
-def _serialize_selected_contract_market_event(
-    event: SelectedContractQuoteEvent | SelectedContractBarEvent,
-    *,
-    observed_at: datetime,
-    watcher_pid: int,
-    trade_id: str,
-) -> dict[str, Any]:
-    payload = _to_jsonable(asdict(event) if is_dataclass(event) else event)
-    event_kind = (
-        "selected_contract_quote"
-        if isinstance(event, SelectedContractQuoteEvent)
-        else "selected_contract_bar"
-    )
-    return {
-        "artifact_version": 1,
-        "event_kind": event_kind,
-        "observed_at": observed_at.isoformat(),
-        "watcher_pid": watcher_pid,
-        "trade_id": trade_id,
-        "symbol": event.symbol,
-        "payload": payload,
-    }
-
-
-def _to_jsonable(value: Any) -> Any:
-    if isinstance(value, (datetime, date, time)):
-        return value.isoformat()
-    if isinstance(value, Enum):
-        return value.value
-    if isinstance(value, Path):
-        return str(value)
-    if isinstance(value, dict):
-        return {str(key): _to_jsonable(item) for key, item in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [_to_jsonable(item) for item in value]
-    return value
 
 
 def _broker_health_is_healthy(health) -> bool:

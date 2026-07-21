@@ -13,6 +13,7 @@ from .position_state import S23PaperPositionState
 
 _ARTIFACT_VERSION = 1
 _SESSION_LEDGER_FILENAME = "paper_trade_ledger.jsonl"
+_POSITION_STATE_FILENAME = "paper_position_state.json"
 _DEFAULT_GLOBAL_LEDGER_ROOT = Path("tmp/paper_trade_ledger")
 _DEFAULT_GLOBAL_LEDGER_FILENAME = "s23_paper_trade_ledger.jsonl"
 
@@ -48,6 +49,46 @@ _LIFECYCLE_TERMINAL_MANAGER_STATUSES = _CLOSE_MANAGER_STATUSES | {
     "PAPER_POSITION_ROLLOVER_REQUIRED",
     "PAPER_POSITION_ALREADY_CLOSED",
 }
+
+
+def paper_trade_ledger_candidate_paths(
+    *,
+    artifact_root: str | Path,
+    strategy_code: str,
+    repo_root: str | Path | None = None,
+) -> tuple[Path, ...]:
+    artifact_root_path = Path(artifact_root)
+    candidate_paths: set[Path] = set()
+    if artifact_root_path.exists():
+        candidate_paths.update(artifact_root_path.rglob(_SESSION_LEDGER_FILENAME))
+    effective_repo_root = Path(repo_root) if repo_root is not None else Path.cwd()
+    global_ledger = (
+        effective_repo_root
+        / _DEFAULT_GLOBAL_LEDGER_ROOT
+        / f"{str(strategy_code).strip().lower()}_paper_trade_ledger.jsonl"
+    )
+    if global_ledger.exists():
+        candidate_paths.add(global_ledger)
+    return tuple(sorted(candidate_paths))
+
+
+def paper_trade_has_display_backing(
+    state_directory: str | Path | None,
+    *,
+    event_type: str | None,
+    lifecycle_status: str | None,
+    manager_status: str | None,
+) -> bool:
+    if state_directory is None:
+        return True
+    state_path = Path(state_directory) / _POSITION_STATE_FILENAME
+    if state_path.exists():
+        return True
+    return paper_trade_is_terminal(
+        event_type=event_type,
+        lifecycle_status=lifecycle_status,
+        manager_status=manager_status,
+    )
 
 
 def paper_trade_is_terminal(
@@ -208,6 +249,14 @@ class PaperTradeStatusCandidate(PaperTradeDisplayCandidate, Protocol):
     rollover_required: bool
 
 
+class PaperTradeIdentityCandidate(PaperTradeStatusCandidate, Protocol):
+    trade_id: str
+
+
+class PaperTradeHistoricalCandidate(PaperTradeIdentityCandidate, Protocol):
+    strategy_code: str
+
+
 def paper_trade_select_display_row(
     rows: Sequence[PaperTradeDisplayCandidate],
 ) -> PaperTradeDisplayCandidate:
@@ -224,6 +273,63 @@ def paper_trade_select_display_row(
     return max(
         candidate_rows,
         key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+    )
+
+
+def paper_trade_latest_active_rows(
+    rows: Sequence[PaperTradeIdentityCandidate],
+    *,
+    latest_session_date: date | None,
+) -> list[PaperTradeIdentityCandidate]:
+    grouped_rows: dict[str, list[PaperTradeIdentityCandidate]] = {}
+    for row in rows:
+        grouped_rows.setdefault(row.trade_id, []).append(row)
+    latest_by_trade = {
+        trade_id: paper_trade_select_display_row(trade_rows)
+        for trade_id, trade_rows in grouped_rows.items()
+    }
+    return sorted(
+        (
+            row
+            for row in latest_by_trade.values()
+            if paper_trade_visible_for_latest_session(
+                row_session_date=getattr(row, "session_date", None),
+                event_timestamp=row.event_timestamp,
+                latest_session_date=latest_session_date,
+                event_type=row.event_type,
+                lifecycle_status=row.lifecycle_status,
+                manager_status=row.manager_status,
+                fresh_entry_required=row.fresh_entry_required,
+                reverse_entry_required=row.reverse_entry_required,
+                rollover_required=row.rollover_required,
+            )
+        ),
+        key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+        reverse=True,
+    )
+
+
+def paper_trade_latest_historical_close_rows(
+    rows: Sequence[PaperTradeHistoricalCandidate],
+) -> list[PaperTradeHistoricalCandidate]:
+    latest_close_by_trade: dict[tuple[str, str], PaperTradeHistoricalCandidate] = {}
+    for row in rows:
+        if str(row.event_type).upper() != "CLOSE":
+            continue
+        key = (row.strategy_code.upper(), row.trade_id)
+        current = latest_close_by_trade.get(key)
+        if current is None or (
+            row.event_timestamp is not None
+            and (
+                current.event_timestamp is None
+                or row.event_timestamp > current.event_timestamp
+            )
+        ):
+            latest_close_by_trade[key] = row
+    return sorted(
+        latest_close_by_trade.values(),
+        key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+        reverse=True,
     )
 
 
@@ -537,8 +643,11 @@ __all__ = [
     "paper_trade_display_status_label",
     "paper_trade_event_type_for_manager_status",
     "paper_trade_followup_note",
+    "paper_trade_has_display_backing",
     "paper_trade_is_open",
     "paper_trade_is_terminal",
+    "paper_trade_latest_active_rows",
+    "paper_trade_latest_historical_close_rows",
     "paper_trade_manager_status_is_open",
     "paper_trade_manager_status_is_lifecycle_terminal",
     "paper_trade_manager_status_is_terminal",

@@ -6,7 +6,9 @@ targets:
     strategy_path: config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL
     reference_packet_path: config/reference_packets/s23_bear_put_live_decision_reference.json
     session_id_prefix: s23-fyers-morning-supervised-decision
-    executor: s23_morning_supervised
+    executor: paper_morning_supervised
+    runner_script_path: scripts/run_s23_fyers_0916_supervised_decision.py
+    wrapper_script_path: scripts/start_s23_fyers_morning_supervised_decision.ps1
   - strategy_code: S21
     config_path: config/paper.s21.fyers_connect_test.yaml
     artifact_root: data/strategies/S21/fyers_morning_supervised_decision
@@ -14,4 +16,6 @@ targets:
     strategy_path: config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL
     reference_packet_path: config/reference_packets/s21_banknifty_monthly_live_decision_reference.json
     session_id_prefix: s21-fyers-morning-supervised-decision
-    executor: s23_morning_supervised
+    executor: paper_morning_supervised
+    runner_script_path: scripts/run_s21_banknifty_0916_supervised_decision.py
+    wrapper_script_path: scripts/start_s21_fyers_morning_supervised_decision.ps1

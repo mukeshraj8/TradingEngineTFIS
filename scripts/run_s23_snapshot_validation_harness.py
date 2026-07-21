@@ -10,7 +10,7 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from tfis.paper import S23SnapshotValidationHarness
+from tfis.paper import PaperSnapshotValidationHarness
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -42,7 +42,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    harness = S23SnapshotValidationHarness(artifact_root=args.artifact_root)
+    harness = PaperSnapshotValidationHarness(artifact_root=args.artifact_root)
     artifact_set = harness.run_from_files(
         config_path=args.config,
         strategy_path=args.strategy_path,

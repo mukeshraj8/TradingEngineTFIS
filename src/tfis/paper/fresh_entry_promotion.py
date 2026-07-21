@@ -8,13 +8,12 @@ from typing import Any, Callable
 
 from tfis.importers import load_strategy_rule
 
+from .decision_summary_discovery import discover_trade_decision_summaries
 from .live_decision import S23PaperTradeDecisionSummary
-from .order_state import S23PaperOrderStateStore
-from .position_state import (
-    S23PaperPositionStateStatus,
-    S23PaperPositionStateError,
-    S23PaperPositionStateStore,
-    paper_position_blocks_new_entry,
+from .order_state import S23PaperOrderStateDiscovery, S23PaperOrderStateStore
+from .position_discovery import PaperOpenPositionDiscovery
+from .session_discovery import (
+    find_latest_supervised_session_dir,
 )
 
 
@@ -35,6 +34,16 @@ class PaperFreshEntryPromotionSummary:
     promotions: tuple[PaperFreshEntryPromotionRecord, ...]
 
 
+@dataclass(frozen=True, slots=True)
+class PaperFreshEntryBlockedDecisionCandidate:
+    session_dir: Path
+    branch_directory: Path
+    summary_path: Path
+    branch: str
+    summary: S23PaperTradeDecisionSummary
+    order_state_path: Path | None = None
+
+
 def promote_blocked_fresh_entries(
     artifact_root: str | Path,
     *,
@@ -52,7 +61,7 @@ def promote_blocked_fresh_entries(
             f"No strategy artifact day directory exists for {session_date.isoformat()}: {day_root}"
         )
 
-    active_positions = active_position_paths(artifact_root_path)
+    active_positions = blocking_position_paths(artifact_root_path)
     if active_positions:
         rendered = "\n".join(f"- {path}" for path in active_positions)
         raise PaperFreshEntryPromotionError(
@@ -75,14 +84,13 @@ def promote_blocked_fresh_entries(
 
     load_strategy = strategy_loader or _default_strategy_loader
     promotions: list[PaperFreshEntryPromotionRecord] = []
-    for summary_path, payload in candidates:
-        summary = summary_from_payload(payload)
-        strategy_rule = load_strategy(summary.strategy_branch)
-        order_path = summary_path.parent / "paper_order_state.json"
-        if order_path.exists():
+    for candidate in candidates:
+        strategy_rule = load_strategy(candidate.branch)
+        order_path = candidate.order_state_path or (candidate.branch_directory / "paper_order_state.json")
+        if candidate.order_state_path is not None:
             promotions.append(
                 PaperFreshEntryPromotionRecord(
-                    branch=summary.strategy_branch,
+                    branch=candidate.branch,
                     status="already_has_order_state",
                     order_state_json=str(order_path),
                 )
@@ -91,28 +99,28 @@ def promote_blocked_fresh_entries(
         if dry_run:
             promotions.append(
                 PaperFreshEntryPromotionRecord(
-                    branch=summary.strategy_branch,
+                    branch=candidate.branch,
                     status="dry_run_eligible",
                     order_state_json=str(order_path),
                 )
             )
             continue
         _state, state_path, _events_path = S23PaperOrderStateStore().create_waiting_order_from_live_decision(
-            summary_path.parent,
+            candidate.branch_directory,
             strategy_rule=strategy_rule,
-            decision=summary,
+            decision=candidate.summary,
             created_at=created_at,
-            provenance_source_ids=(str(summary_path), str(metadata_path)),
+            provenance_source_ids=(str(candidate.summary_path), str(metadata_path)),
         )
         mark_metadata_promoted(
             metadata=metadata,
-            branch=summary.strategy_branch,
+            branch=candidate.branch,
             order_state_path=state_path,
             promoted_at=created_at,
         )
         promotions.append(
             PaperFreshEntryPromotionRecord(
-                branch=summary.strategy_branch,
+                branch=candidate.branch,
                 status="promoted_to_waiting_order",
                 order_state_json=str(state_path),
             )
@@ -135,36 +143,32 @@ def latest_session_dir(
     session_date: date,
     session_id_prefix: str | None = None,
 ) -> Path:
-    suffix = session_date.isoformat()
-    candidates = sorted(
-        (
-            path
-            for path in day_root.iterdir()
-            if path.is_dir()
-            and path.name.endswith(suffix)
-            and (not session_id_prefix or path.name.startswith(session_id_prefix))
-        ),
-        key=lambda path: path.stat().st_mtime,
+    latest_session = find_latest_supervised_session_dir(
+        day_root,
+        session_date=session_date,
+        session_id_prefix=session_id_prefix,
     )
-    if not candidates:
+    if latest_session is None:
         raise PaperFreshEntryPromotionError(
             f"No supervised session directory found under {day_root}"
         )
-    return candidates[-1]
+    return latest_session
 
 
 def promotion_candidates(
     session_dir: Path,
     *,
     branch: str | None,
-) -> list[tuple[Path, dict[str, Any]]]:
-    candidates: list[tuple[Path, dict[str, Any]]] = []
-    for summary_path in sorted(session_dir.rglob("trade_decision_summary.json")):
-        payload = _read_json(summary_path)
-        summary = payload.get("summary", payload)
-        if not isinstance(summary, dict):
-            continue
-        branch_name = str(summary.get("strategy_branch") or summary_path.parent.name)
+) -> list[PaperFreshEntryBlockedDecisionCandidate]:
+    existing_orders = {
+        candidate.state_directory.resolve(): candidate.state_directory.resolve() / "paper_order_state.json"
+        for candidate in S23PaperOrderStateDiscovery().find_orders((session_dir,))
+    }
+    candidates: list[PaperFreshEntryBlockedDecisionCandidate] = []
+    for candidate in discover_trade_decision_summaries(session_dir):
+        payload = candidate.payload
+        summary = candidate.summary
+        branch_name = candidate.branch
         if branch and branch_name != branch:
             continue
         if summary.get("status") != "READY":
@@ -175,7 +179,20 @@ def promotion_candidates(
             continue
         if summary.get("order_placement_block_reason") != "OPEN_CARRY_FORWARD_POSITION":
             continue
-        candidates.append((summary_path, payload))
+        structured_summary = summary_from_payload(payload)
+        candidates.append(
+            PaperFreshEntryBlockedDecisionCandidate(
+                session_dir=session_dir,
+                branch_directory=candidate.branch_directory,
+                summary_path=candidate.summary_path,
+                branch=branch_name,
+                summary=structured_summary,
+                order_state_path=(
+                    candidate.order_state_path
+                    or existing_orders.get(candidate.branch_directory.resolve())
+                ),
+            )
+        )
     return candidates
 
 
@@ -208,17 +225,16 @@ def summary_from_payload(payload: dict[str, Any]) -> S23PaperTradeDecisionSummar
     return S23PaperTradeDecisionSummary(**values)
 
 
-def active_position_paths(artifact_root: Path) -> list[Path]:
-    active: list[Path] = []
-    store = S23PaperPositionStateStore()
-    for state_path in sorted(artifact_root.rglob("paper_position_state.json")):
-        try:
-            state = store.load_state(state_path.parent)
-        except S23PaperPositionStateError:
-            continue
-        if paper_position_blocks_new_entry(state.lifecycle_status) or state.lifecycle_status is S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED:
-            active.append(state_path)
-    return active
+def blocking_position_paths(artifact_root: Path) -> list[Path]:
+    return [
+        candidate.state_path
+        for candidate in PaperOpenPositionDiscovery().find_positions_blocking_new_entry(
+            (artifact_root,)
+        )
+    ]
+
+
+active_position_paths = blocking_position_paths
 
 
 def mark_metadata_promoted(
@@ -266,9 +282,11 @@ def _read_json(path: Path) -> dict[str, Any]:
 
 
 __all__ = [
+    "PaperFreshEntryBlockedDecisionCandidate",
     "PaperFreshEntryPromotionError",
     "PaperFreshEntryPromotionRecord",
     "PaperFreshEntryPromotionSummary",
+    "blocking_position_paths",
     "active_position_paths",
     "latest_session_dir",
     "mark_metadata_promoted",

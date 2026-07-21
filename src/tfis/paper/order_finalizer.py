@@ -5,6 +5,7 @@ from datetime import date, datetime, time
 from pathlib import Path
 
 from .order_state import (
+    S23PaperOrderStateDiscovery,
     S23PaperOrderState,
     S23PaperOrderStateError,
     S23PaperOrderStateStore,
@@ -43,6 +44,7 @@ class S23PaperOrderFinalizer:
 
     def __init__(self, *, order_store: S23PaperOrderStateStore | None = None) -> None:
         self._order_store = order_store or S23PaperOrderStateStore()
+        self._order_discovery = S23PaperOrderStateDiscovery(order_store=self._order_store)
 
     def finalize(
         self,
@@ -71,25 +73,9 @@ class S23PaperOrderFinalizer:
             )
 
         after_cutoff = marked_at.timetz().replace(tzinfo=None) >= cutoff_time
-        for state_path in sorted(root.rglob("paper_order_state.json")):
-            order_dir = state_path.parent
-            try:
-                state = self._order_store.load_state(order_dir)
-            except S23PaperOrderStateError as exc:
-                decisions.append(
-                    S23PaperOrderFinalizerDecision(
-                        order_directory=order_dir,
-                        selected_contract_symbol="n/a",
-                        entry_date=None,
-                        previous_status=None,
-                        final_status=None,
-                        action="SKIPPED",
-                        reason_code="paper_order_state_unreadable",
-                        message=str(exc),
-                    )
-                )
-                continue
-
+        for candidate in self._order_discovery.find_orders((root,)):
+            order_dir = candidate.state_directory
+            state = candidate.state
             eligibility = self._eligible_waiting_state(
                 state,
                 session_date=session_date,

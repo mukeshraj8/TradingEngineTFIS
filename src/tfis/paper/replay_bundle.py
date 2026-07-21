@@ -391,3 +391,10 @@ class S23PaperReplayBundleManager:
         if isinstance(value, Path):
             return str(value)
         return value
+
+
+PaperReplayBundleFile = S23PaperReplayBundleFile
+PaperReplayBundleManifest = S23PaperReplayBundleManifest
+PaperReplayBundleValidationResult = S23PaperReplayBundleValidationResult
+PaperReplayBundleSummary = S23PaperReplayBundleSummary
+PaperReplayBundleManager = S23PaperReplayBundleManager

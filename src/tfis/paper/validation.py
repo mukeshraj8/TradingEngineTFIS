@@ -1000,3 +1000,7 @@ class S23PaperSessionManifestBuilder:
             unique_sources[key]
             for key in sorted(unique_sources, key=lambda item: (item[0], item[1]))
         )
+
+
+PaperContractValidator = S23PaperContractValidator
+PaperSessionManifestBuilder = S23PaperSessionManifestBuilder

@@ -14,6 +14,11 @@ from tfis.dashboard.operator_dashboard import (
     DashboardSelectedContractStreamHealth,
     DashboardTradeLedgerRow,
 )
+from tfis.paper import (
+    paper_trade_latest_active_rows,
+    paper_trade_select_display_row,
+    paper_trade_visible_for_latest_session,
+)
 
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -465,7 +470,7 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
                 "artifact_version": 1,
                 "event_kind": "selected_contract_quote",
                 "observed_at": "2026-06-10T09:31:01+05:30",
-                "watcher_pid": 4321,
+                "supervisor_pid": 4321,
                 "symbol": "NIFTY_20260602_23800_PE",
                 "payload": {
                     "ltp": 188.5,
@@ -1557,7 +1562,6 @@ def test_render_trade_current_cell_labels_stale_live_quote(tmp_path: Path) -> No
 
 
 def test_trade_visible_for_latest_session_uses_shared_visibility_rule(tmp_path: Path) -> None:
-    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
     latest_session_date = datetime(2026, 7, 15, 9, 30, tzinfo=IST).date()
     timestamp = datetime(2026, 7, 14, 12, 0, tzinfo=IST)
 
@@ -1596,14 +1600,20 @@ def test_trade_visible_for_latest_session_uses_shared_visibility_rule(tmp_path: 
         raw_artifact_links={},
     )
 
-    assert builder._trade_visible_for_latest_session(
-        row,
+    assert paper_trade_visible_for_latest_session(
+        row_session_date=row.session_date,
+        event_timestamp=row.event_timestamp,
         latest_session_date=latest_session_date,
+        event_type=row.event_type,
+        lifecycle_status=row.lifecycle_status,
+        manager_status=row.manager_status,
+        fresh_entry_required=row.fresh_entry_required,
+        reverse_entry_required=row.reverse_entry_required,
+        rollover_required=row.rollover_required,
     ) is False
 
 
 def test_display_row_for_trade_prefers_terminal_row_over_later_action(tmp_path: Path) -> None:
-    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
     open_timestamp = datetime(2026, 7, 15, 9, 30, tzinfo=IST)
     close_timestamp = datetime(2026, 7, 15, 12, 57, 59, tzinfo=IST)
     later_action_timestamp = datetime(2026, 7, 16, 9, 30, tzinfo=IST)
@@ -1650,7 +1660,7 @@ def test_display_row_for_trade_prefers_terminal_row_over_later_action(tmp_path: 
             raw_artifact_links={},
         )
 
-    display_row = builder._display_row_for_trade(
+    display_row = paper_trade_select_display_row(
         [
             row(
                 event_timestamp=open_timestamp,
@@ -1675,6 +1685,87 @@ def test_display_row_for_trade_prefers_terminal_row_over_later_action(tmp_path: 
 
     assert display_row.event_type == "CLOSE"
     assert display_row.event_timestamp == close_timestamp
+
+
+def test_latest_trade_rows_are_selected_through_shared_active_helper(tmp_path: Path) -> None:
+    latest_session_date = datetime(2026, 7, 15, 9, 30, tzinfo=IST).date()
+    open_timestamp = datetime(2026, 7, 15, 9, 30, tzinfo=IST)
+    close_timestamp = datetime(2026, 7, 15, 12, 57, 59, tzinfo=IST)
+    older_open_timestamp = datetime(2026, 7, 14, 9, 30, tzinfo=IST)
+
+    def row(
+        *,
+        trade_id: str,
+        event_timestamp: datetime,
+        event_type: str,
+        lifecycle_status: str,
+        manager_status: str,
+        fresh_entry_required: bool = False,
+    ) -> DashboardTradeLedgerRow:
+        return DashboardTradeLedgerRow(
+            session_date=event_timestamp.date(),
+            event_timestamp=event_timestamp,
+            entry_timestamp=older_open_timestamp,
+            exit_timestamp=event_timestamp if event_type == "CLOSE" else None,
+            event_type=event_type,
+            trade_id=trade_id,
+            strategy_id="S23:LEG",
+            strategy_code="S23",
+            strategy_branch="LEG",
+            selected_contract_symbol="NIFTY_20260721_24200_CE",
+            side="SELL",
+            lots=1,
+            quantity=65,
+            entry_price=209.0,
+            current_price=180.0,
+            current_bid=179.5,
+            current_ask=180.5,
+            exit_price=86.1 if event_type == "CLOSE" else None,
+            target_price=85.1,
+            stoploss_price=258.94,
+            gross_points=122.9 if event_type == "CLOSE" else None,
+            gross_pnl=7988.5 if event_type == "CLOSE" else None,
+            lifecycle_status=lifecycle_status,
+            manager_status=manager_status,
+            reason_code="reason",
+            message="message",
+            fresh_entry_required=fresh_entry_required,
+            reverse_entry_required=False,
+            rollover_required=False,
+            state_directory=None,
+            stream_health=DashboardSelectedContractStreamHealth(),
+            raw_artifact_links={},
+        )
+
+    latest_rows = paper_trade_latest_active_rows(
+        [
+            row(
+                trade_id="T1",
+                event_timestamp=older_open_timestamp,
+                event_type="OPEN",
+                lifecycle_status="PAPER_POSITION_OPEN",
+                manager_status="PAPER_POSITION_OPENED",
+            ),
+            row(
+                trade_id="T1",
+                event_timestamp=close_timestamp,
+                event_type="CLOSE",
+                lifecycle_status="PAPER_POSITION_CLOSED",
+                manager_status="PAPER_POSITION_CLOSED",
+            ),
+            row(
+                trade_id="T2",
+                event_timestamp=open_timestamp,
+                event_type="ACTION_REQUIRED",
+                lifecycle_status="PAPER_FRESH_ENTRY_REQUIRED",
+                manager_status="PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                fresh_entry_required=True,
+            ),
+        ],
+        latest_session_date=latest_session_date,
+    )
+
+    assert [row.trade_id for row in latest_rows] == ["T2"]
 
 
 def test_trade_ledger_section_summary_uses_shared_trade_counts(tmp_path: Path) -> None:
@@ -2118,7 +2209,9 @@ def test_dashboard_builds_historical_trades_page_with_filters(tmp_path: Path) ->
     assert manifest["historical_trades_page"].replace("\\", "/") == "trades/history/index.html"
 
 
-def test_all_trades_monitor_hides_terminal_close_after_latest_session_date(tmp_path: Path) -> None:
+def test_all_trades_monitor_hides_terminal_close_after_latest_session_date_without_live_state_file(
+    tmp_path: Path,
+) -> None:
     s23_root = tmp_path / "s23-artifacts"
     latest_day = s23_root / "2026-07-14"
     latest_final = latest_day / "s23-fyers-morning-supervised-decision-2026-07-14"
@@ -2148,36 +2241,6 @@ def test_all_trades_monitor_hides_terminal_close_after_latest_session_date(tmp_p
         / "NIFTY_OP_SELL_WK_DIFF_2D_3D"
     )
     trade_dir.mkdir(parents=True)
-    (trade_dir / "paper_position_state.json").write_text(
-        json.dumps(
-            {
-                "artifact_version": 1,
-                "strategy_code": "S23",
-                "unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
-                "symbol": "NIFTY",
-                "option_type": "CALL",
-                "selected_contract_symbol": "NIFTY_20260721_24200_CE",
-                "expiry_date": "2026-07-21",
-                "expiry_type": "WEEKLY",
-                "entry_date": "2026-07-08",
-                "entry_timestamp": "2026-07-08T12:24:59+05:30",
-                "entry_price": 209.0,
-                "lots": 1,
-                "quantity": 65,
-                "side": "SELL",
-                "target_price": 85.10,
-                "stoploss_price": 258.94,
-                "fsl_price": None,
-                "trp_price": None,
-                "carry_forward_allowed": False,
-                "no_carry_past_expiry": True,
-                "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
-                "last_updated_timestamp": "2026-07-15T12:57:59+05:30",
-                "provenance_source_ids": ["paper_order_state.json", "s23_paper_position_watch"],
-            }
-        ),
-        encoding="utf-8",
-    )
     (trade_dir / "paper_trade_ledger.jsonl").write_text(
         "\n".join(
             [

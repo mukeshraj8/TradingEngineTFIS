@@ -994,3 +994,7 @@ class S23PaperGuardrailEvaluator:
         if code == "same_day_only_policy_not_confirmed_for_lifecycle":
             return "Confirm same-day-only policy before starting the S23 paper lifecycle loop."
         return "Review the recorded paper-session guardrail before retrying."
+
+
+PaperGuardrailSettings = S23PaperGuardrailSettings
+PaperGuardrailEvaluator = S23PaperGuardrailEvaluator

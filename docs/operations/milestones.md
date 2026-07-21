@@ -7,6 +7,11 @@
   blocks silent live enablement until the remaining paper-runtime,
   reconciliation, ingress, and operator-control gaps are closed and explicitly
   reviewed
+- as of Tuesday, July 21, 2026, the remaining shared paper review/replay/
+  comparison naming seam is now closed: neutral paper aliases cover review
+  summaries, replay-bundle management, and paper-vs-historical comparison
+  contracts while the older S23 names remain exported for compatibility, and
+  the focused regression pack for that slice passed at `92 passed`
 - the first weekend Step 2 lifecycle-correctness fix is now in place: active
   dashboard trade monitors suppress terminal trade rows by default, leaving
   closed trades to the historical view instead of presenting live and closed
@@ -51,6 +56,198 @@
   the shared broker-neutral runtime helper when the adapter reports an
   unhealthy state, and fails closed with explicit strategy/provider context if
   the runtime remains unhealthy after that reconnect
+- the next trade-ledger authority slice is now also in place as of Monday,
+  July 20, 2026: TFIS now exposes shared helpers for latest active-trade row
+  selection and latest historical-close selection, and the operator dashboard
+  has been cut over to those shared helpers so active strategy pages, the
+  consolidated all-trades monitor, and the historical closed-trades page no
+  longer maintain separate latest-row selection logic
+- that same Monday, July 20, 2026 reconciliation pass also tightened shared
+  runtime target discovery: only same-day waiting orders are now eligible
+  watch targets, while prior-session waiting orders remain historical/review
+  artifacts instead of being carried forward into the shared supervisor loop
+- the next Monday, July 20, 2026 reconciliation slice then removed another
+  split-brain runtime seam: blocked fresh-entry promotion now uses the shared
+  position-discovery layer to find open or reverse-entry-required positions
+  that still block new-entry promotion, instead of maintaining its own local
+  filesystem walk and predicate
+- the next Monday, July 20, 2026 runtime refactor slice then removed another
+  supervisor-script decision seam: fresh-entry-required handoff now runs
+  through a shared paper helper that owns idempotent marker-path resolution,
+  blocked-decision promotion-first behavior, and runner-launch marker writes,
+  while the supervisor script now only supplies task-spec and subprocess
+  wiring
+- the next Monday, July 20, 2026 runtime metadata slice then removed another
+  S21/S23 ownership seam: shared lifecycle-supervisor targets now carry the
+  relaunch runner/wrapper script paths needed for fresh-entry handoff, the
+  supervisor task builder now consumes that shared target metadata instead of
+  maintaining a hardcoded strategy-to-script map, and the reusable execution-
+  plan surface now normalizes the old `s23_morning_supervised` label onto the
+  generic paper-morning-supervised executor contract
+- the next Monday, July 20, 2026 artifact-discovery slice then removed another
+  split-brain filesystem seam: TFIS now has shared paper-session discovery
+  helpers for strategy-day ordering, latest supervised-session lookup, stage
+  snapshot directory discovery, and branch summary enumeration, and the
+  operator dashboard plus blocked fresh-entry promotion now share that same
+  artifact-truth path with focused regressions still green
+- the next Monday, July 20, 2026 dashboard-order slice then removed another
+  duplicated monitor seam: active dashboard trade rows now read pending and
+  not-filled orders through the shared typed paper-order discovery path first,
+  with raw-order fallback preserved for sparse historical artifacts, and the
+  shared order-status helpers now normalize enum and string values the same
+  way so typed discovery cannot silently hide valid monitor rows
+- the next Monday, July 20, 2026 decision-summary slice then removed another
+  duplicated artifact-read seam: TFIS now has shared trade-decision summary
+  discovery for branch-level `trade_decision_summary.json` payloads, and both
+  the dashboard plus blocked fresh-entry promotion now share that same
+  payload/summary extraction path with focused regressions still green
+- the next Monday, July 20, 2026 trade-ledger slice then removed another
+  dashboard-local filesystem seam: shared trade-ledger helpers now own the
+  discovery of session and global `paper_trade_ledger.jsonl` paths, and the
+  operator dashboard consumes that shared path selection instead of rebuilding
+  it locally
+- the next Tuesday, July 21, 2026 ledger-authority slice then removed another
+  dashboard-only truth rule: shared paper trade-ledger helpers now decide when
+  a terminal trade row remains displayable after its live
+  `paper_position_state.json` has been cleaned up, so historical closed-trade
+  visibility no longer depends on a dashboard-local filesystem existence check
+- the same Tuesday, July 21, 2026 session-discovery slice then removed another
+  dashboard-local selection rule: shared paper-session discovery now owns the
+  preferred-stage lookup that selects the `09:30` stage snapshot when present
+  and otherwise falls back to the latest available stage for that session day
+- the next Tuesday, July 21, 2026 decision-summary slice then removed another
+  dashboard-local read-model seam: shared decision-summary helpers now expose
+  reusable selected-contract symbol discovery, and the dashboard consumes that
+  shared symbol list instead of re-looping parsed summary payloads to rebuild
+  final session contract symbols
+- the same Tuesday, July 21, 2026 session-read-model slice then removed the
+  next dashboard-local merge seam: shared session-contract discovery now owns
+  the union of typed order-state symbols, raw order-state fallback symbols,
+  and branch-summary symbols used to reconstruct final session contracts
+- the next Tuesday, July 21, 2026 final-summary slice then removed another
+  dashboard-local read-model seam: shared decision-summary helpers now own the
+  resolved final artifact directory plus parsed final summary view for a
+  supervised session, so the dashboard no longer reopens and reshapes the
+  final `trade_decision_summary.json` artifact on its own
+- the next Monday, July 20, 2026 dashboard-discovery slice then removed two
+  more dashboard-local filesystem seams: shared paper-session helpers now own
+  branch-explainer path discovery for final versus latest-stage
+  `trade_decision_explainer*.json` artifacts, and the shared paper-order layer
+  now owns reusable raw `paper_order_state.json` candidate-path discovery used
+  by dashboard historical/order fallbacks
+- the next Monday, July 20, 2026 decision-summary slice then removed another
+  neighboring-artifact seam: shared decision-summary discovery candidates now
+  carry their resolved branch directory plus sibling `paper_order_state.json`
+  path, and both the operator dashboard plus blocked fresh-entry promotion now
+  use that shared sibling-artifact truth instead of rebuilding it from
+  `summary_path.parent`
+- the next Tuesday, July 21, 2026 stage-artifact slice then removed one more
+  dashboard-local naming seam: shared paper-session helpers now resolve the
+  finalized-session `monthly_status_stage_<key>.json` and
+  `trade_decision_explainer_stage_<key>.json` paths for a stage key, and the
+  operator dashboard now consumes that shared naming path instead of
+  reconstructing those filenames inline
+- the next Tuesday, July 21, 2026 final-artifact slice then removed one more
+  dashboard-local authority seam: shared decision-summary discovery now
+  resolves the authoritative final trade-decision artifact directory for a
+  supervised session, preferring a session-level summary when present and
+  otherwise falling back to the matching branch-summary directory, and the
+  operator dashboard now consumes that shared resolution path instead of
+  carrying the policy inline
+- the next Tuesday, July 21, 2026 session-completeness slice then removed one
+  more dashboard-local session-state seam: shared paper-session helpers now
+  resolve the `scheduled_run_metadata.json` path and expose the derived
+  supervised-session completion check, and the operator dashboard now consumes
+  that shared rule instead of inlining the metadata-filename test
+- the same Tuesday, July 21, 2026 executor-contract slice then removed one
+  more half-shared runtime seam: canonical paper supervised executor naming
+  now lives in one shared `tfis.strategy` helper, lifecycle-supervisor target
+  loading now normalizes legacy executor aliases the same way as strategy
+  execution-plan validation, and the repo paper configs plus supervisor target
+  metadata now declare the generic `paper_morning_supervised` contract
+- the same Tuesday, July 21, 2026 selected-contract event slice then removed
+  another artifact-handling seam: shared paper helpers now own
+  `selected_contract_market_events.jsonl` path discovery, append/load
+  behavior, and supervisor-vs-watcher PID interpretation, and the shared
+  supervisor, legacy S23 compatibility watcher, operator dashboard, and
+  captured-session validator now all consume that same helper instead of
+  maintaining separate local event-artifact logic
+- the same Tuesday, July 21, 2026 watcher-recovery slice then removed another
+  compatibility seam: the legacy S23 watch script now resolves same-day
+  waiting orders through the shared paper-order discovery helper instead of
+  scanning `paper_order_state.json` files inline, so current-session waiting
+  order recovery and stale previous-session filtering now follow the same
+  shared discovery rule
+- the same Tuesday, July 21, 2026 morning-bootstrap slice then removed
+  another S23-shaped public seam: shared paper aliases now expose neutral
+  morning supervised checkpoint/result/runner names, both the S21 and S23
+  morning launcher scripts now call that generic runner directly, and the two
+  launcher scripts now also share the same market-closed no-action rule plus
+  process-lock path helper instead of carrying separate local copies
+- the same Tuesday, July 21, 2026 timeline-and-live-check slice then removed
+  another shared-paper naming seam: the timeline builder/checkpoint/stage/
+  result contract now has generic paper aliases used by the operator
+  dashboard and morning supervised runner, the legacy S23 watch path now uses
+  the shared live-state owner helper name directly, and the live-decision
+  check now also exposes a neutral runner/result alias that the CLI entrypoint
+  consumes instead of binding directly to an S23-only public name
+- the same Tuesday, July 21, 2026 snapshot-and-prelude slice then removed
+  another shared-paper naming seam: neutral paper aliases now exist for the
+  reusable prelude builder/error/request/result/mode contract and the shared
+  snapshot session read-models, while the shared decision builder, timeline
+  builder, FYERS snapshot collector, generated prelude dry-run runner, and
+  operator dashboard now consume those neutral aliases directly instead of
+  binding only to S23-prefixed public names
+- the same Tuesday, July 21, 2026 collector-and-preflight slice then removed
+  another shared-paper naming seam: the FYERS snapshot collector/preflight
+  artifact, error, issue, summary, and provenance types now also have neutral
+  paper aliases, and the shared live-decision runner, snapshot-validation
+  harness, and live-decision-check CLI now consume those neutral collector
+  aliases directly instead of binding only to S23-prefixed public names
+- the next Tuesday, July 21, 2026 runtime-input and live-reference slice then
+  removed another shared-paper naming seam: the decision-reference loader,
+  decision/monthly-status/market reference packets, derived runtime-input
+  contracts, runtime-input derivation error/deriver, and live reference
+  derivation error/result/deriver now also expose neutral paper aliases, and
+  the shared live-decision builder, live-decision timeline, live-decision
+  runner, operator dashboard, and S21 morning wrapper now consume those shared
+  names directly while the timeline runner preserves one compatibility loader
+  alias for older S23 hooks
+- the same Tuesday, July 21, 2026 planning-foundation slice then removed
+  another shared-paper naming seam: guardrail evaluator/settings, paper
+  contract validator, paper session-manifest builder, paper order-plan,
+  paper session orchestrator, and paper session snapshot now all expose
+  neutral paper aliases, and the shared ingress dry-run and paper artifact
+  surfaces now consume those planning aliases directly instead of binding only
+  to S23-prefixed public contracts
+- the next Tuesday, July 21, 2026 ingress dry-run/read-model slice then
+  removed another shared-paper naming seam: ingress dry-run error/readiness,
+  thresholds, timing audit, ingress health metrics, selected-contract audit,
+  dry-run summary/artifact-set, normalized event loader, and ingress dry-run
+  runner now all expose neutral paper aliases, and the shared `tfis.paper`
+  surface can now present those ingress contracts without requiring S23-only
+  public names
+- the next Monday, July 20, 2026 reconciliation slice then removed one more
+  dashboard-only rule: live trade-monitor order visibility for waiting and
+  not-filled paper orders now comes from a shared paper-order helper keyed by
+  latest-session date, so dashboard active-order filtering and reusable paper-
+  order semantics no longer drift independently
+- the next Monday, July 20, 2026 runtime-discovery slice then removed one
+  more duplicated filesystem walk: the shared paper-order layer now exposes a
+  reusable order-state discovery helper, and both lifecycle-supervisor target
+  discovery plus the waiting-order finalizer now use that same helper instead
+  of each scanning `paper_order_state.json` artifacts separately
+- the next Monday, July 20, 2026 reconciliation slice then removed one more
+  dashboard-only state scan: shared position discovery now exposes a lenient
+  latest-terminal-position lookup for sparse historical position-state files,
+  and the strategy dashboard now uses that shared lookup when overriding stale
+  carry-forward blockers instead of walking raw `paper_position_state.json`
+  files locally
+- the next Monday, July 20, 2026 fresh-entry refactor slice then tightened the
+  promotion path itself: blocked READY promotion now works from shared
+  blocked-decision candidate records that carry parsed summary data plus any
+  already-discovered order-state path for that branch, instead of passing raw
+  summary-path tuples through the promotion loop
 - offline TFIS architecture and backtest foundation is in place
 - corrected S23 weekly option selling contract is documented and now supersedes
   older inferred branch mappings

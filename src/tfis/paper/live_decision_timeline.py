@@ -20,17 +20,20 @@ from tfis.monthly_status import (
     build_monthly_weekly_context_lookback_windows,
 )
 
-from .fyers_snapshot_collector import S23CollectedSnapshotInputs
-from .live_reference_derivation import S23LiveReferenceDeriver
+from .fyers_snapshot_collector import PaperCollectedSnapshotInputs
+from .live_reference_derivation import PaperLiveReferenceDeriver
 from .live_decision import (
     S23PaperLiveDecisionBuilder,
     S23PaperLiveDecisionError,
     S23PaperLiveDecisionResult,
 )
-from .live_prelude import S23LivePreludeError
+from .live_prelude import PaperLivePreludeError
 from .models import SnapshotLabel
 from .position_state import S23PaperPositionState
-from .runtime_input_derivation import S23DecisionReferencePacket, S23RuntimeInputDerivationError
+from .runtime_input_derivation import (
+    PaperDecisionReferencePacket,
+    PaperRuntimeInputDerivationError,
+)
 
 
 _CHECKPOINT_LABELS = {
@@ -99,6 +102,12 @@ class S23LiveDecisionTimelineStageBuild:
     decision_result: S23PaperLiveDecisionResult | None
 
 
+PaperLiveDecisionTimelineCheckpoint = S23LiveDecisionTimelineCheckpoint
+PaperLiveDecisionTimelineStage = S23LiveDecisionTimelineStage
+PaperLiveDecisionTimelineResult = S23LiveDecisionTimelineResult
+PaperLiveDecisionTimelineStageBuild = S23LiveDecisionTimelineStageBuild
+
+
 class S23LiveDecisionTimelineBuilder:
     def __init__(
         self,
@@ -106,7 +115,7 @@ class S23LiveDecisionTimelineBuilder:
         decision_builder: S23PaperLiveDecisionBuilder | None = None,
         monthly_status_engine: MonthlyStatusEngine | None = None,
         monthly_status_lookback_resolver: MonthlyStatusLookbackResolver | None = None,
-        live_reference_deriver: S23LiveReferenceDeriver | None = None,
+        live_reference_deriver: PaperLiveReferenceDeriver | None = None,
     ) -> None:
         self._decision_builder = decision_builder or S23PaperLiveDecisionBuilder()
         self._monthly_status_engine = monthly_status_engine or MonthlyStatusEngine()
@@ -116,7 +125,7 @@ class S23LiveDecisionTimelineBuilder:
                 monthly_status_engine=self._monthly_status_engine
             )
         )
-        self._live_reference_deriver = live_reference_deriver or S23LiveReferenceDeriver()
+        self._live_reference_deriver = live_reference_deriver or PaperLiveReferenceDeriver()
 
     def build_stage(
         self,
@@ -124,8 +133,8 @@ class S23LiveDecisionTimelineBuilder:
         stage_name: str,
         stage_time: time,
         strategy_rule: StrategyRule,
-        reference_packet: S23DecisionReferencePacket,
-        collected_inputs: S23CollectedSnapshotInputs,
+        reference_packet: PaperDecisionReferencePacket,
+        collected_inputs: PaperCollectedSnapshotInputs,
         carry_forward_position: S23PaperPositionState | None = None,
         smoke_override_enabled: bool = False,
         smoke_override_selected_contract_symbol: str | None = None,
@@ -203,8 +212,8 @@ class S23LiveDecisionTimelineBuilder:
                 )
             except (
                 S23PaperLiveDecisionError,
-                S23LivePreludeError,
-                S23RuntimeInputDerivationError,
+                PaperLivePreludeError,
+                PaperRuntimeInputDerivationError,
             ) as exc:
                 decision_failure_code = getattr(exc, "code", "LIVE_DECISION_FAILED")
                 decision_failure_message = str(exc)
@@ -615,7 +624,7 @@ class S23LiveDecisionTimelineBuilder:
     def _checkpoint_observations(
         self,
         *,
-        collected_inputs: S23CollectedSnapshotInputs,
+        collected_inputs: PaperCollectedSnapshotInputs,
         stage_time: time,
     ) -> tuple[S23LiveDecisionTimelineCheckpoint, ...]:
         observations: list[S23LiveDecisionTimelineCheckpoint] = []
@@ -653,7 +662,7 @@ class S23LiveDecisionTimelineBuilder:
     def _classify_monthly_status(
         self,
         *,
-        reference_packet: S23DecisionReferencePacket,
+        reference_packet: PaperDecisionReferencePacket,
         current_price: float | None,
         current_reference_timestamp: datetime,
         daily_bars: tuple[UnderlyingHistoryBar, ...],
@@ -726,7 +735,7 @@ class S23LiveDecisionTimelineBuilder:
         )
 
     @staticmethod
-    def _stage_runtime_values(reference_packet: S23DecisionReferencePacket) -> dict[str, float]:
+    def _stage_runtime_values(reference_packet: PaperDecisionReferencePacket) -> dict[str, float]:
         runtime_values = {
             key.upper(): float(value)
             for key, value in reference_packet.option_reference_values.items()
@@ -738,7 +747,7 @@ class S23LiveDecisionTimelineBuilder:
     @staticmethod
     def _stage_market_levels(
         *,
-        reference_packet: S23DecisionReferencePacket,
+        reference_packet: PaperDecisionReferencePacket,
         current_day_high_so_far: float | None,
         current_day_low_so_far: float | None,
     ) -> MarketLevels:
@@ -756,7 +765,7 @@ class S23LiveDecisionTimelineBuilder:
     @staticmethod
     def _reference_values(
         *,
-        reference_packet: S23DecisionReferencePacket,
+        reference_packet: PaperDecisionReferencePacket,
         current_day_high_so_far: float | None,
         current_day_low_so_far: float | None,
     ) -> dict[str, dict[str, Any]]:
@@ -897,7 +906,15 @@ class S23LiveDecisionTimelineBuilder:
         return re.sub(r"\b[A-Za-z_][A-Za-z0-9_]*\b", replace_alias, text)
 
 
+PaperLiveDecisionTimelineBuilder = S23LiveDecisionTimelineBuilder
+
+
 __all__ = [
+    "PaperLiveDecisionTimelineBuilder",
+    "PaperLiveDecisionTimelineCheckpoint",
+    "PaperLiveDecisionTimelineResult",
+    "PaperLiveDecisionTimelineStage",
+    "PaperLiveDecisionTimelineStageBuild",
     "S23LiveDecisionTimelineBuilder",
     "S23LiveDecisionTimelineCheckpoint",
     "S23LiveDecisionTimelineResult",

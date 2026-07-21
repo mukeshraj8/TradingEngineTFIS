@@ -4,6 +4,7 @@ from pathlib import Path
 
 from tfis.paper import (
     PaperMorningSupervisedTaskSpec,
+    build_paper_morning_task_spec_from_target,
     build_paper_morning_runner_arguments,
     build_paper_morning_wrapper_command,
     S23MorningSupervisedTaskSpec,
@@ -150,3 +151,31 @@ def test_generic_paper_task_aliases_build_same_arguments_and_command() -> None:
     assert args[1].endswith("scripts\\run_s21_banknifty_0916_supervised_decision.py")
     assert "start_s21_fyers_morning_supervised_decision.ps1" in command
     assert "-SessionIdPrefix \"s21-fyers-morning-supervised-decision\"" in command
+
+
+def test_build_paper_morning_task_spec_from_target_uses_shared_target_metadata() -> None:
+    target = type(
+        "Target",
+        (),
+        {
+            "strategy_code": "S21",
+            "config_path": Path("config/paper.s21.fyers_connect_test.yaml"),
+            "strategy_path": Path("config/strategies/options_sell/banknifty/S21_BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL"),
+            "reference_packet_path": Path("config/reference_packets/s21_banknifty_monthly_live_decision_reference.json"),
+            "artifact_root": Path("data/strategies/S21/fyers_morning_supervised_decision"),
+            "session_id_prefix": "s21-fyers-morning-supervised-decision",
+            "runner_script_path": Path("scripts/run_s21_banknifty_0916_supervised_decision.py"),
+            "wrapper_script_path": Path("scripts/start_s21_fyers_morning_supervised_decision.ps1"),
+        },
+    )()
+
+    spec = build_paper_morning_task_spec_from_target(
+        target=target,
+        repo_root=Path("D:/TradingEngineTFIS"),
+        tfis_root=Path("D:/TradingEngineTFIS"),
+    )
+
+    assert spec is not None
+    assert spec.task_name == "TFIS S21 Morning Supervised Decision"
+    assert spec.runner_script_path.name == "run_s21_banknifty_0916_supervised_decision.py"
+    assert spec.wrapper_script_path.name == "start_s21_fyers_morning_supervised_decision.ps1"

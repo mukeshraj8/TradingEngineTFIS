@@ -10,9 +10,9 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from .fyers_snapshot_collector import (
-    S23FyersSnapshotArtifactSet,
-    S23FyersSnapshotCollector,
-    S23FyersSnapshotCollectorError,
+    PaperFyersSnapshotArtifactSet,
+    PaperFyersSnapshotCollector,
+    PaperFyersSnapshotCollectorError,
 )
 
 
@@ -102,6 +102,14 @@ class S23SnapshotValidationArtifactSet:
     report: S23SnapshotValidationReport
 
 
+PaperSnapshotValidationWarning = S23SnapshotValidationWarning
+PaperSnapshotOptionChainStatistics = S23SnapshotOptionChainStatistics
+PaperSnapshotValidationSample = S23SnapshotValidationSample
+PaperSnapshotValidationAggregateMetrics = S23SnapshotValidationAggregateMetrics
+PaperSnapshotValidationReport = S23SnapshotValidationReport
+PaperSnapshotValidationArtifactSet = S23SnapshotValidationArtifactSet
+
+
 class SnapshotCollectorLike(Protocol):
     def collect_from_files(
         self,
@@ -114,7 +122,7 @@ class SnapshotCollectorLike(Protocol):
         dry_run_build_prelude: bool = False,
         enable_smoke_override: bool = False,
         adapter: object | None = None,
-    ) -> S23FyersSnapshotArtifactSet: ...
+    ) -> PaperFyersSnapshotArtifactSet: ...
 
 
 class S23SnapshotValidationHarness:
@@ -126,7 +134,7 @@ class S23SnapshotValidationHarness:
         sleep_fn: callable | None = None,
     ) -> None:
         self._artifact_root = Path(artifact_root)
-        self._collector = collector or S23FyersSnapshotCollector(artifact_root=artifact_root)
+        self._collector = collector or PaperFyersSnapshotCollector(artifact_root=artifact_root)
         self._sleep_fn = sleep_fn or time_module.sleep
 
     def run_from_files(
@@ -168,7 +176,7 @@ class S23SnapshotValidationHarness:
                     previous_success=previous_success,
                 )
                 previous_success = sample if sample.selected_contract_symbol is not None else previous_success
-            except S23FyersSnapshotCollectorError as exc:
+            except PaperFyersSnapshotCollectorError as exc:
                 sample = self._build_failure_sample(
                     sample_index=index + 1,
                     runtime_fixture_path=runtime_fixture_path,
@@ -270,12 +278,12 @@ class S23SnapshotValidationHarness:
     def _build_success_sample(
         self,
         *,
-        artifact: S23FyersSnapshotArtifactSet,
+        artifact: PaperFyersSnapshotArtifactSet,
         sample_index: int,
         previous_success: S23SnapshotValidationSample | None,
     ) -> S23SnapshotValidationSample:
         if artifact.collected_inputs is None or artifact.prelude_result is None:
-            raise S23FyersSnapshotCollectorError(
+            raise PaperFyersSnapshotCollectorError(
                 "PRELUDE_BUILD_FAILURE",
                 "Snapshot collector did not return in-memory prelude details for validation.",
             )
@@ -357,7 +365,7 @@ class S23SnapshotValidationHarness:
         sample_index: int,
         runtime_fixture_path: str | Path,
         session_id: str,
-        error: S23FyersSnapshotCollectorError,
+        error: PaperFyersSnapshotCollectorError,
     ) -> S23SnapshotValidationSample:
         runtime_fixture = json.loads(Path(runtime_fixture_path).read_text(encoding="utf-8"))
         timestamp = datetime.fromisoformat(str(runtime_fixture["generated_at"]))
@@ -510,3 +518,6 @@ class S23SnapshotValidationHarness:
         if isinstance(value, Path):
             return str(value)
         return value
+
+
+PaperSnapshotValidationHarness = S23SnapshotValidationHarness

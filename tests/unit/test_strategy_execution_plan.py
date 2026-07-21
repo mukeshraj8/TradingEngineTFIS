@@ -28,10 +28,11 @@ def test_execution_plan_marks_enabled_supported_strategy_runnable() -> None:
             ]
         },
         registry=load_strategy_registry(),
-        supported_executors=("s23_morning_supervised",),
+        supported_executors=("paper_morning_supervised",),
     )
 
     assert len(plan.items) == 1
+    assert plan.items[0].executor == "paper_morning_supervised"
     assert plan.items[0].status == "RUNNABLE"
     assert plan.runnable_items == plan.items
     assert plan.blocked_items == ()
@@ -51,7 +52,7 @@ def test_execution_plan_skips_disabled_strategy_without_blocking() -> None:
             ]
         },
         registry=load_strategy_registry(),
-        supported_executors=("s23_morning_supervised",),
+        supported_executors=("paper_morning_supervised",),
     )
 
     assert plan.items[0].status == "SKIPPED_DISABLED"
@@ -73,7 +74,7 @@ def test_execution_plan_fails_closed_for_unsupported_enabled_executor() -> None:
             ]
         },
         registry=load_strategy_registry(),
-        supported_executors=("s23_morning_supervised",),
+        supported_executors=("paper_morning_supervised",),
     )
 
     assert plan.items[0].status == "BLOCKED_UNSUPPORTED_EXECUTOR"
@@ -120,11 +121,12 @@ def test_paper_s23_configs_have_runnable_generic_strategy_plan() -> None:
         plan = build_strategy_execution_plan(
             config,
             registry=registry,
-            supported_executors=("s23_morning_supervised",),
+            supported_executors=("paper_morning_supervised",),
         )
 
         assert len(plan.items) == 1
         assert plan.items[0].strategy_code == "S23"
+        assert plan.items[0].executor == "paper_morning_supervised"
         assert plan.items[0].status == "RUNNABLE"
         assert len(plan.items[0].registry_ids) == 4
         assert len(plan.items[0].strategy_paths) == 4
@@ -139,13 +141,33 @@ def test_paper_s21_config_has_runnable_generic_strategy_plan() -> None:
     plan = build_strategy_execution_plan(
         config,
         registry=registry,
-        supported_executors=("s23_morning_supervised",),
+        supported_executors=("paper_morning_supervised",),
     )
 
     assert len(plan.items) == 1
     assert plan.items[0].strategy_code == "S21"
-    assert plan.items[0].executor == "s23_morning_supervised"
+    assert plan.items[0].executor == "paper_morning_supervised"
     assert plan.items[0].status == "RUNNABLE"
     assert len(plan.items[0].registry_ids) == 4
     assert len(plan.items[0].strategy_paths) == 4
     assert_no_blocked_enabled_strategies(plan)
+
+
+def test_execution_plan_normalizes_legacy_executor_alias_to_generic_name() -> None:
+    plan = build_strategy_execution_plan(
+        {
+            "strategies": [
+                {
+                    "strategy_code": "S23",
+                    "enabled": True,
+                    "executor": "s23_morning_supervised",
+                    "registry_ids": ["S23_NIFTY_OP_SELL_WK_DIFF_2D_3D"],
+                }
+            ]
+        },
+        registry=load_strategy_registry(),
+        supported_executors=("paper_morning_supervised",),
+    )
+
+    assert plan.items[0].executor == "paper_morning_supervised"
+    assert plan.items[0].status == "RUNNABLE"

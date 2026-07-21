@@ -29,7 +29,7 @@ PAPER_CONFIGS = (
     ROOT / "config" / "paper.s23.fyers_connect_test.yaml",
     ROOT / "config" / "paper.s21.fyers_connect_test.yaml",
 )
-SUPPORTED_EXECUTORS = ("s23_morning_supervised",)
+SUPPORTED_EXECUTORS = ("paper_morning_supervised",)
 
 
 def main() -> int:

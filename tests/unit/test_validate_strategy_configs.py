@@ -59,14 +59,14 @@ def test_validate_strategy_configs_script_passes_for_current_configs() -> None:
         in result.stdout
     )
     assert (
-        "EXECUTION_PLAN config\\paper.s23.yaml S23 RUNNABLE s23_morning_supervised"
+        "EXECUTION_PLAN config\\paper.s23.yaml S23 RUNNABLE paper_morning_supervised"
         in result.stdout
     )
     assert (
-        "EXECUTION_PLAN config\\paper.s23.fyers_connect_test.yaml S23 RUNNABLE s23_morning_supervised"
+        "EXECUTION_PLAN config\\paper.s23.fyers_connect_test.yaml S23 RUNNABLE paper_morning_supervised"
         in result.stdout
     )
     assert (
-        "EXECUTION_PLAN config\\paper.s21.fyers_connect_test.yaml S21 RUNNABLE s23_morning_supervised"
+        "EXECUTION_PLAN config\\paper.s21.fyers_connect_test.yaml S21 RUNNABLE paper_morning_supervised"
         in result.stdout
     )

@@ -15,13 +15,16 @@ from .live_ingress import PaperLiveIngressConfig
 from .live_decision_runner import prepare_live_decision_runtime_environment
 from .live_decision_schedule import build_schedule_note, compute_schedule_delay_seconds
 from .live_decision_timeline import (
-    S23LiveDecisionTimelineBuilder,
-    S23LiveDecisionTimelineResult,
-    S23LiveDecisionTimelineStage,
+    PaperLiveDecisionTimelineBuilder,
+    PaperLiveDecisionTimelineResult,
+    PaperLiveDecisionTimelineStage,
 )
 from .order_state import S23PaperOrderStateStore
 from .position_state import S23PaperPositionStateStore
-from .runtime_input_derivation import load_s23_decision_reference_packet
+from .runtime_input_derivation import load_paper_decision_reference_packet
+
+
+load_s23_decision_reference_packet = load_paper_decision_reference_packet
 
 
 @dataclass(frozen=True, slots=True)
@@ -48,7 +51,7 @@ class S23MorningDecisionStageRun:
     stage_explainer_markdown: str
     monthly_status_json: str
     monthly_status_markdown: str
-    stage: S23LiveDecisionTimelineStage
+    stage: PaperLiveDecisionTimelineStage
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,6 +68,11 @@ class S23MorningDecisionRunResult:
     branch_position_state_json: dict[str, str] = field(default_factory=dict)
     branch_order_placement_blocked: dict[str, bool] = field(default_factory=dict)
     branch_order_placement_block_reason: dict[str, str] = field(default_factory=dict)
+
+
+PaperMorningDecisionCheckpoint = S23MorningDecisionCheckpoint
+PaperMorningDecisionStageRun = S23MorningDecisionStageRun
+PaperMorningDecisionRunResult = S23MorningDecisionRunResult
 
 
 def default_morning_decision_checkpoints() -> tuple[S23MorningDecisionCheckpoint, ...]:
@@ -138,7 +146,7 @@ def run_s23_morning_supervised_decision(
     base_reference_packet = load_s23_decision_reference_packet(reference_packet_path)
     collector = S23FyersSnapshotCollector(artifact_root=artifact_root)
     decision_builder = S23PaperLiveDecisionBuilder()
-    timeline_builder = S23LiveDecisionTimelineBuilder(decision_builder=decision_builder)
+    timeline_builder = PaperLiveDecisionTimelineBuilder(decision_builder=decision_builder)
     dashboard_builder = _build_dashboard_builder(
         artifact_root=artifact_root,
         strategy_path=primary_strategy_path,
@@ -161,7 +169,7 @@ def run_s23_morning_supervised_decision(
     branch_order_placement_blocked: dict[str, bool] = {}
     branch_order_placement_block_reason: dict[str, str] = {}
     stage_runs: list[S23MorningDecisionStageRun] = []
-    timeline_stages_by_branch: dict[str, list[S23LiveDecisionTimelineStage]] = {
+    timeline_stages_by_branch: dict[str, list[PaperLiveDecisionTimelineStage]] = {
         rule.unique_code: [] for rule in strategy_rules
     }
     final_decisions_by_branch = {}
@@ -467,7 +475,14 @@ def run_s23_morning_supervised_decision(
     )
 
 
+run_paper_morning_supervised_decision = run_s23_morning_supervised_decision
+
+
 __all__ = [
+    "PaperMorningDecisionCheckpoint",
+    "PaperMorningDecisionRunResult",
+    "PaperMorningDecisionStageRun",
+    "run_paper_morning_supervised_decision",
     "S23MorningDecisionCheckpoint",
     "S23MorningDecisionRunResult",
     "S23MorningDecisionStageRun",

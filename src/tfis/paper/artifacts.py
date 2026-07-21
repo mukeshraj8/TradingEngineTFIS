@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .models import PaperSessionManifest
-from .orchestrator import S23PaperSessionSnapshot
+from .orchestrator import S23PaperSessionSnapshot as PaperSessionSnapshot
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,7 +36,7 @@ class S23PaperSessionArtifactWriter:
 
     def write_snapshot(
         self,
-        snapshot: S23PaperSessionSnapshot,
+        snapshot: PaperSessionSnapshot,
         *,
         session_id: str | None = None,
     ) -> S23PaperArtifactSet:
@@ -116,7 +116,7 @@ class S23PaperSessionArtifactWriter:
 
     def _build_decision_summary(
         self,
-        snapshot: S23PaperSessionSnapshot,
+        snapshot: PaperSessionSnapshot,
         session_id: str,
     ) -> dict[str, Any]:
         manifest = snapshot.manifest
@@ -158,7 +158,7 @@ class S23PaperSessionArtifactWriter:
 
     def _build_order_plan_summary(
         self,
-        snapshot: S23PaperSessionSnapshot,
+        snapshot: PaperSessionSnapshot,
         session_id: str,
     ) -> dict[str, Any]:
         assert snapshot.order_plan is not None
@@ -176,7 +176,7 @@ class S23PaperSessionArtifactWriter:
 
     def _build_terminal_summary(
         self,
-        snapshot: S23PaperSessionSnapshot,
+        snapshot: PaperSessionSnapshot,
         session_id: str,
         terminal_state: str,
     ) -> dict[str, Any]:
@@ -204,7 +204,7 @@ class S23PaperSessionArtifactWriter:
             **self._guardrail_fields(snapshot),
         }
 
-    def _guardrail_fields(self, snapshot: S23PaperSessionSnapshot) -> dict[str, Any]:
+    def _guardrail_fields(self, snapshot: PaperSessionSnapshot) -> dict[str, Any]:
         decision = snapshot.latest_guardrail_decision
         if decision is None:
             return {
@@ -222,7 +222,7 @@ class S23PaperSessionArtifactWriter:
             "operator_action_required": decision.operator_action_required,
         }
 
-    def _terminal_reason_code(self, snapshot: S23PaperSessionSnapshot) -> str | None:
+    def _terminal_reason_code(self, snapshot: PaperSessionSnapshot) -> str | None:
         validation = snapshot.latest_validation_result
         if validation is not None:
             if validation.abort_reasons:

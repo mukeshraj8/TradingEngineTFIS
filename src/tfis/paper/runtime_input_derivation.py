@@ -26,8 +26,8 @@ from tfis.rules import (
 )
 
 from .live_prelude import (
-    S23PaperPreludeSessionContext,
-    S23PaperSnapshotInput,
+    PaperPreludeSessionContext,
+    PaperSnapshotInput,
 )
 from .models import SnapshotLabel, UnderlyingQuoteEvent
 
@@ -86,7 +86,7 @@ class S23DerivedRuntimeInputs:
     monthly_status_resolution: MonthlyStatusResolutionResult
     market_levels: MarketLevels
     runtime_values: dict[str, float]
-    snapshots: tuple[S23PaperSnapshotInput, ...]
+    snapshots: tuple[PaperSnapshotInput, ...]
     required_market_aliases: tuple[str, ...]
     required_option_aliases: tuple[str, ...]
     checkpoint_labels: tuple[str, ...]
@@ -121,7 +121,7 @@ class S23RuntimeInputDeriver:
         underlying_quote: UnderlyingQuoteEvent,
         underlying_bars: tuple[UnderlyingHistoryBar, ...],
         daily_bars: tuple[UnderlyingHistoryBar, ...] | None,
-        session_context: S23PaperPreludeSessionContext,
+        session_context: PaperPreludeSessionContext,
         required_snapshot_labels: tuple[SnapshotLabel, ...] | None = None,
     ) -> S23DerivedRuntimeInputs:
         self._validate_scope(strategy_rule, reference_packet, session_context, underlying_quote)
@@ -172,7 +172,7 @@ class S23RuntimeInputDeriver:
         self,
         strategy_rule: StrategyRule,
         reference_packet: S23DecisionReferencePacket,
-        session_context: S23PaperPreludeSessionContext,
+        session_context: PaperPreludeSessionContext,
         underlying_quote: UnderlyingQuoteEvent,
     ) -> None:
         matrix_mismatches = _validate_supported_strategy_rule(strategy_rule)
@@ -209,8 +209,8 @@ class S23RuntimeInputDeriver:
         reference_packet: S23DecisionReferencePacket,
         current_price: float | None,
         daily_bars: tuple[UnderlyingHistoryBar, ...],
-        session_context: S23PaperPreludeSessionContext,
-        snapshots: tuple[S23PaperSnapshotInput, ...],
+        session_context: PaperPreludeSessionContext,
+        snapshots: tuple[PaperSnapshotInput, ...],
     ) -> MonthlyStatusResolutionResult:
         if current_price is None:
             raise S23RuntimeInputDerivationError(
@@ -254,7 +254,7 @@ class S23RuntimeInputDeriver:
         underlying_bars: tuple[UnderlyingHistoryBar, ...],
         session_context: S23PaperPreludeSessionContext,
         required_snapshot_labels: tuple[SnapshotLabel, ...] | None = None,
-    ) -> tuple[S23PaperSnapshotInput, ...]:
+    ) -> tuple[PaperSnapshotInput, ...]:
         if not underlying_bars:
             raise S23RuntimeInputDerivationError(
                 "UNDERLYING_BARS_MISSING",
@@ -266,7 +266,7 @@ class S23RuntimeInputDeriver:
             for bar in underlying_bars
             if bar.bar_start.date() == session_context.session_date
         }
-        snapshots: list[S23PaperSnapshotInput] = []
+        snapshots: list[PaperSnapshotInput] = []
         missing_labels: list[str] = []
         for label, candle_starts in _CHECKPOINT_CANDLE_STARTS.items():
             bar = None
@@ -279,7 +279,7 @@ class S23RuntimeInputDeriver:
                     missing_labels.append(label.value)
                 continue
             snapshots.append(
-                S23PaperSnapshotInput(
+                PaperSnapshotInput(
                     snapshot_label=label,
                     open=bar.open,
                     high=bar.high,
@@ -301,7 +301,7 @@ class S23RuntimeInputDeriver:
         self,
         *,
         reference_levels: S23MarketReferencePacket,
-        snapshots: tuple[S23PaperSnapshotInput, ...],
+        snapshots: tuple[PaperSnapshotInput, ...],
         required_market_aliases: tuple[str, ...],
     ) -> MarketLevels:
         current_day_high = max(
@@ -397,7 +397,7 @@ class S23RuntimeInputDeriver:
     def _resolve_monthly_status_price(
         self,
         *,
-        snapshots: tuple[S23PaperSnapshotInput, ...],
+        snapshots: tuple[PaperSnapshotInput, ...],
         fallback_price: float | None,
     ) -> float | None:
         latest_snapshot = max(snapshots, key=lambda item: item.bar_end, default=None)
@@ -544,3 +544,12 @@ def _validate_supported_strategy_rule(strategy_rule: StrategyRule) -> tuple[str,
         "UNSUPPORTED_STRATEGY",
         f"Runtime derivation currently supports S23 and S21 only, received {strategy_rule.strategy_code}.",
     )
+
+
+PaperMonthlyStatusReferencePacket = S23MonthlyStatusReferencePacket
+PaperMarketReferencePacket = S23MarketReferencePacket
+PaperDecisionReferencePacket = S23DecisionReferencePacket
+PaperDerivedRuntimeInputs = S23DerivedRuntimeInputs
+PaperRuntimeInputDerivationError = S23RuntimeInputDerivationError
+PaperRuntimeInputDeriver = S23RuntimeInputDeriver
+load_paper_decision_reference_packet = load_s23_decision_reference_packet

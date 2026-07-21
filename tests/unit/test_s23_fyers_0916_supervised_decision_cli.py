@@ -38,7 +38,7 @@ def test_market_closed_no_candles_returns_success_without_starting_watcher(
             "FYERS underlying history payload returned no candles.",
         )
 
-    monkeypatch.setattr(module, "run_s23_morning_supervised_decision", fail_no_candles)
+    monkeypatch.setattr(module, "run_paper_morning_supervised_decision", fail_no_candles)
 
     assert module.main([]) == 0
 
@@ -61,7 +61,7 @@ def test_non_closed_market_broker_failure_still_returns_error(
             "FYERS history request failed [-99]: Bad request.",
         )
 
-    monkeypatch.setattr(module, "run_s23_morning_supervised_decision", fail_other)
+    monkeypatch.setattr(module, "run_paper_morning_supervised_decision", fail_other)
 
     assert module.main([]) == 1
 

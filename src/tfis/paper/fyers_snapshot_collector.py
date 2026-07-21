@@ -20,12 +20,12 @@ from tfis.monthly_status import MonthlyStatusResult
 from .expiry_governance import DeterministicExpiryCalendar, PaperExpiryGovernance
 from .live_ingress import PaperLiveIngressConfig
 from .live_prelude import (
-    S23LivePreludeError,
-    S23PaperLivePreludeBuilder,
-    S23PaperLivePreludeRequest,
-    S23PaperLivePreludeResult,
-    S23PaperPreludeSessionContext,
-    S23PaperSnapshotInput,
+    PaperLivePreludeBuilder,
+    PaperLivePreludeError,
+    PaperLivePreludeRequest,
+    PaperLivePreludeResult,
+    PaperPreludeSessionContext,
+    PaperSnapshotInput,
 )
 from .models import (
     EventEnvelope,
@@ -118,12 +118,12 @@ class S23FyersSnapshotArtifactSet:
     generated_prelude_provenance_path: Path | None = None
     generated_governance_events_path: Path | None = None
     collected_inputs: S23CollectedSnapshotInputs | None = None
-    prelude_result: S23PaperLivePreludeResult | None = None
+    prelude_result: PaperLivePreludeResult | None = None
 
 
 @dataclass(frozen=True, slots=True)
 class S23CollectedSnapshotInputs:
-    session_context: S23PaperPreludeSessionContext
+    session_context: PaperPreludeSessionContext
     strategy_rule: StrategyRule
     underlying_quote: UnderlyingQuoteEvent
     underlying_bars: tuple[UnderlyingHistoryBar, ...]
@@ -134,16 +134,24 @@ class S23CollectedSnapshotInputs:
     selected_contract_bars: tuple[SelectedContractBarEvent, ...] = ()
 
 
+PaperCollectedSnapshotInputs = S23CollectedSnapshotInputs
+PaperFyersSnapshotCollectorError = S23FyersSnapshotCollectorError
+PaperFyersSnapshotPreflightIssue = S23FyersSnapshotPreflightIssue
+PaperFyersSnapshotPreludeProvenance = S23FyersSnapshotPreludeProvenance
+PaperFyersSnapshotPreflightSummary = S23FyersSnapshotPreflightSummary
+PaperFyersSnapshotArtifactSet = S23FyersSnapshotArtifactSet
+
+
 class S23FyersSnapshotCollector:
     def __init__(
         self,
         *,
         artifact_root: str | Path = _DEFAULT_ARTIFACT_ROOT,
-        prelude_builder: S23PaperLivePreludeBuilder | None = None,
+        prelude_builder: PaperLivePreludeBuilder | None = None,
         position_state_store: S23PaperPositionStateStore | None = None,
     ) -> None:
         self._artifact_root = Path(artifact_root)
-        self._prelude_builder = prelude_builder or S23PaperLivePreludeBuilder()
+        self._prelude_builder = prelude_builder or PaperLivePreludeBuilder()
         self._position_state_store = position_state_store or S23PaperPositionStateStore()
 
     def collect_from_files(
@@ -211,7 +219,7 @@ class S23FyersSnapshotCollector:
         underlying_bars: tuple[UnderlyingHistoryBar, ...]
         daily_bars: tuple[UnderlyingHistoryBar, ...]
         option_chain_snapshot: OptionChainSnapshotEvent
-        prelude_result: S23PaperLivePreludeResult | None = None
+        prelude_result: PaperLivePreludeResult | None = None
         try:
             active_adapter.connect()
             underlying_quote = active_adapter.get_underlying_quote(
@@ -308,7 +316,7 @@ class S23FyersSnapshotCollector:
                 )
             try:
                 prelude_result = self._prelude_builder.build(
-                    S23PaperLivePreludeRequest(
+                    PaperLivePreludeRequest(
                         strategy_rule=strategy,
                         strategy_branch=str(runtime_fixture["strategy_branch"]),
                         monthly_status_result=self._build_monthly_status_result(
@@ -345,7 +353,7 @@ class S23FyersSnapshotCollector:
                         ),
                     )
                 )
-            except S23LivePreludeError as exc:
+            except PaperLivePreludeError as exc:
                 raise S23FyersSnapshotCollectorError(exc.code, str(exc)) from exc
 
             generated_prelude_events_path = session_directory / "generated_live_prelude_events.jsonl"
@@ -444,7 +452,7 @@ class S23FyersSnapshotCollector:
             generated_prelude_events_path=generated_prelude_events_path,
             generated_prelude_provenance_path=generated_prelude_provenance_path,
             generated_governance_events_path=generated_governance_events_path,
-            collected_inputs=S23CollectedSnapshotInputs(
+            collected_inputs=PaperCollectedSnapshotInputs(
                 session_context=session_context,
                 strategy_rule=strategy,
                 underlying_quote=underlying_quote,
@@ -608,11 +616,11 @@ class S23FyersSnapshotCollector:
         *,
         config: PaperLiveIngressConfig,
         runtime_fixture: dict[str, Any] | None,
-    ) -> S23PaperPreludeSessionContext:
+    ) -> PaperPreludeSessionContext:
         if runtime_fixture is not None:
             session_date = self._parse_date(runtime_fixture["session_date"])
             generated_at = self._parse_datetime(runtime_fixture["generated_at"])
-            return S23PaperPreludeSessionContext(
+            return PaperPreludeSessionContext(
                 session_date=session_date,
                 timezone=str(runtime_fixture.get("timezone", config.broker.timezone)),
                 generated_at=generated_at,
@@ -628,7 +636,7 @@ class S23FyersSnapshotCollector:
             )
         timezone = self._resolve_timezone(config.broker.timezone)
         now = datetime.now(timezone) if timezone is not None else datetime.now()
-        return S23PaperPreludeSessionContext(
+        return PaperPreludeSessionContext(
             session_date=now.date(),
             timezone=config.broker.timezone,
             generated_at=now,
@@ -991,11 +999,11 @@ class S23FyersSnapshotCollector:
     def _build_snapshots(
         self,
         payload: list[dict[str, Any]],
-    ) -> tuple[S23PaperSnapshotInput, ...]:
-        snapshots: list[S23PaperSnapshotInput] = []
+    ) -> tuple[PaperSnapshotInput, ...]:
+        snapshots: list[PaperSnapshotInput] = []
         for item in payload:
             snapshots.append(
-                S23PaperSnapshotInput(
+                PaperSnapshotInput(
                     snapshot_label=SnapshotLabel(str(item["snapshot_label"])),
                     open=self._optional_float(item.get("open")),
                     high=self._optional_float(item.get("high")),
@@ -1112,3 +1120,6 @@ class S23FyersSnapshotCollector:
         if value in (None, ""):
             return None
         return float(value)
+
+
+PaperFyersSnapshotCollector = S23FyersSnapshotCollector
