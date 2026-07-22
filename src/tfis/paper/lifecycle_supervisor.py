@@ -7,10 +7,10 @@ from pathlib import Path
 from .expiry_governance import PaperExpiryGovernance
 from .models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from .order_state import (
-    S23PaperOrderEvent,
-    S23PaperOrderState,
-    S23PaperOrderStateStore,
-    S23PaperOrderStatus,
+    PaperOrderEvent,
+    PaperOrderState,
+    PaperOrderStateStore,
+    PaperOrderStatus,
     paper_order_is_waiting_for_trigger,
 )
 from .position_manager import (
@@ -19,8 +19,8 @@ from .position_manager import (
     PaperPositionManagerResult,
     PaperPositionManagerStatus,
 )
-from .position_state import S23PaperPositionState
-from .trade_ledger import S23PaperTradeLedgerStore
+from .position_state import PaperPositionState
+from .trade_ledger import PaperTradeLedgerStore
 from .trade_ledger import paper_trade_manager_status_is_lifecycle_terminal
 
 
@@ -32,17 +32,17 @@ TERMINAL_POSITION_MANAGER_STATUSES = {
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperLifecycleSupervisorContext:
+class PaperLifecycleSupervisorContext:
     session_directory: Path
     session_date: date
     trade_id: str
     selected_contract_symbol: str
-    order_state: S23PaperOrderState | None = None
-    position_state: S23PaperPositionState | None = None
+    order_state: PaperOrderState | None = None
+    position_state: PaperPositionState | None = None
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperLifecycleSupervisorStep:
+class PaperLifecycleSupervisorStep:
     status: str
     reason_code: str
     fill_price: float | None = None
@@ -51,35 +51,35 @@ class S23PaperLifecycleSupervisorStep:
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperLifecycleSupervisorResult:
-    context: S23PaperLifecycleSupervisorContext
-    steps: tuple[S23PaperLifecycleSupervisorStep, ...]
+class PaperLifecycleSupervisorResult:
+    context: PaperLifecycleSupervisorContext
+    steps: tuple[PaperLifecycleSupervisorStep, ...]
     terminal: bool = False
 
     @property
-    def final_step(self) -> S23PaperLifecycleSupervisorStep:
+    def final_step(self) -> PaperLifecycleSupervisorStep:
         return self.steps[-1]
 
 
-class S23PaperLifecycleSupervisor:
+class PaperLifecycleSupervisor:
     def __init__(
         self,
         *,
         strategy_code: str = "S23",
-        order_store: S23PaperOrderStateStore | None = None,
+        order_store: PaperOrderStateStore | None = None,
         position_manager: PaperPositionManager | None = None,
     ) -> None:
-        self._order_store = order_store or S23PaperOrderStateStore()
+        self._order_store = order_store or PaperOrderStateStore()
         self._position_manager = position_manager or build_paper_position_manager(
             strategy_code=strategy_code,
         )
 
     def expire_waiting_order_from_previous_session(
         self,
-        context: S23PaperLifecycleSupervisorContext,
+        context: PaperLifecycleSupervisorContext,
         *,
         evaluated_at: datetime,
-    ) -> S23PaperLifecycleSupervisorResult | None:
+    ) -> PaperLifecycleSupervisorResult | None:
         order_state = context.order_state
         if (
             context.position_state is not None
@@ -98,7 +98,7 @@ class S23PaperLifecycleSupervisor:
                 "being carried forward."
             ),
         )
-        return S23PaperLifecycleSupervisorResult(
+        return PaperLifecycleSupervisorResult(
             context=self._replace_order_context(context, order_state=order_state),
             steps=(self._step_from_order_event(order_event),),
             terminal=True,
@@ -106,7 +106,7 @@ class S23PaperLifecycleSupervisor:
 
     def supervise(
         self,
-        context: S23PaperLifecycleSupervisorContext,
+        context: PaperLifecycleSupervisorContext,
         *,
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
@@ -114,7 +114,7 @@ class S23PaperLifecycleSupervisor:
         expiry_governance: PaperExpiryGovernance,
         allow_reverse_on_stoploss: bool = False,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperLifecycleSupervisorResult:
+    ) -> PaperLifecycleSupervisorResult:
         if context.position_state is None:
             return self._supervise_waiting_order(
                 context,
@@ -136,7 +136,7 @@ class S23PaperLifecycleSupervisor:
 
     def _supervise_waiting_order(
         self,
-        context: S23PaperLifecycleSupervisorContext,
+        context: PaperLifecycleSupervisorContext,
         *,
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
@@ -144,7 +144,7 @@ class S23PaperLifecycleSupervisor:
         expiry_governance: PaperExpiryGovernance,
         allow_reverse_on_stoploss: bool,
         provenance_source_ids: tuple[str, ...],
-    ) -> S23PaperLifecycleSupervisorResult:
+    ) -> PaperLifecycleSupervisorResult:
         order_state = context.order_state
         if order_state is None:
             raise RuntimeError("Waiting-order supervision requires an order_state.")
@@ -154,10 +154,10 @@ class S23PaperLifecycleSupervisor:
             market_events=market_events,
             evaluated_at=evaluated_at,
         )
-        steps: list[S23PaperLifecycleSupervisorStep] = [self._step_from_order_event(order_event)]
+        steps: list[PaperLifecycleSupervisorStep] = [self._step_from_order_event(order_event)]
         next_context = self._replace_order_context(context, order_state=order_state)
 
-        if order_state.status is not S23PaperOrderStatus.PAPER_ORDER_FILLED:
+        if order_state.status is not PaperOrderStatus.PAPER_ORDER_FILLED:
             if evaluated_at.timetz().replace(tzinfo=None) >= watch_cutoff_time:
                 order_state, order_event, _state_path, _events_path = self._order_store.mark_not_filled(
                     context.session_directory,
@@ -170,12 +170,12 @@ class S23PaperLifecycleSupervisor:
                     ),
                 )
                 steps.append(self._step_from_order_event(order_event))
-                return S23PaperLifecycleSupervisorResult(
+                return PaperLifecycleSupervisorResult(
                     context=self._replace_order_context(context, order_state=order_state),
                     steps=tuple(steps),
                     terminal=True,
                 )
-            return S23PaperLifecycleSupervisorResult(
+            return PaperLifecycleSupervisorResult(
                 context=next_context,
                 steps=tuple(steps),
                 terminal=False,
@@ -187,10 +187,10 @@ class S23PaperLifecycleSupervisor:
             provenance_source_ids=("paper_order_state.json", "s23_paper_position_watch"),
         )
         steps.append(self._step_from_position_manager_result(opened, entry_price=opened.state.entry_price))
-        position_context = S23PaperLifecycleSupervisorContext(
+        position_context = PaperLifecycleSupervisorContext(
             session_directory=context.session_directory,
             session_date=context.session_date,
-            trade_id=S23PaperTradeLedgerStore.trade_id_for_state(opened.state),
+            trade_id=PaperTradeLedgerStore.trade_id_for_state(opened.state),
             selected_contract_symbol=opened.state.selected_contract_symbol,
             position_state=opened.state,
         )
@@ -202,7 +202,7 @@ class S23PaperLifecycleSupervisor:
             allow_reverse_on_stoploss=allow_reverse_on_stoploss,
             provenance_source_ids=provenance_source_ids,
         )
-        return S23PaperLifecycleSupervisorResult(
+        return PaperLifecycleSupervisorResult(
             context=position_result.context,
             steps=tuple([*steps, *position_result.steps]),
             terminal=position_result.terminal,
@@ -210,14 +210,14 @@ class S23PaperLifecycleSupervisor:
 
     def _supervise_open_position(
         self,
-        context: S23PaperLifecycleSupervisorContext,
+        context: PaperLifecycleSupervisorContext,
         *,
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
         expiry_governance: PaperExpiryGovernance,
         allow_reverse_on_stoploss: bool,
         provenance_source_ids: tuple[str, ...],
-    ) -> S23PaperLifecycleSupervisorResult:
+    ) -> PaperLifecycleSupervisorResult:
         if context.position_state is None:
             raise RuntimeError("Open-position supervision requires a position_state.")
         result = self._position_manager.process_session(
@@ -229,14 +229,14 @@ class S23PaperLifecycleSupervisor:
             allow_reverse_on_stoploss=allow_reverse_on_stoploss,
             provenance_source_ids=provenance_source_ids,
         )
-        next_context = S23PaperLifecycleSupervisorContext(
+        next_context = PaperLifecycleSupervisorContext(
             session_directory=context.session_directory,
             session_date=context.session_date,
             trade_id=context.trade_id,
             selected_contract_symbol=result.state.selected_contract_symbol,
             position_state=result.state,
         )
-        return S23PaperLifecycleSupervisorResult(
+        return PaperLifecycleSupervisorResult(
             context=next_context,
             steps=(self._step_from_position_manager_result(result),),
             terminal=result.status in TERMINAL_POSITION_MANAGER_STATUSES,
@@ -244,11 +244,11 @@ class S23PaperLifecycleSupervisor:
 
     @staticmethod
     def _replace_order_context(
-        context: S23PaperLifecycleSupervisorContext,
+        context: PaperLifecycleSupervisorContext,
         *,
-        order_state: S23PaperOrderState,
-    ) -> S23PaperLifecycleSupervisorContext:
-        return S23PaperLifecycleSupervisorContext(
+        order_state: PaperOrderState,
+    ) -> PaperLifecycleSupervisorContext:
+        return PaperLifecycleSupervisorContext(
             session_directory=context.session_directory,
             session_date=context.session_date,
             trade_id=context.trade_id,
@@ -257,8 +257,8 @@ class S23PaperLifecycleSupervisor:
         )
 
     @staticmethod
-    def _step_from_order_event(event: S23PaperOrderEvent) -> S23PaperLifecycleSupervisorStep:
-        return S23PaperLifecycleSupervisorStep(
+    def _step_from_order_event(event: PaperOrderEvent) -> PaperLifecycleSupervisorStep:
+        return PaperLifecycleSupervisorStep(
             status=event.status.value,
             reason_code=event.reason_code,
             fill_price=event.fill_price,
@@ -269,8 +269,8 @@ class S23PaperLifecycleSupervisor:
         result: PaperPositionManagerResult,
         *,
         entry_price: float | None = None,
-    ) -> S23PaperLifecycleSupervisorStep:
-        return S23PaperLifecycleSupervisorStep(
+    ) -> PaperLifecycleSupervisorStep:
+        return PaperLifecycleSupervisorStep(
             status=result.status.value,
             reason_code=result.event.reason_code,
             entry_price=entry_price,
@@ -278,10 +278,10 @@ class S23PaperLifecycleSupervisor:
         )
 
 
-PaperLifecycleSupervisorContext = S23PaperLifecycleSupervisorContext
-PaperLifecycleSupervisorStep = S23PaperLifecycleSupervisorStep
-PaperLifecycleSupervisorResult = S23PaperLifecycleSupervisorResult
-PaperLifecycleSupervisor = S23PaperLifecycleSupervisor
+S23PaperLifecycleSupervisorContext = PaperLifecycleSupervisorContext
+S23PaperLifecycleSupervisorStep = PaperLifecycleSupervisorStep
+S23PaperLifecycleSupervisorResult = PaperLifecycleSupervisorResult
+S23PaperLifecycleSupervisor = PaperLifecycleSupervisor
 
 
 __all__ = [

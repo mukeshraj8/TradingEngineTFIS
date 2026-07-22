@@ -39,11 +39,6 @@ $Host.UI.RawUI.WindowTitle = "TFIS S21 Morning Supervised Decision"
 
 $pythonExe = Resolve-TfisPythonExecutable -RepoRoot $repoRoot
 
-if (Test-TfisTradingHolidayDate -RepoRoot $repoRoot -EffectiveDate $Date -CalendarPath $TradingHolidayCalendar) {
-    Write-Host "Skipping S21 supervised decision because $($Date.ToString('yyyy-MM-dd')) is configured as a trading holiday."
-    exit 0
-}
-
 $taskContext = New-TfisTaskLaunchContext `
     -RepoRoot $repoRoot `
     -RelativeLogDirectory "tmp\s21_fyers_morning_supervised_decision\_task_launch_logs" `
@@ -62,7 +57,53 @@ function Write-LaunchLog {
         -TimestampFormat "yyyy-MM-ddTHH:mm:sszzz"
 }
 
-$effectiveRunDate = $Date.Date
+function Invoke-S21SupervisedDecisionProcess {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object[]]$ArgumentList,
+        [Parameter(Mandatory = $true)]
+        [string]$StdoutPath,
+        [Parameter(Mandatory = $true)]
+        [string]$StderrPath
+    )
+
+    $process = Start-TfisHiddenPythonProcess `
+        -PythonExecutable $pythonExe `
+        -ArgumentList $ArgumentList `
+        -WorkingDirectory $repoRoot `
+        -StdoutPath $StdoutPath `
+        -StderrPath $StderrPath
+
+    $stdoutLines = @()
+    $stderrLines = @()
+    if (Test-Path $StdoutPath) {
+        $stdoutLines = @(Get-Content -Path $StdoutPath)
+    }
+    if (Test-Path $StderrPath) {
+        $stderrLines = @(Get-Content -Path $StderrPath)
+    }
+
+    return [pscustomobject]@{
+        ExitCode = $process.ExitCode
+        StdoutLines = $stdoutLines
+        StderrLines = $stderrLines
+    }
+}
+
+$effectiveRunDate = Get-TfisEffectiveRunDate -RunDate $Date
+$noRunReason = Get-TfisNoRunReason -RepoRoot $repoRoot -EffectiveDate $effectiveRunDate -CalendarPath $TradingHolidayCalendar
+if ($noRunReason) {
+    Show-TfisTaskBanner `
+        -Title "TFIS S21 MORNING SUPERVISED DECISION" `
+        -RepoRoot $repoRoot `
+        -LogPath $launchLogPath
+    Write-LaunchLog "Starting TFIS S21 morning supervised decision wrapper."
+    Write-LaunchLog $noRunReason
+    Write-LaunchLog "Skipping TFIS S21 morning decision."
+    Write-LaunchLog "Wrapper finished with exit code 0."
+    exit 0
+}
+
 $carryForwardStateDirArg = Resolve-TfisPositionStateDirectoryPath -RepoRoot $repoRoot -PathText $CarryForwardStateDir
 if (-not $carryForwardStateDirArg) {
     $discoveredCarryForwardStatePaths = @(
@@ -109,25 +150,77 @@ if ($carryForwardStateDirArg) {
     $args += $carryForwardStateDirArg
 }
 
+Show-TfisTaskBanner `
+    -Title "TFIS S21 MORNING SUPERVISED DECISION" `
+    -RepoRoot $repoRoot `
+    -LogPath $launchLogPath
+Write-LaunchLog "Starting TFIS S21 morning supervised decision wrapper."
+Write-LaunchLog "Python executable: $pythonExe"
+Write-LaunchLog "TfisRoot: $TfisRoot"
+Write-LaunchLog "ArtifactRoot: $ArtifactRoot"
+Write-LaunchLog "SessionIdPrefix: $SessionIdPrefix"
+Write-LaunchLog "Supervised decision stdout: $pythonOutputPath"
+Write-LaunchLog "Supervised decision stderr: $pythonErrorPath"
 Write-LaunchLog "Starting S21 supervised decision Python process."
-$process = Start-TfisHiddenPythonProcess `
-    -PythonExecutable $pythonExe `
-    -ArgumentList $args `
-    -WorkingDirectory $repoRoot `
-    -StdoutPath $pythonOutputPath `
-    -StderrPath $pythonErrorPath
-$exitCode = $process.ExitCode
-Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."
+Write-LaunchLog "Effective run date: $($effectiveRunDate.ToString('yyyy-MM-dd'))"
 
-if ($exitCode -ne 0) {
-    if (Test-Path $pythonErrorPath) {
-        Get-Content -Path $pythonErrorPath | ForEach-Object { Write-Host $_ }
+try {
+    $result = Invoke-S21SupervisedDecisionProcess `
+        -ArgumentList $args `
+        -StdoutPath $pythonOutputPath `
+        -StderrPath $pythonErrorPath
+    $exitCode = $result.ExitCode
+    $stdoutLines = $result.StdoutLines
+    $stderrLines = $result.StderrLines
+    $stdoutLines | ForEach-Object {
+        Write-LaunchLog ("PYTHON: {0}" -f $_)
     }
-    exit $exitCode
-}
+    $stderrLines | ForEach-Object {
+        Write-LaunchLog ("PYTHON_ERR: {0}" -f $_)
+    }
 
-if (Test-Path $pythonOutputPath) {
-    Get-Content -Path $pythonOutputPath | ForEach-Object { Write-Host $_ }
-}
+    $tokenRaceDetected = (
+        (-not $SkipRefresh) -and
+        ($exitCode -ne 0) -and
+        ($stderrLines -match "invalid auth code").Count -gt 0
+    )
+    if ($tokenRaceDetected) {
+        Write-LaunchLog "Detected FYERS auth-code race during S21 refresh; retrying once with --skip-refresh."
+        $retryStamp = "{0}_retry_skip_refresh" -f $stamp
+        $retryOutputPath = Join-Path $logDir "run_s21_banknifty_0916_supervised_decision_$retryStamp.out.log"
+        $retryErrorPath = Join-Path $logDir "run_s21_banknifty_0916_supervised_decision_$retryStamp.err.log"
+        $retryArgs = @($args + "--skip-refresh")
+        $retryResult = Invoke-S21SupervisedDecisionProcess `
+            -ArgumentList $retryArgs `
+            -StdoutPath $retryOutputPath `
+            -StderrPath $retryErrorPath
+        $exitCode = $retryResult.ExitCode
+        $stdoutLines = $retryResult.StdoutLines
+        $stderrLines = $retryResult.StderrLines
+        $stdoutLines | ForEach-Object {
+            Write-LaunchLog ("PYTHON_RETRY: {0}" -f $_)
+        }
+        $stderrLines | ForEach-Object {
+            Write-LaunchLog ("PYTHON_RETRY_ERR: {0}" -f $_)
+        }
+        $pythonOutputPath = $retryOutputPath
+        $pythonErrorPath = $retryErrorPath
+    }
 
-exit 0
+    Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."
+
+    if ($exitCode -ne 0) {
+        $stderrLines | ForEach-Object { Write-Host $_ }
+        Write-LaunchLog "Wrapper finished with exit code $exitCode."
+        exit $exitCode
+    }
+
+    $stdoutLines | ForEach-Object { Write-Host $_ }
+
+    Write-LaunchLog "Wrapper finished with exit code 0."
+    exit 0
+}
+catch {
+    Write-LaunchLog ("Wrapper failed: {0}" -f $_.Exception.Message)
+    throw
+}

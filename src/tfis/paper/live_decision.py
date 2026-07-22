@@ -28,7 +28,7 @@ from .live_prelude import (
     PaperPreludeMode,
 )
 from .models import SelectedContractBarEvent, SnapshotLabel
-from .position_state import S23PaperPositionState
+from .position_state import PaperPositionState
 from .runtime_input_derivation import (
     PaperDecisionReferencePacket,
     PaperDerivedRuntimeInputs,
@@ -163,7 +163,7 @@ class S23PaperLiveDecisionBuilder:
         strategy_rule: StrategyRule,
         reference_packet: PaperDecisionReferencePacket,
         collected_inputs: PaperCollectedSnapshotInputs,
-        carry_forward_position: S23PaperPositionState | None = None,
+        carry_forward_position: PaperPositionState | None = None,
         smoke_override_enabled: bool = False,
         smoke_override_selected_contract_symbol: str | None = None,
         allow_branch_pinned_unknown_monthly_status: bool = False,
@@ -242,7 +242,7 @@ class S23PaperLiveDecisionBuilder:
         reference_packet: PaperDecisionReferencePacket,
         derived_inputs: PaperDerivedRuntimeInputs,
         collected_inputs: PaperCollectedSnapshotInputs,
-        carry_forward_position: S23PaperPositionState | None,
+        carry_forward_position: PaperPositionState | None,
         smoke_override_enabled: bool,
         smoke_override_selected_contract_symbol: str | None,
         allow_branch_pinned_unknown_monthly_status: bool,
@@ -636,9 +636,8 @@ class S23PaperLiveDecisionBuilder:
             lines.append(
                 f"- `{candidate['symbol']}` strike `{candidate['strike']}` premium `{candidate['ltp']}` "
                 f"OI `{candidate['oi']}` -> `{candidate['status']}` ({reason_text})"
-            )
+        )
         return "\n".join(lines) + "\n"
-
     def _build_summary(
         self,
         *,
@@ -1082,3 +1081,8 @@ class S23PaperLiveDecisionBuilder:
                 }
             )
         return tuple(items)
+
+
+PaperLiveDecisionError = S23PaperLiveDecisionError
+PaperLiveDecisionResult = S23PaperLiveDecisionResult
+PaperLiveDecisionBuilder = S23PaperLiveDecisionBuilder

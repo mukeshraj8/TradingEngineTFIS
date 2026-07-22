@@ -9,6 +9,7 @@ from tfis.paper import (
     PaperFreshEntryPromotionSummary,
     fresh_decision_launch_marker_path,
     handoff_fresh_entry_requirement,
+    load_fresh_decision_launch_marker,
 )
 
 
@@ -90,3 +91,51 @@ def test_handoff_fresh_entry_requirement_spawns_when_promotion_unavailable(tmp_p
     )
     assert marker_payload["runner_script"] == "run_s21_banknifty_0916_supervised_decision.py"
     assert marker_payload["pid"] == 4321
+
+
+def test_load_fresh_decision_launch_marker_reads_promotion_marker(tmp_path: Path) -> None:
+    session_directory = tmp_path / "closed-session"
+    session_directory.mkdir()
+    fresh_decision_launch_marker_path(session_directory).write_text(
+        json.dumps(
+            {
+                "launched_at": "2026-07-21T12:58:00+05:30",
+                "strategy_code": "S23",
+                "trade_id": "trade-3",
+                "mode": "promoted_existing_blocked_decision",
+                "promoted_session_dir": str(tmp_path / "promoted"),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    marker = load_fresh_decision_launch_marker(session_directory)
+
+    assert marker is not None
+    assert marker.trade_id == "trade-3"
+    assert marker.mode == "promoted_existing_blocked_decision"
+    assert marker.promoted_session_dir == str(tmp_path / "promoted")
+
+
+def test_load_fresh_decision_launch_marker_reads_spawn_marker(tmp_path: Path) -> None:
+    session_directory = tmp_path / "closed-session"
+    session_directory.mkdir()
+    fresh_decision_launch_marker_path(session_directory).write_text(
+        json.dumps(
+            {
+                "launched_at": "2026-07-21T12:58:00+05:30",
+                "strategy_code": "S21",
+                "trade_id": "trade-4",
+                "runner_script": "run_s21_banknifty_0916_supervised_decision.py",
+                "pid": 7890,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    marker = load_fresh_decision_launch_marker(session_directory)
+
+    assert marker is not None
+    assert marker.trade_id == "trade-4"
+    assert marker.runner_script == "run_s21_banknifty_0916_supervised_decision.py"
+    assert marker.pid == 7890

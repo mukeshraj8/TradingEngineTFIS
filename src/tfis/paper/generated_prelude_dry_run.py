@@ -15,9 +15,9 @@ from tfis.monthly_status import MonthlyStatusResult
 
 from .ingress_dry_run import (
     PaperEvent,
-    S23NormalizedPaperEventLoader,
-    S23PaperIngressDryRunArtifactSet,
-    S23PaperIngressDryRunRunner,
+    PaperNormalizedEventLoader,
+    PaperIngressDryRunArtifactSet,
+    PaperIngressDryRunRunner,
 )
 from .live_ingress import PaperLiveIngressConfig
 from .live_prelude import (
@@ -35,8 +35,8 @@ from .models import (
     SnapshotLabel,
     UnderlyingQuoteEvent,
 )
-from .position_state import S23PaperPositionStateStore
-from .review import S23PaperSessionReviewer
+from .position_state import PaperPositionStateStore
+from .review import PaperSessionReviewer
 from .expiry_governance import DeterministicExpiryCalendar, PaperExpiryGovernance
 
 
@@ -59,7 +59,7 @@ class S23GeneratedPreludeDryRunProvenance:
 
 @dataclass(frozen=True, slots=True)
 class S23GeneratedPreludeDryRunArtifactSet:
-    ingress_artifacts: S23PaperIngressDryRunArtifactSet
+    ingress_artifacts: PaperIngressDryRunArtifactSet
     generated_prelude_events_path: Path
     combined_events_path: Path
     provenance_path: Path
@@ -76,17 +76,17 @@ class S23GeneratedPreludeDryRunRunner:
     def __init__(
         self,
         *,
-        dry_run_runner: S23PaperIngressDryRunRunner | None = None,
+        dry_run_runner: PaperIngressDryRunRunner | None = None,
         prelude_builder: PaperLivePreludeBuilder | None = None,
-        reviewer: S23PaperSessionReviewer | None = None,
-        position_state_store: S23PaperPositionStateStore | None = None,
+        reviewer: PaperSessionReviewer | None = None,
+        position_state_store: PaperPositionStateStore | None = None,
     ) -> None:
-        self._dry_run_runner = dry_run_runner or S23PaperIngressDryRunRunner(
+        self._dry_run_runner = dry_run_runner or PaperIngressDryRunRunner(
             source_mode="generated_live_prelude_dry_run"
         )
         self._prelude_builder = prelude_builder or PaperLivePreludeBuilder()
-        self._reviewer = reviewer or S23PaperSessionReviewer()
-        self._position_state_store = position_state_store or S23PaperPositionStateStore()
+        self._reviewer = reviewer or PaperSessionReviewer()
+        self._position_state_store = position_state_store or PaperPositionStateStore()
 
     def run_from_files(
         self,
@@ -102,7 +102,7 @@ class S23GeneratedPreludeDryRunRunner:
         strategy = load_strategy_rule(strategy_path)
         config = PaperLiveIngressConfig.from_yaml(ingress_config_path)
         runtime_fixture = self._load_runtime_fixture(runtime_fixture_path)
-        market_events = S23NormalizedPaperEventLoader().load_jsonl(market_events_jsonl)
+        market_events = PaperNormalizedEventLoader().load_jsonl(market_events_jsonl)
 
         session_context = self._build_session_context(runtime_fixture)
         option_chain_snapshot = self._select_option_chain_snapshot(

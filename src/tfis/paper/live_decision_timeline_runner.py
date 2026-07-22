@@ -9,8 +9,11 @@ from typing import Callable
 from tfis.importers import load_strategy_rule
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
 
-from .fyers_snapshot_collector import S23FyersSnapshotArtifactSet, S23FyersSnapshotCollector
-from .live_decision import S23PaperLiveDecisionBuilder
+from .fyers_snapshot_collector import (
+    PaperFyersSnapshotArtifactSet,
+    PaperFyersSnapshotCollector,
+)
+from .live_decision import PaperLiveDecisionBuilder
 from .live_ingress import PaperLiveIngressConfig
 from .live_decision_runner import prepare_live_decision_runtime_environment
 from .live_decision_schedule import build_schedule_note, compute_schedule_delay_seconds
@@ -19,12 +22,13 @@ from .live_decision_timeline import (
     PaperLiveDecisionTimelineResult,
     PaperLiveDecisionTimelineStage,
 )
-from .order_state import S23PaperOrderStateStore
-from .position_state import S23PaperPositionStateStore
+from .order_state import PaperOrderStateStore
+from .position_state import PaperPositionStateStore
 from .runtime_input_derivation import load_paper_decision_reference_packet
 
 
 load_s23_decision_reference_packet = load_paper_decision_reference_packet
+S23FyersSnapshotCollector = PaperFyersSnapshotCollector
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,7 +149,7 @@ def run_s23_morning_supervised_decision(
     ingress_config = PaperLiveIngressConfig.from_yaml(config_path)
     base_reference_packet = load_s23_decision_reference_packet(reference_packet_path)
     collector = S23FyersSnapshotCollector(artifact_root=artifact_root)
-    decision_builder = S23PaperLiveDecisionBuilder()
+    decision_builder = PaperLiveDecisionBuilder()
     timeline_builder = PaperLiveDecisionTimelineBuilder(decision_builder=decision_builder)
     dashboard_builder = _build_dashboard_builder(
         artifact_root=artifact_root,
@@ -154,7 +158,7 @@ def run_s23_morning_supervised_decision(
         session_id_prefix=session_id_prefix,
     )
     carry_forward_position = (
-        S23PaperPositionStateStore().load_state(carry_forward_state_dir)
+        PaperPositionStateStore().load_state(carry_forward_state_dir)
         if carry_forward_state_dir is not None
         else None
     )
@@ -176,7 +180,7 @@ def run_s23_morning_supervised_decision(
     final_decision_trigger_time_by_branch: dict[str, str] = {}
     final_decision_stage_by_branch: dict[str, str] = {}
     final_decision_reason_by_branch: dict[str, str] = {}
-    last_snapshot_artifacts: S23FyersSnapshotArtifactSet | None = None
+    last_snapshot_artifacts: PaperFyersSnapshotArtifactSet | None = None
 
     for checkpoint in stage_checkpoints:
         now = now_fn()
@@ -400,7 +404,7 @@ def run_s23_morning_supervised_decision(
                 )
                 if item
             )
-            _order_state, order_state_path, _order_events_path = S23PaperOrderStateStore().create_waiting_order_from_live_decision(
+            _order_state, order_state_path, _order_events_path = PaperOrderStateStore().create_waiting_order_from_live_decision(
                 output_dir,
                 strategy_rule=strategy_rule,
                 decision=decision_result,

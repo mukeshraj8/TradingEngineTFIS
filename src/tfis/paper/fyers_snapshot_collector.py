@@ -9,8 +9,7 @@ from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from tfis.brokers.base import BrokerAdapter, BrokerAdapterError, BrokerCredentialsError
-from tfis.brokers.fyers import FyersBrokerAdapter, FyersCredentials
+from tfis.brokers.base import BrokerAdapter, BrokerAdapterError
 from tfis.domain import ExpiryType, MarketLevels, StrategyRule
 from tfis.domain.enums import MonthlyStatus
 from tfis.importers import load_strategy_rule
@@ -19,6 +18,12 @@ from tfis.monthly_status import MonthlyStatusResult
 
 from .expiry_governance import DeterministicExpiryCalendar, PaperExpiryGovernance
 from .live_ingress import PaperLiveIngressConfig
+from .lifecycle_runtime_config import (
+    PaperLifecycleBrokerConfig,
+    PaperLifecycleRuntimeConfigError,
+    build_paper_broker_adapter_from_broker_config,
+    paper_broker_credentials_available,
+)
 from .live_prelude import (
     PaperLivePreludeBuilder,
     PaperLivePreludeError,
@@ -35,7 +40,7 @@ from .models import (
     SnapshotLabel,
     UnderlyingQuoteEvent,
 )
-from .position_state import S23PaperPositionStateStore
+from .position_state import PaperPositionStateStore
 
 
 _ARTIFACT_VERSION = 1
@@ -148,11 +153,11 @@ class S23FyersSnapshotCollector:
         *,
         artifact_root: str | Path = _DEFAULT_ARTIFACT_ROOT,
         prelude_builder: PaperLivePreludeBuilder | None = None,
-        position_state_store: S23PaperPositionStateStore | None = None,
+        position_state_store: PaperPositionStateStore | None = None,
     ) -> None:
         self._artifact_root = Path(artifact_root)
         self._prelude_builder = prelude_builder or PaperLivePreludeBuilder()
-        self._position_state_store = position_state_store or S23PaperPositionStateStore()
+        self._position_state_store = position_state_store or PaperPositionStateStore()
 
     def collect_from_files(
         self,
@@ -597,10 +602,22 @@ class S23FyersSnapshotCollector:
                 )
             )
         if config.broker.payload_fixture_path is None and not adapter_supplied:
-            try:
-                FyersCredentials.from_env()
-            except BrokerCredentialsError as exc:
-                issues.append(self._issue("missing_broker_credentials", str(exc)))
+            credentials_ready, message = paper_broker_credentials_available(
+                PaperLifecycleBrokerConfig(
+                    provider=config.broker.provider,
+                    timezone=config.broker.timezone,
+                    payload_fixture_path=config.broker.payload_fixture_path,
+                    capture_stream_events=config.broker.capture_stream_events,
+                    option_chain_strike_count=config.broker.option_chain_strike_count,
+                )
+            )
+            if not credentials_ready:
+                issues.append(
+                    self._issue(
+                        "missing_broker_credentials",
+                        message or "Broker credentials are unavailable.",
+                    )
+                )
         else:
             issues.append(
                 self._issue(
@@ -917,20 +934,21 @@ class S23FyersSnapshotCollector:
             return None
 
     def _build_adapter(self, config: PaperLiveIngressConfig) -> BrokerAdapter:
-        if config.broker.provider != "fyers":
+        try:
+            return build_paper_broker_adapter_from_broker_config(
+                PaperLifecycleBrokerConfig(
+                    provider=config.broker.provider,
+                    timezone=config.broker.timezone,
+                    payload_fixture_path=config.broker.payload_fixture_path,
+                    capture_stream_events=config.broker.capture_stream_events,
+                    option_chain_strike_count=config.broker.option_chain_strike_count,
+                )
+            )
+        except PaperLifecycleRuntimeConfigError as exc:
             raise S23FyersSnapshotCollectorError(
                 "UNSUPPORTED_BROKER_PROVIDER",
                 "Snapshot preflight currently supports broker.provider=fyers only.",
-            )
-        if config.broker.payload_fixture_path:
-            return FyersBrokerAdapter.from_payload_file(
-                config.broker.payload_fixture_path,
-                source_timezone=config.broker.timezone,
-            )
-        return FyersBrokerAdapter(
-            source_timezone=config.broker.timezone,
-            option_chain_strike_count=config.broker.option_chain_strike_count,
-        )
+            ) from exc
 
     @staticmethod
     def _derive_session_id(

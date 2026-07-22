@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import date
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
@@ -15,10 +16,13 @@ from tfis.dashboard.operator_dashboard import (
     DashboardTradeLedgerRow,
 )
 from tfis.paper import (
+    build_paper_live_state_store_from_yaml,
     paper_trade_latest_active_rows,
     paper_trade_select_display_row,
     paper_trade_visible_for_latest_session,
 )
+from tfis.paper.operator_controls import global_pause_marker_path, paper_runtime_control_root, strategy_pause_marker_path
+from tfis.paper.operator_controls import operator_control_event_log_path
 
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -52,7 +56,50 @@ def _s21_strategy_config(artifact_root: Path) -> StrategyDashboardConfig:
     )
 
 
-def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
+def _write_runtime_targets_config(
+    repo_root: Path,
+    *,
+    strategy_code: str,
+    config_path: Path,
+    artifact_root: Path,
+) -> None:
+    targets_path = repo_root / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    targets_path.parent.mkdir(parents=True, exist_ok=True)
+    relative_config = config_path.relative_to(repo_root).as_posix()
+    relative_artifact_root = artifact_root.relative_to(repo_root).as_posix()
+    targets_path.write_text(
+        "\n".join(
+            (
+                "targets:",
+                f"  - strategy_code: {strategy_code}",
+                f"    config_path: {relative_config}",
+                f"    artifact_root: {relative_artifact_root}",
+                "    process_lock_root: tmp/process_locks/test",
+                "    strategy_path: config/strategies/options_sell/test",
+                "    reference_packet_path: config/reference_packets/test.json",
+                "    session_id_prefix: test-session",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_test.py",
+                "    wrapper_script_path: scripts/start_test.ps1",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+
+def test_dashboard_builds_from_stage_artifacts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-06-10T09:31:30+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
     artifact_root = tmp_path / "artifacts"
     day_dir = artifact_root / "2026-06-10"
     stage_dir = day_dir / "s23-fyers-morning-supervised-decision-0916-2026-06-10"
@@ -733,7 +780,7 @@ def test_dashboard_builds_from_stage_artifacts(tmp_path: Path) -> None:
     assert "PID 9876" in strategy_html
     assert "Source fixture_quote_feed" in strategy_html
     assert "Source fixture_order_feed" in strategy_html
-    assert "RECORDED" in strategy_html
+    assert "OK" in strategy_html
     assert "PAPER_POSITION_HELD" in strategy_html
     assert "Bear Put" in strategy_html
     assert "compact-cell" in strategy_html
@@ -945,8 +992,449 @@ def test_dashboard_builds_consolidated_trades_page(tmp_path: Path) -> None:
 
     assert "All Trades Monitor" in index_html
     assert 'href="trades/index.html"' in index_html
+    assert "Operator Home" in index_html
+    assert "Historical Trades" in index_html
+    assert "Visible Trades" in index_html
+    assert "Open Positions" in index_html
+    assert "Action Required" in index_html
+    assert "Closed Trades" in index_html
     assert "All Strategy Trades" in trades_html
     assert "S23" in trades_html
+
+
+def test_dashboard_shared_operator_nav_links_across_tool_and_strategy_pages(tmp_path: Path) -> None:
+    artifact_root = tmp_path / "artifacts"
+    day_dir = artifact_root / "2026-07-21"
+    final_dir = day_dir / "s23-fyers-morning-supervised-decision-2026-07-21"
+    branch_dir = final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    branch_dir.mkdir(parents=True)
+    (final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "READY", "monthly_status": "BEAR"}}),
+        encoding="utf-8",
+    )
+    (final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260721_24150_CE",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "entry_date": "2026-07-21",
+                "order_timestamp": "2026-07-21T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-21T09:31:00+05:30",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(_strategy_config(artifact_root),)
+    ).build(output_root=tmp_path / "dashboard")
+
+    strategy_html = result.strategy_pages["S23"].read_text(encoding="utf-8")
+    charts_html = result.tool_pages["charts"].read_text(encoding="utf-8")
+    monthly_html = result.tool_pages["monthly_status_calculator"].read_text(encoding="utf-8")
+    manual_html = result.tool_pages["s23_manual_calculator"].read_text(encoding="utf-8")
+
+    assert "Operator Home" in strategy_html
+    assert "All Trades Monitor" in strategy_html
+    assert "Historical Trades" in strategy_html
+    assert "Charts" in strategy_html
+    assert "Monthly Status Calculator" in strategy_html
+    assert "Manual S23 Calculator" in strategy_html
+    assert "S23" in strategy_html
+    assert "Charts" in charts_html
+    assert "NIFTY Monthly Structure Review" in charts_html
+    assert "operator-nav-link-active" in monthly_html
+    assert "Monthly Status Calculator" in monthly_html
+    assert "Manual S23 Calculator" in manual_html
+    assert "MONTHLY_QUERY" in monthly_html
+
+
+def test_dashboard_chart_review_page_surfaces_selected_contract_market_evidence(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-07-21T10:30:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
+    artifact_root = tmp_path / "artifacts"
+    day_dir = artifact_root / "2026-07-21"
+    final_dir = day_dir / "s23-fyers-morning-supervised-decision-2026-07-21"
+    branch_dir = final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    branch_dir.mkdir(parents=True)
+    (final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "READY", "monthly_status": "BEAR"}}),
+        encoding="utf-8",
+    )
+    (final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260721_24150_CE",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "entry_date": "2026-07-21",
+                "order_timestamp": "2026-07-21T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-21T09:31:00+05:30",
+                "planned_entry_price": 194.25,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (branch_dir / "selected_contract_market_events.jsonl").write_text(
+        "\n".join(
+            (
+                json.dumps(
+                    {
+                        "artifact_version": 1,
+                        "event_kind": "selected_contract_quote",
+                        "observed_at": "2026-07-21T09:31:00+05:30",
+                        "symbol": "NIFTY_20260721_24150_CE",
+                        "trade_id": "T1",
+                        "supervisor_pid": 1234,
+                        "payload": {"ltp": 245.5, "bid": 245.0, "ask": 246.0},
+                    }
+                ),
+                json.dumps(
+                    {
+                        "artifact_version": 1,
+                        "event_kind": "selected_contract_quote",
+                        "observed_at": "2026-07-21T09:32:00+05:30",
+                        "symbol": "NIFTY_20260721_24150_CE",
+                        "trade_id": "T1",
+                        "supervisor_pid": 1234,
+                        "payload": {"ltp": 241.25, "bid": 241.0, "ask": 241.5},
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(_strategy_config(artifact_root),)
+    ).build(output_root=tmp_path / "dashboard")
+
+    charts_html = result.tool_pages["charts"].read_text(encoding="utf-8")
+
+    assert "Selected Contract Charts" in charts_html
+    assert "NIFTY_20260721_24150_CE" in charts_html
+    assert "selected-contract-chart" in charts_html
+    assert "Last 241.25" in charts_html
+    assert "Open NIFTY Monthly Status Calculator" in charts_html
+    assert "Open BANKNIFTY Monthly Status Calculator" in charts_html
+    assert "?symbol=NIFTY&amp;instrument_group=nifty" in charts_html
+    assert "?symbol=BANKNIFTY&amp;instrument_group=banknifty" in charts_html
+    assert 'id="chartStrategyFilter"' in charts_html
+    assert 'id="chartInstrumentFilter"' in charts_html
+    assert 'id="chartStreamFilter"' in charts_html
+    assert 'id="chartVisibleCount"' in charts_html
+    assert 'id="chartInstrumentCount"' in charts_html
+    assert 'data-strategy="S23"' in charts_html
+    assert 'data-instrument="NIFTY"' in charts_html
+    assert 'data-has-points="true"' in charts_html
+    assert "Market Events" in charts_html
+
+
+def test_dashboard_surfaces_operator_control_and_stream_alerts(tmp_path: Path) -> None:
+    s23_root = tmp_path / "s23-artifacts"
+    s23_day_dir = s23_root / "2026-07-21"
+    s23_final_dir = s23_day_dir / "s23-fyers-morning-supervised-decision-2026-07-21"
+    s23_branch_dir = s23_final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    s23_branch_dir.mkdir(parents=True)
+    (s23_final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "READY", "monthly_status": "BEAR"}}),
+        encoding="utf-8",
+    )
+    (s23_final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (s23_branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260721_24150_CE",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "entry_date": "2026-07-21",
+                "order_timestamp": "2026-07-21T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-21T09:31:00+05:30",
+                "planned_entry_price": 194.25,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(s23_root),))
+    builder._repo_root = tmp_path.resolve()
+    config_path = tmp_path / "config" / "paper.s23.test.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "storage:",
+                "  live_state:",
+                "    enabled: true",
+                "    provider: filesystem",
+                "    root: tmp/live_state",
+                "    namespace: tfis",
+                "    environment: paper",
+                "    strategy_id: s23",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+            )
+        ),
+        encoding="utf-8",
+    )
+    _write_runtime_targets_config(
+        tmp_path,
+        strategy_code="S23",
+        config_path=config_path,
+        artifact_root=s23_root,
+    )
+    control_root = paper_runtime_control_root(tmp_path)
+    control_root.mkdir(parents=True, exist_ok=True)
+    global_pause_marker_path(control_root).write_text("{}", encoding="utf-8")
+    strategy_pause_marker_path(control_root, "S23").write_text("{}", encoding="utf-8")
+    operator_control_event_log_path(control_root).write_text(
+        '{"action":"PAUSE","scope":"GLOBAL","occurred_at":"2026-07-21T09:32:00+05:30","actor":"operator"}\n',
+        encoding="utf-8",
+    )
+    live_state_store = build_paper_live_state_store_from_yaml(config_path, strict=True)
+    live_state_store.set_watch_heartbeat(
+        session_date=date(2026, 7, 21),
+        trade_id="S23-test-heartbeat",
+        payload={
+            "trade_id": "S23-test-heartbeat",
+            "owner_id": "tfis-paper-lifecycle-supervisor:s23:1234",
+            "timestamp": datetime.now(IST).isoformat(),
+            "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+            "selected_contract_symbol": "NIFTY_20260721_24150_CE",
+            "state_directory": str(s23_branch_dir),
+            "strategy_code": "S23",
+            "supervisor_pid": 1234,
+        },
+    )
+
+    result = builder.build(output_root=tmp_path / "dashboard")
+    trades_html = result.trades_page.read_text(encoding="utf-8")
+
+    assert "Operator Status" in trades_html
+    assert "GLOBAL_PAUSE" in trades_html
+    assert "Paused Strategies" in trades_html
+    assert "Paper Guardrails" in trades_html
+    assert "Order Routing Safety" in trades_html
+    assert "Runtime Heartbeats" in trades_html
+    assert "Heartbeat Owner" in trades_html
+    assert "Heartbeat State Dir" in trades_html
+    assert "Runtime Reconciliation" in trades_html
+    assert "Fresh Entry Handoffs" in trades_html
+    assert "PASS" in trades_html
+    assert "OK" in trades_html
+    assert "Latest Control Event" in trades_html
+    assert "PAUSE 2026-07-21T09:32:00+05:30" in trades_html
+    assert "tfis-paper-lifecycle-supervisor:s23:1234" in trades_html
+    assert str(s23_branch_dir) in trades_html
+    assert "S23" in trades_html
+    assert "No Stream Rows" in trades_html
+    assert "Global TFIS paper supervision is paused" in trades_html
+    assert "scripts\\pause_tfis_runtime.ps1" in trades_html
+    assert "scripts\\resume_tfis_runtime.ps1" in trades_html
+
+
+def test_operator_status_panel_flags_fresh_entry_handoff_failure(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    builder._runtime_guardrail_statuses = []
+    builder._runtime_order_routing_statuses = []
+    builder._runtime_heartbeat_statuses = []
+    builder._runtime_reconciliation_statuses = []
+    builder._runtime_fresh_entry_handoff_statuses = [
+        SimpleNamespace(
+            strategy_code="S23",
+            status="FAIL",
+            message="missing fresh-entry handoff evidence for trade-1@BRANCH",
+        )
+    ]
+    builder._latest_operator_control_event = None
+    builder._runtime_control_state = SimpleNamespace(
+        global_pause_active=False,
+        paused_strategies=frozenset(),
+    )
+
+    html = builder._render_operator_status_panel(
+        title="Operator Status",
+        rows=[],
+        strategy_code="S23",
+    )
+
+    assert "Fresh Entry Handoffs" in html
+    assert "FAIL" in html
+    assert "Fresh-entry handoff evidence failure detected." in html
+    assert "missing fresh-entry handoff evidence for trade-1@BRANCH" in html
+
+
+def test_trade_followup_note_includes_fresh_decision_handoff_status(tmp_path: Path) -> None:
+    state_directory = tmp_path / "state"
+    state_directory.mkdir(parents=True)
+    (state_directory / "fresh_decision_launch.json").write_text(
+        json.dumps(
+            {
+                "launched_at": "2026-07-21T12:58:00+05:30",
+                "strategy_code": "S23",
+                "trade_id": "T1",
+                "mode": "promoted_existing_blocked_decision",
+                "promoted_session_dir": str(tmp_path / "promoted-session"),
+            }
+        ),
+        encoding="utf-8",
+    )
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    row = DashboardTradeLedgerRow(
+        session_date=date(2026, 7, 21),
+        event_timestamp=datetime.fromisoformat("2026-07-21T12:57:59+05:30"),
+        entry_timestamp=datetime.fromisoformat("2026-07-21T09:30:00+05:30"),
+        exit_timestamp=datetime.fromisoformat("2026-07-21T12:57:59+05:30"),
+        event_type="CLOSE",
+        trade_id="T1",
+        strategy_id="S23-TEST",
+        strategy_code="S23",
+        strategy_branch="NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        selected_contract_symbol="NIFTY_20260721_23950_CE",
+        side="SELL",
+        lots=1,
+        quantity=65,
+        entry_price=212.75,
+        current_price=85.10,
+        current_bid=None,
+        current_ask=None,
+        exit_price=85.10,
+        target_price=85.10,
+        stoploss_price=258.94,
+        gross_points=127.65,
+        gross_pnl=8297.25,
+        lifecycle_status="PAPER_POSITION_CLOSED",
+        manager_status="PAPER_POSITION_TARGET_HIT",
+        reason_code="target_hit",
+        message="Selected-contract quote proved target hit.",
+        fresh_entry_required=True,
+        reverse_entry_required=False,
+        rollover_required=False,
+        state_directory=state_directory,
+        stream_health=DashboardSelectedContractStreamHealth(),
+        raw_artifact_links={},
+    )
+
+    note = builder._trade_followup_note(row)
+
+    assert "fresh entry recalculation required" in note.lower()
+    assert "promoted an existing blocked READY decision" in note
+
+
+def test_strategy_page_prefers_promoted_waiting_order_over_blocked_summary_status(
+    tmp_path: Path,
+) -> None:
+    artifact_root = tmp_path / "s23-artifacts"
+    day_dir = artifact_root / "2026-07-21"
+    final_dir = day_dir / "s23-fyers-morning-supervised-decision-2026-07-21"
+    final_dir.mkdir(parents=True)
+    (final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "READY", "monthly_status": "BEAR"}}),
+        encoding="utf-8",
+    )
+    (final_dir / "scheduled_run_metadata.json").write_text(
+        json.dumps(
+            {
+                "branch_order_placement_blocked": {
+                    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL": False,
+                },
+                "branch_order_placement_promoted_after_carry_exit": {
+                    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL": True,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    branch_dir = final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    branch_dir.mkdir()
+    (branch_dir / "trade_decision_summary.json").write_text(
+        json.dumps(
+            {
+                "summary": {
+                    "status": "READY",
+                    "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                    "selected_contract_symbol": "NIFTY_20260728_23950_CE",
+                    "selected_contract_option_type": "CALL",
+                    "selected_contract_expiry": "2026-07-28",
+                    "selected_contract_strike": 23950,
+                    "selected_contract_ltp": 304.95,
+                    "selected_contract_oi": 50700,
+                    "planned_entry_price": 212.75,
+                    "target_price": 85.10,
+                    "stoploss_price": 258.94,
+                    "order_placement_blocked": True,
+                    "order_placement_block_reason": "OPEN_CARRY_FORWARD_POSITION",
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    (branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260728_23950_CE",
+                "selected_contract_expiry": "2026-07-28",
+                "selected_contract_option_type": "CE",
+                "selected_contract_strike": 23950,
+                "expiry_type": "WEEKLY",
+                "rollover_policy": "NEXT_WEEKLY",
+                "forced_close_time": "12:00:00",
+                "no_carry_past_expiry": True,
+                "entry_date": "2026-07-21",
+                "order_timestamp": "2026-07-21T12:58:30+05:30",
+                "last_updated_timestamp": "2026-07-21T12:58:30+05:30",
+                "planned_entry_price": 212.75,
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "lots": 1,
+                "quantity": 65,
+                "order_side": "SELL",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "last_reason_code": "paper_order_waiting_quote_above_entry",
+                "last_message": "Selected option premium is still above entry.",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(artifact_root),)).build(
+        output_root=tmp_path / "dashboard"
+    )
+
+    strategy_html = result.strategy_pages["S23"].read_text(encoding="utf-8")
+
+    assert "ORDER_WAITING_FOR_TRIGGER" in strategy_html
+    assert "OPEN_CARRY_FORWARD_POSITION" not in strategy_html
 
 
 def test_consolidated_monitor_hides_past_not_filled_rows_without_current_session(
@@ -1014,7 +1502,6 @@ def test_consolidated_monitor_hides_past_not_filled_rows_without_current_session
 
     assert "ORDER_NOT_FILLED" not in trades_html
     assert "NIFTY_20260721_23950_CE" not in trades_html
-    assert "No active paper orders or positions for the latest session." in trades_html
 
 
 def test_s21_failed_leg_uses_strategy_aware_branch_normalization(tmp_path: Path) -> None:
@@ -2207,6 +2694,193 @@ def test_dashboard_builds_historical_trades_page_with_filters(tmp_path: Path) ->
     assert "NIFTY_20260721_24200_CE" not in trades_html
     assert "BANKNIFTY_20260728_57200_CE" not in trades_html
     assert manifest["historical_trades_page"].replace("\\", "/") == "trades/history/index.html"
+
+
+def test_all_trades_monitor_uses_global_latest_session_anchor_across_strategies(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-07-20T10:30:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
+    s23_root = tmp_path / "s23-artifacts"
+    s21_root = tmp_path / "s21-artifacts"
+
+    s23_day_dir = s23_root / "2026-07-17"
+    s23_final_dir = s23_day_dir / "s23-fyers-morning-supervised-decision-2026-07-17"
+    s23_branch_dir = s23_final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    s23_branch_dir.mkdir(parents=True)
+    (s23_final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "NO_GO", "monthly_status": "BULL"}}),
+        encoding="utf-8",
+    )
+    (s23_final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (s23_branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260721_23950_CE",
+                "selected_contract_expiry": "2026-07-21",
+                "selected_contract_option_type": "CE",
+                "selected_contract_strike": 23950,
+                "expiry_type": "WEEKLY",
+                "rollover_policy": "NEXT_WEEKLY",
+                "forced_close_time": "12:00:00",
+                "no_carry_past_expiry": True,
+                "entry_date": "2026-07-17",
+                "order_timestamp": "2026-07-17T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-17T15:30:01+05:30",
+                "planned_entry_price": 212.75,
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "lots": 1,
+                "quantity": 65,
+                "order_side": "SELL",
+                "status": "PAPER_ORDER_NOT_FILLED",
+                "last_reason_code": "paper_order_not_triggered_by_watch_cutoff",
+                "last_message": "Selected option premium did not reach entry before cutoff.",
+                "last_market_price": 406.55,
+                "last_market_bid": 405.60,
+                "last_market_ask": 408.80,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    s21_day_dir = s21_root / "2026-07-20"
+    s21_final_dir = s21_day_dir / "s21-fyers-morning-supervised-decision-2026-07-20"
+    s21_branch_dir = s21_final_dir / "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL"
+    s21_branch_dir.mkdir(parents=True)
+    (s21_final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "READY", "monthly_status": "BULL_CF"}}),
+        encoding="utf-8",
+    )
+    (s21_final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (s21_branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S21",
+                "strategy_branch": "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+                "selected_contract_symbol": "BANKNIFTY_20260728_57300_CE",
+                "selected_contract_expiry": "2026-07-28",
+                "selected_contract_option_type": "CE",
+                "selected_contract_strike": 57300,
+                "expiry_type": "MONTHLY",
+                "rollover_policy": "NEXT_MONTHLY",
+                "forced_close_time": "15:00:00",
+                "no_carry_past_expiry": True,
+                "entry_date": "2026-07-20",
+                "order_timestamp": "2026-07-20T10:24:16+05:30",
+                "last_updated_timestamp": "2026-07-20T10:24:16+05:30",
+                "planned_entry_price": 462.50,
+                "target_price": 185.0,
+                "stoploss_price": 740.0,
+                "lots": 1,
+                "quantity": 35,
+                "order_side": "SELL",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "last_reason_code": "paper_order_waiting_quote_above_entry",
+                "last_message": "Selected option premium is still above entry.",
+                "last_market_price": 852.40,
+                "last_market_bid": 851.10,
+                "last_market_ask": 855.45,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(
+            _strategy_config(s23_root),
+            _s21_strategy_config(s21_root),
+        )
+    ).build(output_root=tmp_path / "dashboard")
+
+    trades_html = result.trades_page.read_text(encoding="utf-8")
+
+    assert "BANKNIFTY_20260728_57300_CE" in trades_html
+    assert "NIFTY_20260721_23950_CE" not in trades_html
+    assert "ORDER_NOT_FILLED" not in trades_html
+    assert re.search(r"Unique Trades</span><div class=\"value\">1</div>", trades_html)
+
+
+def test_strategy_page_uses_current_day_anchor_for_live_trade_monitor(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-07-20T10:30:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
+    s23_root = tmp_path / "s23-artifacts"
+    s23_day_dir = s23_root / "2026-07-17"
+    s23_final_dir = s23_day_dir / "s23-fyers-morning-supervised-decision-2026-07-17"
+    s23_branch_dir = s23_final_dir / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    s23_branch_dir.mkdir(parents=True)
+    (s23_final_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "NO_GO", "monthly_status": "BULL"}}),
+        encoding="utf-8",
+    )
+    (s23_final_dir / "scheduled_run_metadata.json").write_text("{}", encoding="utf-8")
+    (s23_branch_dir / "paper_order_state.json").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "strategy_code": "S23",
+                "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+                "selected_contract_symbol": "NIFTY_20260721_23950_CE",
+                "selected_contract_expiry": "2026-07-21",
+                "selected_contract_option_type": "CE",
+                "selected_contract_strike": 23950,
+                "expiry_type": "WEEKLY",
+                "rollover_policy": "NEXT_WEEKLY",
+                "forced_close_time": "12:00:00",
+                "no_carry_past_expiry": True,
+                "entry_date": "2026-07-17",
+                "order_timestamp": "2026-07-17T09:30:00+05:30",
+                "last_updated_timestamp": "2026-07-17T15:30:01+05:30",
+                "planned_entry_price": 212.75,
+                "target_price": 85.10,
+                "stoploss_price": 258.94,
+                "lots": 1,
+                "quantity": 65,
+                "order_side": "SELL",
+                "status": "PAPER_ORDER_NOT_FILLED",
+                "last_reason_code": "paper_order_not_triggered_by_watch_cutoff",
+                "last_message": "Selected option premium did not reach entry before cutoff.",
+                "last_market_price": 406.55,
+                "last_market_bid": 405.60,
+                "last_market_ask": 408.80,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = TfisOperatorDashboardBuilder(
+        strategy_configs=(_strategy_config(s23_root),)
+    ).build(output_root=tmp_path / "dashboard")
+
+    strategy_html = result.strategy_pages["S23"].read_text(encoding="utf-8")
+
+    trades_section = strategy_html.split("<h2>Trades Taken</h2>", 1)[1]
+
+    assert "NIFTY_20260721_23950_CE" not in trades_section
+    assert "ORDER_NOT_FILLED" not in strategy_html
+    assert "No active paper orders or positions for the latest session." in strategy_html
 
 
 def test_all_trades_monitor_hides_terminal_close_after_latest_session_date_without_live_state_file(

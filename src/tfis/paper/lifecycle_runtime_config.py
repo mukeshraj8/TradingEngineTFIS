@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Callable
 from zoneinfo import ZoneInfo
 
 import yaml
 
-from tfis.brokers import BrokerAdapter, BrokerHealthEvent
+from tfis.brokers import BrokerAdapter, BrokerCredentialsError, BrokerHealthEvent
 
 
 class PaperLifecycleRuntimeConfigError(RuntimeError):
@@ -36,9 +37,18 @@ class PaperLifecycleCostConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class PaperLifecyclePaperGuardrailConfig:
+    paper_mode_enabled: bool = True
+    no_live_orders_allowed: bool = True
+    kill_switch_enabled: bool = True
+    session_kill_switch_active: bool = False
+
+
+@dataclass(frozen=True, slots=True)
 class PaperLifecycleRuntimeConfig:
     broker: PaperLifecycleBrokerConfig
     costs: PaperLifecycleCostConfig
+    paper: PaperLifecyclePaperGuardrailConfig
     source_mode: str = "broker_fyers_live_paper_ingress"
 
     @classmethod
@@ -51,6 +61,7 @@ class PaperLifecycleRuntimeConfig:
             )
         broker = data.get("broker") or {}
         costs = data.get("costs") or {}
+        paper = data.get("paper") or {}
         payload_fixture_path = _optional_text(broker.get("payload_fixture_path"))
         if payload_fixture_path is not None:
             payload_path = Path(payload_fixture_path)
@@ -70,19 +81,41 @@ class PaperLifecycleRuntimeConfig:
             costs=PaperLifecycleCostConfig(
                 slippage_exit_points=_optional_float(costs.get("slippage_exit_points")),
             ),
+            paper=PaperLifecyclePaperGuardrailConfig(
+                paper_mode_enabled=bool(paper.get("paper_mode_enabled", True)),
+                no_live_orders_allowed=bool(paper.get("no_live_orders_allowed", True)),
+                kill_switch_enabled=bool(paper.get("kill_switch_enabled", True)),
+                session_kill_switch_active=bool(
+                    paper.get("session_kill_switch_active", False)
+                ),
+            ),
             source_mode=str(
                 data.get("source_mode", "broker_fyers_live_paper_ingress")
             ).strip(),
         )
 
 
+@dataclass(frozen=True, slots=True)
+class _PaperLifecycleBrokerProvider:
+    build_adapter: Callable[[PaperLifecycleRuntimeConfig], BrokerAdapter]
+    credentials_ready: Callable[[PaperLifecycleBrokerConfig], tuple[bool, str | None]]
+    prepare_environment: Callable[..., None]
+
+
 def build_paper_broker_adapter(config: PaperLifecycleRuntimeConfig) -> BrokerAdapter:
-    provider = config.broker.provider.strip().lower()
-    if provider == "fyers":
-        return _build_fyers_broker_adapter(config)
-    raise PaperLifecycleRuntimeConfigError(
-        f"Unsupported paper lifecycle broker provider: {config.broker.provider}"
+    return build_paper_broker_adapter_from_broker_config(config.broker)
+
+
+def build_paper_broker_adapter_from_broker_config(
+    broker_config: PaperLifecycleBrokerConfig,
+) -> BrokerAdapter:
+    provider = _paper_lifecycle_broker_provider(broker_config.provider)
+    runtime_config = PaperLifecycleRuntimeConfig(
+        broker=broker_config,
+        costs=PaperLifecycleCostConfig(),
+        paper=PaperLifecyclePaperGuardrailConfig(),
     )
+    return provider.build_adapter(runtime_config)
 
 
 def load_paper_broker_runtime(
@@ -100,23 +133,45 @@ def load_paper_broker_runtime(
     )
 
 
+def paper_broker_credentials_available(
+    broker_config: PaperLifecycleBrokerConfig,
+) -> tuple[bool, str | None]:
+    provider = _paper_lifecycle_broker_provider(broker_config.provider)
+    return provider.credentials_ready(broker_config)
+
+
+def validate_paper_lifecycle_runtime_guardrails(
+    config: PaperLifecycleRuntimeConfig,
+) -> tuple[str, ...]:
+    failures: list[str] = []
+    source_mode = config.source_mode.strip().lower()
+    if (not source_mode.startswith("broker_")) or ("paper" not in source_mode) or ("fill" in source_mode):
+        failures.append(
+            "source_mode must stay on a broker-backed paper-ingress path; "
+            f"got {config.source_mode!r}"
+        )
+    if not config.paper.paper_mode_enabled:
+        failures.append("paper.paper_mode_enabled must be true")
+    if not config.paper.no_live_orders_allowed:
+        failures.append("paper.no_live_orders_allowed must be true")
+    if not config.paper.kill_switch_enabled:
+        failures.append("paper.kill_switch_enabled must be true")
+    if config.paper.session_kill_switch_active:
+        failures.append("paper.session_kill_switch_active must be false before runtime start")
+    return tuple(failures)
+
+
 def prepare_paper_broker_runtime_environment(
     config: PaperLifecycleRuntimeConfig,
     *,
     tfis_root: str | Path,
     skip_refresh: bool = False,
 ) -> None:
-    provider = config.broker.provider.strip().lower()
-    if provider == "fyers":
-        from tfis.brokers.fyers_token import prepare_fyers_env_from_tfis
-
-        prepare_fyers_env_from_tfis(
-            tfis_root=tfis_root,
-            skip_refresh=skip_refresh,
-        )
-        return
-    raise PaperLifecycleRuntimeConfigError(
-        f"Unsupported paper lifecycle broker provider: {config.broker.provider}"
+    provider = _paper_lifecycle_broker_provider(config.broker.provider)
+    provider.prepare_environment(
+        config,
+        tfis_root=tfis_root,
+        skip_refresh=skip_refresh,
     )
 
 
@@ -211,6 +266,53 @@ def _build_fyers_broker_adapter(config: PaperLifecycleRuntimeConfig) -> BrokerAd
     )
 
 
+def _prepare_fyers_broker_runtime_environment(
+    _config: PaperLifecycleRuntimeConfig,
+    *,
+    tfis_root: str | Path,
+    skip_refresh: bool = False,
+) -> None:
+    from tfis.brokers.fyers_token import prepare_fyers_env_from_tfis
+
+    prepare_fyers_env_from_tfis(
+        tfis_root=tfis_root,
+        skip_refresh=skip_refresh,
+    )
+
+
+def _fyers_broker_credentials_available(
+    broker_config: PaperLifecycleBrokerConfig,
+) -> tuple[bool, str | None]:
+    if broker_config.payload_fixture_path:
+        return True, None
+    from tfis.brokers.fyers import FyersCredentials
+
+    try:
+        FyersCredentials.from_env()
+    except BrokerCredentialsError as exc:
+        return False, str(exc)
+    return True, None
+
+
+def _paper_lifecycle_broker_provider(
+    provider_name: str,
+) -> _PaperLifecycleBrokerProvider:
+    provider = provider_name.strip().lower()
+    providers = {
+        "fyers": _PaperLifecycleBrokerProvider(
+            build_adapter=_build_fyers_broker_adapter,
+            credentials_ready=_fyers_broker_credentials_available,
+            prepare_environment=_prepare_fyers_broker_runtime_environment,
+        ),
+    }
+    matched_provider = providers.get(provider)
+    if matched_provider is None:
+        raise PaperLifecycleRuntimeConfigError(
+            f"Unsupported paper lifecycle broker provider: {provider_name}"
+        )
+    return matched_provider
+
+
 def _optional_text(value: object) -> str | None:
     if value is None:
         return None
@@ -231,8 +333,10 @@ __all__ = [
     "PaperLifecycleRuntimeConfig",
     "PaperLifecycleRuntimeConfigError",
     "build_paper_broker_adapter",
+    "build_paper_broker_adapter_from_broker_config",
     "connect_paper_broker_runtime",
     "ensure_paper_broker_runtime_healthy",
     "load_paper_broker_runtime",
+    "paper_broker_credentials_available",
     "prepare_paper_broker_runtime_environment",
 ]

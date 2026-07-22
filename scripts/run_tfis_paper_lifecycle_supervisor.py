@@ -52,8 +52,10 @@ from tfis.paper import (
     paper_live_state_owner_id,
     PaperSelectedContractEventRequest,
     prepare_paper_broker_runtime_environment,
+    validate_paper_lifecycle_runtime_guardrails,
 )
 from tfis.paper.models import SelectedContractBarEvent, SelectedContractQuoteEvent
+from tfis.paper.operator_controls import load_paper_runtime_control_state_from_root
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 
 
@@ -93,6 +95,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--skip-refresh", action="store_true")
     parser.add_argument("--once", action="store_true", help="Run one supervisor cycle and exit.")
     parser.add_argument(
+        "--control-root",
+        default="tmp/operator_controls",
+        help="Directory containing global or per-strategy TFIS operator pause markers.",
+    )
+    parser.add_argument(
         "--no-targets-ok",
         action="store_true",
         help="Allow the supervisor to start cleanly even when no watchable targets exist yet.",
@@ -121,6 +128,7 @@ def main(argv: list[str] | None = None) -> int:
     held_watch_locks: dict[tuple[str, str], Any] = {}
     held_trade_ids: dict[tuple[str, str], str] = {}
     discovery = PaperLifecycleSupervisorTargetDiscovery(order_store=PaperOrderStateStore())
+    last_control_signature: tuple[bool, tuple[str, ...]] | None = None
 
     try:
         process_lock_handle = acquire_process_lock(
@@ -151,10 +159,17 @@ def main(argv: list[str] | None = None) -> int:
             active_keys: set[tuple[str, str]] = set()
             any_targets = False
             now_by_strategy: dict[str, datetime] = {}
+            control_state = load_paper_runtime_control_state_from_root(REPO_ROOT / args.control_root)
+            control_signature = _control_signature(control_state)
+            if control_signature != last_control_signature:
+                _log_control_state_transition(control_state)
+                last_control_signature = control_signature
 
             for runtime in runtimes:
                 evaluated_at = datetime.now(runtime.timezone)
                 now_by_strategy[runtime.spec.strategy_code] = evaluated_at
+                if control_state.strategy_paused(runtime.spec.strategy_code):
+                    continue
                 effective_session_date = (
                     date.fromisoformat(args.session_date)
                     if args.session_date
@@ -202,7 +217,7 @@ def main(argv: list[str] | None = None) -> int:
                 return 0
             if _all_targets_past_cutoff(now_by_strategy=now_by_strategy, until_time=until_time):
                 return 0
-            if (not any_targets) and (not args.no_targets_ok):
+            if (not any_targets) and (not args.no_targets_ok) and (not control_state.global_pause_active):
                 print(
                     f"{datetime.now().isoformat()} WARNING no_watchable_targets_found; "
                     "supervisor remains alive",
@@ -241,6 +256,12 @@ def _build_runtimes(
     for spec in targets:
         broker_runtime = load_paper_broker_runtime(spec.config_path)
         config = broker_runtime.config
+        guardrail_failures = validate_paper_lifecycle_runtime_guardrails(config)
+        if guardrail_failures:
+            raise RuntimeError(
+                f"{spec.strategy_code} runtime guardrail check failed: "
+                + "; ".join(guardrail_failures)
+            )
         timezone_name = broker_runtime.timezone_name
         timezone = broker_runtime.timezone
         live_state_diagnostics = inspect_paper_live_state_store_from_yaml(spec.config_path)
@@ -277,6 +298,29 @@ def _build_runtimes(
             )
         )
     return tuple(runtimes)
+
+
+def _control_signature(state) -> tuple[bool, tuple[str, ...]]:
+    return state.global_pause_active, tuple(sorted(state.paused_strategies))
+
+
+def _log_control_state_transition(state) -> None:
+    if state.global_pause_active:
+        print(
+            "INFO operator_pause_active scope=global strategy=ALL "
+            f"control_root={state.control_root}",
+            flush=True,
+        )
+        return
+    if state.paused_strategies:
+        strategies = ",".join(sorted(state.paused_strategies))
+        print(
+            "INFO operator_pause_active scope=strategy "
+            f"strategies={strategies} control_root={state.control_root}",
+            flush=True,
+        )
+        return
+    print("INFO operator_pause_cleared", flush=True)
 
 
 def _prepare_runtime_environments(

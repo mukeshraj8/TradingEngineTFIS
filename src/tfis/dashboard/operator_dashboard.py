@@ -44,6 +44,7 @@ from tfis.paper.session_discovery import (
     iter_strategy_day_dirs,
 )
 from tfis.paper.selected_contract_market_events import (
+    load_selected_contract_market_events,
     selected_contract_market_event_paths,
     selected_contract_market_event_process_pid,
 )
@@ -64,6 +65,7 @@ from tfis.paper.trade_ledger import (
     paper_trade_is_open,
     paper_trade_is_terminal,
     paper_trade_latest_active_rows,
+    paper_trade_latest_monitor_rows,
     paper_trade_latest_historical_close_rows,
     paper_trade_normalized_message,
     paper_trade_option_label,
@@ -71,6 +73,34 @@ from tfis.paper.trade_ledger import (
     paper_trade_status_labels,
     paper_trade_summary_counts,
     paper_trade_status_kind,
+)
+from tfis.paper.operator_controls import (
+    load_latest_operator_control_event_from_root,
+    load_paper_runtime_control_state_from_root,
+)
+from tfis.paper.fresh_entry_handoff import (
+    PaperFreshDecisionLaunchMarker,
+    load_fresh_decision_launch_marker,
+)
+from tfis.paper.runtime_guardrail_status import (
+    PaperRuntimeGuardrailStatus,
+    load_paper_runtime_guardrail_statuses,
+)
+from tfis.paper.runtime_order_routing_status import (
+    PaperRuntimeOrderRoutingStatus,
+    load_paper_runtime_order_routing_statuses,
+)
+from tfis.paper.runtime_heartbeat_status import (
+    PaperRuntimeHeartbeatStatus,
+    load_paper_runtime_heartbeat_statuses,
+)
+from tfis.paper.runtime_reconciliation_status import (
+    PaperRuntimeReconciliationStatus,
+    load_paper_runtime_reconciliation_statuses,
+)
+from tfis.paper.runtime_fresh_entry_handoff_status import (
+    PaperRuntimeFreshEntryHandoffStatus,
+    load_paper_runtime_fresh_entry_handoff_statuses,
 )
 from tfis.paper.runtime_input_derivation import load_paper_decision_reference_packet
 
@@ -214,11 +244,35 @@ class TfisOperatorDashboardBuilder:
             tuple[str, str | None, bool, bool],
             list[DashboardTradeLedgerRow],
         ] = {}
+        self._fresh_decision_marker_cache: dict[Path, PaperFreshDecisionLaunchMarker | None] = {}
+        self._operator_control_state = load_paper_runtime_control_state_from_root(
+            self._repo_root / "tmp" / "operator_controls"
+        )
+        self._latest_operator_control_event = load_latest_operator_control_event_from_root(
+            self._repo_root / "tmp" / "operator_controls"
+        )
+        self._runtime_guardrail_statuses = self._load_runtime_guardrail_statuses()
+        self._runtime_order_routing_statuses = self._load_runtime_order_routing_statuses()
+        self._runtime_heartbeat_statuses = self._load_runtime_heartbeat_statuses()
+        self._runtime_reconciliation_statuses = self._load_runtime_reconciliation_statuses()
+        self._runtime_fresh_entry_handoff_statuses = self._load_runtime_fresh_entry_handoff_statuses()
 
     def build(self, *, output_root: str | Path) -> DashboardBuildResult:
         self._jsonl_cache.clear()
         self._stream_health_cache.clear()
         self._trade_rows_cache.clear()
+        self._fresh_decision_marker_cache.clear()
+        self._operator_control_state = load_paper_runtime_control_state_from_root(
+            self._repo_root / "tmp" / "operator_controls"
+        )
+        self._latest_operator_control_event = load_latest_operator_control_event_from_root(
+            self._repo_root / "tmp" / "operator_controls"
+        )
+        self._runtime_guardrail_statuses = self._load_runtime_guardrail_statuses()
+        self._runtime_order_routing_statuses = self._load_runtime_order_routing_statuses()
+        self._runtime_heartbeat_statuses = self._load_runtime_heartbeat_statuses()
+        self._runtime_reconciliation_statuses = self._load_runtime_reconciliation_statuses()
+        self._runtime_fresh_entry_handoff_statuses = self._load_runtime_fresh_entry_handoff_statuses()
         target = Path(output_root)
         target.mkdir(parents=True, exist_ok=True)
         summaries = [self._collect_strategy_sessions(config) for config in self._strategy_configs]
@@ -264,7 +318,11 @@ class TfisOperatorDashboardBuilder:
         )
 
         review_data_pages = self._write_review_data_pages(target, summaries)
-        tool_pages = self._write_tool_pages(target, review_data_pages=review_data_pages)
+        tool_pages = self._write_tool_pages(
+            target,
+            strategy_summaries=list(zip(self._strategy_configs, summaries, strict=False)),
+            review_data_pages=review_data_pages,
+        )
 
         index_html = target / "index.html"
         index_html.write_text(
@@ -322,13 +380,14 @@ class TfisOperatorDashboardBuilder:
         self,
         output_root: Path,
         *,
+        strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
         review_data_pages: dict[str, Path],
     ) -> dict[str, Path]:
         manual_dir = output_root / "tools" / "s23-manual-calculator"
         manual_dir.mkdir(parents=True, exist_ok=True)
         manual_path = manual_dir / "index.html"
         manual_path.write_text(
-            self._render_s23_manual_calculator_page(),
+            self._render_s23_manual_calculator_page(page_path=manual_path),
             encoding="utf-8",
         )
         monthly_dir = output_root / "tools" / "monthly-status-calculator"
@@ -336,11 +395,24 @@ class TfisOperatorDashboardBuilder:
         monthly_path = monthly_dir / "index.html"
         monthly_path.write_text(
             self._render_monthly_status_calculator_page(
-                monthly_index_path=review_data_pages.get("monthly_status_index")
+                monthly_index_path=review_data_pages.get("monthly_status_index"),
+                page_path=monthly_path,
+            ),
+            encoding="utf-8",
+        )
+        charts_dir = output_root / "tools" / "charts"
+        charts_dir.mkdir(parents=True, exist_ok=True)
+        charts_path = charts_dir / "index.html"
+        charts_path.write_text(
+            self._render_chart_review_page(
+                strategy_summaries=strategy_summaries,
+                dashboard_root=output_root,
+                page_path=charts_path,
             ),
             encoding="utf-8",
         )
         return {
+            "charts": charts_path,
             "monthly_status_calculator": monthly_path,
             "s23_manual_calculator": manual_path,
         }
@@ -1010,8 +1082,23 @@ class TfisOperatorDashboardBuilder:
         index_path: Path,
     ) -> str:
         cards: list[str] = []
+        operator_rows: list[DashboardTradeLedgerRow] = []
+        global_anchor_session_date = self._summary_anchor_session_date(strategy_summaries)
         for config, sessions in strategy_summaries:
             latest = sessions[0] if sessions else None
+            latest_session_date = latest.session_date if latest else None
+            strategy_rows = list(
+                paper_trade_latest_monitor_rows(
+                    self._collect_trade_ledger_rows(
+                        config,
+                        latest_session_date=latest_session_date,
+                    ),
+                    latest_session_date=latest_session_date,
+                    anchor_session_date=global_anchor_session_date,
+                )
+            )
+            operator_rows.extend(strategy_rows)
+            strategy_counts = paper_trade_summary_counts(strategy_rows)
             href = os.path.relpath(
                 dashboard_root / "strategies" / config.strategy_code / "index.html",
                 start=index_path.parent,
@@ -1025,6 +1112,10 @@ class TfisOperatorDashboardBuilder:
                         f"<div class=\"metric-row\"><span>Latest Session</span><strong>{html.escape(latest.session_date.isoformat() if latest else 'none')}</strong></div>",
                         f"<div class=\"metric-row\"><span>Status</span>{self._badge(latest.session_status if latest else 'NO_DATA')}</div>",
                         f"<div class=\"metric-row\"><span>Final Monthly Status</span>{self._badge(latest.final_monthly_status or 'n/a') if latest else self._badge('n/a')}</div>",
+                        f"<div class=\"metric-row\"><span>Visible Trades</span><strong>{strategy_counts['unique_trades']}</strong></div>",
+                        f"<div class=\"metric-row\"><span>Open Positions</span><strong>{strategy_counts['open_positions']}</strong></div>",
+                        f"<div class=\"metric-row\"><span>Action Required</span><strong>{strategy_counts['action_required']}</strong></div>",
+                        f"<div class=\"metric-row\"><span>Closed Trades</span><strong>{strategy_counts['closed_trades']}</strong></div>",
                         "</a>",
                     ]
                 )
@@ -1037,8 +1128,16 @@ class TfisOperatorDashboardBuilder:
                     "<div class=\"eyebrow\">Operator View</div>",
                     "<h1>TFIS Operator Dashboard</h1>",
                     "<p>Read-only, artifact-backed strategy pages for morning decision visibility across strategies and sessions.</p>",
-                    '<div class="tool-strip"><a class="tool-link" href="trades/index.html">All Trades Monitor</a><a class="tool-link" href="trades/history/index.html">Historical Trades</a><a class="tool-link" href="tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                    self._render_operator_nav(
+                        dashboard_root=dashboard_root,
+                        page_path=index_path,
+                        current_key="home",
+                    ),
                     "</header>",
+                    self._render_operator_status_panel(
+                        rows=operator_rows,
+                        title="Operator Status",
+                    ),
                     "<section class=\"grid\">",
                     *(cards if cards else ["<p>No strategy data found.</p>"]),
                     "</section>",
@@ -1059,6 +1158,13 @@ class TfisOperatorDashboardBuilder:
             config,
             latest_session_date=latest.session_date if latest else None,
         )
+        monitor_rows = list(
+            paper_trade_latest_monitor_rows(
+                trade_rows,
+                latest_session_date=latest.session_date if latest else None,
+                anchor_session_date=datetime.now().date(),
+            )
+        )
         latest_block = (
             self._render_latest_session_block(
                 config=config,
@@ -1073,17 +1179,27 @@ class TfisOperatorDashboardBuilder:
             rows=trade_rows,
             page_path=page_path,
             latest_session_date=latest.session_date if latest else None,
+            anchor_to_current_session=True,
         )
         history_rows = "\n".join(self._render_session_history_row(session, page_path=page_path) for session in sessions) or "<tr><td colspan=\"5\">No sessions found.</td></tr>"
         body = "\n".join(
             [
-                '<nav><a href="../../index.html">Back to strategy index</a></nav>',
                 "<header class=\"hero\">",
                 f"<div class=\"eyebrow\">Strategy {html.escape(config.strategy_code)}</div>",
                 f"<h1>{html.escape(config.display_name)}</h1>",
                 f"<p>Operator page for {html.escape(config.strategy_code)}. Each stage is rendered from TFIS artifacts and reconstructed stage logic when stage-level explainers are not yet available.</p>",
-                '<div class="tool-strip"><a class="tool-link" href="../../trades/index.html">All Trades Monitor</a><a class="tool-link" href="../../trades/history/index.html">Historical Trades</a><a class="tool-link" href="../../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                self._render_operator_nav(
+                    dashboard_root=dashboard_root,
+                    page_path=page_path,
+                    current_key="strategy",
+                    current_strategy_code=config.strategy_code,
+                ),
                 "</header>",
+                self._render_operator_status_panel(
+                    rows=monitor_rows,
+                    title="Operator Status",
+                    strategy_code=config.strategy_code,
+                ),
                 "<section>",
                 "<h2>Latest Session</h2>",
                 latest_block,
@@ -1111,15 +1227,17 @@ class TfisOperatorDashboardBuilder:
         page_path: Path,
     ) -> str:
         rows: list[DashboardTradeLedgerRow] = []
+        global_anchor_session_date = self._summary_anchor_session_date(strategy_summaries)
         for config, sessions in strategy_summaries:
             latest_session_date = sessions[0].session_date if sessions else None
             rows.extend(
-                paper_trade_latest_active_rows(
+                paper_trade_latest_monitor_rows(
                     self._collect_trade_ledger_rows(
                         config,
                         latest_session_date=latest_session_date,
                     ),
                     latest_session_date=latest_session_date,
+                    anchor_session_date=global_anchor_session_date,
                 )
             )
         rows = sorted(
@@ -1129,20 +1247,27 @@ class TfisOperatorDashboardBuilder:
         )
         body = "\n".join(
             [
-                '<nav><a href="../index.html">Back to strategy index</a></nav>',
                 "<header class=\"hero\">",
                 "<div class=\"eyebrow\">Operator View</div>",
                 "<h1>All Trades Monitor</h1>",
                 "<p>Consolidated paper-order and position visibility across every configured TFIS strategy.</p>",
-                '<div class="tool-strip"><a class="tool-link" href="history/index.html">Historical Trades</a><a class="tool-link" href="../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                self._render_operator_nav(
+                    dashboard_root=dashboard_root,
+                    page_path=page_path,
+                    current_key="trades",
+                ),
                 "</header>",
+                self._render_operator_status_panel(
+                    rows=rows,
+                    title="Operator Status",
+                ),
                 "<section>",
                 "<h2>All Strategy Trades</h2>",
                 self._render_trade_ledger_section(
                     rows=rows,
                     page_path=page_path,
                     latest_session_date=None,
-                    anchor_to_current_session=True,
+                    anchor_session_date=global_anchor_session_date,
                 ),
                 "</section>",
                 self._dashboard_refresh_script(),
@@ -1160,12 +1285,15 @@ class TfisOperatorDashboardBuilder:
         rows = self._collect_historical_trade_rows(strategy_summaries)
         body = "\n".join(
             [
-                '<nav><a href="../../index.html">Back to strategy index</a></nav>',
                 "<header class=\"hero\">",
                 "<div class=\"eyebrow\">Operator View</div>",
                 "<h1>Historical Trades</h1>",
                 "<p>Closed-trade history across every configured TFIS strategy, with date and strategy filters for review.</p>",
-                '<div class="tool-strip"><a class="tool-link" href="../index.html">All Trades Monitor</a><a class="tool-link" href="../../tools/monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="tool-link" href="../../tools/s23-manual-calculator/index.html">Manual S23 Calculator</a></div>',
+                self._render_operator_nav(
+                    dashboard_root=dashboard_root,
+                    page_path=page_path,
+                    current_key="history",
+                ),
                 "</header>",
                 "<section>",
                 "<h2>Closed Trade History</h2>",
@@ -1203,6 +1331,803 @@ class TfisOperatorDashboardBuilder:
             ]
         )
         return self._render_page(title="Historical Trades", body=body)
+
+    def _render_operator_nav(
+        self,
+        *,
+        dashboard_root: Path,
+        page_path: Path,
+        current_key: str,
+        current_strategy_code: str | None = None,
+    ) -> str:
+        links: list[tuple[str, str, bool]] = [
+            (
+                "Operator Home",
+                os.path.relpath(dashboard_root / "index.html", start=page_path.parent).replace("\\", "/"),
+                current_key == "home",
+            ),
+            (
+                "All Trades Monitor",
+                os.path.relpath(dashboard_root / "trades" / "index.html", start=page_path.parent).replace("\\", "/"),
+                current_key == "trades",
+            ),
+            (
+                "Historical Trades",
+                os.path.relpath(dashboard_root / "trades" / "history" / "index.html", start=page_path.parent).replace("\\", "/"),
+                current_key == "history",
+            ),
+            (
+                "Charts",
+                os.path.relpath(dashboard_root / "tools" / "charts" / "index.html", start=page_path.parent).replace("\\", "/"),
+                current_key == "charts",
+            ),
+            (
+                "Monthly Status Calculator",
+                os.path.relpath(dashboard_root / "tools" / "monthly-status-calculator" / "index.html", start=page_path.parent).replace("\\", "/"),
+                current_key == "monthly_status",
+            ),
+            (
+                "Manual S23 Calculator",
+                os.path.relpath(dashboard_root / "tools" / "s23-manual-calculator" / "index.html", start=page_path.parent).replace("\\", "/"),
+                current_key == "manual_s23",
+            ),
+        ]
+        for config in self._strategy_configs:
+            links.append(
+                (
+                    config.strategy_code,
+                    os.path.relpath(dashboard_root / "strategies" / config.strategy_code / "index.html", start=page_path.parent).replace("\\", "/"),
+                    current_key == "strategy" and current_strategy_code == config.strategy_code,
+                )
+            )
+        nav_html = "".join(
+            f'<a class="operator-nav-link{" operator-nav-link-active" if active else ""}" href="{html.escape(href)}">{html.escape(label)}</a>'
+            for label, href, active in links
+        )
+        return f'<div class="operator-nav-strip">{nav_html}</div>'
+
+    def _render_operator_status_panel(
+        self,
+        *,
+        rows: list[DashboardTradeLedgerRow],
+        title: str,
+        strategy_code: str | None = None,
+    ) -> str:
+        paused_strategies = sorted(self._operator_control_state.paused_strategies)
+        global_pause = self._operator_control_state.global_pause_active
+        strategy_paused = bool(strategy_code and self._operator_control_state.strategy_paused(strategy_code))
+        guardrail_statuses = self._runtime_guardrail_statuses
+        order_routing_statuses = self._runtime_order_routing_statuses
+        heartbeat_statuses = self._runtime_heartbeat_statuses
+        reconciliation_statuses = self._runtime_reconciliation_statuses
+        fresh_entry_handoff_statuses = self._runtime_fresh_entry_handoff_statuses
+        if strategy_code:
+            guardrail_statuses = [
+                item for item in guardrail_statuses if item.strategy_code.upper() == strategy_code.upper()
+            ]
+            order_routing_statuses = [
+                item for item in order_routing_statuses if item.strategy_code.upper() == strategy_code.upper()
+            ]
+            heartbeat_statuses = [
+                item for item in heartbeat_statuses if item.strategy_code.upper() == strategy_code.upper()
+            ]
+            reconciliation_statuses = [
+                item for item in reconciliation_statuses if item.strategy_code.upper() == strategy_code.upper()
+            ]
+            fresh_entry_handoff_statuses = [
+                item for item in fresh_entry_handoff_statuses if item.strategy_code.upper() == strategy_code.upper()
+            ]
+        guardrail_failures = [item for item in guardrail_statuses if item.status != "PASS"]
+        order_routing_failures = [item for item in order_routing_statuses if item.status != "PASS"]
+        heartbeat_failures = [
+            item for item in heartbeat_statuses if item.status in {"STALE", "UNAVAILABLE"}
+        ]
+        reconciliation_failures = [item for item in reconciliation_statuses if item.status == "FAIL"]
+        fresh_entry_handoff_failures = [item for item in fresh_entry_handoff_statuses if item.status == "FAIL"]
+        active_rows = [row for row in rows if not self._trade_terminal(row)]
+        stale_count = sum(
+            1
+            for row in active_rows
+            if row.stream_health.health_status == "STALE"
+        )
+        no_stream_count = sum(
+            1
+            for row in active_rows
+            if row.stream_health.health_status == "NO_STREAM"
+        )
+        ok_stream_count = sum(
+            1
+            for row in active_rows
+            if row.stream_health.health_status in {"OK", "RECORDED"}
+        )
+        pause_scope = (
+            "GLOBAL_PAUSE"
+            if global_pause
+            else ("STRATEGY_PAUSED" if strategy_paused else "ACTIVE")
+        )
+        paused_label = ", ".join(paused_strategies) if paused_strategies else "none"
+        guardrail_label = "PASS" if not guardrail_failures else "FAIL"
+        order_routing_label = "PASS" if not order_routing_failures else "FAIL"
+        heartbeat_label = self._summarize_runtime_heartbeat_statuses(heartbeat_statuses)
+        heartbeat_owner_label = self._latest_runtime_heartbeat_owner_label(heartbeat_statuses)
+        heartbeat_state_dir_label = self._latest_runtime_heartbeat_state_directory_label(
+            heartbeat_statuses
+        )
+        reconciliation_label = self._summarize_runtime_reconciliation_statuses(reconciliation_statuses)
+        fresh_entry_handoff_label = self._summarize_runtime_fresh_entry_handoff_statuses(
+            fresh_entry_handoff_statuses
+        )
+        latest_control_event = self._latest_operator_control_event
+        latest_control_label = "none"
+        if latest_control_event is not None:
+            latest_control_label = " ".join(
+                part
+                for part in (
+                    latest_control_event.action,
+                    latest_control_event.strategy_code,
+                    latest_control_event.occurred_at,
+                )
+                if part
+            )
+        alerts: list[tuple[str, str]] = []
+        if global_pause:
+            alerts.append(
+                (
+                    "warning",
+                    "Global TFIS paper supervision is paused. Use "
+                    "`powershell -ExecutionPolicy Bypass -File scripts\\resume_tfis_runtime.ps1` "
+                    "to resume it.",
+                )
+            )
+        elif strategy_paused and strategy_code:
+            alerts.append(
+                (
+                    "warning",
+                    f"Strategy {strategy_code} is paused. Use "
+                    f"`powershell -ExecutionPolicy Bypass -File scripts\\resume_tfis_runtime.ps1 -StrategyCode {strategy_code}` "
+                    "to resume it.",
+                )
+            )
+        if stale_count:
+            alerts.append(
+                (
+                    "bad",
+                    f"{stale_count} active trade row(s) have stale selected-contract stream evidence.",
+                )
+            )
+        if no_stream_count:
+            alerts.append(
+                (
+                    "bad",
+                    f"{no_stream_count} active trade row(s) have no selected-contract stream evidence yet.",
+                )
+            )
+        if guardrail_failures:
+            failure_text = "; ".join(
+                f"{item.strategy_code}: {item.message}" for item in guardrail_failures
+            )
+            alerts.append(
+                (
+                    "bad",
+                    f"Paper runtime guardrail failure detected. {failure_text}",
+                )
+            )
+        if order_routing_failures:
+            failure_text = "; ".join(
+                f"{item.strategy_code}: {item.message}" for item in order_routing_failures
+            )
+            alerts.append(
+                (
+                    "bad",
+                    f"Order-routing safety failure detected. {failure_text}",
+                )
+            )
+        if heartbeat_failures:
+            failure_text = "; ".join(
+                f"{item.strategy_code}: {item.message}" for item in heartbeat_failures
+            )
+            alerts.append(
+                (
+                    "warning",
+                    f"Runtime heartbeat attention required. {failure_text}",
+                )
+            )
+        if reconciliation_failures:
+            failure_text = "; ".join(
+                f"{item.strategy_code}: {item.message}" for item in reconciliation_failures
+            )
+            alerts.append(
+                (
+                    "bad",
+                    f"Runtime reconciliation failure detected. {failure_text}",
+                )
+            )
+        if fresh_entry_handoff_failures:
+            failure_text = "; ".join(
+                f"{item.strategy_code}: {item.message}" for item in fresh_entry_handoff_failures
+            )
+            alerts.append(
+                (
+                    "bad",
+                    f"Fresh-entry handoff evidence failure detected. {failure_text}",
+                )
+            )
+        if (not alerts) and active_rows:
+            alerts.append(
+                (
+                    "good",
+                    "No operator pause markers are active, and all visible active rows currently have usable stream evidence.",
+                )
+            )
+        if (not alerts) and (not active_rows):
+            alerts.append(
+                (
+                    "warning",
+                    "No active trade rows are currently visible. Review strategy pages or historical trades if this is unexpected.",
+                )
+            )
+        alert_html = "".join(
+            f'<div class="operator-alert operator-alert-{tone}">{html.escape(message)}</div>'
+            for tone, message in alerts
+        )
+        return "\n".join(
+            [
+                "<section>",
+                f"<h2>{html.escape(title)}</h2>",
+                '<div class="session-summary summary-shell operator-status-shell">',
+                '<div class="summary-grid">',
+                self._summary_metric("Runtime Control", self._badge(pause_scope)),
+                self._summary_metric("Paused Strategies", html.escape(paused_label)),
+                self._summary_metric("Paper Guardrails", self._badge(guardrail_label)),
+                self._summary_metric("Order Routing Safety", self._badge(order_routing_label)),
+                self._summary_metric("Runtime Heartbeats", self._badge(heartbeat_label)),
+                self._summary_metric("Heartbeat Owner", html.escape(heartbeat_owner_label)),
+                self._summary_metric("Heartbeat State Dir", html.escape(heartbeat_state_dir_label)),
+                self._summary_metric("Runtime Reconciliation", self._badge(reconciliation_label)),
+                self._summary_metric("Fresh Entry Handoffs", self._badge(fresh_entry_handoff_label)),
+                self._summary_metric("Latest Control Event", html.escape(latest_control_label)),
+                self._summary_metric("Healthy Streams", str(ok_stream_count)),
+                self._summary_metric("Stale Streams", str(stale_count)),
+                self._summary_metric("No Stream Rows", str(no_stream_count)),
+                self._summary_metric("Active Rows", str(len(active_rows))),
+                "</div>",
+                f'<div class="operator-alert-list">{alert_html}</div>',
+                '<div class="operator-command-strip">'
+                '<code>powershell -ExecutionPolicy Bypass -File scripts\\pause_tfis_runtime.ps1</code>'
+                '<code>powershell -ExecutionPolicy Bypass -File scripts\\resume_tfis_runtime.ps1</code>'
+                '<code>powershell -ExecutionPolicy Bypass -File scripts\\refresh_tfis_operator_dashboard.ps1</code>'
+                "</div>",
+                "</div>",
+                "</section>",
+            ]
+        )
+
+    @staticmethod
+    def _summarize_runtime_heartbeat_statuses(
+        statuses: list[PaperRuntimeHeartbeatStatus],
+    ) -> str:
+        if not statuses:
+            return "NONE"
+        labels = {item.status for item in statuses}
+        if "UNAVAILABLE" in labels:
+            return "UNAVAILABLE"
+        if "STALE" in labels:
+            return "STALE"
+        if "OK" in labels:
+            return "OK"
+        if "NONE" in labels:
+            return "NONE"
+        if "DISABLED" in labels:
+            return "DISABLED"
+        return sorted(labels)[0]
+
+    @staticmethod
+    def _latest_runtime_heartbeat_owner_label(
+        statuses: list[PaperRuntimeHeartbeatStatus],
+    ) -> str:
+        latest = TfisOperatorDashboardBuilder._latest_runtime_heartbeat_status(statuses)
+        if latest is None:
+            return "none"
+        return latest.latest_owner_id or "n/a"
+
+    @staticmethod
+    def _latest_runtime_heartbeat_state_directory_label(
+        statuses: list[PaperRuntimeHeartbeatStatus],
+    ) -> str:
+        latest = TfisOperatorDashboardBuilder._latest_runtime_heartbeat_status(statuses)
+        if latest is None:
+            return "none"
+        return latest.latest_state_directory or "n/a"
+
+    @staticmethod
+    def _latest_runtime_heartbeat_status(
+        statuses: list[PaperRuntimeHeartbeatStatus],
+    ) -> PaperRuntimeHeartbeatStatus | None:
+        if not statuses:
+            return None
+        return max(
+            statuses,
+            key=lambda item: (
+                item.latest_timestamp or "",
+                item.latest_owner_id or "",
+                item.strategy_code,
+            ),
+        )
+
+    @staticmethod
+    def _summarize_runtime_reconciliation_statuses(
+        statuses: list[PaperRuntimeReconciliationStatus],
+    ) -> str:
+        if not statuses:
+            return "NONE"
+        labels = {item.status for item in statuses}
+        if "FAIL" in labels:
+            return "FAIL"
+        if "PASS" in labels:
+            return "PASS"
+        if "NONE" in labels:
+            return "NONE"
+        return sorted(labels)[0]
+
+    @staticmethod
+    def _summarize_runtime_fresh_entry_handoff_statuses(
+        statuses: list[PaperRuntimeFreshEntryHandoffStatus],
+    ) -> str:
+        if not statuses:
+            return "NONE"
+        labels = {item.status for item in statuses}
+        if "FAIL" in labels:
+            return "FAIL"
+        if "PASS" in labels:
+            return "PASS"
+        if "NONE" in labels:
+            return "NONE"
+        return sorted(labels)[0]
+
+    def _render_chart_review_page(
+        self,
+        *,
+        strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
+        dashboard_root: Path,
+        page_path: Path,
+    ) -> str:
+        active_rows: list[DashboardTradeLedgerRow] = []
+        global_anchor_session_date = self._summary_anchor_session_date(strategy_summaries)
+        for config, sessions in strategy_summaries:
+            latest_session_date = sessions[0].session_date if sessions else None
+            active_rows.extend(
+                paper_trade_latest_monitor_rows(
+                    self._collect_trade_ledger_rows(
+                        config,
+                        latest_session_date=latest_session_date,
+                    ),
+                    latest_session_date=latest_session_date,
+                    anchor_session_date=global_anchor_session_date,
+                )
+            )
+        active_rows = sorted(
+            active_rows,
+            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+            reverse=True,
+        )
+        chart_cards = [
+            self._render_selected_contract_chart_card(row, page_path=page_path)
+            for row in active_rows
+        ]
+        if not chart_cards:
+            chart_cards = [
+                '<div class="chart-review-card empty-panel">'
+                "No active paper-order or open-position rows currently have chartable selected-contract market evidence."
+                "</div>"
+            ]
+        strategy_options = "".join(
+            f'<option value="{html.escape(config.strategy_code)}">{html.escape(config.strategy_code)}</option>'
+            for config, _sessions in strategy_summaries
+        )
+        instrument_options = "".join(
+            f'<option value="{html.escape(symbol)}">{html.escape(symbol)}</option>'
+            for symbol in sorted(
+                {
+                    self._selected_contract_underlying_symbol(row.selected_contract_symbol)
+                    for row in active_rows
+                    if row.selected_contract_symbol
+                }
+            )
+        )
+        body = "\n".join(
+            [
+                "<header class=\"hero\">",
+                "<div class=\"eyebrow\">Operator View</div>",
+                "<h1>Charts</h1>",
+                "<p>Review selected-contract market evidence for active TFIS trades and jump to the monthly-status chart for NIFTY structure context.</p>",
+                self._render_operator_nav(
+                    dashboard_root=dashboard_root,
+                    page_path=page_path,
+                    current_key="charts",
+                ),
+                "</header>",
+                "<section>",
+                "<h2>NIFTY Monthly Structure Review</h2>",
+                '<div class="session-summary summary-shell chart-review-summary">'
+                "<p>Open the monthly-status calculator for the full interactive NIFTY/BANKNIFTY market-structure chart, current data fetch, and level overlay review.</p>"
+                '<div class="chart-review-links">'
+                f'<a class="tool-link" href="{html.escape(self._monthly_status_tool_href(page_path=page_path, dashboard_root=dashboard_root, symbol="NIFTY", instrument_group="nifty"))}">Open NIFTY Monthly Status Calculator</a>'
+                f'<a class="tool-link" href="{html.escape(self._monthly_status_tool_href(page_path=page_path, dashboard_root=dashboard_root, symbol="BANKNIFTY", instrument_group="banknifty"))}">Open BANKNIFTY Monthly Status Calculator</a>'
+                "</div>"
+                "</div>",
+                "</section>",
+                "<section>",
+                "<h2>Selected Contract Charts</h2>",
+                '<div class="chart-filter-shell">'
+                '<div class="chart-filter-grid">'
+                '<label><span>Strategy</span><select id="chartStrategyFilter"><option value="ALL">All Strategies</option>'
+                f"{strategy_options}"
+                "</select></label>"
+                '<label><span>Instrument</span><select id="chartInstrumentFilter"><option value="ALL">All Instruments</option>'
+                f"{instrument_options}"
+                "</select></label>"
+                '<label><span>Stream</span><select id="chartStreamFilter">'
+                '<option value="ALL">All Streams</option>'
+                '<option value="OK">Healthy Only</option>'
+                '<option value="STALE">Stale Only</option>'
+                '<option value="NO_STREAM">No Stream Only</option>'
+                "</select></label>"
+                "</div>"
+                '<div class="summary-grid historical-summary-grid">'
+                '<div class="metric"><span>Visible Charts</span><div class="value" id="chartVisibleCount">0</div></div>'
+                '<div class="metric"><span>Visible Instruments</span><div class="value" id="chartInstrumentCount">0</div></div>'
+                '<div class="metric"><span>With Evidence</span><div class="value" id="chartEvidenceCount">0</div></div>'
+                '<div class="metric"><span>Stale Streams</span><div class="value" id="chartStaleCount">0</div></div>'
+                '<div class="metric"><span>No Stream Rows</span><div class="value" id="chartNoStreamCount">0</div></div>'
+                "</div>"
+                "</div>",
+                '<div class="chart-review-grid">',
+                *chart_cards,
+                "</div>",
+                "</section>",
+                self._chart_review_script(),
+                self._dashboard_refresh_script(),
+            ]
+        )
+        return self._render_page(title="Charts", body=body)
+
+    def _monthly_status_tool_href(
+        self,
+        *,
+        page_path: Path,
+        dashboard_root: Path,
+        symbol: str,
+        instrument_group: str,
+    ) -> str:
+        base = os.path.relpath(
+            dashboard_root / "tools" / "monthly-status-calculator" / "index.html",
+            start=page_path.parent,
+        ).replace("\\", "/")
+        return f"{base}?symbol={html.escape(symbol)}&instrument_group={html.escape(instrument_group)}"
+
+    def _render_selected_contract_chart_card(
+        self,
+        row: DashboardTradeLedgerRow,
+        *,
+        page_path: Path,
+    ) -> str:
+        if row.state_directory is None:
+            return (
+                '<div class="chart-review-card empty-panel">'
+                f"<strong>{html.escape(row.selected_contract_symbol)}</strong>"
+                "<p>No state directory is available for chart review.</p>"
+                "</div>"
+            )
+        points = self._selected_contract_chart_points(row.state_directory)
+        summary_html = (
+            f"<div class=\"chart-review-meta\"><span>Strategy</span><strong>{html.escape(row.strategy_code)}</strong></div>"
+            f"<div class=\"chart-review-meta\"><span>Status</span><strong>{html.escape(row.manager_status or row.lifecycle_status)}</strong></div>"
+            f"<div class=\"chart-review-meta\"><span>Points</span><strong>{len(points)}</strong></div>"
+            f"<div class=\"chart-review-meta\"><span>Stream</span><strong>{html.escape(row.stream_health.health_status)}</strong></div>"
+        )
+        events_href = "#"
+        if row.raw_artifact_links.get("Market Events"):
+            events_href = row.raw_artifact_links["Market Events"]
+        instrument_symbol = self._selected_contract_underlying_symbol(row.selected_contract_symbol)
+        chart_html = (
+            self._render_selected_contract_chart_svg(points, symbol=row.selected_contract_symbol)
+            if points
+            else '<div class="chart-review-empty">No selected-contract market events have been persisted yet for this row.</div>'
+        )
+        latest_label = "n/a"
+        if points:
+            latest_label = f"{points[-1][1]:.2f}"
+        return "\n".join(
+            [
+                f'<article class="chart-review-card" data-strategy="{html.escape(row.strategy_code)}" data-instrument="{html.escape(instrument_symbol)}" data-stream="{html.escape(row.stream_health.health_status)}" data-has-points="{"true" if points else "false"}">',
+                '<div class="chart-review-card-header">',
+                f"<div><div class=\"eyebrow\">{html.escape(row.strategy_code)}</div><h3>{html.escape(row.selected_contract_symbol)}</h3></div>",
+                f"<div class=\"chart-review-price\">{html.escape(latest_label)}</div>",
+                "</div>",
+                '<div class="chart-review-meta-grid">',
+                summary_html,
+                "</div>",
+                chart_html,
+                '<div class="chart-review-links">',
+                f'<a href="{html.escape(events_href)}">Market Events</a>',
+                f'<a href="{html.escape(os.path.relpath(page_path.parents[2] / "trades" / "index.html", start=page_path.parent).replace("\\\\", "/"))}">All Trades Monitor</a>',
+                "</div>",
+                "</article>",
+            ]
+        )
+
+    def _selected_contract_chart_points(
+        self,
+        state_directory: Path,
+    ) -> list[tuple[datetime, float]]:
+        points: list[tuple[datetime, float]] = []
+        for event in load_selected_contract_market_events(state_directory):
+            observed_at = self._parse_datetime(event.get("observed_at"))
+            payload = event.get("payload")
+            if observed_at is None or not isinstance(payload, dict):
+                continue
+            raw_price = payload.get("ltp")
+            if raw_price is None:
+                raw_price = payload.get("close")
+            try:
+                price = float(raw_price) if raw_price is not None else None
+            except (TypeError, ValueError):
+                price = None
+            if price is None:
+                continue
+            points.append((observed_at, price))
+        points.sort(key=lambda item: item[0])
+        return points[-80:]
+
+    def _render_selected_contract_chart_svg(
+        self,
+        points: list[tuple[datetime, float]],
+        *,
+        symbol: str,
+    ) -> str:
+        if not points:
+            return '<div class="chart-review-empty">No selected-contract market events have been persisted yet for this row.</div>'
+        width = 860
+        height = 240
+        margin_left = 18
+        margin_right = 18
+        margin_top = 18
+        margin_bottom = 28
+        prices = [price for _at, price in points]
+        min_price = min(prices)
+        max_price = max(prices)
+        if min_price == max_price:
+            min_price -= 1.0
+            max_price += 1.0
+        span = max_price - min_price
+        plot_width = width - margin_left - margin_right
+        plot_height = height - margin_top - margin_bottom
+
+        def x_for(index: int) -> float:
+            if len(points) == 1:
+                return margin_left + plot_width / 2
+            return margin_left + (plot_width * index / (len(points) - 1))
+
+        def y_for(price: float) -> float:
+            return margin_top + ((max_price - price) / span) * plot_height
+
+        polyline = " ".join(
+            f"{x_for(index):.1f},{y_for(price):.1f}"
+            for index, (_timestamp, price) in enumerate(points)
+        )
+        latest_time = points[-1][0].strftime("%H:%M:%S")
+        first_time = points[0][0].strftime("%H:%M:%S")
+        latest_price = prices[-1]
+        low_price = min_price
+        high_price = max_price
+        svg = "\n".join(
+            [
+                f'<svg class="selected-contract-chart" viewBox="0 0 {width} {height}" role="img" aria-label="{html.escape(symbol)} selected-contract market-evidence chart">',
+                f'<rect x="0" y="0" width="{width}" height="{height}" class="selected-contract-chart-bg"></rect>',
+                f'<line x1="{margin_left}" y1="{margin_top}" x2="{margin_left}" y2="{height - margin_bottom}" class="selected-contract-chart-axis"></line>',
+                f'<line x1="{margin_left}" y1="{height - margin_bottom}" x2="{width - margin_right}" y2="{height - margin_bottom}" class="selected-contract-chart-axis"></line>',
+                f'<polyline points="{polyline}" class="selected-contract-chart-line"></polyline>',
+                f'<circle cx="{x_for(len(points) - 1):.1f}" cy="{y_for(latest_price):.1f}" r="4" class="selected-contract-chart-dot"></circle>',
+                f'<text x="{margin_left}" y="{height - 8}" class="selected-contract-chart-label">{html.escape(first_time)}</text>',
+                f'<text x="{width - margin_right}" y="{height - 8}" text-anchor="end" class="selected-contract-chart-label">{html.escape(latest_time)}</text>',
+                f'<text x="{margin_left}" y="{margin_top - 4}" class="selected-contract-chart-label">High {high_price:.2f}</text>',
+                f'<text x="{margin_left}" y="{height - margin_bottom - 6}" class="selected-contract-chart-label">Low {low_price:.2f}</text>',
+                f'<text x="{width - margin_right}" y="{margin_top - 4}" text-anchor="end" class="selected-contract-chart-label">Last {latest_price:.2f}</text>',
+                "</svg>",
+            ]
+        )
+        return f'<div class="selected-contract-chart-wrap">{svg}</div>'
+
+    @staticmethod
+    def _chart_review_script() -> str:
+        return """
+<script>
+(() => {
+  const strategyFilter = document.getElementById("chartStrategyFilter");
+  const instrumentFilter = document.getElementById("chartInstrumentFilter");
+  const streamFilter = document.getElementById("chartStreamFilter");
+  const cards = Array.from(document.querySelectorAll(".chart-review-card[data-strategy]"));
+  const visibleCount = document.getElementById("chartVisibleCount");
+  const instrumentCount = document.getElementById("chartInstrumentCount");
+  const evidenceCount = document.getElementById("chartEvidenceCount");
+  const staleCount = document.getElementById("chartStaleCount");
+  const noStreamCount = document.getElementById("chartNoStreamCount");
+
+  function matches(card) {
+    const strategy = strategyFilter.value;
+    const instrument = instrumentFilter.value;
+    const stream = streamFilter.value;
+    const cardStrategy = card.dataset.strategy || "";
+    const cardInstrument = card.dataset.instrument || "";
+    const cardStream = card.dataset.stream || "";
+    if (strategy !== "ALL" && cardStrategy !== strategy) return false;
+    if (instrument !== "ALL" && cardInstrument !== instrument) return false;
+    if (stream !== "ALL" && cardStream !== stream) return false;
+    return true;
+  }
+
+  function refresh() {
+    let shown = 0;
+    const visibleInstruments = new Set();
+    let evidence = 0;
+    let stale = 0;
+    let noStream = 0;
+    cards.forEach(card => {
+      const show = matches(card);
+      card.style.display = show ? "" : "none";
+      if (!show) return;
+      shown += 1;
+      if (card.dataset.instrument) visibleInstruments.add(card.dataset.instrument);
+      if ((card.dataset.hasPoints || "") === "true") evidence += 1;
+      if ((card.dataset.stream || "") === "STALE") stale += 1;
+      if ((card.dataset.stream || "") === "NO_STREAM") noStream += 1;
+    });
+    visibleCount.textContent = String(shown);
+    instrumentCount.textContent = String(visibleInstruments.size);
+    evidenceCount.textContent = String(evidence);
+    staleCount.textContent = String(stale);
+    noStreamCount.textContent = String(noStream);
+  }
+
+  [strategyFilter, instrumentFilter, streamFilter].forEach(element => {
+    element?.addEventListener("change", refresh);
+  });
+  refresh();
+})();
+</script>
+"""
+
+    @staticmethod
+    def _selected_contract_underlying_symbol(symbol: str) -> str:
+        text = str(symbol or "").strip()
+        if not text:
+            return "UNKNOWN"
+        return text.split("_", 1)[0] or "UNKNOWN"
+
+    def _load_runtime_guardrail_statuses(self) -> list[PaperRuntimeGuardrailStatus]:
+        targets_config = self._repo_root / "config" / "paper_lifecycle_supervisor_targets.yaml"
+        try:
+            return list(load_paper_runtime_guardrail_statuses(targets_config, repo_root=self._repo_root))
+        except Exception as exc:
+            strategy_codes = ",".join(config.strategy_code for config in self._strategy_configs) or "UNKNOWN"
+            return [
+                PaperRuntimeGuardrailStatus(
+                    strategy_code=strategy_code,
+                    status="FAIL",
+                    source_mode=None,
+                    paper_mode_enabled=None,
+                    no_live_orders_allowed=None,
+                    kill_switch_enabled=None,
+                    session_kill_switch_active=None,
+                    message=f"runtime guardrail status unavailable: {type(exc).__name__}: {exc}",
+                )
+                for strategy_code in strategy_codes.split(",")
+                if strategy_code
+            ]
+
+    def _load_runtime_order_routing_statuses(self) -> list[PaperRuntimeOrderRoutingStatus]:
+        targets_config = self._repo_root / "config" / "paper_lifecycle_supervisor_targets.yaml"
+        try:
+            return list(
+                load_paper_runtime_order_routing_statuses(
+                    targets_config,
+                    repo_root=self._repo_root,
+                )
+            )
+        except Exception as exc:
+            strategy_codes = ",".join(config.strategy_code for config in self._strategy_configs) or "UNKNOWN"
+            return [
+                PaperRuntimeOrderRoutingStatus(
+                    strategy_code=strategy_code,
+                    status="FAIL",
+                    provider=None,
+                    no_live_orders_allowed=None,
+                    place_order_blocked=None,
+                    modify_order_blocked=None,
+                    cancel_order_blocked=None,
+                    message=f"order-routing safety unavailable: {type(exc).__name__}: {exc}",
+                )
+                for strategy_code in strategy_codes.split(",")
+                if strategy_code
+            ]
+
+    def _load_runtime_heartbeat_statuses(self) -> list[PaperRuntimeHeartbeatStatus]:
+        targets_config = self._repo_root / "config" / "paper_lifecycle_supervisor_targets.yaml"
+        try:
+            return list(load_paper_runtime_heartbeat_statuses(targets_config, repo_root=self._repo_root))
+        except Exception as exc:
+            strategy_codes = ",".join(config.strategy_code for config in self._strategy_configs) or "UNKNOWN"
+            return [
+                PaperRuntimeHeartbeatStatus(
+                    strategy_code=strategy_code,
+                    status="UNAVAILABLE",
+                    backend="unknown",
+                    live_state_enabled=False,
+                    heartbeat_count=0,
+                    latest_timestamp=None,
+                    latest_trade_id=None,
+                    latest_owner_id=None,
+                    latest_state_directory=None,
+                    latest_selected_contract_symbol=None,
+                    latest_supervisor_pid=None,
+                    age_seconds=None,
+                    message=f"runtime heartbeat status unavailable: {type(exc).__name__}: {exc}",
+                )
+                for strategy_code in strategy_codes.split(",")
+                if strategy_code
+            ]
+
+    def _load_runtime_reconciliation_statuses(self) -> list[PaperRuntimeReconciliationStatus]:
+        targets_config = self._repo_root / "config" / "paper_lifecycle_supervisor_targets.yaml"
+        try:
+            return list(load_paper_runtime_reconciliation_statuses(targets_config, repo_root=self._repo_root))
+        except Exception as exc:
+            strategy_codes = ",".join(config.strategy_code for config in self._strategy_configs) or "UNKNOWN"
+            return [
+                PaperRuntimeReconciliationStatus(
+                    strategy_code=strategy_code,
+                    status="FAIL",
+                    persisted_state_count=0,
+                    checked_trade_count=0,
+                    conflict_count=1,
+                    message=f"runtime reconciliation unavailable: {type(exc).__name__}: {exc}",
+                )
+                for strategy_code in strategy_codes.split(",")
+                if strategy_code
+            ]
+
+    def _load_runtime_fresh_entry_handoff_statuses(self) -> list[PaperRuntimeFreshEntryHandoffStatus]:
+        targets_config = self._repo_root / "config" / "paper_lifecycle_supervisor_targets.yaml"
+        try:
+            return list(load_paper_runtime_fresh_entry_handoff_statuses(targets_config, repo_root=self._repo_root))
+        except Exception as exc:
+            strategy_codes = ",".join(config.strategy_code for config in self._strategy_configs) or "UNKNOWN"
+            return [
+                PaperRuntimeFreshEntryHandoffStatus(
+                    strategy_code=strategy_code,
+                    status="FAIL",
+                    fresh_close_count=0,
+                    resolved_count=0,
+                    unresolved_count=1,
+                    message=f"fresh-entry handoff status unavailable: {type(exc).__name__}: {exc}",
+                )
+                for strategy_code in strategy_codes.split(",")
+                if strategy_code
+            ]
+
+    def _load_fresh_decision_launch_marker(
+        self,
+        state_directory: Path,
+    ) -> PaperFreshDecisionLaunchMarker | None:
+        state_directory = state_directory.resolve()
+        if state_directory not in self._fresh_decision_marker_cache:
+            try:
+                self._fresh_decision_marker_cache[state_directory] = load_fresh_decision_launch_marker(
+                    state_directory
+                )
+            except Exception:
+                self._fresh_decision_marker_cache[state_directory] = None
+        return self._fresh_decision_marker_cache[state_directory]
 
     @staticmethod
     def _dashboard_refresh_script() -> str:
@@ -1557,36 +2482,22 @@ class TfisOperatorDashboardBuilder:
         latest_session_date: date | None = None,
         include_terminal_rows: bool = False,
         anchor_to_current_session: bool = False,
+        anchor_session_date: date | None = None,
     ) -> str:
         effective_latest_session_date = latest_session_date
-        if anchor_to_current_session:
-            current_session_date = datetime.now().date()
-            if (
-                effective_latest_session_date is None
-                or effective_latest_session_date < current_session_date
-            ):
-                effective_latest_session_date = current_session_date
-        if effective_latest_session_date is not None:
-            rows = [
-                row
-                for row in rows
-                if row.event_type != "ORDER_WAITING"
-                or (
-                    row.event_timestamp is not None
-                    and row.event_timestamp.date() == effective_latest_session_date
-                )
-            ]
+        if anchor_session_date is None and anchor_to_current_session:
+            anchor_session_date = datetime.now().date()
         if not rows:
             return '<div class="empty-panel">No paper trades have been recorded yet.</div>'
 
         latest_rows = list(
-            paper_trade_latest_active_rows(
+            paper_trade_latest_monitor_rows(
                 rows,
                 latest_session_date=effective_latest_session_date,
+                anchor_session_date=anchor_session_date,
+                include_terminal_rows=include_terminal_rows,
             )
         )
-        if not include_terminal_rows:
-            latest_rows = [row for row in latest_rows if not self._trade_terminal(row)]
         if not latest_rows:
             return '<div class="empty-panel">No active paper orders or positions for the latest session.</div>'
         summary_counts = paper_trade_summary_counts(latest_rows)
@@ -1616,6 +2527,20 @@ class TfisOperatorDashboardBuilder:
                 "</div>",
             ]
         )
+
+    @staticmethod
+    def _summary_anchor_session_date(
+        strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
+    ) -> date | None:
+        session_dates = [
+            sessions[0].session_date
+            for _config, sessions in strategy_summaries
+            if sessions
+        ]
+        current_session_date = datetime.now().date()
+        if not session_dates:
+            return current_session_date
+        return max((*session_dates, current_session_date))
 
     @staticmethod
     def _trade_terminal(row: DashboardTradeLedgerRow) -> bool:
@@ -1677,7 +2602,22 @@ class TfisOperatorDashboardBuilder:
         return paper_trade_status_labels(row)
 
     def _trade_followup_note(self, row: DashboardTradeLedgerRow) -> str:
-        return paper_trade_followup_note(row)
+        notes: list[str] = []
+        base_note = paper_trade_followup_note(row)
+        if base_note:
+            notes.append(base_note.rstrip("."))
+        if row.fresh_entry_required and row.state_directory is not None:
+            marker = self._load_fresh_decision_launch_marker(row.state_directory)
+            if marker is not None:
+                if marker.mode == "promoted_existing_blocked_decision":
+                    notes.append("Fresh decision handoff promoted an existing blocked READY decision")
+                elif marker.runner_script:
+                    notes.append(f"Fresh decision handoff launched {marker.runner_script}")
+                else:
+                    notes.append("Fresh decision handoff was recorded")
+        if not notes:
+            return ""
+        return ". ".join(notes) + "."
 
     def _trade_row_tone_class(self, row: DashboardTradeLedgerRow) -> str:
         status_kind = paper_trade_status_kind(
@@ -4251,9 +5191,16 @@ class TfisOperatorDashboardBuilder:
         self,
         *,
         monthly_index_path: Path | None,
+        page_path: Path,
     ) -> str:
-        body = r"""
-<nav><a href="../../index.html">Back to dashboard</a></nav>
+        dashboard_root = page_path.parents[2]
+        body = (
+            self._render_operator_nav(
+                dashboard_root=dashboard_root,
+                page_path=page_path,
+                current_key="monthly_status",
+            )
+            + r"""
 <header class="hero">
   <div class="eyebrow">Review Mode</div>
   <h1>Monthly Status Calculator</h1>
@@ -4363,6 +5310,7 @@ const FALLBACK_INSTRUMENTS = [
   { symbol: "TITAN", label: "TITAN", instrument_group: "stock" },
   { symbol: "CHOLAFIN", label: "CHOLAFIN", instrument_group: "stock" }
 ];
+const MONTHLY_QUERY = new URLSearchParams(window.location.search);
 let monthlyInstrumentRegistry = { instruments: FALLBACK_INSTRUMENTS, default_symbol: "NIFTY", default_price_source: "spot" };
 let monthlyChartPayload = null;
 let monthlyChartFrame = "monthly";
@@ -4775,12 +5723,23 @@ function applyInstrumentRegistry(registry) {
   document.getElementById("monthlyPriceSource").value = monthlyInstrumentRegistry.default_price_source || "spot";
   applySelectedInstrumentGroup();
 }
+function applyMonthlyQueryDefaults() {
+  const symbol = MONTHLY_QUERY.get("symbol");
+  const instrumentGroup = MONTHLY_QUERY.get("instrument_group");
+  const priceSource = MONTHLY_QUERY.get("price_source");
+  const reviewDate = MONTHLY_QUERY.get("date");
+  if (symbol) document.getElementById("monthlyInstrument").value = symbol;
+  if (instrumentGroup) document.getElementById("instrumentGroup").value = instrumentGroup;
+  if (priceSource) document.getElementById("monthlyPriceSource").value = priceSource;
+  if (reviewDate) document.getElementById("monthlyReviewDate").value = reviewDate;
+}
 async function initInstrumentRegistry() {
   try {
     applyInstrumentRegistry(await fetchJson("/api/monthly-status/instruments"));
   } catch (error) {
     applyInstrumentRegistry(monthlyInstrumentRegistry);
   }
+  applyMonthlyQueryDefaults();
 }
 function selectedInstrument() {
   const symbol = text("monthlyInstrument");
@@ -4892,11 +5851,18 @@ setMonthlyDefaultDate();
 initInstrumentRegistry().then(() => calculateMonthlyStatus()).catch(() => calculateMonthlyStatus());
 </script>
 """
+        )
         return self._render_page(title="Monthly Status Calculator", body=body)
 
-    def _render_s23_manual_calculator_page(self) -> str:
-        body = r"""
-<nav><a href="../../index.html">Back to dashboard</a></nav>
+    def _render_s23_manual_calculator_page(self, *, page_path: Path) -> str:
+        dashboard_root = page_path.parents[2]
+        body = (
+            self._render_operator_nav(
+                dashboard_root=dashboard_root,
+                page_path=page_path,
+                current_key="manual_s23",
+            )
+            + r"""
 <header class="hero">
   <div class="eyebrow">Review Mode</div>
   <h1>S23 Manual Calculator</h1>
@@ -5273,6 +6239,7 @@ calculateStrikes();
 calculate();
 </script>
 """
+        )
         return self._render_page(title="S23 Manual Calculator", body=body)
 
     @staticmethod
@@ -5473,6 +6440,38 @@ calculate();
                 "    .muted-text { color: var(--muted); font-size: 0.82rem; word-break: break-word; }",
                 "    .empty-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; color: var(--muted); }",
                 "    .tool-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }",
+                "    .operator-nav-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }",
+                "    .operator-nav-link { display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(15,94,89,0.18); background: rgba(255,255,255,0.72); color: var(--accent); border-radius: 999px; padding: 8px 12px; font-size: 0.84rem; font-weight: 700; }",
+                "    .operator-nav-link:hover { text-decoration: none; background: rgba(255,255,255,0.95); }",
+                "    .operator-nav-link-active { background: var(--accent); color: white; border-color: var(--accent); }",
+                "    .operator-status-shell { display: grid; gap: 14px; }",
+                "    .operator-alert-list { display: grid; gap: 10px; }",
+                "    .operator-alert { border-radius: 8px; padding: 11px 12px; border: 1px solid var(--soft-border); background: #fff8ef; color: var(--ink); }",
+                "    .operator-alert-good { border-color: rgba(33,110,57,0.28); background: rgba(33,110,57,0.08); color: var(--good); }",
+                "    .operator-alert-warning { border-color: rgba(148,98,0,0.28); background: rgba(148,98,0,0.09); color: #7a5600; }",
+                "    .operator-alert-bad { border-color: rgba(154,52,18,0.26); background: rgba(154,52,18,0.09); color: var(--bad); }",
+                "    .operator-command-strip { display: flex; flex-wrap: wrap; gap: 8px; }",
+                "    .operator-command-strip code { display: inline-flex; align-items: center; border: 1px solid var(--soft-border); border-radius: 999px; background: #fffaf3; padding: 7px 10px; font-size: 0.78rem; overflow-wrap: anywhere; }",
+                "    .chart-review-summary p { margin: 0 0 14px; }",
+                "    .chart-review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(520px, 100%), 1fr)); gap: 18px; }",
+                "    .chart-review-card { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 18px; display: grid; gap: 14px; }",
+                "    .chart-review-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }",
+                "    .chart-review-card-header h3 { margin: 4px 0 0; font-size: 1.05rem; overflow-wrap: anywhere; }",
+                "    .chart-review-price { font-size: 1.3rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }",
+                "    .chart-review-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }",
+                "    .chart-review-meta { border: 1px solid var(--soft-border); border-radius: 8px; padding: 8px 10px; background: #fffaf3; }",
+                "    .chart-review-meta span { display: block; color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }",
+                "    .chart-review-meta strong { display: block; margin-top: 4px; font-size: 0.92rem; overflow-wrap: anywhere; }",
+                "    .selected-contract-chart-wrap { border: 1px solid #263348; border-radius: 10px; background: #0d1320; overflow: hidden; }",
+                "    .selected-contract-chart { display: block; width: 100%; height: 240px; }",
+                "    .selected-contract-chart-bg { fill: #0d1320; }",
+                "    .selected-contract-chart-axis { stroke: #526174; stroke-width: 1; }",
+                "    .selected-contract-chart-line { fill: none; stroke: #2dd4bf; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }",
+                "    .selected-contract-chart-dot { fill: #facc15; stroke: #0d1320; stroke-width: 2; }",
+                "    .selected-contract-chart-label { fill: #d6dee9; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }",
+                "    .chart-review-empty { display: grid; place-items: center; min-height: 240px; border: 1px dashed #3d4d63; border-radius: 10px; background: #111827; color: #cbd5e1; padding: 16px; text-align: center; }",
+                "    .chart-review-links { display: flex; gap: 12px; flex-wrap: wrap; }",
+                "    .chart-review-links a { font-weight: 700; }",
                 "    .tool-link, button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--accent); background: var(--accent); color: white; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; font: inherit; }",
                 "    .tool-link:hover, button:hover { text-decoration: none; filter: brightness(0.95); }",
                 "    button[type='button'] { background: #fff8ef; color: var(--accent); }",

@@ -12,16 +12,13 @@ import yaml
 from tfis.brokers import (
     BrokerAdapter,
     BrokerAdapterError,
-    BrokerCredentialsError,
-    FyersBrokerAdapter,
 )
-from tfis.brokers.fyers import FyersCredentials
 
 from .ingress_dry_run import (
-    S23NormalizedPaperEventLoader,
-    S23PaperIngressDryRunArtifactSet,
-    S23PaperIngressDryRunRunner,
-    S23PaperIngressDryRunThresholds,
+    PaperNormalizedEventLoader,
+    PaperIngressDryRunArtifactSet,
+    PaperIngressDryRunRunner,
+    PaperIngressDryRunThresholds,
 )
 from .models import (
     CostSlippageSettingsEvent,
@@ -32,6 +29,12 @@ from .models import (
     SnapshotLabel,
 )
 from .validation import PaperEvent, required_snapshot_labels_for_config
+from .lifecycle_runtime_config import (
+    PaperLifecycleBrokerConfig,
+    PaperLifecycleRuntimeConfigError,
+    build_paper_broker_adapter_from_broker_config,
+    paper_broker_credentials_available,
+)
 
 
 _ARTIFACT_VERSION = 1
@@ -334,7 +337,7 @@ class PaperLiveIngressPreflightSummary:
 @dataclass(frozen=True, slots=True)
 class PaperLiveIngressArtifactSet:
     session_directory: Path
-    dry_run_artifacts: S23PaperIngressDryRunArtifactSet
+    dry_run_artifacts: PaperIngressDryRunArtifactSet
     broker_health_path: Path
     normalized_events_path: Path
     ingress_summary_path: Path
@@ -346,11 +349,11 @@ class PaperBrokerPaperIngressRunner:
     def __init__(
         self,
         *,
-        loader: S23NormalizedPaperEventLoader | None = None,
-        dry_run_runner_factory: type[S23PaperIngressDryRunRunner] = S23PaperIngressDryRunRunner,
+        loader: PaperNormalizedEventLoader | None = None,
+        dry_run_runner_factory: type[PaperIngressDryRunRunner] = PaperIngressDryRunRunner,
         artifact_root: str | Path = _DEFAULT_ARTIFACT_ROOT,
     ) -> None:
-        self._loader = loader or S23NormalizedPaperEventLoader()
+        self._loader = loader or PaperNormalizedEventLoader()
         self._dry_run_runner_factory = dry_run_runner_factory
         self._artifact_root = Path(artifact_root)
 
@@ -455,7 +458,7 @@ class PaperBrokerPaperIngressRunner:
 
         dry_run_runner = self._dry_run_runner_factory(
             artifact_writer=self._artifact_writer(),
-            thresholds=S23PaperIngressDryRunThresholds(
+            thresholds=PaperIngressDryRunThresholds(
                 max_stale_events=config.thresholds.max_stale_events,
                 max_timing_drift_seconds=config.thresholds.max_timing_drift_seconds,
                 max_missing_chains=config.thresholds.max_missing_chains,
@@ -578,7 +581,7 @@ class PaperBrokerPaperIngressRunner:
 
     def render_markdown(self, summary: PaperLiveIngressSummary) -> str:
         lines = [
-            "# S23 Fyers Live-Paper Ingress Summary",
+            "# Paper Broker Live-Paper Ingress Summary",
             "",
             f"- broker: `{summary.broker_name}`",
             f"- source mode: `{summary.source_mode}`",
@@ -617,7 +620,7 @@ class PaperBrokerPaperIngressRunner:
         summary: PaperLiveIngressPreflightSummary,
     ) -> str:
         lines = [
-            "# S23 Fyers Live-Paper Ingress Preflight",
+            "# Paper Broker Live-Paper Ingress Preflight",
             "",
             f"- provider: `{summary.provider}`",
             f"- session id: `{summary.session_id}`",
@@ -670,23 +673,27 @@ class PaperBrokerPaperIngressRunner:
                 "## Safety Note",
                 "",
                 f"- {summary.explicit_disclaimer}",
-                "- Preflight only never connects to FYERS and never places orders.",
+                "- Preflight only never connects to the configured broker and never places orders.",
             ]
         )
         return "\n".join(lines) + "\n"
 
     def _build_adapter(self, config: PaperLiveIngressConfig) -> BrokerAdapter:
-        if config.broker.provider != "fyers":
+        try:
+            return build_paper_broker_adapter_from_broker_config(
+                PaperLifecycleBrokerConfig(
+                    provider=config.broker.provider,
+                    timezone=config.broker.timezone,
+                    payload_fixture_path=config.broker.payload_fixture_path,
+                    capture_stream_events=config.broker.capture_stream_events,
+                    option_chain_strike_count=config.broker.option_chain_strike_count,
+                )
+            )
+        except PaperLifecycleRuntimeConfigError as exc:
             raise PaperLiveIngressError(
-                f"Unsupported broker provider for the first live-paper ingress rollout: "
+                "Unsupported broker provider for the first live-paper ingress rollout: "
                 f"{config.broker.provider}"
-            )
-        if config.broker.payload_fixture_path:
-            return FyersBrokerAdapter.from_payload_file(
-                config.broker.payload_fixture_path,
-                source_timezone=config.broker.timezone,
-            )
-        return FyersBrokerAdapter(source_timezone=config.broker.timezone)
+            ) from exc
 
     def _artifact_writer(self):
         from .artifacts import S23PaperSessionArtifactWriter
@@ -992,13 +999,20 @@ class PaperBrokerPaperIngressRunner:
                 )
             )
         if config.broker.payload_fixture_path is None and not adapter_supplied:
-            try:
-                FyersCredentials.from_env()
-            except BrokerCredentialsError as exc:
+            credentials_ready, message = paper_broker_credentials_available(
+                PaperLifecycleBrokerConfig(
+                    provider=config.broker.provider,
+                    timezone=config.broker.timezone,
+                    payload_fixture_path=config.broker.payload_fixture_path,
+                    capture_stream_events=config.broker.capture_stream_events,
+                    option_chain_strike_count=config.broker.option_chain_strike_count,
+                )
+            )
+            if not credentials_ready:
                 issues.append(
                     self._issue(
                         "missing_broker_credentials",
-                        str(exc),
+                        message or "Broker credentials are unavailable.",
                     )
                 )
         else:
@@ -1135,15 +1149,16 @@ class PaperBrokerPaperIngressRunner:
         return tuple(dict.fromkeys(labels))
 
     def _credentials_present(self, config: PaperLiveIngressConfig) -> bool:
-        if config.broker.payload_fixture_path is not None:
-            return False
-        try:
-            from tfis.brokers.fyers import FyersCredentials
-
-            FyersCredentials.from_env()
-        except BrokerCredentialsError:
-            return False
-        return True
+        credentials_ready, _message = paper_broker_credentials_available(
+            PaperLifecycleBrokerConfig(
+                provider=config.broker.provider,
+                timezone=config.broker.timezone,
+                payload_fixture_path=config.broker.payload_fixture_path,
+                capture_stream_events=config.broker.capture_stream_events,
+                option_chain_strike_count=config.broker.option_chain_strike_count,
+            )
+        )
+        return credentials_ready and config.broker.payload_fixture_path is None
 
     def _derive_preflight_status(
         self,

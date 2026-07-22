@@ -11,12 +11,12 @@ from typing import Any
 from tfis.domain import ExpiryType, OptionType, RolloverPolicy, StrategyRule
 
 from .expiry_governance import PaperExpiryGovernance
-from .live_decision import S23PaperLiveDecisionResult, S23PaperTradeDecisionSummary
+from .live_decision import PaperLiveDecisionResult, S23PaperTradeDecisionSummary
 from .models import SelectedContractBarEvent, SelectedContractQuoteEvent
-from .order_state import S23PaperOrderState, S23PaperOrderStatus
+from .order_state import PaperOrderState, PaperOrderStatus
 from .position_state import (
-    S23PaperPositionState,
-    S23PaperPositionStateStore,
+    PaperPositionState,
+    PaperPositionStateStore,
     paper_position_is_no_longer_open,
 )
 from .trade_ledger import (
@@ -24,19 +24,21 @@ from .trade_ledger import (
     S23PaperTradeLedgerStore,
     paper_trade_event_type_for_manager_status,
 )
-from .live_state_store import NullS23PaperLiveStateStore, S23PaperLiveStateStore
+from .live_state_store import NullPaperLiveStateStore, PaperLiveStateStore
 
 
 _ARTIFACT_VERSION = 1
 _MANAGER_EVENTS_FILENAME = "paper_position_manager_events.jsonl"
 _MANAGER_SUMMARY_FILENAME = "paper_position_manager_summary.json"
 
+S23PaperPositionState = PaperPositionState
 
-class S23PaperPositionManagerError(RuntimeError):
+
+class PaperPositionManagerError(RuntimeError):
     """Raised when a multi-day S23 paper position cannot be managed safely."""
 
 
-class S23PaperPositionManagerStatus(str, Enum):
+class PaperPositionManagerStatus(str, Enum):
     PAPER_POSITION_OPENED = "PAPER_POSITION_OPENED"
     PAPER_POSITION_HELD = "PAPER_POSITION_HELD"
     PAPER_POSITION_TARGET_HIT = "PAPER_POSITION_TARGET_HIT"
@@ -50,11 +52,11 @@ class S23PaperPositionManagerStatus(str, Enum):
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperPositionManagerEvent:
+class PaperPositionManagerEvent:
     artifact_version: int
     timestamp: datetime
     session_date: date
-    status: S23PaperPositionManagerStatus
+    status: PaperPositionManagerStatus
     selected_contract_symbol: str
     reason_code: str
     message: str
@@ -73,18 +75,18 @@ class S23PaperPositionManagerEvent:
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperPositionManagerResult:
+class PaperPositionManagerResult:
     artifact_version: int
     session_date: date
-    status: S23PaperPositionManagerStatus
-    state: S23PaperPositionState
-    event: S23PaperPositionManagerEvent
+    status: PaperPositionManagerStatus
+    state: PaperPositionState
+    event: PaperPositionManagerEvent
     state_path: Path
     manager_events_path: Path
     manager_summary_path: Path
 
 
-class S23PaperPositionManager:
+class PaperPositionManager:
     """Manages S23 paper positions across sessions from selected-contract prices.
 
     This class is deliberately adapter-agnostic. A live runner can feed it FYERS
@@ -95,14 +97,14 @@ class S23PaperPositionManager:
     def __init__(
         self,
         *,
-        state_store: S23PaperPositionStateStore | None = None,
+        state_store: PaperPositionStateStore | None = None,
         ledger_store: S23PaperTradeLedgerStore | None = None,
-        live_state_store: S23PaperLiveStateStore | None = None,
+        live_state_store: PaperLiveStateStore | None = None,
         slippage_exit_points: float = 0.0,
     ) -> None:
-        self._state_store = state_store or S23PaperPositionStateStore()
+        self._state_store = state_store or PaperPositionStateStore()
         self._ledger_store = ledger_store or S23PaperTradeLedgerStore()
-        self._live_state_store = live_state_store or NullS23PaperLiveStateStore()
+        self._live_state_store = live_state_store or NullPaperLiveStateStore()
         self._slippage_exit_points = float(slippage_exit_points)
 
     def open_from_live_decision(
@@ -110,11 +112,11 @@ class S23PaperPositionManager:
         session_directory: str | Path,
         *,
         strategy_rule: StrategyRule,
-        decision: S23PaperLiveDecisionResult | S23PaperTradeDecisionSummary,
+        decision: PaperLiveDecisionResult | S23PaperTradeDecisionSummary,
         opened_at: datetime,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionManagerResult:
-        summary = decision.summary if isinstance(decision, S23PaperLiveDecisionResult) else decision
+    ) -> PaperPositionManagerResult:
+        summary = decision.summary if isinstance(decision, PaperLiveDecisionResult) else decision
         self._validate_ready_summary(summary)
         assert summary.selected_contract_symbol is not None
         assert summary.selected_contract_expiry is not None
@@ -126,7 +128,7 @@ class S23PaperPositionManager:
         try:
             option_type = OptionType(summary.selected_contract_option_type)
         except ValueError as exc:
-            raise S23PaperPositionManagerError(
+            raise PaperPositionManagerError(
                 f"Unsupported selected option type: {summary.selected_contract_option_type}"
             ) from exc
 
@@ -165,11 +167,11 @@ class S23PaperPositionManager:
         )
         session_dir = Path(session_directory)
         state_path = self._state_store.save_state(session_dir, state)
-        event = S23PaperPositionManagerEvent(
+        event = PaperPositionManagerEvent(
             artifact_version=_ARTIFACT_VERSION,
             timestamp=opened_at,
             session_date=summary.session_date,
-            status=S23PaperPositionManagerStatus.PAPER_POSITION_OPENED,
+            status=PaperPositionManagerStatus.PAPER_POSITION_OPENED,
             selected_contract_symbol=state.selected_contract_symbol,
             reason_code="paper_position_opened_from_ready_decision",
             message="S23 READY decision was persisted as an open multi-day paper position.",
@@ -190,22 +192,22 @@ class S23PaperPositionManager:
         session_directory: str | Path,
         *,
         strategy_rule: StrategyRule | None = None,
-        order_state: S23PaperOrderState,
+        order_state: PaperOrderState,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionManagerResult:
-        if order_state.status is not S23PaperOrderStatus.PAPER_ORDER_FILLED:
-            raise S23PaperPositionManagerError(
+    ) -> PaperPositionManagerResult:
+        if order_state.status is not PaperOrderStatus.PAPER_ORDER_FILLED:
+            raise PaperPositionManagerError(
                 "Cannot open paper position from an S23 paper order that is not filled."
             )
         if order_state.fill_price is None or order_state.fill_timestamp is None:
-            raise S23PaperPositionManagerError(
+            raise PaperPositionManagerError(
                 "Cannot open paper position from filled order without fill price and timestamp."
             )
 
         try:
             option_type = OptionType(order_state.selected_contract_option_type)
         except ValueError as exc:
-            raise S23PaperPositionManagerError(
+            raise PaperPositionManagerError(
                 f"Unsupported selected option type: {order_state.selected_contract_option_type}"
             ) from exc
         try:
@@ -220,7 +222,7 @@ class S23PaperPositionManager:
                 else RolloverPolicy(order_state.rollover_policy)
             )
         except ValueError as exc:
-            raise S23PaperPositionManagerError(
+            raise PaperPositionManagerError(
                 "Unsupported expiry policy in filled paper order."
             ) from exc
         forced_close_time = (
@@ -285,11 +287,11 @@ class S23PaperPositionManager:
         )
         session_dir = Path(session_directory)
         state_path = self._state_store.save_state(session_dir, state)
-        event = S23PaperPositionManagerEvent(
+        event = PaperPositionManagerEvent(
             artifact_version=_ARTIFACT_VERSION,
             timestamp=order_state.fill_timestamp,
             session_date=order_state.entry_date,
-            status=S23PaperPositionManagerStatus.PAPER_POSITION_OPENED,
+            status=PaperPositionManagerStatus.PAPER_POSITION_OPENED,
             selected_contract_symbol=state.selected_contract_symbol,
             reason_code="paper_position_opened_from_filled_order",
             message="S23 paper order filled; persisted as an open multi-day paper position.",
@@ -318,15 +320,15 @@ class S23PaperPositionManager:
         expiry_governance: PaperExpiryGovernance | None = None,
         allow_reverse_on_stoploss: bool = True,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionManagerResult:
+    ) -> PaperPositionManagerResult:
         session_dir = Path(session_directory)
         state = self._state_store.load_state(session_dir)
         if paper_position_is_no_longer_open(state.lifecycle_status):
-            event = S23PaperPositionManagerEvent(
+            event = PaperPositionManagerEvent(
                 artifact_version=_ARTIFACT_VERSION,
                 timestamp=evaluated_at,
                 session_date=session_date,
-                status=S23PaperPositionManagerStatus.PAPER_POSITION_ALREADY_CLOSED,
+                status=PaperPositionManagerStatus.PAPER_POSITION_ALREADY_CLOSED,
                 selected_contract_symbol=state.selected_contract_symbol,
                 reason_code="position_not_open",
                 message="Persisted S23 paper position is no longer open.",
@@ -355,11 +357,11 @@ class S23PaperPositionManager:
                     message=expiry_decision.message,
                     provenance_source_ids=provenance_source_ids,
                 )
-                event = S23PaperPositionManagerEvent(
+                event = PaperPositionManagerEvent(
                     artifact_version=_ARTIFACT_VERSION,
                     timestamp=evaluated_at,
                     session_date=session_date,
-                    status=S23PaperPositionManagerStatus.PAPER_POSITION_ROLLOVER_REQUIRED,
+                    status=PaperPositionManagerStatus.PAPER_POSITION_ROLLOVER_REQUIRED,
                     selected_contract_symbol=state.selected_contract_symbol,
                     reason_code="rollover_required_before_session_processing",
                     message=(
@@ -519,14 +521,14 @@ class S23PaperPositionManager:
             )
 
         if not market_events:
-            status = S23PaperPositionManagerStatus.PAPER_POSITION_NO_MARKET_DATA
+            status = PaperPositionManagerStatus.PAPER_POSITION_NO_MARKET_DATA
             reason_code = "missing_selected_contract_market_data"
             message = (
                 "No selected-contract market events were available; the open paper "
                 "position remains unchanged and must be resumed with fresh data."
             )
         else:
-            status = S23PaperPositionManagerStatus.PAPER_POSITION_HELD
+            status = PaperPositionManagerStatus.PAPER_POSITION_HELD
             reason_code = "no_exit_threshold_hit"
             message = (
                 "No target, stoploss, FSL, expiry, or rollover condition was hit; "
@@ -535,7 +537,7 @@ class S23PaperPositionManager:
         current_price, current_bid, current_ask, current_kind, current_id, current_timestamp = (
             self._latest_market_reference(state, market_events)
         )
-        event = S23PaperPositionManagerEvent(
+        event = PaperPositionManagerEvent(
             artifact_version=_ARTIFACT_VERSION,
             timestamp=evaluated_at,
             session_date=session_date,
@@ -570,7 +572,7 @@ class S23PaperPositionManager:
         evaluated_at: datetime,
         allow_reverse_on_stoploss: bool,
         stoploss_enabled: bool = True,
-    ) -> S23PaperPositionManagerEvent | None:
+    ) -> PaperPositionManagerEvent | None:
         for event in self._sorted_market_events(market_events):
             if event.symbol != state.selected_contract_symbol:
                 continue
@@ -614,7 +616,7 @@ class S23PaperPositionManager:
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         evaluated_at: datetime,
         provenance_source_ids: tuple[str, ...],
-    ) -> tuple[S23PaperPositionManagerEvent | None, S23PaperPositionState]:
+    ) -> tuple[PaperPositionManagerEvent | None, S23PaperPositionState]:
         orpt_time = state.stoploss_reset_orpt_time or time(9, 24, 59)
         rc_time = state.stoploss_reset_rc_time or time(9, 29, 59)
         current_time = evaluated_at.timetz().replace(tzinfo=None)
@@ -776,12 +778,12 @@ class S23PaperPositionManager:
         source_id: str | None,
         source_timestamp: datetime | None,
         stop_price: float | None,
-    ) -> S23PaperPositionManagerEvent:
-        return S23PaperPositionManagerEvent(
+    ) -> PaperPositionManagerEvent:
+        return PaperPositionManagerEvent(
             artifact_version=_ARTIFACT_VERSION,
             timestamp=source_timestamp or evaluated_at,
             session_date=session_date,
-            status=S23PaperPositionManagerStatus.PAPER_POSITION_HELD,
+            status=PaperPositionManagerStatus.PAPER_POSITION_HELD,
             selected_contract_symbol=state.selected_contract_symbol,
             reason_code=reason_code,
             message=message,
@@ -824,7 +826,7 @@ class S23PaperPositionManager:
         session_date: date,
         evaluated_at: datetime,
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
-    ) -> S23PaperPositionManagerEvent | None:
+    ) -> PaperPositionManagerEvent | None:
         if evaluated_at.timetz().replace(tzinfo=None) < time(15, 0):
             return None
         current_price, current_bid, current_ask, source_kind, source_id, source_timestamp = (
@@ -839,7 +841,7 @@ class S23PaperPositionManager:
             return self._exit_event(
                 session_date=session_date,
                 event_timestamp=timestamp,
-                status=S23PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED,
+                status=PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED,
                 selected_contract_symbol=state.selected_contract_symbol,
                 reason_code="s23_1500_close_above_original_sl",
                 message=(
@@ -856,11 +858,11 @@ class S23PaperPositionManager:
                 target_price=state.target_price,
                 stop_price=original_stoploss,
             )
-        return S23PaperPositionManagerEvent(
+        return PaperPositionManagerEvent(
             artifact_version=_ARTIFACT_VERSION,
             timestamp=timestamp,
             session_date=session_date,
-            status=S23PaperPositionManagerStatus.PAPER_POSITION_HELD,
+            status=PaperPositionManagerStatus.PAPER_POSITION_HELD,
             selected_contract_symbol=state.selected_contract_symbol,
             reason_code="s23_1500_carry_forward_stop_inactive",
             message=(
@@ -886,7 +888,7 @@ class S23PaperPositionManager:
         event: SelectedContractQuoteEvent,
         allow_reverse_on_stoploss: bool,
         stoploss_enabled: bool = True,
-    ) -> S23PaperPositionManagerEvent | None:
+    ) -> PaperPositionManagerEvent | None:
         exit_reference = (
             float(event.ask)
             if event.ask is not None
@@ -901,9 +903,9 @@ class S23PaperPositionManager:
                 session_date=session_date,
                 event_timestamp=event.envelope.effective_timestamp,
                 status=(
-                    S23PaperPositionManagerStatus.PAPER_POSITION_REVERSE_ENTRY_REQUIRED
+                    PaperPositionManagerStatus.PAPER_POSITION_REVERSE_ENTRY_REQUIRED
                     if allow_reverse_on_stoploss
-                    else S23PaperPositionManagerStatus.PAPER_POSITION_STOPLOSS_HIT
+                    else PaperPositionManagerStatus.PAPER_POSITION_STOPLOSS_HIT
                 ),
                 selected_contract_symbol=state.selected_contract_symbol,
                 reason_code="stoploss_or_fsl_hit",
@@ -928,7 +930,7 @@ class S23PaperPositionManager:
             return self._exit_event(
                 session_date=session_date,
                 event_timestamp=event.envelope.effective_timestamp,
-                status=S23PaperPositionManagerStatus.PAPER_POSITION_FRESH_ENTRY_REQUIRED,
+                status=PaperPositionManagerStatus.PAPER_POSITION_FRESH_ENTRY_REQUIRED,
                 selected_contract_symbol=state.selected_contract_symbol,
                 reason_code="target_hit",
                 message=(
@@ -957,7 +959,7 @@ class S23PaperPositionManager:
         event: SelectedContractBarEvent,
         allow_reverse_on_stoploss: bool,
         stoploss_enabled: bool = True,
-    ) -> S23PaperPositionManagerEvent | None:
+    ) -> PaperPositionManagerEvent | None:
         if event.high is None or event.low is None:
             return None
         high = float(event.high)
@@ -975,9 +977,9 @@ class S23PaperPositionManager:
                 session_date=session_date,
                 event_timestamp=event.bar_end,
                 status=(
-                    S23PaperPositionManagerStatus.PAPER_POSITION_REVERSE_ENTRY_REQUIRED
+                    PaperPositionManagerStatus.PAPER_POSITION_REVERSE_ENTRY_REQUIRED
                     if allow_reverse_on_stoploss
-                    else S23PaperPositionManagerStatus.PAPER_POSITION_STOPLOSS_HIT
+                    else PaperPositionManagerStatus.PAPER_POSITION_STOPLOSS_HIT
                 ),
                 selected_contract_symbol=state.selected_contract_symbol,
                 reason_code=reason,
@@ -999,7 +1001,7 @@ class S23PaperPositionManager:
             return self._exit_event(
                 session_date=session_date,
                 event_timestamp=event.bar_end,
-                status=S23PaperPositionManagerStatus.PAPER_POSITION_FRESH_ENTRY_REQUIRED,
+                status=PaperPositionManagerStatus.PAPER_POSITION_FRESH_ENTRY_REQUIRED,
                 selected_contract_symbol=state.selected_contract_symbol,
                 reason_code="target_hit",
                 message=(
@@ -1026,16 +1028,16 @@ class S23PaperPositionManager:
         evaluated_at: datetime,
         market_events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
         message: str,
-    ) -> S23PaperPositionManagerEvent:
+    ) -> PaperPositionManagerEvent:
         price, source_kind, source_id, source_timestamp = self._latest_exit_price(
             state,
             market_events,
         )
-        return S23PaperPositionManagerEvent(
+        return PaperPositionManagerEvent(
             artifact_version=_ARTIFACT_VERSION,
             timestamp=source_timestamp or evaluated_at,
             session_date=session_date,
-            status=S23PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED,
+            status=PaperPositionManagerStatus.PAPER_POSITION_FORCE_CLOSED,
             selected_contract_symbol=state.selected_contract_symbol,
             reason_code="expiry_force_close",
             message=message,
@@ -1109,7 +1111,7 @@ class S23PaperPositionManager:
         *,
         session_date: date,
         event_timestamp: datetime,
-        status: S23PaperPositionManagerStatus,
+        status: PaperPositionManagerStatus,
         selected_contract_symbol: str,
         reason_code: str,
         message: str,
@@ -1124,8 +1126,8 @@ class S23PaperPositionManager:
         stop_price: float,
         reverse_entry_required: bool = False,
         fresh_entry_required: bool = False,
-    ) -> S23PaperPositionManagerEvent:
-        return S23PaperPositionManagerEvent(
+    ) -> PaperPositionManagerEvent:
+        return PaperPositionManagerEvent(
             artifact_version=_ARTIFACT_VERSION,
             timestamp=event_timestamp,
             session_date=session_date,
@@ -1170,7 +1172,7 @@ class S23PaperPositionManager:
     @staticmethod
     def _validate_ready_summary(summary: S23PaperTradeDecisionSummary) -> None:
         if summary.status != "READY":
-            raise S23PaperPositionManagerError(
+            raise PaperPositionManagerError(
                 f"Cannot open paper position from decision status {summary.status!r}."
             )
         missing = [
@@ -1186,7 +1188,7 @@ class S23PaperPositionManager:
             if getattr(summary, name) is None
         ]
         if missing:
-            raise S23PaperPositionManagerError(
+            raise PaperPositionManagerError(
                 "Cannot open paper position; decision summary is missing "
                 + ", ".join(missing)
             )
@@ -1196,15 +1198,15 @@ class S23PaperPositionManager:
         session_directory: Path,
         *,
         session_date: date,
-        status: S23PaperPositionManagerStatus,
+        status: PaperPositionManagerStatus,
         state: S23PaperPositionState,
-        event: S23PaperPositionManagerEvent,
+        event: PaperPositionManagerEvent,
         state_path: Path,
-    ) -> S23PaperPositionManagerResult:
+    ) -> PaperPositionManagerResult:
         events_path = session_directory / _MANAGER_EVENTS_FILENAME
         summary_path = session_directory / _MANAGER_SUMMARY_FILENAME
         self._append_jsonl(events_path, event)
-        result = S23PaperPositionManagerResult(
+        result = PaperPositionManagerResult(
             artifact_version=_ARTIFACT_VERSION,
             session_date=session_date,
             status=status,
@@ -1267,11 +1269,11 @@ class S23PaperPositionManager:
 
     @staticmethod
     def _ledger_event_type(
-        status: S23PaperPositionManagerStatus,
+        status: PaperPositionManagerStatus,
     ) -> S23PaperTradeLedgerEventType:
         return paper_trade_event_type_for_manager_status(status.value)
 
-    def _append_jsonl(self, path: Path, event: S23PaperPositionManagerEvent) -> None:
+    def _append_jsonl(self, path: Path, event: PaperPositionManagerEvent) -> None:
         existing = path.read_text(encoding="utf-8") if path.exists() else ""
         rendered = existing + json.dumps(self._normalize(event), sort_keys=True) + "\n"
         self._atomic_write_text(path, rendered)
@@ -1324,25 +1326,25 @@ class S23PaperPositionManager:
 def build_paper_position_manager(
     *,
     strategy_code: str,
-    live_state_store: S23PaperLiveStateStore | None = None,
+    live_state_store: PaperLiveStateStore | None = None,
     slippage_exit_points: float = 0.0,
-) -> S23PaperPositionManager:
+) -> PaperPositionManager:
     normalized_strategy_code = strategy_code.strip().upper()
     if normalized_strategy_code in {"S21", "S23"}:
-        return S23PaperPositionManager(
+        return PaperPositionManager(
             live_state_store=live_state_store,
             slippage_exit_points=slippage_exit_points,
         )
-    raise S23PaperPositionManagerError(
+    raise PaperPositionManagerError(
         f"Unsupported paper position manager strategy code: {strategy_code}"
     )
 
 
-PaperPositionManager = S23PaperPositionManager
-PaperPositionManagerError = S23PaperPositionManagerError
-PaperPositionManagerEvent = S23PaperPositionManagerEvent
-PaperPositionManagerResult = S23PaperPositionManagerResult
-PaperPositionManagerStatus = S23PaperPositionManagerStatus
+S23PaperPositionManager = PaperPositionManager
+S23PaperPositionManagerError = PaperPositionManagerError
+S23PaperPositionManagerEvent = PaperPositionManagerEvent
+S23PaperPositionManagerResult = PaperPositionManagerResult
+S23PaperPositionManagerStatus = PaperPositionManagerStatus
 
 
 __all__ = [

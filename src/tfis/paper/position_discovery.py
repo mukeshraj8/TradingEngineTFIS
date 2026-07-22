@@ -6,9 +6,9 @@ from datetime import datetime
 from pathlib import Path
 
 from .position_state import (
-    S23PaperPositionState,
-    S23PaperPositionStateStore,
-    S23PaperPositionStateStatus,
+    PaperPositionState,
+    PaperPositionStateStore,
+    PaperPositionStateStatus,
     paper_position_is_active,
     paper_position_blocks_new_entry,
 )
@@ -18,7 +18,7 @@ from .position_state import (
 class S23OpenPaperPositionCandidate:
     state_directory: Path
     state_path: Path
-    state: S23PaperPositionState
+    state: PaperPositionState
     modified_timestamp: float
 
 
@@ -36,10 +36,10 @@ class S23OpenPaperPositionDiscovery:
     def __init__(
         self,
         *,
-        state_store: S23PaperPositionStateStore | None = None,
+        state_store: PaperPositionStateStore | None = None,
         state_filename: str = "paper_position_state.json",
     ) -> None:
-        self._state_store = state_store or S23PaperPositionStateStore()
+        self._state_store = state_store or PaperPositionStateStore()
         self._state_filename = state_filename
 
     def find_open_positions(
@@ -70,7 +70,7 @@ class S23OpenPaperPositionDiscovery:
             predicate=lambda state: (
                 paper_position_blocks_new_entry(state.lifecycle_status)
                 or state.lifecycle_status
-                is S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED
+                is PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED
             ),
         )
 

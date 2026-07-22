@@ -12,7 +12,7 @@ import yaml
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperLiveStateSettings:
+class PaperLiveStateSettings:
     enabled: bool = False
     provider: str = "redis"
     root: str = "tmp/live_state"
@@ -27,11 +27,27 @@ class S23PaperLiveStateSettings:
     redis_password: str | None = None
 
     @classmethod
-    def from_mapping(cls, data: dict[str, Any] | None) -> "S23PaperLiveStateSettings":
+    def from_mapping(cls, data: dict[str, Any] | None) -> "PaperLiveStateSettings":
         root = data or {}
         storage = root.get("storage") if isinstance(root.get("storage"), dict) else {}
-        live_state = storage.get("live_state") if isinstance(storage.get("live_state"), dict) else {}
-        redis_cfg = storage.get("redis") if isinstance(storage.get("redis"), dict) else {}
+        live_state = (
+            storage.get("live_state")
+            if isinstance(storage.get("live_state"), dict)
+            else (
+                root.get("live_state")
+                if isinstance(root.get("live_state"), dict)
+                else {}
+            )
+        )
+        redis_cfg = (
+            storage.get("redis")
+            if isinstance(storage.get("redis"), dict)
+            else (
+                root.get("redis")
+                if isinstance(root.get("redis"), dict)
+                else {}
+            )
+        )
         return cls(
             enabled=bool(live_state.get("enabled", False)),
             provider=str(live_state.get("provider", "redis")),
@@ -48,7 +64,7 @@ class S23PaperLiveStateSettings:
         )
 
     @classmethod
-    def from_yaml(cls, path: str | Path) -> "S23PaperLiveStateSettings":
+    def from_yaml(cls, path: str | Path) -> "PaperLiveStateSettings":
         target = Path(path)
         if not target.exists():
             return cls()
@@ -76,7 +92,7 @@ class S23PaperLiveStateSettings:
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperLiveStateStoreDiagnostics:
+class PaperLiveStateStoreDiagnostics:
     enabled: bool
     provider: str
     backend: str
@@ -85,8 +101,8 @@ class S23PaperLiveStateStoreDiagnostics:
     exception_type: str | None = None
 
 
-class S23PaperLiveStateStore:
-    def __init__(self, settings: S23PaperLiveStateSettings) -> None:
+class PaperLiveStateStore:
+    def __init__(self, settings: PaperLiveStateSettings) -> None:
         self.settings = settings
 
     def mirror_position_state(
@@ -142,9 +158,9 @@ class S23PaperLiveStateStore:
         )
 
 
-class NullS23PaperLiveStateStore(S23PaperLiveStateStore):
-    def __init__(self, settings: S23PaperLiveStateSettings | None = None) -> None:
-        super().__init__(settings or S23PaperLiveStateSettings())
+class NullPaperLiveStateStore(PaperLiveStateStore):
+    def __init__(self, settings: PaperLiveStateSettings | None = None) -> None:
+        super().__init__(settings or PaperLiveStateSettings())
 
     def mirror_position_state(
         self,
@@ -186,9 +202,9 @@ class NullS23PaperLiveStateStore(S23PaperLiveStateStore):
         return None
 
 
-class InMemoryS23PaperLiveStateStore(S23PaperLiveStateStore):
-    def __init__(self, settings: S23PaperLiveStateSettings | None = None) -> None:
-        super().__init__(settings or S23PaperLiveStateSettings(enabled=True))
+class InMemoryPaperLiveStateStore(PaperLiveStateStore):
+    def __init__(self, settings: PaperLiveStateSettings | None = None) -> None:
+        super().__init__(settings or PaperLiveStateSettings(enabled=True))
         self.values: dict[str, str] = {}
         self.lists: dict[str, list[str]] = {}
         self.locks: dict[str, str] = {}
@@ -243,8 +259,8 @@ class InMemoryS23PaperLiveStateStore(S23PaperLiveStateStore):
             self.locks.pop(key, None)
 
 
-class RedisS23PaperLiveStateStore(S23PaperLiveStateStore):
-    def __init__(self, settings: S23PaperLiveStateSettings) -> None:
+class RedisPaperLiveStateStore(PaperLiveStateStore):
+    def __init__(self, settings: PaperLiveStateSettings) -> None:
         super().__init__(settings)
         import redis
 
@@ -324,9 +340,9 @@ class RedisS23PaperLiveStateStore(S23PaperLiveStateStore):
     @staticmethod
     def _normalize(value: Any) -> Any:
         if isinstance(value, dict):
-            return {str(key): RedisS23PaperLiveStateStore._normalize(val) for key, val in value.items()}
+            return {str(key): RedisPaperLiveStateStore._normalize(val) for key, val in value.items()}
         if isinstance(value, tuple | list):
-            return [RedisS23PaperLiveStateStore._normalize(item) for item in value]
+            return [RedisPaperLiveStateStore._normalize(item) for item in value]
         if isinstance(value, datetime | date):
             return value.isoformat()
         if isinstance(value, Path):
@@ -334,8 +350,8 @@ class RedisS23PaperLiveStateStore(S23PaperLiveStateStore):
         return value
 
 
-class FilesystemS23PaperLiveStateStore(S23PaperLiveStateStore):
-    def __init__(self, settings: S23PaperLiveStateSettings) -> None:
+class FilesystemPaperLiveStateStore(PaperLiveStateStore):
+    def __init__(self, settings: PaperLiveStateSettings) -> None:
         super().__init__(settings)
         self._root = Path(settings.root)
         self._root.mkdir(parents=True, exist_ok=True)
@@ -450,9 +466,9 @@ class FilesystemS23PaperLiveStateStore(S23PaperLiveStateStore):
     @staticmethod
     def _normalize(value: Any) -> Any:
         if isinstance(value, dict):
-            return {str(key): FilesystemS23PaperLiveStateStore._normalize(val) for key, val in value.items()}
+            return {str(key): FilesystemPaperLiveStateStore._normalize(val) for key, val in value.items()}
         if isinstance(value, tuple | list):
-            return [FilesystemS23PaperLiveStateStore._normalize(item) for item in value]
+            return [FilesystemPaperLiveStateStore._normalize(item) for item in value]
         if isinstance(value, datetime | date):
             return value.isoformat()
         if isinstance(value, Path):
@@ -495,11 +511,11 @@ class FilesystemS23PaperLiveStateStore(S23PaperLiveStateStore):
                 temp_path.unlink()
 
 
-def inspect_s23_paper_live_state_store(
-    settings: S23PaperLiveStateSettings,
-) -> S23PaperLiveStateStoreDiagnostics:
+def inspect_paper_live_state_store(
+    settings: PaperLiveStateSettings,
+) -> PaperLiveStateStoreDiagnostics:
     if not settings.enabled:
-        return S23PaperLiveStateStoreDiagnostics(
+        return PaperLiveStateStoreDiagnostics(
             enabled=False,
             provider=settings.provider,
             backend="null",
@@ -507,7 +523,7 @@ def inspect_s23_paper_live_state_store(
             message="Live-state mirroring is disabled by configuration.",
         )
     if settings.namespace.lower().startswith("nte"):
-        return S23PaperLiveStateStoreDiagnostics(
+        return PaperLiveStateStoreDiagnostics(
             enabled=True,
             provider=settings.provider,
             backend="null",
@@ -526,7 +542,7 @@ def inspect_s23_paper_live_state_store(
                 probe_path.write_text("ok\n", encoding="utf-8")
                 probe_path.unlink(missing_ok=True)
             except Exception as exc:
-                return S23PaperLiveStateStoreDiagnostics(
+                return PaperLiveStateStoreDiagnostics(
                     enabled=True,
                     provider=settings.provider,
                     backend="null",
@@ -537,14 +553,14 @@ def inspect_s23_paper_live_state_store(
                     ),
                     exception_type=type(exc).__name__,
                 )
-            return S23PaperLiveStateStoreDiagnostics(
+            return PaperLiveStateStoreDiagnostics(
                 enabled=True,
                 provider=settings.provider,
                 backend="filesystem",
                 status="PASS",
                 message=f"Live-state provider '{settings.provider}' is ready under {root}.",
             )
-        return S23PaperLiveStateStoreDiagnostics(
+        return PaperLiveStateStoreDiagnostics(
             enabled=True,
             provider=settings.provider,
             backend="null",
@@ -555,9 +571,9 @@ def inspect_s23_paper_live_state_store(
             ),
         )
     try:
-        RedisS23PaperLiveStateStore(settings)
+        RedisPaperLiveStateStore(settings)
     except Exception as exc:
-        return S23PaperLiveStateStoreDiagnostics(
+        return PaperLiveStateStoreDiagnostics(
             enabled=True,
             provider=settings.provider,
             backend="null",
@@ -568,7 +584,7 @@ def inspect_s23_paper_live_state_store(
             ),
             exception_type=type(exc).__name__,
         )
-    return S23PaperLiveStateStoreDiagnostics(
+    return PaperLiveStateStoreDiagnostics(
         enabled=True,
         provider=settings.provider,
         backend="redis",
@@ -580,41 +596,41 @@ def inspect_s23_paper_live_state_store(
     )
 
 
-def inspect_s23_paper_live_state_store_from_yaml(
+def inspect_paper_live_state_store_from_yaml(
     path: str | Path,
-) -> S23PaperLiveStateStoreDiagnostics:
-    return inspect_s23_paper_live_state_store(S23PaperLiveStateSettings.from_yaml(path))
+) -> PaperLiveStateStoreDiagnostics:
+    return inspect_paper_live_state_store(PaperLiveStateSettings.from_yaml(path))
 
 
-def build_s23_paper_live_state_store(
-    settings: S23PaperLiveStateSettings,
+def build_paper_live_state_store(
+    settings: PaperLiveStateSettings,
     *,
     strict: bool = False,
-) -> S23PaperLiveStateStore:
+) -> PaperLiveStateStore:
     if settings.enabled and settings.namespace.lower().startswith("nte"):
         raise ValueError(
             "TFIS live-state namespace must not use TradingEngineProd prefixes such as "
             "nte/nte_money/nte_dev."
         )
-    diagnostics = inspect_s23_paper_live_state_store(settings)
+    diagnostics = inspect_paper_live_state_store(settings)
     if diagnostics.status != "PASS":
         if strict:
             raise RuntimeError(diagnostics.message)
-        return NullS23PaperLiveStateStore(settings)
+        return NullPaperLiveStateStore(settings)
     if diagnostics.backend == "redis":
-        return RedisS23PaperLiveStateStore(settings)
+        return RedisPaperLiveStateStore(settings)
     if diagnostics.backend == "filesystem":
-        return FilesystemS23PaperLiveStateStore(settings)
-    return NullS23PaperLiveStateStore(settings)
+        return FilesystemPaperLiveStateStore(settings)
+    return NullPaperLiveStateStore(settings)
 
 
-def build_s23_paper_live_state_store_from_yaml(
+def build_paper_live_state_store_from_yaml(
     path: str | Path,
     *,
     strict: bool = False,
-) -> S23PaperLiveStateStore:
-    return build_s23_paper_live_state_store(
-        S23PaperLiveStateSettings.from_yaml(path),
+) -> PaperLiveStateStore:
+    return build_paper_live_state_store(
+        PaperLiveStateSettings.from_yaml(path),
         strict=strict,
     )
 
@@ -623,41 +639,41 @@ def s23_live_state_owner_id(prefix: str = "tfis-s23-paper-watch") -> str:
     return f"{prefix}:{os.getpid()}"
 
 
-PaperLiveStateSettings = S23PaperLiveStateSettings
-PaperLiveStateStore = S23PaperLiveStateStore
-PaperLiveStateStoreDiagnostics = S23PaperLiveStateStoreDiagnostics
-InMemoryPaperLiveStateStore = InMemoryS23PaperLiveStateStore
-FilesystemPaperLiveStateStore = FilesystemS23PaperLiveStateStore
-NullPaperLiveStateStore = NullS23PaperLiveStateStore
-RedisPaperLiveStateStore = RedisS23PaperLiveStateStore
+S23PaperLiveStateSettings = PaperLiveStateSettings
+S23PaperLiveStateStore = PaperLiveStateStore
+S23PaperLiveStateStoreDiagnostics = PaperLiveStateStoreDiagnostics
+InMemoryS23PaperLiveStateStore = InMemoryPaperLiveStateStore
+FilesystemS23PaperLiveStateStore = FilesystemPaperLiveStateStore
+NullS23PaperLiveStateStore = NullPaperLiveStateStore
+RedisS23PaperLiveStateStore = RedisPaperLiveStateStore
 
 
-def build_paper_live_state_store(
-    settings: PaperLiveStateSettings,
+def build_s23_paper_live_state_store(
+    settings: S23PaperLiveStateSettings,
     *,
     strict: bool = False,
-) -> PaperLiveStateStore:
-    return build_s23_paper_live_state_store(settings, strict=strict)
+) -> S23PaperLiveStateStore:
+    return build_paper_live_state_store(settings, strict=strict)
 
 
-def inspect_paper_live_state_store(
-    settings: PaperLiveStateSettings,
-) -> PaperLiveStateStoreDiagnostics:
-    return inspect_s23_paper_live_state_store(settings)
+def inspect_s23_paper_live_state_store(
+    settings: S23PaperLiveStateSettings,
+) -> S23PaperLiveStateStoreDiagnostics:
+    return inspect_paper_live_state_store(settings)
 
 
-def inspect_paper_live_state_store_from_yaml(
+def inspect_s23_paper_live_state_store_from_yaml(
     path: str | Path,
-) -> PaperLiveStateStoreDiagnostics:
-    return inspect_s23_paper_live_state_store_from_yaml(path)
+) -> S23PaperLiveStateStoreDiagnostics:
+    return inspect_paper_live_state_store_from_yaml(path)
 
 
-def build_paper_live_state_store_from_yaml(
+def build_s23_paper_live_state_store_from_yaml(
     path: str | Path,
     *,
     strict: bool = False,
-) -> PaperLiveStateStore:
-    return build_s23_paper_live_state_store_from_yaml(path, strict=strict)
+) -> S23PaperLiveStateStore:
+    return build_paper_live_state_store_from_yaml(path, strict=strict)
 
 
 def paper_live_state_owner_id(prefix: str = "tfis-paper-watch") -> str:

@@ -22,6 +22,18 @@ class PaperFreshEntryHandoffResult:
     promotion_summary: PaperFreshEntryPromotionSummary | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class PaperFreshDecisionLaunchMarker:
+    marker_path: Path
+    launched_at: str | None
+    strategy_code: str | None
+    trade_id: str | None
+    mode: str | None
+    runner_script: str | None
+    pid: int | None
+    promoted_session_dir: str | None
+
+
 def fresh_decision_launch_marker_path(
     session_directory: str | Path,
     *,
@@ -117,6 +129,33 @@ def handoff_fresh_entry_requirement(
     )
 
 
+def load_fresh_decision_launch_marker(
+    session_directory: str | Path,
+    *,
+    marker_filename: str = "fresh_decision_launch.json",
+) -> PaperFreshDecisionLaunchMarker | None:
+    marker_path = fresh_decision_launch_marker_path(
+        session_directory,
+        marker_filename=marker_filename,
+    )
+    if not marker_path.exists():
+        return None
+    payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"Expected JSON object in {marker_path}")
+    pid_value = payload.get("pid")
+    return PaperFreshDecisionLaunchMarker(
+        marker_path=marker_path,
+        launched_at=str(payload.get("launched_at") or "").strip() or None,
+        strategy_code=str(payload.get("strategy_code") or "").strip() or None,
+        trade_id=str(payload.get("trade_id") or "").strip() or None,
+        mode=str(payload.get("mode") or "").strip() or None,
+        runner_script=str(payload.get("runner_script") or "").strip() or None,
+        pid=(int(pid_value) if isinstance(pid_value, int) else None),
+        promoted_session_dir=str(payload.get("promoted_session_dir") or "").strip() or None,
+    )
+
+
 def _write_marker(path: Path, payload: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -126,7 +165,9 @@ def _write_marker(path: Path, payload: dict[str, object]) -> None:
 
 
 __all__ = [
+    "PaperFreshDecisionLaunchMarker",
     "PaperFreshEntryHandoffResult",
     "fresh_decision_launch_marker_path",
     "handoff_fresh_entry_requirement",
+    "load_fresh_decision_launch_marker",
 ]

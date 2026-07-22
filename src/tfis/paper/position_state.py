@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import os
@@ -17,11 +17,11 @@ _STATE_FILENAME = "paper_position_state.json"
 _EVENTS_FILENAME = "paper_position_state_events.jsonl"
 
 
-class S23PaperPositionStateError(RuntimeError):
+class PaperPositionStateError(RuntimeError):
     """Raised when persisted paper position state cannot be used safely."""
 
 
-class S23PaperPositionStateStatus(str, Enum):
+class PaperPositionStateStatus(str, Enum):
     PAPER_POSITION_OPEN = "PAPER_POSITION_OPEN"
     PAPER_POSITION_CARRIED_FORWARD = "PAPER_POSITION_CARRIED_FORWARD"
     PAPER_POSITION_RESUMED = "PAPER_POSITION_RESUMED"
@@ -31,7 +31,7 @@ class S23PaperPositionStateStatus(str, Enum):
     PAPER_FRESH_ENTRY_REQUIRED = "PAPER_FRESH_ENTRY_REQUIRED"
 
 
-class S23PaperPositionStateEventType(str, Enum):
+class PaperPositionStateEventType(str, Enum):
     PAPER_POSITION_CARRIED_FORWARD = "PAPER_POSITION_CARRIED_FORWARD"
     PAPER_POSITION_RESUMED = "PAPER_POSITION_RESUMED"
     PAPER_POSITION_CLOSED = "PAPER_POSITION_CLOSED"
@@ -45,62 +45,62 @@ class S23PaperPositionStateEventType(str, Enum):
 
 
 def paper_position_is_active(
-    status: S23PaperPositionStateStatus | str | None,
+    status: PaperPositionStateStatus | str | None,
 ) -> bool:
-    if isinstance(status, S23PaperPositionStateStatus):
+    if isinstance(status, PaperPositionStateStatus):
         return status in {
-            S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
-            S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
-            S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
+            PaperPositionStateStatus.PAPER_POSITION_OPEN,
+            PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
+            PaperPositionStateStatus.PAPER_POSITION_RESUMED,
         }
     normalized = str(status or "").strip()
     return normalized in {
-        S23PaperPositionStateStatus.PAPER_POSITION_OPEN.value,
-        S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD.value,
-        S23PaperPositionStateStatus.PAPER_POSITION_RESUMED.value,
+        PaperPositionStateStatus.PAPER_POSITION_OPEN.value,
+        PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD.value,
+        PaperPositionStateStatus.PAPER_POSITION_RESUMED.value,
     }
 
 
 def paper_position_is_no_longer_open(
-    status: S23PaperPositionStateStatus | str | None,
+    status: PaperPositionStateStatus | str | None,
 ) -> bool:
-    if isinstance(status, S23PaperPositionStateStatus):
+    if isinstance(status, PaperPositionStateStatus):
         return status in {
-            S23PaperPositionStateStatus.PAPER_POSITION_CLOSED,
-            S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED,
-            S23PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED,
-            S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
+            PaperPositionStateStatus.PAPER_POSITION_CLOSED,
+            PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED,
+            PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED,
+            PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
         }
     normalized = str(status or "").strip()
     return normalized in {
-        S23PaperPositionStateStatus.PAPER_POSITION_CLOSED.value,
-        S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED.value,
-        S23PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED.value,
-        S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED.value,
+        PaperPositionStateStatus.PAPER_POSITION_CLOSED.value,
+        PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED.value,
+        PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED.value,
+        PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED.value,
     }
 
 
 def paper_position_blocks_new_entry(
-    status: S23PaperPositionStateStatus | str | None,
+    status: PaperPositionStateStatus | str | None,
 ) -> bool:
-    if isinstance(status, S23PaperPositionStateStatus):
+    if isinstance(status, PaperPositionStateStatus):
         return status in {
-            S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
-            S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
-            S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
-            S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
+            PaperPositionStateStatus.PAPER_POSITION_OPEN,
+            PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
+            PaperPositionStateStatus.PAPER_POSITION_RESUMED,
+            PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
         }
     normalized = str(status or "").strip()
     return normalized in {
-        S23PaperPositionStateStatus.PAPER_POSITION_OPEN.value,
-        S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD.value,
-        S23PaperPositionStateStatus.PAPER_POSITION_RESUMED.value,
-        S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED.value,
+        PaperPositionStateStatus.PAPER_POSITION_OPEN.value,
+        PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD.value,
+        PaperPositionStateStatus.PAPER_POSITION_RESUMED.value,
+        PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED.value,
     }
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperPositionState:
+class PaperPositionState:
     artifact_version: int
     strategy_code: str
     unique_code: str
@@ -121,7 +121,7 @@ class S23PaperPositionState:
     trp_price: float | None
     carry_forward_allowed: bool
     no_carry_past_expiry: bool
-    lifecycle_status: S23PaperPositionStateStatus
+    lifecycle_status: PaperPositionStateStatus
     last_updated_timestamp: datetime
     provenance_source_ids: tuple[str, ...] = ()
     strategy_parameters: dict[str, float] | None = None
@@ -172,9 +172,9 @@ class S23PaperPositionState:
             raise TypeError("carry_forward_allowed must be a bool")
         if not isinstance(self.no_carry_past_expiry, bool):
             raise TypeError("no_carry_past_expiry must be a bool")
-        if not isinstance(self.lifecycle_status, S23PaperPositionStateStatus):
+        if not isinstance(self.lifecycle_status, PaperPositionStateStatus):
             raise TypeError(
-                "lifecycle_status must be a S23PaperPositionStateStatus value"
+                "lifecycle_status must be a PaperPositionStateStatus value"
             )
         if any(not isinstance(item, str) or not item.strip() for item in self.provenance_source_ids):
             raise ValueError("provenance_source_ids must contain non-empty strings")
@@ -207,20 +207,20 @@ class S23PaperPositionState:
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperPositionStateEvent:
+class PaperPositionStateEvent:
     timestamp: datetime
-    event_type: S23PaperPositionStateEventType
+    event_type: PaperPositionStateEventType
     strategy_code: str
     unique_code: str
     selected_contract_symbol: str
-    lifecycle_status: S23PaperPositionStateStatus | None
+    lifecycle_status: PaperPositionStateStatus | None
     session_date: date | None
     reason_code: str | None
     message: str
     provenance_source_ids: tuple[str, ...] = ()
 
 
-class S23PaperPositionStateStore:
+class PaperPositionStateStore:
     def __init__(
         self,
         *,
@@ -260,8 +260,8 @@ class S23PaperPositionStateStore:
         stoploss_reset_buffer_pct: float | None = None,
         stoploss_reset_orpt_time: time | None = None,
         stoploss_reset_rc_time: time | None = None,
-    ) -> S23PaperPositionState:
-        return S23PaperPositionState(
+    ) -> PaperPositionState:
+        return PaperPositionState(
             artifact_version=_ARTIFACT_VERSION,
             strategy_code=strategy_code,
             unique_code=unique_code,
@@ -287,7 +287,7 @@ class S23PaperPositionStateStore:
             trp_price=trp_price,
             carry_forward_allowed=carry_forward_allowed,
             no_carry_past_expiry=no_carry_past_expiry,
-            lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
+            lifecycle_status=PaperPositionStateStatus.PAPER_POSITION_OPEN,
             last_updated_timestamp=last_updated_timestamp,
             provenance_source_ids=provenance_source_ids,
             strategy_parameters=self._normalize_strategy_parameters(strategy_parameters),
@@ -301,14 +301,14 @@ class S23PaperPositionStateStore:
     def save_state(
         self,
         session_directory: str | Path,
-        state: S23PaperPositionState,
+        state: PaperPositionState,
     ) -> Path:
         session_dir = Path(session_directory)
         path = session_dir / self._state_filename
         self._write_json(path, self._state_payload(state))
         return path
 
-    def load_state(self, session_directory: str | Path) -> S23PaperPositionState:
+    def load_state(self, session_directory: str | Path) -> PaperPositionState:
         session_dir = Path(session_directory)
         path = session_dir / self._state_filename
         try:
@@ -320,7 +320,7 @@ class S23PaperPositionStateStore:
                 timestamp=datetime.now(),
                 message=f"Persisted paper position state is invalid: {exc}",
             )
-            raise S23PaperPositionStateError(str(exc)) from exc
+            raise PaperPositionStateError(str(exc)) from exc
 
     def carry_forward(
         self,
@@ -330,11 +330,11 @@ class S23PaperPositionStateStore:
         updated_at: datetime,
         expiry_governance: Any | None = None,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionState:
+    ) -> PaperPositionState:
         state = self.load_state(session_directory)
         session_dir = Path(session_directory)
         if not state.carry_forward_allowed:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "Carry-forward is not allowed for this persisted paper position state."
             )
         if expiry_governance is not None:
@@ -361,13 +361,13 @@ class S23PaperPositionStateStore:
                 ),
                 provenance_source_ids=provenance_source_ids,
             )
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "Cannot carry the paper position beyond expiry."
             )
 
         updated_state = replace(
             state,
-            lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
+            lifecycle_status=PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
             last_updated_timestamp=updated_at,
             provenance_source_ids=self._merge_provenance(
                 state.provenance_source_ids,
@@ -377,9 +377,9 @@ class S23PaperPositionStateStore:
         self.save_state(session_dir, updated_state)
         self._append_event(
             session_dir,
-            S23PaperPositionStateEvent(
+            PaperPositionStateEvent(
                 timestamp=updated_at,
-                event_type=S23PaperPositionStateEventType.PAPER_POSITION_CARRIED_FORWARD,
+                event_type=PaperPositionStateEventType.PAPER_POSITION_CARRIED_FORWARD,
                 strategy_code=updated_state.strategy_code,
                 unique_code=updated_state.unique_code,
                 selected_contract_symbol=updated_state.selected_contract_symbol,
@@ -400,11 +400,11 @@ class S23PaperPositionStateStore:
         resumed_at: datetime,
         expiry_governance: Any | None = None,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionState:
+    ) -> PaperPositionState:
         state = self.load_state(session_directory)
         session_dir = Path(session_directory)
         if not state.carry_forward_allowed:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "Carry-forward resume is not allowed for this persisted paper position state."
             )
         if expiry_governance is not None:
@@ -431,13 +431,13 @@ class S23PaperPositionStateStore:
                 ),
                 provenance_source_ids=provenance_source_ids,
             )
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "Cannot resume a paper position after expiry has passed."
             )
 
         updated_state = replace(
             state,
-            lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
+            lifecycle_status=PaperPositionStateStatus.PAPER_POSITION_RESUMED,
             last_updated_timestamp=resumed_at,
             provenance_source_ids=self._merge_provenance(
                 state.provenance_source_ids,
@@ -447,9 +447,9 @@ class S23PaperPositionStateStore:
         self.save_state(session_dir, updated_state)
         self._append_event(
             session_dir,
-            S23PaperPositionStateEvent(
+            PaperPositionStateEvent(
                 timestamp=resumed_at,
-                event_type=S23PaperPositionStateEventType.PAPER_POSITION_RESUMED,
+                event_type=PaperPositionStateEventType.PAPER_POSITION_RESUMED,
                 strategy_code=updated_state.strategy_code,
                 unique_code=updated_state.unique_code,
                 selected_contract_symbol=updated_state.selected_contract_symbol,
@@ -465,18 +465,18 @@ class S23PaperPositionStateStore:
     def load_events(
         self,
         session_directory: str | Path,
-    ) -> tuple[S23PaperPositionStateEvent, ...]:
+    ) -> tuple[PaperPositionStateEvent, ...]:
         path = Path(session_directory) / self._events_filename
         if not path.exists():
             return ()
-        events: list[S23PaperPositionStateEvent] = []
+        events: list[PaperPositionStateEvent] = []
         for raw_line in path.read_text(encoding="utf-8").splitlines():
             stripped = raw_line.strip()
             if not stripped:
                 continue
             payload = json.loads(stripped)
             events.append(
-                S23PaperPositionStateEvent(
+                PaperPositionStateEvent(
                     timestamp=self._parse_datetime(payload.get("timestamp"), "timestamp"),
                     event_type=self._parse_event_type(payload.get("event_type")),
                     strategy_code=self._parse_text(payload.get("strategy_code"), "strategy_code"),
@@ -509,9 +509,9 @@ class S23PaperPositionStateStore:
         state = self.load_state(session_directory)
         self._append_event(
             Path(session_directory),
-            S23PaperPositionStateEvent(
+            PaperPositionStateEvent(
                 timestamp=closed_at,
-                event_type=S23PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSED,
+                event_type=PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSED,
                 strategy_code=state.strategy_code,
                 unique_code=state.unique_code,
                 selected_contract_symbol=state.selected_contract_symbol,
@@ -534,19 +534,19 @@ class S23PaperPositionStateStore:
         reverse_entry_required: bool = False,
         fresh_entry_required: bool = False,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionState:
+    ) -> PaperPositionState:
         state = self.load_state(session_directory)
         session_dir = Path(session_directory)
         lifecycle_status = (
-            S23PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED
+            PaperPositionStateStatus.PAPER_REVERSE_ENTRY_REQUIRED
             if reverse_entry_required
             else (
-                S23PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED
+                PaperPositionStateStatus.PAPER_FRESH_ENTRY_REQUIRED
                 if fresh_entry_required
-                else S23PaperPositionStateStatus.PAPER_POSITION_CLOSED
+                else PaperPositionStateStatus.PAPER_POSITION_CLOSED
             )
         )
-        updated_state = S23PaperPositionState(
+        updated_state = PaperPositionState(
             artifact_version=state.artifact_version,
             strategy_code=state.strategy_code,
             unique_code=state.unique_code,
@@ -577,9 +577,9 @@ class S23PaperPositionStateStore:
         self.save_state(session_dir, updated_state)
         self._append_event(
             session_dir,
-            S23PaperPositionStateEvent(
+            PaperPositionStateEvent(
                 timestamp=closed_at,
-                event_type=S23PaperPositionStateEventType.PAPER_POSITION_CLOSED,
+                event_type=PaperPositionStateEventType.PAPER_POSITION_CLOSED,
                 strategy_code=updated_state.strategy_code,
                 unique_code=updated_state.unique_code,
                 selected_contract_symbol=updated_state.selected_contract_symbol,
@@ -593,9 +593,9 @@ class S23PaperPositionStateStore:
         if reverse_entry_required:
             self._append_event(
                 session_dir,
-                S23PaperPositionStateEvent(
+                PaperPositionStateEvent(
                     timestamp=closed_at,
-                    event_type=S23PaperPositionStateEventType.PAPER_REVERSE_ENTRY_REQUIRED,
+                    event_type=PaperPositionStateEventType.PAPER_REVERSE_ENTRY_REQUIRED,
                     strategy_code=updated_state.strategy_code,
                     unique_code=updated_state.unique_code,
                     selected_contract_symbol=updated_state.selected_contract_symbol,
@@ -612,9 +612,9 @@ class S23PaperPositionStateStore:
         if fresh_entry_required:
             self._append_event(
                 session_dir,
-                S23PaperPositionStateEvent(
+                PaperPositionStateEvent(
                     timestamp=closed_at,
-                    event_type=S23PaperPositionStateEventType.PAPER_FRESH_ENTRY_REQUIRED,
+                    event_type=PaperPositionStateEventType.PAPER_FRESH_ENTRY_REQUIRED,
                     strategy_code=updated_state.strategy_code,
                     unique_code=updated_state.unique_code,
                     selected_contract_symbol=updated_state.selected_contract_symbol,
@@ -639,10 +639,10 @@ class S23PaperPositionStateStore:
         marked_at: datetime,
         message: str,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionState:
+    ) -> PaperPositionState:
         state = self.load_state(session_directory)
         session_dir = Path(session_directory)
-        updated_state = S23PaperPositionState(
+        updated_state = PaperPositionState(
             artifact_version=state.artifact_version,
             strategy_code=state.strategy_code,
             unique_code=state.unique_code,
@@ -663,7 +663,7 @@ class S23PaperPositionStateStore:
             trp_price=state.trp_price,
             carry_forward_allowed=False,
             no_carry_past_expiry=state.no_carry_past_expiry,
-            lifecycle_status=S23PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
+            lifecycle_status=PaperPositionStateStatus.PAPER_ROLLOVER_REQUIRED,
             last_updated_timestamp=marked_at,
             provenance_source_ids=self._merge_provenance(
                 state.provenance_source_ids,
@@ -673,9 +673,9 @@ class S23PaperPositionStateStore:
         self.save_state(session_dir, updated_state)
         self._append_event(
             session_dir,
-            S23PaperPositionStateEvent(
+            PaperPositionStateEvent(
                 timestamp=marked_at,
-                event_type=S23PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED,
+                event_type=PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED,
                 strategy_code=updated_state.strategy_code,
                 unique_code=updated_state.unique_code,
                 selected_contract_symbol=updated_state.selected_contract_symbol,
@@ -698,12 +698,12 @@ class S23PaperPositionStateStore:
         reason_code: str,
         message: str,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionState:
+    ) -> PaperPositionState:
         state = self.load_state(session_directory)
         session_dir = Path(session_directory)
         updated_state = replace(
             state,
-            lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
+            lifecycle_status=PaperPositionStateStatus.PAPER_POSITION_CARRIED_FORWARD,
             last_updated_timestamp=updated_at,
             stoploss_active=False,
             stoploss_reset_pending=True,
@@ -718,9 +718,9 @@ class S23PaperPositionStateStore:
         self.save_state(session_dir, updated_state)
         self._append_event(
             session_dir,
-            S23PaperPositionStateEvent(
+            PaperPositionStateEvent(
                 timestamp=updated_at,
-                event_type=S23PaperPositionStateEventType.PAPER_POSITION_CARRIED_FORWARD,
+                event_type=PaperPositionStateEventType.PAPER_POSITION_CARRIED_FORWARD,
                 strategy_code=updated_state.strategy_code,
                 unique_code=updated_state.unique_code,
                 selected_contract_symbol=updated_state.selected_contract_symbol,
@@ -744,12 +744,12 @@ class S23PaperPositionStateStore:
         reason_code: str,
         message: str,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> S23PaperPositionState:
+    ) -> PaperPositionState:
         state = self.load_state(session_directory)
         session_dir = Path(session_directory)
         updated_state = replace(
             state,
-            lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_OPEN,
+            lifecycle_status=PaperPositionStateStatus.PAPER_POSITION_OPEN,
             last_updated_timestamp=updated_at,
             stoploss_price=float(stoploss_price),
             fsl_price=fsl_price,
@@ -765,9 +765,9 @@ class S23PaperPositionStateStore:
         self.save_state(session_dir, updated_state)
         self._append_event(
             session_dir,
-            S23PaperPositionStateEvent(
+            PaperPositionStateEvent(
                 timestamp=updated_at,
-                event_type=S23PaperPositionStateEventType.PAPER_POSITION_RESUMED,
+                event_type=PaperPositionStateEventType.PAPER_POSITION_RESUMED,
                 strategy_code=updated_state.strategy_code,
                 unique_code=updated_state.unique_code,
                 selected_contract_symbol=updated_state.selected_contract_symbol,
@@ -795,9 +795,9 @@ class S23PaperPositionStateStore:
     ) -> None:
         self._append_event(
             session_directory,
-            S23PaperPositionStateEvent(
+            PaperPositionStateEvent(
                 timestamp=timestamp,
-                event_type=S23PaperPositionStateEventType.PAPER_POSITION_STATE_INVALID,
+                event_type=PaperPositionStateEventType.PAPER_POSITION_STATE_INVALID,
                 strategy_code=strategy_code,
                 unique_code=unique_code,
                 selected_contract_symbol=selected_contract_symbol,
@@ -812,7 +812,7 @@ class S23PaperPositionStateStore:
     def _append_event(
         self,
         session_directory: Path,
-        event: S23PaperPositionStateEvent,
+        event: PaperPositionStateEvent,
     ) -> None:
         existing = list(self.load_events(session_directory))
         existing.append(event)
@@ -823,7 +823,7 @@ class S23PaperPositionStateStore:
         self,
         *,
         session_directory: Path,
-        state: S23PaperPositionState,
+        state: PaperPositionState,
         session_date: date,
         event_timestamp: datetime,
         current_time: time,
@@ -850,11 +850,11 @@ class S23PaperPositionStateStore:
             if decision.should_select_next_expiry
             else "Current-expiry continuation is blocked by expiry governance."
         )
-        raise S23PaperPositionStateError(reason)
+        raise PaperPositionStateError(reason)
 
-    def _state_from_payload(self, payload: dict[str, Any]) -> S23PaperPositionState:
+    def _state_from_payload(self, payload: dict[str, Any]) -> PaperPositionState:
         expiry_policy_payload = payload.get("expiry_policy") if isinstance(payload.get("expiry_policy"), dict) else None
-        return S23PaperPositionState(
+        return PaperPositionState(
             artifact_version=self._parse_int(payload.get("artifact_version"), "artifact_version"),
             strategy_code=self._parse_text(payload.get("strategy_code"), "strategy_code"),
             unique_code=self._parse_text(payload.get("unique_code"), "unique_code"),
@@ -953,17 +953,17 @@ class S23PaperPositionStateStore:
 
     def _load_json_required(self, path: Path) -> dict[str, Any]:
         if not path.exists():
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 f"Persisted paper position state is missing: {path}"
             )
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except json.JSONDecodeError as exc:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 f"Persisted paper position state is corrupt JSON: {path}"
             ) from exc
         if not isinstance(payload, dict):
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "Persisted paper position state must be a JSON object."
             )
         return payload
@@ -1028,7 +1028,7 @@ class S23PaperPositionStateStore:
 
     def _parse_text(self, value: Any, field_name: str) -> str:
         if not isinstance(value, str) or not value.strip():
-            raise S23PaperPositionStateError(f"{field_name} must be a non-empty string")
+            raise PaperPositionStateError(f"{field_name} must be a non-empty string")
         return value.strip()
 
     def _parse_optional_text(self, value: Any) -> str | None:
@@ -1040,7 +1040,7 @@ class S23PaperPositionStateStore:
         if value in (None, ()):
             return ()
         if not isinstance(value, list | tuple):
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "provenance_source_ids must be a JSON array when present"
             )
         normalized: list[str] = []
@@ -1053,7 +1053,7 @@ class S23PaperPositionStateStore:
         if value in (None, ""):
             return None
         if not isinstance(value, dict):
-            raise S23PaperPositionStateError("strategy_parameters must be a JSON object")
+            raise PaperPositionStateError("strategy_parameters must be a JSON object")
         return self._normalize_strategy_parameters(value)
 
     @staticmethod
@@ -1064,38 +1064,38 @@ class S23PaperPositionStateStore:
         for key, raw_value in value.items():
             key_text = str(key).strip()
             if not key_text:
-                raise S23PaperPositionStateError(
+                raise PaperPositionStateError(
                     "strategy_parameters keys must be non-empty strings"
                 )
             if isinstance(raw_value, bool):
-                raise S23PaperPositionStateError(
+                raise PaperPositionStateError(
                     f"strategy parameter {key_text!r} must be numeric"
                 )
             try:
                 normalized[key_text] = float(raw_value)
             except (TypeError, ValueError) as exc:
-                raise S23PaperPositionStateError(
+                raise PaperPositionStateError(
                     f"strategy parameter {key_text!r} must be numeric"
                 ) from exc
         return normalized
 
     def _parse_bool(self, value: Any, field_name: str) -> bool:
         if not isinstance(value, bool):
-            raise S23PaperPositionStateError(f"{field_name} must be a bool")
+            raise PaperPositionStateError(f"{field_name} must be a bool")
         return value
 
     def _parse_int(self, value: Any, field_name: str) -> int:
         if isinstance(value, bool) or not isinstance(value, int):
-            raise S23PaperPositionStateError(f"{field_name} must be an integer")
+            raise PaperPositionStateError(f"{field_name} must be an integer")
         return value
 
     def _parse_float(self, value: Any, field_name: str) -> float:
         if value is None:
-            raise S23PaperPositionStateError(f"{field_name} is required")
+            raise PaperPositionStateError(f"{field_name} is required")
         try:
             return float(value)
         except (TypeError, ValueError) as exc:
-            raise S23PaperPositionStateError(f"{field_name} must be numeric") from exc
+            raise PaperPositionStateError(f"{field_name} must be numeric") from exc
 
     def _parse_optional_float(self, value: Any) -> float | None:
         if value in (None, ""):
@@ -1103,17 +1103,17 @@ class S23PaperPositionStateStore:
         try:
             return float(value)
         except (TypeError, ValueError) as exc:
-            raise S23PaperPositionStateError("optional price fields must be numeric") from exc
+            raise PaperPositionStateError("optional price fields must be numeric") from exc
 
     def _parse_date(self, value: Any, field_name: str) -> date:
         if value is None:
-            raise S23PaperPositionStateError(f"{field_name} is required")
+            raise PaperPositionStateError(f"{field_name} is required")
         if isinstance(value, date) and not isinstance(value, datetime):
             return value
         try:
             return date.fromisoformat(str(value))
         except ValueError as exc:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 f"{field_name} must be an ISO date"
             ) from exc
 
@@ -1124,13 +1124,13 @@ class S23PaperPositionStateStore:
 
     def _parse_datetime(self, value: Any, field_name: str) -> datetime:
         if value is None:
-            raise S23PaperPositionStateError(f"{field_name} is required")
+            raise PaperPositionStateError(f"{field_name} is required")
         if isinstance(value, datetime):
             return value
         try:
             return datetime.fromisoformat(str(value))
         except ValueError as exc:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 f"{field_name} must be an ISO datetime"
             ) from exc
 
@@ -1142,7 +1142,7 @@ class S23PaperPositionStateStore:
         try:
             return time.fromisoformat(str(value))
         except ValueError as exc:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "forced_close_time must be an ISO time"
             ) from exc
 
@@ -1150,35 +1150,35 @@ class S23PaperPositionStateStore:
         try:
             return OptionType(str(value))
         except ValueError as exc:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "option_type must be a valid OptionType value"
             ) from exc
 
-    def _parse_lifecycle_status(self, value: Any) -> S23PaperPositionStateStatus:
+    def _parse_lifecycle_status(self, value: Any) -> PaperPositionStateStatus:
         try:
-            return S23PaperPositionStateStatus(str(value))
+            return PaperPositionStateStatus(str(value))
         except ValueError as exc:
-            raise S23PaperPositionStateError(
-                "lifecycle_status must be a valid S23PaperPositionStateStatus value"
+            raise PaperPositionStateError(
+                "lifecycle_status must be a valid PaperPositionStateStatus value"
             ) from exc
 
     def _parse_optional_lifecycle_status(
         self,
         value: Any,
-    ) -> S23PaperPositionStateStatus | None:
+    ) -> PaperPositionStateStatus | None:
         if value in (None, ""):
             return None
         return self._parse_lifecycle_status(value)
 
-    def _parse_event_type(self, value: Any) -> S23PaperPositionStateEventType:
+    def _parse_event_type(self, value: Any) -> PaperPositionStateEventType:
         try:
-            return S23PaperPositionStateEventType(str(value))
+            return PaperPositionStateEventType(str(value))
         except ValueError as exc:
-            raise S23PaperPositionStateError(
-                "event_type must be a valid S23PaperPositionStateEventType value"
+            raise PaperPositionStateError(
+                "event_type must be a valid PaperPositionStateEventType value"
             ) from exc
 
-    def _state_payload(self, state: S23PaperPositionState) -> dict[str, Any]:
+    def _state_payload(self, state: PaperPositionState) -> dict[str, Any]:
         return {
             "artifact_version": state.artifact_version,
             "strategy_code": state.strategy_code,
@@ -1220,7 +1220,7 @@ class S23PaperPositionStateStore:
         try:
             return ExpiryType(str(value))
         except ValueError as exc:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "expiry_type must be a valid ExpiryType value"
             ) from exc
 
@@ -1228,17 +1228,17 @@ class S23PaperPositionStateStore:
         try:
             return RolloverPolicy(str(value))
         except ValueError as exc:
-            raise S23PaperPositionStateError(
+            raise PaperPositionStateError(
                 "rollover_policy must be a valid RolloverPolicy value"
             ) from exc
 
 
-PaperPositionStateError = S23PaperPositionStateError
-PaperPositionStateStatus = S23PaperPositionStateStatus
-PaperPositionStateEventType = S23PaperPositionStateEventType
-PaperPositionState = S23PaperPositionState
-PaperPositionStateEvent = S23PaperPositionStateEvent
-PaperPositionStateStore = S23PaperPositionStateStore
+S23PaperPositionStateError = PaperPositionStateError
+S23PaperPositionStateStatus = PaperPositionStateStatus
+S23PaperPositionStateEventType = PaperPositionStateEventType
+S23PaperPositionState = PaperPositionState
+S23PaperPositionStateEvent = PaperPositionStateEvent
+S23PaperPositionStateStore = PaperPositionStateStore
 
 
 __all__ = [
@@ -1258,3 +1258,4 @@ __all__ = [
     "S23PaperPositionStateStatus",
     "S23PaperPositionStateStore",
 ]
+

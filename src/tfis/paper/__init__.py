@@ -131,6 +131,7 @@ from .trade_ledger import (
     paper_trade_is_terminal,
     paper_trade_ledger_candidate_paths,
     paper_trade_latest_active_rows,
+    paper_trade_latest_monitor_rows,
     paper_trade_latest_historical_close_rows,
     paper_trade_manager_status_is_lifecycle_terminal,
     paper_trade_manager_status_is_open,
@@ -184,13 +185,17 @@ from .lifecycle_runtime_config import (
     PaperLifecycleBrokerRuntime,
     PaperLifecycleBrokerConfig,
     PaperLifecycleCostConfig,
+    PaperLifecyclePaperGuardrailConfig,
     PaperLifecycleRuntimeConfig,
     PaperLifecycleRuntimeConfigError,
     build_paper_broker_adapter,
+    build_paper_broker_adapter_from_broker_config,
     connect_paper_broker_runtime,
     ensure_paper_broker_runtime_healthy,
     load_paper_broker_runtime,
+    paper_broker_credentials_available,
     prepare_paper_broker_runtime_environment,
+    validate_paper_lifecycle_runtime_guardrails,
 )
 from .lifecycle_market_events import (
     PaperSelectedContractEventRequest,
@@ -210,9 +215,11 @@ from .fresh_entry_promotion import (
     summary_from_payload,
 )
 from .fresh_entry_handoff import (
+    PaperFreshDecisionLaunchMarker,
     PaperFreshEntryHandoffResult,
     fresh_decision_launch_marker_path,
     handoff_fresh_entry_requirement,
+    load_fresh_decision_launch_marker,
 )
 from .decision_summary_discovery import (
     PaperFinalTradeDecisionSummary,
@@ -405,6 +412,30 @@ from .runtime_input_derivation import (
     load_paper_decision_reference_packet,
     load_s23_decision_reference_packet,
 )
+from .runtime_guardrail_status import (
+    PaperRuntimeGuardrailStatus,
+    load_paper_runtime_guardrail_statuses,
+)
+from .runtime_order_routing_status import (
+    PaperRuntimeOrderRoutingStatus,
+    load_paper_runtime_order_routing_statuses,
+)
+from .runtime_broker_health_status import (
+    PaperRuntimeBrokerHealthStatus,
+    load_paper_runtime_broker_health_statuses,
+)
+from .runtime_reconciliation_status import (
+    PaperRuntimeReconciliationStatus,
+    load_paper_runtime_reconciliation_statuses,
+)
+from .runtime_fresh_entry_handoff_status import (
+    PaperRuntimeFreshEntryHandoffStatus,
+    load_paper_runtime_fresh_entry_handoff_statuses,
+)
+from .runtime_heartbeat_status import (
+    PaperRuntimeHeartbeatStatus,
+    load_paper_runtime_heartbeat_statuses,
+)
 from .live_reference_derivation import (
     PaperLiveReferenceDerivationError,
     PaperLiveReferenceDerivationResult,
@@ -414,6 +445,9 @@ from .live_reference_derivation import (
     S23LiveReferenceDeriver,
 )
 from .live_decision import (
+    PaperLiveDecisionBuilder,
+    PaperLiveDecisionError,
+    PaperLiveDecisionResult,
     S23PaperLiveDecisionBuilder,
     S23PaperLiveDecisionError,
     S23PaperLiveDecisionResult,
@@ -773,6 +807,9 @@ __all__ = [
     "S23MorningSupervisedTaskSpec",
     "S23MonthlyStatusReferencePacket",
     "PaperLivePreludeBuilder",
+    "PaperLiveDecisionBuilder",
+    "PaperLiveDecisionError",
+    "PaperLiveDecisionResult",
     "PaperLivePreludeError",
     "PaperLivePreludeRequest",
     "PaperLivePreludeResult",
@@ -856,6 +893,7 @@ __all__ = [
     "paper_trade_is_open",
     "paper_trade_is_terminal",
     "paper_trade_latest_active_rows",
+    "paper_trade_latest_monitor_rows",
     "paper_trade_latest_historical_close_rows",
     "paper_trade_manager_status_is_lifecycle_terminal",
     "paper_trade_manager_status_is_open",
@@ -898,16 +936,30 @@ __all__ = [
     "inspect_paper_live_state_store_from_yaml",
     "inspect_s23_paper_live_state_store",
     "inspect_s23_paper_live_state_store_from_yaml",
+    "PaperRuntimeGuardrailStatus",
+    "load_paper_runtime_guardrail_statuses",
+    "PaperRuntimeOrderRoutingStatus",
+    "load_paper_runtime_order_routing_statuses",
+    "PaperRuntimeBrokerHealthStatus",
+    "load_paper_runtime_broker_health_statuses",
+    "PaperRuntimeReconciliationStatus",
+    "load_paper_runtime_reconciliation_statuses",
+    "PaperRuntimeFreshEntryHandoffStatus",
+    "load_paper_runtime_fresh_entry_handoff_statuses",
+    "PaperRuntimeHeartbeatStatus",
+    "load_paper_runtime_heartbeat_statuses",
     "load_paper_lifecycle_supervisor_target_specs",
     "PaperLifecycleBrokerConfig",
     "PaperLifecycleCostConfig",
     "PaperLifecycleRuntimeConfig",
     "PaperLifecycleRuntimeConfigError",
     "build_paper_broker_adapter",
+    "build_paper_broker_adapter_from_broker_config",
     "connect_paper_broker_runtime",
     "ensure_paper_broker_runtime_healthy",
     "PaperSelectedContractEventRequest",
     "fetch_selected_contract_market_events",
+    "paper_broker_credentials_available",
     "prepare_paper_broker_runtime_environment",
     "paper_live_state_owner_id",
     "s23_live_state_owner_id",
@@ -974,6 +1026,7 @@ __all__ = [
     "active_position_paths",
     "blocking_position_paths",
     "PaperFreshEntryBlockedDecisionCandidate",
+    "PaperFreshDecisionLaunchMarker",
     "PaperFreshEntryHandoffResult",
     "find_latest_supervised_session_dir",
     "find_preferred_supervised_stage_dir",
@@ -981,6 +1034,7 @@ __all__ = [
     "find_supervised_stage_dirs",
     "fresh_decision_launch_marker_path",
     "handoff_fresh_entry_requirement",
+    "load_fresh_decision_launch_marker",
     "PaperSupervisedStageArtifactPaths",
     "iter_session_branch_dirs",
     "iter_session_branch_explainer_paths",

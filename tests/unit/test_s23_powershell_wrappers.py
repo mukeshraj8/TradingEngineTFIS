@@ -143,9 +143,21 @@ def test_s21_operational_scripts_exist_for_daily_startup() -> None:
     assert "Resolve-TfisAbsolutePathText -RepoRoot $repoRoot" in start_script
     assert "Resolve-TfisPositionStateDirectoryPath -RepoRoot $repoRoot" in start_script
     assert "Get-TfisResumablePaperPositionStatePaths" in start_script
-    assert "Test-TfisTradingHolidayDate -RepoRoot $repoRoot -EffectiveDate $Date -CalendarPath $TradingHolidayCalendar" in start_script
+    assert "Get-TfisEffectiveRunDate -RunDate $Date" in start_script
+    assert "Get-TfisNoRunReason -RepoRoot $repoRoot -EffectiveDate $effectiveRunDate -CalendarPath $TradingHolidayCalendar" in start_script
     assert "Resolve-TfisPythonExecutable -RepoRoot $repoRoot" in start_script
     assert "New-TfisTaskLaunchContext" in start_script
+    assert "Show-TfisTaskBanner" in start_script
+    assert 'Write-LaunchLog "Starting TFIS S21 morning supervised decision wrapper."' in start_script
+    assert 'Write-LaunchLog "Skipping TFIS S21 morning decision."' in start_script
+    assert 'Write-LaunchLog "Wrapper finished with exit code 0."' in start_script
+    assert 'Write-LaunchLog "Python executable: $pythonExe"' in start_script
+    assert 'Write-LaunchLog "Supervised decision stdout: $pythonOutputPath"' in start_script
+    assert 'Write-LaunchLog "Supervised decision stderr: $pythonErrorPath"' in start_script
+    assert 'Write-LaunchLog "Effective run date: $($effectiveRunDate.ToString(' in start_script
+    assert 'Write-LaunchLog ("PYTHON: {0}" -f $_)' in start_script
+    assert 'Write-LaunchLog ("PYTHON_ERR: {0}" -f $_)' in start_script
+    assert 'Write-LaunchLog ("Wrapper failed: {0}" -f $_.Exception.Message)' in start_script
     assert "Passing latest discovered open S21 paper position to supervised decision" in start_script
     assert "run_s21_banknifty_0916_supervised_decision_$stamp.out.log" in start_script
     assert "run_tfis_paper_lifecycle_supervisor.py" in launcher_script

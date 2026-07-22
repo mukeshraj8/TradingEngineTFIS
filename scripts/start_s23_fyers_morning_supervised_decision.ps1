@@ -54,6 +54,39 @@ function Write-LaunchLog {
     Write-TfisTaskLogMessage -LogPath $logPath -Message $Message -ConsolePrefix "[TFIS S23] "
 }
 
+function Invoke-S23SupervisedDecisionProcess {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object[]]$ArgumentList,
+        [Parameter(Mandatory = $true)]
+        [string]$StdoutPath,
+        [Parameter(Mandatory = $true)]
+        [string]$StderrPath
+    )
+
+    $process = Start-TfisHiddenPythonProcess `
+        -PythonExecutable $pythonExe `
+        -ArgumentList $ArgumentList `
+        -WorkingDirectory $repoRoot `
+        -StdoutPath $StdoutPath `
+        -StderrPath $StderrPath
+
+    $stdoutLines = @()
+    $stderrLines = @()
+    if (Test-Path $StdoutPath) {
+        $stdoutLines = @(Get-Content -Path $StdoutPath)
+    }
+    if (Test-Path $StderrPath) {
+        $stderrLines = @(Get-Content -Path $StderrPath)
+    }
+
+    return [pscustomobject]@{
+        ExitCode = $process.ExitCode
+        StdoutLines = $stdoutLines
+        StderrLines = $stderrLines
+    }
+}
+
 function Get-TfisLatestSessionMetadata {
     param([datetime]$Date)
 
@@ -108,7 +141,12 @@ function Start-TfisSharedSupervisor {
 
 $pythonExe = Resolve-TfisPythonExecutable -RepoRoot $repoRoot -AllowSystemPythonFallback
 
-$effectiveRunDate = Get-TfisEffectiveRunDate -RunDate $RunDate
+if ($PSBoundParameters.ContainsKey("RunDate")) {
+    $effectiveRunDate = Get-TfisEffectiveRunDate -RunDate $RunDate
+}
+else {
+    $effectiveRunDate = Get-TfisEffectiveRunDate
+}
 
 $args = @(
     (Join-Path $repoRoot "scripts\run_s23_fyers_0916_supervised_decision.py"),
@@ -177,31 +215,65 @@ try {
     Write-LaunchLog "Supervised decision stdout: $pythonOutputPath"
     Write-LaunchLog "Supervised decision stderr: $pythonErrorPath"
     Write-LaunchLog "Starting supervised decision Python process."
-    $process = Start-TfisHiddenPythonProcess `
-        -PythonExecutable $pythonExe `
+    $result = Invoke-S23SupervisedDecisionProcess `
         -ArgumentList $args `
-        -WorkingDirectory $repoRoot `
         -StdoutPath $pythonOutputPath `
         -StderrPath $pythonErrorPath
-    $exitCode = $process.ExitCode
+    $exitCode = $result.ExitCode
     if ($null -eq $exitCode) {
         $exitCode = 0
     }
-    if (Test-Path $pythonOutputPath) {
-        Get-Content -Path $pythonOutputPath | ForEach-Object {
-            Write-LaunchLog ("PYTHON: {0}" -f $_)
-            if ($_ -match "MARKET_CLOSED_NO_ACTION") {
-                $marketClosedNoAction = $true
-            }
+    $stdoutLines = $result.StdoutLines
+    $stderrLines = $result.StderrLines
+    $stdoutLines | ForEach-Object {
+        Write-LaunchLog ("PYTHON: {0}" -f $_)
+        if ($_ -match "MARKET_CLOSED_NO_ACTION") {
+            $marketClosedNoAction = $true
         }
     }
-    if (Test-Path $pythonErrorPath) {
-        Get-Content -Path $pythonErrorPath | ForEach-Object {
-            Write-LaunchLog ("PYTHON_ERR: {0}" -f $_)
+    $stderrLines | ForEach-Object {
+        Write-LaunchLog ("PYTHON_ERR: {0}" -f $_)
+        if ($_ -match "MARKET_CLOSED_NO_ACTION") {
+            $marketClosedNoAction = $true
+        }
+    }
+
+    $tokenRaceDetected = (
+        (-not $SkipRefresh) -and
+        ($exitCode -ne 0) -and
+        ($stderrLines -match "invalid auth code").Count -gt 0
+    )
+    if ($tokenRaceDetected) {
+        Write-LaunchLog "Detected FYERS auth-code race during S23 refresh; retrying once with --skip-refresh."
+        $retryStamp = "{0}_retry_skip_refresh" -f $stamp
+        $retryOutputPath = Join-Path $logDir "run_s23_fyers_0916_supervised_decision_$retryStamp.out.log"
+        $retryErrorPath = Join-Path $logDir "run_s23_fyers_0916_supervised_decision_$retryStamp.err.log"
+        $retryArgs = @($args + "--skip-refresh")
+        $retryResult = Invoke-S23SupervisedDecisionProcess `
+            -ArgumentList $retryArgs `
+            -StdoutPath $retryOutputPath `
+            -StderrPath $retryErrorPath
+        $exitCode = $retryResult.ExitCode
+        if ($null -eq $exitCode) {
+            $exitCode = 0
+        }
+        $stdoutLines = $retryResult.StdoutLines
+        $stderrLines = $retryResult.StderrLines
+        $marketClosedNoAction = $false
+        $stdoutLines | ForEach-Object {
+            Write-LaunchLog ("PYTHON_RETRY: {0}" -f $_)
             if ($_ -match "MARKET_CLOSED_NO_ACTION") {
                 $marketClosedNoAction = $true
             }
         }
+        $stderrLines | ForEach-Object {
+            Write-LaunchLog ("PYTHON_RETRY_ERR: {0}" -f $_)
+            if ($_ -match "MARKET_CLOSED_NO_ACTION") {
+                $marketClosedNoAction = $true
+            }
+        }
+        $pythonOutputPath = $retryOutputPath
+        $pythonErrorPath = $retryErrorPath
     }
     Write-LaunchLog "Morning supervised decision finished with exit code $exitCode."
     if ($marketClosedNoAction) {

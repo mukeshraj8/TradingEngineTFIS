@@ -94,6 +94,7 @@ from tfis.paper import (
     paper_trade_is_open,
     paper_trade_ledger_candidate_paths,
     paper_trade_latest_active_rows,
+    paper_trade_latest_monitor_rows,
     paper_trade_latest_historical_close_rows,
     paper_trade_manager_status_is_lifecycle_terminal,
     paper_trade_manager_status_is_open,
@@ -182,6 +183,8 @@ from tfis.paper import (
     PaperSnapshotValidationSample,
     PaperSnapshotValidationWarning,
     load_paper_decision_reference_packet,
+    build_paper_broker_adapter_from_broker_config,
+    paper_broker_credentials_available,
     S23PaperLifecycleSupervisor,
     S23PaperLifecycleSupervisorContext,
     S23PaperLifecycleSupervisorResult,
@@ -462,6 +465,8 @@ def test_phase3_supervisor_runtime_symbols_are_exported() -> None:
     assert PaperLifecycleRuntimeConfig.__name__ == "PaperLifecycleRuntimeConfig"
     assert PaperLifecycleRuntimeConfigError.__name__ == "PaperLifecycleRuntimeConfigError"
     assert callable(build_paper_broker_adapter)
+    assert callable(build_paper_broker_adapter_from_broker_config)
+    assert callable(paper_broker_credentials_available)
 
 
 def test_paper_expiry_governance_aliases_point_to_existing_s23_types() -> None:
@@ -1223,6 +1228,82 @@ def test_paper_trade_latest_active_rows_use_shared_display_and_visibility_rules(
     latest_rows = paper_trade_latest_active_rows(
         rows,
         latest_session_date=latest_session_date,
+    )
+
+    assert [row.trade_id for row in latest_rows] == ["T2"]
+
+
+def test_paper_trade_latest_monitor_rows_apply_current_session_waiting_boundary() -> None:
+    latest_rows = paper_trade_latest_monitor_rows(
+        [
+            _StatusRow(
+                trade_id="WAIT-OLD",
+                event_timestamp=datetime.fromisoformat("2026-07-20T15:30:01+05:30"),
+                event_type="ORDER_WAITING",
+                lifecycle_status="ORDER_WAITING_FOR_TRIGGER",
+                manager_status="PAPER_ORDER_WAITING_FOR_TRIGGER",
+            ),
+            _StatusRow(
+                trade_id="WAIT-TODAY",
+                event_timestamp=datetime.fromisoformat("2026-07-21T10:24:16+05:30"),
+                event_type="ORDER_WAITING",
+                lifecycle_status="ORDER_WAITING_FOR_TRIGGER",
+                manager_status="PAPER_ORDER_WAITING_FOR_TRIGGER",
+            ),
+        ],
+        latest_session_date=date(2026, 7, 20),
+        anchor_session_date=date(2026, 7, 21),
+    )
+
+    assert [row.trade_id for row in latest_rows] == ["WAIT-TODAY"]
+
+
+def test_paper_trade_latest_monitor_rows_apply_current_session_not_filled_boundary() -> None:
+    latest_rows = paper_trade_latest_monitor_rows(
+        [
+            _StatusRow(
+                trade_id="NOTFILLED-OLD",
+                event_timestamp=datetime.fromisoformat("2026-07-20T15:30:01+05:30"),
+                event_type="ORDER_NOT_FILLED",
+                lifecycle_status="ORDER_NOT_FILLED",
+                manager_status="PAPER_ORDER_NOT_FILLED",
+            ),
+            _StatusRow(
+                trade_id="NOTFILLED-TODAY",
+                event_timestamp=datetime.fromisoformat("2026-07-21T15:30:01+05:30"),
+                event_type="ORDER_NOT_FILLED",
+                lifecycle_status="ORDER_NOT_FILLED",
+                manager_status="PAPER_ORDER_NOT_FILLED",
+            ),
+        ],
+        latest_session_date=date(2026, 7, 20),
+        anchor_session_date=date(2026, 7, 21),
+    )
+
+    assert [row.trade_id for row in latest_rows] == ["NOTFILLED-TODAY"]
+
+
+def test_paper_trade_latest_monitor_rows_hide_terminal_rows_by_default() -> None:
+    latest_rows = paper_trade_latest_monitor_rows(
+        [
+            _StatusRow(
+                trade_id="T1",
+                event_timestamp=datetime.fromisoformat("2026-07-21T10:24:16+05:30"),
+                event_type="CLOSE",
+                lifecycle_status="PAPER_POSITION_CLOSED",
+                manager_status="PAPER_POSITION_CLOSED",
+                fresh_entry_required=True,
+            ),
+            _StatusRow(
+                trade_id="T2",
+                event_timestamp=datetime.fromisoformat("2026-07-21T10:25:16+05:30"),
+                event_type="ACTION_REQUIRED",
+                lifecycle_status="PAPER_FRESH_ENTRY_REQUIRED",
+                manager_status="PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                fresh_entry_required=True,
+            ),
+        ],
+        latest_session_date=date(2026, 7, 21),
     )
 
     assert [row.trade_id for row in latest_rows] == ["T2"]

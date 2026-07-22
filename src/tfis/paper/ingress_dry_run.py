@@ -38,7 +38,7 @@ from .orchestrator import (
     S23PaperSessionSnapshot as PaperSessionSnapshot,
 )
 from .replay_bundle import S23PaperReplayBundleManager
-from .review import S23PaperSessionReviewer
+from .review import PaperSessionReviewer
 from .validation import DEFAULT_MAX_QUOTE_AGE, PaperContractValidator, PaperEvent
 
 
@@ -389,7 +389,7 @@ class S23PaperIngressDryRunRunner:
         artifact_writer: S23PaperSessionArtifactWriter | None = None,
         replay_bundle_manager: S23PaperReplayBundleManager | None = None,
         execution_journal_writer: S23PaperExecutionJournalWriter | None = None,
-        reviewer: S23PaperSessionReviewer | None = None,
+        reviewer: PaperSessionReviewer | None = None,
         thresholds: S23PaperIngressDryRunThresholds | None = None,
         max_quote_age: timedelta = DEFAULT_MAX_QUOTE_AGE,
         late_event_threshold: timedelta = _DEFAULT_EVENT_LAG_THRESHOLD,
@@ -404,7 +404,7 @@ class S23PaperIngressDryRunRunner:
         self._execution_journal_writer = (
             execution_journal_writer or S23PaperExecutionJournalWriter()
         )
-        self._reviewer = reviewer or S23PaperSessionReviewer()
+        self._reviewer = reviewer or PaperSessionReviewer()
         self._thresholds = thresholds or S23PaperIngressDryRunThresholds()
         self._max_quote_age = max_quote_age
         self._late_event_threshold = late_event_threshold

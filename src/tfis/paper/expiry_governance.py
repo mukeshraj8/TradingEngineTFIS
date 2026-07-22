@@ -8,10 +8,10 @@ from typing import Protocol
 from tfis.domain import ExpiryType, RolloverPolicy, StrategyExpiryPolicy, StrategyRule
 
 from .position_state import (
-    S23PaperPositionState,
-    S23PaperPositionStateEvent,
-    S23PaperPositionStateEventType,
-    S23PaperPositionStateStatus,
+    PaperPositionState,
+    PaperPositionStateEvent,
+    PaperPositionStateEventType,
+    PaperPositionStateStatus,
 )
 
 
@@ -95,7 +95,7 @@ class PaperExpiryGovernanceDecision:
     can_carry_forward: bool
     must_force_close: bool
     should_select_next_expiry: bool
-    event_types: tuple[S23PaperPositionStateEventType, ...]
+    event_types: tuple[PaperPositionStateEventType, ...]
     message: str
 
 
@@ -105,17 +105,17 @@ class PaperExpiryGovernance:
 
     def resolve_expiry_date(
         self,
-        strategy: StrategyRule | StrategyExpiryPolicy | S23PaperPositionState,
+        strategy: StrategyRule | StrategyExpiryPolicy | PaperPositionState,
         session_date: date,
     ) -> date:
-        if isinstance(strategy, S23PaperPositionState):
+        if isinstance(strategy, PaperPositionState):
             return strategy.expiry_date
         policy = self._extract_policy(strategy)
         return self._calendar.resolve_expiry(policy.expiry_type, session_date)
 
     def can_carry_forward(
         self,
-        position: S23PaperPositionState,
+        position: PaperPositionState,
         session_date: date,
     ) -> bool:
         if not position.carry_forward_allowed:
@@ -133,7 +133,7 @@ class PaperExpiryGovernance:
 
     def must_force_close(
         self,
-        position: S23PaperPositionState,
+        position: PaperPositionState,
         session_date: date,
         current_time: time,
     ) -> bool:
@@ -156,7 +156,7 @@ class PaperExpiryGovernance:
 
     def should_select_next_expiry(
         self,
-        strategy: StrategyRule | StrategyExpiryPolicy | S23PaperPositionState,
+        strategy: StrategyRule | StrategyExpiryPolicy | PaperPositionState,
         session_date: date,
     ) -> bool:
         policy = self._extract_policy(strategy)
@@ -165,12 +165,12 @@ class PaperExpiryGovernance:
             policy,
             session_date,
             current_expiry=current_expiry,
-            position=strategy if isinstance(strategy, S23PaperPositionState) else None,
+            position=strategy if isinstance(strategy, PaperPositionState) else None,
         )
 
     def evaluate_position(
         self,
-        position: S23PaperPositionState,
+        position: PaperPositionState,
         *,
         session_date: date,
         current_time: time,
@@ -178,20 +178,20 @@ class PaperExpiryGovernance:
         should_next = self.should_select_next_expiry(position, session_date)
         force_close = self.must_force_close(position, session_date, current_time)
         carry_allowed = self.can_carry_forward(position, session_date)
-        event_types: list[S23PaperPositionStateEventType] = []
+        event_types: list[PaperPositionStateEventType] = []
         messages: list[str] = []
 
         if should_next:
             event_types.append(
-                S23PaperPositionStateEventType.PAPER_ROLLOVER_POLICY_APPLIED
+                PaperPositionStateEventType.PAPER_ROLLOVER_POLICY_APPLIED
             )
             event_types.append(
-                S23PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED
+                PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED
             )
             messages.append("Current expiry is inside the configured rollover window.")
         if force_close:
             event_types.append(
-                S23PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSE_REQUIRED
+                PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSE_REQUIRED
             )
             messages.append("Current-expiry exposure must be force-closed under expiry governance.")
         if not messages:
@@ -207,22 +207,22 @@ class PaperExpiryGovernance:
 
     def build_events(
         self,
-        position: S23PaperPositionState,
+        position: PaperPositionState,
         *,
         session_date: date,
         event_timestamp: datetime,
         current_time: time,
         provenance_source_ids: tuple[str, ...] = (),
-    ) -> tuple[S23PaperPositionStateEvent, ...]:
+    ) -> tuple[PaperPositionStateEvent, ...]:
         decision = self.evaluate_position(
             position,
             session_date=session_date,
             current_time=current_time,
         )
-        events: list[S23PaperPositionStateEvent] = []
+        events: list[PaperPositionStateEvent] = []
         for event_type in decision.event_types:
             events.append(
-                S23PaperPositionStateEvent(
+                PaperPositionStateEvent(
                     timestamp=event_timestamp,
                     event_type=event_type,
                     strategy_code=position.strategy_code,
@@ -239,7 +239,7 @@ class PaperExpiryGovernance:
 
     @staticmethod
     def _extract_policy(
-        strategy: StrategyRule | StrategyExpiryPolicy | S23PaperPositionState,
+        strategy: StrategyRule | StrategyExpiryPolicy | PaperPositionState,
     ) -> StrategyExpiryPolicy:
         if isinstance(strategy, StrategyRule):
             return strategy.expiry_policy
@@ -253,7 +253,7 @@ class PaperExpiryGovernance:
         session_date: date,
         *,
         current_expiry: date,
-        position: S23PaperPositionState | None = None,
+        position: PaperPositionState | None = None,
     ) -> bool:
         if position is not None and self._position_may_continue_to_expiry(position):
             return False
@@ -265,7 +265,7 @@ class PaperExpiryGovernance:
         )
         return trading_days_until_expiry <= self._rollover_threshold(policy.rollover_policy)
 
-    def _position_may_continue_to_expiry(self, position: S23PaperPositionState) -> bool:
+    def _position_may_continue_to_expiry(self, position: PaperPositionState) -> bool:
         trading_days_from_entry_to_expiry = self._calendar.trading_days_until(
             position.entry_date,
             position.expiry_date,
@@ -282,13 +282,13 @@ class PaperExpiryGovernance:
 
     @staticmethod
     def _reason_code_for_event(
-        event_type: S23PaperPositionStateEventType,
+        event_type: PaperPositionStateEventType,
     ) -> str:
         mapping = {
-            S23PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSE_REQUIRED: "expiry_force_close_required",
-            S23PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSED: "expiry_force_closed",
-            S23PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED: "next_expiry_required",
-            S23PaperPositionStateEventType.PAPER_ROLLOVER_POLICY_APPLIED: "rollover_policy_applied",
+            PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSE_REQUIRED: "expiry_force_close_required",
+            PaperPositionStateEventType.PAPER_EXPIRY_FORCE_CLOSED: "expiry_force_closed",
+            PaperPositionStateEventType.PAPER_NEXT_EXPIRY_REQUIRED: "next_expiry_required",
+            PaperPositionStateEventType.PAPER_ROLLOVER_POLICY_APPLIED: "rollover_policy_applied",
         }
         return mapping[event_type]
 

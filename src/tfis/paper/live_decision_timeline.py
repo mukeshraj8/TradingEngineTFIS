@@ -23,13 +23,13 @@ from tfis.monthly_status import (
 from .fyers_snapshot_collector import PaperCollectedSnapshotInputs
 from .live_reference_derivation import PaperLiveReferenceDeriver
 from .live_decision import (
-    S23PaperLiveDecisionBuilder,
-    S23PaperLiveDecisionError,
-    S23PaperLiveDecisionResult,
+    PaperLiveDecisionBuilder,
+    PaperLiveDecisionError,
+    PaperLiveDecisionResult,
 )
 from .live_prelude import PaperLivePreludeError
 from .models import SnapshotLabel
-from .position_state import S23PaperPositionState
+from .position_state import PaperPositionState
 from .runtime_input_derivation import (
     PaperDecisionReferencePacket,
     PaperRuntimeInputDerivationError,
@@ -99,7 +99,7 @@ class S23LiveDecisionTimelineResult:
 @dataclass(frozen=True, slots=True)
 class S23LiveDecisionTimelineStageBuild:
     stage: S23LiveDecisionTimelineStage
-    decision_result: S23PaperLiveDecisionResult | None
+    decision_result: PaperLiveDecisionResult | None
 
 
 PaperLiveDecisionTimelineCheckpoint = S23LiveDecisionTimelineCheckpoint
@@ -112,12 +112,12 @@ class S23LiveDecisionTimelineBuilder:
     def __init__(
         self,
         *,
-        decision_builder: S23PaperLiveDecisionBuilder | None = None,
+        decision_builder: PaperLiveDecisionBuilder | None = None,
         monthly_status_engine: MonthlyStatusEngine | None = None,
         monthly_status_lookback_resolver: MonthlyStatusLookbackResolver | None = None,
         live_reference_deriver: PaperLiveReferenceDeriver | None = None,
     ) -> None:
-        self._decision_builder = decision_builder or S23PaperLiveDecisionBuilder()
+        self._decision_builder = decision_builder or PaperLiveDecisionBuilder()
         self._monthly_status_engine = monthly_status_engine or MonthlyStatusEngine()
         self._monthly_status_lookback_resolver = (
             monthly_status_lookback_resolver
@@ -135,7 +135,7 @@ class S23LiveDecisionTimelineBuilder:
         strategy_rule: StrategyRule,
         reference_packet: PaperDecisionReferencePacket,
         collected_inputs: PaperCollectedSnapshotInputs,
-        carry_forward_position: S23PaperPositionState | None = None,
+        carry_forward_position: PaperPositionState | None = None,
         smoke_override_enabled: bool = False,
         smoke_override_selected_contract_symbol: str | None = None,
         allow_branch_pinned_unknown_monthly_status: bool = False,
@@ -192,7 +192,7 @@ class S23LiveDecisionTimelineBuilder:
             waiting_for=waiting_for,
         )
         can_finalize = not waiting_for
-        decision: S23PaperLiveDecisionResult | None = None
+        decision: PaperLiveDecisionResult | None = None
         decision_failure_code: str | None = None
         decision_failure_message: str | None = None
         decision_failure_attempted_expiries: tuple[str, ...] = ()
@@ -211,7 +211,7 @@ class S23LiveDecisionTimelineBuilder:
                     required_snapshot_labels=required_snapshot_labels,
                 )
             except (
-                S23PaperLiveDecisionError,
+                PaperLiveDecisionError,
                 PaperLivePreludeError,
                 PaperRuntimeInputDerivationError,
             ) as exc:
@@ -321,7 +321,7 @@ class S23LiveDecisionTimelineBuilder:
         *,
         stage_name: str,
         waiting_for: tuple[str, ...],
-        decision: S23PaperLiveDecisionResult,
+        decision: PaperLiveDecisionResult,
     ) -> bool:
         if not waiting_for:
             return True

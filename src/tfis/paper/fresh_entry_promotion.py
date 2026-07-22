@@ -10,7 +10,7 @@ from tfis.importers import load_strategy_rule
 
 from .decision_summary_discovery import discover_trade_decision_summaries
 from .live_decision import S23PaperTradeDecisionSummary
-from .order_state import S23PaperOrderStateDiscovery, S23PaperOrderStateStore
+from .order_state import PaperOrderStateDiscovery, PaperOrderStateStore
 from .position_discovery import PaperOpenPositionDiscovery
 from .session_discovery import (
     find_latest_supervised_session_dir,
@@ -105,7 +105,7 @@ def promote_blocked_fresh_entries(
                 )
             )
             continue
-        _state, state_path, _events_path = S23PaperOrderStateStore().create_waiting_order_from_live_decision(
+        _state, state_path, _events_path = PaperOrderStateStore().create_waiting_order_from_live_decision(
             candidate.branch_directory,
             strategy_rule=strategy_rule,
             decision=candidate.summary,
@@ -162,7 +162,7 @@ def promotion_candidates(
 ) -> list[PaperFreshEntryBlockedDecisionCandidate]:
     existing_orders = {
         candidate.state_directory.resolve(): candidate.state_directory.resolve() / "paper_order_state.json"
-        for candidate in S23PaperOrderStateDiscovery().find_orders((session_dir,))
+        for candidate in PaperOrderStateDiscovery().find_orders((session_dir,))
     }
     candidates: list[PaperFreshEntryBlockedDecisionCandidate] = []
     for candidate in discover_trade_decision_summaries(session_dir):

@@ -6,6 +6,15 @@ way.
 
 ## Immediate Next Priorities
 
+0.5. Remove the remaining S21/S23 morning startup auth race that was exposed on
+   Wednesday, July 22, 2026.
+   Today's market-time recovery proved that the paper runtime can be rescued,
+   but it also proved the current startup design is still suboptimal: S21 and
+   S23 can compete for FYERS token/auth refresh at the same startup moment.
+   The wrapper retry with `--skip-refresh` is now in place as a safety net, but
+   the next engineering step should serialize or centralize token/bootstrap
+   work so the race disappears at the root.
+
 0. Execute the weekend live-money-readiness track in strict order, without
    bypassing paper-safety gates.
    The repository contract still applies: TFIS must remain safe for paper
@@ -51,6 +60,27 @@ way.
    replay-bundle management, and paper-vs-historical comparison contracts.
    The next immediate action is to run the current readiness audit on that
    shared surface and fix any paper-trading blockers the audit exposes.
+   Update later on Tuesday, July 21, 2026:
+   the morning paper-start blocker exposed by today's scheduled run has now
+   been corrected for S23: the wrapper accepts scheduler launches without an
+   explicit `RunDate`, and the shared process-lock path now distinguishes a
+   truly matching live process from a reused Windows PID before it blocks a
+   new launch. The next immediate runtime follow-up is to review whether the
+   S21 scheduled wrapper should emit more explicit completion/failure evidence
+   in its task logs when the real supervised run remains alive beyond wrapper
+   exit visibility.
+   Update later still on Tuesday, July 21, 2026:
+   the consolidated dashboard monitor now anchors waiting/not-filled trade
+   visibility to the later of the current operator day and the newest
+   discovered strategy session date, so stale prior-day unfilled rows no
+   longer leak back into active all-trades or chart-review surfaces when a
+   strategy has not yet produced a fresh session. The next immediate
+   follow-up remains the broader live-money-readiness backlog rather than more
+   dashboard-local active/historical row filtering. A same-day follow-up slice
+   has now also aligned each strategy page to that same current-day anchor
+   rule, so stale past-session waiting/not-filled rows no longer appear inside
+   a strategy page's active "Trades Taken" monitor or Operator Status panel
+   just because that strategy has not produced a fresh session today.
 
 1. Phase 1 runtime-consistency refactor, Phase 2 runtime-contract/read-model
    consolidation, and the first full Phase 3 lifecycle-supervisor cutover are
@@ -210,6 +240,55 @@ way.
    prelude behavior rather than another top-level bootstrap or config
    entrypoint. The reusable prelude and paper position-manager layers now also
    type their expiry-governance dependency through the neutral
+   `PaperExpiryGovernance` alias. The next Tuesday, July 21, 2026 follow-
+   up slice has now also moved `paper_vs_historical.py` onto the neutral
+   `PaperSessionReviewer` / `PaperReviewSummary` / `PaperReviewError`
+   contracts while preserving the older S23 comparison exports. The impacted
+   comparison/execution/lifecycle regression pack passed at `137 passed`. The
+   next Tuesday, July 21, 2026 follow-up slice has now also cut
+   `expiry_governance.py` and `lifecycle_supervisor.py` over to the neutral
+   shared order/position/event aliases while preserving their outward S23
+   compatibility exports, and the impacted regression pack for that slice
+   passed at `108 passed`. The next Tuesday, July 21, 2026 follow-up slice has
+   now also moved `live_prelude.py`, `live_decision.py`,
+   `live_decision_timeline.py`, and `trade_ledger.py` onto the neutral paper
+   position-state aliases while preserving their outward S23 contracts, and
+   the impacted regression pack for that slice passed at `116 passed`. The
+   next Tuesday, July 21, 2026 follow-up slice has now also moved
+   `order_finalizer.py` and `fresh_entry_promotion.py` onto the neutral
+   `PaperOrderState...` aliases while preserving their outward S23 contracts,
+   and the impacted regression pack for that slice passed at `115 passed`. The
+   next Wednesday, July 22, 2026 follow-up slice has now also moved
+   `position_manager.py` onto the neutral paper order/live-state aliases and
+   `live_state_store.py` onto neutral paper-first class and factory names,
+   while preserving their outward S23 compatibility aliases and wrappers. A
+   same-day repair pass then completed the interrupted `position_manager.py`
+   declaration cutover itself, so that module now declares
+   `PaperPositionManager...` types first and keeps the S23 names as
+   compatibility aliases with the focused regression pack and local `prod`
+   readiness both green again. The impacted regression packs for those slices
+   passed at `124 passed` and `155 passed`. The next likely Phase 4 cleanup is
+   therefore the remaining generic runtime modules that still type shared
+   state through direct S23 names beyond those live-decision, orchestration,
+   order-state, position-state, and live-state surfaces. The same Wednesday,
+   July 22, 2026 follow-up slice has now also moved `order_state.py` itself
+   onto paper-first status/state/event/discovery/store names while preserving
+   the outward S23 aliases, with the impacted regression pack passing at
+   `143 passed` and local `prod` readiness staying green. A later Wednesday,
+   July 22, 2026 slice then also moved `position_state.py` onto
+   paper-first status/event-type/state/event/store names while preserving the
+   outward S23 aliases, with the impacted regression pack passing at
+   `131 passed` and local `prod` readiness still green. A later Wednesday,
+   July 22, 2026 slice then also moved `trade_ledger.py` onto paper-first
+   ledger event-type/row/store names while preserving the outward S23 aliases,
+   with the impacted regression pack passing at `139 passed` and local `prod`
+   readiness still green. A later Wednesday, July 22, 2026 slice then also
+   moved `lifecycle_supervisor.py` onto paper-first context/step/result/
+   supervisor names while preserving the outward S23 aliases, with the
+   impacted regression pack passing at `139 passed` and local `prod`
+   readiness still green. The clearest next shared-state follow-up is now the
+   remaining generic runtime/read-model surfaces that still expose S23-first
+   declarations outside these core state modules.
    `PaperExpiryGovernance` alias, so the next likely decision is how much of
    `src/tfis/paper/live_ingress.py` is truly strategy-specific behavior versus
    shared broker/data-source plumbing that should move behind a neutral seam.
@@ -236,7 +315,44 @@ way.
    `PaperLiveIngressSummary` plus `PaperLiveIngressArtifactSet` aliases in its
    signatures. That means the current low-risk Phase 4 naming/export cleanup is
    effectively complete; the next Phase 4 move is a behavioral extraction
-   decision rather than another alias/config/export cleanup.
+   decision rather than another alias/config/export cleanup. The next Tuesday,
+   July 21, 2026 shared-surface slice now also moves one more band of generic
+   paper modules onto those neutral imports: shared live-decision runners,
+   timeline builders, generated-prelude flow, live-ingress runner,
+   TradingEngine capture ingress suite, and generic order/position entry
+   helpers now consume the `Paper...` live-decision and ingress-dry-run names
+   directly instead of the `S23...` names. The next likely Phase 4 move is
+   therefore behavioral extraction inside the remaining truly shared live-
+   ingress/live-decision logic rather than more naming churn. The next
+   Tuesday, July 21, 2026 broker-bootstrap slice is now also complete:
+   `src/tfis/paper/lifecycle_runtime_config.py` now exposes a broker-config-
+   level adapter builder, and both the neutral live-ingress runner plus the
+   FYERS snapshot collector consume that same helper instead of duplicating
+   inline provider checks and fixture/live adapter construction logic. The
+   focused affected regression pack passed at `110 passed`, the broader shared
+   safety sweep passed at `90 passed`, and local `prod` readiness remained
+   `overall_status=PASS`. The same Tuesday, July 21, 2026 bootstrap-hardening
+   slice now also centralizes broker-credential readiness: the shared paper
+   runtime-config layer owns provider-specific credential-availability checks,
+   and both the neutral live-ingress preflight plus the FYERS snapshot
+   collector now consume that one helper instead of each probing FYERS
+   credentials inline. The focused affected regression pack passed at
+   `112 passed`, and local `prod` readiness remained `overall_status=PASS`.
+   The same Tuesday, July 21, 2026 shared-ingress wording slice now also
+   removes one more public S23/FYERS-only signal from the shared paper path:
+   the neutral live-ingress runner now renders generic paper-broker summary
+   and preflight headings plus generic configured-broker safety wording. The
+   same Tuesday, July 21, 2026 shared reviewer/state-store cutover batch is
+   now also clean: generated-prelude dry runs, position discovery, position
+   management, the morning timeline runner, execution journal, fill
+   simulator, lifecycle simulator, ingress dry-run, and the FYERS snapshot
+   collector now consume neutral `Paper...` reviewer/state-store aliases
+   where those surfaces are already shared, while preserving compatibility
+   symbols for older module-level monkeypatch hooks. The impacted regression
+   pack passed at `190 passed`, and local `prod` readiness remained
+   `overall_status=PASS`. The next likely Phase 4 move is therefore a true
+   behavioral extraction inside the remaining shared live-ingress/live-
+   decision flow rather than another bootstrap or naming cleanup.
 2. Run the next pre-market operator checklist and supervised paper start
    against the shared supervisor path.
    The local readiness gate now has a dedicated command:
@@ -439,6 +555,11 @@ and operator-facing verification all pass.
    lifecycle supervisor now re-checks broker runtime health before managing
    active targets, emitting explicit degraded/recovered logs with
    strategy/provider context instead of trusting startup health indefinitely.
+   TFIS now also has one explicit opt-in broker-health probe surface:
+   `scripts/pre_live_readiness.py --probe-broker-health` can actively connect
+   each configured paper broker adapter and fail closed if health never
+   reaches `CONNECTED`, while `scripts/show_tfis_runtime_status.ps1` can print
+   the same shared probe status from its read-only operator console.
    Acceptance gate:
    readiness and runtime paths both surface provider health explicitly and do
    not silently continue into ambiguous trade-management states.
@@ -490,12 +611,31 @@ and operator-facing verification all pass.
    candidate records that carry parsed summary data plus any already-
    discovered order-state path for the branch, rather than passing raw
    summary-path tuples through the promotion loop.
-   The
-   remaining work in this step is the runtime side of that truth model:
-   explicit ledger/state authority across open-position persistence,
-   post-close fresh-entry promotion flows, and final ledger promotion rules
-   so one lifecycle transition cannot leave conflicting active/historical
-   evidence behind.
+   The runtime side of that truth model has now tightened further too:
+   pre-live readiness audits each persisted paper position state against the
+   latest ledger row for the same trade and fails closed when active state,
+   terminal state, or missing ledger backing disagree with the durable trade
+   record. The read-only operator runtime-status command now also exposes a
+   dedicated `RuntimeReconciliation` section sourced from that same helper, so
+   reconciliation failures are visible during market hours without a restart.
+   The same Tuesday, July 21, 2026 runtime surface now also has one shared
+   fresh-entry handoff audit: readiness, the runtime-status command, and the
+   dashboard Operator Status panel all consume the same helper, which accepts
+   launch markers, later same-branch lifecycle rows, or later same-branch
+   supervised-session artifacts as valid evidence that a fresh-entry-required
+   close was handed off correctly.
+   The shared live-monitor trade-row helper now also keeps prior-session
+   `ORDER_NOT_FILLED` rows historical-only, closing one more active-vs-
+   historical leak when a strategy has not produced a current-day session yet.
+   The dashboard can now also read fresh-decision launch markers and tell the
+   operator whether a fresh-entry-required close promoted an existing blocked
+   READY decision or launched a new supervised runner. The remaining work is
+   now narrower than basic visibility: keep shrinking the last places where
+   old close/promotion artifacts can still leave confusing active-versus-
+   historical evidence behind.
+   The remaining work in this step is to keep shrinking the last places where
+   post-close fresh-entry promotion and final ledger promotion can leave
+   confusing active-versus-historical evidence behind.
    Acceptance gate:
    every lifecycle state has one durable source of truth, and dashboard views
    agree with it.
@@ -504,6 +644,48 @@ and operator-facing verification all pass.
    dry-run/live configuration boundaries, manual stop/pause/recovery guidance,
    kill-switch expectations, live-order preconditions, and audit/event
    visibility.
+   Latest slice:
+   TFIS now has filesystem-backed global and per-strategy paper-runtime pause
+   controls through `scripts/pause_tfis_runtime.ps1`,
+   `scripts/resume_tfis_runtime.ps1`, and shared supervisor pause-state
+   detection. The dashboard now also surfaces pause scope, paused strategies,
+   stale/no-stream counts, alert text, the latest operator-control event, and
+   the primary pause/resume/refresh commands in one shared Operator Status
+   panel. Operator pause/resume commands now also append one shared
+   `operator_control_events.jsonl` audit trail under `tmp/operator_controls`.
+   TFIS also now has a read-only `scripts/show_tfis_runtime_status.ps1`
+   command so operators can inspect shared-process, pause-state, and latest
+   control-event truth without restarting runtime.
+   Pre-live readiness now also fails closed when a lingering TFIS
+   global/strategy pause marker would block supervision for the day.
+   The shared lifecycle runtime now also validates one broker-neutral paper
+   guardrail contract before supervisor bootstrap: paper configs must stay on
+   a paper-ingress source mode with paper mode enabled, no live orders
+   allowed, kill switch enabled, and session kill switch inactive.
+   The dashboard now consumes that same shared guardrail helper too, so
+   Operator Status surfaces a paper-guardrail PASS/FAIL badge and explicit
+   alerts instead of leaving that truth hidden inside readiness/bootstrap
+   checks only. The dashboard now also consumes filesystem-backed supervisor
+   heartbeat truth from the shared live-state backend, so Operator Status can
+   flag stale or unavailable supervision separately from selected-contract
+   stream staleness. The same operator/runtime surface now also exposes a
+   separate shared order-routing safety status: pre-live readiness,
+   `scripts/show_tfis_runtime_status.ps1`, and the dashboard Operator Status
+   panel all confirm that paper targets still keep
+   `no_live_orders_allowed=true` and broker adapters still inherit the
+   blocked paper-only `place_order` / `modify_order` / `cancel_order` paths.
+   The heartbeat read-model now also exposes the latest persisted
+   `owner_id` and `state_directory`, and the shared live-state loader accepts
+   both nested `storage.live_state` / `storage.redis` config and top-level
+   `live_state` / `redis` aliases, so runtime status reads and live-state
+   bootstrap no longer depend on different YAML shapes.
+   The shared dashboard Operator Status panel now also shows that latest
+   heartbeat owner/state-directory detail directly, so operators can trace a
+   stale or fresh heartbeat back to the shared supervisor identity and watched
+   state directory without leaving the dashboard.
+   The remaining work is to define any future live-mode-only routing controls
+   separately from this paper-only safety audit and fold those controls into
+   the broader live-mode audit truth.
    Acceptance gate:
    the system can fail closed safely, and an operator can understand what to
    do during partial failure without code inspection.
@@ -513,6 +695,22 @@ and operator-facing verification all pass.
    home, clear entry points for live monitor, historical trades, strategy
    pages, and charts, plus operator-friendly labels and layout that stay easy
    to scan as more strategies and instruments are added.
+   Latest slice:
+   the dashboard now has a shared Operator Status panel on the index,
+   strategy pages, and all-trades monitor for pause scope plus stream-health
+   alerts. The dashboard now also has one shared operator nav strip across the
+   home, strategy, all-trades, historical-trades, monthly-status, and manual
+   S23 pages, so the primary operator workflows no longer depend on page-local
+   back links or tool-only link clusters. A first shared chart-review page now
+   also exists under `tools/charts/index.html`, surfacing active selected-
+   contract market-evidence charts and a direct entry into the monthly-status
+   structure chart. The remaining dashboard work is denser operator-time
+   summaries, broader chart coverage, and scaling the same navigation model as
+   more strategies and instruments are added. The operator home cards now also
+   show per-strategy visible-trade, open-position, action-required, and
+   closed-row counts from the shared live monitor, so the next dashboard work
+   is less about basic summary density and more about broader chart coverage
+   plus long-horizon multi-strategy scaling.
    Acceptance gate:
    an operator can move between strategies, all trades, historical review, and
    chart review without hunting through page-local links or strategy-specific
@@ -522,6 +720,18 @@ and operator-facing verification all pass.
    operator-selectable chart views for a chosen tradeable scrip and NIFTY at
    minimum, designed through the same broker-agnostic market-data boundary so
    future brokers can supply the same review surface.
+   Latest slice:
+   the shared dashboard now exposes `tools/charts/index.html`, which renders
+   persisted selected-contract market-evidence charts for active rows and
+   links directly into the monthly-status chart surface for NIFTY/BANKNIFTY
+   structure review. That page now also includes simple strategy/stream
+   filters plus visible/evidence summary counts so the surface remains usable
+   as more active rows appear, and the monthly-status tool now accepts simple
+   query-string defaults so the chart page can open directly into NIFTY or
+   BANKNIFTY review. The chart page now also has an instrument filter over the
+   active selected-contract cards, so the remaining chart work is richer index
+   review and additional cross-strategy chart summaries rather than basic
+   chart narrowing.
    Acceptance gate:
    the dashboard exposes a clear charts section with navigable chart views and
    no FYERS-only assumptions leaking into the operator workflow.

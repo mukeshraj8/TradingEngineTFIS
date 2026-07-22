@@ -12,9 +12,9 @@ from tfis.domain.enums import MonthlyStatus, OptionType
 
 from .artifacts import S23PaperSessionArtifactWriter
 from .ingress_dry_run import (
-    S23PaperIngressDryRunArtifactSet,
-    S23PaperIngressDryRunRunner,
-    S23PaperIngressDryRunThresholds,
+    PaperIngressDryRunArtifactSet,
+    PaperIngressDryRunRunner,
+    PaperIngressDryRunThresholds,
 )
 from .models import PaperSessionState
 from .tradingengine_capture_adapter import (
@@ -157,10 +157,10 @@ class S23TradingEngineCaptureIngressSuiteRunner:
         self,
         *,
         out_root: str | Path = _DEFAULT_OUT_ROOT,
-        thresholds: S23PaperIngressDryRunThresholds | None = None,
+        thresholds: PaperIngressDryRunThresholds | None = None,
     ) -> None:
         self._out_root = Path(out_root)
-        self._thresholds = thresholds or S23PaperIngressDryRunThresholds()
+        self._thresholds = thresholds or PaperIngressDryRunThresholds()
 
     def run(
         self,
@@ -353,7 +353,7 @@ class S23TradingEngineCaptureIngressSuiteRunner:
             encoding="utf-8",
         )
 
-        runner = S23PaperIngressDryRunRunner(
+        runner = PaperIngressDryRunRunner(
             artifact_writer=S23PaperSessionArtifactWriter(self._out_root),
             thresholds=self._thresholds,
             source_mode="tradingengine_capture_plus_tfis_prelude_jsonl",
@@ -406,7 +406,7 @@ class S23TradingEngineCaptureIngressSuiteRunner:
 
     def _classify_session(
         self,
-        artifact_set: S23PaperIngressDryRunArtifactSet,
+        artifact_set: PaperIngressDryRunArtifactSet,
     ) -> tuple[str, list[str]]:
         summary = artifact_set.summary
         warnings: list[str] = []
@@ -577,7 +577,7 @@ class S23TradingEngineCaptureIngressSuiteRunner:
 
     def _timing_value(
         self,
-        artifact_set: S23PaperIngressDryRunArtifactSet,
+        artifact_set: PaperIngressDryRunArtifactSet,
         label: str,
     ) -> float | None:
         for entry in artifact_set.summary.timing_audit:

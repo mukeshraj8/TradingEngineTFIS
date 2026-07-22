@@ -4,13 +4,14 @@ import json
 import os
 import sys
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, Callable
 
 
 CRITICAL_DUPLICATE_PROCESS_SHUTDOWN = "CRITICAL_DUPLICATE_PROCESS_SHUTDOWN"
 STALE_PROCESS_LOCK_RECLAIMED = "STALE_PROCESS_LOCK_RECLAIMED"
+PID_REUSE_LOCK_TOLERANCE = timedelta(seconds=5)
 
 
 class ProcessLockError(RuntimeError):
@@ -55,7 +56,7 @@ def acquire_process_lock(
         payload = _read_lock_payload(resolved_lock_path)
         existing_pid = _payload_pid(payload)
         if existing_pid is not None and existing_pid != pid:
-            if exists(existing_pid):
+            if exists(existing_pid) and _process_matches_payload(existing_pid, payload):
                 message = (
                     f"{CRITICAL_DUPLICATE_PROCESS_SHUTDOWN}: {label} duplicate startup blocked; "
                     f"lock={resolved_lock_path}; existing_pid={existing_pid}; attempted_pid={pid}"
@@ -142,6 +143,78 @@ def _process_exists(pid: int) -> bool:
     except OSError:
         return False
     return True
+
+
+def _process_matches_payload(pid: int, payload: dict[str, Any] | None) -> bool:
+    if pid <= 0:
+        return False
+    if not payload:
+        return True
+    lock_created_at = _payload_created_at(payload)
+    if lock_created_at is None:
+        return True
+    process_created_at = _process_created_at(pid)
+    if process_created_at is None:
+        return True
+    return process_created_at <= (lock_created_at + PID_REUSE_LOCK_TOLERANCE)
+
+
+def _process_created_at(pid: int) -> datetime | None:
+    if pid <= 0:
+        return None
+    if os.name == "nt":
+        return _windows_process_created_at(pid)
+    return None
+
+
+def _windows_process_created_at(pid: int) -> datetime | None:
+    import ctypes
+
+    process_query_limited_information = 0x1000
+    handle = ctypes.windll.kernel32.OpenProcess(
+        process_query_limited_information,
+        False,
+        pid,
+    )
+    if not handle:
+        return None
+
+    filetime_factory = getattr(ctypes, "c_ulonglong", None)
+    if filetime_factory is None:
+        return None
+
+    created = filetime_factory()
+    exited = filetime_factory()
+    kernel = filetime_factory()
+    user = filetime_factory()
+    try:
+        ok = ctypes.windll.kernel32.GetProcessTimes(
+            handle,
+            ctypes.byref(created),
+            ctypes.byref(exited),
+            ctypes.byref(kernel),
+            ctypes.byref(user),
+        )
+        if not ok:
+            return None
+        return datetime(1601, 1, 1, tzinfo=UTC) + timedelta(microseconds=created.value / 10)
+    finally:
+        ctypes.windll.kernel32.CloseHandle(handle)
+
+
+def _payload_created_at(payload: dict[str, Any] | None) -> datetime | None:
+    if not payload:
+        return None
+    raw = payload.get("created_at")
+    if not raw:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(raw))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC)
 
 
 def _read_lock_payload(lock_path: Path) -> dict[str, Any] | None:

@@ -5,11 +5,11 @@ from datetime import date, datetime, time
 from pathlib import Path
 
 from .order_state import (
-    S23PaperOrderStateDiscovery,
-    S23PaperOrderState,
-    S23PaperOrderStateError,
-    S23PaperOrderStateStore,
-    S23PaperOrderStatus,
+    PaperOrderStateDiscovery,
+    PaperOrderState,
+    PaperOrderStateError,
+    PaperOrderStateStore,
+    PaperOrderStatus,
     paper_order_is_waiting_for_trigger,
 )
 
@@ -42,9 +42,9 @@ class S23PaperOrderFinalizerSummary:
 class S23PaperOrderFinalizer:
     """Marks session-only S23 waiting paper orders as not filled after cutoff."""
 
-    def __init__(self, *, order_store: S23PaperOrderStateStore | None = None) -> None:
-        self._order_store = order_store or S23PaperOrderStateStore()
-        self._order_discovery = S23PaperOrderStateDiscovery(order_store=self._order_store)
+    def __init__(self, *, order_store: PaperOrderStateStore | None = None) -> None:
+        self._order_store = order_store or PaperOrderStateStore()
+        self._order_discovery = PaperOrderStateDiscovery(order_store=self._order_store)
 
     def finalize(
         self,
@@ -109,7 +109,7 @@ class S23PaperOrderFinalizer:
                 "session cutoff, so it was marked not filled instead of being "
                 "carried forward."
             )
-            final_status = S23PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value
+            final_status = PaperOrderStatus.PAPER_ORDER_NOT_FILLED.value
             if not dry_run:
                 updated_state, _event, _state_path, _events_path = self._order_store.mark_not_filled(
                     order_dir,
@@ -146,7 +146,7 @@ class S23PaperOrderFinalizer:
 
     @staticmethod
     def _eligible_waiting_state(
-        state: S23PaperOrderState,
+        state: PaperOrderState,
         *,
         session_date: date,
         after_cutoff: bool,
@@ -166,7 +166,7 @@ class S23PaperOrderFinalizer:
     @staticmethod
     def _skip_message(
         reason_code: str,
-        state: S23PaperOrderState,
+        state: PaperOrderState,
         session_date: date,
         cutoff_time: time,
     ) -> str:

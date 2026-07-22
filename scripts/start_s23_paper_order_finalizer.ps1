@@ -50,7 +50,12 @@ Write-FinalizerLog "ArtifactRoot: $ArtifactRoot"
 Write-FinalizerLog "DashboardOutputRoot: $DashboardOutputRoot"
 Write-FinalizerLog "Cutoff: $Cutoff"
 
-$effectiveRunDate = Get-TfisEffectiveRunDate -RunDate $RunDate
+if ($PSBoundParameters.ContainsKey("RunDate")) {
+    $effectiveRunDate = Get-TfisEffectiveRunDate -RunDate $RunDate
+}
+else {
+    $effectiveRunDate = Get-TfisEffectiveRunDate
+}
 $noRunReason = Get-TfisNoRunReason -RepoRoot $repoRoot -EffectiveDate $effectiveRunDate -CalendarPath $TradingHolidayCalendar
 if ($noRunReason) {
     Write-FinalizerLog $noRunReason

@@ -14,7 +14,7 @@ from tfis.backtest.report_comparison import (
 )
 
 from .models import PaperSessionState
-from .review import S23PaperReviewError, S23PaperReviewSummary, S23PaperSessionReviewer
+from .review import PaperReviewError, PaperReviewSummary, PaperSessionReviewer
 
 
 _ARTIFACT_VERSION = 1
@@ -141,7 +141,7 @@ class S23PaperHistoricalComparisonSummary:
 class _PaperComparisonContext:
     session_directory: Path
     bundle_directory: Path | None
-    review_summary: S23PaperReviewSummary
+    review_summary: PaperReviewSummary
     decision_summary: dict[str, Any]
     session_manifest: dict[str, Any]
     order_plan_payload: dict[str, Any] | None
@@ -217,7 +217,7 @@ def compare_paper_session_to_historical(
     historical_trade_key: str | None = None,
     session_date: str | date | None = None,
     numeric_tolerance: float = 0.01,
-    reviewer: S23PaperSessionReviewer | None = None,
+    reviewer: PaperSessionReviewer | None = None,
     comparison_limits: ComparisonLimits | None = None,
 ) -> S23PaperHistoricalComparisonSummary:
     context = _load_paper_context(
@@ -512,7 +512,7 @@ def compare_paper_bundle_to_historical(
     historical_trade_key: str | None = None,
     session_date: str | date | None = None,
     numeric_tolerance: float = 0.01,
-    reviewer: S23PaperSessionReviewer | None = None,
+    reviewer: PaperSessionReviewer | None = None,
     comparison_limits: ComparisonLimits | None = None,
 ) -> S23PaperHistoricalComparisonSummary:
     return compare_paper_session_to_historical(
@@ -700,7 +700,7 @@ def _load_paper_context(
     *,
     session_directory: str | Path,
     bundle_directory: str | Path | None,
-    reviewer: S23PaperSessionReviewer | None,
+    reviewer: PaperSessionReviewer | None,
 ) -> _PaperComparisonContext:
     session_dir = Path(session_directory)
     if not session_dir.exists():
@@ -713,13 +713,13 @@ def _load_paper_context(
         if bundle_directory is not None
         else (session_dir if (session_dir / "replay_bundle_manifest.json").exists() else None)
     )
-    active_reviewer = reviewer or S23PaperSessionReviewer()
+    active_reviewer = reviewer or PaperSessionReviewer()
     try:
         review_summary = active_reviewer.review_session(
             session_dir,
             bundle_directory=effective_bundle,
         )
-    except S23PaperReviewError as exc:
+    except PaperReviewError as exc:
         raise S23PaperHistoricalComparisonError(str(exc)) from exc
 
     decision_summary = _load_json_required(session_dir / "decision_summary.json")

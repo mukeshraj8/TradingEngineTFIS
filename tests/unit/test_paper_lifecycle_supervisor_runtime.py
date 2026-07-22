@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+from dataclasses import replace
 from datetime import date, datetime, time
 from pathlib import Path
 
@@ -14,20 +15,33 @@ from tfis.paper import (
     build_paper_expiry_governance,
     build_paper_live_state_store_from_yaml,
     build_paper_position_manager,
+    PaperLifecycleBrokerConfig,
     PaperLifecycleBrokerRuntime,
     PaperLifecycleRuntimeConfig,
     PaperLifecycleSupervisor,
     PaperLifecycleSupervisorTargetDiscovery,
     PaperOrderStateStore,
+    PaperPositionStateStatus,
+    PaperPositionStateStore,
     S23PaperPositionManager,
+    S23PaperTradeLedgerEventType,
     S23PaperTradeLedgerStore,
     S23PaperTradeDecisionSummary,
     build_paper_broker_adapter,
+    build_paper_broker_adapter_from_broker_config,
     ensure_paper_broker_runtime_healthy,
     inspect_paper_live_state_store_from_yaml,
     load_paper_broker_runtime,
+    paper_broker_credentials_available,
+    load_paper_runtime_guardrail_statuses,
+    load_paper_runtime_fresh_entry_handoff_statuses,
+    load_paper_runtime_broker_health_statuses,
+    load_paper_runtime_heartbeat_statuses,
+    load_paper_runtime_order_routing_statuses,
+    load_paper_runtime_reconciliation_statuses,
     load_paper_lifecycle_supervisor_target_specs,
     prepare_paper_broker_runtime_environment,
+    validate_paper_lifecycle_runtime_guardrails,
 )
 from tfis.paper.fresh_entry_promotion import promote_blocked_fresh_entries as shared_promote_blocked_fresh_entries
 
@@ -163,6 +177,11 @@ def test_paper_lifecycle_runtime_config_loads_relative_payload_fixture(tmp_path:
                 "  timezone: Asia/Kolkata",
                 "  payload_fixture_path: fixtures/sample_payload.json",
                 "  option_chain_strike_count: 120",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
                 "costs:",
                 "  slippage_exit_points: 1.5",
             )
@@ -176,7 +195,666 @@ def test_paper_lifecycle_runtime_config_loads_relative_payload_fixture(tmp_path:
     assert config.broker.timezone == "Asia/Kolkata"
     assert config.broker.payload_fixture_path == str(fixture_path.resolve())
     assert config.broker.option_chain_strike_count == 120
+    assert config.paper.paper_mode_enabled is True
+    assert config.paper.no_live_orders_allowed is True
+    assert config.paper.kill_switch_enabled is True
+    assert config.paper.session_kill_switch_active is False
     assert config.costs.slippage_exit_points == 1.5
+
+
+def test_build_paper_broker_adapter_from_broker_config_preserves_fixture_and_strike_count(
+    tmp_path: Path,
+) -> None:
+    fixture_path = tmp_path / "fixtures" / "sample_payload.json"
+    fixture_path.parent.mkdir(parents=True, exist_ok=True)
+    fixture_path.write_text("{}", encoding="utf-8")
+
+    adapter = build_paper_broker_adapter_from_broker_config(
+        PaperLifecycleBrokerConfig(
+            provider="fyers",
+            timezone="Asia/Kolkata",
+            payload_fixture_path=str(fixture_path),
+            option_chain_strike_count=120,
+        )
+    )
+
+    assert isinstance(adapter, FyersBrokerAdapter)
+    assert adapter._payloads == {}
+    assert adapter._option_chain_strike_count == 80
+
+    live_adapter = build_paper_broker_adapter_from_broker_config(
+        PaperLifecycleBrokerConfig(
+            provider="fyers",
+            timezone="Asia/Kolkata",
+            payload_fixture_path=None,
+            option_chain_strike_count=120,
+        )
+    )
+
+    assert isinstance(live_adapter, FyersBrokerAdapter)
+    assert live_adapter._option_chain_strike_count == 120
+
+
+def test_paper_broker_credentials_available_reports_fixture_mode_as_ready(
+    tmp_path: Path,
+) -> None:
+    fixture_path = tmp_path / "fixtures" / "sample_payload.json"
+    fixture_path.parent.mkdir(parents=True, exist_ok=True)
+    fixture_path.write_text("{}", encoding="utf-8")
+
+    credentials_ready, message = paper_broker_credentials_available(
+        PaperLifecycleBrokerConfig(
+            provider="fyers",
+            timezone="Asia/Kolkata",
+            payload_fixture_path=str(fixture_path),
+        )
+    )
+
+    assert credentials_ready is True
+    assert message is None
+
+
+def test_paper_broker_credentials_available_reports_missing_live_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("FYERS_APP_ID", raising=False)
+    monkeypatch.delenv("FYERS_ACCESS_TOKEN", raising=False)
+    monkeypatch.delenv("FYERS_CLIENT_ID", raising=False)
+
+    credentials_ready, message = paper_broker_credentials_available(
+        PaperLifecycleBrokerConfig(
+            provider="fyers",
+            timezone="Asia/Kolkata",
+            payload_fixture_path=None,
+        )
+    )
+
+    assert credentials_ready is False
+    assert message is not None
+    assert "FYERS_APP_ID" in message
+
+
+def test_paper_lifecycle_runtime_guardrails_fail_for_unsafe_runtime_flags(tmp_path: Path) -> None:
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_fill_mode",
+                "paper:",
+                "  paper_mode_enabled: false",
+                "  no_live_orders_allowed: false",
+                "  kill_switch_enabled: false",
+                "  session_kill_switch_active: true",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    config = PaperLifecycleRuntimeConfig.from_yaml(config_path)
+    failures = validate_paper_lifecycle_runtime_guardrails(config)
+
+    assert any("source_mode must stay on a broker-backed paper-ingress path" in item for item in failures)
+    assert "paper.paper_mode_enabled must be true" in failures
+    assert "paper.no_live_orders_allowed must be true" in failures
+    assert "paper.kill_switch_enabled must be true" in failures
+    assert "paper.session_kill_switch_active must be false before runtime start" in failures
+
+
+def test_load_paper_runtime_guardrail_statuses_reports_per_strategy_results(tmp_path: Path) -> None:
+    pass_config = tmp_path / "config" / "paper.s23.yaml"
+    fail_config = tmp_path / "config" / "paper.s21.yaml"
+    pass_config.parent.mkdir(parents=True, exist_ok=True)
+    pass_config.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+            )
+        ),
+        encoding="utf-8",
+    )
+    fail_config.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_fill_mode",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: false",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+            )
+        ),
+        encoding="utf-8",
+    )
+    targets_path = tmp_path / "targets.yaml"
+    targets_path.write_text(
+        "\n".join(
+            (
+                "targets:",
+                "  - strategy_code: S23",
+                "    config_path: config/paper.s23.yaml",
+                "    artifact_root: data/strategies/S23/root",
+                "    process_lock_root: tmp/process_locks/s23",
+                "    strategy_path: config/strategies/options_sell/s23",
+                "    reference_packet_path: config/reference_packets/s23.json",
+                "    session_id_prefix: s23-session",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s23.py",
+                "    wrapper_script_path: scripts/start_s23.ps1",
+                "  - strategy_code: S21",
+                "    config_path: config/paper.s21.yaml",
+                "    artifact_root: data/strategies/S21/root",
+                "    process_lock_root: tmp/process_locks/s21",
+                "    strategy_path: config/strategies/options_sell/s21",
+                "    reference_packet_path: config/reference_packets/s21.json",
+                "    session_id_prefix: s21-session",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s21.py",
+                "    wrapper_script_path: scripts/start_s21.ps1",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    statuses = load_paper_runtime_guardrail_statuses(targets_path, repo_root=tmp_path)
+
+    by_code = {item.strategy_code: item for item in statuses}
+    assert by_code["S23"].status == "PASS"
+    assert by_code["S23"].source_mode == "broker_fyers_live_paper_ingress"
+    assert by_code["S21"].status == "FAIL"
+    assert "no_live_orders_allowed" in by_code["S21"].message
+
+
+def test_load_paper_runtime_heartbeat_statuses_reports_owner_and_state_directory(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision"
+    state_dir = artifact_root / "2026-07-21" / "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    live_state_root = tmp_path / "paper-live-state"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+                "live_state:",
+                "  enabled: true",
+                "  provider: filesystem",
+                f"  root: {live_state_root.as_posix()}",
+            )
+        ),
+        encoding="utf-8",
+    )
+    targets_path = _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root)
+    live_state_store = build_paper_live_state_store_from_yaml(config_path, strict=True)
+    live_state_store.set_watch_heartbeat(
+        session_date=date(2026, 7, 21),
+        trade_id="S23-test-heartbeat",
+        payload={
+            "trade_id": "S23-test-heartbeat",
+            "owner_id": "tfis-paper-lifecycle-supervisor:s23:1234",
+            "timestamp": "2026-07-21T09:32:00+05:30",
+            "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+            "selected_contract_symbol": "NIFTY_20260728_23950_CE",
+            "state_directory": str(state_dir),
+            "strategy_code": "S23",
+            "supervisor_pid": 1234,
+        },
+    )
+
+    statuses = load_paper_runtime_heartbeat_statuses(
+        targets_path,
+        repo_root=tmp_path,
+        stale_after_seconds=10_000_000,
+    )
+
+    assert len(statuses) == 1
+    assert statuses[0].status == "OK"
+    assert statuses[0].latest_trade_id == "S23-test-heartbeat"
+    assert statuses[0].latest_owner_id == "tfis-paper-lifecycle-supervisor:s23:1234"
+    assert statuses[0].latest_state_directory == str(state_dir)
+    assert statuses[0].latest_selected_contract_symbol == "NIFTY_20260728_23950_CE"
+
+
+def test_load_paper_runtime_order_routing_statuses_reports_per_strategy_results(tmp_path: Path) -> None:
+    pass_config = tmp_path / "config" / "paper.s23.yaml"
+    fail_config = tmp_path / "config" / "paper.s21.yaml"
+    pass_config.parent.mkdir(parents=True, exist_ok=True)
+    pass_config.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+            )
+        ),
+        encoding="utf-8",
+    )
+    fail_config.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: false",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+            )
+        ),
+        encoding="utf-8",
+    )
+    targets_path = tmp_path / "targets.yaml"
+    targets_path.write_text(
+        "\n".join(
+            (
+                "targets:",
+                "  - strategy_code: S23",
+                "    config_path: config/paper.s23.yaml",
+                "    artifact_root: data/strategies/S23/root",
+                "    process_lock_root: tmp/process_locks/s23",
+                "    strategy_path: config/strategies/options_sell/s23",
+                "    reference_packet_path: config/reference_packets/s23.json",
+                "    session_id_prefix: s23-session",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s23.py",
+                "    wrapper_script_path: scripts/start_s23.ps1",
+                "  - strategy_code: S21",
+                "    config_path: config/paper.s21.yaml",
+                "    artifact_root: data/strategies/S21/root",
+                "    process_lock_root: tmp/process_locks/s21",
+                "    strategy_path: config/strategies/options_sell/s21",
+                "    reference_packet_path: config/reference_packets/s21.json",
+                "    session_id_prefix: s21-session",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s21.py",
+                "    wrapper_script_path: scripts/start_s21.ps1",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    statuses = load_paper_runtime_order_routing_statuses(targets_path, repo_root=tmp_path)
+
+    by_code = {item.strategy_code: item for item in statuses}
+    assert by_code["S23"].status == "PASS"
+    assert by_code["S23"].place_order_blocked is True
+    assert by_code["S23"].modify_order_blocked is True
+    assert by_code["S23"].cancel_order_blocked is True
+    assert by_code["S21"].status == "FAIL"
+    assert "no_live_orders_allowed" in by_code["S21"].message
+
+
+def test_load_paper_runtime_reconciliation_statuses_reports_per_strategy_results(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+            )
+        ),
+        encoding="utf-8",
+    )
+    targets_path = tmp_path / "targets.yaml"
+    targets_path.write_text(
+        "\n".join(
+            (
+                "targets:",
+                "  - strategy_code: S23",
+                "    config_path: config/paper.s23.yaml",
+                "    artifact_root: data/strategies/S23/root",
+                "    process_lock_root: tmp/process_locks/s23",
+                "    strategy_path: config/strategies/options_sell/s23",
+                "    reference_packet_path: config/reference_packets/s23.json",
+                "    session_id_prefix: s23-session",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s23.py",
+                "    wrapper_script_path: scripts/start_s23.ps1",
+                "  - strategy_code: S21",
+                "    config_path: config/paper.s23.yaml",
+                "    artifact_root: data/strategies/S21/root",
+                "    process_lock_root: tmp/process_locks/s21",
+                "    strategy_path: config/strategies/options_sell/s21",
+                "    reference_packet_path: config/reference_packets/s21.json",
+                "    session_id_prefix: s21-session",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s21.py",
+                "    wrapper_script_path: scripts/start_s21.ps1",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    open_dir = tmp_path / "data" / "strategies" / "S23" / "root" / "2026-07-21" / "branch-open"
+    conflict_dir = tmp_path / "data" / "strategies" / "S21" / "root" / "2026-07-21" / "branch-conflict"
+    open_dir.mkdir(parents=True, exist_ok=True)
+    conflict_dir.mkdir(parents=True, exist_ok=True)
+
+    state_store = PaperPositionStateStore()
+    ledger_store_s23 = S23PaperTradeLedgerStore(
+        global_ledger_root=tmp_path / "tmp" / "paper_trade_ledger",
+        global_ledger_filename="s23_paper_trade_ledger.jsonl",
+    )
+    ledger_store_s21 = S23PaperTradeLedgerStore(
+        global_ledger_root=tmp_path / "tmp" / "paper_trade_ledger",
+        global_ledger_filename="s21_paper_trade_ledger.jsonl",
+    )
+
+    open_state = state_store.create_open_position_state(
+        strategy_code="S23",
+        unique_code="S23_BRANCH",
+        symbol="NIFTY",
+        option_type=OptionType.PUT,
+        selected_contract_symbol="NIFTY_20260723_24150_PE",
+        expiry_date=date(2026, 7, 23),
+        expiry_type=ExpiryType.WEEKLY,
+        rollover_policy=RolloverPolicy.T_MINUS_1,
+        forced_close_time=time(12, 0),
+        no_carry_past_expiry=True,
+        entry_date=date(2026, 7, 21),
+        entry_timestamp=datetime(2026, 7, 21, 9, 30),
+        entry_price=194.25,
+        lots=1,
+        quantity=65,
+        side="SELL",
+        target_price=77.70,
+        stoploss_price=242.0,
+        fsl_price=None,
+        trp_price=None,
+        carry_forward_allowed=True,
+        last_updated_timestamp=datetime(2026, 7, 21, 9, 30),
+    )
+    state_store.save_state(open_dir, open_state)
+    ledger_store_s23.append(
+        open_dir,
+        ledger_store_s23.build_row(
+            state=open_state,
+            event_timestamp=datetime(2026, 7, 21, 9, 30),
+            event_type=S23PaperTradeLedgerEventType.OPEN,
+            session_date=date(2026, 7, 21),
+            manager_status="PAPER_POSITION_OPENED",
+            reason_code="opened",
+            message="opened",
+            current_price=194.25,
+            state_directory=open_dir,
+        ),
+    )
+
+    conflict_state = replace(
+        open_state,
+        strategy_code="S21",
+        unique_code="S21_BRANCH",
+        symbol="BANKNIFTY",
+        selected_contract_symbol="BANKNIFTY_20260729_58000_PE",
+        lifecycle_status=PaperPositionStateStatus.PAPER_POSITION_CLOSED,
+        last_updated_timestamp=datetime(2026, 7, 21, 12, 58),
+    )
+    state_store.save_state(conflict_dir, conflict_state)
+    session_ledger_path = conflict_dir / "paper_trade_ledger.jsonl"
+    session_ledger_path.write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "event_timestamp": "2026-07-21T09:30:00",
+                "event_type": "OPEN",
+                "trade_id": ledger_store_s21.trade_id_for_state(conflict_state),
+                "strategy_id": "S21:S21_BRANCH",
+                "strategy_code": "S21",
+                "strategy_branch": "S21_BRANCH",
+                "symbol": "BANKNIFTY",
+                "option_type": "PUT",
+                "selected_contract_symbol": "BANKNIFTY_20260729_58000_PE",
+                "expiry_date": "2026-07-29",
+                "side": "SELL",
+                "lots": 1,
+                "quantity": 65,
+                "entry_date": "2026-07-21",
+                "entry_timestamp": "2026-07-21T09:30:00",
+                "entry_price": 194.25,
+                "target_price": 77.70,
+                "stoploss_price": 242.0,
+                "fsl_price": None,
+                "trp_price": None,
+                "session_date": "2026-07-21",
+                "lifecycle_status": "PAPER_POSITION_OPEN",
+                "manager_status": "PAPER_POSITION_OPENED",
+                "reason_code": "opened",
+                "message": "opened",
+                "current_price": 444.0,
+                "state_directory": str(conflict_dir),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    statuses = load_paper_runtime_reconciliation_statuses(targets_path, repo_root=tmp_path)
+
+    by_code = {item.strategy_code: item for item in statuses}
+    assert by_code["S23"].status == "PASS"
+    assert by_code["S23"].persisted_state_count == 1
+    assert by_code["S21"].status == "FAIL"
+    assert "terminal position state" in by_code["S21"].message
+
+
+def test_load_paper_runtime_fresh_entry_handoff_statuses_reports_marker_resolved_close(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    state_dir = artifact_root / "2026-07-21" / "branch-a"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    (state_dir / "fresh_decision_launch.json").write_text(
+        json.dumps(
+            {
+                "launched_at": "2026-07-21T10:05:00+05:30",
+                "strategy_code": "S23",
+                "trade_id": "trade-1",
+                "pid": 1234,
+            }
+        ),
+        encoding="utf-8",
+    )
+    (state_dir / "paper_trade_ledger.jsonl").write_text(
+        json.dumps(
+            {
+                "event_timestamp": "2026-07-21T10:00:00+05:30",
+                "event_type": "CLOSE",
+                "trade_id": "trade-1",
+                "strategy_code": "S23",
+                "strategy_branch": "BRANCH_A",
+                "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                "manager_status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                "fresh_entry_required": True,
+                "state_directory": str(state_dir),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    targets_path = _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root)
+
+    statuses = load_paper_runtime_fresh_entry_handoff_statuses(targets_path, repo_root=tmp_path)
+
+    assert len(statuses) == 1
+    status = statuses[0]
+    assert status.strategy_code == "S23"
+    assert status.status == "PASS"
+    assert status.fresh_close_count == 1
+    assert status.resolved_count == 1
+    assert status.unresolved_count == 0
+    assert "confirmed" in status.message
+
+
+def test_load_paper_runtime_fresh_entry_handoff_statuses_reports_subsequent_waiting_order_as_resolved(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    state_dir = artifact_root / "2026-07-21" / "branch-a"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    (state_dir / "paper_trade_ledger.jsonl").write_text(
+        "\n".join(
+            (
+                json.dumps(
+                    {
+                        "event_timestamp": "2026-07-21T10:00:00+05:30",
+                        "event_type": "CLOSE",
+                        "trade_id": "trade-1",
+                        "strategy_code": "S23",
+                        "strategy_branch": "BRANCH_A",
+                        "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                        "manager_status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                        "fresh_entry_required": True,
+                        "state_directory": str(state_dir),
+                    }
+                ),
+                json.dumps(
+                    {
+                        "event_timestamp": "2026-07-21T10:02:00+05:30",
+                        "event_type": "ORDER_WAITING",
+                        "trade_id": "trade-2",
+                        "strategy_code": "S23",
+                        "strategy_branch": "BRANCH_A",
+                        "lifecycle_status": "ORDER_WAITING_FOR_TRIGGER",
+                        "manager_status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                        "fresh_entry_required": False,
+                        "state_directory": str(state_dir),
+                    }
+                ),
+            )
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    targets_path = _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root)
+
+    statuses = load_paper_runtime_fresh_entry_handoff_statuses(targets_path, repo_root=tmp_path)
+
+    assert statuses[0].status == "PASS"
+    assert statuses[0].resolved_count == 1
+    assert statuses[0].unresolved_count == 0
+
+
+def test_load_paper_runtime_fresh_entry_handoff_statuses_reports_later_branch_session_artifact_as_resolved(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    closed_state_dir = artifact_root / "2026-07-06" / "session-closed" / "BRANCH_A"
+    later_branch_dir = artifact_root / "2026-07-21" / "session-later" / "BRANCH_A"
+    closed_state_dir.mkdir(parents=True, exist_ok=True)
+    later_branch_dir.mkdir(parents=True, exist_ok=True)
+    (closed_state_dir / "paper_trade_ledger.jsonl").write_text(
+        json.dumps(
+            {
+                "event_timestamp": "2026-07-06T09:32:19+05:30",
+                "event_type": "CLOSE",
+                "trade_id": "trade-1",
+                "strategy_code": "S23",
+                "strategy_branch": "BRANCH_A",
+                "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                "manager_status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                "fresh_entry_required": True,
+                "session_date": "2026-07-06",
+                "state_directory": str(closed_state_dir),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (later_branch_dir / "trade_decision_summary.json").write_text(
+        json.dumps({"summary": {"status": "READY"}}),
+        encoding="utf-8",
+    )
+    targets_path = _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root)
+
+    statuses = load_paper_runtime_fresh_entry_handoff_statuses(targets_path, repo_root=tmp_path)
+
+    assert statuses[0].status == "PASS"
+    assert statuses[0].resolved_count == 1
+    assert statuses[0].unresolved_count == 0
+
+
+def test_load_paper_runtime_fresh_entry_handoff_statuses_reports_unresolved_close(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    state_dir = artifact_root / "2026-07-21" / "branch-a"
+    state_dir.mkdir(parents=True, exist_ok=True)
+    (state_dir / "paper_trade_ledger.jsonl").write_text(
+        json.dumps(
+            {
+                "event_timestamp": "2026-07-21T10:00:00+05:30",
+                "event_type": "CLOSE",
+                "trade_id": "trade-1",
+                "strategy_code": "S23",
+                "strategy_branch": "BRANCH_A",
+                "lifecycle_status": "PAPER_FRESH_ENTRY_REQUIRED",
+                "manager_status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+                "fresh_entry_required": True,
+                "state_directory": str(state_dir),
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    targets_path = _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root)
+
+    statuses = load_paper_runtime_fresh_entry_handoff_statuses(targets_path, repo_root=tmp_path)
+
+    assert statuses[0].status == "FAIL"
+    assert statuses[0].fresh_close_count == 1
+    assert statuses[0].resolved_count == 0
+    assert statuses[0].unresolved_count == 1
+    assert "trade-1@BRANCH_A" in statuses[0].message
 
 
 def test_build_paper_broker_adapter_returns_fyers_adapter_for_supported_provider(tmp_path: Path) -> None:
@@ -435,6 +1113,31 @@ def test_runtime_environment_preparation_is_deduped_per_provider(
     assert calls == [("fyers", False)]
 
 
+def test_supervisor_script_supports_operator_control_root_and_signatures() -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    parser = module.build_parser()
+    args = parser.parse_args([])
+
+    assert args.control_root == "tmp/operator_controls"
+    signature = module._control_signature(
+        type(
+            "ControlState",
+            (),
+            {
+                "global_pause_active": False,
+                "paused_strategies": frozenset({"S23", "S21"}),
+            },
+        )()
+    )
+    assert signature == (False, ("S21", "S23"))
+
+
 def test_connect_paper_broker_runtime_returns_health() -> None:
     class HealthyAdapter:
         def __init__(self) -> None:
@@ -464,6 +1167,94 @@ def test_connect_paper_broker_runtime_returns_health() -> None:
 
     assert health.connection_state.value == "CONNECTED"
     assert health.is_connected is True
+
+
+def test_load_paper_runtime_broker_health_statuses_reports_connected_status(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.paper.runtime_broker_health_status as broker_health_module
+
+    class _Health:
+        def __init__(self) -> None:
+            self.connection_state = type("State", (), {"value": "CONNECTED"})()
+            self.is_connected = True
+            self.reconnect_attempts = 0
+            self.warnings = ()
+            self.diagnostics = ()
+
+    class _Adapter:
+        def disconnect(self) -> None:
+            return None
+
+    target_spec = type(
+        "TargetSpec",
+        (),
+        {
+            "strategy_code": "S23",
+            "config_path": tmp_path / "config.yaml",
+        },
+    )()
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+            )
+        ),
+        encoding="utf-8",
+    )
+    runtime = type(
+        "Runtime",
+        (),
+        {
+            "config": PaperLifecycleRuntimeConfig.from_yaml(config_path),
+            "adapter": _Adapter(),
+        },
+    )()
+
+    monkeypatch.setattr(
+        broker_health_module,
+        "load_paper_lifecycle_supervisor_target_specs",
+        lambda _path, repo_root: (target_spec,),
+    )
+    monkeypatch.setattr(
+        broker_health_module,
+        "load_paper_broker_runtime",
+        lambda _path: runtime,
+    )
+    monkeypatch.setattr(
+        broker_health_module,
+        "prepare_paper_broker_runtime_environment",
+        lambda config, tfis_root, skip_refresh: None,
+    )
+    monkeypatch.setattr(
+        broker_health_module,
+        "connect_paper_broker_runtime",
+        lambda **kwargs: _Health(),
+    )
+
+    statuses = load_paper_runtime_broker_health_statuses(
+        tmp_path / "targets.yaml",
+        repo_root=tmp_path,
+        tfis_root=tmp_path,
+    )
+
+    assert len(statuses) == 1
+    status = statuses[0]
+    assert status.strategy_code == "S23"
+    assert status.status == "PASS"
+    assert status.provider == "fyers"
+    assert status.connection_state == "CONNECTED"
+    assert status.is_connected is True
 
 
 def test_connect_paper_broker_runtime_reconnects_when_initial_health_is_degraded() -> None:
@@ -728,6 +1519,47 @@ def test_connect_paper_broker_runtime_contextualizes_health_failures() -> None:
             provider="fyers",
             adapter=AdapterWithBrokenHealth(),
         )
+
+
+def test_supervisor_runtime_bootstrap_fails_closed_for_guardrail_config(
+    tmp_path: Path,
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_fill_mode",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: false",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+            )
+        ),
+        encoding="utf-8",
+    )
+
+    target_spec = load_paper_lifecycle_supervisor_target_specs(
+        _targets_yaml(
+            tmp_path,
+            config_path=config_path,
+            artifact_root=tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision",
+        ),
+        repo_root=tmp_path,
+    )[0]
+
+    with pytest.raises(RuntimeError, match="runtime guardrail check failed"):
+        module._build_runtimes((target_spec,))
 
 
 def test_build_fresh_decision_task_spec_from_target_metadata(tmp_path: Path) -> None:

@@ -11,7 +11,7 @@ from .fyers_snapshot_collector import (
     PaperFyersSnapshotCollector,
     PaperFyersSnapshotCollectorError,
 )
-from .live_decision import S23PaperLiveDecisionBuilder, S23PaperLiveDecisionError
+from .live_decision import PaperLiveDecisionBuilder, PaperLiveDecisionError
 from .live_ingress import PaperLiveIngressConfig
 from .lifecycle_runtime_config import (
     PaperLifecycleRuntimeConfig,
@@ -95,7 +95,7 @@ def run_s23_live_decision_check(
 
     strategy_rule = load_strategy_rule(strategy_path)
     reference_packet = load_paper_decision_reference_packet(reference_packet_path)
-    decision_builder = S23PaperLiveDecisionBuilder()
+    decision_builder = PaperLiveDecisionBuilder()
     decision = decision_builder.build(
         strategy_rule=strategy_rule,
         reference_packet=reference_packet,

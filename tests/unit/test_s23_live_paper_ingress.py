@@ -314,6 +314,10 @@ def test_valid_mock_config_passes_preflight_with_warning(tmp_path: Path) -> None
     assert summary.artifact_root_writable is True
     assert any(issue.code == "payload_fixture_mode_enabled" for issue in summary.issues)
 
+    markdown = runner.render_preflight_markdown(summary)
+    assert markdown.startswith("# Paper Broker Live-Paper Ingress Preflight")
+    assert "never connects to the configured broker" in markdown
+
 
 def test_preflight_only_does_not_build_or_connect_broker(
     tmp_path: Path,
@@ -416,6 +420,9 @@ def test_live_broker_ingress_reaches_order_planned_and_persists_artifacts(
         artifact_set.no_trade_or_order_plan_summary_path.read_text(encoding="utf-8")
     )
     assert terminal_summary["summary_kind"] == "order_plan"
+
+    markdown = runner.render_markdown(artifact_set.summary)
+    assert markdown.startswith("# Paper Broker Live-Paper Ingress Summary")
 
 
 def test_live_broker_ingress_accepts_generic_broker_adapter(tmp_path: Path) -> None:

@@ -15,7 +15,7 @@ from .guardrails import (
 )
 from .models import PaperSessionState, SelectedContractBarEvent, SelectedContractQuoteEvent
 from .replay_bundle import S23PaperReplayBundleManager
-from .review import S23PaperReviewError, S23PaperSessionReviewer
+from .review import PaperReviewError, PaperSessionReviewer
 from .validation import DEFAULT_MAX_QUOTE_AGE
 
 
@@ -167,7 +167,7 @@ class S23PaperLifecycleSimulator:
     def __init__(
         self,
         *,
-        reviewer: S23PaperSessionReviewer | None = None,
+        reviewer: PaperSessionReviewer | None = None,
         replay_bundle_manager: S23PaperReplayBundleManager | None = None,
         guardrail_settings: S23PaperGuardrailSettings | None = None,
         guardrail_evaluator: S23PaperGuardrailEvaluator | None = None,
@@ -175,7 +175,7 @@ class S23PaperLifecycleSimulator:
         eod_cutoff: time = time(15, 30),
         eod_price_age_window: timedelta = timedelta(minutes=5),
     ) -> None:
-        self._reviewer = reviewer or S23PaperSessionReviewer()
+        self._reviewer = reviewer or PaperSessionReviewer()
         self._replay_bundle_manager = (
             replay_bundle_manager or S23PaperReplayBundleManager()
         )
@@ -323,7 +323,7 @@ class S23PaperLifecycleSimulator:
                 session_dir,
                 bundle_directory=effective_bundle,
             )
-        except S23PaperReviewError as exc:
+        except PaperReviewError as exc:
             raise S23PaperLifecycleError(str(exc)) from exc
 
         if review_summary.strategy_code != "S23":

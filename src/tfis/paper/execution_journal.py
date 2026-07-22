@@ -20,9 +20,9 @@ from .replay_bundle import (
     S23PaperReplayBundleValidationResult,
 )
 from .review import (
-    S23PaperReviewError,
-    S23PaperReviewSummary,
-    S23PaperSessionReviewer,
+    PaperReviewError,
+    PaperReviewSummary,
+    PaperSessionReviewer,
 )
 from .runtime_contract import PaperTradeShellContract
 from .validation import DEFAULT_MAX_QUOTE_AGE
@@ -293,13 +293,13 @@ class S23PaperExecutionJournalWriter:
     def __init__(
         self,
         *,
-        reviewer: S23PaperSessionReviewer | None = None,
+        reviewer: PaperSessionReviewer | None = None,
         replay_bundle_manager: S23PaperReplayBundleManager | None = None,
         guardrail_settings: S23PaperGuardrailSettings | None = None,
         guardrail_evaluator: S23PaperGuardrailEvaluator | None = None,
         max_selected_contract_age: timedelta = DEFAULT_MAX_QUOTE_AGE,
     ) -> None:
-        self._reviewer = reviewer or S23PaperSessionReviewer()
+        self._reviewer = reviewer or PaperSessionReviewer()
         self._replay_bundle_manager = replay_bundle_manager or S23PaperReplayBundleManager()
         self._guardrail_evaluator = guardrail_evaluator or S23PaperGuardrailEvaluator(
             guardrail_settings
@@ -407,7 +407,7 @@ class S23PaperExecutionJournalWriter:
 
     def write_from_review(
         self,
-        summary: S23PaperReviewSummary,
+        summary: PaperReviewSummary,
         *,
         created_at: datetime | None = None,
     ) -> S23PaperExecutionJournalArtifactSet:
@@ -503,7 +503,7 @@ class S23PaperExecutionJournalWriter:
 
     def validate_review(
         self,
-        summary: S23PaperReviewSummary,
+        summary: PaperReviewSummary,
     ) -> S23PaperOrderIntentValidationResult:
         errors: list[str] = []
         bundle_validation_performed = summary.replay_bundle.validation_performed
@@ -1735,13 +1735,13 @@ class S23PaperExecutionJournalWriter:
         if bundle_directory is not None:
             replay_validation = self._replay_bundle_manager.validate_bundle(bundle_directory)
 
-        review_summary: S23PaperReviewSummary | None = None
+        review_summary: PaperReviewSummary | None = None
         try:
             review_summary = self._reviewer.review_session(
                 session_directory,
                 bundle_directory=bundle_directory,
             )
-        except S23PaperReviewError:
+        except PaperReviewError:
             review_summary = None
 
         selected_contract_envelope = selected_contract_payload.get("envelope", {}) if selected_contract_payload is not None else {}
@@ -1815,7 +1815,7 @@ class S23PaperExecutionJournalWriter:
 
     def _evaluate_post_planning_from_review(
         self,
-        summary: S23PaperReviewSummary,
+        summary: PaperReviewSummary,
         *,
         validation: S23PaperOrderIntentValidationResult,
         evaluation_timestamp: datetime,
@@ -2026,7 +2026,7 @@ class S23PaperExecutionJournalWriter:
 
     def _build_order_intent(
         self,
-        summary: S23PaperReviewSummary,
+        summary: PaperReviewSummary,
         validation: S23PaperOrderIntentValidationResult,
     ) -> S23PaperOrderIntent:
         assert summary.order_plan is not None
@@ -2519,7 +2519,7 @@ class S23PaperExecutionJournalWriter:
             disclaimer=_NO_EXECUTION_DISCLAIMER,
         )
 
-    def _derive_event_timestamp(self, summary: S23PaperReviewSummary) -> datetime:
+    def _derive_event_timestamp(self, summary: PaperReviewSummary) -> datetime:
         if summary.audit_transitions:
             return summary.audit_transitions[-1].timestamp
         if summary.order_plan is not None and summary.order_plan.planning_timestamp is not None:

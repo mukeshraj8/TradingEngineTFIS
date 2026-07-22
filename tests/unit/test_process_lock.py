@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -61,6 +62,79 @@ def test_stale_pid_lock_is_reclaimed_and_released(tmp_path: Path) -> None:
     handle.release()
 
     assert not lock_path.exists()
+
+
+def test_reused_live_pid_lock_is_reclaimed_when_process_start_is_newer(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    lock_path = tmp_path / "tfis-watch.pid.json"
+    lock_path.write_text(
+        json.dumps(
+            {
+                "pid": 1234,
+                "label": "stale-watch",
+                "created_at": "2026-07-21T03:39:52+00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+    logs: list[str] = []
+
+    monkeypatch.setattr(
+        process_lock_module,
+        "_process_created_at",
+        lambda pid: datetime.fromisoformat("2026-07-21T03:50:00+00:00") if pid == 1234 else None,
+    )
+
+    handle = acquire_process_lock(
+        lock_path,
+        label="s21-supervised-decision:trade-1",
+        pid_provider=lambda: 5678,
+        process_exists=lambda pid: pid == 1234,
+        logger=logs.append,
+    )
+
+    assert handle.pid == 5678
+    assert json.loads(lock_path.read_text(encoding="utf-8"))["pid"] == 5678
+    assert any(STALE_PROCESS_LOCK_RECLAIMED in item for item in logs)
+
+
+def test_live_pid_lock_remains_blocking_when_process_start_matches_payload(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    lock_path = tmp_path / "tfis-watch.pid.json"
+    lock_path.write_text(
+        json.dumps(
+            {
+                "pid": 1234,
+                "label": "existing-watch",
+                "created_at": "2026-07-21T03:39:52+00:00",
+            }
+        ),
+        encoding="utf-8",
+    )
+    logs: list[str] = []
+
+    monkeypatch.setattr(
+        process_lock_module,
+        "_process_created_at",
+        lambda pid: datetime.fromisoformat("2026-07-21T03:39:50+00:00") if pid == 1234 else None,
+    )
+
+    with pytest.raises(ProcessLockError) as exc_info:
+        acquire_process_lock(
+            lock_path,
+            label="s21-supervised-decision:trade-1",
+            pid_provider=lambda: 5678,
+            process_exists=lambda pid: pid == 1234,
+            logger=logs.append,
+        )
+
+    assert exc_info.value.code == CRITICAL_DUPLICATE_PROCESS_SHUTDOWN
+    assert exc_info.value.existing_pid == 1234
+    assert json.loads(lock_path.read_text(encoding="utf-8"))["pid"] == 1234
 
 
 def test_release_does_not_remove_foreign_lock(tmp_path: Path) -> None:

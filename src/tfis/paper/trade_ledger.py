@@ -8,7 +8,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Protocol, Sequence
 
-from .position_state import S23PaperPositionState
+from .position_state import PaperPositionState
 
 
 _ARTIFACT_VERSION = 1
@@ -18,7 +18,7 @@ _DEFAULT_GLOBAL_LEDGER_ROOT = Path("tmp/paper_trade_ledger")
 _DEFAULT_GLOBAL_LEDGER_FILENAME = "s23_paper_trade_ledger.jsonl"
 
 
-class S23PaperTradeLedgerEventType(str, Enum):
+class PaperTradeLedgerEventType(str, Enum):
     OPEN = "OPEN"
     HOLD = "HOLD"
     CLOSE = "CLOSE"
@@ -132,15 +132,15 @@ def paper_trade_manager_status_is_lifecycle_terminal(manager_status: str | None)
 
 def paper_trade_event_type_for_manager_status(
     manager_status: str | None,
-) -> S23PaperTradeLedgerEventType:
+) -> PaperTradeLedgerEventType:
     normalized = str(manager_status or "").upper()
     if normalized == "PAPER_POSITION_OPENED":
-        return S23PaperTradeLedgerEventType.OPEN
+        return PaperTradeLedgerEventType.OPEN
     if normalized == "PAPER_POSITION_HELD":
-        return S23PaperTradeLedgerEventType.HOLD
+        return PaperTradeLedgerEventType.HOLD
     if normalized in _CLOSE_MANAGER_STATUSES:
-        return S23PaperTradeLedgerEventType.CLOSE
-    return S23PaperTradeLedgerEventType.ACTION_REQUIRED
+        return PaperTradeLedgerEventType.CLOSE
+    return PaperTradeLedgerEventType.ACTION_REQUIRED
 
 
 def paper_trade_action_required(
@@ -309,6 +309,68 @@ def paper_trade_latest_active_rows(
     )
 
 
+def paper_trade_latest_monitor_rows(
+    rows: Sequence[PaperTradeIdentityCandidate],
+    *,
+    latest_session_date: date | None,
+    anchor_session_date: date | None = None,
+    include_terminal_rows: bool = False,
+) -> list[PaperTradeIdentityCandidate]:
+    effective_latest_session_date = latest_session_date
+    if anchor_session_date is not None and (
+        effective_latest_session_date is None
+        or effective_latest_session_date < anchor_session_date
+    ):
+        effective_latest_session_date = anchor_session_date
+    filtered_rows = list(rows)
+    if effective_latest_session_date is not None:
+        filtered_rows = [
+            row
+            for row in filtered_rows
+            if not _paper_trade_requires_current_session_monitor_visibility(
+                row,
+                effective_latest_session_date,
+            )
+        ]
+    latest_rows = list(
+        paper_trade_latest_active_rows(
+            filtered_rows,
+            latest_session_date=effective_latest_session_date,
+        )
+    )
+    if include_terminal_rows:
+        return latest_rows
+    return [
+        row
+        for row in latest_rows
+        if not paper_trade_is_terminal(
+            event_type=row.event_type,
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
+        )
+    ]
+
+
+def _paper_trade_requires_current_session_monitor_visibility(
+    row: PaperTradeIdentityCandidate,
+    effective_latest_session_date: date,
+) -> bool:
+    status_kind = paper_trade_status_kind(
+        event_type=row.event_type,
+        lifecycle_status=row.lifecycle_status,
+        manager_status=row.manager_status,
+        fresh_entry_required=row.fresh_entry_required,
+        reverse_entry_required=row.reverse_entry_required,
+        rollover_required=row.rollover_required,
+    )
+    if status_kind not in {"waiting", "not_filled"}:
+        return False
+    return not (
+        row.event_timestamp is not None
+        and row.event_timestamp.date() == effective_latest_session_date
+    )
+
+
 def paper_trade_latest_historical_close_rows(
     rows: Sequence[PaperTradeHistoricalCandidate],
 ) -> list[PaperTradeHistoricalCandidate]:
@@ -444,10 +506,10 @@ def paper_trade_pnl_tone(gross_pnl: float | None) -> str:
 
 
 @dataclass(frozen=True, slots=True)
-class S23PaperTradeLedgerRow:
+class PaperTradeLedgerRow:
     artifact_version: int
     event_timestamp: datetime
-    event_type: S23PaperTradeLedgerEventType
+    event_type: PaperTradeLedgerEventType
     trade_id: str
     strategy_id: str
     strategy_code: str
@@ -487,7 +549,7 @@ class S23PaperTradeLedgerRow:
     state_directory: str | None = None
 
 
-class S23PaperTradeLedgerStore:
+class PaperTradeLedgerStore:
     def __init__(
         self,
         *,
@@ -506,7 +568,7 @@ class S23PaperTradeLedgerStore:
     def append(
         self,
         session_directory: str | Path,
-        row: S23PaperTradeLedgerRow,
+        row: PaperTradeLedgerRow,
     ) -> tuple[Path, Path]:
         session_path = Path(session_directory) / self._session_ledger_filename
         global_path = self.global_ledger_path
@@ -517,9 +579,9 @@ class S23PaperTradeLedgerStore:
     def build_row(
         self,
         *,
-        state: S23PaperPositionState,
+        state: PaperPositionState,
         event_timestamp: datetime,
-        event_type: S23PaperTradeLedgerEventType,
+        event_type: PaperTradeLedgerEventType,
         session_date: date,
         manager_status: str,
         reason_code: str,
@@ -536,7 +598,7 @@ class S23PaperTradeLedgerStore:
         reverse_entry_required: bool = False,
         rollover_required: bool = False,
         state_directory: str | Path | None = None,
-    ) -> S23PaperTradeLedgerRow:
+    ) -> PaperTradeLedgerRow:
         gross_points = None
         gross_pnl = None
         pnl_reference_price = exit_price if exit_price is not None else current_price
@@ -544,7 +606,7 @@ class S23PaperTradeLedgerStore:
             # S23 is currently option-selling paper mode: lower exit premium is profit.
             gross_points = float(state.entry_price) - float(pnl_reference_price)
             gross_pnl = gross_points * state.quantity
-        return S23PaperTradeLedgerRow(
+        return PaperTradeLedgerRow(
             artifact_version=_ARTIFACT_VERSION,
             event_timestamp=event_timestamp,
             event_type=event_type,
@@ -588,14 +650,14 @@ class S23PaperTradeLedgerStore:
         )
 
     @staticmethod
-    def trade_id_for_state(state: S23PaperPositionState) -> str:
+    def trade_id_for_state(state: PaperPositionState) -> str:
         timestamp = state.entry_timestamp.strftime("%Y%m%dT%H%M%S")
         return (
             f"{state.strategy_code}-{state.unique_code}-"
             f"{state.selected_contract_symbol}-{timestamp}"
         )
 
-    def _append_jsonl(self, path: Path, row: S23PaperTradeLedgerRow) -> None:
+    def _append_jsonl(self, path: Path, row: PaperTradeLedgerRow) -> None:
         existing = path.read_text(encoding="utf-8") if path.exists() else ""
         rendered = existing + json.dumps(self._normalize(row), sort_keys=True) + "\n"
         self._atomic_write_text(path, rendered)
@@ -647,6 +709,7 @@ __all__ = [
     "paper_trade_is_open",
     "paper_trade_is_terminal",
     "paper_trade_latest_active_rows",
+    "paper_trade_latest_monitor_rows",
     "paper_trade_latest_historical_close_rows",
     "paper_trade_manager_status_is_open",
     "paper_trade_manager_status_is_lifecycle_terminal",
@@ -659,7 +722,15 @@ __all__ = [
     "paper_trade_select_display_row",
     "paper_trade_summary_counts",
     "paper_trade_visible_for_latest_session",
+    "PaperTradeLedgerEventType",
+    "PaperTradeLedgerRow",
+    "PaperTradeLedgerStore",
     "S23PaperTradeLedgerEventType",
     "S23PaperTradeLedgerRow",
     "S23PaperTradeLedgerStore",
 ]
+
+
+S23PaperTradeLedgerEventType = PaperTradeLedgerEventType
+S23PaperTradeLedgerRow = PaperTradeLedgerRow
+S23PaperTradeLedgerStore = PaperTradeLedgerStore

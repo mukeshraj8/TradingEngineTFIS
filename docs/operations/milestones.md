@@ -2,6 +2,13 @@
 
 ## Current Snapshot
 
+- as of Wednesday, July 22, 2026, TFIS survived a real market-time startup
+  recovery drill: S23 launched on schedule, S21 initially failed because of a
+  simultaneous FYERS auth refresh collision, both morning wrappers were then
+  hardened to retry once with `--skip-refresh` on `invalid auth code`, and a
+  host-style S21 rerun completed the `2026-07-22` morning paper flow so both
+  strategies reached valid session artifacts and shared lifecycle-supervisor
+  startup by about `09:31 IST`
 - as of Saturday, July 18, 2026, TFIS is entering a weekend
   live-money-readiness hardening track, but the repository contract still
   blocks silent live enablement until the remaining paper-runtime,
@@ -12,6 +19,166 @@
   summaries, replay-bundle management, and paper-vs-historical comparison
   contracts while the older S23 names remain exported for compatibility, and
   the focused regression pack for that slice passed at `92 passed`
+- as of Tuesday, July 21, 2026, one more shared comparison seam is now clean:
+  the `paper_vs_historical.py` loader itself now consumes the neutral
+  `PaperSessionReviewer`, `PaperReviewSummary`, and `PaperReviewError`
+  contracts instead of importing S23-prefixed review types directly, while the
+  older S23 comparison exports remain intact; the impacted regression pack for
+  this follow-up slice passed at `137 passed`
+- as of Tuesday, July 21, 2026, the next shared state-orchestration seam is
+  now clean as well: `expiry_governance.py` and `lifecycle_supervisor.py` now
+  consume neutral `Paper...` order/position/event aliases internally instead
+  of typing those generic flows through S23-specific state classes, while the
+  public S23 compatibility surface remains exported; the impacted regression
+  pack for that slice passed at `108 passed`
+- as of Tuesday, July 21, 2026, the next shared live-decision/ledger seam is
+  now clean as well: `live_prelude.py`, `live_decision.py`,
+  `live_decision_timeline.py`, and `trade_ledger.py` now consume neutral
+  paper position-state aliases in their shared carry-forward and ledger flows
+  instead of importing S23-prefixed position-state types directly, while the
+  outward S23 contracts remain exported; the impacted regression pack for that
+  slice passed at `116 passed`
+- as of Tuesday, July 21, 2026, the next shared order-state seam is now clean
+  as well: `order_finalizer.py` and `fresh_entry_promotion.py` now consume
+  neutral `PaperOrderState...` aliases internally in their generic waiting-
+  order and blocked fresh-entry promotion flows instead of importing
+  S23-prefixed order-state types directly, while the outward S23 contracts
+  remain exported; the impacted regression pack for that slice passed at
+  `115 passed`
+- as of Wednesday, July 22, 2026, the shared position-manager boundary is now
+  cleaner as well: `position_manager.py` now consumes neutral
+  `PaperOrderState` / `PaperOrderStatus` / `PaperLiveStateStore` aliases in
+  its generic order-to-position and live-state wiring paths instead of
+  importing S23-prefixed order/live-state types directly, while the outward
+  S23 position-manager contracts remain exported; the impacted regression pack
+  for that slice passed at `124 passed`
+- as of Wednesday, July 22, 2026, that same shared position-manager surface is
+  now internally aligned with the paper-first contract too: the module
+  declares `PaperPositionManager...` classes first and keeps the older S23
+  names as compatibility aliases, with the focused regression pack and local
+  `prod` readiness both passing again afterward at `124 passed` and
+  `overall_status=PASS`
+- as of Wednesday, July 22, 2026, the shared order-state surface is now
+  cleaner as well: `order_state.py` now declares its status, state, event,
+  discovery, and store types through neutral `PaperOrder...` names first,
+  while the outward S23 names remain exported as compatibility aliases; the
+  impacted regression pack for that slice passed at `143 passed`, and local
+  `prod` readiness remained `overall_status=PASS`
+- as of Wednesday, July 22, 2026, the shared position-state surface is now
+  cleaner as well: `position_state.py` now declares its status, event-type,
+  state, event, and store types through neutral `PaperPositionState...` names
+  first, while the outward S23 names remain exported as compatibility aliases;
+  the impacted regression pack for that slice passed at `131 passed`, and
+  local `prod` readiness remained `overall_status=PASS`
+- as of Wednesday, July 22, 2026, the shared trade-ledger surface is now
+  cleaner as well: `trade_ledger.py` now declares its ledger event type, row,
+  and store types through neutral `PaperTradeLedger...` names first, while the
+  outward S23 names remain exported as compatibility aliases; the impacted
+  regression pack for that slice passed at `139 passed`, and local `prod`
+  readiness remained `overall_status=PASS`
+- as of Wednesday, July 22, 2026, the shared lifecycle-supervisor surface is
+  now cleaner as well: `lifecycle_supervisor.py` now declares its context,
+  step, result, and supervisor types through neutral
+  `PaperLifecycleSupervisor...` names first, while the outward S23 names
+  remain exported as compatibility aliases; the impacted regression pack for
+  that slice passed at `139 passed`, and local `prod` readiness remained
+  `overall_status=PASS`
+- as of Wednesday, July 22, 2026, the shared live-state surface is now
+  cleaner as well: `live_state_store.py` now declares its primary settings,
+  diagnostics, store, provider implementations, and build/inspect helpers in
+  neutral `Paper...` names first, while the outward S23 names remain exported
+  as compatibility aliases and wrappers; the impacted regression pack for that
+  slice passed at `155 passed`
+- as of Tuesday, July 21, 2026, TFIS also recovered the same-day scheduled
+  paper-start path after a real startup audit: the S23 morning launcher no
+  longer crashes when Task Scheduler omits `RunDate`, the shared
+  Windows-process lock now treats reused PIDs as stale lock candidates
+  instead of unconditional duplicate starts, a fresh S23 session was launched
+  for `2026-07-21`, the shared lifecycle supervisor was started successfully,
+  the operator dashboard was refreshed without stopping runtime, and the
+  production paper-readiness gate passed afterward
+- as of Tuesday, July 21, 2026, TFIS also added the first shared operator
+  pause-control slice: global and per-strategy runtime pause markers now have
+  dedicated PowerShell operator commands, and the shared lifecycle supervisor
+  now honors those controls directly instead of forcing operators to kill
+  windows just to stop one strategy temporarily
+- as of Tuesday, July 21, 2026, the operator dashboard also gained the first
+  shared runtime-alert/control visibility slice: index, strategy, and
+  consolidated trade pages now show a shared Operator Status panel with pause
+  scope, paused strategies, stale/no-stream counts, alert text, and the
+  primary pause/resume/refresh commands needed during operator recovery
+- as of Tuesday, July 21, 2026, that operator-control slice now also has a
+  shared audit trail: pause/resume commands append JSONL events under
+  `tmp/operator_controls`, the shared operator-control module can load the
+  latest event generically, and the dashboard Operator Status panel now shows
+  the most recent manual control action alongside the current pause state
+- as of Tuesday, July 21, 2026, TFIS also gained a read-only operator status
+  command: `scripts/show_tfis_runtime_status.ps1` reports the current TFIS
+  runtime processes, pause scope, paused strategies, and latest operator
+  control event without interrupting the active paper runtime
+- as of Tuesday, July 21, 2026, the pre-live readiness gate now also fails on
+  active TFIS paper-runtime pause markers, so a lingering global or
+  per-strategy pause is detected before market start instead of silently
+  suppressing shared supervisor management later
+- as of Tuesday, July 21, 2026, the shared paper lifecycle runtime now also
+  enforces one broker-neutral paper-start guardrail contract: runtime configs
+  must remain on a paper-ingress source mode with paper mode enabled, no live
+  orders allowed, kill switch enabled, and session kill switch inactive, and
+  both readiness plus supervisor bootstrap now fail closed when those flags
+  drift out of the supported paper posture
+- as of Tuesday, July 21, 2026, TFIS also added one shared fresh-entry
+  handoff-authority audit: the same helper now feeds pre-live readiness, the
+  read-only runtime-status command, and the dashboard Operator Status panel,
+  and it treats launch markers, later same-branch lifecycle rows, or later
+  same-branch supervised-session artifacts as valid handoff evidence
+- the Tuesday, July 21, 2026 prod-paper readiness pass is now green again on
+  that expanded runtime surface: an older Sunday, July 6, 2026 S23
+  fresh-entry-required close no longer fails the current-day gate once later
+  same-branch supervised-session evidence is present
+- as of Tuesday, July 21, 2026, the operator dashboard also consumes that same
+  shared guardrail truth: Operator Status now shows a paper-guardrail
+  PASS/FAIL badge and raises explicit alerts when any configured strategy no
+  longer satisfies the supported paper-only runtime contract
+- as of Tuesday, July 21, 2026, the operator dashboard also gained the first
+  shared runtime-heartbeat visibility slice: when the paper runtime uses the
+  filesystem live-state backend, Operator Status now reads the persisted
+  supervisor heartbeat and flags stale or unavailable supervision directly on
+  the shared operator surface
+- the same Tuesday, July 21, 2026 heartbeat slice now also exposes the latest
+  persisted supervisor `owner_id` plus `state_directory`, and the shared live-
+  state loader now accepts both nested `storage.live_state` / `storage.redis`
+  config blocks and their top-level `live_state` / `redis` aliases so the
+  heartbeat read-model and the runtime-store bootstrap no longer depend on
+  different YAML shapes
+- the operator dashboard now also renders that same heartbeat owner/state
+  detail on the shared Operator Status panel, so the latest shared supervisor
+  identity and watched state directory are visible at operator time without
+  dropping into the raw heartbeat store
+- the operator home strategy cards now also surface visible-trade, open-
+  position, action-required, and closed-row counts from the shared live
+  monitor, giving the multi-strategy dashboard a denser at-a-glance operator
+  summary without changing any runtime or strategy behavior
+- the shared chart-review page now also includes an instrument filter over the
+  selected-contract chart cards, so operators can narrow the same chart
+  surface by underlying symbol as the number of active strategies and
+  instruments grows
+- TFIS now also has a shared opt-in broker-health probe surface: one reusable
+  runtime status loader can actively connect configured paper broker adapters,
+  the read-only runtime console can print that probe result, and pre-live
+  readiness can include the same broker-health truth when explicitly asked to
+  do so
+- as of Tuesday, July 21, 2026, the operator dashboard navigation now also
+  uses one shared operator nav strip across the home, strategy, all-trades,
+  historical-trades, monthly-status, and manual-S23 pages, so the main
+  operator surface now scales through one consistent navigation pattern
+  instead of page-local back-link layouts
+- as of Tuesday, July 21, 2026, the operator dashboard also gained the first
+  shared chart-review surface: `tools/charts/index.html` now brings active
+  selected-contract market-evidence charts and a direct NIFTY/BANKNIFTY
+  monthly-structure review entry into the same operator navigation model, with
+  simple strategy/stream filters plus evidence summary counts for operator-time
+  review, and the monthly-status tool now accepts preselected instrument
+  defaults from chart-page links
 - the first weekend Step 2 lifecycle-correctness fix is now in place: active
   dashboard trade monitors suppress terminal trade rows by default, leaving
   closed trades to the historical view instead of presenting live and closed
@@ -62,6 +229,107 @@
   has been cut over to those shared helpers so active strategy pages, the
   consolidated all-trades monitor, and the historical closed-trades page no
   longer maintain separate latest-row selection logic
+- the next Tuesday, July 21, 2026 operator-safety slice now also separates
+  order-routing truth from generic paper guardrails: TFIS now has one shared
+  paper runtime order-routing status helper that confirms per strategy that
+  `no_live_orders_allowed` remains enabled and broker adapters still inherit
+  the blocked paper-only order methods, and that same PASS/FAIL truth now
+  surfaces through pre-live readiness, the read-only runtime-status command,
+  and the dashboard Operator Status panel
+- the Tuesday, July 21, 2026 readiness audit then passed on the current paper
+  runtime surface as well: the focused `prod` readiness checks succeeded both
+  with and without `--require-token`, confirming shared supervisor targets,
+  broker runtime assembly, paper guardrails, order-routing safety, filesystem
+  live-state readiness, operator-control state, and local FYERS token-store
+  availability
+- the next Tuesday, July 21, 2026 dashboard-truth slice now also removes one
+  more page-local visibility rule: the shared paper trade-ledger layer now
+  owns current-session waiting-order filtering plus terminal-row suppression
+  for the active trade monitor, so the dashboard no longer pre-filters those
+  rows inline before delegating to the shared latest-row selection helpers
+- that same Tuesday, July 21, 2026 shared monitor helper now also keeps
+  prior-session `ORDER_NOT_FILLED` rows out of the live monitor, so a strategy
+  with no current-day session no longer leaks stale unfilled orders from an
+  older day back into the consolidated active-trades surface
+- as of Tuesday, July 21, 2026, the consolidated operator surfaces now also
+  anchor waiting/not-filled visibility to the later of the current operator
+  day and the newest discovered strategy session date, so stale prior-day
+  unfilled rows cannot reappear in the active all-trades or chart-review
+  surfaces just because another strategy has not produced a fresh session yet
+- as of Tuesday, July 21, 2026, each strategy page now follows that same
+  current-day active-monitor rule: past-session waiting or `ORDER_NOT_FILLED`
+  rows can still appear in the latest-session decision summary for audit, but
+  they no longer leak back into the active "Trades Taken" monitor or strategy
+  Operator Status panel as if they were current live trades
+- the Tuesday, July 21, 2026 focused validation pass is green again on that
+  expanded operator surface: `tests/unit/test_operator_dashboard.py` passed at
+  `31 passed`, the supporting runtime/readiness/reset pack passed at
+  `58 passed`, the shared handoff/process-lock/operator-control/wrapper pack
+  passed at `86 passed`, and the `prod` readiness audit passed both with and
+  without `--require-token`
+- the same Tuesday, July 21, 2026 broker-readiness pass is now also proven on
+  the stronger path: `scripts/pre_live_readiness.py --profile prod
+  --require-token --probe-broker-health --json` confirmed
+  `S23=>fyers/CONNECTED` and `S21=>fyers/CONNECTED`, while the latest
+  `lifecycle_runtime_config.py` cleanup moved adapter construction plus
+  runtime-environment preparation behind one narrower provider-registry seam
+  with the focused lifecycle-runtime/readiness regression pack passing at
+  `50 passed`
+- the next Tuesday, July 21, 2026 Phase 4 naming/plumbing slice is now also
+  complete: shared paper runners, timeline builders, generated-prelude flow,
+  live-ingress runner, capture-ingress suite, and generic order/position entry
+  helpers now consume the neutral `Paper...` live-decision and ingress-dry-run
+  aliases instead of importing `S23...` names directly, with the focused
+  impacted regression pack passing at `147 passed`; the broader shared safety
+  sweep over operator dashboard, readiness, lifecycle-supervisor runtime, and
+  reset-path regressions then also passed at `89 passed`, with local `prod`
+  readiness still returning `overall_status=PASS`
+- the next Tuesday, July 21, 2026 Phase 4 broker-bootstrap slice is now also
+  complete: the shared paper runtime-config layer now exports a broker-config-
+  level adapter builder, and both the live-ingress runner plus the FYERS
+  snapshot collector now consume that shared helper instead of duplicating
+  provider checks and fixture/live adapter creation logic inline. The focused
+  affected regression pack passed at `110 passed`, the broader shared safety
+  sweep passed at `90 passed`, and local `prod` readiness remained
+  `overall_status=PASS`
+- the same Tuesday, July 21, 2026 bootstrap-hardening slice then also
+  centralized broker-credential readiness: the shared paper runtime-config
+  layer now owns provider-specific credential-availability checks, and both
+  the neutral live-ingress preflight plus the FYERS snapshot collector consume
+  that same helper instead of probing FYERS credentials inline. The focused
+  affected regression pack passed at `112 passed`, and local `prod` readiness
+  remained `overall_status=PASS`
+- the same Tuesday, July 21, 2026 shared-ingress wording slice then also
+  removed one more public S23/FYERS-only signal from the shared paper path:
+  the neutral live-ingress runner now renders generic paper-broker summary and
+  preflight headings plus generic configured-broker safety wording, with the
+  focused affected regression pack still passing at `112 passed` and local
+  `prod` readiness remaining `overall_status=PASS`
+- the same Tuesday, July 21, 2026 shared reviewer/state-store cutover batch is
+  now also clean: generated-prelude dry runs, position discovery, position
+  management, the morning timeline runner, execution journal, fill simulator,
+  lifecycle simulator, ingress dry-run, and the FYERS snapshot collector now
+  consume neutral `Paper...` reviewer/state-store aliases where those surfaces
+  are already shared, while preserving compatibility symbols for older module-
+  level monkeypatch hooks. The impacted regression pack passed at `190 passed`,
+  and local `prod` readiness remained `overall_status=PASS`
+- the same Tuesday, July 21, 2026 handoff-truth slice also made fresh-entry
+  recovery more operator-visible: the shared paper layer now reads
+  `fresh_decision_launch.json`, and dashboard follow-up text for
+  fresh-entry-required closes now states whether TFIS promoted a blocked READY
+  decision or launched a fresh supervised runner
+- as of Tuesday, July 21, 2026, the S21 morning wrapper now also follows the
+  shared effective-run-date plus no-run helper path and always writes
+  explicit skip/finish/failure evidence into its task log, so its scheduled
+  behavior now matches S23 more closely during weekend/holiday and wrapper-
+  exit audits
+- the next Tuesday, July 21, 2026 reconciliation slice now also adds an
+  explicit startup audit for persisted state-versus-ledger authority: TFIS
+  now checks each persisted paper position state against the latest ledger row
+  for the same trade, fails closed if active state disagrees with terminal
+  ledger truth or terminal state disagrees with non-terminal ledger truth, and
+  the repo readiness pass is currently clean on that expanded gate after BOM-
+  tolerant JSONL handling was added for older Windows-written ledger files
 - that same Monday, July 20, 2026 reconciliation pass also tightened shared
   runtime target discovery: only same-day waiting orders are now eligible
   watch targets, while prior-session waiting orders remain historical/review
@@ -468,6 +736,12 @@
   narrows process discovery to likely TFIS host processes, stops matched TFIS
   process trees directly, and waits for the dashboard port to accept
   connections before declaring startup complete
+- As of Tuesday, July 21, 2026, the shared paper runtime reconciliation gate
+  is now operator-visible as well as readiness-visible: the same helper that
+  checks persisted paper position state against latest ledger truth now also
+  feeds `scripts/show_tfis_runtime_status.ps1`, so runtime state-vs-ledger
+  conflicts can be inspected from one read-only TFIS operator console without
+  restarting the supervisor
 - TFIS operator dashboard builds now reuse in-process caches for parsed JSONL
   artifacts, selected-contract stream health, and trade-row collections, which
   cuts repeated rereads of large market-event and ledger files during one reset

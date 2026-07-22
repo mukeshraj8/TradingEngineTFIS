@@ -49,6 +49,76 @@ def test_stop_script_uses_shared_runtime_process_helper() -> None:
     assert "stop_tfis_runtime\\.ps1" in helper_script
 
 
+def test_pause_and_resume_scripts_use_shared_operator_control_helper() -> None:
+    pause_script = _script_text("pause_tfis_runtime.ps1")
+    resume_script = _script_text("resume_tfis_runtime.ps1")
+    helper_script = _script_text("tfis_operator_control_helpers.ps1")
+
+    assert '. $operatorControlHelperPath' in pause_script
+    assert '. $operatorControlHelperPath' in resume_script
+    assert "TFIS RUNTIME PAUSE" in pause_script
+    assert "TFIS RUNTIME RESUME" in resume_script
+    assert "Set-TfisOperatorPauseMarker" in pause_script
+    assert "Clear-TfisOperatorPauseMarker" in resume_script
+    assert "function Resolve-TfisOperatorControlRoot" in helper_script
+    assert "function Get-TfisGlobalPauseMarkerPath" in helper_script
+    assert "function Get-TfisStrategyPauseMarkerPath" in helper_script
+    assert "function Get-TfisOperatorControlEventLogPath" in helper_script
+    assert "function Get-TfisLatestOperatorControlEvent" in helper_script
+    assert "function Set-TfisOperatorPauseMarker" in helper_script
+    assert "function Clear-TfisOperatorPauseMarker" in helper_script
+    assert "function Write-TfisOperatorControlEvent" in helper_script
+
+
+def test_status_script_reads_shared_runtime_and_operator_control_state() -> None:
+    status_script = _script_text("show_tfis_runtime_status.ps1")
+    guardrail_script = _script_text("show_paper_runtime_guardrail_status.py")
+    broker_health_script = _script_text("show_paper_runtime_broker_health_status.py")
+    heartbeat_script = _script_text("show_paper_runtime_heartbeat_status.py")
+    order_routing_script = _script_text("show_paper_runtime_order_routing_status.py")
+    reconciliation_script = _script_text("show_paper_runtime_reconciliation_status.py")
+    fresh_entry_handoff_script = _script_text("show_paper_runtime_fresh_entry_handoff_status.py")
+
+    assert '. $runtimeProcessHelperPath' in status_script
+    assert '. $operatorControlHelperPath' in status_script
+    assert '$Host.UI.RawUI.WindowTitle = "TFIS Runtime Status"' in status_script
+    assert '[switch]$RequireToken' in status_script
+    assert "TFIS RUNTIME STATUS" in status_script
+    assert "function Test-TfisDashboardPortReady" in status_script
+    assert 'show_paper_runtime_guardrail_status.py' in status_script
+    assert 'show_paper_runtime_broker_health_status.py' in status_script
+    assert 'show_paper_runtime_heartbeat_status.py' in status_script
+    assert 'show_paper_runtime_order_routing_status.py' in status_script
+    assert 'show_paper_runtime_reconciliation_status.py' in status_script
+    assert 'show_paper_runtime_fresh_entry_handoff_status.py' in status_script
+    assert "PaperGuardrails:" in status_script
+    assert "BrokerHealth:" in status_script
+    assert '$brokerHealthArgs += "--require-token"' in status_script
+    assert "RuntimeHeartbeats:" in status_script
+    assert "OrderRoutingSafety:" in status_script
+    assert "RuntimeReconciliation:" in status_script
+    assert "FreshEntryHandoffs:" in status_script
+    assert "Get-TfisLatestOperatorControlEvent" in status_script
+    assert "Get-TfisRuntimeProcesses -RepoRoot $repoRoot" in status_script
+    assert "DashboardPortReady:" in status_script
+    assert "DashboardProcesses:" in status_script
+    assert "SupervisorProcesses:" in status_script
+    assert "load_paper_runtime_guardrail_statuses" in guardrail_script
+    assert "GuardrailStatus:" in guardrail_script
+    assert "load_paper_runtime_broker_health_statuses" in broker_health_script
+    assert "BrokerHealthStatus:" in broker_health_script
+    assert "load_paper_runtime_heartbeat_statuses" in heartbeat_script
+    assert "HeartbeatStatus:" in heartbeat_script
+    assert "owner_id=" in heartbeat_script
+    assert "state_directory=" in heartbeat_script
+    assert "load_paper_runtime_order_routing_statuses" in order_routing_script
+    assert "OrderRoutingStatus:" in order_routing_script
+    assert "load_paper_runtime_reconciliation_statuses" in reconciliation_script
+    assert "ReconciliationStatus:" in reconciliation_script
+    assert "load_paper_runtime_fresh_entry_handoff_statuses" in fresh_entry_handoff_script
+    assert "FreshEntryHandoffStatus:" in fresh_entry_handoff_script
+
+
 def test_reset_script_keeps_dashboard_and_supervisor_recovery_windows_visible() -> None:
     script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
     supervisor_helper_script = _script_text("tfis_paper_lifecycle_supervisor_helpers.ps1")

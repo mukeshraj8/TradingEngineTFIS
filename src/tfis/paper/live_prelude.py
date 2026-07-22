@@ -34,10 +34,10 @@ from .models import (
     UnderlyingSnapshotEvent,
 )
 from .position_state import (
-    S23PaperPositionState,
-    S23PaperPositionStateEvent,
-    S23PaperPositionStateEventType,
-    S23PaperPositionStateStatus,
+    PaperPositionState,
+    PaperPositionStateEvent,
+    PaperPositionStateEventType,
+    PaperPositionStateStatus,
 )
 
 
@@ -106,7 +106,7 @@ class S23PaperLivePreludeRequest:
     source_workbook_rule: str | None = None
     workbook_row_number: int | None = None
     fsl_price: float | None = None
-    carry_forward_position: S23PaperPositionState | None = None
+    carry_forward_position: PaperPositionState | None = None
     smoke_override_enabled: bool = False
     smoke_override_selected_contract_symbol: str | None = None
     allow_branch_pinned_unknown_monthly_status: bool = False
@@ -122,8 +122,8 @@ class S23PaperLivePreludeResult:
     snapshot_events: tuple[UnderlyingSnapshotEvent, ...]
     trade_plan_event: PaperTradePlanEvent | None
     selected_contract_event: SelectedContractQuoteEvent | None
-    governance_events: tuple[S23PaperPositionStateEvent, ...]
-    resume_event: S23PaperPositionStateEvent | None
+    governance_events: tuple[PaperPositionStateEvent, ...]
+    resume_event: PaperPositionStateEvent | None
     contract_selection: S23PaperContractSelectionResult | None
     trade_plan: TradePlan | None
     selected_contract_provenance: str | None
@@ -169,8 +169,8 @@ class S23PaperLivePreludeBuilder:
         monthly_status_event = self._build_monthly_status_event(request)
         snapshot_events = self._build_snapshot_events(request)
 
-        resume_event: S23PaperPositionStateEvent | None = None
-        governance_events: tuple[S23PaperPositionStateEvent, ...] = ()
+        resume_event: PaperPositionStateEvent | None = None
+        governance_events: tuple[PaperPositionStateEvent, ...] = ()
         if request.carry_forward_position is not None:
             resume_event = self._build_resume_event(request)
             governance_events = request.expiry_governance.build_events(
@@ -623,15 +623,15 @@ class S23PaperLivePreludeBuilder:
     def _build_resume_event(
         self,
         request: S23PaperLivePreludeRequest,
-    ) -> S23PaperPositionStateEvent:
+    ) -> PaperPositionStateEvent:
         assert request.carry_forward_position is not None
-        return S23PaperPositionStateEvent(
+        return PaperPositionStateEvent(
             timestamp=request.session_context.generated_at,
-            event_type=S23PaperPositionStateEventType.PAPER_POSITION_RESUMED,
+            event_type=PaperPositionStateEventType.PAPER_POSITION_RESUMED,
             strategy_code=request.carry_forward_position.strategy_code,
             unique_code=request.carry_forward_position.unique_code,
             selected_contract_symbol=request.carry_forward_position.selected_contract_symbol,
-            lifecycle_status=S23PaperPositionStateStatus.PAPER_POSITION_RESUMED,
+            lifecycle_status=PaperPositionStateStatus.PAPER_POSITION_RESUMED,
             session_date=request.session_context.session_date,
             reason_code="paper_position_resumed",
             message="Paper carry-forward position was resumed for the new session.",
