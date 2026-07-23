@@ -568,6 +568,41 @@ def test_load_paper_runtime_lifecycle_audit_statuses_flags_legacy_missing_audit(
     assert "missing=1" in statuses[0].message
 
 
+def test_load_paper_runtime_lifecycle_audit_statuses_ignores_terminal_order_without_audit(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    order_dir = artifact_root / "2026-07-22" / "branch-not-filled"
+    order_dir.mkdir(parents=True, exist_ok=True)
+    order_store = PaperOrderStateStore()
+    order_store.create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 22)),
+        created_at=datetime(2026, 7, 22, 9, 30),
+    )
+    order_store.mark_not_filled(
+        order_dir,
+        marked_at=datetime(2026, 7, 22, 15, 30),
+        reason_code="paper_order_cutoff_not_filled",
+        message="Order was not filled by cutoff.",
+    )
+
+    statuses = load_paper_runtime_lifecycle_audit_statuses(
+        _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root),
+        repo_root=tmp_path,
+    )
+
+    assert statuses[0].status == "PASS"
+    assert statuses[0].managed_state_count == 1
+    assert statuses[0].audit_state_count == 0
+    assert statuses[0].missing_audit_count == 0
+    assert statuses[0].actionable_state_count == 0
+
+
 def test_load_paper_runtime_lifecycle_audit_statuses_fails_invalid_audit(
     tmp_path: Path,
 ) -> None:

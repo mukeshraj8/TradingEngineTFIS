@@ -19,6 +19,12 @@
   after app-level auth preparation and waits for all of them before shared
   supervisor startup, removing the S21-behind-S23 serialization issue for
   future scheduled runs
+- as of Thursday, July 23, 2026, the shared runtime status console is now
+  market-phase aware: it prints `MarketSessionPhase`, reports missing
+  supervisor visibility as urgent only during `ACTIVE_MARKET`, reports
+  `AFTER_MARKET_IDLE` after cutoff when order/reconciliation checks are clean,
+  and filters terminal historical paper orders out of missing lifecycle-audit
+  attention so live-readiness signals are quieter and more accurate
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate

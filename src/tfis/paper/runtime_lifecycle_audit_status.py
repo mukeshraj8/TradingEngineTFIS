@@ -108,7 +108,8 @@ def _load_strategy_lifecycle_audit_status(
             actionable_state_count += 1
         audit_path = state_dir / _AUDIT_FILENAME
         if not audit_path.exists():
-            missing_audit_count += 1
+            if actionable:
+                missing_audit_count += 1
             continue
         rows = _load_jsonl_dicts(audit_path)
         if not rows:

@@ -27,6 +27,15 @@ change in a meaningful way.
   configured strategy wrapper first and then waits for all wrapper processes,
   preserving one app-owned auth preparation while avoiding strategy-level
   startup serialization as TFIS grows beyond S21/S23
+- the Thursday, July 23, 2026 post-market operator status signal has also been
+  corrected: `scripts/show_tfis_runtime_status.ps1` now reports
+  `MarketSessionPhase`, treats missing supervisor visibility as an immediate
+  recovery action during `ACTIVE_MARKET` only, reports `AFTER_MARKET_IDLE`
+  after cutoff when waiting orders and reconciliation are clean, and gives the
+  lifecycle-audit rollup a wider stale-evidence window outside market hours;
+  the lifecycle-audit read model now ignores missing supervisor-audit files
+  for terminal paper orders so historical not-filled orders do not pollute the
+  current live-readiness signal
 - as of Wednesday, July 22, 2026, the active implementation track is now the
   single TFIS application-startup contract: document the ordered queue, make
   FYERS auth preparation validate existing token state before refreshing under
@@ -236,6 +245,13 @@ change in a meaningful way.
   `start_or_recover_dashboard`, `start_shared_supervisor`, or
   `resolve_stale_waiting_orders`; focused status tests passed at `10 passed`
   and the real status command ran successfully
+- follow-up on Thursday, July 23, 2026: the runtime console is now
+  market-phase aware and the real post-market status reports
+  `MarketSessionPhase=POST_MARKET`, `LifecycleAudit=PASS`,
+  `WaitingOrders=PASS`, `RuntimeReconciliation=PASS`, and
+  `RestartRecoveryStatus=AFTER_MARKET_IDLE pending=none`; focused runtime
+  status/lifecycle-audit tests passed at `15 passed`, and parse/compile checks
+  passed for the edited PowerShell/Python files
 - the consolidated go/no-go review for Wednesday, July 22, 2026 is documented
   in `docs/operations/tfis_go_no_go_review_2026-07-22.md`: current paper-live
   readiness is `GO` for the blocked paper operating contract, live-money

@@ -85,9 +85,14 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert '. $operatorControlHelperPath' in status_script
     assert '$Host.UI.RawUI.WindowTitle = "TFIS Runtime Status"' in status_script
     assert '[switch]$RequireToken' in status_script
+    assert '[datetime]$RunDate = (Get-Date)' in status_script
+    assert '[string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json"' in status_script
     assert "TFIS RUNTIME STATUS" in status_script
     assert "function Test-TfisDashboardPortReady" in status_script
     assert "function Get-TfisRestartRecoveryStatus" in status_script
+    assert "function Get-TfisMarketSessionPhase" in status_script
+    assert ". $tradingCalendarHelperPath" in status_script
+    assert "MarketSessionPhase:" in status_script
     assert 'show_paper_runtime_guardrail_status.py' in status_script
     assert 'show_paper_runtime_broker_health_status.py' in status_script
     assert 'show_paper_runtime_heartbeat_status.py' in status_script
@@ -101,10 +106,16 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert '$brokerHealthArgs += "--require-token"' in status_script
     assert "RuntimeHeartbeats:" in status_script
     assert "LifecycleAudit:" in status_script
+    assert "$lifecycleAuditArgs = @($lifecycleAuditScript)" in status_script
+    assert '$lifecycleAuditArgs += @("--stale-after-seconds", "86400")' in status_script
     assert "WaitingOrders:" in status_script
     assert "RestartRecoveryStatus:" in status_script
     assert "READY_FOR_MORNING_STARTUP" in status_script
     assert "ACTION_REQUIRED" in status_script
+    assert "STOPPED_AFTER_MARKET" in status_script
+    assert "AFTER_MARKET_IDLE" in status_script
+    assert "ACTIVE_MARKET" in status_script
+    assert "POST_MARKET" in status_script
     assert "resolve_stale_waiting_orders" in status_script
     assert "start_or_recover_dashboard" in status_script
     assert "start_shared_supervisor" in status_script
@@ -137,6 +148,18 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "ReconciliationStatus:" in reconciliation_script
     assert "load_paper_runtime_fresh_entry_handoff_statuses" in fresh_entry_handoff_script
     assert "FreshEntryHandoffStatus:" in fresh_entry_handoff_script
+
+
+def test_status_script_is_market_phase_aware_for_supervisor_recovery() -> None:
+    status_script = _script_text("show_tfis_runtime_status.ps1")
+
+    assert 'if ($MarketSessionPhase -eq "ACTIVE_MARKET")' in status_script
+    assert '$pending += "start_shared_supervisor"' in status_script
+    assert 'elseif ($MarketSessionPhase -eq "PRE_MARKET")' in status_script
+    assert '$pending += "run_morning_startup"' in status_script
+    assert 'elseif (($MarketSessionPhase -eq "POST_MARKET") -and ($SupervisorProcessCount -eq 0))' in status_script
+    assert "no shared supervisor restart is required" in status_script
+    assert "TFIS appears stopped during active market; operator recovery is required." in status_script
 
 
 def test_reset_script_keeps_dashboard_and_supervisor_recovery_windows_visible() -> None:

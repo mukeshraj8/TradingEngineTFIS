@@ -1,7 +1,9 @@
 param(
     [string]$TfisRoot,
     [int]$DashboardPort = 8765,
-    [switch]$RequireToken
+    [switch]$RequireToken,
+    [datetime]$RunDate = (Get-Date),
+    [string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json"
 )
 
 $ErrorActionPreference = "Stop"
@@ -10,8 +12,10 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = Split-Path -Parent $scriptDir
 $runtimeProcessHelperPath = Join-Path $scriptDir "tfis_runtime_process_helpers.ps1"
 $operatorControlHelperPath = Join-Path $scriptDir "tfis_operator_control_helpers.ps1"
+$tradingCalendarHelperPath = Join-Path $scriptDir "tfis_trading_calendar_helpers.ps1"
 . $runtimeProcessHelperPath
 . $operatorControlHelperPath
+. $tradingCalendarHelperPath
 
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
@@ -50,7 +54,8 @@ function Get-TfisRestartRecoveryStatus {
         [int]$DashboardProcessCount,
         [int]$SupervisorProcessCount,
         [int]$OtherProcessCount,
-        [bool]$WaitingOrderFailure
+        [bool]$WaitingOrderFailure,
+        [string]$MarketSessionPhase
     )
 
     $pending = @()
@@ -61,16 +66,38 @@ function Get-TfisRestartRecoveryStatus {
         $pending += "start_or_recover_dashboard"
     }
     if ($SupervisorProcessCount -eq 0) {
-        $pending += "start_shared_supervisor"
+        if ($MarketSessionPhase -eq "ACTIVE_MARKET") {
+            $pending += "start_shared_supervisor"
+        }
+        elseif ($MarketSessionPhase -eq "PRE_MARKET") {
+            $pending += "run_morning_startup"
+        }
     }
     if (($DashboardProcessCount -eq 0) -and ($SupervisorProcessCount -eq 0) -and ($OtherProcessCount -eq 0) -and (-not $DashboardReady)) {
-        $status = "READY_FOR_MORNING_STARTUP"
-        $pending = @("run_morning_startup")
-        $message = "TFIS appears stopped; run reset_tfis_dashboard_and_watchers.ps1 -MorningStartup for the scheduled app startup path."
+        if ($MarketSessionPhase -eq "PRE_MARKET") {
+            $status = "READY_FOR_MORNING_STARTUP"
+            $pending = @("run_morning_startup")
+            $message = "TFIS appears stopped before market; run reset_tfis_dashboard_and_watchers.ps1 -MorningStartup for the scheduled app startup path."
+        }
+        elseif ($MarketSessionPhase -eq "ACTIVE_MARKET") {
+            $status = "ACTION_REQUIRED"
+            $pending = @("start_or_recover_dashboard", "start_shared_supervisor")
+            $message = "TFIS appears stopped during active market; operator recovery is required."
+        }
+        else {
+            $status = "STOPPED_AFTER_MARKET"
+            $pending = @("none")
+            $message = "TFIS appears stopped outside active market hours; no same-day supervisor restart is required."
+        }
     }
     elseif ($pending.Count -gt 0) {
         $status = "ACTION_REQUIRED"
         $message = "TFIS runtime is partially available; review pending action(s): $($pending -join ', ')."
+    }
+    elseif (($MarketSessionPhase -eq "POST_MARKET") -and ($SupervisorProcessCount -eq 0)) {
+        $status = "AFTER_MARKET_IDLE"
+        $pending = @("none")
+        $message = "Market lifecycle window has ended; dashboard/status may remain available and no shared supervisor restart is required."
     }
     else {
         $status = "RUNNING"
@@ -83,6 +110,25 @@ function Get-TfisRestartRecoveryStatus {
         PendingActions = $pending
         Message = $message
     }
+}
+
+function Get-TfisMarketSessionPhase {
+    param([datetime]$Date)
+
+    $effectiveDate = Get-TfisEffectiveRunDate -RunDate $Date
+    $noRunReason = Get-TfisNoRunReason -RepoRoot $repoRoot -EffectiveDate $effectiveDate -CalendarPath $TradingHolidayCalendar
+    if ($noRunReason) {
+        return "CLOSED_DAY"
+    }
+
+    $timeOfDay = $Date.TimeOfDay
+    if ($timeOfDay -lt ([TimeSpan]::Parse("09:15:00"))) {
+        return "PRE_MARKET"
+    }
+    if ($timeOfDay -lt ([TimeSpan]::Parse("15:30:00"))) {
+        return "ACTIVE_MARKET"
+    }
+    return "POST_MARKET"
 }
 
 Write-Host "============================================"
@@ -109,9 +155,11 @@ $otherProcesses = @(
     }
 )
 $dashboardReady = Test-TfisDashboardPortReady -Port $DashboardPort
+$marketSessionPhase = Get-TfisMarketSessionPhase -Date $RunDate
 
 Write-Host "RepoRoot: $repoRoot"
 Write-Host "TfisRoot: $TfisRoot"
+Write-Host "MarketSessionPhase: $marketSessionPhase"
 Write-Host "GlobalPause: $(if (Test-Path $globalPausePath) { 'YES' } else { 'NO' })"
 Write-Host "PausedStrategies: $(if ($pausedStrategies.Count -gt 0) { $pausedStrategies -join ', ' } else { 'none' })"
 Write-Host "DashboardPortReady: $(if ($dashboardReady) { 'YES' } else { 'NO' })"
@@ -190,7 +238,11 @@ else {
 
 if ((Test-Path $pythonExe) -and (Test-Path $lifecycleAuditScript)) {
     try {
-        $lifecycleAuditLines = & $pythonExe $lifecycleAuditScript 2>$null
+        $lifecycleAuditArgs = @($lifecycleAuditScript)
+        if ($marketSessionPhase -ne "ACTIVE_MARKET") {
+            $lifecycleAuditArgs += @("--stale-after-seconds", "86400")
+        }
+        $lifecycleAuditLines = & $pythonExe $lifecycleAuditArgs 2>$null
         if ($lifecycleAuditLines) {
             Write-Host "LifecycleAudit:"
             foreach ($line in $lifecycleAuditLines) {
@@ -234,7 +286,8 @@ $restartRecoveryStatus = Get-TfisRestartRecoveryStatus `
     -DashboardProcessCount $dashboardProcesses.Count `
     -SupervisorProcessCount $supervisorProcesses.Count `
     -OtherProcessCount $otherProcesses.Count `
-    -WaitingOrderFailure:$waitingOrderFailure
+    -WaitingOrderFailure:$waitingOrderFailure `
+    -MarketSessionPhase $marketSessionPhase
 Write-Host ("RestartRecoveryStatus: status={0} pending={1} message={2}" -f `
     $restartRecoveryStatus.Status, `
     ($restartRecoveryStatus.PendingActions -join ","), `

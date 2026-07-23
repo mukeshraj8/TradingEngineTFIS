@@ -22,9 +22,21 @@ way.
    wrappers one by one is not acceptable for multi-strategy TFIS operation:
    S21 was delayed behind S23. The current fix launches all configured morning
    wrappers concurrently after shared auth preparation, then waits for all of
-   them before starting the shared lifecycle supervisor. Follow-up: add a
-   stronger process/runtime status detector so Windows venv launcher PIDs and
-   real Python PIDs do not make operator status look inconsistent.
+   them before starting the shared lifecycle supervisor.
+
+0.06. `DONE` Make runtime recovery status market-phase aware.
+   The July 23, 2026 post-market status view exposed a misleading recovery
+   signal: stale cutoff heartbeats and zero visible supervisor processes were
+   reported as `ACTION_REQUIRED` even after every current waiting order had
+   reached a terminal not-filled state. The status console now prints
+   `MarketSessionPhase`, asks for supervisor recovery only during
+   `ACTIVE_MARKET`, reports `AFTER_MARKET_IDLE` after cutoff when current
+   order/reconciliation checks are clean, widens lifecycle-audit freshness
+   outside market hours, and ignores missing supervisor-audit files for
+   terminal historical paper orders. Follow-up: add a stronger process/runtime
+   status detector so Windows venv launcher PIDs and real Python PIDs do not
+   make process counts look inconsistent when the port/heartbeat evidence is
+   otherwise clear.
 
 0.1. `DONE` Establish one TFIS application-startup contract before
    adding any live-order capability.
@@ -143,10 +155,17 @@ way.
      manifest artifacts
    - `scripts/validate_project.py` passed
    Next slice:
-   close same-day lifecycle correctness gaps that would be unacceptable in
-   live money, especially duplicate supervision, stale quote handling, cutoff
-   behavior, fresh-recalculation handoff after position close, and dashboard/
-   operator consistency.
+   close the remaining live-money-readiness gaps in this order:
+   1. strengthen Windows process/runtime detection so process counts agree
+      with dashboard port readiness and heartbeat owner evidence
+   2. tighten active-market stale quote and heartbeat handling so active
+      positions cannot continue on ambiguous market data
+   3. prove multi-day open-position startup/resume using broker-truth
+      reconciliation evidence, not only TFIS paper files
+   4. connect the existing broker-order/idempotency/reconciliation/approval
+      contracts into a deliberately disabled live execution adapter path, with
+      tests showing live routing remains blocked unless every gate passes
+   5. run a final go/no-go review before any real live-order enablement
 
 0.5. Remove the remaining S21/S23 morning startup auth race that was exposed on
    Wednesday, July 22, 2026.
@@ -279,6 +298,13 @@ way.
    port readiness, dashboard/supervisor/other TFIS process counts, and stale
    waiting-order status. The current post-market host reports
    `READY_FOR_MORNING_STARTUP` with pending action `run_morning_startup`.
+   Follow-up on Thursday, July 23, 2026:
+   the runtime status console is now market-phase aware. Missing supervisor
+   visibility is an active-market recovery action, not an after-market restart
+   demand; terminal historical paper orders no longer create missing audit
+   attention; and the current post-market console reports
+   `AFTER_MARKET_IDLE pending=none` with lifecycle audit, waiting orders, and
+   reconciliation passing.
    Go/no-go review completed on Wednesday, July 22, 2026:
    `docs/operations/tfis_go_no_go_review_2026-07-22.md` records `GO` for the
    current blocked paper-live operating contract and `NO-GO_FOR_LIVE_MONEY`
