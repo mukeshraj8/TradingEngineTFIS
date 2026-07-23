@@ -38,6 +38,23 @@ way.
    make process counts look inconsistent when the port/heartbeat evidence is
    otherwise clear.
 
+0.07. `DONE` Strengthen Windows TFIS process/runtime detection.
+   Current operator status can still show zero dashboard/supervisor processes
+   even when dashboard port readiness, heartbeat owner ids, or direct host
+   inspection prove TFIS components were active. Fix the shared PowerShell
+   process helper so it discovers both Windows virtualenv launcher processes
+   and real Python child processes consistently, keeps matching scoped to the
+   TFIS repo root, and reports clearer process roles without changing runtime
+   behavior. Completed on Thursday, July 23, 2026: the shared runtime process
+   helper now accepts slash-normalized repo paths, carries child processes of
+   directly matched TFIS launchers, classifies dashboard/supervisor/strategy/
+   watcher/maintenance roles, and falls back from `Get-NetTCPConnection` to
+   `netstat -ano` plus `Get-Process` for dashboard port-owner evidence.
+   `show_tfis_runtime_status.ps1` now reports `DashboardPortOwnerProcesses`
+   and prints `Role=dashboard_port_owner` when command-line evidence is
+   unavailable; the real host status now reports `DashboardProcesses=1` for
+   the listening dashboard instead of zero.
+
 0.1. `DONE` Establish one TFIS application-startup contract before
    adding any live-order capability.
    TFIS must start as one application that can manage many enabled strategies,

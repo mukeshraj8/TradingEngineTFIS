@@ -146,12 +146,18 @@ $pausedStrategies = @(
 )
 $latestEvent = Get-TfisLatestOperatorControlEvent -RepoRoot $repoRoot
 $runtimeProcesses = @(Get-TfisRuntimeProcesses -RepoRoot $repoRoot)
-$dashboardProcesses = @($runtimeProcesses | Where-Object { $_.CommandLine -match "serve_operator_dashboard\.py" })
-$supervisorProcesses = @($runtimeProcesses | Where-Object { $_.CommandLine -match "run_tfis_paper_lifecycle_supervisor\.py|start_tfis_paper_lifecycle_supervisor\.ps1" })
+$dashboardProcesses = @($runtimeProcesses | Where-Object { (Get-TfisRuntimeProcessRole -CommandLine $_.CommandLine) -eq "dashboard" })
+$dashboardPortOwnerProcesses = @(Get-TfisPortOwnerProcesses -Port $DashboardPort)
+foreach ($portOwnerProcess in $dashboardPortOwnerProcesses) {
+    if (@($dashboardProcesses | Where-Object { $_.ProcessId -eq $portOwnerProcess.ProcessId }).Count -eq 0) {
+        $dashboardProcesses += $portOwnerProcess
+    }
+}
+$supervisorProcesses = @($runtimeProcesses | Where-Object { (Get-TfisRuntimeProcessRole -CommandLine $_.CommandLine) -eq "supervisor" })
 $otherProcesses = @(
     $runtimeProcesses | Where-Object {
-        $_.CommandLine -notmatch "serve_operator_dashboard\.py" -and
-        $_.CommandLine -notmatch "run_tfis_paper_lifecycle_supervisor\.py|start_tfis_paper_lifecycle_supervisor\.ps1"
+        $role = Get-TfisRuntimeProcessRole -CommandLine $_.CommandLine
+        $role -ne "dashboard" -and $role -ne "supervisor"
     }
 )
 $dashboardReady = Test-TfisDashboardPortReady -Port $DashboardPort
@@ -163,6 +169,7 @@ Write-Host "MarketSessionPhase: $marketSessionPhase"
 Write-Host "GlobalPause: $(if (Test-Path $globalPausePath) { 'YES' } else { 'NO' })"
 Write-Host "PausedStrategies: $(if ($pausedStrategies.Count -gt 0) { $pausedStrategies -join ', ' } else { 'none' })"
 Write-Host "DashboardPortReady: $(if ($dashboardReady) { 'YES' } else { 'NO' })"
+Write-Host "DashboardPortOwnerProcesses: $($dashboardPortOwnerProcesses.Count)"
 
 $pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
 $guardrailScript = Join-Path $scriptDir "show_paper_runtime_guardrail_status.py"
@@ -374,5 +381,13 @@ Write-Host "DashboardProcesses: $($dashboardProcesses.Count)"
 Write-Host "SupervisorProcesses: $($supervisorProcesses.Count)"
 Write-Host "OtherTfisProcesses: $($otherProcesses.Count)"
 foreach ($proc in $runtimeProcesses) {
-    Write-Host (" - PID={0} Name={1}" -f $proc.ProcessId, $proc.Name)
+    Write-Host (" - PID={0} Name={1} Role={2}" -f `
+        $proc.ProcessId, `
+        $proc.Name, `
+        (Get-TfisRuntimeProcessRole -CommandLine $proc.CommandLine))
+}
+foreach ($proc in $dashboardPortOwnerProcesses) {
+    if (@($runtimeProcesses | Where-Object { $_.ProcessId -eq $proc.ProcessId }).Count -eq 0) {
+        Write-Host (" - PID={0} Name={1} Role=dashboard_port_owner" -f $proc.ProcessId, $proc.Name)
+    }
 }

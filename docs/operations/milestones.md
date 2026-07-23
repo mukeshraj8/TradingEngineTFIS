@@ -25,6 +25,12 @@
   `AFTER_MARKET_IDLE` after cutoff when order/reconciliation checks are clean,
   and filters terminal historical paper orders out of missing lifecycle-audit
   attention so live-readiness signals are quieter and more accurate
+- as of Thursday, July 23, 2026, Windows dashboard process detection is
+  stronger: the shared runtime helper now handles slash-normalized repo paths,
+  virtualenv parent/child process discovery, process-role classification, and
+  a `netstat -ano` dashboard port-owner fallback; the real status console now
+  shows the dashboard listener as `DashboardProcesses=1` with
+  `Role=dashboard_port_owner`
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate

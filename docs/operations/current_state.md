@@ -36,6 +36,15 @@ change in a meaningful way.
   the lifecycle-audit read model now ignores missing supervisor-audit files
   for terminal paper orders so historical not-filled orders do not pollute the
   current live-readiness signal
+- the Windows process/runtime detection gap from the same post-market review
+  is closed for the dashboard path: `scripts/tfis_runtime_process_helpers.ps1`
+  now matches TFIS repo paths with either slash style, includes child
+  processes of matched TFIS launchers, exposes process roles, and falls back
+  to `netstat -ano` plus `Get-Process` when PowerShell network/process
+  providers do not expose command-line evidence; the real status console now
+  reports the dashboard listener as `DashboardProcesses=1` with
+  `Role=dashboard_port_owner` instead of showing zero processes while the port
+  is accepting connections
 - as of Wednesday, July 22, 2026, the active implementation track is now the
   single TFIS application-startup contract: document the ordered queue, make
   FYERS auth preparation validate existing token state before refreshing under

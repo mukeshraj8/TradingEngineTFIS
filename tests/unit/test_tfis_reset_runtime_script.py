@@ -16,8 +16,20 @@ def test_reset_script_waits_for_old_tfis_runtime_before_restarting() -> None:
 
     assert '. $runtimeProcessHelperPath' in script
     assert "function Get-TfisProcessCandidates" in helper_script
+    assert "function New-TfisPathRegex" in helper_script
     assert "function Get-TfisRuntimeProcesses" in helper_script
+    assert "function Get-TfisPortOwnerProcesses" in helper_script
+    assert "function Get-TfisRuntimeProcessRole" in helper_script
     assert "build_operator_dashboard\\.py|serve_operator_dashboard\\.py" in helper_script
+    assert "reset_tfis_dashboard_and_watchers\\.ps1" in helper_script
+    assert "start_s21_fyers_morning_supervised_decision\\.ps1" in helper_script
+    assert "start_s23_fyers_morning_supervised_decision\\.ps1" in helper_script
+    assert "ParentProcessId" in helper_script
+    assert "Get-NetTCPConnection -LocalAddress \"127.0.0.1\" -LocalPort $Port -State Listen" in helper_script
+    assert "netstat.exe -ano" in helper_script
+    assert "LISTENING" in helper_script
+    assert "Get-Process -Id $processId" in helper_script
+    assert "CommandLine = $null" in helper_script
     assert "function Wait-ForNoTfisRuntimeProcesses" in helper_script
     assert "throw \"Timed out waiting for TFIS runtime processes to exit" in helper_script
     assert "taskkill.exe" in helper_script
@@ -128,8 +140,12 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "Get-TfisLatestOperatorControlEvent" in status_script
     assert "Get-TfisRuntimeProcesses -RepoRoot $repoRoot" in status_script
     assert "DashboardPortReady:" in status_script
+    assert "DashboardPortOwnerProcesses:" in status_script
     assert "DashboardProcesses:" in status_script
     assert "SupervisorProcesses:" in status_script
+    assert "Get-TfisRuntimeProcessRole -CommandLine $_.CommandLine" in status_script
+    assert "Role={2}" in status_script
+    assert "Role=dashboard_port_owner" in status_script
     assert "load_paper_runtime_guardrail_statuses" in guardrail_script
     assert "GuardrailStatus:" in guardrail_script
     assert "load_paper_runtime_broker_health_statuses" in broker_health_script
@@ -160,6 +176,30 @@ def test_status_script_is_market_phase_aware_for_supervisor_recovery() -> None:
     assert 'elseif (($MarketSessionPhase -eq "POST_MARKET") -and ($SupervisorProcessCount -eq 0))' in status_script
     assert "no shared supervisor restart is required" in status_script
     assert "TFIS appears stopped during active market; operator recovery is required." in status_script
+
+
+def test_runtime_process_helper_matches_windows_path_variants_and_child_processes() -> None:
+    helper_script = _script_text("tfis_runtime_process_helpers.ps1")
+
+    assert "$segments = @($fullPath -split '[\\\\/]+'" in helper_script
+    assert "-join '[\\\\/]+'" in helper_script
+    assert "$repoPattern = New-TfisPathRegex -PathText $RepoRoot" in helper_script
+    assert "$matchedById[[int]$proc.ProcessId] = $proc" in helper_script
+    assert "$parentProcessId = [int]$proc.ParentProcessId" in helper_script
+    assert "$matchedById.ContainsKey($parentProcessId)" in helper_script
+    assert "Name = 'py.exe'" in helper_script
+
+
+def test_runtime_process_helper_exposes_operator_roles() -> None:
+    helper_script = _script_text("tfis_runtime_process_helpers.ps1")
+
+    assert "return \"dashboard\"" in helper_script
+    assert "return \"supervisor\"" in helper_script
+    assert "return \"morning_strategy\"" in helper_script
+    assert "return \"position_watcher\"" in helper_script
+    assert "return \"dashboard_maintenance\"" in helper_script
+    assert "return \"runtime_startup\"" in helper_script
+    assert "return \"runtime_stop\"" in helper_script
 
 
 def test_reset_script_keeps_dashboard_and_supervisor_recovery_windows_visible() -> None:
@@ -254,4 +294,15 @@ def test_refresh_script_rebuilds_dashboard_without_stopping_runtime() -> None:
     assert 'serve_operator_dashboard.py' in script
     assert 'Stop-TfisRuntimeProcesses' not in script
     assert "Reusing existing TFIS dashboard server PID=" in script
+    assert "Get-TfisPortOwnerProcesses -Port $DashboardPort" in script
     assert "TFIS operator dashboard refresh complete in" in script
+
+
+def test_reset_and_refresh_scripts_fallback_to_dashboard_port_owner() -> None:
+    reset_script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
+    refresh_script = _script_text("refresh_tfis_operator_dashboard.ps1")
+
+    for script in (reset_script, refresh_script):
+        assert "$matches = @(Get-TfisRuntimeProcesses -RepoRoot $repoRoot -RuntimePattern $pattern)" in script
+        assert "if ($matches.Count -gt 0)" in script
+        assert "return @(Get-TfisPortOwnerProcesses -Port $DashboardPort)" in script

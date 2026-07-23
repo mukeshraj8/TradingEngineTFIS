@@ -79,7 +79,11 @@ function Get-TfisExistingDashboardProcess {
     $portPattern = [Regex]::Escape("--port")
     $outputRootPattern = New-TfisRegexAlternation @($DashboardOutputRoot, (Resolve-TfisPath $DashboardOutputRoot))
     $pattern = "serve_operator_dashboard\.py.*$([Regex]::Escape('--output-root'))\s+$outputRootPattern.*$portPattern\s+$DashboardPort(?:\s|$)"
-    return @(Get-TfisRuntimeProcesses -RepoRoot $repoRoot -RuntimePattern $pattern)
+    $matches = @(Get-TfisRuntimeProcesses -RepoRoot $repoRoot -RuntimePattern $pattern)
+    if ($matches.Count -gt 0) {
+        return $matches
+    }
+    return @(Get-TfisPortOwnerProcesses -Port $DashboardPort)
 }
 
 function Get-TfisMorningStartupWrapperPaths {

@@ -17,11 +17,109 @@ function New-TfisRegexAlternation {
     return "(?:" + ($parts -join "|") + ")"
 }
 
+function New-TfisPathRegex {
+    param([string]$PathText)
+
+    $fullPath = [System.IO.Path]::GetFullPath($PathText)
+    $segments = @($fullPath -split '[\\/]+') | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    if ($segments.Count -eq 0) {
+        return [Regex]::Escape($fullPath)
+    }
+    return ($segments | ForEach-Object { [Regex]::Escape($_) }) -join '[\\/]+'
+}
+
 function Get-TfisProcessCandidates {
-    $nameFilter = "Name = 'python.exe' OR Name = 'pythonw.exe' OR Name = 'powershell.exe' OR Name = 'pwsh.exe'"
+    $nameFilter = "Name = 'python.exe' OR Name = 'pythonw.exe' OR Name = 'py.exe' OR Name = 'powershell.exe' OR Name = 'pwsh.exe'"
     return @(
         Get-CimInstance Win32_Process -Filter $nameFilter -ErrorAction SilentlyContinue
     )
+}
+
+function Get-TfisPortOwnerProcesses {
+    param([int]$Port)
+
+    $ownerProcessIds = @()
+    $connections = @(
+        Get-NetTCPConnection -LocalAddress "127.0.0.1" -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+    )
+    if ($connections.Count -eq 0) {
+        $connections = @(
+            Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+        )
+    }
+    $ownerProcessIds += @(
+        $connections |
+        Select-Object -ExpandProperty OwningProcess -ErrorAction SilentlyContinue |
+        Where-Object { $_ -and $_ -gt 0 } |
+        ForEach-Object { [int]$_ }
+    )
+    if ($ownerProcessIds.Count -eq 0) {
+        $netstatLines = @(& netstat.exe -ano 2>$null | Select-String -Pattern (":$Port\s+.*\s+LISTENING\s+\d+\s*$"))
+        foreach ($line in $netstatLines) {
+            $text = [string]$line
+            if ($text -match "^\s*TCP\s+\S+:$Port\s+\S+\s+LISTENING\s+(\d+)\s*$") {
+                $ownerProcessIds += [int]$Matches[1]
+            }
+        }
+    }
+    $ownerProcessIds = @($ownerProcessIds | Where-Object { $_ -and $_ -gt 0 } | Sort-Object -Unique)
+    if ($ownerProcessIds.Count -eq 0) {
+        return @()
+    }
+    $ownerProcesses = @(
+        Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object { $ownerProcessIds -contains $_.ProcessId } |
+        Sort-Object ProcessId
+    )
+    if ($ownerProcesses.Count -gt 0) {
+        return $ownerProcesses
+    }
+    return @(
+        $ownerProcessIds |
+        ForEach-Object {
+            $processId = [int]$_
+            $process = Get-Process -Id $processId -ErrorAction SilentlyContinue
+            if ($process) {
+                [PSCustomObject]@{
+                    ProcessId = $process.Id
+                    Name = $process.ProcessName
+                    CommandLine = $null
+                    ParentProcessId = $null
+                }
+            }
+        } |
+        Sort-Object ProcessId
+    )
+}
+
+function Get-TfisRuntimeProcessRole {
+    param([string]$CommandLine)
+
+    if ([string]::IsNullOrWhiteSpace($CommandLine)) {
+        return "unknown"
+    }
+    if ($CommandLine -match "serve_operator_dashboard\.py") {
+        return "dashboard"
+    }
+    if ($CommandLine -match "run_tfis_paper_lifecycle_supervisor\.py|start_tfis_paper_lifecycle_supervisor\.ps1") {
+        return "supervisor"
+    }
+    if ($CommandLine -match "run_s21_banknifty_0916_supervised_decision\.py|run_s23_fyers_0916_supervised_decision\.py|start_s21_fyers_morning_supervised_decision\.ps1|start_s23_fyers_morning_supervised_decision\.ps1") {
+        return "morning_strategy"
+    }
+    if ($CommandLine -match "run_s23_paper_position_watch\.py|start_s21_paper_watchers_from_metadata\.ps1|start_s23_paper_watchers_from_metadata\.ps1") {
+        return "position_watcher"
+    }
+    if ($CommandLine -match "build_operator_dashboard\.py|refresh_tfis_operator_dashboard\.ps1") {
+        return "dashboard_maintenance"
+    }
+    if ($CommandLine -match "reset_tfis_dashboard_and_watchers\.ps1") {
+        return "runtime_startup"
+    }
+    if ($CommandLine -match "stop_tfis_runtime\.ps1") {
+        return "runtime_stop"
+    }
+    return "other"
 }
 
 function Get-TfisRuntimeProcesses {
@@ -31,15 +129,17 @@ function Get-TfisRuntimeProcesses {
         [string]$RuntimePattern
     )
 
-    $repoPattern = [Regex]::Escape($RepoRoot)
+    $repoPattern = New-TfisPathRegex -PathText $RepoRoot
     $effectivePattern = if ([string]::IsNullOrWhiteSpace($RuntimePattern)) {
-        'build_operator_dashboard\.py|serve_operator_dashboard\.py|run_s23_paper_position_watch\.py|run_tfis_paper_lifecycle_supervisor\.py|start_tfis_paper_lifecycle_supervisor\.ps1|start_s21_paper_watchers_from_metadata\.ps1|start_s23_paper_watchers_from_metadata\.ps1|run_s21_banknifty_0916_supervised_decision\.py|run_s23_fyers_0916_supervised_decision\.py|stop_tfis_runtime\.ps1'
+        'build_operator_dashboard\.py|serve_operator_dashboard\.py|refresh_tfis_operator_dashboard\.ps1|reset_tfis_dashboard_and_watchers\.ps1|run_s23_paper_position_watch\.py|run_tfis_paper_lifecycle_supervisor\.py|start_tfis_paper_lifecycle_supervisor\.ps1|start_s21_paper_watchers_from_metadata\.ps1|start_s23_paper_watchers_from_metadata\.ps1|run_s21_banknifty_0916_supervised_decision\.py|run_s23_fyers_0916_supervised_decision\.py|start_s21_fyers_morning_supervised_decision\.ps1|start_s23_fyers_morning_supervised_decision\.ps1|stop_tfis_runtime\.ps1'
     }
     else {
         $RuntimePattern
     }
-    return @(
-        Get-TfisProcessCandidates |
+
+    $candidates = @(Get-TfisProcessCandidates)
+    $directMatches = @(
+        $candidates |
         Where-Object {
             $cmd = $_.CommandLine
             if (-not $cmd) {
@@ -49,9 +149,30 @@ function Get-TfisRuntimeProcesses {
                 return $false
             }
             return $cmd -match $effectivePattern
-        } |
-        Sort-Object ProcessId
+        }
     )
+    $matchedById = @{}
+    foreach ($proc in $directMatches) {
+        $matchedById[[int]$proc.ProcessId] = $proc
+    }
+
+    $changed = $true
+    while ($changed) {
+        $changed = $false
+        foreach ($proc in $candidates) {
+            $processId = [int]$proc.ProcessId
+            if ($matchedById.ContainsKey($processId)) {
+                continue
+            }
+            $parentProcessId = [int]$proc.ParentProcessId
+            if ($matchedById.ContainsKey($parentProcessId)) {
+                $matchedById[$processId] = $proc
+                $changed = $true
+            }
+        }
+    }
+
+    return @($matchedById.Values | Sort-Object ProcessId)
 }
 
 function Wait-ForNoTfisRuntimeProcesses {
