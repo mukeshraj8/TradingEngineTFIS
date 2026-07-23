@@ -57,6 +57,10 @@ def main(argv: list[str] | None = None) -> int:
             parts.append(f"state_directory={status.latest_state_directory}")
         if status.latest_selected_contract_symbol:
             parts.append(f"symbol={status.latest_selected_contract_symbol}")
+        if status.latest_runtime_status:
+            parts.append(f"runtime_status={status.latest_runtime_status}")
+        if status.latest_reason_code:
+            parts.append(f"reason_code={status.latest_reason_code}")
         if status.latest_supervisor_pid is not None:
             parts.append(f"supervisor_pid={status.latest_supervisor_pid}")
         if status.age_seconds is not None:

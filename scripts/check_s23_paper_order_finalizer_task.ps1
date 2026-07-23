@@ -1,5 +1,5 @@
 param(
-    [string]$TaskName = "TFIS S23 Paper Order Finalizer"
+    [string]$TaskName = "TFIS Paper Order Finalizer"
 )
 
 $task = $null

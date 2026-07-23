@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from dataclasses import asdict
+from datetime import date
 from pathlib import Path
 
 
@@ -12,23 +13,26 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from tfis.paper import load_paper_runtime_reconciliation_statuses
+from tfis.paper import load_paper_runtime_waiting_order_statuses
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Show shared TFIS paper runtime reconciliation status by strategy."
+        description="Show stale/current TFIS paper waiting-order status by strategy."
     )
     parser.add_argument("--targets-config", default="config/paper_lifecycle_supervisor_targets.yaml")
+    parser.add_argument("--session-date", help="YYYY-MM-DD. Defaults to each target config timezone's current date.")
     parser.add_argument("--json", action="store_true")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    statuses = load_paper_runtime_reconciliation_statuses(
+    session_date = date.fromisoformat(args.session_date) if args.session_date else None
+    statuses = load_paper_runtime_waiting_order_statuses(
         REPO_ROOT / args.targets_config,
         repo_root=REPO_ROOT,
+        session_date=session_date,
     )
     if args.json:
         print(
@@ -44,14 +48,16 @@ def main(argv: list[str] | None = None) -> int:
         parts = [
             f"strategy={status.strategy_code}",
             f"status={status.status}",
-            f"persisted_state_count={status.persisted_state_count}",
-            f"checked_trade_count={status.checked_trade_count}",
-            f"persisted_order_state_count={status.persisted_order_state_count}",
-            f"checked_order_event_count={status.checked_order_event_count}",
-            f"conflict_count={status.conflict_count}",
+            f"session_date={status.session_date.isoformat()}",
+            f"total_order_count={status.total_order_count}",
+            f"waiting_order_count={status.waiting_order_count}",
+            f"current_session_waiting_order_count={status.current_session_waiting_order_count}",
+            f"stale_waiting_order_count={status.stale_waiting_order_count}",
+            f"terminal_order_count={status.terminal_order_count}",
+            f"latest_stale_order_directory={status.latest_stale_order_directory or 'n/a'}",
             f"message={status.message}",
         ]
-        print("ReconciliationStatus: " + " ".join(parts))
+        print("WaitingOrderStatus: " + " ".join(parts))
     return 0
 
 

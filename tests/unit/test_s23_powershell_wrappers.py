@@ -119,6 +119,15 @@ def test_s23_operational_wrappers_default_to_durable_data_artifact_root() -> Non
         script = _script_text(script_name)
         assert f'$defaultArtifactRoot = "{DURABLE_S23_ARTIFACT_ROOT}"' in script
 
+    finalizer_script = _script_text("start_s23_paper_order_finalizer.ps1")
+    assert '[string]$TargetsConfig = "config/paper_lifecycle_supervisor_targets.yaml"' in finalizer_script
+    assert '"--targets-config", $TargetsConfig' in finalizer_script
+    assert '"--artifact-root", $ArtifactRoot' in finalizer_script
+    assert "[switch]$CurrentSessionOnly" in finalizer_script
+    assert 'if (-not $CurrentSessionOnly)' in finalizer_script
+    assert '$args += "--include-prior-sessions"' in finalizer_script
+    assert 'Write-TfisTaskLogMessage -LogPath $logPath -Message $Message -ConsolePrefix "[TFIS Finalizer] "' in finalizer_script
+
 
 def test_s23_morning_task_registration_defaults_if_past_to_run_now() -> None:
     script = _script_text("register_s23_fyers_morning_supervised_task.ps1")
@@ -143,7 +152,11 @@ def test_s21_operational_scripts_exist_for_daily_startup() -> None:
     assert "Resolve-TfisAbsolutePathText -RepoRoot $repoRoot" in start_script
     assert "Resolve-TfisPositionStateDirectoryPath -RepoRoot $repoRoot" in start_script
     assert "Get-TfisResumablePaperPositionStatePaths" in start_script
-    assert "Get-TfisEffectiveRunDate -RunDate $Date" in start_script
+    assert '[datetime]$RunDate' in start_script
+    assert '$inputRunDate = if ($PSBoundParameters.ContainsKey("RunDate")) { $RunDate } else { $Date }' in start_script
+    assert "Get-TfisEffectiveRunDate -RunDate $inputRunDate" in start_script
+    assert '[switch]$DisablePositionWatch' in start_script
+    assert '$args += "--disable-position-watch"' in start_script
     assert "Get-TfisNoRunReason -RepoRoot $repoRoot -EffectiveDate $effectiveRunDate -CalendarPath $TradingHolidayCalendar" in start_script
     assert "Resolve-TfisPythonExecutable -RepoRoot $repoRoot" in start_script
     assert "New-TfisTaskLaunchContext" in start_script

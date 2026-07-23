@@ -2,6 +2,146 @@
 
 ## Current Snapshot
 
+- as of Wednesday, July 22, 2026, TFIS has an explicit ordered
+  application-startup/live-readiness TODO track: centralize provider auth,
+  correct the existing startup/reset entrypoint instead of adding duplicate
+  scripts, launch enabled strategies through one app-owned path, keep
+  lifecycle execution paper-safe, and only consider live-money order routing
+  after broker-truth reconciliation and operator controls are proven
+- as of Wednesday, July 22, 2026, the first application-startup hardening
+  slice is implemented: FYERS auth preparation now validates and reuses an
+  existing token before refreshing, refresh fallback is serialized by one
+  TFIS-owned lock, `fyers_token_refresh.py --prepare` exposes that
+  validate-or-refresh path, and the existing dashboard/supervisor reset script
+  now supports an opt-in `-MorningStartup` mode for one app-level dashboard/
+  provider-auth/strategy/supervisor launch sequence
+- as of Wednesday, July 22, 2026, the Windows scheduled startup pattern has
+  been migrated on the host: `TFIS Morning Startup` is enabled for weekdays at
+  `09:08` and points to the existing reset script's `-MorningStartup` mode,
+  while the separate S21 and S23 morning scheduled tasks are disabled to avoid
+  strategy-level auth-refresh races
+- as of Wednesday, July 22, 2026, the full TFIS reset path is now
+  market-session guarded: during `09:15-15:30` on a trading day it refuses to
+  stop runtime processes without explicit `-ForceInMarketReset`, keeping
+  dashboard-only refresh as the normal in-market recovery path
+- as of Wednesday, July 22, 2026, TFIS now has an explicit live-money
+  execution/reconciliation boundary: the current paper lifecycle is documented
+  as polling-based and not live-order management, a read-only status command
+  reports `BLOCKED_FOR_LIVE_MONEY`, pre-live readiness includes that boundary,
+  and required gates are listed before live order placement can be considered
+- as of Wednesday, July 22, 2026, the first live-money execution/
+  reconciliation gate has a broker-agnostic model/evidence implementation:
+  `src/tfis/broker/broker_order_state.py` persists broker order ids, exchange
+  ids/statuses, acknowledgements, rejects, cancels, modifications, fills,
+  timestamps, and event history through JSON/JSONL artifacts without enabling
+  live order routing
+- as of Wednesday, July 22, 2026, the second live-money execution/
+  reconciliation gate now has broker-agnostic idempotency infrastructure:
+  `src/tfis/broker/broker_order_idempotency.py` creates deterministic
+  restart-stable client order ids, persists reservations, suppresses duplicate
+  reservation attempts, distinguishes explicit retry attempts, and links
+  consumed reservations to broker-order state without enabling live routing
+- as of Wednesday, July 22, 2026, the third live-money execution/
+  reconciliation gate now has broker-agnostic reconciliation infrastructure:
+  `src/tfis/broker/broker_reconciliation.py` compares TFIS position
+  expectations and persisted broker-order state against supplied broker
+  position/order-book snapshots for pre-startup, supervision, and restart
+  scopes without fetching broker truth or enabling live routing
+- as of Wednesday, July 22, 2026, the fourth live-money execution/
+  reconciliation gate now has explicit broker execution-state handling:
+  broker-order state covers pending, partial-fill, filled, rejected, stale,
+  cancel-failed, and modify-failed transitions with durable quantities,
+  reject/failure reasons, timestamps, and shared operator-attention
+  classification
+- as of Wednesday, July 22, 2026, the fifth live-money execution/
+  reconciliation gate now has broker-neutral exit-protection contract
+  coverage: `src/tfis/broker/live_exit_protection.py` validates target,
+  stoploss, forced-close, emergency-exit, and kill-switch rules, including
+  market-event ingress and operator-approval requirements, without placing or
+  modifying broker orders
+- as of Wednesday, July 22, 2026, the sixth live-money execution/
+  reconciliation gate now has broker-neutral live market-event ingress
+  evidence coverage: `src/tfis/broker/live_market_event_ingress.py` validates
+  websocket or broker-event mode, fresh heartbeat, required symbol
+  subscriptions/evidence, duplicate sequence rejection, and monotonic event
+  ordering; polling-only evidence fails this contract
+- as of Wednesday, July 22, 2026, the seventh live-money execution/
+  reconciliation gate now has broker-truth multi-day recovery contract
+  coverage: `src/tfis/broker/live_position_recovery.py` validates overnight,
+  expiry, forced-close, rollover-required, and next-day resume scenarios with
+  broker truth and reconciliation required for every case
+- as of Wednesday, July 22, 2026, the eighth live-money execution/
+  reconciliation gate now has explicit operator approval and kill-switch
+  governance coverage: `src/tfis/broker/live_operator_controls.py` records
+  expiring live-mode approvals, kill-switch state, and durable JSONL audit
+  events before any live-order mode can be enabled
+- as of Wednesday, July 22, 2026, the current S21/S23 paper-runtime invariants
+  were re-verified after startup hardening: the focused dashboard/supervisor/
+  market-event/lifecycle/captured-session pack passed at `105 passed`, the
+  operator dashboard rebuilt successfully, and project validation remained
+  green
+- as of Wednesday, July 22, 2026, the post-cutoff paper-order finalizer has
+  been corrected into a TFIS application-level scheduled safety net while
+  preserving the existing compatibility script names: it now reads
+  `config/paper_lifecycle_supervisor_targets.yaml`, sweeps the configured
+  S21/S23 paper artifact roots, the host task `TFIS Paper Order Finalizer` is
+  enabled at `15:35`, and the old S23-only finalizer task is disabled
+- as of Wednesday, July 22, 2026, the shared blocked fresh-entry promotion path
+  now creates waiting paper orders from a neutral `PaperOrderDecisionIntent`
+  contract instead of requiring an S23 decision-summary dataclass internally,
+  while keeping the existing S23 compatibility inputs and behavior intact
+- as of Wednesday, July 22, 2026, the shared paper lifecycle supervisor now
+  handles selected-contract market-data fetch failures as an explicit
+  fail-closed target state: it publishes `MARKET_DATA_UNAVAILABLE` heartbeat
+  evidence and skips lifecycle transitions instead of letting ambiguous market
+  data drive order or position changes
+- as of Wednesday, July 22, 2026, the operator-facing heartbeat read-model now
+  classifies fresh `MARKET_DATA_UNAVAILABLE` runtime heartbeats as `DEGRADED`
+  and exposes the latest runtime status/reason code through the console and
+  dashboard Operator Status panel
+- as of Wednesday, July 22, 2026, the broker/data ingress failure-handling
+  checklist item is closed for the current paper runtime: readiness, runtime
+  logs, live-state heartbeat evidence, runtime status, and dashboard Operator
+  Status now surface broker health and selected-contract market-data ambiguity
+  without allowing ambiguous market data to drive lifecycle transitions
+- as of Wednesday, July 22, 2026, paper runtime reconciliation now covers both
+  sides of the persisted trade story: position states reconcile against the
+  trade ledger, paper order states reconcile against their latest order-event
+  trail, actionable waiting/fill conflicts fail readiness evidence, and local
+  configured S23/S21 reconciliation plus prod readiness both remain PASS
+- as of Wednesday, July 22, 2026, the shared paper lifecycle supervisor now
+  writes a compact per-state `paper_lifecycle_supervisor_events.jsonl` audit
+  trail for runtime skips and lifecycle steps, including lock-busy,
+  selected-contract market-data unavailable, stale waiting-order expiration,
+  and emitted lifecycle-step decisions
+- as of Wednesday, July 22, 2026, lifecycle-supervisor audit evidence is now
+  exposed through a shared read model, console command, TFIS runtime-status
+  rollup, and pre-live readiness check; the same pass used the existing
+  configured finalizer to close the two stale actionable S21 waiting paper
+  orders from `2026-07-21`, leaving S21/S23 actionable stale order count at
+  zero while prod readiness remains PASS
+- as of Wednesday, July 22, 2026, stale waiting paper orders are now a named
+  readiness gate: the shared waiting-order status read model and console
+  command distinguish current-session waiting orders from stale/future-dated
+  waiting orders, `show_tfis_runtime_status.ps1` reports `WaitingOrders`, and
+  `pre_live_readiness.py` fails if any configured strategy has a stale
+  actionable waiting order before startup
+- as of Wednesday, July 22, 2026, operator-control evidence is more complete:
+  pre-live readiness and the TFIS runtime status console now surface latest
+  pause/resume action, scope, strategy, timestamp, actor, reason, and marker
+  path so recovery reviews do not require opening the raw operator-control
+  JSONL file
+- as of Wednesday, July 22, 2026, the TFIS runtime status console also reports
+  `RestartRecoveryStatus`, a read-only pending-action summary derived from
+  dashboard availability, dashboard/supervisor/other TFIS process counts, and
+  stale waiting-order status so operators can distinguish stopped, healthy,
+  and partially recovered runtime states
+- as of Wednesday, July 22, 2026, TFIS has a consolidated paper-live go/no-go
+  review at `docs/operations/tfis_go_no_go_review_2026-07-22.md`: paper-live
+  is acceptable only under the current blocked-paper contract, live-money
+  contract gates are complete, and live-money routing remains `NO-GO` until an
+  operator approval artifact exists and a separate reviewed change enables
+  broker routing
 - as of Wednesday, July 22, 2026, TFIS survived a real market-time startup
   recovery drill: S23 launched on schedule, S21 initially failed because of a
   simultaneous FYERS auth refresh collision, both morning wrappers were then
@@ -1311,6 +1451,20 @@
   captured-session validator confirms `2026-07-08` as a clean
   `PAPER_ORDER_NOT_FILLED` waiting-order outcome from persisted market-event
   evidence
+- TFIS morning startup now reaches the real provider auth preparation step
+  without the embedded Python quoting failure previously seen as
+  `print(fPrepared`, and auth preparation now runs before dashboard build/start
+  in morning-startup mode; the remaining proof point is an operator-shell rerun
+  that can access FYERS over HTTPS and either reuse a valid token or complete
+  the refresh.
+- TFIS morning startup now parses configured strategy wrappers robustly from
+  `config/paper_lifecycle_supervisor_targets.yaml`: S23 and S21 are invoked as
+  separate wrappers, failures are recorded per wrapper, and the shared
+  supervisor is still started for operator visibility and recovery evidence.
+- Operator dashboard readability improved: the status panel now uses a compact
+  health strip, grouped operational sections, collapsed diagnostics for long
+  runtime paths, and a cleaner neutral visual system while preserving the
+  existing operator labels and strategy-aware dashboard evidence.
 
 ## Next Recommended Priorities
 

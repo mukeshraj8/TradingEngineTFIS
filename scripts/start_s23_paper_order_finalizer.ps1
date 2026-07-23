@@ -1,12 +1,13 @@
 param(
     [string]$TfisRoot,
     [string]$ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",
+    [string]$TargetsConfig = "config/paper_lifecycle_supervisor_targets.yaml",
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
     [string]$Timezone = "Asia/Kolkata",
     [string]$Cutoff = "15:30",
     [string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json",
     [datetime]$RunDate,
-    [switch]$IncludePriorSessions,
+    [switch]$CurrentSessionOnly,
     [switch]$AllowBeforeCutoff,
     [switch]$DryRun
 )
@@ -20,7 +21,7 @@ $tradingCalendarHelperPath = Join-Path $scriptDir "tfis_trading_calendar_helpers
 $wrapperTaskHelperPath = Join-Path $scriptDir "tfis_wrapper_task_helpers.ps1"
 . $tradingCalendarHelperPath
 . $wrapperTaskHelperPath
-$Host.UI.RawUI.WindowTitle = "TFIS S23 Paper Order Finalizer"
+$Host.UI.RawUI.WindowTitle = "TFIS Paper Order Finalizer"
 if (-not $TfisRoot) {
     $TfisRoot = $repoRoot
 }
@@ -28,25 +29,26 @@ if (-not $TfisRoot) {
 $taskContext = New-TfisTaskLaunchContext `
     -RepoRoot $repoRoot `
     -RelativeLogDirectory "tmp\s23_fyers_morning_supervised_decision\_task_launch_logs" `
-    -LogFilePrefix "s23_paper_order_finalizer"
+    -LogFilePrefix "tfis_paper_order_finalizer"
 $logDir = $taskContext.LogDirectory
 $stamp = $taskContext.Stamp
 $logPath = $taskContext.LogPath
 
 function Write-FinalizerLog {
     param([string]$Message)
-    Write-TfisTaskLogMessage -LogPath $logPath -Message $Message -ConsolePrefix "[TFIS S23 Finalizer] "
+    Write-TfisTaskLogMessage -LogPath $logPath -Message $Message -ConsolePrefix "[TFIS Finalizer] "
 }
 
 $pythonExe = Resolve-TfisPythonExecutable -RepoRoot $repoRoot -AllowSystemPythonFallback
 
 Show-TfisTaskBanner `
-    -Title "TFIS S23 PAPER ORDER FINALIZER" `
+    -Title "TFIS PAPER ORDER FINALIZER" `
     -RepoRoot $repoRoot `
     -LogPath $logPath
-Write-FinalizerLog "Starting TFIS S23 paper order finalizer."
+Write-FinalizerLog "Starting TFIS paper order finalizer."
 Write-FinalizerLog "Python executable: $pythonExe"
 Write-FinalizerLog "ArtifactRoot: $ArtifactRoot"
+Write-FinalizerLog "TargetsConfig: $TargetsConfig"
 Write-FinalizerLog "DashboardOutputRoot: $DashboardOutputRoot"
 Write-FinalizerLog "Cutoff: $Cutoff"
 
@@ -59,13 +61,14 @@ else {
 $noRunReason = Get-TfisNoRunReason -RepoRoot $repoRoot -EffectiveDate $effectiveRunDate -CalendarPath $TradingHolidayCalendar
 if ($noRunReason) {
     Write-FinalizerLog $noRunReason
-    Write-FinalizerLog "Skipping TFIS S23 paper order finalization."
+    Write-FinalizerLog "Skipping TFIS paper order finalization."
     Write-FinalizerLog "Finalizer finished with exit code 0."
     exit 0
 }
 
 $args = @(
     (Join-Path $repoRoot "scripts\finalize_s23_pending_paper_orders.py"),
+    "--targets-config", $TargetsConfig,
     "--artifact-root", $ArtifactRoot,
     "--dashboard-output-root", $DashboardOutputRoot,
     "--timezone", $Timezone,
@@ -74,7 +77,7 @@ $args = @(
     "--rebuild-dashboard"
 )
 
-if ($IncludePriorSessions) {
+if (-not $CurrentSessionOnly) {
     $args += "--include-prior-sessions"
 }
 if ($AllowBeforeCutoff) {

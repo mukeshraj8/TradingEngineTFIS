@@ -1,13 +1,14 @@
 param(
-    [string]$TaskName = "TFIS S23 Paper Order Finalizer",
+    [string]$TaskName = "TFIS Paper Order Finalizer",
     [string]$RunTime = "15:35",
     [string]$TfisRoot,
     [string]$ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",
+    [string]$TargetsConfig = "config/paper_lifecycle_supervisor_targets.yaml",
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
     [string]$Timezone = "Asia/Kolkata",
     [string]$Cutoff = "15:30",
     [string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json",
-    [switch]$IncludePriorSessions
+    [switch]$CurrentSessionOnly
 )
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -23,6 +24,7 @@ if (-not (Test-Path $wrapperPath)) {
 
 $defaultTfisRoot = $repoRoot
 $defaultArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision"
+$defaultTargetsConfig = "config/paper_lifecycle_supervisor_targets.yaml"
 $defaultDashboardOutputRoot = "tmp/operator_dashboard"
 $defaultTimezone = "Asia/Kolkata"
 $defaultCutoff = "15:30"
@@ -43,6 +45,10 @@ if ($ArtifactRoot -ne $defaultArtifactRoot) {
     $actionParts += "-ArtifactRoot"
     $actionParts += ('"{0}"' -f $ArtifactRoot)
 }
+if ($TargetsConfig -ne $defaultTargetsConfig) {
+    $actionParts += "-TargetsConfig"
+    $actionParts += ('"{0}"' -f $TargetsConfig)
+}
 if ($DashboardOutputRoot -ne $defaultDashboardOutputRoot) {
     $actionParts += "-DashboardOutputRoot"
     $actionParts += ('"{0}"' -f $DashboardOutputRoot)
@@ -59,8 +65,8 @@ if ($TradingHolidayCalendar -ne $defaultTradingHolidayCalendar) {
     $actionParts += "-TradingHolidayCalendar"
     $actionParts += ('"{0}"' -f $TradingHolidayCalendar)
 }
-if ($IncludePriorSessions) {
-    $actionParts += "-IncludePriorSessions"
+if ($CurrentSessionOnly) {
+    $actionParts += "-CurrentSessionOnly"
 }
 
 $taskAction = $actionParts -join " "

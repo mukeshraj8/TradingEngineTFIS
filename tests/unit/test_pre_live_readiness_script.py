@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.util
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -20,6 +21,21 @@ def _load_module():
 
 
 def _stub_additive_runtime_checks(module) -> None:
+    module._paper_runtime_heartbeat_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_heartbeat",
+        status="PASS",
+        message="paper runtime heartbeat acceptable",
+    )
+    module._paper_runtime_lifecycle_audit_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_lifecycle_audit",
+        status="PASS",
+        message="paper lifecycle audit evidence visible",
+    )
+    module._paper_runtime_waiting_order_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_waiting_orders",
+        status="PASS",
+        message="no stale waiting orders",
+    )
     module._paper_runtime_fresh_entry_handoff_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
         name="paper_runtime_fresh_entry_handoff",
         status="PASS",
@@ -90,7 +106,11 @@ def test_pre_live_readiness_checks_skip_token_by_default() -> None:
     assert broker_health_check.status == "PASS"
     assert live_state_check.status == "PASS"
     assert any(check.name == "paper_runtime_guardrails" for check in checks)
+    assert any(check.name == "paper_runtime_heartbeat" for check in checks)
+    assert any(check.name == "paper_runtime_lifecycle_audit" for check in checks)
+    assert any(check.name == "paper_runtime_waiting_orders" for check in checks)
     assert any(check.name == "paper_order_routing_safety" for check in checks)
+    assert any(check.name == "live_money_boundary" for check in checks)
     assert any(check.name == "paper_runtime_reconciliation" for check in checks)
     assert any(check.name == "paper_runtime_fresh_entry_handoff" for check in checks)
     assert any(check.name == "operator_controls" for check in checks)
@@ -233,7 +253,7 @@ def test_pre_live_readiness_reports_operator_pause_marker_failure(tmp_path: Path
     control_root.mkdir(parents=True, exist_ok=True)
     (control_root / "global_pause.json").write_text("{}", encoding="utf-8")
     (control_root / "operator_control_events.jsonl").write_text(
-        '{"action":"PAUSE","scope":"GLOBAL","occurred_at":"2026-07-21T08:55:00+05:30"}\n',
+        '{"action":"PAUSE","scope":"GLOBAL","occurred_at":"2026-07-21T08:55:00+05:30","actor":"alice","reason":"manual_risk_pause","marker_path":"global_pause.json"}\n',
         encoding="utf-8",
     )
 
@@ -242,6 +262,28 @@ def test_pre_live_readiness_reports_operator_pause_marker_failure(tmp_path: Path
     assert check.status == "FAIL"
     assert check.name == "operator_controls"
     assert "resume_tfis_runtime.ps1" in check.message
+    assert "actor=alice" in check.message
+    assert "reason=manual_risk_pause" in check.message
+    assert "marker=global_pause.json" in check.message
+
+
+def test_pre_live_readiness_reports_latest_operator_control_event_detail(tmp_path: Path) -> None:
+    module = _load_module()
+    module.REPO_ROOT = tmp_path  # type: ignore[attr-defined]
+    control_root = module.REPO_ROOT / "tmp" / "operator_controls"
+    control_root.mkdir(parents=True, exist_ok=True)
+    (control_root / "operator_control_events.jsonl").write_text(
+        '{"action":"RESUME","scope":"STRATEGY","strategy_code":"S21","occurred_at":"2026-07-21T09:05:00+05:30","actor":"bob","reason":"risk_clear","marker_path":"strategy_S21.pause.json"}\n',
+        encoding="utf-8",
+    )
+
+    check = module._operator_control_check()  # type: ignore[attr-defined]
+
+    assert check.status == "PASS"
+    assert "RESUME scope=STRATEGY strategy=S21" in check.message
+    assert "actor=bob" in check.message
+    assert "reason=risk_clear" in check.message
+    assert "marker=strategy_S21.pause.json" in check.message
 
 
 def test_pre_live_readiness_reports_runtime_guardrail_failure() -> None:
@@ -369,8 +411,224 @@ def test_pre_live_readiness_reports_runtime_reconciliation_failure() -> None:
     assert "terminal ledger row" in reconciliation_check.message
 
 
+def test_pre_live_readiness_reports_runtime_heartbeat_failure() -> None:
+    module = _load_module()
+    _stub_additive_runtime_checks(module)
+    module._paper_broker_runtime_check = lambda require_token: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_broker_runtime",
+        status="PASS",
+        message="mocked broker runtime readiness",
+    )
+    module._paper_live_state_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_live_state",
+        status="PASS",
+        message="mocked live-state readiness",
+    )
+    module._paper_runtime_guardrail_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_guardrails",
+        status="PASS",
+        message="paper runtime guardrails look good",
+    )
+    module._paper_runtime_heartbeat_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_heartbeat",
+        status="FAIL",
+        message="S23: latest supervisor heartbeat reports MARKET_DATA_UNAVAILABLE",
+    )
+    module._paper_order_routing_safety_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_order_routing_safety",
+        status="PASS",
+        message="paper order routing remains blocked",
+    )
+    module._paper_runtime_reconciliation_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_reconciliation",
+        status="PASS",
+        message="paper runtime reconciliation confirmed",
+    )
+    module._operator_control_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="operator_controls",
+        status="PASS",
+        message="no active operator pauses",
+    )
+
+    checks = module.run_checks(require_token=False)
+    heartbeat_check = next(
+        check for check in checks if check.name == "paper_runtime_heartbeat"
+    )
+
+    assert heartbeat_check.status == "FAIL"
+    assert "MARKET_DATA_UNAVAILABLE" in heartbeat_check.message
+
+
+def test_pre_live_readiness_allows_stale_prior_runtime_heartbeat_before_startup() -> None:
+    module = _load_module()
+    _stub_additive_runtime_checks(module)
+    module._paper_broker_runtime_check = lambda require_token: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_broker_runtime",
+        status="PASS",
+        message="mocked broker runtime readiness",
+    )
+    module._paper_live_state_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_live_state",
+        status="PASS",
+        message="mocked live-state readiness",
+    )
+    module._paper_runtime_guardrail_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_guardrails",
+        status="PASS",
+        message="paper runtime guardrails look good",
+    )
+    module._paper_runtime_heartbeat_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_heartbeat",
+        status="PASS",
+        message="Paper runtime heartbeat status acceptable: S23=>stale/heartbeats=1",
+    )
+    module._paper_order_routing_safety_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_order_routing_safety",
+        status="PASS",
+        message="paper order routing remains blocked",
+    )
+    module._paper_runtime_reconciliation_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_reconciliation",
+        status="PASS",
+        message="paper runtime reconciliation confirmed",
+    )
+    module._operator_control_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="operator_controls",
+        status="PASS",
+        message="no active operator pauses",
+    )
+
+    checks = module.run_checks(require_token=False)
+    heartbeat_check = next(
+        check for check in checks if check.name == "paper_runtime_heartbeat"
+    )
+
+    assert heartbeat_check.status == "PASS"
+    assert "stale/heartbeats=1" in heartbeat_check.message
+
+
+def test_paper_runtime_heartbeat_check_fails_only_degraded_or_unavailable(
+    monkeypatch,
+) -> None:
+    module = _load_module()
+    statuses = (
+        SimpleNamespace(
+            strategy_code="S23",
+            status="STALE",
+            heartbeat_count=1,
+            message="filesystem supervisor heartbeat is stale",
+        ),
+        SimpleNamespace(
+            strategy_code="S21",
+            status="DEGRADED",
+            heartbeat_count=1,
+            message="latest supervisor heartbeat reports MARKET_DATA_UNAVAILABLE",
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "load_paper_runtime_heartbeat_statuses",
+        lambda *_args, **_kwargs: statuses,
+    )
+
+    check = module._paper_runtime_heartbeat_check()  # type: ignore[attr-defined]
+
+    assert check.status == "FAIL"
+    assert "S21" in check.message
+    assert "MARKET_DATA_UNAVAILABLE" in check.message
+    assert "S23" not in check.message
+
+
+def test_paper_runtime_lifecycle_audit_check_fails_invalid_evidence(monkeypatch) -> None:
+    module = _load_module()
+    statuses = (
+        SimpleNamespace(
+            strategy_code="S23",
+            status="FAIL",
+            managed_state_count=1,
+            audit_state_count=0,
+            missing_audit_count=0,
+            stale_audit_count=0,
+            message="1 lifecycle supervisor audit file(s) are invalid",
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "load_paper_runtime_lifecycle_audit_statuses",
+        lambda *_args, **_kwargs: statuses,
+    )
+
+    check = module._paper_runtime_lifecycle_audit_check()  # type: ignore[attr-defined]
+
+    assert check.status == "FAIL"
+    assert "S23" in check.message
+    assert "invalid" in check.message
+
+
+def test_paper_runtime_lifecycle_audit_check_surfaces_attention_without_failing(monkeypatch) -> None:
+    module = _load_module()
+    statuses = (
+        SimpleNamespace(
+            strategy_code="S23",
+            status="ATTENTION",
+            managed_state_count=2,
+            audit_state_count=1,
+            missing_audit_count=1,
+            stale_audit_count=0,
+            message="lifecycle supervisor audit evidence needs attention",
+        ),
+        SimpleNamespace(
+            strategy_code="S21",
+            status="PASS",
+            managed_state_count=1,
+            audit_state_count=1,
+            missing_audit_count=0,
+            stale_audit_count=0,
+            message="lifecycle supervisor audit evidence present",
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "load_paper_runtime_lifecycle_audit_statuses",
+        lambda *_args, **_kwargs: statuses,
+    )
+
+    check = module._paper_runtime_lifecycle_audit_check()  # type: ignore[attr-defined]
+
+    assert check.status == "PASS"
+    assert "S23=>attention/managed=2/audited=1/missing=1/stale=0" in check.message
+    assert "S21=>pass/managed=1/audited=1/missing=0/stale=0" in check.message
+
+
+def test_paper_runtime_waiting_order_check_fails_stale_waiting_order(monkeypatch) -> None:
+    module = _load_module()
+    statuses = (
+        SimpleNamespace(
+            strategy_code="S21",
+            status="FAIL",
+            waiting_order_count=1,
+            current_session_waiting_order_count=0,
+            stale_waiting_order_count=1,
+            latest_stale_order_directory="state-dir",
+            message="1 stale waiting paper order(s) require finalizer or operator review before runtime start",
+        ),
+    )
+    monkeypatch.setattr(
+        module,
+        "load_paper_runtime_waiting_order_statuses",
+        lambda *_args, **_kwargs: statuses,
+    )
+
+    check = module._paper_runtime_waiting_order_check()  # type: ignore[attr-defined]
+
+    assert check.status == "FAIL"
+    assert "S21" in check.message
+    assert "state-dir" in check.message
+
+
 def test_pre_live_readiness_reports_fresh_entry_handoff_failure() -> None:
     module = _load_module()
+    _stub_additive_runtime_checks(module)
     module._paper_broker_runtime_check = lambda require_token: module.ReadinessCheck(  # type: ignore[attr-defined]
         name="paper_broker_runtime",
         status="PASS",
@@ -414,3 +672,14 @@ def test_pre_live_readiness_reports_fresh_entry_handoff_failure() -> None:
 
     assert handoff_check.status == "FAIL"
     assert "missing fresh-entry handoff evidence" in handoff_check.message
+
+
+def test_pre_live_readiness_reports_live_money_boundary() -> None:
+    module = _load_module()
+
+    check = module._live_money_boundary_check()  # type: ignore[attr-defined]
+
+    assert check.name == "live_money_boundary"
+    assert check.status == "PASS"
+    assert "routing remains disabled" in check.message
+    assert "operator approval" in check.message

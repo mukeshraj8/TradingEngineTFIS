@@ -75,6 +75,8 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     guardrail_script = _script_text("show_paper_runtime_guardrail_status.py")
     broker_health_script = _script_text("show_paper_runtime_broker_health_status.py")
     heartbeat_script = _script_text("show_paper_runtime_heartbeat_status.py")
+    lifecycle_audit_script = _script_text("show_paper_runtime_lifecycle_audit_status.py")
+    waiting_order_script = _script_text("show_paper_runtime_waiting_order_status.py")
     order_routing_script = _script_text("show_paper_runtime_order_routing_status.py")
     reconciliation_script = _script_text("show_paper_runtime_reconciliation_status.py")
     fresh_entry_handoff_script = _script_text("show_paper_runtime_fresh_entry_handoff_status.py")
@@ -85,9 +87,12 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert '[switch]$RequireToken' in status_script
     assert "TFIS RUNTIME STATUS" in status_script
     assert "function Test-TfisDashboardPortReady" in status_script
+    assert "function Get-TfisRestartRecoveryStatus" in status_script
     assert 'show_paper_runtime_guardrail_status.py' in status_script
     assert 'show_paper_runtime_broker_health_status.py' in status_script
     assert 'show_paper_runtime_heartbeat_status.py' in status_script
+    assert 'show_paper_runtime_lifecycle_audit_status.py' in status_script
+    assert 'show_paper_runtime_waiting_order_status.py' in status_script
     assert 'show_paper_runtime_order_routing_status.py' in status_script
     assert 'show_paper_runtime_reconciliation_status.py' in status_script
     assert 'show_paper_runtime_fresh_entry_handoff_status.py' in status_script
@@ -95,9 +100,20 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "BrokerHealth:" in status_script
     assert '$brokerHealthArgs += "--require-token"' in status_script
     assert "RuntimeHeartbeats:" in status_script
+    assert "LifecycleAudit:" in status_script
+    assert "WaitingOrders:" in status_script
+    assert "RestartRecoveryStatus:" in status_script
+    assert "READY_FOR_MORNING_STARTUP" in status_script
+    assert "ACTION_REQUIRED" in status_script
+    assert "resolve_stale_waiting_orders" in status_script
+    assert "start_or_recover_dashboard" in status_script
+    assert "start_shared_supervisor" in status_script
     assert "OrderRoutingSafety:" in status_script
     assert "RuntimeReconciliation:" in status_script
     assert "FreshEntryHandoffs:" in status_script
+    assert "actor=$(if ($latestEvent.actor)" in status_script
+    assert "reason=$(if ($latestEvent.reason)" in status_script
+    assert "marker=$(if ($latestEvent.marker_path)" in status_script
     assert "Get-TfisLatestOperatorControlEvent" in status_script
     assert "Get-TfisRuntimeProcesses -RepoRoot $repoRoot" in status_script
     assert "DashboardPortReady:" in status_script
@@ -111,6 +127,10 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "HeartbeatStatus:" in heartbeat_script
     assert "owner_id=" in heartbeat_script
     assert "state_directory=" in heartbeat_script
+    assert "load_paper_runtime_lifecycle_audit_statuses" in lifecycle_audit_script
+    assert "LifecycleAuditStatus:" in lifecycle_audit_script
+    assert "load_paper_runtime_waiting_order_statuses" in waiting_order_script
+    assert "WaitingOrderStatus:" in waiting_order_script
     assert "load_paper_runtime_order_routing_statuses" in order_routing_script
     assert "OrderRoutingStatus:" in order_routing_script
     assert "load_paper_runtime_reconciliation_statuses" in reconciliation_script
@@ -145,6 +165,54 @@ def test_reset_script_delegates_recovery_to_shared_supervisor() -> None:
     assert "Get-TfisLivePositionStateDirectories" not in script
     assert '[switch]$SkipRefresh' in supervisor_helper_script
     assert '$supervisorArgs += "-SkipRefresh"' in supervisor_helper_script
+
+
+def test_reset_script_supports_single_application_morning_startup() -> None:
+    script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
+
+    assert "[switch]$MorningStartup" in script
+    assert "[switch]$SkipAuthPreparation" in script
+    assert "TFIS APPLICATION MORNING STARTUP" in script
+    assert "Get-TfisMorningStartupWrapperPaths" in script
+    assert "wrapper_script_path" in script
+    assert "for wrapper in wrappers:" in script
+    assert "print(wrapper)" in script
+    assert "ConvertFrom-Json" not in script
+    assert "Invoke-TfisRuntimeAuthPreparation" in script
+    assert script.count("$pythonCode = @'") >= 2
+    assert "encoding='utf-8'" in script
+    assert "data.get('targets', [])" in script
+    assert "target.get('wrapper_script_path')" in script
+    assert "load_paper_lifecycle_supervisor_target_specs" in script
+    assert "prepare_paper_broker_runtime_environment" in script
+    assert "skip_refresh=False" in script
+    assert "print('Prepared TFIS broker runtime auth for provider=' + provider)" in script
+    assert "Invoke-TfisMorningStartupWrappers" in script
+    assert "$script:MorningWrapperFailures = @()" in script
+    assert "WARNING: TFIS morning startup wrapper failed with exit code" in script
+    assert "Invoke-TfisMorningStartupWrappers" in script
+    assert "$script:MorningWrapperFailures.Count" in script
+    assert "dashboard and shared supervisor startup were still attempted" in script
+    assert "-SkipRefresh" in script
+    assert "-DisablePositionWatch" in script
+    assert "morning startup will not stop them automatically" in script
+    startup_body = script.split("$resetStopwatch", maxsplit=1)[1]
+    assert startup_body.index("Invoke-TfisRuntimeAuthPreparation") < startup_body.index(
+        'scripts/build_operator_dashboard.py'
+    )
+
+
+def test_reset_script_blocks_unforced_full_reset_during_market_session() -> None:
+    script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
+
+    assert "[switch]$ForceInMarketReset" in script
+    assert "[string]$TradingHolidayCalendar" in script
+    assert '. $tradingCalendarHelperPath' in script
+    assert "function Test-TfisMarketSessionActive" in script
+    assert 'TimeSpan]::Parse("09:15:00")' in script
+    assert 'TimeSpan]::Parse("15:30:00")' in script
+    assert "Refusing full TFIS runtime reset during the active market session without -ForceInMarketReset" in script
+    assert "refresh_tfis_operator_dashboard.ps1" in script
 
 
 def test_refresh_script_rebuilds_dashboard_without_stopping_runtime() -> None:

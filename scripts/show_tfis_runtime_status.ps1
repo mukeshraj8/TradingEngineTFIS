@@ -44,6 +44,47 @@ function Test-TfisDashboardPortReady {
     return $false
 }
 
+function Get-TfisRestartRecoveryStatus {
+    param(
+        [bool]$DashboardReady,
+        [int]$DashboardProcessCount,
+        [int]$SupervisorProcessCount,
+        [int]$OtherProcessCount,
+        [bool]$WaitingOrderFailure
+    )
+
+    $pending = @()
+    if ($WaitingOrderFailure) {
+        $pending += "resolve_stale_waiting_orders"
+    }
+    if (-not $DashboardReady) {
+        $pending += "start_or_recover_dashboard"
+    }
+    if ($SupervisorProcessCount -eq 0) {
+        $pending += "start_shared_supervisor"
+    }
+    if (($DashboardProcessCount -eq 0) -and ($SupervisorProcessCount -eq 0) -and ($OtherProcessCount -eq 0) -and (-not $DashboardReady)) {
+        $status = "READY_FOR_MORNING_STARTUP"
+        $pending = @("run_morning_startup")
+        $message = "TFIS appears stopped; run reset_tfis_dashboard_and_watchers.ps1 -MorningStartup for the scheduled app startup path."
+    }
+    elseif ($pending.Count -gt 0) {
+        $status = "ACTION_REQUIRED"
+        $message = "TFIS runtime is partially available; review pending action(s): $($pending -join ', ')."
+    }
+    else {
+        $status = "RUNNING"
+        $pending = @("none")
+        $message = "Dashboard and shared supervisor are visible, and no stale waiting-order recovery action is pending."
+    }
+
+    return [PSCustomObject]@{
+        Status = $status
+        PendingActions = $pending
+        Message = $message
+    }
+}
+
 Write-Host "============================================"
 Write-Host "TFIS RUNTIME STATUS"
 Write-Host "This window belongs to TradingEngineTFIS only."
@@ -67,20 +108,24 @@ $otherProcesses = @(
         $_.CommandLine -notmatch "run_tfis_paper_lifecycle_supervisor\.py|start_tfis_paper_lifecycle_supervisor\.ps1"
     }
 )
+$dashboardReady = Test-TfisDashboardPortReady -Port $DashboardPort
 
 Write-Host "RepoRoot: $repoRoot"
 Write-Host "TfisRoot: $TfisRoot"
 Write-Host "GlobalPause: $(if (Test-Path $globalPausePath) { 'YES' } else { 'NO' })"
 Write-Host "PausedStrategies: $(if ($pausedStrategies.Count -gt 0) { $pausedStrategies -join ', ' } else { 'none' })"
-Write-Host "DashboardPortReady: $(if (Test-TfisDashboardPortReady -Port $DashboardPort) { 'YES' } else { 'NO' })"
+Write-Host "DashboardPortReady: $(if ($dashboardReady) { 'YES' } else { 'NO' })"
 
 $pythonExe = Join-Path $repoRoot ".venv\Scripts\python.exe"
 $guardrailScript = Join-Path $scriptDir "show_paper_runtime_guardrail_status.py"
 $brokerHealthScript = Join-Path $scriptDir "show_paper_runtime_broker_health_status.py"
 $heartbeatScript = Join-Path $scriptDir "show_paper_runtime_heartbeat_status.py"
+$lifecycleAuditScript = Join-Path $scriptDir "show_paper_runtime_lifecycle_audit_status.py"
+$waitingOrderScript = Join-Path $scriptDir "show_paper_runtime_waiting_order_status.py"
 $orderRoutingScript = Join-Path $scriptDir "show_paper_runtime_order_routing_status.py"
 $reconciliationScript = Join-Path $scriptDir "show_paper_runtime_reconciliation_status.py"
 $freshEntryHandoffScript = Join-Path $scriptDir "show_paper_runtime_fresh_entry_handoff_status.py"
+$waitingOrderLines = @()
 if ((Test-Path $pythonExe) -and (Test-Path $guardrailScript)) {
     try {
         $guardrailLines = & $pythonExe $guardrailScript 2>$null
@@ -143,6 +188,58 @@ else {
     Write-Host "RuntimeHeartbeats: unavailable"
 }
 
+if ((Test-Path $pythonExe) -and (Test-Path $lifecycleAuditScript)) {
+    try {
+        $lifecycleAuditLines = & $pythonExe $lifecycleAuditScript 2>$null
+        if ($lifecycleAuditLines) {
+            Write-Host "LifecycleAudit:"
+            foreach ($line in $lifecycleAuditLines) {
+                if (-not [string]::IsNullOrWhiteSpace($line)) {
+                    Write-Host (" - {0}" -f $line)
+                }
+            }
+        }
+    }
+    catch {
+        Write-Host "LifecycleAudit: unavailable"
+    }
+}
+else {
+    Write-Host "LifecycleAudit: unavailable"
+}
+
+if ((Test-Path $pythonExe) -and (Test-Path $waitingOrderScript)) {
+    try {
+        $waitingOrderLines = & $pythonExe $waitingOrderScript 2>$null
+        if ($waitingOrderLines) {
+            Write-Host "WaitingOrders:"
+            foreach ($line in $waitingOrderLines) {
+                if (-not [string]::IsNullOrWhiteSpace($line)) {
+                    Write-Host (" - {0}" -f $line)
+                }
+            }
+        }
+    }
+    catch {
+        Write-Host "WaitingOrders: unavailable"
+    }
+}
+else {
+    Write-Host "WaitingOrders: unavailable"
+}
+
+$waitingOrderFailure = @($waitingOrderLines | Where-Object { $_ -match "status=FAIL" }).Count -gt 0
+$restartRecoveryStatus = Get-TfisRestartRecoveryStatus `
+    -DashboardReady:$dashboardReady `
+    -DashboardProcessCount $dashboardProcesses.Count `
+    -SupervisorProcessCount $supervisorProcesses.Count `
+    -OtherProcessCount $otherProcesses.Count `
+    -WaitingOrderFailure:$waitingOrderFailure
+Write-Host ("RestartRecoveryStatus: status={0} pending={1} message={2}" -f `
+    $restartRecoveryStatus.Status, `
+    ($restartRecoveryStatus.PendingActions -join ","), `
+    $restartRecoveryStatus.Message)
+
 if ((Test-Path $pythonExe) -and (Test-Path $orderRoutingScript)) {
     try {
         $routingLines = & $pythonExe $orderRoutingScript 2>$null
@@ -204,7 +301,16 @@ else {
 }
 
 if ($null -ne $latestEvent) {
-    Write-Host "LatestControlEvent: $($latestEvent.action) scope=$($latestEvent.scope) strategy=$($latestEvent.strategy_code) at=$($latestEvent.occurred_at)"
+    $latestControlParts = @(
+        "$($latestEvent.action)",
+        "scope=$($latestEvent.scope)",
+        "strategy=$(if ($latestEvent.strategy_code) { $latestEvent.strategy_code } else { 'ALL' })",
+        "at=$($latestEvent.occurred_at)",
+        "actor=$(if ($latestEvent.actor) { $latestEvent.actor } else { 'unknown' })",
+        "reason=$(if ($latestEvent.reason) { $latestEvent.reason } else { 'n/a' })",
+        "marker=$(if ($latestEvent.marker_path) { $latestEvent.marker_path } else { 'n/a' })"
+    )
+    Write-Host "LatestControlEvent: $($latestControlParts -join ' ')"
 }
 else {
     Write-Host "LatestControlEvent: none"

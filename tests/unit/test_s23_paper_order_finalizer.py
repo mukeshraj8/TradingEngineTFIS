@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import importlib.util
+import json
+import sys
 from datetime import date, datetime, time
 from pathlib import Path
 
@@ -9,6 +12,20 @@ from tfis.paper import (
     S23PaperOrderStateStore,
     S23PaperOrderStatus,
 )
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+def _load_finalizer_script():
+    script_path = REPO_ROOT / "scripts" / "finalize_s23_pending_paper_orders.py"
+    spec = importlib.util.spec_from_file_location("finalize_s23_pending_paper_orders", script_path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_finalizer_marks_same_session_waiting_order_after_cutoff(tmp_path: Path) -> None:
@@ -99,6 +116,114 @@ def test_finalizer_dry_run_does_not_modify_state(tmp_path: Path) -> None:
     assert summary.decisions[0].action == "WOULD_FINALIZE"
     assert store.load_state(order_dir).status is S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER
     assert not (order_dir / "paper_order_events.jsonl").exists()
+
+
+def test_finalizer_cli_sweeps_all_targets_from_shared_config(
+    tmp_path: Path,
+    capsys,
+    monkeypatch,
+) -> None:
+    module = _load_finalizer_script()
+    monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
+    s23_root = tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision"
+    s21_root = tmp_path / "data" / "strategies" / "S21" / "fyers_morning_supervised_decision"
+    store = S23PaperOrderStateStore()
+    store.save_state(
+        s23_root / "2026-06-29" / "s23-session" / "BEAR_PUT",
+        _waiting_order(entry_date=date(2026, 6, 29)),
+    )
+    store.save_state(
+        s21_root / "2026-06-29" / "s21-session" / "BEAR_CALL",
+        _waiting_order(entry_date=date(2026, 6, 29)),
+    )
+    targets_config = tmp_path / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    targets_config.parent.mkdir(parents=True)
+    targets_config.write_text(
+        "\n".join(
+            [
+                "targets:",
+                "  - strategy_code: S23",
+                "    config_path: config/paper.s23.fyers_connect_test.yaml",
+                "    artifact_root: data/strategies/S23/fyers_morning_supervised_decision",
+                "    process_lock_root: tmp/process_locks/s23_paper_watch",
+                "    strategy_path: config/strategies/S23",
+                "    reference_packet_path: config/reference_packets/s23.json",
+                "    session_id_prefix: s23-fyers-morning-supervised-decision",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s23.py",
+                "    wrapper_script_path: scripts/start_s23.ps1",
+                "  - strategy_code: S21",
+                "    config_path: config/paper.s21.fyers_connect_test.yaml",
+                "    artifact_root: data/strategies/S21/fyers_morning_supervised_decision",
+                "    process_lock_root: tmp/process_locks/s21_paper_watch",
+                "    strategy_path: config/strategies/S21",
+                "    reference_packet_path: config/reference_packets/s21.json",
+                "    session_id_prefix: s21-fyers-morning-supervised-decision",
+                "    executor: paper_morning_supervised",
+                "    runner_script_path: scripts/run_s21.py",
+                "    wrapper_script_path: scripts/start_s21.ps1",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = module.main(
+        [
+            "--targets-config",
+            str(targets_config),
+            "--session-date",
+            "2026-06-29",
+            "--allow-before-cutoff",
+            "--dry-run",
+            "--json",
+        ]
+    )
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["summary_count"] == 2
+    assert payload["total_scanned_count"] == 2
+    assert payload["total_finalized_count"] == 2
+    assert {Path(item["artifact_root"]).name for item in payload["summaries"]} == {
+        "fyers_morning_supervised_decision"
+    }
+
+
+def test_finalizer_cli_dashboard_fallback_uses_resolved_artifact_root(
+    tmp_path: Path,
+    capsys,
+    monkeypatch,
+) -> None:
+    module = _load_finalizer_script()
+    monkeypatch.setattr(module, "REPO_ROOT", tmp_path)
+    captured = {}
+
+    class FakeDashboardBuilder:
+        def __init__(self, *, strategy_configs):
+            captured["strategy_configs"] = strategy_configs
+
+        def build(self, *, output_root):
+            captured["output_root"] = output_root
+            return type("Result", (), {"strategy_pages": {"S23": output_root / "strategies" / "S23"}})()
+
+    monkeypatch.setattr(module, "TfisOperatorDashboardBuilder", FakeDashboardBuilder)
+
+    exit_code = module.main(
+        [
+            "--artifact-root",
+            "data/custom_strategy_root",
+            "--session-date",
+            "2026-06-29",
+            "--allow-before-cutoff",
+            "--rebuild-dashboard",
+        ]
+    )
+
+    assert exit_code == 0
+    strategy_config = captured["strategy_configs"][0]
+    assert strategy_config.artifact_root == tmp_path / "data" / "custom_strategy_root"
+    assert captured["output_root"] == tmp_path / "tmp" / "operator_dashboard"
+    assert "Dashboard rebuilt: S23=" in capsys.readouterr().out
 
 
 def _waiting_order(*, entry_date: date) -> S23PaperOrderState:

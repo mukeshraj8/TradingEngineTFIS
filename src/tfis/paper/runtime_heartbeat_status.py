@@ -21,6 +21,8 @@ class PaperRuntimeHeartbeatStatus:
     latest_owner_id: str | None
     latest_state_directory: str | None
     latest_selected_contract_symbol: str | None
+    latest_runtime_status: str | None
+    latest_reason_code: str | None
     latest_supervisor_pid: int | None
     age_seconds: float | None
     message: str
@@ -57,6 +59,8 @@ def load_paper_runtime_heartbeat_statuses(
                     latest_owner_id=None,
                     latest_state_directory=None,
                     latest_selected_contract_symbol=None,
+                    latest_runtime_status=None,
+                    latest_reason_code=None,
                     latest_supervisor_pid=None,
                     age_seconds=None,
                     message=f"{type(exc).__name__}: {exc}",
@@ -84,6 +88,8 @@ def _load_strategy_runtime_heartbeat_status(
             latest_owner_id=None,
             latest_state_directory=None,
             latest_selected_contract_symbol=None,
+            latest_runtime_status=None,
+            latest_reason_code=None,
             latest_supervisor_pid=None,
             age_seconds=None,
             message="live-state heartbeat monitoring is disabled by configuration",
@@ -100,6 +106,8 @@ def _load_strategy_runtime_heartbeat_status(
             latest_owner_id=None,
             latest_state_directory=None,
             latest_selected_contract_symbol=None,
+            latest_runtime_status=None,
+            latest_reason_code=None,
             latest_supervisor_pid=None,
             age_seconds=None,
             message=f"heartbeat inspection is only available for filesystem live-state backends, not {provider}",
@@ -118,6 +126,8 @@ def _load_strategy_runtime_heartbeat_status(
             latest_owner_id=None,
             latest_state_directory=None,
             latest_selected_contract_symbol=None,
+            latest_runtime_status=None,
+            latest_reason_code=None,
             latest_supervisor_pid=None,
             age_seconds=None,
             message="no filesystem supervisor heartbeat has been persisted yet",
@@ -131,7 +141,12 @@ def _load_strategy_runtime_heartbeat_status(
     if latest_dt is not None:
         now = datetime.now(latest_dt.tzinfo or UTC)
         age_seconds = max(0.0, (now - latest_dt).total_seconds())
-    status = "OK" if age_seconds is not None and age_seconds <= stale_after_seconds else "STALE"
+    latest_runtime_status = _string_or_none(latest.get("status"))
+    latest_reason_code = _string_or_none(latest.get("reason_code"))
+    if latest_runtime_status == "MARKET_DATA_UNAVAILABLE":
+        status = "DEGRADED"
+    else:
+        status = "OK" if age_seconds is not None and age_seconds <= stale_after_seconds else "STALE"
     latest_pid = None
     try:
         raw_pid = latest.get("supervisor_pid")
@@ -149,12 +164,14 @@ def _load_strategy_runtime_heartbeat_status(
         latest_owner_id=_string_or_none(latest.get("owner_id")),
         latest_state_directory=_string_or_none(latest.get("state_directory")),
         latest_selected_contract_symbol=_string_or_none(latest.get("selected_contract_symbol")),
+        latest_runtime_status=latest_runtime_status,
+        latest_reason_code=latest_reason_code,
         latest_supervisor_pid=latest_pid,
         age_seconds=age_seconds,
-        message=(
-            "filesystem supervisor heartbeat is fresh"
-            if status == "OK"
-            else "filesystem supervisor heartbeat is stale"
+        message=_heartbeat_status_message(
+            status=status,
+            latest_runtime_status=latest_runtime_status,
+            latest_reason_code=latest_reason_code,
         ),
     )
 
@@ -199,6 +216,20 @@ def _parse_datetime(value: object) -> datetime | None:
 def _string_or_none(value: object) -> str | None:
     text = str(value or "").strip()
     return text or None
+
+
+def _heartbeat_status_message(
+    *,
+    status: str,
+    latest_runtime_status: str | None,
+    latest_reason_code: str | None,
+) -> str:
+    if status == "DEGRADED":
+        suffix = f" reason={latest_reason_code}" if latest_reason_code else ""
+        return f"latest supervisor heartbeat reports {latest_runtime_status}{suffix}"
+    if status == "OK":
+        return "filesystem supervisor heartbeat is fresh"
+    return "filesystem supervisor heartbeat is stale"
 
 
 __all__ = [

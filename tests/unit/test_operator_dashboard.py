@@ -1238,6 +1238,12 @@ def test_dashboard_surfaces_operator_control_and_stream_alerts(tmp_path: Path) -
     trades_html = result.trades_page.read_text(encoding="utf-8")
 
     assert "Operator Status" in trades_html
+    assert "operator-health-strip" in trades_html
+    assert "operator-status-groups" in trades_html
+    assert "operator-diagnostics" in trades_html
+    assert "<summary>Diagnostics</summary>" in trades_html
+    assert "Market Streams" in trades_html
+    assert "Evidence" in trades_html
     assert "GLOBAL_PAUSE" in trades_html
     assert "Paused Strategies" in trades_html
     assert "Paper Guardrails" in trades_html
@@ -1252,7 +1258,9 @@ def test_dashboard_surfaces_operator_control_and_stream_alerts(tmp_path: Path) -
     assert "Latest Control Event" in trades_html
     assert "PAUSE 2026-07-21T09:32:00+05:30" in trades_html
     assert "tfis-paper-lifecycle-supervisor:s23:1234" in trades_html
+    assert 'title="tfis-paper-lifecycle-supervisor:s23:1234"' in trades_html
     assert str(s23_branch_dir) in trades_html
+    assert f'title="{str(s23_branch_dir)}"' in trades_html
     assert "S23" in trades_html
     assert "No Stream Rows" in trades_html
     assert "Global TFIS paper supervision is paused" in trades_html
@@ -1289,6 +1297,44 @@ def test_operator_status_panel_flags_fresh_entry_handoff_failure(tmp_path: Path)
     assert "FAIL" in html
     assert "Fresh-entry handoff evidence failure detected." in html
     assert "missing fresh-entry handoff evidence for trade-1@BRANCH" in html
+
+
+def test_operator_status_panel_flags_degraded_market_data_heartbeat(tmp_path: Path) -> None:
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    builder._runtime_guardrail_statuses = []
+    builder._runtime_order_routing_statuses = []
+    builder._runtime_heartbeat_statuses = [
+        SimpleNamespace(
+            strategy_code="S23",
+            status="DEGRADED",
+            latest_timestamp="2026-07-22T10:00:00+05:30",
+            latest_owner_id="tfis-paper-lifecycle-supervisor:s23:1234",
+            latest_state_directory=str(tmp_path / "state"),
+            message=(
+                "latest supervisor heartbeat reports MARKET_DATA_UNAVAILABLE "
+                "reason=selected_contract_event_fetch_failed"
+            ),
+        )
+    ]
+    builder._runtime_reconciliation_statuses = []
+    builder._runtime_fresh_entry_handoff_statuses = []
+    builder._latest_operator_control_event = None
+    builder._runtime_control_state = SimpleNamespace(
+        global_pause_active=False,
+        paused_strategies=frozenset(),
+    )
+
+    html = builder._render_operator_status_panel(
+        title="Operator Status",
+        rows=[],
+        strategy_code="S23",
+    )
+
+    assert "Runtime Heartbeats" in html
+    assert "DEGRADED" in html
+    assert "Runtime heartbeat attention required." in html
+    assert "MARKET_DATA_UNAVAILABLE" in html
+    assert "selected_contract_event_fetch_failed" in html
 
 
 def test_trade_followup_note_includes_fresh_decision_handoff_status(tmp_path: Path) -> None:

@@ -22,8 +22,12 @@ from tfis.paper import (
     load_paper_broker_runtime,
     load_paper_runtime_fresh_entry_handoff_statuses,
     load_paper_runtime_guardrail_statuses,
+    load_paper_runtime_heartbeat_statuses,
+    load_paper_runtime_lifecycle_audit_statuses,
+    load_live_money_boundary_status,
     load_paper_runtime_order_routing_statuses,
     load_paper_runtime_reconciliation_statuses,
+    load_paper_runtime_waiting_order_statuses,
     load_paper_lifecycle_supervisor_target_specs,
     prepare_paper_broker_runtime_environment,
 )
@@ -85,7 +89,11 @@ def run_checks(*, require_token: bool, probe_broker_health: bool = False) -> tup
         _paper_lifecycle_supervisor_config_check(),
         _paper_broker_runtime_check(require_token=require_token),
         _paper_runtime_guardrail_check(),
+        _paper_runtime_heartbeat_check(),
+        _paper_runtime_lifecycle_audit_check(),
+        _paper_runtime_waiting_order_check(),
         _paper_order_routing_safety_check(),
+        _live_money_boundary_check(),
         _paper_runtime_reconciliation_check(),
         _paper_runtime_fresh_entry_handoff_check(),
         _paper_live_state_check(),
@@ -263,11 +271,7 @@ def _operator_control_check() -> ReadinessCheck:
     state = load_paper_runtime_control_state_from_root(control_root)
     latest_event = load_latest_operator_control_event_from_root(control_root)
     if state.global_pause_active:
-        latest_detail = (
-            f" Latest control event: {latest_event.action} at {latest_event.occurred_at}."
-            if latest_event is not None
-            else ""
-        )
+        latest_detail = _operator_control_event_detail(latest_event)
         return ReadinessCheck(
             name="operator_controls",
             status="FAIL",
@@ -279,11 +283,7 @@ def _operator_control_check() -> ReadinessCheck:
         )
     if state.paused_strategies:
         paused = ", ".join(sorted(state.paused_strategies))
-        latest_detail = (
-            f" Latest control event: {latest_event.action} at {latest_event.occurred_at}."
-            if latest_event is not None
-            else ""
-        )
+        latest_detail = _operator_control_event_detail(latest_event)
         return ReadinessCheck(
             name="operator_controls",
             status="FAIL",
@@ -299,15 +299,37 @@ def _operator_control_check() -> ReadinessCheck:
             status="PASS",
             message="No TFIS pause markers are active, and no operator-control events are recorded yet.",
         )
-    strategy_suffix = f" strategy={latest_event.strategy_code}" if latest_event.strategy_code else ""
     return ReadinessCheck(
         name="operator_controls",
         status="PASS",
         message=(
             "No TFIS pause markers are active. Latest operator-control event: "
-            f"{latest_event.action}{strategy_suffix} at {latest_event.occurred_at}."
+            f"{_operator_control_event_summary(latest_event)}."
         ),
     )
+
+
+def _operator_control_event_detail(latest_event) -> str:
+    if latest_event is None:
+        return ""
+    return f" Latest control event: {_operator_control_event_summary(latest_event)}."
+
+
+def _operator_control_event_summary(latest_event) -> str:
+    parts = [
+        latest_event.action,
+        f"scope={latest_event.scope}",
+    ]
+    if latest_event.strategy_code:
+        parts.append(f"strategy={latest_event.strategy_code}")
+    parts.append(f"at={latest_event.occurred_at}")
+    if latest_event.actor:
+        parts.append(f"actor={latest_event.actor}")
+    if latest_event.reason:
+        parts.append(f"reason={latest_event.reason}")
+    if latest_event.marker_path:
+        parts.append(f"marker={latest_event.marker_path}")
+    return " ".join(parts)
 
 
 def _paper_broker_runtime_check(*, require_token: bool) -> ReadinessCheck:
@@ -425,6 +447,105 @@ def _paper_runtime_guardrail_check() -> ReadinessCheck:
     )
 
 
+def _paper_runtime_heartbeat_check() -> ReadinessCheck:
+    config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    try:
+        statuses = load_paper_runtime_heartbeat_statuses(config_path, repo_root=REPO_ROOT)
+    except Exception as exc:
+        return ReadinessCheck(
+            name="paper_runtime_heartbeat",
+            status="FAIL",
+            message=f"Paper runtime heartbeat check could not load target config: {exc}",
+        )
+    failures = [
+        item
+        for item in statuses
+        if item.status in {"DEGRADED", "UNAVAILABLE"}
+    ]
+    if failures:
+        return ReadinessCheck(
+            name="paper_runtime_heartbeat",
+            status="FAIL",
+            message="; ".join(f"{item.strategy_code}: {item.message}" for item in failures),
+        )
+    summaries = [
+        f"{item.strategy_code}=>{item.status.lower()}/heartbeats={item.heartbeat_count}"
+        for item in statuses
+    ]
+    return ReadinessCheck(
+        name="paper_runtime_heartbeat",
+        status="PASS",
+        message="Paper runtime heartbeat status acceptable: " + ", ".join(summaries),
+    )
+
+
+def _paper_runtime_lifecycle_audit_check() -> ReadinessCheck:
+    config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    try:
+        statuses = load_paper_runtime_lifecycle_audit_statuses(config_path, repo_root=REPO_ROOT)
+    except Exception as exc:
+        return ReadinessCheck(
+            name="paper_runtime_lifecycle_audit",
+            status="FAIL",
+            message=f"Paper lifecycle audit check could not load target config: {exc}",
+        )
+    failures = [item for item in statuses if item.status == "FAIL"]
+    if failures:
+        return ReadinessCheck(
+            name="paper_runtime_lifecycle_audit",
+            status="FAIL",
+            message="; ".join(f"{item.strategy_code}: {item.message}" for item in failures),
+        )
+    summaries = [
+        f"{item.strategy_code}=>{item.status.lower()}/"
+        f"managed={item.managed_state_count}/audited={item.audit_state_count}/"
+        f"missing={item.missing_audit_count}/stale={item.stale_audit_count}"
+        for item in statuses
+    ]
+    return ReadinessCheck(
+        name="paper_runtime_lifecycle_audit",
+        status="PASS",
+        message="Paper lifecycle audit evidence visible: " + ", ".join(summaries),
+    )
+
+
+def _paper_runtime_waiting_order_check() -> ReadinessCheck:
+    config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    try:
+        statuses = load_paper_runtime_waiting_order_statuses(config_path, repo_root=REPO_ROOT)
+    except Exception as exc:
+        return ReadinessCheck(
+            name="paper_runtime_waiting_orders",
+            status="FAIL",
+            message=f"Paper waiting-order check could not load target config: {exc}",
+        )
+    failures: list[str] = []
+    summaries: list[str] = []
+    for status in statuses:
+        if status.status != "PASS":
+            failures.append(
+                f"{status.strategy_code}: {status.message}; "
+                f"latest={status.latest_stale_order_directory or 'n/a'}"
+            )
+            continue
+        summaries.append(
+            f"{status.strategy_code}=>waiting={status.waiting_order_count}/"
+            f"current={status.current_session_waiting_order_count}/"
+            f"stale={status.stale_waiting_order_count}"
+        )
+    if failures:
+        return ReadinessCheck(
+            name="paper_runtime_waiting_orders",
+            status="FAIL",
+            message="; ".join(failures),
+        )
+    return ReadinessCheck(
+        name="paper_runtime_waiting_orders",
+        status="PASS",
+        message="No stale paper waiting orders found: " + ", ".join(summaries),
+    )
+
+
 def _paper_order_routing_safety_check() -> ReadinessCheck:
     config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
     try:
@@ -456,6 +577,26 @@ def _paper_order_routing_safety_check() -> ReadinessCheck:
     )
 
 
+def _live_money_boundary_check() -> ReadinessCheck:
+    status = load_live_money_boundary_status()
+    if status.order_routing_enabled or status.live_money_ready:
+        return ReadinessCheck(
+            name="live_money_boundary",
+            status="FAIL",
+            message=(
+                "Live-money boundary drifted unexpectedly: "
+                f"status={status.status} "
+                f"live_money_ready={status.live_money_ready} "
+                f"order_routing_enabled={status.order_routing_enabled}"
+            ),
+        )
+    return ReadinessCheck(
+        name="live_money_boundary",
+        status="PASS",
+        message=status.message,
+    )
+
+
 def _paper_runtime_reconciliation_check() -> ReadinessCheck:
     config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
     try:
@@ -474,7 +615,8 @@ def _paper_runtime_reconciliation_check() -> ReadinessCheck:
             failures.append(f"{status.strategy_code}: {status.message}")
             continue
         summaries.append(
-            f"{status.strategy_code}=>{status.status.lower()}/states={status.persisted_state_count}"
+            f"{status.strategy_code}=>{status.status.lower()}/"
+            f"positions={status.persisted_state_count}/orders={status.persisted_order_state_count}"
         )
     if failures:
         return ReadinessCheck(

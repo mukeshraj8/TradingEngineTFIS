@@ -16,18 +16,34 @@ if str(SRC_ROOT) not in sys.path:
 
 from tfis.dashboard import StrategyDashboardConfig, TfisOperatorDashboardBuilder
 from tfis.dashboard.config_loader import load_dashboard_strategy_configs
-from tfis.paper import PaperOrderFinalizer, PaperOrderFinalizerSummary
+from tfis.paper import (
+    PaperOrderFinalizer,
+    PaperOrderFinalizerSummary,
+    load_paper_lifecycle_supervisor_target_specs,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
-            "Finalize stale S23 waiting paper orders after the entry-session "
+            "Finalize stale TFIS waiting paper orders after the entry-session "
             "cutoff. This is a safety net for watcher crashes; it never fills "
             "orders and never calls a broker."
         )
     )
-    parser.add_argument("--artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
+    parser.add_argument(
+        "--artifact-root",
+        action="append",
+        default=None,
+        help=(
+            "Artifact root to sweep. Repeat for multiple strategies. "
+            "Defaults to the legacy S23 root unless --targets-config is supplied."
+        ),
+    )
+    parser.add_argument(
+        "--targets-config",
+        help="Shared lifecycle supervisor targets config whose artifact roots should be swept.",
+    )
     parser.add_argument("--session-date", help="YYYY-MM-DD. Defaults to current date in --timezone.")
     parser.add_argument("--timezone", default="Asia/Kolkata")
     parser.add_argument("--cutoff", default="15:30", help="HH:MM local cutoff.")
@@ -54,19 +70,23 @@ def main(argv: list[str] | None = None) -> int:
     timezone = ZoneInfo(args.timezone)
     session_date = date.fromisoformat(args.session_date) if args.session_date else datetime.now(timezone).date()
     marked_at = datetime.now(timezone)
-    summary = PaperOrderFinalizer().finalize(
-        REPO_ROOT / args.artifact_root,
-        session_date=session_date,
-        marked_at=marked_at,
-        cutoff_time=_parse_hhmm(args.cutoff),
-        include_prior_sessions=args.include_prior_sessions,
-        allow_before_cutoff=args.allow_before_cutoff,
-        dry_run=args.dry_run,
+    summaries = tuple(
+        PaperOrderFinalizer().finalize(
+            root,
+            session_date=session_date,
+            marked_at=marked_at,
+            cutoff_time=_parse_hhmm(args.cutoff),
+            include_prior_sessions=args.include_prior_sessions,
+            allow_before_cutoff=args.allow_before_cutoff,
+            dry_run=args.dry_run,
+        )
+        for root in _artifact_roots_from_args(args)
     )
     if args.json:
-        print(_summary_json(summary))
+        print(_summaries_json(summaries))
     else:
-        _print_summary(summary)
+        for summary in summaries:
+            _print_summary(summary)
     if args.rebuild_dashboard and not args.dry_run:
         dashboard_config_path = REPO_ROOT / "config" / "operator_dashboard_strategies.yaml"
         if dashboard_config_path.exists():
@@ -75,11 +95,12 @@ def main(argv: list[str] | None = None) -> int:
                 repo_root=REPO_ROOT,
             )
         else:
+            fallback_artifact_root = _artifact_roots_from_args(args)[0]
             strategy_configs = (
                 StrategyDashboardConfig(
                     strategy_code="S23",
                     display_name="S23 Operator Dashboard",
-                    artifact_root=REPO_ROOT / args.artifact_root,
+                    artifact_root=fallback_artifact_root,
                     strategy_path=REPO_ROOT / args.s23_strategy_path,
                     reference_packet_path=REPO_ROOT / args.s23_reference_packet,
                     session_id_prefix=args.session_id_prefix,
@@ -88,8 +109,41 @@ def main(argv: list[str] | None = None) -> int:
         result = TfisOperatorDashboardBuilder(
             strategy_configs=strategy_configs,
         ).build(output_root=REPO_ROOT / args.dashboard_output_root)
-        print(f"Dashboard rebuilt: {result.strategy_pages['S23']}")
+        rebuilt_pages = ", ".join(
+            f"{strategy}={path}" for strategy, path in sorted(result.strategy_pages.items())
+        )
+        print(f"Dashboard rebuilt: {rebuilt_pages}")
     return 0
+
+
+def _artifact_roots_from_args(args: argparse.Namespace) -> tuple[Path, ...]:
+    roots: list[Path] = []
+    if args.targets_config:
+        targets_config = _resolve_repo_path(args.targets_config)
+        for spec in load_paper_lifecycle_supervisor_target_specs(
+            targets_config,
+            repo_root=REPO_ROOT,
+        ):
+            roots.append(spec.artifact_root)
+    for artifact_root in args.artifact_root or ():
+        roots.append(_resolve_repo_path(artifact_root))
+    if not roots:
+        roots.append(REPO_ROOT / "data/strategies/S23/fyers_morning_supervised_decision")
+    deduped: list[Path] = []
+    seen: set[Path] = set()
+    for root in roots:
+        resolved = root.resolve()
+        if resolved not in seen:
+            deduped.append(resolved)
+            seen.add(resolved)
+    return tuple(deduped)
+
+
+def _resolve_repo_path(path_text: str) -> Path:
+    path = Path(path_text)
+    if path.is_absolute():
+        return path
+    return REPO_ROOT / path
 
 
 def _parse_hhmm(value: str) -> time:
@@ -100,8 +154,14 @@ def _parse_hhmm(value: str) -> time:
         raise argparse.ArgumentTypeError("--cutoff must be HH:MM") from exc
 
 
-def _summary_json(summary: PaperOrderFinalizerSummary) -> str:
-    payload = asdict(summary)
+def _summaries_json(summaries: tuple[PaperOrderFinalizerSummary, ...]) -> str:
+    payload = {
+        "summary_count": len(summaries),
+        "total_scanned_count": sum(summary.scanned_count for summary in summaries),
+        "total_finalized_count": sum(summary.finalized_count for summary in summaries),
+        "total_skipped_count": sum(summary.skipped_count for summary in summaries),
+        "summaries": [asdict(summary) for summary in summaries],
+    }
     return json.dumps(_normalize(payload), indent=2, sort_keys=True)
 
 
@@ -119,7 +179,7 @@ def _normalize(value):
 
 def _print_summary(summary: PaperOrderFinalizerSummary) -> None:
     mode = "DRY RUN" if summary.dry_run else "APPLIED"
-    print("TFIS S23 paper order finalizer")
+    print("TFIS paper order finalizer")
     print(f"Mode       : {mode}")
     print(f"Root       : {summary.artifact_root}")
     print(f"Session    : {summary.session_date.isoformat()}")

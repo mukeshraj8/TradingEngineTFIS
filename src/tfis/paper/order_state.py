@@ -186,48 +186,93 @@ class PaperOrderStateCandidate:
     state: PaperOrderState
 
 
+@dataclass(frozen=True, slots=True)
+class PaperOrderDecisionIntent:
+    status: str
+    session_date: date
+    strategy_code: str
+    strategy_branch: str
+    lots: int
+    quantity: int
+    selected_contract_symbol: str | None
+    selected_contract_expiry: date | None
+    selected_contract_strike: float | None
+    selected_contract_option_type: str | None
+    planned_entry_price: float | None
+    target_price: float | None
+    stoploss_price: float | None
+    fsl_price: float | None
+
+
+def paper_order_decision_intent_from_decision(
+    decision: PaperLiveDecisionResult | S23PaperTradeDecisionSummary | PaperOrderDecisionIntent,
+) -> PaperOrderDecisionIntent:
+    if isinstance(decision, PaperOrderDecisionIntent):
+        return decision
+    summary = decision.summary if isinstance(decision, PaperLiveDecisionResult) else decision
+    return PaperOrderDecisionIntent(
+        status=str(getattr(summary, "status")),
+        session_date=_coerce_date(getattr(summary, "session_date"), field_name="session_date"),
+        strategy_code=str(getattr(summary, "strategy_code")),
+        strategy_branch=str(getattr(summary, "strategy_branch")),
+        lots=int(getattr(summary, "lots")),
+        quantity=int(getattr(summary, "quantity")),
+        selected_contract_symbol=_optional_text(getattr(summary, "selected_contract_symbol")),
+        selected_contract_expiry=_coerce_optional_date(
+            getattr(summary, "selected_contract_expiry"),
+            field_name="selected_contract_expiry",
+        ),
+        selected_contract_strike=_optional_float(getattr(summary, "selected_contract_strike")),
+        selected_contract_option_type=_optional_text(getattr(summary, "selected_contract_option_type")),
+        planned_entry_price=_optional_float(getattr(summary, "planned_entry_price")),
+        target_price=_optional_float(getattr(summary, "target_price")),
+        stoploss_price=_optional_float(getattr(summary, "stoploss_price")),
+        fsl_price=_optional_float(getattr(summary, "fsl_price")),
+    )
+
+
 class PaperOrderStateStore:
     def create_waiting_order_from_live_decision(
         self,
         session_directory: str | Path,
         *,
         strategy_rule: StrategyRule,
-        decision: PaperLiveDecisionResult | S23PaperTradeDecisionSummary,
+        decision: PaperLiveDecisionResult | S23PaperTradeDecisionSummary | PaperOrderDecisionIntent,
         created_at: datetime,
         provenance_source_ids: tuple[str, ...] = (),
     ) -> tuple[PaperOrderState, Path, Path]:
-        summary = decision.summary if isinstance(decision, PaperLiveDecisionResult) else decision
-        self._validate_ready_summary(summary)
-        assert summary.selected_contract_symbol is not None
-        assert summary.selected_contract_expiry is not None
-        assert summary.selected_contract_option_type is not None
-        assert summary.planned_entry_price is not None
-        assert summary.target_price is not None
-        assert summary.stoploss_price is not None
+        intent = paper_order_decision_intent_from_decision(decision)
+        self._validate_ready_intent(intent)
+        assert intent.selected_contract_symbol is not None
+        assert intent.selected_contract_expiry is not None
+        assert intent.selected_contract_option_type is not None
+        assert intent.planned_entry_price is not None
+        assert intent.target_price is not None
+        assert intent.stoploss_price is not None
 
         state = PaperOrderState(
             artifact_version=_ARTIFACT_VERSION,
-            strategy_code=summary.strategy_code,
-            strategy_branch=summary.strategy_branch,
+            strategy_code=intent.strategy_code,
+            strategy_branch=intent.strategy_branch,
             symbol=strategy_rule.symbol,
-            selected_contract_symbol=summary.selected_contract_symbol,
-            selected_contract_expiry=date.fromisoformat(summary.selected_contract_expiry),
-            selected_contract_option_type=summary.selected_contract_option_type,
-            selected_contract_strike=summary.selected_contract_strike,
+            selected_contract_symbol=intent.selected_contract_symbol,
+            selected_contract_expiry=intent.selected_contract_expiry,
+            selected_contract_option_type=intent.selected_contract_option_type,
+            selected_contract_strike=intent.selected_contract_strike,
             expiry_type=strategy_rule.expiry_policy.expiry_type.value,
             rollover_policy=strategy_rule.expiry_policy.rollover_policy.value,
             forced_close_time=strategy_rule.expiry_policy.forced_close_time,
             no_carry_past_expiry=strategy_rule.expiry_policy.no_carry_past_expiry,
             order_side="SELL",
             trigger_rule="SELL_TRIGGER_WHEN_PREMIUM_AT_OR_BELOW_ENTRY",
-            entry_date=summary.session_date,
+            entry_date=intent.session_date,
             order_timestamp=created_at,
-            planned_entry_price=float(summary.planned_entry_price),
-            target_price=float(summary.target_price),
-            stoploss_price=float(summary.stoploss_price),
-            fsl_price=summary.fsl_price,
-            lots=summary.lots,
-            quantity=summary.quantity,
+            planned_entry_price=float(intent.planned_entry_price),
+            target_price=float(intent.target_price),
+            stoploss_price=float(intent.stoploss_price),
+            fsl_price=intent.fsl_price,
+            lots=intent.lots,
+            quantity=intent.quantity,
             status=PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER,
             last_updated_timestamp=created_at,
             last_reason_code="paper_order_waiting_for_entry_trigger",
@@ -587,10 +632,10 @@ class PaperOrderStateStore:
         return updated, order_event
 
     @staticmethod
-    def _validate_ready_summary(summary: S23PaperTradeDecisionSummary) -> None:
-        if summary.status != "READY":
+    def _validate_ready_intent(intent: PaperOrderDecisionIntent) -> None:
+        if intent.status != "READY":
             raise PaperOrderStateError(
-                f"Cannot create paper order from decision status {summary.status!r}."
+                f"Cannot create paper order from decision status {intent.status!r}."
             )
         missing = [
             name
@@ -602,7 +647,7 @@ class PaperOrderStateStore:
                 "target_price",
                 "stoploss_price",
             )
-            if getattr(summary, name) is None
+            if getattr(intent, name) is None
         ]
         if missing:
             raise PaperOrderStateError(
@@ -692,6 +737,37 @@ class PaperOrderStateStore:
         return value
 
 
+def _coerce_date(value: Any, *, field_name: str) -> date:
+    parsed = _coerce_optional_date(value, field_name=field_name)
+    if parsed is None:
+        raise PaperOrderStateError(f"{field_name} is required")
+    return parsed
+
+
+def _coerce_optional_date(value: Any, *, field_name: str) -> date | None:
+    if value in (None, ""):
+        return None
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return value
+    if isinstance(value, datetime):
+        return value.date()
+    try:
+        return date.fromisoformat(str(value))
+    except ValueError as exc:
+        raise PaperOrderStateError(f"{field_name} must be an ISO date") from exc
+
+
+def _optional_float(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    return float(value)
+
+
+def _optional_text(value: Any) -> str | None:
+    text = str(value or "").strip()
+    return text or None
+
+
 class PaperOrderStateDiscovery:
     def __init__(self, *, order_store: PaperOrderStateStore | None = None) -> None:
         self._order_store = order_store or PaperOrderStateStore()
@@ -731,9 +807,11 @@ class PaperOrderStateDiscovery:
 
 
 __all__ = [
+    "PaperOrderDecisionIntent",
     "paper_order_is_terminal",
     "paper_order_trade_event_type",
     "paper_order_trade_lifecycle_status",
+    "paper_order_decision_intent_from_decision",
     "paper_order_state_candidate_paths",
     "paper_order_visible_for_latest_session",
     "paper_order_visible_in_trade_monitor",

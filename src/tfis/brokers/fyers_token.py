@@ -5,9 +5,11 @@ import hashlib
 import json
 import os
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Iterator
 from urllib.parse import parse_qs, urlparse
 
 import pyotp
@@ -20,6 +22,8 @@ API_V3_BASE = "https://api-t1.fyers.in/api/v3"
 DEFAULT_REDIRECT_URI = "https://myapi.fyers.in/"
 TIMEOUT_SECONDS = 15
 MAX_RETRIES = 2
+REFRESH_LOCK_TIMEOUT_SECONDS = 120.0
+REFRESH_LOCK_STALE_SECONDS = 300.0
 
 PROXY_ENV_KEYS = (
     "HTTP_PROXY",
@@ -76,15 +80,14 @@ def prepare_fyers_env_from_tfis(
     clear_proxy_environment()
     load_dotenv(paths.env_path, override=True)
 
-    refreshed = False
-    if not skip_refresh:
-        refresh_fyers_token(paths=paths)
-        refreshed = True
-
-    token_payload = json.loads(paths.token_store.read_text(encoding="utf-8"))
-    access_token = str(token_payload.get("access_token") or "").strip()
     app_id = _require_env("FYERS_APP_ID")
     client_id = os.getenv("FYERS_CLIENT_ID", "").strip() or None
+
+    refreshed = False
+    access_token = _read_token_access_token(paths)
+    if not skip_refresh and not _stored_token_is_valid(paths, access_token, app_id):
+        refreshed = _refresh_token_if_needed(paths, app_id)
+        access_token = _read_token_access_token(paths)
     if not access_token:
         raise FyersTokenRefreshError(f"Missing access_token in TFIS token store: {paths.token_store}")
 
@@ -138,9 +141,89 @@ def refresh_fyers_token(*, paths: FyersTokenPaths | None = None) -> Path:
     return token_paths.token_store
 
 
+def _refresh_token_if_needed(paths: FyersTokenPaths, app_id: str) -> bool:
+    with _fyers_refresh_lock(paths):
+        access_token = _read_token_access_token(paths)
+        if _stored_token_is_valid(paths, access_token, app_id):
+            _log(paths, "Existing FYERS token became valid while waiting for refresh lock; reusing it.")
+            return False
+        refresh_fyers_token(paths=paths)
+        return True
+
+
+@contextmanager
+def _fyers_refresh_lock(paths: FyersTokenPaths) -> Iterator[None]:
+    paths.log_dir.mkdir(parents=True, exist_ok=True)
+    lock_path = paths.log_dir / "fyers_token_refresh.lock"
+    deadline = time.monotonic() + REFRESH_LOCK_TIMEOUT_SECONDS
+    payload = {
+        "pid": os.getpid(),
+        "created_at": datetime.now().isoformat(),
+        "token_store": str(paths.token_store),
+    }
+    while True:
+        try:
+            fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                json.dump(payload, handle, indent=2)
+            break
+        except FileExistsError:
+            if _refresh_lock_is_stale(lock_path):
+                try:
+                    lock_path.unlink()
+                    _log(paths, f"Removed stale FYERS token refresh lock: {lock_path}", "WARN")
+                except FileNotFoundError:
+                    pass
+                except OSError:
+                    pass
+                continue
+            if time.monotonic() >= deadline:
+                raise FyersTokenRefreshError(
+                    f"Timed out waiting for FYERS token refresh lock: {lock_path}"
+                )
+            time.sleep(0.25)
+    try:
+        yield
+    finally:
+        try:
+            lock_path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+def _refresh_lock_is_stale(lock_path: Path) -> bool:
+    try:
+        age_seconds = time.time() - lock_path.stat().st_mtime
+    except FileNotFoundError:
+        return False
+    return age_seconds > REFRESH_LOCK_STALE_SECONDS
+
+
 def clear_proxy_environment() -> None:
     for key in PROXY_ENV_KEYS:
         os.environ.pop(key, None)
+
+
+def _read_token_access_token(paths: FyersTokenPaths) -> str:
+    try:
+        token_payload = json.loads(paths.token_store.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return ""
+    except json.JSONDecodeError as exc:
+        raise FyersTokenRefreshError(f"Invalid TFIS token store JSON: {paths.token_store}") from exc
+    return str(token_payload.get("access_token") or "").strip()
+
+
+def _stored_token_is_valid(paths: FyersTokenPaths, access_token: str, app_id: str) -> bool:
+    if not access_token:
+        return False
+    try:
+        _verify_token(paths, access_token, app_id)
+    except FyersTokenRefreshError as exc:
+        _log(paths, f"Existing FYERS token is not valid; refresh required: {exc}", "WARN")
+        return False
+    _log(paths, "Existing FYERS token verified; refresh skipped.")
+    return True
 
 
 def _require_exists(path: Path, label: str) -> None:
@@ -385,5 +468,7 @@ __all__ = [
     "default_tfis_repo_root",
     "default_token_paths",
     "prepare_fyers_env_from_tfis",
+    "REFRESH_LOCK_STALE_SECONDS",
+    "REFRESH_LOCK_TIMEOUT_SECONDS",
     "refresh_fyers_token",
 ]

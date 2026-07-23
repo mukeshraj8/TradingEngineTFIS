@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Callable
@@ -9,8 +9,7 @@ from typing import Any, Callable
 from tfis.importers import load_strategy_rule
 
 from .decision_summary_discovery import discover_trade_decision_summaries
-from .live_decision import S23PaperTradeDecisionSummary
-from .order_state import PaperOrderStateDiscovery, PaperOrderStateStore
+from .order_state import PaperOrderDecisionIntent, PaperOrderStateDiscovery, PaperOrderStateStore
 from .position_discovery import PaperOpenPositionDiscovery
 from .session_discovery import (
     find_latest_supervised_session_dir,
@@ -40,7 +39,7 @@ class PaperFreshEntryBlockedDecisionCandidate:
     branch_directory: Path
     summary_path: Path
     branch: str
-    summary: S23PaperTradeDecisionSummary
+    summary: PaperOrderDecisionIntent
     order_state_path: Path | None = None
 
 
@@ -196,33 +195,28 @@ def promotion_candidates(
     return candidates
 
 
-def summary_from_payload(payload: dict[str, Any]) -> S23PaperTradeDecisionSummary:
+def summary_from_payload(payload: dict[str, Any]) -> PaperOrderDecisionIntent:
     raw_summary = payload.get("summary", payload)
     if not isinstance(raw_summary, dict):
         raise PaperFreshEntryPromotionError(
             "Invalid trade_decision_summary.json: summary must be an object"
         )
-    values: dict[str, Any] = {}
-    for field in fields(S23PaperTradeDecisionSummary):
-        value = raw_summary.get(field.name)
-        if field.name == "session_date" and isinstance(value, str):
-            value = date.fromisoformat(value)
-        elif field.name in {
-            "required_market_aliases",
-            "required_option_aliases",
-            "checkpoint_labels",
-            "contract_selection_attempted_expiries",
-            "ranked_candidates",
-            "governance_event_types",
-            "notes",
-        }:
-            value = tuple(value or ())
-        elif field.name == "rejected_candidate_counts":
-            value = {str(k): int(v) for k, v in dict(value or {}).items()}
-        elif field.name in {"market_levels", "runtime_values"}:
-            value = dict(value or {})
-        values[field.name] = value
-    return S23PaperTradeDecisionSummary(**values)
+    return PaperOrderDecisionIntent(
+        status=str(raw_summary.get("status") or ""),
+        session_date=_date_from_payload(raw_summary, "session_date"),
+        strategy_code=str(raw_summary.get("strategy_code") or ""),
+        strategy_branch=str(raw_summary.get("strategy_branch") or ""),
+        lots=int(raw_summary.get("lots") or 0),
+        quantity=int(raw_summary.get("quantity") or 0),
+        selected_contract_symbol=_optional_text(raw_summary.get("selected_contract_symbol")),
+        selected_contract_expiry=_optional_date_from_payload(raw_summary, "selected_contract_expiry"),
+        selected_contract_strike=_optional_float(raw_summary.get("selected_contract_strike")),
+        selected_contract_option_type=_optional_text(raw_summary.get("selected_contract_option_type")),
+        planned_entry_price=_optional_float(raw_summary.get("planned_entry_price")),
+        target_price=_optional_float(raw_summary.get("target_price")),
+        stoploss_price=_optional_float(raw_summary.get("stoploss_price")),
+        fsl_price=_optional_float(raw_summary.get("fsl_price")),
+    )
 
 
 def blocking_position_paths(artifact_root: Path) -> list[Path]:
@@ -279,6 +273,38 @@ def _read_json(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise PaperFreshEntryPromotionError(f"Expected JSON object in {path}")
     return payload
+
+
+def _date_from_payload(payload: dict[str, Any], field_name: str) -> date:
+    parsed = _optional_date_from_payload(payload, field_name)
+    if parsed is None:
+        raise PaperFreshEntryPromotionError(f"Missing required date field: {field_name}")
+    return parsed
+
+
+def _optional_date_from_payload(payload: dict[str, Any], field_name: str) -> date | None:
+    value = payload.get(field_name)
+    if value in (None, ""):
+        return None
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return value
+    if isinstance(value, datetime):
+        return value.date()
+    try:
+        return date.fromisoformat(str(value))
+    except ValueError as exc:
+        raise PaperFreshEntryPromotionError(f"{field_name} must be an ISO date") from exc
+
+
+def _optional_float(value: Any) -> float | None:
+    if value in (None, ""):
+        return None
+    return float(value)
+
+
+def _optional_text(value: Any) -> str | None:
+    text = str(value or "").strip()
+    return text or None
 
 
 __all__ = [

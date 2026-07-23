@@ -16,7 +16,7 @@ from tfis.domain import (
     StrategyExpiryPolicy,
     StrategyRule,
 )
-from tfis.paper import S23PaperOrderStatus
+from tfis.paper import PaperOrderDecisionIntent, S23PaperOrderStatus, summary_from_payload
 from tfis.paper.order_state import S23PaperOrderStateStore
 from tfis.paper.position_state import S23PaperPositionStateStore
 
@@ -57,6 +57,19 @@ def test_promotes_blocked_ready_decision_after_carry_exit(
     assert metadata["branch_order_state_json"][branch] == str(branch_dir / "paper_order_state.json")
     assert metadata["branch_order_placement_blocked"][branch] is False
     assert metadata["branch_order_placement_promoted_after_carry_exit"][branch] is True
+
+
+def test_blocked_ready_summary_parses_to_neutral_order_decision_intent() -> None:
+    intent = summary_from_payload({"summary": _blocked_ready_summary()})
+
+    assert isinstance(intent, PaperOrderDecisionIntent)
+    assert intent.status == "READY"
+    assert intent.strategy_code == "S23"
+    assert intent.strategy_branch == "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    assert intent.session_date == date(2026, 7, 6)
+    assert intent.selected_contract_expiry == date(2026, 7, 14)
+    assert intent.selected_contract_symbol == "NIFTY_20260714_24150_CE"
+    assert intent.planned_entry_price == 194.25
 
 
 def test_refuses_promotion_when_active_position_exists(

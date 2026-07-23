@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .lifecycle_supervisor_runtime import load_paper_lifecycle_supervisor_target_specs
+from .order_state import PaperOrderStateDiscovery, PaperOrderStatus
 from .position_state import PaperPositionStateStore, paper_position_is_active
 from .trade_ledger import S23PaperTradeLedgerStore, paper_trade_is_terminal
 
@@ -16,6 +17,8 @@ class PaperRuntimeReconciliationStatus:
     status: str
     persisted_state_count: int
     checked_trade_count: int
+    persisted_order_state_count: int
+    checked_order_event_count: int
     conflict_count: int
     message: str
 
@@ -37,6 +40,8 @@ def load_paper_runtime_reconciliation_statuses(
                     status="FAIL",
                     persisted_state_count=0,
                     checked_trade_count=0,
+                    persisted_order_state_count=0,
+                    checked_order_event_count=0,
                     conflict_count=1,
                     message=f"{type(exc).__name__}: {exc}",
                 )
@@ -50,19 +55,27 @@ def _reconciliation_status_for_spec(
     repo_root: Path,
 ) -> PaperRuntimeReconciliationStatus:
     state_store = PaperPositionStateStore()
+    order_discovery = PaperOrderStateDiscovery()
     ledger_store = S23PaperTradeLedgerStore(
         global_ledger_root=repo_root / "tmp" / "paper_trade_ledger",
         global_ledger_filename=f"{strategy_code.strip().lower()}_paper_trade_ledger.jsonl",
     )
     state_paths = tuple(sorted(artifact_root.rglob("paper_position_state.json"))) if artifact_root.exists() else ()
-    if not state_paths:
+    order_candidates = (
+        order_discovery.find_orders((artifact_root,), strategy_code=strategy_code)
+        if artifact_root.exists()
+        else ()
+    )
+    if not state_paths and not order_candidates:
         return PaperRuntimeReconciliationStatus(
             strategy_code=strategy_code,
             status="NONE",
             persisted_state_count=0,
             checked_trade_count=0,
+            persisted_order_state_count=0,
+            checked_order_event_count=0,
             conflict_count=0,
-            message="no persisted paper position states found",
+            message="no persisted paper position/order states found",
         )
 
     conflicts: list[str] = []
@@ -97,14 +110,45 @@ def _reconciliation_status_for_spec(
                 f"{latest_row.get('manager_status') or latest_row.get('lifecycle_status') or latest_row.get('event_type')}"
             )
 
+    checked_order_event_count = 0
+    for candidate in order_candidates:
+        latest_event = _latest_order_event_for_state(candidate.state_directory)
+        state_status = candidate.state.status.value
+        if latest_event is None:
+            if candidate.state.status is not PaperOrderStatus.PAPER_ORDER_NOT_FILLED:
+                conflicts.append(f"{candidate.state_directory}: missing order event row")
+            continue
+        checked_order_event_count += 1
+        latest_status = str(latest_event.get("status") or "").strip()
+        if (
+            candidate.state.status is not PaperOrderStatus.PAPER_ORDER_NOT_FILLED
+            and latest_status != state_status
+        ):
+            conflicts.append(
+                f"{candidate.state_directory}: order state {state_status} conflicts with latest order event {latest_status or '<missing>'}"
+            )
+        if candidate.state.status.value == "PAPER_ORDER_FILLED":
+            event_fill_price = latest_event.get("fill_price")
+            if candidate.state.fill_price is None or event_fill_price in (None, ""):
+                conflicts.append(
+                    f"{candidate.state_directory}: filled order state/event missing fill_price"
+                )
+            event_fill_timestamp = latest_event.get("timestamp")
+            if candidate.state.fill_timestamp is None or event_fill_timestamp in (None, ""):
+                conflicts.append(
+                    f"{candidate.state_directory}: filled order state/event missing fill timestamp"
+                )
+
     return PaperRuntimeReconciliationStatus(
         strategy_code=strategy_code,
         status="PASS" if not conflicts else "FAIL",
         persisted_state_count=len(state_paths),
         checked_trade_count=checked_trade_count,
+        persisted_order_state_count=len(order_candidates),
+        checked_order_event_count=checked_order_event_count,
         conflict_count=len(conflicts),
         message=(
-            "position-state and ledger authority agree"
+            "position ledger and order event authority agree"
             if not conflicts
             else "; ".join(conflicts[:5])
         ),
@@ -130,6 +174,20 @@ def _latest_trade_row_for_state(
         return None
     candidates.sort(
         key=lambda row: _parse_datetime(row.get("event_timestamp")) or datetime.min,
+        reverse=True,
+    )
+    return candidates[0]
+
+
+def _latest_order_event_for_state(state_dir: Path) -> dict[str, object] | None:
+    events_path = state_dir / "paper_order_events.jsonl"
+    if not events_path.exists():
+        return None
+    candidates = _iter_jsonl_dicts(events_path)
+    if not candidates:
+        return None
+    candidates.sort(
+        key=lambda row: _parse_datetime(row.get("timestamp")) or datetime.min,
         reverse=True,
     )
     return candidates[0]

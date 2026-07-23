@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from tfis.brokers import FyersBrokerAdapter
+from tfis.brokers import BrokerAdapterError, FyersBrokerAdapter
 from tfis.domain import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment, StrategyExpiryPolicy, StrategyRule
 from tfis.paper import (
     build_paper_expiry_governance,
@@ -37,8 +37,10 @@ from tfis.paper import (
     load_paper_runtime_fresh_entry_handoff_statuses,
     load_paper_runtime_broker_health_statuses,
     load_paper_runtime_heartbeat_statuses,
+    load_paper_runtime_lifecycle_audit_statuses,
     load_paper_runtime_order_routing_statuses,
     load_paper_runtime_reconciliation_statuses,
+    load_paper_runtime_waiting_order_statuses,
     load_paper_lifecycle_supervisor_target_specs,
     prepare_paper_broker_runtime_environment,
     validate_paper_lifecycle_runtime_guardrails,
@@ -435,6 +437,223 @@ def test_load_paper_runtime_heartbeat_statuses_reports_owner_and_state_directory
     assert statuses[0].latest_selected_contract_symbol == "NIFTY_20260728_23950_CE"
 
 
+def test_load_paper_runtime_heartbeat_statuses_reports_market_data_unavailable_as_degraded(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision"
+    live_state_root = tmp_path / "paper-live-state"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+                "live_state:",
+                "  enabled: true",
+                "  provider: filesystem",
+                f"  root: {live_state_root.as_posix()}",
+            )
+        ),
+        encoding="utf-8",
+    )
+    targets_path = _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root)
+    live_state_store = build_paper_live_state_store_from_yaml(config_path, strict=True)
+    live_state_store.set_watch_heartbeat(
+        session_date=date(2026, 7, 22),
+        trade_id="S23-test-heartbeat",
+        payload={
+            "trade_id": "S23-test-heartbeat",
+            "owner_id": "tfis-paper-lifecycle-supervisor:s23:1234",
+            "timestamp": datetime.now().astimezone().isoformat(),
+            "status": "MARKET_DATA_UNAVAILABLE",
+            "reason_code": "selected_contract_event_fetch_failed",
+            "selected_contract_symbol": "NIFTY_20260728_23950_CE",
+            "state_directory": str(artifact_root / "2026-07-22" / "session" / "BRANCH"),
+            "strategy_code": "S23",
+            "supervisor_pid": 1234,
+        },
+    )
+
+    statuses = load_paper_runtime_heartbeat_statuses(
+        targets_path,
+        repo_root=tmp_path,
+        stale_after_seconds=10_000_000,
+    )
+
+    assert statuses[0].status == "DEGRADED"
+    assert statuses[0].latest_runtime_status == "MARKET_DATA_UNAVAILABLE"
+    assert statuses[0].latest_reason_code == "selected_contract_event_fetch_failed"
+    assert "MARKET_DATA_UNAVAILABLE" in statuses[0].message
+
+
+def test_load_paper_runtime_lifecycle_audit_statuses_reports_present_audit(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    order_dir = artifact_root / "2026-07-22" / "branch-waiting"
+    order_dir.mkdir(parents=True, exist_ok=True)
+    PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 22)),
+        created_at=datetime(2026, 7, 22, 9, 30),
+    )
+    (order_dir / "paper_lifecycle_supervisor_events.jsonl").write_text(
+        json.dumps(
+            {
+                "artifact_version": 1,
+                "event_timestamp": datetime.now().astimezone().isoformat(),
+                "event_type": "LIFECYCLE_STEP",
+                "status": "PAPER_ORDER_WAITING_FOR_TRIGGER",
+                "reason_code": "paper_order_waiting_quote_above_entry",
+                "strategy_code": "S23",
+                "trade_id": "trade-1",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    statuses = load_paper_runtime_lifecycle_audit_statuses(
+        _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root),
+        repo_root=tmp_path,
+        stale_after_seconds=10_000_000,
+    )
+
+    assert len(statuses) == 1
+    assert statuses[0].status == "PASS"
+    assert statuses[0].managed_state_count == 1
+    assert statuses[0].audit_state_count == 1
+    assert statuses[0].missing_audit_count == 0
+    assert statuses[0].latest_event_type == "LIFECYCLE_STEP"
+    assert statuses[0].latest_reason_code == "paper_order_waiting_quote_above_entry"
+
+
+def test_load_paper_runtime_lifecycle_audit_statuses_flags_legacy_missing_audit(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    order_dir = artifact_root / "2026-07-22" / "branch-waiting"
+    order_dir.mkdir(parents=True, exist_ok=True)
+    PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 22)),
+        created_at=datetime(2026, 7, 22, 9, 30),
+    )
+
+    statuses = load_paper_runtime_lifecycle_audit_statuses(
+        _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root),
+        repo_root=tmp_path,
+    )
+
+    assert statuses[0].status == "ATTENTION"
+    assert statuses[0].managed_state_count == 1
+    assert statuses[0].audit_state_count == 0
+    assert statuses[0].missing_audit_count == 1
+    assert "missing=1" in statuses[0].message
+
+
+def test_load_paper_runtime_lifecycle_audit_statuses_fails_invalid_audit(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    order_dir = artifact_root / "2026-07-22" / "branch-waiting"
+    order_dir.mkdir(parents=True, exist_ok=True)
+    PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 22)),
+        created_at=datetime(2026, 7, 22, 9, 30),
+    )
+    (order_dir / "paper_lifecycle_supervisor_events.jsonl").write_text("{not-json}\n", encoding="utf-8")
+
+    statuses = load_paper_runtime_lifecycle_audit_statuses(
+        _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root),
+        repo_root=tmp_path,
+    )
+
+    assert statuses[0].status == "FAIL"
+    assert statuses[0].invalid_audit_count == 1
+    assert "invalid" in statuses[0].message
+
+
+def test_load_paper_runtime_waiting_order_statuses_passes_current_session_waiting_order(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    order_dir = artifact_root / "2026-07-22" / "branch-waiting"
+    order_dir.mkdir(parents=True, exist_ok=True)
+    PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 22)),
+        created_at=datetime(2026, 7, 22, 9, 30),
+    )
+
+    statuses = load_paper_runtime_waiting_order_statuses(
+        _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root),
+        repo_root=tmp_path,
+        session_date=date(2026, 7, 22),
+    )
+
+    assert len(statuses) == 1
+    assert statuses[0].status == "PASS"
+    assert statuses[0].waiting_order_count == 1
+    assert statuses[0].current_session_waiting_order_count == 1
+    assert statuses[0].stale_waiting_order_count == 0
+
+
+def test_load_paper_runtime_waiting_order_statuses_fails_prior_session_waiting_order(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    order_dir = artifact_root / "2026-07-21" / "branch-waiting"
+    order_dir.mkdir(parents=True, exist_ok=True)
+    PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 21)),
+        created_at=datetime(2026, 7, 21, 9, 30),
+    )
+
+    statuses = load_paper_runtime_waiting_order_statuses(
+        _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root),
+        repo_root=tmp_path,
+        session_date=date(2026, 7, 22),
+    )
+
+    assert statuses[0].status == "FAIL"
+    assert statuses[0].waiting_order_count == 1
+    assert statuses[0].current_session_waiting_order_count == 0
+    assert statuses[0].stale_waiting_order_count == 1
+    assert statuses[0].latest_stale_order_directory == str(order_dir.resolve())
+    assert "finalizer or operator review" in statuses[0].message
+
+
 def test_load_paper_runtime_order_routing_statuses_reports_per_strategy_results(tmp_path: Path) -> None:
     pass_config = tmp_path / "config" / "paper.s23.yaml"
     fail_config = tmp_path / "config" / "paper.s21.yaml"
@@ -673,6 +892,84 @@ def test_load_paper_runtime_reconciliation_statuses_reports_per_strategy_results
     assert by_code["S23"].persisted_state_count == 1
     assert by_code["S21"].status == "FAIL"
     assert "terminal position state" in by_code["S21"].message
+
+
+def test_load_paper_runtime_reconciliation_statuses_checks_order_event_authority(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    order_dir = artifact_root / "2026-07-21" / "branch-waiting"
+    order_dir.mkdir(parents=True, exist_ok=True)
+
+    PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 21)),
+        created_at=datetime(2026, 7, 21, 9, 30),
+    )
+
+    statuses = load_paper_runtime_reconciliation_statuses(
+        _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root),
+        repo_root=tmp_path,
+    )
+
+    assert len(statuses) == 1
+    assert statuses[0].status == "PASS"
+    assert statuses[0].persisted_state_count == 0
+    assert statuses[0].checked_trade_count == 0
+    assert statuses[0].persisted_order_state_count == 1
+    assert statuses[0].checked_order_event_count == 1
+    assert statuses[0].conflict_count == 0
+
+
+def test_load_paper_runtime_reconciliation_statuses_fails_order_event_conflict(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text("broker:\n  provider: fyers\n  timezone: Asia/Kolkata\n", encoding="utf-8")
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "root"
+    order_dir = artifact_root / "2026-07-21" / "branch-conflict"
+    order_dir.mkdir(parents=True, exist_ok=True)
+
+    PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 21)),
+        created_at=datetime(2026, 7, 21, 9, 30),
+    )
+    events_path = order_dir / "paper_order_events.jsonl"
+    events_path.write_text(
+        events_path.read_text(encoding="utf-8")
+        + json.dumps(
+            {
+                "artifact_version": 1,
+                "timestamp": "2026-07-21T15:35:00",
+                "session_date": "2026-07-21",
+                "status": "PAPER_ORDER_NOT_FILLED",
+                "selected_contract_symbol": "NIFTY_20260723_24150_PE",
+                "planned_entry_price": 194.25,
+                "reason_code": "test_conflict",
+                "message": "latest event disagrees with persisted order state",
+            }
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    statuses = load_paper_runtime_reconciliation_statuses(
+        _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root),
+        repo_root=tmp_path,
+    )
+
+    assert len(statuses) == 1
+    assert statuses[0].status == "FAIL"
+    assert statuses[0].persisted_order_state_count == 1
+    assert statuses[0].checked_order_event_count == 1
+    assert "order state PAPER_ORDER_WAITING_FOR_TRIGGER conflicts" in statuses[0].message
 
 
 def test_load_paper_runtime_fresh_entry_handoff_statuses_reports_marker_resolved_close(
@@ -1138,6 +1435,48 @@ def test_supervisor_script_supports_operator_control_root_and_signatures() -> No
     assert signature == (False, ("S21", "S23"))
 
 
+def test_supervisor_script_appends_lifecycle_audit_event(tmp_path: Path) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    state_dir = tmp_path / "state"
+    result_path = module._append_supervisor_audit_event(
+        state_dir,
+        event_timestamp=datetime(2026, 7, 22, 10, 15),
+        strategy_code="S23",
+        trade_id="trade-1",
+        event_type="LIFECYCLE_STEP",
+        status="PAPER_POSITION_HELD",
+        reason_code="no_exit_threshold_hit",
+        message="position held",
+        selected_contract_symbol="NIFTY_20260723_24150_PE",
+        provider="fyers",
+    )
+
+    rows = [json.loads(line) for line in result_path.read_text(encoding="utf-8").splitlines()]
+    assert result_path == state_dir / "paper_lifecycle_supervisor_events.jsonl"
+    assert rows == [
+        {
+            "artifact_version": 1,
+            "event_timestamp": "2026-07-22T10:15:00",
+            "event_type": "LIFECYCLE_STEP",
+            "message": "position held",
+            "provider": "fyers",
+            "reason_code": "no_exit_threshold_hit",
+            "selected_contract_symbol": "NIFTY_20260723_24150_PE",
+            "state_directory": str(state_dir),
+            "status": "PAPER_POSITION_HELD",
+            "strategy_code": "S23",
+            "supervisor_pid": module.os.getpid(),
+            "trade_id": "trade-1",
+        }
+    ]
+
+
 def test_connect_paper_broker_runtime_returns_health() -> None:
     class HealthyAdapter:
         def __init__(self) -> None:
@@ -1501,6 +1840,120 @@ def test_runtime_health_check_logs_degraded_and_recovered_state(
     assert "WARNING broker_runtime_degraded" in output
     assert "INFO broker_runtime_recovered" in output
     assert health.connection_state.value == "CONNECTED"
+
+
+def test_process_target_records_market_data_unavailable_without_state_transition(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+    target_spec = load_paper_lifecycle_supervisor_target_specs(
+        _targets_yaml(
+            tmp_path,
+            config_path=config_path,
+            artifact_root=tmp_path / "data" / "strategies" / "S23",
+        ),
+        repo_root=tmp_path,
+    )[0]
+    order_dir = target_spec.artifact_root / "2026-07-22" / "session" / "BRANCH"
+    order_state, _state_path, _events_path = PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 22)),
+        created_at=datetime(2026, 7, 22, 9, 30),
+    )
+
+    class FakeLiveStateStore:
+        def __init__(self) -> None:
+            self.heartbeats: list[dict[str, object]] = []
+
+        def acquire_trade_lock(self, **_kwargs) -> bool:
+            return True
+
+        def release_trade_lock(self, **_kwargs) -> None:
+            return None
+
+        def set_watch_heartbeat(self, **kwargs) -> None:
+            self.heartbeats.append(kwargs)
+
+    class SupervisorMustNotRun:
+        def expire_waiting_order_from_previous_session(self, *_args, **_kwargs):
+            return None
+
+        def supervise(self, *_args, **_kwargs):
+            raise AssertionError("supervisor must not transition state without selected-contract data")
+
+    live_state_store = FakeLiveStateStore()
+    runtime = module._TargetRuntime(
+        spec=target_spec,
+        config=PaperLifecycleRuntimeConfig.from_yaml(config_path),
+        timezone_name="Asia/Kolkata",
+        timezone=module.ZoneInfo("Asia/Kolkata"),
+        adapter=object(),
+        live_state_store=live_state_store,
+        supervisor=SupervisorMustNotRun(),
+    )
+    target = type(
+        "Target",
+        (),
+        {
+            "directory": order_dir,
+            "session_date": date(2026, 7, 22),
+            "mode": "order",
+            "order_state": order_state,
+            "position_state": None,
+        },
+    )()
+
+    def _raise_fetch_error(**_kwargs):
+        raise BrokerAdapterError("quote unavailable")
+
+    monkeypatch.setattr(module, "_fetch_selected_contract_events", _raise_fetch_error)
+
+    module._process_target(
+        runtime=runtime,
+        target=target,
+        held_trade_ids={},
+        lock_ttl_seconds=30,
+        watch_cutoff_time=time(15, 30),
+        dashboard_rebuild_disabled=True,
+        evaluated_at=datetime(2026, 7, 22, 10, 0),
+        tfis_root=tmp_path,
+    )
+
+    output = capsys.readouterr().out
+    assert "WARNING market_data_unavailable" in output
+    assert "selected_contract_event_fetch_failed" in output
+    assert live_state_store.heartbeats[0]["payload"]["status"] == "MARKET_DATA_UNAVAILABLE"
+    assert live_state_store.heartbeats[0]["payload"]["reason_code"] == "selected_contract_event_fetch_failed"
+    persisted = PaperOrderStateStore().load_state(order_dir)
+    assert persisted.status.value == "PAPER_ORDER_WAITING_FOR_TRIGGER"
+    audit_rows = [
+        json.loads(line)
+        for line in (order_dir / "paper_lifecycle_supervisor_events.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert audit_rows[-1]["event_type"] == "MARKET_DATA_UNAVAILABLE"
+    assert audit_rows[-1]["status"] == "SKIPPED"
+    assert audit_rows[-1]["reason_code"] == "selected_contract_event_fetch_failed"
+    assert audit_rows[-1]["trade_id"].startswith("S23-S23_NIFTY_OP_SELL_WK_DIFF_2D_3D")
 
 
 def test_connect_paper_broker_runtime_contextualizes_health_failures() -> None:

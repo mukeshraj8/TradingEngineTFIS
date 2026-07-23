@@ -15,9 +15,11 @@ param(
     [ValidateSet("run_now", "abort")]
     [string]$IfPast = "run_now",
     [switch]$SkipRefresh,
+    [switch]$DisablePositionWatch,
     [switch]$EnableSmokeOverride,
     [string]$CarryForwardStateDir,
-    [string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json"
+    [string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json",
+    [datetime]$RunDate
 )
 
 $ErrorActionPreference = "Stop"
@@ -90,7 +92,8 @@ function Invoke-S21SupervisedDecisionProcess {
     }
 }
 
-$effectiveRunDate = Get-TfisEffectiveRunDate -RunDate $Date
+$inputRunDate = if ($PSBoundParameters.ContainsKey("RunDate")) { $RunDate } else { $Date }
+$effectiveRunDate = Get-TfisEffectiveRunDate -RunDate $inputRunDate
 $noRunReason = Get-TfisNoRunReason -RepoRoot $repoRoot -EffectiveDate $effectiveRunDate -CalendarPath $TradingHolidayCalendar
 if ($noRunReason) {
     Show-TfisTaskBanner `
@@ -141,6 +144,9 @@ foreach ($strategy in $StrategyPath) {
 
 if ($SkipRefresh) {
     $args += "--skip-refresh"
+}
+if ($DisablePositionWatch) {
+    $args += "--disable-position-watch"
 }
 if ($EnableSmokeOverride) {
     $args += "--enable-smoke-override"

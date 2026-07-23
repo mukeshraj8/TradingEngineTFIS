@@ -323,6 +323,47 @@ def _log_control_state_transition(state) -> None:
     print("INFO operator_pause_cleared", flush=True)
 
 
+def _append_supervisor_audit_event(
+    directory: Path,
+    *,
+    event_timestamp: datetime,
+    strategy_code: str,
+    trade_id: str,
+    event_type: str,
+    status: str,
+    reason_code: str,
+    message: str,
+    selected_contract_symbol: str | None = None,
+    provider: str | None = None,
+) -> Path:
+    path = directory / "paper_lifecycle_supervisor_events.jsonl"
+    row = {
+        "artifact_version": 1,
+        "event_timestamp": event_timestamp.isoformat(),
+        "strategy_code": strategy_code,
+        "trade_id": trade_id,
+        "event_type": event_type,
+        "status": status,
+        "reason_code": reason_code,
+        "message": message,
+        "selected_contract_symbol": selected_contract_symbol,
+        "provider": provider,
+        "state_directory": str(directory),
+        "supervisor_pid": os.getpid(),
+    }
+    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    rendered = existing + json.dumps(row, sort_keys=True) + "\n"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path = path.parent / f".{path.name}.tmp"
+    try:
+        temp_path.write_text(rendered, encoding="utf-8", newline="\n")
+        os.replace(temp_path, path)
+    finally:
+        if temp_path.exists():
+            temp_path.unlink()
+    return path
+
+
 def _prepare_runtime_environments(
     runtimes: tuple[_TargetRuntime, ...],
     *,
@@ -425,6 +466,18 @@ def _process_target(
             owner_id=owner_id,
             ttl_seconds=lock_ttl_seconds,
         ):
+            _append_supervisor_audit_event(
+                context.session_directory,
+                event_timestamp=evaluated_at,
+                strategy_code=runtime.spec.strategy_code,
+                trade_id=context.trade_id,
+                event_type="LOCK_BUSY",
+                status="SKIPPED",
+                reason_code="trade_lock_busy",
+                message="Another TFIS supervisor owner currently holds the trade lock.",
+                selected_contract_symbol=context.selected_contract_symbol,
+                provider=runtime.config.broker.provider,
+            )
             print(
                 f"{evaluated_at.isoformat()} INFO lock_busy "
                 f"strategy={runtime.spec.strategy_code} trade_id={context.trade_id} "
@@ -445,19 +498,41 @@ def _process_target(
             f"{final_step.reason_code} fill={final_step.fill_price}",
             flush=True,
         )
+        _append_supervisor_audit_event(
+            context.session_directory,
+            event_timestamp=evaluated_at,
+            strategy_code=runtime.spec.strategy_code,
+            trade_id=context.trade_id,
+            event_type="PREVIOUS_SESSION_ORDER_EXPIRED",
+            status=final_step.status,
+            reason_code=final_step.reason_code,
+            message=getattr(final_step, "message", "") or "",
+            selected_contract_symbol=context.selected_contract_symbol,
+            provider=runtime.config.broker.provider,
+        )
         runtime.live_state_store.release_trade_lock(
             trade_id=held_trade_ids.pop(key, context.trade_id),
             owner_id=owner_id,
         )
         return
 
-    events = _fetch_selected_contract_events(
-        adapter=runtime.adapter,
-        selected_contract_symbol=context.selected_contract_symbol,
-        session_date=context.session_date,
-        evaluated_at=evaluated_at,
-        state=context.position_state,
-    )
+    try:
+        events = _fetch_selected_contract_events(
+            adapter=runtime.adapter,
+            selected_contract_symbol=context.selected_contract_symbol,
+            session_date=context.session_date,
+            evaluated_at=evaluated_at,
+            state=context.position_state,
+        )
+    except BrokerAdapterError as exc:
+        _record_market_data_unavailable(
+            runtime=runtime,
+            context=context,
+            evaluated_at=evaluated_at,
+            reason_code="selected_contract_event_fetch_failed",
+            message=f"{type(exc).__name__}: {exc}",
+        )
+        return
     append_selected_contract_market_events(
         context.session_directory,
         events=events,
@@ -510,6 +585,18 @@ def _process_target(
             f"directory={context.session_directory}",
             flush=True,
         )
+        _append_supervisor_audit_event(
+            context.session_directory,
+            event_timestamp=evaluated_at,
+            strategy_code=runtime.spec.strategy_code,
+            trade_id=context.trade_id,
+            event_type="LIFECYCLE_STEP",
+            status=step.status,
+            reason_code=step.reason_code,
+            message=getattr(step, "message", "") or "",
+            selected_contract_symbol=context.selected_contract_symbol,
+            provider=runtime.config.broker.provider,
+        )
     runtime.live_state_store.set_watch_heartbeat(
         session_date=context.session_date,
         trade_id=context.trade_id,
@@ -541,6 +628,54 @@ def _process_target(
             trade_id=held_trade_ids.pop(key, context.trade_id),
             owner_id=owner_id,
         )
+
+
+def _record_market_data_unavailable(
+    *,
+    runtime: _TargetRuntime,
+    context: PaperLifecycleSupervisorContext,
+    evaluated_at: datetime,
+    reason_code: str,
+    message: str,
+) -> None:
+    print(
+        f"{evaluated_at.isoformat()} WARNING market_data_unavailable "
+        f"strategy={runtime.spec.strategy_code} "
+        f"provider={runtime.config.broker.provider} "
+        f"trade_id={context.trade_id} "
+        f"selected_contract_symbol={context.selected_contract_symbol} "
+        f"reason={reason_code} message={message}",
+        flush=True,
+    )
+    _append_supervisor_audit_event(
+        context.session_directory,
+        event_timestamp=evaluated_at,
+        strategy_code=runtime.spec.strategy_code,
+        trade_id=context.trade_id,
+        event_type="MARKET_DATA_UNAVAILABLE",
+        status="SKIPPED",
+        reason_code=reason_code,
+        message=message,
+        selected_contract_symbol=context.selected_contract_symbol,
+        provider=runtime.config.broker.provider,
+    )
+    runtime.live_state_store.set_watch_heartbeat(
+        session_date=context.session_date,
+        trade_id=context.trade_id,
+        payload={
+            "trade_id": context.trade_id,
+            "owner_id": _owner_id_for_spec(runtime.spec),
+            "timestamp": evaluated_at.isoformat(),
+            "status": "MARKET_DATA_UNAVAILABLE",
+            "reason_code": reason_code,
+            "message": message,
+            "selected_contract_symbol": context.selected_contract_symbol,
+            "state_directory": str(context.session_directory),
+            "strategy_code": runtime.spec.strategy_code,
+            "provider": runtime.config.broker.provider,
+            "supervisor_pid": os.getpid(),
+        },
+    )
 
 
 def _build_lifecycle_context(

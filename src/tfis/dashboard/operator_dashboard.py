@@ -1420,7 +1420,7 @@ class TfisOperatorDashboardBuilder:
         guardrail_failures = [item for item in guardrail_statuses if item.status != "PASS"]
         order_routing_failures = [item for item in order_routing_statuses if item.status != "PASS"]
         heartbeat_failures = [
-            item for item in heartbeat_statuses if item.status in {"STALE", "UNAVAILABLE"}
+            item for item in heartbeat_statuses if item.status in {"DEGRADED", "STALE", "UNAVAILABLE"}
         ]
         reconciliation_failures = [item for item in reconciliation_statuses if item.status == "FAIL"]
         fresh_entry_handoff_failures = [item for item in fresh_entry_handoff_statuses if item.status == "FAIL"]
@@ -1570,28 +1570,92 @@ class TfisOperatorDashboardBuilder:
             f'<div class="operator-alert operator-alert-{tone}">{html.escape(message)}</div>'
             for tone, message in alerts
         )
+        health_strip = "\n".join(
+            [
+                '<div class="operator-health-strip">',
+                self._operator_health_item("Runtime", self._badge(pause_scope)),
+                self._operator_health_item("Guardrails", self._badge(guardrail_label)),
+                self._operator_health_item("Routing", self._badge(order_routing_label)),
+                self._operator_health_item("Heartbeats", self._badge(heartbeat_label)),
+                self._operator_health_item(
+                    "Streams",
+                    (
+                        f'<strong>{ok_stream_count}</strong> ok / '
+                        f'<strong>{stale_count}</strong> stale / '
+                        f'<strong>{no_stream_count}</strong> none'
+                    ),
+                ),
+                self._operator_health_item("Active Rows", f"<strong>{len(active_rows)}</strong>"),
+                "</div>",
+            ]
+        )
+        system_panel = self._operator_status_group(
+            "System",
+            [
+                self._operator_status_item("Runtime Control", self._badge(pause_scope)),
+                self._operator_status_item("Paused Strategies", html.escape(paused_label)),
+                self._operator_status_item("Latest Control Event", html.escape(latest_control_label)),
+            ],
+        )
+        safety_panel = self._operator_status_group(
+            "Safety",
+            [
+                self._operator_status_item("Paper Guardrails", self._badge(guardrail_label)),
+                self._operator_status_item("Order Routing Safety", self._badge(order_routing_label)),
+                self._operator_status_item("Fresh Entry Handoffs", self._badge(fresh_entry_handoff_label)),
+            ],
+        )
+        stream_panel = self._operator_status_group(
+            "Market Streams",
+            [
+                self._operator_status_item("Runtime Heartbeats", self._badge(heartbeat_label)),
+                self._operator_status_item("Healthy Streams", str(ok_stream_count)),
+                self._operator_status_item("Stale Streams", str(stale_count)),
+                self._operator_status_item("No Stream Rows", str(no_stream_count)),
+            ],
+        )
+        evidence_panel = self._operator_status_group(
+            "Evidence",
+            [
+                self._operator_status_item("Runtime Reconciliation", self._badge(reconciliation_label)),
+                self._operator_status_item("Visible Active Rows", str(len(active_rows))),
+            ],
+        )
+        diagnostics_html = "\n".join(
+            [
+                '<details class="operator-diagnostics">',
+                "<summary>Diagnostics</summary>",
+                '<div class="operator-diagnostics-grid">',
+                self._operator_status_item(
+                    "Heartbeat Owner",
+                    html.escape(heartbeat_owner_label),
+                    title=heartbeat_owner_label,
+                    compact=True,
+                ),
+                self._operator_status_item(
+                    "Heartbeat State Dir",
+                    html.escape(heartbeat_state_dir_label),
+                    title=heartbeat_state_dir_label,
+                    compact=True,
+                ),
+                "</div>",
+                "</details>",
+            ]
+        )
         return "\n".join(
             [
                 "<section>",
                 f"<h2>{html.escape(title)}</h2>",
                 '<div class="session-summary summary-shell operator-status-shell">',
-                '<div class="summary-grid">',
-                self._summary_metric("Runtime Control", self._badge(pause_scope)),
-                self._summary_metric("Paused Strategies", html.escape(paused_label)),
-                self._summary_metric("Paper Guardrails", self._badge(guardrail_label)),
-                self._summary_metric("Order Routing Safety", self._badge(order_routing_label)),
-                self._summary_metric("Runtime Heartbeats", self._badge(heartbeat_label)),
-                self._summary_metric("Heartbeat Owner", html.escape(heartbeat_owner_label)),
-                self._summary_metric("Heartbeat State Dir", html.escape(heartbeat_state_dir_label)),
-                self._summary_metric("Runtime Reconciliation", self._badge(reconciliation_label)),
-                self._summary_metric("Fresh Entry Handoffs", self._badge(fresh_entry_handoff_label)),
-                self._summary_metric("Latest Control Event", html.escape(latest_control_label)),
-                self._summary_metric("Healthy Streams", str(ok_stream_count)),
-                self._summary_metric("Stale Streams", str(stale_count)),
-                self._summary_metric("No Stream Rows", str(no_stream_count)),
-                self._summary_metric("Active Rows", str(len(active_rows))),
-                "</div>",
+                health_strip,
                 f'<div class="operator-alert-list">{alert_html}</div>',
+                '<div class="operator-status-groups">',
+                system_panel,
+                safety_panel,
+                stream_panel,
+                evidence_panel,
+                "</div>",
+                diagnostics_html,
                 '<div class="operator-command-strip">'
                 '<code>powershell -ExecutionPolicy Bypass -File scripts\\pause_tfis_runtime.ps1</code>'
                 '<code>powershell -ExecutionPolicy Bypass -File scripts\\resume_tfis_runtime.ps1</code>'
@@ -1603,6 +1667,45 @@ class TfisOperatorDashboardBuilder:
         )
 
     @staticmethod
+    def _operator_health_item(label: str, value: str) -> str:
+        return (
+            '<div class="operator-health-item">'
+            f'<span>{html.escape(label)}</span>'
+            f'<div class="operator-health-value">{value}</div>'
+            "</div>"
+        )
+
+    @staticmethod
+    def _operator_status_group(title: str, rows: list[str]) -> str:
+        return "\n".join(
+            [
+                '<div class="operator-status-group">',
+                f"<h3>{html.escape(title)}</h3>",
+                '<div class="operator-status-group-body">',
+                *rows,
+                "</div>",
+                "</div>",
+            ]
+        )
+
+    @staticmethod
+    def _operator_status_item(
+        label: str,
+        value: str,
+        *,
+        title: str | None = None,
+        compact: bool = False,
+    ) -> str:
+        title_attr = f' title="{html.escape(title, quote=True)}"' if title else ""
+        compact_class = " operator-status-item-compact" if compact else ""
+        return (
+            f'<div class="operator-status-item{compact_class}"{title_attr}>'
+            f"<span>{html.escape(label)}</span>"
+            f'<div class="operator-status-value">{value}</div>'
+            "</div>"
+        )
+
+    @staticmethod
     def _summarize_runtime_heartbeat_statuses(
         statuses: list[PaperRuntimeHeartbeatStatus],
     ) -> str:
@@ -1611,6 +1714,8 @@ class TfisOperatorDashboardBuilder:
         labels = {item.status for item in statuses}
         if "UNAVAILABLE" in labels:
             return "UNAVAILABLE"
+        if "DEGRADED" in labels:
+            return "DEGRADED"
         if "STALE" in labels:
             return "STALE"
         if "OK" in labels:
@@ -2069,6 +2174,8 @@ class TfisOperatorDashboardBuilder:
                     latest_owner_id=None,
                     latest_state_directory=None,
                     latest_selected_contract_symbol=None,
+                    latest_runtime_status=None,
+                    latest_reason_code=None,
                     latest_supervisor_pid=None,
                     age_seconds=None,
                     message=f"runtime heartbeat status unavailable: {type(exc).__name__}: {exc}",
@@ -2089,6 +2196,8 @@ class TfisOperatorDashboardBuilder:
                     status="FAIL",
                     persisted_state_count=0,
                     checked_trade_count=0,
+                    persisted_order_state_count=0,
+                    checked_order_event_count=0,
                     conflict_count=1,
                     message=f"runtime reconciliation unavailable: {type(exc).__name__}: {exc}",
                 )
@@ -6253,18 +6362,18 @@ calculate();
                 "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">",
                 f"  <title>{html.escape(title)}</title>",
                 "  <style>",
-                "    :root { --bg: #f6f2ea; --card: #fffdf9; --ink: #17211b; --muted: #607068; --accent: #0f5e59; --accent-2: #8f5a2a; --border: #d8ccb7; --soft-border: #eadfce; --soft-fill: #fff9f0; --good: #216e39; --bad: #9a3412; --pending: #946200; --unknown: #5b5f97; }",
-                "    body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #f6f2ea; color: var(--ink); font-size: 14px; line-height: 1.45; }",
+                "    :root { --bg: #f4f6f8; --card: #ffffff; --ink: #111827; --muted: #5b6675; --accent: #0f766e; --accent-2: #475569; --border: #d8dee8; --soft-border: #e6ebf2; --soft-fill: #f8fafc; --good: #15803d; --bad: #b42318; --pending: #b7791f; --unknown: #4f46e5; }",
+                "    body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }",
                 "    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }",
-                "    .hero { padding: 34px 40px 22px; border-bottom: 1px solid var(--border); background: linear-gradient(135deg, #fff9ef, #f0e3ca); }",
-                "    .hero h1 { margin: 0 0 8px; font-size: 2.05rem; letter-spacing: 0; }",
+                "    .hero { padding: 26px 40px 18px; border-bottom: 1px solid var(--border); background: #ffffff; }",
+                "    .hero h1 { margin: 0 0 8px; font-size: 1.85rem; letter-spacing: 0; }",
                 "    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; font-weight: 700; margin-bottom: 10px; }",
                 "    nav { padding: 16px 40px 0; }",
                 "    section { padding: 24px 40px; }",
                 "    .grid, .stage-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }",
-                "    .strategy-card, .stage-card, .session-summary { display: block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 10px 24px rgba(47, 39, 22, 0.06); }",
-                "    .strategy-card { transition: transform 160ms ease, box-shadow 160ms ease; } .strategy-card:hover { transform: translateY(-2px); box-shadow: 0 20px 38px rgba(47, 39, 22, 0.1); text-decoration: none; }",
-                "    .strategy-card h2, .stage-card h3 { margin: 0 0 8px; font-family: Georgia, 'Times New Roman', serif; }",
+                "    .strategy-card, .stage-card, .session-summary { display: block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05); }",
+                "    .strategy-card { transition: transform 160ms ease, box-shadow 160ms ease; } .strategy-card:hover { transform: translateY(-2px); box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08); text-decoration: none; }",
+                "    .strategy-card h2, .stage-card h3 { margin: 0 0 8px; font-family: 'Segoe UI', Arial, sans-serif; }",
                 "    .summary-shell { padding: 22px; }",
                 "    .summary-shell + .summary-shell { margin-top: 14px; }",
                 "    .summary-grid, .stage-metrics, .decision-strip { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }",
@@ -6285,8 +6394,9 @@ calculate();
                 "    .badge { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 4px 9px; font-size: 0.72rem; line-height: 1.15; font-weight: 750; letter-spacing: 0; border: 1px solid currentColor; white-space: nowrap; }",
                 "    .badge-ready, .badge-pass, .badge-selected, .badge-bull, .badge-bear, .badge-bull_cf, .badge-bear_cf, .badge-yes { color: var(--good); background: rgba(33,110,57,0.09); }",
                 "    .badge-in_progress, .badge-unknown, .badge-no_trigger, .badge-n_a, .badge-none { color: var(--unknown); background: rgba(91,95,151,0.1); }",
-                "    .badge-warning, .badge-pending { color: var(--pending); background: rgba(148,98,0,0.1); }",
-                "    .badge-no_go, .badge-failed, .badge-rejected, .badge-no { color: var(--bad); background: rgba(154,52,18,0.1); }",
+                "    .badge-active { color: var(--good); background: rgba(21,128,61,0.09); }",
+                "    .badge-warning, .badge-pending, .badge-stale, .badge-degraded { color: var(--pending); background: rgba(183,121,31,0.12); }",
+                "    .badge-no_go, .badge-failed, .badge-rejected, .badge-fail, .badge-unavailable, .badge-no { color: var(--bad); background: rgba(180,35,24,0.1); }",
                 "    .badge-position_closed, .badge-close { color: #0f766e; background: rgba(15,118,110,0.12); }",
                 "    .badge-order_not_filled { color: #b45309; background: rgba(180,83,9,0.13); }",
                 "    .badge-order_waiting_for_trigger, .badge-order_waiting { color: #4338ca; background: rgba(67,56,202,0.11); }",
@@ -6441,17 +6551,39 @@ calculate();
                 "    .empty-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; color: var(--muted); }",
                 "    .tool-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }",
                 "    .operator-nav-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }",
-                "    .operator-nav-link { display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(15,94,89,0.18); background: rgba(255,255,255,0.72); color: var(--accent); border-radius: 999px; padding: 8px 12px; font-size: 0.84rem; font-weight: 700; }",
-                "    .operator-nav-link:hover { text-decoration: none; background: rgba(255,255,255,0.95); }",
+                "    .operator-nav-link { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--soft-border); background: #ffffff; color: #334155; border-radius: 8px; padding: 8px 12px; font-size: 0.84rem; font-weight: 700; }",
+                "    .operator-nav-link:hover { text-decoration: none; border-color: rgba(15,118,110,0.42); color: var(--accent); }",
                 "    .operator-nav-link-active { background: var(--accent); color: white; border-color: var(--accent); }",
-                "    .operator-status-shell { display: grid; gap: 14px; }",
+                "    .operator-status-shell { display: grid; gap: 14px; padding: 18px 20px; }",
+                "    .operator-health-strip { display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap: 10px; align-items: stretch; }",
+                "    .operator-health-item { min-width: 0; border: 1px solid var(--soft-border); border-radius: 8px; background: var(--soft-fill); padding: 10px 12px; }",
+                "    .operator-health-item span { display: block; color: var(--muted); font-size: 0.72rem; line-height: 1.2; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 7px; }",
+                "    .operator-health-value { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; min-width: 0; color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }",
+                "    .operator-status-groups { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 12px; align-items: start; }",
+                "    .operator-status-group { min-width: 0; border: 1px solid var(--soft-border); border-radius: 8px; background: #ffffff; overflow: hidden; }",
+                "    .operator-status-group h3 { margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--soft-border); background: #f8fafc; color: #334155; font-size: 0.8rem; font-family: 'Segoe UI', Arial, sans-serif; font-weight: 850; text-transform: uppercase; letter-spacing: 0.04em; }",
+                "    .operator-status-group-body { display: grid; gap: 0; }",
+                "    .operator-status-item { display: grid; grid-template-columns: minmax(105px, 0.9fr) minmax(0, 1.4fr); gap: 10px; align-items: center; min-width: 0; padding: 10px 12px; border-top: 1px solid #eef2f7; }",
+                "    .operator-status-item:first-child { border-top: 0; }",
+                "    .operator-status-item span { color: var(--muted); font-size: 0.76rem; line-height: 1.25; font-weight: 750; }",
+                "    .operator-status-value { min-width: 0; color: var(--ink); font-size: 0.9rem; line-height: 1.28; font-weight: 760; overflow-wrap: anywhere; }",
+                "    .operator-status-item-compact { grid-template-columns: minmax(150px, 0.35fr) minmax(0, 1fr); align-items: start; }",
+                "    .operator-status-item-compact .operator-status-value { font-family: Consolas, 'Courier New', monospace; font-size: 0.78rem; color: #334155; }",
+                "    .operator-diagnostics { border: 1px solid var(--soft-border); border-radius: 8px; background: #ffffff; overflow: hidden; }",
+                "    .operator-diagnostics summary { cursor: pointer; list-style: none; padding: 10px 12px; color: #334155; font-weight: 850; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.78rem; }",
+                "    .operator-diagnostics summary::-webkit-details-marker { display: none; }",
+                "    .operator-diagnostics summary::before { content: '+'; display: inline-flex; width: 18px; margin-right: 8px; color: var(--accent); font-weight: 900; }",
+                "    .operator-diagnostics[open] summary::before { content: '-'; }",
+                "    .operator-diagnostics-grid { display: grid; gap: 0; border-top: 1px solid var(--soft-border); }",
                 "    .operator-alert-list { display: grid; gap: 10px; }",
-                "    .operator-alert { border-radius: 8px; padding: 11px 12px; border: 1px solid var(--soft-border); background: #fff8ef; color: var(--ink); }",
-                "    .operator-alert-good { border-color: rgba(33,110,57,0.28); background: rgba(33,110,57,0.08); color: var(--good); }",
-                "    .operator-alert-warning { border-color: rgba(148,98,0,0.28); background: rgba(148,98,0,0.09); color: #7a5600; }",
-                "    .operator-alert-bad { border-color: rgba(154,52,18,0.26); background: rgba(154,52,18,0.09); color: var(--bad); }",
+                "    .operator-alert { border-radius: 8px; padding: 11px 12px; border: 1px solid var(--soft-border); background: #ffffff; color: var(--ink); font-weight: 650; }",
+                "    .operator-alert-good { border-color: rgba(21,128,61,0.28); background: rgba(21,128,61,0.07); color: var(--good); }",
+                "    .operator-alert-warning { border-color: rgba(183,121,31,0.34); background: rgba(183,121,31,0.09); color: #8a5a12; }",
+                "    .operator-alert-bad { border-color: rgba(180,35,24,0.28); background: rgba(180,35,24,0.08); color: var(--bad); }",
                 "    .operator-command-strip { display: flex; flex-wrap: wrap; gap: 8px; }",
-                "    .operator-command-strip code { display: inline-flex; align-items: center; border: 1px solid var(--soft-border); border-radius: 999px; background: #fffaf3; padding: 7px 10px; font-size: 0.78rem; overflow-wrap: anywhere; }",
+                "    .operator-command-strip code { display: inline-flex; align-items: center; border: 1px solid var(--soft-border); border-radius: 8px; background: #f8fafc; padding: 7px 10px; font-size: 0.78rem; overflow-wrap: anywhere; }",
+                "    @media (max-width: 1280px) { .operator-health-strip { grid-template-columns: repeat(3, minmax(150px, 1fr)); } .operator-status-groups { grid-template-columns: repeat(2, minmax(240px, 1fr)); } }",
+                "    @media (max-width: 720px) { .operator-health-strip, .operator-status-groups { grid-template-columns: 1fr; } .operator-status-item, .operator-status-item-compact { grid-template-columns: 1fr; gap: 4px; } }",
                 "    .chart-review-summary p { margin: 0 0 14px; }",
                 "    .chart-review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(520px, 100%), 1fr)); gap: 18px; }",
                 "    .chart-review-card { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 18px; display: grid; gap: 14px; }",
