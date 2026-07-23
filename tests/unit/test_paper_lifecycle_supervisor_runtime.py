@@ -11,6 +11,7 @@ import pytest
 
 from tfis.brokers import BrokerAdapterError, FyersBrokerAdapter
 from tfis.domain import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment, StrategyExpiryPolicy, StrategyRule
+from tfis.normalized_events import EventEnvelope, PaperEventType, SelectedContractQuoteEvent
 from tfis.paper import (
     build_paper_expiry_governance,
     build_paper_live_state_store_from_yaml,
@@ -1989,6 +1990,139 @@ def test_process_target_records_market_data_unavailable_without_state_transition
     assert audit_rows[-1]["status"] == "SKIPPED"
     assert audit_rows[-1]["reason_code"] == "selected_contract_event_fetch_failed"
     assert audit_rows[-1]["trade_id"].startswith("S23-S23_NIFTY_OP_SELL_WK_DIFF_2D_3D")
+
+
+def test_process_target_records_stale_selected_contract_event_without_state_transition(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(
+        "\n".join(
+            (
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+            )
+        ),
+        encoding="utf-8",
+    )
+    target_spec = load_paper_lifecycle_supervisor_target_specs(
+        _targets_yaml(
+            tmp_path,
+            config_path=config_path,
+            artifact_root=tmp_path / "data" / "strategies" / "S23",
+        ),
+        repo_root=tmp_path,
+    )[0]
+    order_dir = target_spec.artifact_root / "2026-07-22" / "session" / "BRANCH"
+    order_state, _state_path, _events_path = PaperOrderStateStore().create_waiting_order_from_live_decision(
+        order_dir,
+        strategy_rule=_strategy_rule(),
+        decision=_ready_summary(session_date=date(2026, 7, 22)),
+        created_at=datetime(2026, 7, 22, 9, 30),
+    )
+
+    class FakeLiveStateStore:
+        def __init__(self) -> None:
+            self.heartbeats: list[dict[str, object]] = []
+
+        def acquire_trade_lock(self, **_kwargs) -> bool:
+            return True
+
+        def release_trade_lock(self, **_kwargs) -> None:
+            return None
+
+        def set_watch_heartbeat(self, **kwargs) -> None:
+            self.heartbeats.append(kwargs)
+
+    class SupervisorMustNotRun:
+        def expire_waiting_order_from_previous_session(self, *_args, **_kwargs):
+            return None
+
+        def supervise(self, *_args, **_kwargs):
+            raise AssertionError("supervisor must not transition state with stale selected-contract data")
+
+    live_state_store = FakeLiveStateStore()
+    runtime = module._TargetRuntime(
+        spec=target_spec,
+        config=PaperLifecycleRuntimeConfig.from_yaml(config_path),
+        timezone_name="Asia/Kolkata",
+        timezone=module.ZoneInfo("Asia/Kolkata"),
+        adapter=object(),
+        live_state_store=live_state_store,
+        supervisor=SupervisorMustNotRun(),
+    )
+    target = type(
+        "Target",
+        (),
+        {
+            "directory": order_dir,
+            "session_date": date(2026, 7, 22),
+            "mode": "order",
+            "order_state": order_state,
+            "position_state": None,
+        },
+    )()
+    stale_event = SelectedContractQuoteEvent(
+        envelope=EventEnvelope(
+            event_type=PaperEventType.SELECTED_CONTRACT_QUOTE,
+            session_date=date(2026, 7, 22),
+            effective_timestamp=datetime(2026, 7, 22, 9, 55),
+            captured_at=datetime(2026, 7, 22, 9, 55),
+            timezone="Asia/Kolkata",
+            source_type="broker",
+            source_id="stale-selected-contract-quote",
+            synthetic_fixture=True,
+            normalized_by="test",
+        ),
+        symbol=order_state.selected_contract_symbol,
+        option_type=OptionType.PUT,
+        strike=24150.0,
+        expiry=date(2026, 7, 23),
+        bid=199.0,
+        ask=201.0,
+        ltp=200.0,
+        oi=100000.0,
+    )
+
+    monkeypatch.setattr(module, "_fetch_selected_contract_events", lambda **_kwargs: (stale_event,))
+
+    module._process_target(
+        runtime=runtime,
+        target=target,
+        held_trade_ids={},
+        lock_ttl_seconds=30,
+        watch_cutoff_time=time(15, 30),
+        dashboard_rebuild_disabled=True,
+        evaluated_at=datetime(2026, 7, 22, 10, 0),
+        tfis_root=tmp_path,
+        max_selected_contract_event_age_seconds=120.0,
+    )
+
+    output = capsys.readouterr().out
+    assert "WARNING market_data_unavailable" in output
+    assert "selected_contract_event_stale" in output
+    assert live_state_store.heartbeats[0]["payload"]["status"] == "MARKET_DATA_UNAVAILABLE"
+    assert live_state_store.heartbeats[0]["payload"]["reason_code"] == "selected_contract_event_stale"
+    persisted = PaperOrderStateStore().load_state(order_dir)
+    assert persisted.status.value == "PAPER_ORDER_WAITING_FOR_TRIGGER"
+    assert not (order_dir / "selected_contract_market_events.jsonl").exists()
+    audit_rows = [
+        json.loads(line)
+        for line in (order_dir / "paper_lifecycle_supervisor_events.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert audit_rows[-1]["event_type"] == "MARKET_DATA_UNAVAILABLE"
+    assert audit_rows[-1]["status"] == "SKIPPED"
+    assert audit_rows[-1]["reason_code"] == "selected_contract_event_stale"
 
 
 def test_connect_paper_broker_runtime_contextualizes_health_failures() -> None:

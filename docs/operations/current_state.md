@@ -45,6 +45,13 @@ change in a meaningful way.
   reports the dashboard listener as `DashboardProcesses=1` with
   `Role=dashboard_port_owner` instead of showing zero processes while the port
   is accepting connections
+- active-market selected-contract freshness is now fail-closed in the shared
+  paper lifecycle supervisor runner: `scripts/run_tfis_paper_lifecycle_supervisor.py`
+  exposes `--max-selected-contract-event-age-seconds` with a default of
+  `120s`, and stale, missing, or future-dated selected-contract events are
+  recorded as `MARKET_DATA_UNAVAILABLE` heartbeat/audit evidence before
+  order/position lifecycle logic can run; this is a safety gate only and does
+  not change entry, target, SL, FSL, rollover, or live-order routing behavior
 - as of Wednesday, July 22, 2026, the active implementation track is now the
   single TFIS application-startup contract: document the ordered queue, make
   FYERS auth preparation validate existing token state before refreshing under

@@ -8,7 +8,7 @@ import subprocess
 import sys
 import time as time_module
 from dataclasses import dataclass
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
@@ -83,6 +83,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--targets-config", default=str(DEFAULT_TARGETS_CONFIG))
     parser.add_argument("--session-date", help="YYYY-MM-DD. Defaults to current date in target timezone.")
     parser.add_argument("--poll-seconds", type=float, default=5.0)
+    parser.add_argument(
+        "--max-selected-contract-event-age-seconds",
+        type=float,
+        default=120.0,
+        help="Fail closed when the latest selected-contract market event is older than this threshold.",
+    )
     parser.add_argument("--max-iterations", type=int, default=0, help="0 means run until --until.")
     parser.add_argument("--until", default="15:30", help="Local HH:MM cutoff for the supervisor loop.")
     parser.add_argument("--dashboard-output-root", default="tmp/operator_dashboard")
@@ -196,6 +202,7 @@ def main(argv: list[str] | None = None) -> int:
                         dashboard_rebuild_disabled=args.disable_dashboard_rebuild,
                         evaluated_at=evaluated_at,
                         tfis_root=Path(args.tfis_root),
+                        max_selected_contract_event_age_seconds=args.max_selected_contract_event_age_seconds,
                     )
 
             _release_stale_handles(
@@ -447,6 +454,7 @@ def _process_target(
     dashboard_rebuild_disabled: bool,
     evaluated_at: datetime,
     tfis_root: Path,
+    max_selected_contract_event_age_seconds: float = 120.0,
 ) -> None:
     key = (runtime.spec.strategy_code, str(target.directory))
     context = _build_lifecycle_context(target, session_date=target.session_date)
@@ -531,6 +539,21 @@ def _process_target(
             evaluated_at=evaluated_at,
             reason_code="selected_contract_event_fetch_failed",
             message=f"{type(exc).__name__}: {exc}",
+        )
+        return
+    stale_reason = _selected_contract_events_stale_reason(
+        events=events,
+        evaluated_at=evaluated_at,
+        max_age_seconds=max_selected_contract_event_age_seconds,
+    )
+    if stale_reason is not None:
+        reason_code, message = stale_reason
+        _record_market_data_unavailable(
+            runtime=runtime,
+            context=context,
+            evaluated_at=evaluated_at,
+            reason_code=reason_code,
+            message=message,
         )
         return
     append_selected_contract_market_events(
@@ -627,7 +650,53 @@ def _process_target(
         runtime.live_state_store.release_trade_lock(
             trade_id=held_trade_ids.pop(key, context.trade_id),
             owner_id=owner_id,
+    )
+
+
+def _selected_contract_events_stale_reason(
+    *,
+    events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
+    evaluated_at: datetime,
+    max_age_seconds: float,
+) -> tuple[str, str] | None:
+    if max_age_seconds <= 0:
+        return None
+    if not events:
+        return (
+            "selected_contract_event_missing",
+            "No selected-contract market event was returned for lifecycle supervision.",
         )
+    latest_timestamp = max(event.envelope.effective_timestamp for event in events)
+    evaluated = _as_comparable_datetime(evaluated_at, reference=latest_timestamp)
+    latest = _as_comparable_datetime(latest_timestamp, reference=evaluated)
+    future_tolerance = timedelta(seconds=5)
+    if latest > evaluated + future_tolerance:
+        return (
+            "selected_contract_event_future_timestamp",
+            (
+                "Latest selected-contract market event timestamp is in the future: "
+                f"latest={latest.isoformat()} evaluated_at={evaluated.isoformat()}."
+            ),
+        )
+    age_seconds = max(0.0, (evaluated - latest).total_seconds())
+    if age_seconds > max_age_seconds:
+        return (
+            "selected_contract_event_stale",
+            (
+                "Latest selected-contract market event is stale: "
+                f"age_seconds={age_seconds:.1f} max_age_seconds={max_age_seconds:.1f} "
+                f"latest={latest.isoformat()} evaluated_at={evaluated.isoformat()}."
+            ),
+        )
+    return None
+
+
+def _as_comparable_datetime(value: datetime, *, reference: datetime) -> datetime:
+    if value.tzinfo is None and reference.tzinfo is not None:
+        return value.replace(tzinfo=reference.tzinfo)
+    if value.tzinfo is not None and reference.tzinfo is not None:
+        return value.astimezone(reference.tzinfo)
+    return value
 
 
 def _record_market_data_unavailable(

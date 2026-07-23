@@ -31,6 +31,12 @@
   a `netstat -ano` dashboard port-owner fallback; the real status console now
   shows the dashboard listener as `DashboardProcesses=1` with
   `Role=dashboard_port_owner`
+- as of Thursday, July 23, 2026, the shared paper lifecycle supervisor fails
+  closed on stale selected-contract market evidence: successful quote/bar
+  fetches are checked against a configurable freshness threshold before any
+  waiting-order or open-position lifecycle decision, and stale/missing/future
+  events write `MARKET_DATA_UNAVAILABLE` heartbeat and audit evidence instead
+  of driving fills, exits, targets, SL, FSL, or rollover handling
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate

@@ -55,6 +55,23 @@ way.
    unavailable; the real host status now reports `DashboardProcesses=1` for
    the listening dashboard instead of zero.
 
+0.08. `DONE` Tighten active-market stale quote and heartbeat handling.
+   During active market hours, open positions and waiting orders must not keep
+   advancing lifecycle decisions on stale or ambiguous selected-contract
+   market data. Identify the current freshness checks in the shared paper
+   lifecycle supervisor, make stale selected-contract evidence fail closed with
+   explicit heartbeat/audit/operator status, add focused tests, and keep the
+   change paper-safe without altering strategy entry, target, SL, FSL, or
+   rollover rules. Completed on Thursday, July 23, 2026: the shared lifecycle
+   supervisor runner now has an explicit
+   `--max-selected-contract-event-age-seconds` gate, defaulting to `120s`;
+   successful but stale, missing, or future-dated selected-contract events are
+   treated as `MARKET_DATA_UNAVAILABLE`, persisted to heartbeat/audit evidence,
+   and skipped before order/position lifecycle logic can run. Focused runtime
+   coverage proves stale selected-contract data does not fill waiting orders,
+   does not append selected-contract market-event evidence as valid runtime
+   input, and leaves the paper order unchanged.
+
 0.1. `DONE` Establish one TFIS application-startup contract before
    adding any live-order capability.
    TFIS must start as one application that can manage many enabled strategies,
