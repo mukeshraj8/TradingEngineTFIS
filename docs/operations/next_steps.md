@@ -6,6 +6,26 @@ way.
 
 ## Immediate Next Priorities
 
+0.0. `DONE` Correct dashboard order/trade terminology before live-money
+   operation.
+   The dashboard now treats a finalized order as an order, not an open trade:
+   `trades/index.html` is the Active Trades Monitor for filled/open paper
+   positions only, `orders/index.html` is the consolidated Orders Manager for
+   waiting/actionable finalized paper orders across strategies, and strategy
+   pages now show separate `Active Trades` and `Orders Finalized` sections.
+   Remaining follow-up: the same vocabulary should be carried into any future
+   broker-backed live execution page so broker order state, TFIS order state,
+   and open positions never share one ambiguous "trade" label.
+
+0.05. `DONE` Remove strategy-wrapper serialization from TFIS Morning Startup.
+   The July 23, 2026 live-paper startup proved that launching configured
+   wrappers one by one is not acceptable for multi-strategy TFIS operation:
+   S21 was delayed behind S23. The current fix launches all configured morning
+   wrappers concurrently after shared auth preparation, then waits for all of
+   them before starting the shared lifecycle supervisor. Follow-up: add a
+   stronger process/runtime status detector so Windows venv launcher PIDs and
+   real Python PIDs do not make operator status look inconsistent.
+
 0.1. `DONE` Establish one TFIS application-startup contract before
    adding any live-order capability.
    TFIS must start as one application that can manage many enabled strategies,
@@ -203,8 +223,8 @@ way.
    dashboard-local active/historical row filtering. A same-day follow-up slice
    has now also aligned each strategy page to that same current-day anchor
    rule, so stale past-session waiting/not-filled rows no longer appear inside
-   a strategy page's active "Trades Taken" monitor or Operator Status panel
-   just because that strategy has not produced a fresh session today.
+   a strategy page's active monitor or Operator Status panel just because that
+   strategy has not produced a fresh session today.
    Update on Wednesday, July 22, 2026:
    the reconciliation slice is now extended beyond positions. The
    `paper_runtime_reconciliation` check confirms persisted position states
@@ -660,10 +680,11 @@ way.
    outcomes from that evidence. The validator now also replays persisted
    position threshold outcomes for target, active SL/FSL, and still-open or
    carry-forward states. The remaining validation is to prove that this stream
-   is populated continuously during a real market watch. The Trades Taken
-   dashboard now surfaces that stream as event count, latest timestamp,
-   age/staleness, watcher PID, source, and Market Events artifact link, so the
-   live validation should check those fields alongside price and P&L. The
+   is populated continuously during a real market watch. The Active Trades and
+   Orders Manager dashboard surfaces now show that stream as event count,
+   latest timestamp, age/staleness, watcher PID, source, and Market Events
+   artifact link, so the live validation should check those fields alongside
+   price and P&L. The
    captured-session validator now also recognizes expiry force-close and
    next-day SL reset replay outcomes from persisted artifacts. Improve
    TFIS-only supervisor observability so an

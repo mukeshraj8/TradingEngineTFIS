@@ -157,26 +157,49 @@ function Invoke-TfisMorningStartupWrappers {
     }
 
     $script:MorningWrapperFailures = @()
+    $wrapperProcesses = @()
     foreach ($wrapperPathText in $wrapperPaths) {
         $wrapperPath = Resolve-TfisPath ([string]$wrapperPathText)
         if (-not (Test-Path $wrapperPath)) {
             throw "Missing TFIS morning startup wrapper: $wrapperPath"
         }
-        Write-Host "Starting TFIS morning wrapper with shared auth prepared: $wrapperPath"
-        & powershell.exe `
-            -NoProfile `
-            -ExecutionPolicy Bypass `
-            -File $wrapperPath `
-            -TfisRoot $TfisRoot `
-            -RunDate $RunDate `
-            -SkipRefresh `
-            -DisablePositionWatch
-        if ($LASTEXITCODE -ne 0) {
+        $wrapperArgs = @(
+            "-NoProfile",
+            "-ExecutionPolicy", "Bypass",
+            "-File", $wrapperPath,
+            "-TfisRoot", $TfisRoot,
+            "-RunDate", $RunDate.ToString("o"),
+            "-SkipRefresh",
+            "-DisablePositionWatch"
+        )
+        Write-Host "Launching TFIS morning wrapper with shared auth prepared: $wrapperPath"
+        $wrapperProcess = Start-Process `
+            -FilePath "powershell.exe" `
+            -ArgumentList $wrapperArgs `
+            -WorkingDirectory $repoRoot `
+            -PassThru `
+            -WindowStyle Normal
+        $wrapperProcesses += [PSCustomObject]@{
+            Path = $wrapperPath
+            Process = $wrapperProcess
+        }
+        Write-Host "Started TFIS morning wrapper PID=$($wrapperProcess.Id) path=$wrapperPath"
+    }
+
+    foreach ($wrapperLaunch in $wrapperProcesses) {
+        $wrapperProcess = $wrapperLaunch.Process
+        $wrapperPath = $wrapperLaunch.Path
+        Write-Host "Waiting for TFIS morning wrapper PID=$($wrapperProcess.Id) path=$wrapperPath"
+        $wrapperProcess.WaitForExit()
+        if ($wrapperProcess.ExitCode -ne 0) {
             $script:MorningWrapperFailures += [PSCustomObject]@{
                 Path = $wrapperPath
-                ExitCode = $LASTEXITCODE
+                ExitCode = $wrapperProcess.ExitCode
             }
-            Write-Host "WARNING: TFIS morning startup wrapper failed with exit code $LASTEXITCODE`: $wrapperPath"
+            Write-Host "WARNING: TFIS morning startup wrapper failed with exit code $($wrapperProcess.ExitCode): $wrapperPath"
+        }
+        else {
+            Write-Host "TFIS morning wrapper completed successfully: $wrapperPath"
         }
     }
 }

@@ -2,6 +2,23 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 23, 2026, the operator dashboard now separates
+  finalized orders from open trades: the global Active Trades Monitor shows
+  open paper positions only, the new global Orders Manager shows
+  waiting/actionable finalized paper orders across strategies, strategy pages
+  split `Active Trades` from `Orders Finalized`, and the dashboard manifest
+  exposes both `trades_page` and `orders_page`
+- as of Thursday, July 23, 2026, the live-paper morning startup was observed
+  end to end: the Windows scheduled task fired at `09:08:38`, S23 initially
+  produced `09:16` artifacts, a sequential-wrapper startup gap delayed S21,
+  manual recovery brought both S21 and S23 through `09:16`, `09:25`, and
+  `09:30`, final paper order states were written, the shared lifecycle
+  supervisor was started once, and prod readiness reported PASS
+- as of Thursday, July 23, 2026, `reset_tfis_dashboard_and_watchers.ps1
+  -MorningStartup` now launches all configured strategy wrappers concurrently
+  after app-level auth preparation and waits for all of them before shared
+  supervisor startup, removing the S21-behind-S23 serialization issue for
+  future scheduled runs
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate

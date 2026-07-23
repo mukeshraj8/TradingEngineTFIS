@@ -6,6 +6,27 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 23, 2026, the operator dashboard terminology has been
+  corrected for paper/live-readiness: `trades/index.html` is now the Active
+  Trades Monitor and shows only open paper positions, `orders/index.html` is
+  the new Orders Manager for finalized paper orders that are waiting for fill
+  or operator action, and each strategy page separates `Active Trades` from
+  `Orders Finalized`; this is a dashboard/view contract change only and does
+  not change paper order fill, target, SL, FSL, rollover, or live-order
+  routing behavior
+- during the Thursday, July 23, 2026 live-paper morning startup, the scheduled
+  task launched correctly but exposed a startup orchestration gap: configured
+  strategy wrappers were being run sequentially, so S21 waited behind S23
+  instead of running its own stage calculations at the same time; the day's run
+  was recovered manually, both S21 and S23 completed `09:16`, `09:25`, and
+  `09:30` stage artifacts and final summaries, the shared lifecycle supervisor
+  was started once, and `pre_live_readiness.py --profile prod --require-token
+  --json` reported `overall_status=PASS`
+- the underlying startup script has now been corrected: in `-MorningStartup`
+  mode, `scripts/reset_tfis_dashboard_and_watchers.ps1` launches every
+  configured strategy wrapper first and then waits for all wrapper processes,
+  preserving one app-owned auth preparation while avoiding strategy-level
+  startup serialization as TFIS grows beyond S21/S23
 - as of Wednesday, July 22, 2026, the active implementation track is now the
   single TFIS application-startup contract: document the ordered queue, make
   FYERS auth preparation validate existing token state before refreshing under
@@ -288,11 +309,11 @@ change in a meaningful way.
   unfilled rows cannot reappear in the live all-trades or chart-review
   surfaces just because another strategy has not produced a fresh session yet
 - as of Tuesday, July 21, 2026, the same current-day anchor rule now also
-  applies to each individual strategy page's live "Trades Taken" monitor and
-  Operator Status panel, so a past-session `ORDER_NOT_FILLED` or waiting row
-  can still remain visible in the latest-session decision summary for audit
-  purposes, but it no longer leaks back into the active strategy monitor as if
-  it were a current live trade
+  applies to each individual strategy page's active monitor and Operator
+  Status panel, so a past-session `ORDER_NOT_FILLED` or waiting row can still
+  remain visible in the latest-session decision summary for audit purposes,
+  but it no longer leaks back into the active strategy monitor as if it were a
+  current live trade
 - as of Tuesday, July 21, 2026, the shared paper broker-bootstrap seam is now
   tighter too: the neutral live-ingress runner and the FYERS snapshot
   collector no longer recreate FYERS adapter-construction rules inline, and

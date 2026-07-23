@@ -226,6 +226,7 @@ class DashboardBuildResult:
     manifest_json: Path
     strategy_pages: dict[str, Path]
     trades_page: Path
+    orders_page: Path
     historical_trades_page: Path
     tool_pages: dict[str, Path]
     review_data_pages: dict[str, Path]
@@ -298,10 +299,21 @@ class TfisOperatorDashboardBuilder:
         trades_dir.mkdir(parents=True, exist_ok=True)
         trades_page = trades_dir / "index.html"
         trades_page.write_text(
-            self._render_all_trades_page(
+            self._render_active_trades_page(
                 strategy_summaries=list(zip(self._strategy_configs, summaries, strict=False)),
                 dashboard_root=target,
                 page_path=trades_page,
+            ),
+            encoding="utf-8",
+        )
+        orders_dir = target / "orders"
+        orders_dir.mkdir(parents=True, exist_ok=True)
+        orders_page = orders_dir / "index.html"
+        orders_page.write_text(
+            self._render_orders_manager_page(
+                strategy_summaries=list(zip(self._strategy_configs, summaries, strict=False)),
+                dashboard_root=target,
+                page_path=orders_page,
             ),
             encoding="utf-8",
         )
@@ -349,6 +361,7 @@ class TfisOperatorDashboardBuilder:
                         for config, sessions in zip(self._strategy_configs, summaries, strict=False)
                     ],
                     "trades_page": str(Path("trades") / "index.html"),
+                    "orders_page": str(Path("orders") / "index.html"),
                     "historical_trades_page": str(Path("trades") / "history" / "index.html"),
                     "tools": {
                         name: str(path.relative_to(target))
@@ -371,6 +384,7 @@ class TfisOperatorDashboardBuilder:
             manifest_json=manifest_json,
             strategy_pages=strategy_pages,
             trades_page=trades_page,
+            orders_page=orders_page,
             historical_trades_page=historical_trades_page,
             tool_pages=tool_pages,
             review_data_pages=review_data_pages,
@@ -1103,6 +1117,10 @@ class TfisOperatorDashboardBuilder:
                 dashboard_root / "strategies" / config.strategy_code / "index.html",
                 start=index_path.parent,
             ).replace("\\", "/")
+            active_order_count = self._count_rows_by_status_kinds(
+                strategy_rows,
+                {"waiting", "action"},
+            )
             cards.append(
                 "\n".join(
                     [
@@ -1112,8 +1130,8 @@ class TfisOperatorDashboardBuilder:
                         f"<div class=\"metric-row\"><span>Latest Session</span><strong>{html.escape(latest.session_date.isoformat() if latest else 'none')}</strong></div>",
                         f"<div class=\"metric-row\"><span>Status</span>{self._badge(latest.session_status if latest else 'NO_DATA')}</div>",
                         f"<div class=\"metric-row\"><span>Final Monthly Status</span>{self._badge(latest.final_monthly_status or 'n/a') if latest else self._badge('n/a')}</div>",
-                        f"<div class=\"metric-row\"><span>Visible Trades</span><strong>{strategy_counts['unique_trades']}</strong></div>",
                         f"<div class=\"metric-row\"><span>Open Positions</span><strong>{strategy_counts['open_positions']}</strong></div>",
+                        f"<div class=\"metric-row\"><span>Active Orders</span><strong>{active_order_count}</strong></div>",
                         f"<div class=\"metric-row\"><span>Action Required</span><strong>{strategy_counts['action_required']}</strong></div>",
                         f"<div class=\"metric-row\"><span>Closed Trades</span><strong>{strategy_counts['closed_trades']}</strong></div>",
                         "</a>",
@@ -1180,6 +1198,18 @@ class TfisOperatorDashboardBuilder:
             page_path=page_path,
             latest_session_date=latest.session_date if latest else None,
             anchor_to_current_session=True,
+            status_kinds={"open"},
+            empty_message="No open paper positions for the latest session.",
+            unique_label="Open Position Rows",
+        )
+        orders_block = self._render_trade_ledger_section(
+            rows=trade_rows,
+            page_path=page_path,
+            latest_session_date=latest.session_date if latest else None,
+            anchor_to_current_session=True,
+            status_kinds={"waiting", "action"},
+            empty_message="No active finalized paper orders are waiting for fill or operator action.",
+            unique_label="Active Order Rows",
         )
         history_rows = "\n".join(self._render_session_history_row(session, page_path=page_path) for session in sessions) or "<tr><td colspan=\"5\">No sessions found.</td></tr>"
         body = "\n".join(
@@ -1205,8 +1235,12 @@ class TfisOperatorDashboardBuilder:
                 latest_block,
                 "</section>",
                 "<section>",
-                "<h2>Trades Taken</h2>",
+                "<h2>Active Trades</h2>",
                 trades_block,
+                "</section>",
+                "<section>",
+                "<h2>Orders Finalized</h2>",
+                orders_block,
                 "</section>",
                 "<section>",
                 "<h2>Session History</h2>",
@@ -1219,7 +1253,7 @@ class TfisOperatorDashboardBuilder:
         )
         return self._render_page(title=config.display_name, body=body)
 
-    def _render_all_trades_page(
+    def _render_active_trades_page(
         self,
         *,
         strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
@@ -1240,6 +1274,11 @@ class TfisOperatorDashboardBuilder:
                     anchor_session_date=global_anchor_session_date,
                 )
             )
+        rows = [
+            row
+            for row in rows
+            if self._trade_status_kind(row) == "open"
+        ]
         rows = sorted(
             rows,
             key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
@@ -1249,8 +1288,8 @@ class TfisOperatorDashboardBuilder:
             [
                 "<header class=\"hero\">",
                 "<div class=\"eyebrow\">Operator View</div>",
-                "<h1>All Trades Monitor</h1>",
-                "<p>Consolidated paper-order and position visibility across every configured TFIS strategy.</p>",
+                "<h1>Active Trades Monitor</h1>",
+                "<p>Consolidated view of currently open paper positions across every configured TFIS strategy.</p>",
                 self._render_operator_nav(
                     dashboard_root=dashboard_root,
                     page_path=page_path,
@@ -1262,18 +1301,85 @@ class TfisOperatorDashboardBuilder:
                     title="Operator Status",
                 ),
                 "<section>",
-                "<h2>All Strategy Trades</h2>",
+                "<h2>All Open Positions</h2>",
                 self._render_trade_ledger_section(
                     rows=rows,
                     page_path=page_path,
                     latest_session_date=None,
                     anchor_session_date=global_anchor_session_date,
+                    status_kinds={"open"},
+                    empty_message="No open paper positions are currently visible.",
+                    unique_label="Open Position Rows",
                 ),
                 "</section>",
                 self._dashboard_refresh_script(),
             ]
         )
-        return self._render_page(title="All Trades Monitor", body=body)
+        return self._render_page(title="Active Trades Monitor", body=body)
+
+    def _render_orders_manager_page(
+        self,
+        *,
+        strategy_summaries: list[tuple[StrategyDashboardConfig, list[DashboardSessionSummary]]],
+        dashboard_root: Path,
+        page_path: Path,
+    ) -> str:
+        rows: list[DashboardTradeLedgerRow] = []
+        global_anchor_session_date = self._summary_anchor_session_date(strategy_summaries)
+        for config, sessions in strategy_summaries:
+            latest_session_date = sessions[0].session_date if sessions else None
+            rows.extend(
+                paper_trade_latest_monitor_rows(
+                    self._collect_trade_ledger_rows(
+                        config,
+                        latest_session_date=latest_session_date,
+                    ),
+                    latest_session_date=latest_session_date,
+                    anchor_session_date=global_anchor_session_date,
+                )
+            )
+        rows = [
+            row
+            for row in rows
+            if self._trade_status_kind(row) in {"waiting", "action"}
+        ]
+        rows = sorted(
+            rows,
+            key=lambda item: item.event_timestamp.isoformat() if item.event_timestamp else "",
+            reverse=True,
+        )
+        body = "\n".join(
+            [
+                "<header class=\"hero\">",
+                "<div class=\"eyebrow\">Operator View</div>",
+                "<h1>Orders Manager</h1>",
+                "<p>Consolidated view of finalized paper orders that are waiting for fill or operator action.</p>",
+                self._render_operator_nav(
+                    dashboard_root=dashboard_root,
+                    page_path=page_path,
+                    current_key="orders",
+                ),
+                "</header>",
+                self._render_operator_status_panel(
+                    rows=rows,
+                    title="Operator Status",
+                ),
+                "<section>",
+                "<h2>All Active Orders</h2>",
+                self._render_trade_ledger_section(
+                    rows=rows,
+                    page_path=page_path,
+                    latest_session_date=None,
+                    anchor_session_date=global_anchor_session_date,
+                    status_kinds={"waiting", "action"},
+                    empty_message="No active finalized paper orders are waiting for fill or operator action.",
+                    unique_label="Active Order Rows",
+                ),
+                "</section>",
+                self._dashboard_refresh_script(),
+            ]
+        )
+        return self._render_page(title="Orders Manager", body=body)
 
     def _render_historical_trades_page(
         self,
@@ -1347,9 +1453,14 @@ class TfisOperatorDashboardBuilder:
                 current_key == "home",
             ),
             (
-                "All Trades Monitor",
+                "Active Trades Monitor",
                 os.path.relpath(dashboard_root / "trades" / "index.html", start=page_path.parent).replace("\\", "/"),
                 current_key == "trades",
+            ),
+            (
+                "Orders Manager",
+                os.path.relpath(dashboard_root / "orders" / "index.html", start=page_path.parent).replace("\\", "/"),
+                current_key == "orders",
             ),
             (
                 "Historical Trades",
@@ -1492,14 +1603,14 @@ class TfisOperatorDashboardBuilder:
             alerts.append(
                 (
                     "bad",
-                    f"{stale_count} active trade row(s) have stale selected-contract stream evidence.",
+                    f"{stale_count} visible active row(s) have stale selected-contract stream evidence.",
                 )
             )
         if no_stream_count:
             alerts.append(
                 (
                     "bad",
-                    f"{no_stream_count} active trade row(s) have no selected-contract stream evidence yet.",
+                    f"{no_stream_count} visible active row(s) have no selected-contract stream evidence yet.",
                 )
             )
         if guardrail_failures:
@@ -1563,7 +1674,7 @@ class TfisOperatorDashboardBuilder:
             alerts.append(
                 (
                     "warning",
-                    "No active trade rows are currently visible. Review strategy pages or historical trades if this is unexpected.",
+                    "No active order or open-position rows are currently visible. Review strategy pages or historical trades if this is unexpected.",
                 )
             )
         alert_html = "".join(
@@ -1844,7 +1955,7 @@ class TfisOperatorDashboardBuilder:
                 "<header class=\"hero\">",
                 "<div class=\"eyebrow\">Operator View</div>",
                 "<h1>Charts</h1>",
-                "<p>Review selected-contract market evidence for active TFIS trades and jump to the monthly-status chart for NIFTY structure context.</p>",
+                "<p>Review selected-contract market evidence for active TFIS orders and open positions, and jump to the monthly-status chart for structure context.</p>",
                 self._render_operator_nav(
                     dashboard_root=dashboard_root,
                     page_path=page_path,
@@ -1955,7 +2066,7 @@ class TfisOperatorDashboardBuilder:
                 chart_html,
                 '<div class="chart-review-links">',
                 f'<a href="{html.escape(events_href)}">Market Events</a>',
-                f'<a href="{html.escape(os.path.relpath(page_path.parents[2] / "trades" / "index.html", start=page_path.parent).replace("\\\\", "/"))}">All Trades Monitor</a>',
+                f'<a href="{html.escape(os.path.relpath(page_path.parents[2] / "trades" / "index.html", start=page_path.parent).replace("\\\\", "/"))}">Active Trades Monitor</a>',
                 "</div>",
                 "</article>",
             ]
@@ -2592,12 +2703,15 @@ class TfisOperatorDashboardBuilder:
         include_terminal_rows: bool = False,
         anchor_to_current_session: bool = False,
         anchor_session_date: date | None = None,
+        status_kinds: set[str] | None = None,
+        empty_message: str = "No active paper orders or positions for the latest session.",
+        unique_label: str = "Unique Rows",
     ) -> str:
         effective_latest_session_date = latest_session_date
         if anchor_session_date is None and anchor_to_current_session:
             anchor_session_date = datetime.now().date()
         if not rows:
-            return '<div class="empty-panel">No paper trades have been recorded yet.</div>'
+            return f'<div class="empty-panel">{html.escape(empty_message)}</div>'
 
         latest_rows = list(
             paper_trade_latest_monitor_rows(
@@ -2607,15 +2721,26 @@ class TfisOperatorDashboardBuilder:
                 include_terminal_rows=include_terminal_rows,
             )
         )
+        if status_kinds is not None:
+            latest_rows = [
+                row
+                for row in latest_rows
+                if self._trade_status_kind(row) in status_kinds
+            ]
         if not latest_rows:
-            return '<div class="empty-panel">No active paper orders or positions for the latest session.</div>'
+            return f'<div class="empty-panel">{html.escape(empty_message)}</div>'
         summary_counts = paper_trade_summary_counts(latest_rows)
+        active_order_count = self._count_rows_by_status_kinds(
+            latest_rows,
+            {"waiting", "action"},
+        )
         header = "\n".join(
             [
                 '<div class="session-summary summary-shell trade-summary">',
                 '<div class="summary-grid">',
-                self._summary_metric("Unique Trades", str(summary_counts["unique_trades"])),
+                self._summary_metric(unique_label, str(summary_counts["unique_trades"])),
                 self._summary_metric("Open Positions", str(summary_counts["open_positions"])),
+                self._summary_metric("Active Orders", str(active_order_count)),
                 self._summary_metric("Action Required", str(summary_counts["action_required"])),
                 self._summary_metric("Closed Trades", str(summary_counts["closed_trades"])),
                 "</div>",
@@ -2665,6 +2790,25 @@ class TfisOperatorDashboardBuilder:
             lifecycle_status=row.lifecycle_status,
             manager_status=row.manager_status,
         )
+
+    @staticmethod
+    def _trade_status_kind(row: DashboardTradeLedgerRow) -> str:
+        return paper_trade_status_kind(
+            event_type=row.event_type,
+            lifecycle_status=row.lifecycle_status,
+            manager_status=row.manager_status,
+            fresh_entry_required=row.fresh_entry_required,
+            reverse_entry_required=row.reverse_entry_required,
+            rollover_required=row.rollover_required,
+        )
+
+    @classmethod
+    def _count_rows_by_status_kinds(
+        cls,
+        rows: list[DashboardTradeLedgerRow],
+        status_kinds: set[str],
+    ) -> int:
+        return sum(1 for row in rows if cls._trade_status_kind(row) in status_kinds)
 
     def _render_trade_ledger_row(self, row: DashboardTradeLedgerRow, *, page_path: Path) -> str:
         event_time = row.event_timestamp.isoformat(sep=" ", timespec="seconds") if row.event_timestamp else "n/a"

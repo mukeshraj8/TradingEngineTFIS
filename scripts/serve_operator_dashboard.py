@@ -47,6 +47,7 @@ class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
         elif (
             request_path.startswith("/strategies/")
             or request_path.startswith("/trades/")
+            or request_path.startswith("/orders/")
             or request_path.startswith("/tools/")
             or request_path.startswith("/data/")
         ):

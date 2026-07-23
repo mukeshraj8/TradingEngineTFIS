@@ -189,6 +189,12 @@ def test_reset_script_supports_single_application_morning_startup() -> None:
     assert "print('Prepared TFIS broker runtime auth for provider=' + provider)" in script
     assert "Invoke-TfisMorningStartupWrappers" in script
     assert "$script:MorningWrapperFailures = @()" in script
+    assert "$wrapperProcesses = @()" in script
+    assert "Start-Process `" in script
+    assert "Started TFIS morning wrapper PID=" in script
+    assert "Waiting for TFIS morning wrapper PID=" in script
+    assert "$wrapperProcess.WaitForExit()" in script
+    assert "TFIS morning wrapper completed successfully" in script
     assert "WARNING: TFIS morning startup wrapper failed with exit code" in script
     assert "Invoke-TfisMorningStartupWrappers" in script
     assert "$script:MorningWrapperFailures.Count" in script

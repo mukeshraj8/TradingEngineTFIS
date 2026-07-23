@@ -765,7 +765,8 @@ def test_dashboard_builds_from_stage_artifacts(
     assert "NIFTY_20260602_23800_PE" in strategy_html
     assert "NIFTY_20260602_23850_CE" in strategy_html
     assert "SELL CE" in strategy_html
-    assert "Trades Taken" in strategy_html
+    assert "Active Trades" in strategy_html
+    assert "Orders Finalized" in strategy_html
     assert "trade-table-wrap" in strategy_html
     assert "Current" in strategy_html
     assert "Stream" in strategy_html
@@ -795,8 +796,8 @@ def test_dashboard_builds_from_stage_artifacts(
     assert "paper_order_state.json" in strategy_html
     assert strategy_html.count("ORDER_WAITING_FOR_TRIGGER") == 1
     assert "NIFTY_20260602_23825_PE" not in strategy_html
-    assert "ORDER_NOT_FILLED" in strategy_html
-    assert "paper_order_not_triggered_by_watch_cutoff" in strategy_html
+    assert "ORDER_NOT_FILLED" not in strategy_html
+    assert "paper_order_not_triggered_by_watch_cutoff" not in strategy_html
     assert "NIFTY_20260609_24000_PE_STALE" not in strategy_html
     assert "Stale waiting order that must not carry forward" not in strategy_html
     assert '<details class="stage-card snapshot-panel">' in strategy_html
@@ -989,17 +990,24 @@ def test_dashboard_builds_consolidated_trades_page(tmp_path: Path) -> None:
 
     index_html = result.index_html.read_text(encoding="utf-8")
     trades_html = result.trades_page.read_text(encoding="utf-8")
+    orders_html = result.orders_page.read_text(encoding="utf-8")
 
-    assert "All Trades Monitor" in index_html
+    assert "Active Trades Monitor" in index_html
+    assert "Orders Manager" in index_html
     assert 'href="trades/index.html"' in index_html
+    assert 'href="orders/index.html"' in index_html
     assert "Operator Home" in index_html
     assert "Historical Trades" in index_html
-    assert "Visible Trades" in index_html
     assert "Open Positions" in index_html
+    assert "Active Orders" in index_html
     assert "Action Required" in index_html
     assert "Closed Trades" in index_html
-    assert "All Strategy Trades" in trades_html
-    assert "S23" in trades_html
+    assert "Active Trades Monitor" in trades_html
+    assert "All Open Positions" in trades_html
+    assert "No open paper positions are currently visible." in trades_html
+    assert "Orders Manager" in orders_html
+    assert "All Active Orders" in orders_html
+    assert "S23" in orders_html
 
 
 def test_dashboard_shared_operator_nav_links_across_tool_and_strategy_pages(tmp_path: Path) -> None:
@@ -1039,7 +1047,8 @@ def test_dashboard_shared_operator_nav_links_across_tool_and_strategy_pages(tmp_
     manual_html = result.tool_pages["s23_manual_calculator"].read_text(encoding="utf-8")
 
     assert "Operator Home" in strategy_html
-    assert "All Trades Monitor" in strategy_html
+    assert "Active Trades Monitor" in strategy_html
+    assert "Orders Manager" in strategy_html
     assert "Historical Trades" in strategy_html
     assert "Charts" in strategy_html
     assert "Monthly Status Calculator" in strategy_html
@@ -1051,6 +1060,14 @@ def test_dashboard_shared_operator_nav_links_across_tool_and_strategy_pages(tmp_
     assert "Monthly Status Calculator" in monthly_html
     assert "Manual S23 Calculator" in manual_html
     assert "MONTHLY_QUERY" in monthly_html
+
+
+def test_dashboard_server_routes_orders_manager_page() -> None:
+    server_script = (_repo_root() / "scripts" / "serve_operator_dashboard.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert 'request_path.startswith("/orders/")' in server_script
 
 
 def test_dashboard_chart_review_page_surfaces_selected_contract_market_evidence(
@@ -2739,6 +2756,7 @@ def test_dashboard_builds_historical_trades_page_with_filters(tmp_path: Path) ->
     assert "BANKNIFTY_20260728_57200_CE" in history_html
     assert "NIFTY_20260721_24200_CE" not in trades_html
     assert "BANKNIFTY_20260728_57200_CE" not in trades_html
+    assert manifest["orders_page"].replace("\\", "/") == "orders/index.html"
     assert manifest["historical_trades_page"].replace("\\", "/") == "trades/history/index.html"
 
 
@@ -2852,11 +2870,13 @@ def test_all_trades_monitor_uses_global_latest_session_anchor_across_strategies(
     ).build(output_root=tmp_path / "dashboard")
 
     trades_html = result.trades_page.read_text(encoding="utf-8")
+    orders_html = result.orders_page.read_text(encoding="utf-8")
 
-    assert "BANKNIFTY_20260728_57300_CE" in trades_html
+    assert "BANKNIFTY_20260728_57300_CE" not in trades_html
+    assert "BANKNIFTY_20260728_57300_CE" in orders_html
     assert "NIFTY_20260721_23950_CE" not in trades_html
     assert "ORDER_NOT_FILLED" not in trades_html
-    assert re.search(r"Unique Trades</span><div class=\"value\">1</div>", trades_html)
+    assert re.search(r"Active Order Rows</span><div class=\"value\">1</div>", orders_html)
 
 
 def test_strategy_page_uses_current_day_anchor_for_live_trade_monitor(
@@ -2922,11 +2942,14 @@ def test_strategy_page_uses_current_day_anchor_for_live_trade_monitor(
 
     strategy_html = result.strategy_pages["S23"].read_text(encoding="utf-8")
 
-    trades_section = strategy_html.split("<h2>Trades Taken</h2>", 1)[1]
+    trades_section = strategy_html.split("<h2>Active Trades</h2>", 1)[1].split(
+        "<h2>Orders Finalized</h2>",
+        1,
+    )[0]
 
     assert "NIFTY_20260721_23950_CE" not in trades_section
     assert "ORDER_NOT_FILLED" not in strategy_html
-    assert "No active paper orders or positions for the latest session." in strategy_html
+    assert "No open paper positions for the latest session." in strategy_html
 
 
 def test_all_trades_monitor_hides_terminal_close_after_latest_session_date_without_live_state_file(

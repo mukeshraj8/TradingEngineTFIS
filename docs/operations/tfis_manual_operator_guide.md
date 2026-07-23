@@ -940,9 +940,20 @@ Then open:
 
 - `http://127.0.0.1:8765/index.html`
 - use the shared operator nav at the top of each page to move between
-  `Operator Home`, `All Trades Monitor`, `Historical Trades`, `Charts`,
-  `Monthly Status Calculator`, `Manual S23 Calculator`, and the active
+  `Operator Home`, `Active Trades Monitor`, `Orders Manager`,
+  `Historical Trades`, `Charts`, `Monthly Status Calculator`,
+  `Manual S23 Calculator`, and the active
   strategy pages without relying on page-local back links
+
+Dashboard terminology:
+
+- `Active Trades Monitor` shows filled/open paper positions only.
+- `Orders Manager` shows finalized paper orders that are waiting for fill or
+  operator action across all configured strategies.
+- Strategy pages use the same split: `Active Trades` for open positions and
+  `Orders Finalized` for active finalized orders.
+- Closed/not-filled outcomes belong in historical/review evidence, not the
+  active trade monitor.
 
 The first version gives you:
 
@@ -1245,7 +1256,7 @@ run those only when you intend to use the TFIS FYERS paper-data path.
 | `powershell -ExecutionPolicy Bypass -File scripts\check_s23_fyers_morning_supervised_task.ps1` | Legacy read-only check for the old S23 strategy-specific scheduled task. | Only when auditing old host state after migration. | The old S23 morning task should normally be disabled once `TFIS Morning Startup` is enabled. | Read-only scheduled-task check. Do not use it as the primary TFIS startup check. |
 | `powershell -ExecutionPolicy Bypass -File scripts\register_s23_fyers_morning_supervised_task.ps1` | Legacy registration path for the old S23 strategy-specific scheduled task. | Avoid for normal TFIS startup. Use only for a deliberate compatibility test after confirming the single app startup task is not being used. | If used, immediately review whether it reintroduced duplicate startup risk. | Changes Windows Task Scheduler for TFIS only; the preferred task is now `TFIS Morning Startup`. |
 | `powershell -ExecutionPolicy Bypass -File scripts\start_s23_fyers_morning_supervised_decision.ps1 -SkipRefresh -DisablePositionWatch` | Manually run the S23 wrapper with app-prepared auth and wrapper-local supervisor startup suppressed. | Controlled compatibility test, usually before/after market, or from the single TFIS app startup path. | Watch visible TFIS PowerShell windows and generated logs under `tmp\s23_fyers_morning_supervised_decision\_task_launch_logs`. | Uses FYERS data path. Do not run if another TFIS run is active unless testing duplicate-process protection. |
-| `powershell -ExecutionPolicy Bypass -File scripts\start_s23_paper_watchers_from_metadata.ps1` | Start or recover watcher windows from existing current-day metadata without rerunning the morning decision. | If valid paper orders/positions exist but watcher windows are not running. | Trades Taken should show current price and Stream status after watchers write `selected_contract_market_events.jsonl`. | TFIS-only recovery command. Confirm it points at TFIS artifact roots; do not touch TradingEngineProd. |
+| `powershell -ExecutionPolicy Bypass -File scripts\start_s23_paper_watchers_from_metadata.ps1` | Start or recover watcher windows from existing current-day metadata without rerunning the morning decision. | If valid paper orders/positions exist but watcher windows are not running. | Active Trades or Orders Manager should show current price and Stream status after watchers write `selected_contract_market_events.jsonl`. | TFIS-only recovery command. Confirm it points at TFIS artifact roots; do not touch TradingEngineProd. |
 | `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token` | Run pre-live readiness checks for configured profile and token availability. | Pre-market readiness audit. | Clean pass means core imports, strategy execution plans, dashboard config, monthly-status config, operator-control pause state, shared paper-runtime guardrails, lifecycle audit visibility, no stale waiting paper orders, order-routing safety, runtime reconciliation, fresh-entry handoff evidence, live-state providers, and token prerequisites look usable. Failures should be resolved before scheduled start. | May inspect broker-token setup, TFIS operator pause markers, live-state configuration, and paper-runtime guardrail flags but does not place orders. |
 | `.\.venv\Scripts\python.exe scripts\pre_live_readiness.py --profile prod --require-token --probe-broker-health` | Run the same readiness audit plus an active broker-health probe for each configured paper runtime. | Pre-market when you want stronger proof that the broker adapters can actually connect and report `CONNECTED`, not just assemble from config. | Clean pass means the standard readiness checks passed and each configured paper broker runtime connected successfully through the shared broker-neutral probe surface. | This is still read-only from a trade-routing point of view, but it does actively connect the configured paper broker adapters, so use it as a deliberate stronger pre-market check rather than a background status command. |
 
@@ -1255,7 +1266,7 @@ run those only when you intend to use the TFIS FYERS paper-data path.
 | --- | --- | --- | --- |
 | `Market Events` | Number of persisted selected-contract quote/bar observations available for replay. | Non-zero for watcher-managed orders/positions. | If zero for a current session, verify watcher startup and `selected_contract_market_events.jsonl`. |
 | `Order Replay` | Offline replay of whether a waiting paper order should have filled, remained waiting, or been marked not filled. | `REPLAY_CONFIRMED_FILLED`, `REPLAY_CONFIRMED_NOT_FILLED`, `REPLAY_CONFIRMED_WAITING`. | Investigate any `REPLAY_MISMATCH_*` before trusting paper behavior. |
-| `Position Replay` | Offline replay of target/SL/FSL, expiry force-close, and next-day SL reset outcomes. | `POSITION_REPLAY_CONFIRMED_EXIT`, `POSITION_REPLAY_CONFIRMED_OPEN`, `POSITION_REPLAY_CONFIRMED_EXPIRY_FORCE_CLOSE`, `POSITION_REPLAY_CONFIRMED_NEXT_DAY_SL_RESET`. | Investigate mismatch/gap lines and compare with Trades Taken dashboard and manager events. |
+| `Position Replay` | Offline replay of target/SL/FSL, expiry force-close, and next-day SL reset outcomes. | `POSITION_REPLAY_CONFIRMED_EXIT`, `POSITION_REPLAY_CONFIRMED_OPEN`, `POSITION_REPLAY_CONFIRMED_EXPIRY_FORCE_CLOSE`, `POSITION_REPLAY_CONFIRMED_NEXT_DAY_SL_RESET`. | Investigate mismatch/gap lines and compare with Active Trades, Orders Manager, and manager events. |
 | `Latest Market Event` | Latest selected-contract evidence timestamp used by replay. | Should be near watcher activity time for live sessions. | If stale during market hours, watcher or data feed may have stopped. |
 | `gaps` | Missing evidence or inconsistent lifecycle state. | Empty or known historical gaps for older sessions. | Treat new current-day gaps as action items before any money-readiness claim. |
 
@@ -1271,7 +1282,7 @@ run those only when you intend to use the TFIS FYERS paper-data path.
 | compare historical modes | compare backtest reports |
 | inspect one paper session | review paper session |
 | replay captured S23 paper evidence | captured-session validation |
-| inspect watcher/current-price health | operator dashboard Trades Taken Stream column |
+| inspect watcher/current-price health | operator dashboard Active Trades or Orders Manager Stream column |
 | compare paper to historical | compare paper to historical |
 | validate normalized ingress only | ingress-only dry run |
 | safely prepare a real FYERS run | FYERS preflight |
@@ -1302,7 +1313,7 @@ If you are operating TFIS manually for the first time, use this exact order:
 5. Review one existing paper session
 6. Run one normalized JSONL ingress-only dry run
 7. Run captured-session validation against durable S23 artifacts
-8. Launch the operator dashboard and review Trades Taken stream health
+8. Launch the operator dashboard and review Active Trades plus Orders Manager stream health
 9. Run FYERS preflight only
 10. Read the close-out policy
 11. Only then attempt a real market-hours ingress-only run
