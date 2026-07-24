@@ -59,6 +59,14 @@ change in a meaningful way.
   delegates mismatch detection to `reconcile_broker_truth`; this is validation
   infrastructure only and does not fetch broker truth or enable live order
   routing
+- the live execution contracts are now connected behind a disabled-by-default
+  broker-neutral gate: `src/tfis/broker/live_execution_gate.py` validates live
+  routing enablement, broker-order intent evidence, idempotency reservation,
+  operator controls, exit protection, market-event ingress, startup/resume
+  evidence, and broker reconciliation before any future live order adapter
+  could route; `load_live_money_boundary_status()` now reports
+  `LIVE_EXECUTION_GATE_DISABLED_BY_DEFAULT`, and live order routing remains
+  disabled
 - as of Wednesday, July 22, 2026, the active implementation track is now the
   single TFIS application-startup contract: document the ordered queue, make
   FYERS auth preparation validate existing token state before refreshing under

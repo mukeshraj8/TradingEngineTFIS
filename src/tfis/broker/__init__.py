@@ -60,6 +60,11 @@ from .live_exit_protection import (
     LiveExitProtectionValidation,
     validate_live_exit_protection_plan,
 )
+from .live_execution_gate import (
+    LiveExecutionGateDecision,
+    LiveExecutionGateIssue,
+    validate_live_execution_gate,
+)
 from .live_market_event_ingress import (
     LiveMarketEventEnvelope,
     LiveMarketEventIngressIssue,
@@ -124,6 +129,8 @@ __all__ = [
     "LiveExitProtectionRule",
     "LiveExitProtectionRuleType",
     "LiveExitProtectionValidation",
+    "LiveExecutionGateDecision",
+    "LiveExecutionGateIssue",
     "LiveMarketEventEnvelope",
     "LiveMarketEventIngressIssue",
     "LiveMarketEventIngressMode",
@@ -166,4 +173,5 @@ __all__ = [
     "validate_live_position_recovery_plan",
     "validate_live_position_startup_resume",
     "validate_live_exit_protection_plan",
+    "validate_live_execution_gate",
 ]

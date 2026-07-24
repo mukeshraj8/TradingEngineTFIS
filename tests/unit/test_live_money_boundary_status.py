@@ -37,6 +37,7 @@ def test_live_money_boundary_status_blocks_live_order_routing() -> None:
         "MARKET_EVENT_INGRESS_FOR_LIVE",
         "MULTI_DAY_LIVE_POSITION_RECOVERY",
         "OPERATOR_LIVE_APPROVAL_AND_KILL_SWITCH",
+        "LIVE_EXECUTION_GATE_DISABLED_BY_DEFAULT",
     }
     assert all(gate.required_before_live for gate in status.gates)
     assert gates_by_code["BROKER_ORDER_STATE_MODEL"].status == "DONE"
@@ -55,6 +56,8 @@ def test_live_money_boundary_status_blocks_live_order_routing() -> None:
     assert "overnight" in gates_by_code["MULTI_DAY_LIVE_POSITION_RECOVERY"].description
     assert gates_by_code["OPERATOR_LIVE_APPROVAL_AND_KILL_SWITCH"].status == "DONE"
     assert "operator approval" in gates_by_code["OPERATOR_LIVE_APPROVAL_AND_KILL_SWITCH"].description
+    assert gates_by_code["LIVE_EXECUTION_GATE_DISABLED_BY_DEFAULT"].status == "DONE"
+    assert "blocks live routing" in gates_by_code["LIVE_EXECUTION_GATE_DISABLED_BY_DEFAULT"].description
     assert all(gate.status == "DONE" for gate in status.gates)
 
 
@@ -76,3 +79,4 @@ def test_live_money_boundary_cli_reports_blocked_status(capsys) -> None:
     assert "LiveMoneyGate: code=MARKET_EVENT_INGRESS_FOR_LIVE status=DONE" in output
     assert "LiveMoneyGate: code=MULTI_DAY_LIVE_POSITION_RECOVERY status=DONE" in output
     assert "LiveMoneyGate: code=OPERATOR_LIVE_APPROVAL_AND_KILL_SWITCH status=DONE" in output
+    assert "LiveMoneyGate: code=LIVE_EXECUTION_GATE_DISABLED_BY_DEFAULT status=DONE" in output

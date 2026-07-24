@@ -42,6 +42,12 @@
   supplied broker position truth, and mismatches are checked through the
   broker-neutral reconciliation engine without enabling live routing or
   fetching broker data
+- as of Friday, July 24, 2026, the broker-neutral live execution gate exists
+  and remains disabled by default: it connects live routing enablement,
+  broker-order intent, idempotency reservation, operator controls, exit
+  protection, market-event ingress, startup/resume evidence, and broker
+  reconciliation into one validation decision before any future live adapter
+  can place an order
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate

@@ -8,6 +8,7 @@ from tfis.broker import (
     build_broker_client_order_id,
     reconcile_broker_truth,
     validate_live_exit_protection_plan,
+    validate_live_execution_gate,
     validate_live_market_event_ingress,
     validate_live_operator_controls,
     validate_live_position_recovery_plan,
@@ -120,6 +121,19 @@ LIVE_MONEY_READINESS_GATES: tuple[LiveMoneyReadinessGate, ...] = (
             "operator approval, expiring approval windows, kill-switch state, "
             "and durable audit events before live-order mode can be enabled "
             f"(validator: {validate_live_operator_controls.__name__})."
+        ),
+    ),
+    LiveMoneyReadinessGate(
+        code="LIVE_EXECUTION_GATE_DISABLED_BY_DEFAULT",
+        status="DONE",
+        required_before_live=True,
+        description=(
+            "A broker-neutral live execution gate now connects order-routing "
+            "enablement, durable broker-order intent, idempotency reservation, "
+            "operator controls, exit protection, market-event ingress, startup/"
+            "resume evidence, and broker reconciliation; it blocks live routing "
+            "unless every gate passes and routing is explicitly enabled "
+            f"(validator: {validate_live_execution_gate.__name__})."
         ),
     ),
 )

@@ -88,6 +88,23 @@ way.
    scopes. Focused tests cover matching broker truth, missing broker truth,
    and broker quantity mismatch.
 
+0.10. `DONE` Wire a deliberately disabled live execution adapter gate.
+   The broker-order state, idempotency, reconciliation, live exit-protection,
+   market-event ingress, startup/resume, and operator-control contracts now
+   exist independently. The next live-money-readiness step is to connect those
+   contracts into one broker-neutral live execution gate that remains disabled
+   by default and proves no live order can be routed unless every required
+   validation has passed and live routing is explicitly enabled. Completed on
+   Friday, July 24, 2026: `src/tfis/broker/live_execution_gate.py` exposes
+   `validate_live_execution_gate`, which blocks routing unless live routing is
+   explicitly enabled, durable broker-order intent exists, idempotency
+   reservation is active and non-duplicate, operator controls pass, exit
+   protection passes, market-event ingress passes, startup/resume evidence
+   passes, and broker reconciliation passes. The live-money boundary status
+   now includes `LIVE_EXECUTION_GATE_DISABLED_BY_DEFAULT`, and focused tests
+   prove the disabled path remains blocked even when every other contract
+   passes.
+
 0.1. `DONE` Establish one TFIS application-startup contract before
    adding any live-order capability.
    TFIS must start as one application that can manage many enabled strategies,
