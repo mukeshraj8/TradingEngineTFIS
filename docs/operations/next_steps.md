@@ -72,6 +72,22 @@ way.
    does not append selected-contract market-event evidence as valid runtime
    input, and leaves the paper order unchanged.
 
+0.09. `DONE` Prove multi-day open-position startup/resume with broker
+   truth evidence.
+   TFIS already has paper carry-forward state and broker-neutral live recovery
+   contract models, but the next live-money-readiness gap is to make the
+   startup/resume evidence explicit: open or carried positions must be checked
+   against supplied broker position/order-book truth before any future live
+   supervisor can manage them. Keep this as broker-neutral evidence and
+   readiness logic only; do not enable live order routing. Completed on
+   Friday, July 24, 2026: `validate_live_position_startup_resume` now requires
+   supplied broker position truth whenever TFIS expects non-zero open/carry
+   positions, delegates detailed mismatch detection to the existing broker
+   reconciliation engine, and returns explicit startup/resume validation
+   evidence for `PRE_STARTUP`, `AFTER_RESTART`, and other reconciliation
+   scopes. Focused tests cover matching broker truth, missing broker truth,
+   and broker quantity mismatch.
+
 0.1. `DONE` Establish one TFIS application-startup contract before
    adding any live-order capability.
    TFIS must start as one application that can manage many enabled strategies,

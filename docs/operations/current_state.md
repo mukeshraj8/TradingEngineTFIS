@@ -52,6 +52,13 @@ change in a meaningful way.
   recorded as `MARKET_DATA_UNAVAILABLE` heartbeat/audit evidence before
   order/position lifecycle logic can run; this is a safety gate only and does
   not change entry, target, SL, FSL, rollover, or live-order routing behavior
+- multi-day live startup/resume evidence is now explicit at the broker-neutral
+  contract layer: `src/tfis/broker/live_position_recovery.py` exports
+  `validate_live_position_startup_resume`, which requires supplied broker
+  position truth whenever TFIS expects non-zero open/carry positions and then
+  delegates mismatch detection to `reconcile_broker_truth`; this is validation
+  infrastructure only and does not fetch broker truth or enable live order
+  routing
 - as of Wednesday, July 22, 2026, the active implementation track is now the
   single TFIS application-startup contract: document the ordered queue, make
   FYERS auth preparation validate existing token state before refreshing under

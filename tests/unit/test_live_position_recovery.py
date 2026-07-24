@@ -3,11 +3,15 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 
 from tfis.broker import (
+    BrokerPositionSnapshot,
+    BrokerReconciliationScope,
     LivePositionRecoveryAction,
     LivePositionRecoveryCase,
     LivePositionRecoveryPlan,
     LivePositionRecoveryScenario,
+    TfisPositionExpectation,
     validate_live_position_recovery_plan,
+    validate_live_position_startup_resume,
 )
 
 
@@ -103,6 +107,85 @@ def test_live_position_recovery_plan_requires_operator_review_for_risky_cases() 
         and issue.scenario is LivePositionRecoveryScenario.EXPIRY
         for issue in validation.issues
     )
+
+
+def test_live_position_startup_resume_passes_when_broker_truth_matches() -> None:
+    validation = validate_live_position_startup_resume(
+        scope=BrokerReconciliationScope.PRE_STARTUP,
+        expected_positions=(
+            TfisPositionExpectation(
+                provider="fyers",
+                strategy_code="S23",
+                strategy_branch="BRANCH",
+                symbol="NIFTY_OPT",
+                expected_quantity=-75,
+                expected_average_price=194.25,
+            ),
+        ),
+        broker_positions=(
+            BrokerPositionSnapshot(
+                provider="fyers",
+                symbol="NIFTY_OPT",
+                quantity=-75,
+                average_price=194.25,
+                source_id="broker:positions:2026-07-23",
+            ),
+        ),
+    )
+
+    assert validation.status == "PASS"
+    assert validation.expected_open_position_count == 1
+    assert validation.broker_position_count == 1
+    assert validation.conflict_count == 0
+    assert validation.reconciliation is not None
+    assert "agree with supplied broker truth" in validation.message
+
+
+def test_live_position_startup_resume_fails_when_open_position_lacks_broker_truth() -> None:
+    validation = validate_live_position_startup_resume(
+        scope=BrokerReconciliationScope.AFTER_RESTART,
+        expected_positions=(
+            TfisPositionExpectation(
+                provider="fyers",
+                strategy_code="S23",
+                strategy_branch="BRANCH",
+                symbol="NIFTY_OPT",
+                expected_quantity=-75,
+            ),
+        ),
+        broker_positions=(),
+    )
+
+    assert validation.status == "FAIL"
+    assert validation.reconciliation is None
+    assert validation.conflict_count == 1
+    assert "Broker position truth is required" in validation.message
+
+
+def test_live_position_startup_resume_fails_broker_truth_mismatch() -> None:
+    validation = validate_live_position_startup_resume(
+        scope=BrokerReconciliationScope.AFTER_RESTART,
+        expected_positions=(
+            TfisPositionExpectation(
+                provider="fyers",
+                strategy_code="S21",
+                strategy_branch="BRANCH",
+                symbol="BANKNIFTY_OPT",
+                expected_quantity=-35,
+            ),
+        ),
+        broker_positions=(
+            BrokerPositionSnapshot(
+                provider="fyers",
+                symbol="BANKNIFTY_OPT",
+                quantity=-20,
+            ),
+        ),
+    )
+
+    assert validation.status == "FAIL"
+    assert validation.reconciliation is not None
+    assert validation.reconciliation.conflicts[0].code == "BROKER_POSITION_QUANTITY_MISMATCH"
 
 
 def _complete_plan() -> LivePositionRecoveryPlan:

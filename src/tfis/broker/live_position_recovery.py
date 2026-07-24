@@ -4,6 +4,17 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
 
+from .broker_order_state import BrokerOrderState
+from .broker_reconciliation import (
+    BrokerOrderBookSnapshot,
+    BrokerPositionSnapshot,
+    BrokerReconciliationResult,
+    BrokerReconciliationScope,
+    BrokerReconciliationStatus,
+    TfisPositionExpectation,
+    reconcile_broker_truth,
+)
+
 
 class LivePositionRecoveryScenario(str, Enum):
     OVERNIGHT = "OVERNIGHT"
@@ -58,6 +69,19 @@ class LivePositionRecoveryValidation:
     message: str
 
 
+@dataclass(frozen=True, slots=True)
+class LivePositionStartupResumeValidation:
+    status: str
+    scope: BrokerReconciliationScope
+    expected_open_position_count: int
+    broker_position_count: int
+    expected_order_count: int
+    broker_order_count: int
+    conflict_count: int
+    reconciliation: BrokerReconciliationResult | None
+    message: str
+
+
 def validate_live_position_recovery_plan(
     plan: LivePositionRecoveryPlan,
 ) -> LivePositionRecoveryValidation:
@@ -93,6 +117,63 @@ def validate_live_position_recovery_plan(
             f"{len(issues)} live position recovery issue(s) detected."
             if issues
             else "Live position recovery plan covers overnight, expiry, forced-close, rollover-required, and next-day resume scenarios from broker truth."
+        ),
+    )
+
+
+def validate_live_position_startup_resume(
+    *,
+    scope: BrokerReconciliationScope,
+    expected_positions: tuple[TfisPositionExpectation, ...],
+    broker_positions: tuple[BrokerPositionSnapshot, ...],
+    expected_orders: tuple[BrokerOrderState, ...] = (),
+    broker_orders: tuple[BrokerOrderBookSnapshot, ...] = (),
+    price_tolerance: float = 0.01,
+) -> LivePositionStartupResumeValidation:
+    expected_open_positions = tuple(
+        item for item in expected_positions if item.expected_quantity != 0
+    )
+    if expected_open_positions and not broker_positions:
+        return LivePositionStartupResumeValidation(
+            status="FAIL",
+            scope=scope,
+            expected_open_position_count=len(expected_open_positions),
+            broker_position_count=0,
+            expected_order_count=len(expected_orders),
+            broker_order_count=len(broker_orders),
+            conflict_count=len(expected_open_positions),
+            reconciliation=None,
+            message=(
+                "Broker position truth is required before startup/resume when "
+                "TFIS expects open or carried live positions."
+            ),
+        )
+    reconciliation = reconcile_broker_truth(
+        scope=scope,
+        expected_positions=expected_positions,
+        broker_positions=broker_positions,
+        expected_orders=expected_orders,
+        broker_orders=broker_orders,
+        price_tolerance=price_tolerance,
+    )
+    status = (
+        "PASS"
+        if reconciliation.status is BrokerReconciliationStatus.PASS
+        else "FAIL"
+    )
+    return LivePositionStartupResumeValidation(
+        status=status,
+        scope=scope,
+        expected_open_position_count=len(expected_open_positions),
+        broker_position_count=len(broker_positions),
+        expected_order_count=len(expected_orders),
+        broker_order_count=len(broker_orders),
+        conflict_count=reconciliation.conflict_count,
+        reconciliation=reconciliation,
+        message=(
+            "Live startup/resume position expectations agree with supplied broker truth."
+            if status == "PASS"
+            else reconciliation.message
         ),
     )
 
@@ -154,5 +235,7 @@ __all__ = [
     "LivePositionRecoveryPlan",
     "LivePositionRecoveryScenario",
     "LivePositionRecoveryValidation",
+    "LivePositionStartupResumeValidation",
     "validate_live_position_recovery_plan",
+    "validate_live_position_startup_resume",
 ]

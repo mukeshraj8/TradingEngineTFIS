@@ -76,7 +76,9 @@ from .live_position_recovery import (
     LivePositionRecoveryPlan,
     LivePositionRecoveryScenario,
     LivePositionRecoveryValidation,
+    LivePositionStartupResumeValidation,
     validate_live_position_recovery_plan,
+    validate_live_position_startup_resume,
 )
 from .live_operator_controls import (
     LiveKillSwitchState,
@@ -141,6 +143,7 @@ __all__ = [
     "LivePositionRecoveryPlan",
     "LivePositionRecoveryScenario",
     "LivePositionRecoveryValidation",
+    "LivePositionStartupResumeValidation",
     "MarketDataProvider",
     "OptionChainProvider",
     "OrderExecutor",
@@ -161,5 +164,6 @@ __all__ = [
     "validate_live_market_event_ingress",
     "validate_live_operator_controls",
     "validate_live_position_recovery_plan",
+    "validate_live_position_startup_resume",
     "validate_live_exit_protection_plan",
 ]

@@ -37,6 +37,11 @@
   waiting-order or open-position lifecycle decision, and stale/missing/future
   events write `MARKET_DATA_UNAVAILABLE` heartbeat and audit evidence instead
   of driving fills, exits, targets, SL, FSL, or rollover handling
+- as of Friday, July 24, 2026, the live position recovery contract includes
+  broker-truth startup/resume validation: TFIS open/carry expectations require
+  supplied broker position truth, and mismatches are checked through the
+  broker-neutral reconciliation engine without enabling live routing or
+  fetching broker data
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate
