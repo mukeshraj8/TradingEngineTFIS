@@ -67,6 +67,13 @@ change in a meaningful way.
   could route; `load_live_money_boundary_status()` now reports
   `LIVE_EXECUTION_GATE_DISABLED_BY_DEFAULT`, and live order routing remains
   disabled
+- the Friday, July 24, 2026 go/no-go review is recorded at
+  `docs/operations/tfis_go_no_go_review_2026-07-24.md`: paper-live remains
+  `GO` only for the blocked paper operating contract, live execution
+  infrastructure is `COMPLETE_BUT_DISABLED`, and live-money routing remains
+  `NO-GO` until a separate reviewed enablement change routes through the live
+  execution gate with broker truth, broker-event/websocket ingress, operator
+  approval, kill switch, idempotency, and reconciliation evidence present
 - as of Wednesday, July 22, 2026, the active implementation track is now the
   single TFIS application-startup contract: document the ordered queue, make
   FYERS auth preparation validate existing token state before refreshing under

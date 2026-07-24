@@ -105,6 +105,15 @@ way.
    prove the disabled path remains blocked even when every other contract
    passes.
 
+0.11. `DONE` Complete the July 24 live-money go/no-go review.
+   `docs/operations/tfis_go_no_go_review_2026-07-24.md` records the current
+   decision: paper-live is `GO` for the blocked paper operating contract, live
+   execution contract infrastructure is `COMPLETE_BUT_DISABLED`, and
+   live-money routing remains `NO-GO` until a separate reviewed enablement
+   change routes exclusively through `validate_live_execution_gate` with
+   broker truth, broker-event/websocket ingress, operator approval, kill
+   switch, idempotency, and reconciliation evidence present.
+
 0.1. `DONE` Establish one TFIS application-startup contract before
    adding any live-order capability.
    TFIS must start as one application that can manage many enabled strategies,

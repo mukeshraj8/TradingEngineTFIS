@@ -48,6 +48,10 @@
   protection, market-event ingress, startup/resume evidence, and broker
   reconciliation into one validation decision before any future live adapter
   can place an order
+- as of Friday, July 24, 2026, the updated go/no-go review is documented in
+  `docs/operations/tfis_go_no_go_review_2026-07-24.md`: paper-live is `GO`
+  only for the blocked paper contract, live execution infrastructure is
+  `COMPLETE_BUT_DISABLED`, and live-money routing remains `NO-GO`
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate
