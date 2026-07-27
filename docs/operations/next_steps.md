@@ -35,11 +35,16 @@ way.
       but reports dashboard/supervisor counts from logical components, so a
       PowerShell launcher plus Python child is not double-counted as two
       supervisors.
-   5. `IN_PROGRESS` Add active-market shared-supervisor recovery. If the supervisor
+   5. `DONE` Add active-market shared-supervisor recovery. If the supervisor
       dies during `ACTIVE_MARKET`, TFIS should restart only the shared
       supervisor when recovery evidence is safe, without running a full reset
-      or relaunching strategy calculations.
-   6. `TODO` Improve dashboard freshness and refresh semantics. The operator
+      or relaunching strategy calculations. The existing reset script now has
+      `-RecoverSharedSupervisor`, which refuses outside active market, refuses
+      if a supervisor or conflicting launch/recovery process already exists,
+      checks guardrails, waiting orders, reconciliation, and order-routing
+      safety, then starts only the shared supervisor with dashboard rebuild and
+      auth refresh skipped.
+   6. `IN_PROGRESS` Improve dashboard freshness and refresh semantics. The operator
       dashboard should show generated-at/data-freshness clearly and avoid
       forcing manual reset scripts for ordinary dashboard visibility.
    7. `TODO` Harden S21 operational trust. Validate S21 reference packet,

@@ -175,11 +175,12 @@ def test_status_script_is_market_phase_aware_for_supervisor_recovery() -> None:
 
     assert 'if ($MarketSessionPhase -eq "ACTIVE_MARKET")' in status_script
     assert '$pending += "start_shared_supervisor"' in status_script
+    assert "reset_tfis_dashboard_and_watchers.ps1 -RecoverSharedSupervisor" in status_script
     assert 'elseif ($MarketSessionPhase -eq "PRE_MARKET")' in status_script
     assert '$pending += "run_morning_startup"' in status_script
     assert 'elseif (($MarketSessionPhase -eq "POST_MARKET") -and ($SupervisorProcessCount -eq 0))' in status_script
     assert "no shared supervisor restart is required" in status_script
-    assert "TFIS appears stopped during active market; operator recovery is required." in status_script
+    assert "TFIS appears stopped during active market; refresh the dashboard if needed" in status_script
 
 
 def test_runtime_process_helper_matches_windows_path_variants_and_child_processes() -> None:
@@ -289,6 +290,30 @@ def test_reset_script_blocks_unforced_full_reset_during_market_session() -> None
     assert 'TimeSpan]::Parse("15:30:00")' in script
     assert "Refusing full TFIS runtime reset during the active market session without -ForceInMarketReset" in script
     assert "refresh_tfis_operator_dashboard.ps1" in script
+
+
+def test_reset_script_has_active_market_supervisor_only_recovery_path() -> None:
+    script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
+
+    assert "[switch]$RecoverSharedSupervisor" in script
+    assert "TFIS SHARED SUPERVISOR RECOVERY" in script
+    assert "function Invoke-TfisSharedSupervisorRecovery" in script
+    assert "function Assert-TfisStatusScriptPass" in script
+    assert "Shared-supervisor-only recovery is intended for active market recovery" in script
+    assert "Refusing supervisor recovery because a shared supervisor already appears to be running" in script
+    assert "morning_strategy" in script
+    assert "runtime_startup" in script
+    assert "position_watcher" in script
+    assert "show_paper_runtime_guardrail_status.py" in script
+    assert "show_paper_runtime_waiting_order_status.py" in script
+    assert "show_paper_runtime_reconciliation_status.py" in script
+    assert "show_paper_runtime_order_routing_status.py" in script
+    assert "status=FAIL" in script
+    assert "-DisableDashboardRebuild" in script
+    assert "-SkipRefresh" in script
+    assert "Started shared TFIS paper lifecycle supervisor recovery PID=" in script
+    assert "Invoke-TfisSharedSupervisorRecovery" in script
+    assert "exit 0" in script
 
 
 def test_refresh_script_rebuilds_dashboard_without_stopping_runtime() -> None:

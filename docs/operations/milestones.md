@@ -65,6 +65,10 @@
   discovery from logical component counting, so Windows launcher/child pairs
   remain visible for diagnostics but dashboard/supervisor counts reflect one
   logical runtime component
+- as of Monday, July 27, 2026, active-market shared-supervisor recovery is
+  available through the existing reset script's `-RecoverSharedSupervisor`
+  mode; it performs safety checks and starts only the shared supervisor without
+  full reset, dashboard rebuild, auth refresh, or strategy recalculation
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate
@@ -1543,6 +1547,9 @@
   `RuntimeProcessComponents`, while dashboard/supervisor counts use logical
   components to avoid double-counting PowerShell launcher plus Python child
   pairs.
+- Active-market shared-supervisor-only recovery is now documented and wired
+  into `reset_tfis_dashboard_and_watchers.ps1 -RecoverSharedSupervisor` with
+  guardrail, waiting-order, reconciliation, and order-routing safety checks.
 
 ## Next Recommended Priorities
 

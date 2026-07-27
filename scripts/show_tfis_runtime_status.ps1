@@ -82,7 +82,7 @@ function Get-TfisRestartRecoveryStatus {
         elseif ($MarketSessionPhase -eq "ACTIVE_MARKET") {
             $status = "ACTION_REQUIRED"
             $pending = @("start_or_recover_dashboard", "start_shared_supervisor")
-            $message = "TFIS appears stopped during active market; operator recovery is required."
+            $message = "TFIS appears stopped during active market; refresh the dashboard if needed, then run reset_tfis_dashboard_and_watchers.ps1 -RecoverSharedSupervisor after reviewing safety evidence."
         }
         else {
             $status = "STOPPED_AFTER_MARKET"
@@ -92,7 +92,7 @@ function Get-TfisRestartRecoveryStatus {
     }
     elseif ($pending.Count -gt 0) {
         $status = "ACTION_REQUIRED"
-        $message = "TFIS runtime is partially available; review pending action(s): $($pending -join ', ')."
+        $message = "TFIS runtime is partially available; review pending action(s): $($pending -join ', '). Use reset_tfis_dashboard_and_watchers.ps1 -RecoverSharedSupervisor only when start_shared_supervisor is the active-market pending action."
     }
     elseif (($MarketSessionPhase -eq "POST_MARKET") -and ($SupervisorProcessCount -eq 0)) {
         $status = "AFTER_MARKET_IDLE"

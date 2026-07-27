@@ -2490,3 +2490,11 @@ Current notes:
   runtimes. Focused script tests passed at `14 passed`; the real status command
   ran successfully post-market and reported clean waiting-order/reconciliation
   checks with no active dashboard or supervisor process.
+- The existing TFIS reset script now has an active-market
+  `-RecoverSharedSupervisor` mode that starts only the shared paper lifecycle
+  supervisor after safety checks. It refuses outside `09:15-15:30`, refuses
+  when another supervisor or launch/recovery process is visible, verifies
+  guardrails, waiting-order status, reconciliation, and order-routing safety,
+  then starts the supervisor with dashboard rebuild and auth refresh skipped.
+  Focused script coverage passed at `15 passed`; a real post-market invocation
+  correctly refused without starting anything.

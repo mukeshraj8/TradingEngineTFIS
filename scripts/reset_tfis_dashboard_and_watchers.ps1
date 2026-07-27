@@ -9,6 +9,7 @@ param(
     [string]$S21ArtifactRoot = "data/strategies/S21/fyers_morning_supervised_decision",
     [string]$Timezone = "Asia/Kolkata",
     [switch]$MorningStartup,
+    [switch]$RecoverSharedSupervisor,
     [switch]$SkipAuthPreparation,
     [datetime]$RunDate = (Get-Date),
     [switch]$ForceInMarketReset,
@@ -224,6 +225,74 @@ function Test-TfisMarketSessionActive {
     )
 }
 
+function Assert-TfisStatusScriptPass {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ScriptRelativePath,
+        [Parameter(Mandatory = $true)]
+        [string]$StatusLabel
+    )
+
+    $scriptPath = Resolve-TfisPath $ScriptRelativePath
+    if (-not (Test-Path $scriptPath)) {
+        throw "Missing TFIS recovery safety script: $scriptPath"
+    }
+    $lines = @(& $pythonExe $scriptPath 2>$null)
+    if ($LASTEXITCODE -ne 0) {
+        throw "TFIS supervisor recovery safety check failed: $StatusLabel exited with code $LASTEXITCODE."
+    }
+    $failures = @($lines | Where-Object { $_ -match "status=FAIL" })
+    if ($failures.Count -gt 0) {
+        throw "TFIS supervisor recovery is not safe: $StatusLabel reported failure: $($failures -join '; ')"
+    }
+    Write-Host "TFIS supervisor recovery safety check passed: $StatusLabel"
+}
+
+function Invoke-TfisSharedSupervisorRecovery {
+    if (-not (Test-TfisMarketSessionActive -Date $RunDate)) {
+        throw (
+            "Shared-supervisor-only recovery is intended for active market recovery. " +
+            "Use -MorningStartup before market, or the normal reset path outside market hours."
+        )
+    }
+
+    $runtimeProcesses = @(Get-TfisRuntimeProcesses -RepoRoot $repoRoot)
+    $logicalRuntimeProcesses = @(Get-TfisLogicalRuntimeProcesses -Processes $runtimeProcesses)
+    $supervisorProcesses = @($logicalRuntimeProcesses | Where-Object { $_.Role -eq "supervisor" })
+    if ($supervisorProcesses.Count -gt 0) {
+        throw "Refusing supervisor recovery because a shared supervisor already appears to be running."
+    }
+
+    $unsafeProcesses = @(
+        $logicalRuntimeProcesses |
+        Where-Object { $_.Role -in @("morning_strategy", "runtime_startup", "runtime_stop", "position_watcher") }
+    )
+    if ($unsafeProcesses.Count -gt 0) {
+        $unsafeText = @(
+            $unsafeProcesses |
+            ForEach-Object { "role=$($_.Role) pids=$($_.ProcessIds -join ',')" }
+        )
+        throw "Refusing supervisor recovery while other runtime launch/recovery work is active: $($unsafeText -join '; ')"
+    }
+
+    Assert-TfisStatusScriptPass -ScriptRelativePath "scripts/show_paper_runtime_guardrail_status.py" -StatusLabel "PaperGuardrails"
+    Assert-TfisStatusScriptPass -ScriptRelativePath "scripts/show_paper_runtime_waiting_order_status.py" -StatusLabel "WaitingOrders"
+    Assert-TfisStatusScriptPass -ScriptRelativePath "scripts/show_paper_runtime_reconciliation_status.py" -StatusLabel "RuntimeReconciliation"
+    Assert-TfisStatusScriptPass -ScriptRelativePath "scripts/show_paper_runtime_order_routing_status.py" -StatusLabel "OrderRoutingSafety"
+
+    $supervisorProcess = Start-TfisPaperLifecycleSupervisorProcess `
+        -RepoRoot $repoRoot `
+        -TfisRoot $TfisRoot `
+        -TargetsConfig (Resolve-TfisPath $TargetsConfig) `
+        -DashboardOutputRoot $DashboardOutputRoot `
+        -DashboardPort $DashboardPort `
+        -SessionDate $RunDate `
+        -DisableDashboardRebuild `
+        -SkipRefresh
+
+    Write-Host "Started shared TFIS paper lifecycle supervisor recovery PID=$($supervisorProcess.Id)"
+}
+
 $resetStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 Write-Host "============================================================"
@@ -231,12 +300,22 @@ if ($MorningStartup) {
     Write-Host "TFIS APPLICATION MORNING STARTUP"
     Write-Host "This command prepares auth once, starts the dashboard, runs configured strategy wrappers, and starts one shared supervisor."
 }
+elseif ($RecoverSharedSupervisor) {
+    Write-Host "TFIS SHARED SUPERVISOR RECOVERY"
+    Write-Host "This command performs an active-market safety check and starts only the shared supervisor."
+}
 else {
     Write-Host "TFIS DASHBOARD/SUPERVISOR RESET"
     Write-Host "This command stops and restarts the TFIS paper runtime."
     Write-Host "Use scripts\refresh_tfis_operator_dashboard.ps1 when you only want a dashboard rebuild during market hours."
 }
 Write-Host "============================================================"
+
+if ($RecoverSharedSupervisor) {
+    Invoke-TfisSharedSupervisorRecovery
+    Write-Host ("TFIS shared supervisor recovery complete in {0:n1}s." -f $resetStopwatch.Elapsed.TotalSeconds)
+    exit 0
+}
 
 if ($MorningStartup) {
     $existingRuntime = @(Get-TfisRuntimeProcesses -RepoRoot $repoRoot)
