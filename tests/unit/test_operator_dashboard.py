@@ -56,6 +56,47 @@ def _s21_strategy_config(artifact_root: Path) -> StrategyDashboardConfig:
     )
 
 
+def _trade_row_with_stream_health(
+    *,
+    stream_health: DashboardSelectedContractStreamHealth,
+) -> DashboardTradeLedgerRow:
+    timestamp = datetime(2026, 7, 27, 15, 30, 12, tzinfo=IST)
+    return DashboardTradeLedgerRow(
+        session_date=timestamp.date(),
+        event_timestamp=timestamp,
+        entry_timestamp=datetime(2026, 7, 23, 12, 31, 8, tzinfo=IST),
+        exit_timestamp=None,
+        event_type="HOLD",
+        trade_id="S23-LEG-NIFTY_20260804_23900_CE-20260723T123108",
+        strategy_id="S23:NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        strategy_code="S23",
+        strategy_branch="NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        selected_contract_symbol="NIFTY_20260804_23900_CE",
+        side="SELL",
+        lots=1,
+        quantity=65,
+        entry_price=210.40,
+        current_price=256.05,
+        current_bid=256.0,
+        current_ask=259.40,
+        exit_price=None,
+        target_price=85.10,
+        stoploss_price=258.94,
+        gross_points=-45.65,
+        gross_pnl=-2967.25,
+        lifecycle_status="PAPER_POSITION_OPEN",
+        manager_status="PAPER_POSITION_HELD",
+        reason_code="s23_1500_carry_forward_stop_inactive",
+        message="Position is carried forward.",
+        fresh_entry_required=False,
+        reverse_entry_required=False,
+        rollover_required=False,
+        state_directory=None,
+        stream_health=stream_health,
+        raw_artifact_links={},
+    )
+
+
 def _write_runtime_targets_config(
     repo_root: Path,
     *,
@@ -1354,6 +1395,118 @@ def test_operator_status_panel_flags_degraded_market_data_heartbeat(tmp_path: Pa
     assert "selected_contract_event_fetch_failed" in html
 
 
+def test_operator_status_panel_keeps_stale_stream_warning_during_active_market(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-07-27T10:30:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    builder._runtime_guardrail_statuses = []
+    builder._runtime_order_routing_statuses = []
+    builder._runtime_heartbeat_statuses = [
+        SimpleNamespace(
+            strategy_code="S23",
+            status="STALE",
+            latest_timestamp="2026-07-27T10:20:00+05:30",
+            latest_owner_id="tfis-paper-lifecycle-supervisor:s23:1234",
+            latest_state_directory=str(tmp_path / "state"),
+            message="filesystem supervisor heartbeat is stale",
+        )
+    ]
+    builder._runtime_reconciliation_statuses = []
+    builder._runtime_fresh_entry_handoff_statuses = []
+    builder._latest_operator_control_event = None
+    builder._runtime_control_state = SimpleNamespace(
+        global_pause_active=False,
+        paused_strategies=frozenset(),
+    )
+
+    row = _trade_row_with_stream_health(
+        stream_health=DashboardSelectedContractStreamHealth(
+            event_count=12,
+            latest_event_at=datetime.fromisoformat("2026-07-27T10:20:00+05:30"),
+            age_seconds=600.0,
+            health_status="STALE",
+        )
+    )
+
+    html = builder._render_operator_status_panel(
+        title="Operator Status",
+        rows=[row],
+        strategy_code="S23",
+    )
+
+    assert "Runtime heartbeat attention required." in html
+    assert "1 visible active row(s) have stale selected-contract stream evidence." in html
+    assert ">STALE<" in html
+    assert "Market closed; showing final selected-contract stream snapshot" not in html
+
+
+def test_operator_status_panel_treats_stale_stream_as_market_closed_snapshot_after_close(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-07-27T15:35:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    builder._runtime_guardrail_statuses = []
+    builder._runtime_order_routing_statuses = []
+    builder._runtime_heartbeat_statuses = [
+        SimpleNamespace(
+            strategy_code="S23",
+            status="STALE",
+            latest_timestamp="2026-07-27T15:30:12+05:30",
+            latest_owner_id="tfis-paper-lifecycle-supervisor:s23:1880",
+            latest_state_directory=str(tmp_path / "state"),
+            message="filesystem supervisor heartbeat is stale",
+        )
+    ]
+    builder._runtime_reconciliation_statuses = []
+    builder._runtime_fresh_entry_handoff_statuses = []
+    builder._latest_operator_control_event = None
+    builder._runtime_control_state = SimpleNamespace(
+        global_pause_active=False,
+        paused_strategies=frozenset(),
+    )
+
+    row = _trade_row_with_stream_health(
+        stream_health=DashboardSelectedContractStreamHealth(
+            event_count=13,
+            latest_event_at=datetime.fromisoformat("2026-07-27T15:30:12+05:30"),
+            age_seconds=288.0,
+            health_status="STALE",
+        )
+    )
+
+    html = builder._render_operator_status_panel(
+        title="Operator Status",
+        rows=[row],
+        strategy_code="S23",
+    )
+
+    assert "Runtime heartbeat attention required." not in html
+    assert "stale selected-contract stream evidence" not in html
+    assert "Market closed; showing final selected-contract stream snapshot for 1 visible active row(s)." in html
+    assert ">CLOSED<" in html
+    assert "<strong>1</strong> closed / <strong>0</strong> stale / <strong>0</strong> none" in html
+    assert "Closed Streams" in html
+
+
 def test_trade_followup_note_includes_fresh_decision_handoff_status(tmp_path: Path) -> None:
     state_directory = tmp_path / "state"
     state_directory.mkdir(parents=True)
@@ -2061,7 +2214,19 @@ def test_render_trade_current_cell_hides_live_price_without_stream_evidence(tmp_
     assert "180.5" not in html
 
 
-def test_render_trade_current_cell_labels_stale_live_quote(tmp_path: Path) -> None:
+def test_render_trade_current_cell_labels_stale_live_quote(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-07-15T12:05:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
     builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
     timestamp = datetime(2026, 7, 15, 12, 0, tzinfo=IST)
     row = DashboardTradeLedgerRow(
@@ -2109,6 +2274,38 @@ def test_render_trade_current_cell_labels_stale_live_quote(tmp_path: Path) -> No
     assert "180" in html
     assert "Bid / Ask 179.50 / 180.50" in html
     assert "Stale selected-contract quote" in html
+
+
+def test_render_trade_current_cell_labels_post_market_final_quote(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-07-27T15:35:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
+    builder = TfisOperatorDashboardBuilder(strategy_configs=(_strategy_config(tmp_path / "artifacts"),))
+    row = _trade_row_with_stream_health(
+        stream_health=DashboardSelectedContractStreamHealth(
+            event_count=13,
+            latest_event_at=datetime.fromisoformat("2026-07-27T15:30:12+05:30"),
+            age_seconds=288.0,
+            health_status="STALE",
+        )
+    )
+
+    html = builder._render_trade_current_cell(row)
+
+    assert "LTP" in html
+    assert "256.05" in html
+    assert "Bid / Ask 256 / 259.40" in html
+    assert "Market closed final quote" in html
+    assert "Stale selected-contract quote" not in html
 
 
 def test_trade_visible_for_latest_session_uses_shared_visibility_rule(tmp_path: Path) -> None:

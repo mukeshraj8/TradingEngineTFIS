@@ -2459,3 +2459,10 @@ Current notes:
   into a collapsible Diagnostics block with tooltips. The visual theme is now
   a cleaner neutral app surface with stronger status colors instead of the
   previous beige-heavy card grid.
+- The operator dashboard now treats stale selected-contract stream evidence and
+  stale filesystem supervisor heartbeats differently after the configured
+  `15:30` market lifecycle cutoff. During active market hours, stale evidence
+  still raises the existing operator warnings. After market close, stale
+  selected-contract evidence is rendered as a closed/final stream snapshot, and
+  stale-only runtime heartbeats are shown as a closed runtime rather than an
+  attention-required warning.

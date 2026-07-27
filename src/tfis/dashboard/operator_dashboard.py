@@ -118,6 +118,8 @@ _STAGE_TIMES = {
     "0930": time(9, 30),
 }
 _STAGE_ORDER = {"0916": 1, "0925": 2, "0930": 3}
+_MARKET_OPEN_TIME = time(9, 15)
+_MARKET_CLOSE_TIME = time(15, 30)
 
 
 @dataclass(frozen=True, slots=True)
@@ -1512,6 +1514,8 @@ class TfisOperatorDashboardBuilder:
         heartbeat_statuses = self._runtime_heartbeat_statuses
         reconciliation_statuses = self._runtime_reconciliation_statuses
         fresh_entry_handoff_statuses = self._runtime_fresh_entry_handoff_statuses
+        market_session_phase = self._market_session_phase()
+        post_market = market_session_phase == "POST_MARKET"
         if strategy_code:
             guardrail_statuses = [
                 item for item in guardrail_statuses if item.strategy_code.upper() == strategy_code.upper()
@@ -1531,7 +1535,9 @@ class TfisOperatorDashboardBuilder:
         guardrail_failures = [item for item in guardrail_statuses if item.status != "PASS"]
         order_routing_failures = [item for item in order_routing_statuses if item.status != "PASS"]
         heartbeat_failures = [
-            item for item in heartbeat_statuses if item.status in {"DEGRADED", "STALE", "UNAVAILABLE"}
+            item
+            for item in heartbeat_statuses
+            if item.status in {"DEGRADED", "UNAVAILABLE"} or (item.status == "STALE" and not post_market)
         ]
         reconciliation_failures = [item for item in reconciliation_statuses if item.status == "FAIL"]
         fresh_entry_handoff_failures = [item for item in fresh_entry_handoff_statuses if item.status == "FAIL"]
@@ -1539,7 +1545,7 @@ class TfisOperatorDashboardBuilder:
         stale_count = sum(
             1
             for row in active_rows
-            if row.stream_health.health_status == "STALE"
+            if self._display_stream_health_status(row.stream_health.health_status, market_session_phase) == "STALE"
         )
         no_stream_count = sum(
             1
@@ -1549,7 +1555,13 @@ class TfisOperatorDashboardBuilder:
         ok_stream_count = sum(
             1
             for row in active_rows
-            if row.stream_health.health_status in {"OK", "RECORDED"}
+            if self._display_stream_health_status(row.stream_health.health_status, market_session_phase)
+            in {"OK", "RECORDED"}
+        )
+        closed_stream_count = sum(
+            1
+            for row in active_rows
+            if self._display_stream_health_status(row.stream_health.health_status, market_session_phase) == "CLOSED"
         )
         pause_scope = (
             "GLOBAL_PAUSE"
@@ -1559,7 +1571,10 @@ class TfisOperatorDashboardBuilder:
         paused_label = ", ".join(paused_strategies) if paused_strategies else "none"
         guardrail_label = "PASS" if not guardrail_failures else "FAIL"
         order_routing_label = "PASS" if not order_routing_failures else "FAIL"
-        heartbeat_label = self._summarize_runtime_heartbeat_statuses(heartbeat_statuses)
+        heartbeat_label = self._summarize_runtime_heartbeat_statuses(
+            heartbeat_statuses,
+            market_session_phase=market_session_phase,
+        )
         heartbeat_owner_label = self._latest_runtime_heartbeat_owner_label(heartbeat_statuses)
         heartbeat_state_dir_label = self._latest_runtime_heartbeat_state_directory_label(
             heartbeat_statuses
@@ -1604,6 +1619,16 @@ class TfisOperatorDashboardBuilder:
                 (
                     "bad",
                     f"{stale_count} visible active row(s) have stale selected-contract stream evidence.",
+                )
+            )
+        if post_market and closed_stream_count:
+            alerts.append(
+                (
+                    "good",
+                    (
+                        "Market closed; showing final selected-contract stream snapshot for "
+                        f"{closed_stream_count} visible active row(s)."
+                    ),
                 )
             )
         if no_stream_count:
@@ -1690,10 +1715,12 @@ class TfisOperatorDashboardBuilder:
                 self._operator_health_item("Heartbeats", self._badge(heartbeat_label)),
                 self._operator_health_item(
                     "Streams",
-                    (
-                        f'<strong>{ok_stream_count}</strong> ok / '
-                        f'<strong>{stale_count}</strong> stale / '
-                        f'<strong>{no_stream_count}</strong> none'
+                    self._operator_stream_summary_value(
+                        ok_stream_count=ok_stream_count,
+                        stale_count=stale_count,
+                        no_stream_count=no_stream_count,
+                        closed_stream_count=closed_stream_count,
+                        market_session_phase=market_session_phase,
                     ),
                 ),
                 self._operator_health_item("Active Rows", f"<strong>{len(active_rows)}</strong>"),
@@ -1722,6 +1749,7 @@ class TfisOperatorDashboardBuilder:
                 self._operator_status_item("Runtime Heartbeats", self._badge(heartbeat_label)),
                 self._operator_status_item("Healthy Streams", str(ok_stream_count)),
                 self._operator_status_item("Stale Streams", str(stale_count)),
+                self._operator_status_item("Closed Streams", str(closed_stream_count)),
                 self._operator_status_item("No Stream Rows", str(no_stream_count)),
             ],
         )
@@ -1778,6 +1806,43 @@ class TfisOperatorDashboardBuilder:
         )
 
     @staticmethod
+    def _market_session_phase(now: datetime | None = None) -> str:
+        current = now if now is not None else datetime.now().astimezone()
+        current_time = current.time()
+        if current_time < _MARKET_OPEN_TIME:
+            return "PRE_MARKET"
+        if current_time < _MARKET_CLOSE_TIME:
+            return "ACTIVE_MARKET"
+        return "POST_MARKET"
+
+    @staticmethod
+    def _display_stream_health_status(health_status: str, market_session_phase: str) -> str:
+        if market_session_phase == "POST_MARKET" and health_status == "STALE":
+            return "CLOSED"
+        return health_status
+
+    @staticmethod
+    def _operator_stream_summary_value(
+        *,
+        ok_stream_count: int,
+        stale_count: int,
+        no_stream_count: int,
+        closed_stream_count: int,
+        market_session_phase: str,
+    ) -> str:
+        if market_session_phase == "POST_MARKET":
+            return (
+                f'<strong>{closed_stream_count}</strong> closed / '
+                f'<strong>{stale_count}</strong> stale / '
+                f'<strong>{no_stream_count}</strong> none'
+            )
+        return (
+            f'<strong>{ok_stream_count}</strong> ok / '
+            f'<strong>{stale_count}</strong> stale / '
+            f'<strong>{no_stream_count}</strong> none'
+        )
+
+    @staticmethod
     def _operator_health_item(label: str, value: str) -> str:
         return (
             '<div class="operator-health-item">'
@@ -1819,6 +1884,8 @@ class TfisOperatorDashboardBuilder:
     @staticmethod
     def _summarize_runtime_heartbeat_statuses(
         statuses: list[PaperRuntimeHeartbeatStatus],
+        *,
+        market_session_phase: str = "ACTIVE_MARKET",
     ) -> str:
         if not statuses:
             return "NONE"
@@ -1827,6 +1894,8 @@ class TfisOperatorDashboardBuilder:
             return "UNAVAILABLE"
         if "DEGRADED" in labels:
             return "DEGRADED"
+        if market_session_phase == "POST_MARKET" and "STALE" in labels:
+            return "CLOSED"
         if "STALE" in labels:
             return "STALE"
         if "OK" in labels:
@@ -2943,20 +3012,30 @@ class TfisOperatorDashboardBuilder:
             else f'<span class="muted-text">Bid / Ask {bid} / {ask}</span>'
         )
         freshness_note = ""
-        if is_live_monitor_row and row.stream_health.health_status == "STALE":
+        display_health_status = self._display_stream_health_status(
+            row.stream_health.health_status,
+            self._market_session_phase(),
+        )
+        if is_live_monitor_row and display_health_status == "STALE":
             freshness_note = '<br><span class="muted-text">Stale selected-contract quote</span>'
+        elif is_live_monitor_row and display_health_status == "CLOSED":
+            freshness_note = '<br><span class="muted-text">Market closed final quote</span>'
         return f'<span class="price-label">LTP</span> {current}<br>{bid_ask}{freshness_note}'
 
     def _render_trade_stream_cell(self, row: DashboardTradeLedgerRow) -> str:
         stream = row.stream_health
         if stream.event_count <= 0:
             return '<span class="muted-text">No stream evidence</span>'
+        display_health_status = self._display_stream_health_status(
+            stream.health_status,
+            self._market_session_phase(),
+        )
         latest = (
             stream.latest_event_at.isoformat(sep=" ", timespec="seconds")
             if stream.latest_event_at is not None
             else "n/a"
         )
-        if stream.health_status == "RECORDED":
+        if display_health_status in {"RECORDED", "CLOSED"}:
             age = "historical"
         else:
             age = self._fmt_seconds(stream.age_seconds)
@@ -2965,7 +3044,7 @@ class TfisOperatorDashboardBuilder:
         return "\n".join(
             [
                 '<div class="stream-cell">',
-                f'<div class="status-badges">{self._badge(stream.health_status)}</div>',
+                f'<div class="status-badges">{self._badge(display_health_status)}</div>',
                 f'<span class="muted-text">Events {stream.event_count}</span>',
                 f'<span class="muted-text">Latest {html.escape(latest)}</span>',
                 f'<span class="muted-text">Age {html.escape(age)}</span>',

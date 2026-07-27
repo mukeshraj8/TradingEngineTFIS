@@ -1515,6 +1515,10 @@
   health strip, grouped operational sections, collapsed diagnostics for long
   runtime paths, and a cleaner neutral visual system while preserving the
   existing operator labels and strategy-aware dashboard evidence.
+- Operator dashboard post-market status wording is now market-phase aware:
+  stale selected-contract streams and stale-only filesystem supervisor
+  heartbeats after the `15:30` lifecycle cutoff are shown as closed/final
+  snapshot evidence, while active-market stale evidence remains a warning.
 
 ## Next Recommended Priorities
 
