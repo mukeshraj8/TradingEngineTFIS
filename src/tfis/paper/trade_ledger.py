@@ -6,7 +6,8 @@ from dataclasses import dataclass, fields, is_dataclass
 from datetime import date, datetime, time
 from enum import Enum
 from pathlib import Path
-from typing import Any, Protocol, Sequence
+from time import monotonic as _monotonic, sleep as _sleep
+from typing import Any, Callable, Protocol, Sequence
 
 from .position_state import PaperPositionState
 
@@ -16,6 +17,9 @@ _SESSION_LEDGER_FILENAME = "paper_trade_ledger.jsonl"
 _POSITION_STATE_FILENAME = "paper_position_state.json"
 _DEFAULT_GLOBAL_LEDGER_ROOT = Path("tmp/paper_trade_ledger")
 _DEFAULT_GLOBAL_LEDGER_FILENAME = "s23_paper_trade_ledger.jsonl"
+_DEFAULT_LEDGER_LOCK_TIMEOUT_SECONDS = 10.0
+_DEFAULT_LEDGER_LOCK_RETRY_DELAY_SECONDS = 0.05
+_DEFAULT_LEDGER_STALE_LOCK_SECONDS = 60.0
 
 
 class PaperTradeLedgerEventType(str, Enum):
@@ -556,10 +560,20 @@ class PaperTradeLedgerStore:
         global_ledger_root: str | Path = _DEFAULT_GLOBAL_LEDGER_ROOT,
         global_ledger_filename: str = _DEFAULT_GLOBAL_LEDGER_FILENAME,
         session_ledger_filename: str = _SESSION_LEDGER_FILENAME,
+        lock_timeout_seconds: float = _DEFAULT_LEDGER_LOCK_TIMEOUT_SECONDS,
+        lock_retry_delay_seconds: float = _DEFAULT_LEDGER_LOCK_RETRY_DELAY_SECONDS,
+        stale_lock_seconds: float = _DEFAULT_LEDGER_STALE_LOCK_SECONDS,
+        sleeper: Callable[[float], None] = _sleep,
+        monotonic_clock: Callable[[], float] = _monotonic,
     ) -> None:
         self._global_ledger_root = Path(global_ledger_root)
         self._global_ledger_filename = global_ledger_filename
         self._session_ledger_filename = session_ledger_filename
+        self._lock_timeout_seconds = max(0.0, float(lock_timeout_seconds))
+        self._lock_retry_delay_seconds = max(0.0, float(lock_retry_delay_seconds))
+        self._stale_lock_seconds = max(0.0, float(stale_lock_seconds))
+        self._sleeper = sleeper
+        self._monotonic_clock = monotonic_clock
 
     @property
     def global_ledger_path(self) -> Path:
@@ -658,20 +672,54 @@ class PaperTradeLedgerStore:
         )
 
     def _append_jsonl(self, path: Path, row: PaperTradeLedgerRow) -> None:
-        existing = path.read_text(encoding="utf-8") if path.exists() else ""
-        rendered = existing + json.dumps(self._normalize(row), sort_keys=True) + "\n"
-        self._atomic_write_text(path, rendered)
-
-    @staticmethod
-    def _atomic_write_text(path: Path, content: str) -> None:
+        rendered = json.dumps(self._normalize(row), sort_keys=True) + "\n"
         path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = path.parent / f".{path.name}.tmp"
+        lock_path = path.parent / f".{path.name}.lock"
+        lock_fd = self._acquire_lock(lock_path)
         try:
-            temp_path.write_text(content, encoding="utf-8", newline="\n")
-            os.replace(temp_path, path)
+            with path.open("a", encoding="utf-8", newline="\n") as handle:
+                handle.write(rendered)
         finally:
-            if temp_path.exists():
-                temp_path.unlink()
+            os.close(lock_fd)
+            try:
+                lock_path.unlink()
+            except FileNotFoundError:
+                pass
+
+    def _acquire_lock(self, lock_path: Path) -> int:
+        started_at = self._monotonic_clock()
+        while True:
+            try:
+                fd = os.open(str(lock_path), os.O_CREAT | os.O_EXCL | os.O_RDWR)
+                os.write(
+                    fd,
+                    (
+                        f"pid={os.getpid()} created_at={datetime.now().isoformat()}\n"
+                    ).encode("utf-8"),
+                )
+                return fd
+            except (FileExistsError, PermissionError):
+                self._remove_stale_lock(lock_path)
+                if self._monotonic_clock() - started_at >= self._lock_timeout_seconds:
+                    raise TimeoutError(
+                        f"Timed out waiting for paper trade ledger lock: {lock_path}"
+                    )
+                if self._lock_retry_delay_seconds > 0:
+                    self._sleeper(self._lock_retry_delay_seconds)
+
+    def _remove_stale_lock(self, lock_path: Path) -> None:
+        if self._stale_lock_seconds <= 0:
+            return
+        try:
+            age_seconds = datetime.now().timestamp() - lock_path.stat().st_mtime
+        except FileNotFoundError:
+            return
+        if age_seconds < self._stale_lock_seconds:
+            return
+        try:
+            lock_path.unlink()
+        except FileNotFoundError:
+            return
 
     def _normalize(self, value: Any) -> Any:
         if is_dataclass(value):

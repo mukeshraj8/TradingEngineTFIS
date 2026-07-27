@@ -57,6 +57,10 @@
   for quote or option-chain snapshot reads are retried with bounded attempts,
   successful retries are visible in preflight issues, and exhausted malformed
   broker data still fails closed without placing orders
+- as of Monday, July 27, 2026, paper trade ledger writes no longer use a
+  shared temp-file replace path for append operations; session and global
+  ledger JSONL rows are appended under per-ledger lock files so concurrent
+  supervisor/manager writers do not collide or silently lose rows
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate
@@ -1528,6 +1532,9 @@
   quote/option-chain snapshot reads, records retry success as operator-visible
   preflight evidence, and preserves fail-closed `BROKER_SNAPSHOT_FAILED`
   behavior after bounded retry exhaustion.
+- Paper trade ledger append safety is now hardened with per-ledger lock files,
+  append-only JSONL writes, stale-lock cleanup, timeout errors for held locks,
+  and focused concurrent-write coverage.
 
 ## Next Recommended Priorities
 

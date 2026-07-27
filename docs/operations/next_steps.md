@@ -24,10 +24,12 @@ way.
       records successful retry evidence in the preflight summary, and still
       fails closed with the exhausted attempt count when broker data remains
       malformed.
-   3. `IN_PROGRESS` Make paper trade ledger writes concurrency-safe. Supervisor
+   3. `DONE` Make paper trade ledger writes concurrency-safe. Supervisor
       ledger writes must not crash on Windows temp-file replace collisions or
-      concurrent appends.
-   4. `TODO` Clean dashboard/supervisor process reporting so Windows
+      concurrent appends. Paper trade ledger JSONL writes now append under a
+      per-ledger lock file, avoid shared temp-file replace paths, remove stale
+      locks, and fail clearly on lock timeout.
+   4. `IN_PROGRESS` Clean dashboard/supervisor process reporting so Windows
       parent-child launcher pairs are shown as one logical runtime component
       where appropriate.
    5. `TODO` Add active-market shared-supervisor recovery. If the supervisor

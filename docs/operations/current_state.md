@@ -2478,3 +2478,8 @@ Current notes:
   retries are recorded as preflight warning evidence, and exhausted retries
   still fail closed as `BROKER_SNAPSHOT_FAILED`; focused collector regression
   coverage passed at `9 passed`.
+- Paper trade ledger writes are now concurrency-safe for the current
+  supervisor/runtime path: ledger JSONL rows are appended under a per-ledger
+  lock file rather than read-modify-written through one shared temp filename,
+  stale locks are removed, and held locks time out with an explicit error.
+  Focused ledger/supervisor/position-manager coverage passed at `77 passed`.
