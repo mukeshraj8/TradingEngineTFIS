@@ -2466,3 +2466,9 @@ Current notes:
   selected-contract evidence is rendered as a closed/final stream snapshot, and
   stale-only runtime heartbeats are shown as a closed runtime rather than an
   attention-required warning.
+- As of Monday, July 27, 2026, TFIS remains suitable for controlled live-paper
+  observation but is not live-money ready. The active remediation queue is now
+  tracked in `next_steps.md` item `0.12`: broker snapshot robustness,
+  concurrency-safe paper ledger writes, cleaner logical process reporting,
+  active-market shared-supervisor recovery, dashboard freshness semantics, S21
+  operational trust hardening, and a final live-money gate review.

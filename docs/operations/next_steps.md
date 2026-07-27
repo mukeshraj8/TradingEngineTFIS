@@ -6,6 +6,41 @@ way.
 
 ## Immediate Next Priorities
 
+0.12. `IN_PROGRESS` Close the remaining live-paper/live-money readiness gaps
+   one by one, updating status docs and tests after each completed slice.
+   This queue starts from the July 27, 2026 operator findings: S23/S21 can run
+   in controlled paper mode with shared startup and dashboard visibility, but
+   TFIS still needs stronger runtime robustness before live-money enablement.
+   Ordered implementation list:
+   1. `DONE` Clarify post-market dashboard stale stream/heartbeat wording.
+      After the `15:30` lifecycle cutoff, stale selected-contract evidence is
+      now displayed as closed/final snapshot evidence; active-market stale
+      evidence still raises warnings.
+   2. `TODO` Fix broker snapshot robustness for FYERS-backed morning decisions.
+      Missing/malformed FYERS option-chain or quote payloads should get a
+      bounded retry/failover path and clear operator evidence instead of a
+      brittle one-shot startup failure.
+   3. `TODO` Make paper trade ledger writes concurrency-safe. Supervisor
+      ledger writes must not crash on Windows temp-file replace collisions or
+      concurrent appends.
+   4. `TODO` Clean dashboard/supervisor process reporting so Windows
+      parent-child launcher pairs are shown as one logical runtime component
+      where appropriate.
+   5. `TODO` Add active-market shared-supervisor recovery. If the supervisor
+      dies during `ACTIVE_MARKET`, TFIS should restart only the shared
+      supervisor when recovery evidence is safe, without running a full reset
+      or relaunching strategy calculations.
+   6. `TODO` Improve dashboard freshness and refresh semantics. The operator
+      dashboard should show generated-at/data-freshness clearly and avoid
+      forcing manual reset scripts for ordinary dashboard visibility.
+   7. `TODO` Harden S21 operational trust. Validate S21 reference packet,
+      BankNifty lot/strike/expiry assumptions, carry-forward policy, and
+      readiness evidence before treating it as equally trusted with S23.
+   8. `TODO` Review live-money gates after the runtime fixes. Live routing must
+      remain disabled until broker truth, idempotency, kill-switch, operator
+      approval, reconciliation, and websocket/event-ingress evidence are all
+      proven through the existing live execution gate.
+
 0.0. `DONE` Correct dashboard order/trade terminology before live-money
    operation.
    The dashboard now treats a finalized order as an order, not an open trade:
