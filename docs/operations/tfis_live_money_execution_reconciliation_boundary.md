@@ -1,6 +1,6 @@
 # TFIS Live-Money Execution And Reconciliation Boundary
 
-Status as of Wednesday, July 22, 2026: `BLOCKED_FOR_LIVE_MONEY`.
+Status as of Monday, July 27, 2026: `LIVE_MONEY_NO_GO_ROUTING_DISABLED`.
 
 TFIS remains paper-safe. The current shared lifecycle supervisor manages paper
 orders and paper positions from selected-contract quote/bar evidence. It polls
@@ -58,17 +58,22 @@ place live orders:
    broker-event mode, connected heartbeat freshness, required symbol
    subscriptions and event evidence, duplicate sequence rejection, and
    monotonic event ordering. Polling-only evidence still fails this contract.
-7. Multi-day live-position recovery: prove overnight, expiry, forced-close,
-   rollover-required, and next-day resume behavior from broker truth.
+7. `DONE` Multi-day live-position recovery:
+   `src/tfis/broker/live_position_recovery.py` validates overnight, expiry,
+   forced-close, rollover-required, and next-day resume behavior from supplied
+   broker truth before startup/resume can be considered safe. This does not
+   fetch broker truth itself and does not place live orders.
 8. `DONE` Operator approval and kill switch:
    `src/tfis/broker/live_operator_controls.py` provides explicit live-mode
    approval records, expiring approval windows, kill-switch state, and durable
    JSONL audit events. The validator fails missing/expired approval, active or
    unavailable kill switch, and missing audit evidence.
 
-Current live-money contract-gate blocker count: 0. Live order routing remains
-disabled until an operator approval artifact exists and a separate reviewed
-change enables broker routing.
+Current live-money contract-gate blocker count: 0 for contract scaffolding.
+Live-money routing is still `NO-GO`: live order routing remains disabled until
+real broker truth, broker-event/websocket ingress, operator approval,
+kill-switch, idempotency, and reconciliation evidence are supplied through a
+separate reviewed enablement change.
 
 ## Verification Surface
 

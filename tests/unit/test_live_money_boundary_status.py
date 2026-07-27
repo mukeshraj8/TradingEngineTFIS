@@ -22,7 +22,7 @@ def _load_script_module():
 def test_live_money_boundary_status_blocks_live_order_routing() -> None:
     status = load_live_money_boundary_status()
 
-    assert status.status == "LIVE_MONEY_CONTRACT_GATES_COMPLETE_ROUTING_DISABLED"
+    assert status.status == "LIVE_MONEY_NO_GO_ROUTING_DISABLED"
     assert status.live_money_ready is False
     assert status.paper_runtime_safe is True
     assert status.order_routing_enabled is False
@@ -68,7 +68,7 @@ def test_live_money_boundary_cli_reports_blocked_status(capsys) -> None:
 
     assert exit_code == 0
     output = capsys.readouterr().out
-    assert "LiveMoneyBoundary: status=LIVE_MONEY_CONTRACT_GATES_COMPLETE_ROUTING_DISABLED" in output
+    assert "LiveMoneyBoundary: status=LIVE_MONEY_NO_GO_ROUTING_DISABLED" in output
     assert "live_money_ready=false" in output
     assert "order_routing_enabled=false" in output
     assert "LiveMoneyGate: code=BROKER_ORDER_STATE_MODEL status=DONE" in output

@@ -26,7 +26,7 @@ by default.
 - Order routing safety remains blocked:
   place, modify, and cancel order paths are blocked for S21 and S23.
 - Live-money boundary status is
-  `LIVE_MONEY_CONTRACT_GATES_COMPLETE_ROUTING_DISABLED`,
+  `LIVE_MONEY_NO_GO_ROUTING_DISABLED`,
   `live_money_ready=false`, and `order_routing_enabled=false`.
 
 ## Completed Since July 22
@@ -81,7 +81,7 @@ by default.
 Paper-live readiness: `GO` for the current blocked paper operating contract,
 subject to pre-market token verification when broker access is required.
 
-Live-money contract infrastructure: `COMPLETE_BUT_DISABLED`.
+Live-money contract infrastructure: implemented but disabled.
 
 Live-money routing readiness: `NO-GO`. Live order routing remains disabled
 until a separate reviewed change enables routing through the live execution

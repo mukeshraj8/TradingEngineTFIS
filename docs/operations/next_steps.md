@@ -6,7 +6,7 @@ way.
 
 ## Immediate Next Priorities
 
-0.12. `IN_PROGRESS` Close the remaining live-paper/live-money readiness gaps
+0.12. `DONE` Close the remaining live-paper/live-money readiness gaps
    one by one, updating status docs and tests after each completed slice.
    This queue starts from the July 27, 2026 operator findings: S23/S21 can run
    in controlled paper mode with shared startup and dashboard visibility, but
@@ -57,10 +57,19 @@ way.
       carry-forward/no-carry-past-expiry policy, paper-only guardrails, and all
       four S21 rule folders before it is treated as operationally comparable
       with S23 in paper mode. This is intentionally not live-money approval.
-   8. `IN_PROGRESS` Review live-money gates after the runtime fixes. Live routing must
-      remain disabled until broker truth, idempotency, kill-switch, operator
-      approval, reconciliation, and websocket/event-ingress evidence are all
-      proven through the existing live execution gate.
+   8. `DONE` Review live-money gates after the runtime fixes. The July 27,
+      2026 go/no-go review is recorded at
+      `docs/operations/tfis_go_no_go_review_2026-07-27.md`. Live routing
+      remains `NO-GO` and disabled until broker truth, idempotency,
+      kill-switch, operator approval, reconciliation, and
+      websocket/broker-event ingress evidence are all proven through the
+      existing live execution gate in a separate reviewed enablement change.
+
+0.13. `TODO` Start the separate live-routing enablement track only when the
+   operator is ready to supply broker-truth, broker-event/websocket ingress,
+   explicit session approval, kill-switch, idempotency, and reconciliation
+   evidence. This must remain a reviewed opt-in change and must route
+   exclusively through `validate_live_execution_gate`.
 
 0.0. `DONE` Correct dashboard order/trade terminology before live-money
    operation.
@@ -164,7 +173,7 @@ way.
 0.11. `DONE` Complete the July 24 live-money go/no-go review.
    `docs/operations/tfis_go_no_go_review_2026-07-24.md` records the current
    decision: paper-live is `GO` for the blocked paper operating contract, live
-   execution contract infrastructure is `COMPLETE_BUT_DISABLED`, and
+   execution contract infrastructure is implemented but disabled, and
    live-money routing remains `NO-GO` until a separate reviewed enablement
    change routes exclusively through `validate_live_execution_gate` with
    broker truth, broker-event/websocket ingress, operator approval, kill

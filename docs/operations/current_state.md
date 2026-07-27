@@ -16,6 +16,14 @@ change in a meaningful way.
   `scripts/show_tfis_runtime_status.ps1`, and `scripts/pre_live_readiness.py`,
   with prod readiness reporting `paper_runtime_strategy_trust=PASS`; this is
   controlled-paper validation only and does not approve live-money routing
+- the Monday, July 27, 2026 live-money gate review is recorded at
+  `docs/operations/tfis_go_no_go_review_2026-07-27.md`: the runtime hardening
+  queue is complete for the current blocked paper operating contract, the
+  boundary status is now explicitly `LIVE_MONEY_NO_GO_ROUTING_DISABLED`, and
+  live-money routing remains disabled until broker truth, broker-event or
+  websocket ingress, operator approval, kill-switch, idempotency, and
+  reconciliation evidence are supplied through a separate reviewed enablement
+  change
 - as of Thursday, July 23, 2026, the operator dashboard terminology has been
   corrected for paper/live-readiness: `trades/index.html` is now the Active
   Trades Monitor and shows only open paper positions, `orders/index.html` is
@@ -80,7 +88,7 @@ change in a meaningful way.
 - the Friday, July 24, 2026 go/no-go review is recorded at
   `docs/operations/tfis_go_no_go_review_2026-07-24.md`: paper-live remains
   `GO` only for the blocked paper operating contract, live execution
-  infrastructure is `COMPLETE_BUT_DISABLED`, and live-money routing remains
+  infrastructure is implemented but disabled, and live-money routing remains
   `NO-GO` until a separate reviewed enablement change routes through the live
   execution gate with broker truth, broker-event/websocket ingress, operator
   approval, kill switch, idempotency, and reconciliation evidence present
@@ -2351,7 +2359,7 @@ Current notes:
     tests/unit/test_live_money_boundary_status.py
     tests/unit/test_pre_live_readiness_script.py -q`: `28 passed`
   - `python scripts/show_tfis_live_money_boundary_status.py`:
-    `status=LIVE_MONEY_CONTRACT_GATES_COMPLETE_ROUTING_DISABLED`,
+    `status=LIVE_MONEY_NO_GO_ROUTING_DISABLED`,
     `live_money_ready=false`, `order_routing_enabled=false`, 0 pending gates
   - `python scripts/pre_live_readiness.py --profile prod --json`:
     `overall_status=PASS` with live-money contract gates implemented and live

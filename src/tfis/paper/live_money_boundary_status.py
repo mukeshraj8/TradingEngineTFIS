@@ -142,14 +142,16 @@ LIVE_MONEY_READINESS_GATES: tuple[LiveMoneyReadinessGate, ...] = (
 def load_live_money_boundary_status() -> LiveMoneyBoundaryStatus:
     pending = tuple(gate for gate in LIVE_MONEY_READINESS_GATES if gate.status != "DONE")
     status = (
-        "LIVE_MONEY_CONTRACT_GATES_COMPLETE_ROUTING_DISABLED"
+        "LIVE_MONEY_NO_GO_ROUTING_DISABLED"
         if not pending
         else "BLOCKED_FOR_LIVE_MONEY"
     )
     message = (
-        "TFIS live-money contract gates are implemented, but live order routing "
-        "remains disabled until an operator approval artifact exists and a "
-        "separate reviewed change enables broker routing."
+        "TFIS live-money contract scaffolding is implemented, but the current "
+        "live-money disposition is NO-GO: live order routing remains disabled "
+        "until real broker truth, event ingress, operator approval, kill-switch, "
+        "idempotency, and reconciliation evidence are supplied through a "
+        "separate reviewed enablement change."
         if not pending
         else (
             "TFIS live-money order routing is intentionally blocked. "

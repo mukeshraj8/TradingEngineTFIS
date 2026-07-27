@@ -8,6 +8,12 @@
   reference-packet scope, paper-only guardrails, and carry-forward policy, and
   both the TFIS runtime status console and pre-live readiness now include that
   evidence while live-money routing remains disabled
+- as of Monday, July 27, 2026, the live-money boundary review was refreshed
+  after the runtime-hardening queue: `docs/operations/tfis_go_no_go_review_2026-07-27.md`
+  records paper-live `GO` only for the blocked paper contract, live-money
+  routing `NO-GO`, and the boundary status now says
+  `LIVE_MONEY_NO_GO_ROUTING_DISABLED` so contract scaffolding cannot be
+  mistaken for live approval
 - as of Thursday, July 23, 2026, the operator dashboard now separates
   finalized orders from open trades: the global Active Trades Monitor shows
   open paper positions only, the new global Orders Manager shows
@@ -57,7 +63,7 @@
 - as of Friday, July 24, 2026, the updated go/no-go review is documented in
   `docs/operations/tfis_go_no_go_review_2026-07-24.md`: paper-live is `GO`
   only for the blocked paper contract, live execution infrastructure is
-  `COMPLETE_BUT_DISABLED`, and live-money routing remains `NO-GO`
+  implemented but disabled, and live-money routing remains `NO-GO`
 - as of Monday, July 27, 2026, the FYERS-backed S23 snapshot preflight path is
   less brittle during morning startup: transient broker normalization failures
   for quote or option-chain snapshot reads are retried with bounded attempts,
@@ -216,9 +222,10 @@
 - as of Wednesday, July 22, 2026, TFIS has a consolidated paper-live go/no-go
   review at `docs/operations/tfis_go_no_go_review_2026-07-22.md`: paper-live
   is acceptable only under the current blocked-paper contract, live-money
-  contract gates are complete, and live-money routing remains `NO-GO` until an
-  operator approval artifact exists and a separate reviewed change enables
-  broker routing
+  contract scaffolding is implemented, and live-money routing remains `NO-GO`
+  until real broker truth, event ingress, operator approval, kill-switch,
+  idempotency, and reconciliation evidence are supplied through a separate
+  reviewed enablement change
 - as of Wednesday, July 22, 2026, TFIS survived a real market-time startup
   recovery drill: S23 launched on schedule, S21 initially failed because of a
   simultaneous FYERS auth refresh collision, both morning wrappers were then
