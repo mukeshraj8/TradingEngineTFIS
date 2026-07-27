@@ -69,6 +69,10 @@
   available through the existing reset script's `-RecoverSharedSupervisor`
   mode; it performs safety checks and starts only the shared supervisor without
   full reset, dashboard rebuild, auth refresh, or strategy recalculation
+- as of Monday, July 27, 2026, dashboard freshness is visible and less manual:
+  generated pages show their build timestamp, and the dashboard server can
+  rebuild stale static pages on ordinary page requests without using the full
+  reset path
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate
@@ -1550,6 +1554,9 @@
 - Active-market shared-supervisor-only recovery is now documented and wired
   into `reset_tfis_dashboard_and_watchers.ps1 -RecoverSharedSupervisor` with
   guardrail, waiting-order, reconciliation, and order-routing safety checks.
+- Dashboard pages now include visible built-at freshness information, and the
+  local dashboard server supports configurable stale-page auto-rebuilds while
+  retaining the manual refresh script for immediate rebuilds.
 
 ## Next Recommended Priorities
 

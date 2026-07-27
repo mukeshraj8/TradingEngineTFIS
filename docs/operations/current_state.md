@@ -2498,3 +2498,11 @@ Current notes:
   then starts the supervisor with dashboard rebuild and auth refresh skipped.
   Focused script coverage passed at `15 passed`; a real post-market invocation
   correctly refused without starting anything.
+- Dashboard freshness semantics are clearer: every generated page now shows a
+  built-at freshness strip, and `serve_operator_dashboard.py` can auto-rebuild
+  stale static dashboard pages on normal page requests using the configurable
+  `--auto-rebuild-seconds` interval. Manual
+  `refresh_tfis_operator_dashboard.ps1` remains the immediate rebuild path,
+  while full reset is no longer needed for ordinary dashboard visibility.
+  Focused dashboard coverage passed at `36 passed`, the dashboard rebuilt
+  successfully under `tmp/operator_dashboard`, and project validation passed.

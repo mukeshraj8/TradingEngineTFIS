@@ -6576,6 +6576,7 @@ calculate();
 
     @staticmethod
     def _render_page(*, title: str, body: str) -> str:
+        generated_at = datetime.now().astimezone().isoformat(timespec="seconds")
         return "\n".join(
             [
                 "<!doctype html>",
@@ -6590,6 +6591,8 @@ calculate();
                 "    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }",
                 "    .hero { padding: 26px 40px 18px; border-bottom: 1px solid var(--border); background: #ffffff; }",
                 "    .hero h1 { margin: 0 0 8px; font-size: 1.85rem; letter-spacing: 0; }",
+                "    .freshness-bar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; padding: 9px 40px; border-bottom: 1px solid var(--border); background: #eef6f5; color: #134e4a; font-size: 0.82rem; }",
+                "    .freshness-bar code { color: inherit; background: transparent; padding: 0; }",
                 "    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; font-weight: 700; margin-bottom: 10px; }",
                 "    nav { padding: 16px 40px 0; }",
                 "    section { padding: 24px 40px; }",
@@ -6921,6 +6924,10 @@ calculate();
                 "  </style>",
                 "</head>",
                 "<body>",
+                "<div class=\"freshness-bar\">"
+                f"<span>Dashboard built at <code>{html.escape(generated_at)}</code></span>"
+                "<span>Serving refreshes rebuild stale pages automatically; use dashboard refresh for an immediate rebuild.</span>"
+                "</div>",
                 body,
                 "</body>",
                 "</html>",

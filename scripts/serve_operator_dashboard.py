@@ -5,6 +5,8 @@ import http.server
 import json
 import socketserver
 import sys
+import threading
+import time
 from datetime import date
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -29,6 +31,9 @@ class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
     dashboard_root: Path
     repo_root: Path
     runtime_config_path: Path
+    strategy_configs: tuple[StrategyDashboardConfig, ...]
+    auto_rebuild_seconds: int
+    rebuild_lock = threading.Lock()
 
     def do_GET(self) -> None:
         request = urlsplit(self.path)
@@ -38,6 +43,8 @@ class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
         if request.path == "/api/monthly-status/current":
             self._handle_current_monthly_status(parse_qs(request.query))
             return
+        if self._should_rebuild_for_request(request.path):
+            self._maybe_rebuild_dashboard()
         super().do_GET()
 
     def translate_path(self, path: str) -> str:
@@ -89,6 +96,42 @@ class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _should_rebuild_for_request(self, request_path: str) -> bool:
+        if self.auto_rebuild_seconds <= 0:
+            return False
+        if request_path in ("", "/", "/index.html"):
+            return True
+        if not (
+            request_path.startswith("/strategies/")
+            or request_path.startswith("/trades/")
+            or request_path.startswith("/orders/")
+            or request_path.startswith("/tools/")
+        ):
+            return False
+        return request_path.endswith("/") or request_path.endswith(".html")
+
+    def _maybe_rebuild_dashboard(self) -> None:
+        manifest_path = self.dashboard_root / "dashboard_manifest.json"
+        try:
+            manifest_age_seconds = time.time() - manifest_path.stat().st_mtime
+        except FileNotFoundError:
+            manifest_age_seconds = self.auto_rebuild_seconds + 1
+        if manifest_age_seconds < self.auto_rebuild_seconds:
+            return
+        if not self.rebuild_lock.acquire(blocking=False):
+            return
+        try:
+            try:
+                manifest_age_seconds = time.time() - manifest_path.stat().st_mtime
+            except FileNotFoundError:
+                manifest_age_seconds = self.auto_rebuild_seconds + 1
+            if manifest_age_seconds < self.auto_rebuild_seconds:
+                return
+            builder = TfisOperatorDashboardBuilder(strategy_configs=self.strategy_configs)
+            builder.build(output_root=self.dashboard_root)
+        finally:
+            self.rebuild_lock.release()
+
 
 def _query_value(query: dict[str, list[str]], key: str) -> str | None:
     values = query.get(key)
@@ -121,6 +164,17 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--dashboard-config", default="config/operator_dashboard_strategies.yaml")
     parser.add_argument("--runtime-config", default="config/paper.s23.fyers_connect_test.yaml")
+    parser.add_argument(
+        "--auto-rebuild-seconds",
+        type=int,
+        default=60,
+        help="Rebuild stale dashboard HTML on dashboard page requests after this many seconds.",
+    )
+    parser.add_argument(
+        "--disable-auto-rebuild",
+        action="store_true",
+        help="Serve static dashboard files only; do not rebuild on page requests.",
+    )
     parser.add_argument("--s23-artifact-root", default="data/strategies/S23/fyers_morning_supervised_decision")
     parser.add_argument(
         "--s23-strategy-path",
@@ -173,6 +227,8 @@ def main(argv: list[str] | None = None) -> int:
     handler.dashboard_root = output_root
     handler.repo_root = REPO_ROOT
     handler.runtime_config_path = REPO_ROOT / args.runtime_config
+    handler.strategy_configs = tuple(strategy_configs)
+    handler.auto_rebuild_seconds = 0 if args.disable_auto_rebuild else args.auto_rebuild_seconds
     with ReusableTcpServer(("127.0.0.1", args.port), handler) as httpd:
         print("TFIS operator dashboard ready.")
         print(f"Serving: {result_index_html}")

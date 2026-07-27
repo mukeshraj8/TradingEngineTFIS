@@ -44,10 +44,14 @@ way.
       checks guardrails, waiting orders, reconciliation, and order-routing
       safety, then starts only the shared supervisor with dashboard rebuild and
       auth refresh skipped.
-   6. `IN_PROGRESS` Improve dashboard freshness and refresh semantics. The operator
+   6. `DONE` Improve dashboard freshness and refresh semantics. The operator
       dashboard should show generated-at/data-freshness clearly and avoid
-      forcing manual reset scripts for ordinary dashboard visibility.
-   7. `TODO` Harden S21 operational trust. Validate S21 reference packet,
+      forcing manual reset scripts for ordinary dashboard visibility. Static
+      pages now show a built-at freshness strip, and the dashboard server can
+      auto-rebuild stale dashboard pages on normal page requests through a
+      configurable `--auto-rebuild-seconds` interval while preserving the
+      manual refresh script for immediate rebuilds.
+   7. `IN_PROGRESS` Harden S21 operational trust. Validate S21 reference packet,
       BankNifty lot/strike/expiry assumptions, carry-forward policy, and
       readiness evidence before treating it as equally trusted with S23.
    8. `TODO` Review live-money gates after the runtime fixes. Live routing must

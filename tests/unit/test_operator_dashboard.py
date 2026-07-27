@@ -728,6 +728,8 @@ def test_dashboard_builds_from_stage_artifacts(
     manifest = json.loads(result.manifest_json.read_text(encoding="utf-8"))
 
     assert "TFIS Operator Dashboard" in index_html
+    assert "Dashboard built at" in index_html
+    assert "Serving refreshes rebuild stale pages automatically" in index_html
     assert "2026-06-10" in strategy_html
     assert "Run Status" in strategy_html
     assert "Final Contract" in strategy_html
@@ -1109,6 +1111,14 @@ def test_dashboard_server_routes_orders_manager_page() -> None:
     )
 
     assert 'request_path.startswith("/orders/")' in server_script
+    assert "--auto-rebuild-seconds" in server_script
+    assert "--disable-auto-rebuild" in server_script
+    assert "def _maybe_rebuild_dashboard" in server_script
+    assert "dashboard_manifest.json" in server_script
+    assert "builder.build(output_root=self.dashboard_root)" in server_script
+    assert "request_path.startswith(\"/strategies/\")" in server_script
+    assert "request_path.startswith(\"/trades/\")" in server_script
+    assert "request_path.startswith(\"/tools/\")" in server_script
 
 
 def test_dashboard_chart_review_page_surfaces_selected_contract_market_evidence(
