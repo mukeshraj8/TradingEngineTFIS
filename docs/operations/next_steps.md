@@ -29,10 +29,13 @@ way.
       concurrent appends. Paper trade ledger JSONL writes now append under a
       per-ledger lock file, avoid shared temp-file replace paths, remove stale
       locks, and fail clearly on lock timeout.
-   4. `IN_PROGRESS` Clean dashboard/supervisor process reporting so Windows
+   4. `DONE` Clean dashboard/supervisor process reporting so Windows
       parent-child launcher pairs are shown as one logical runtime component
-      where appropriate.
-   5. `TODO` Add active-market shared-supervisor recovery. If the supervisor
+      where appropriate. Runtime status now keeps raw process count visible
+      but reports dashboard/supervisor counts from logical components, so a
+      PowerShell launcher plus Python child is not double-counted as two
+      supervisors.
+   5. `IN_PROGRESS` Add active-market shared-supervisor recovery. If the supervisor
       dies during `ACTIVE_MARKET`, TFIS should restart only the shared
       supervisor when recovery evidence is safe, without running a full reset
       or relaunching strategy calculations.

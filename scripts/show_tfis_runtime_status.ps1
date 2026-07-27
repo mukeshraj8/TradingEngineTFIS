@@ -146,19 +146,24 @@ $pausedStrategies = @(
 )
 $latestEvent = Get-TfisLatestOperatorControlEvent -RepoRoot $repoRoot
 $runtimeProcesses = @(Get-TfisRuntimeProcesses -RepoRoot $repoRoot)
-$dashboardProcesses = @($runtimeProcesses | Where-Object { (Get-TfisRuntimeProcessRole -CommandLine $_.CommandLine) -eq "dashboard" })
+$logicalRuntimeProcesses = @(Get-TfisLogicalRuntimeProcesses -Processes $runtimeProcesses)
+$dashboardProcesses = @($logicalRuntimeProcesses | Where-Object { $_.Role -eq "dashboard" })
 $dashboardPortOwnerProcesses = @(Get-TfisPortOwnerProcesses -Port $DashboardPort)
 foreach ($portOwnerProcess in $dashboardPortOwnerProcesses) {
-    if (@($dashboardProcesses | Where-Object { $_.ProcessId -eq $portOwnerProcess.ProcessId }).Count -eq 0) {
-        $dashboardProcesses += $portOwnerProcess
+    $knownDashboardProcessIds = @($dashboardProcesses | ForEach-Object { $_.ProcessIds } | ForEach-Object { [int]$_ })
+    if ($knownDashboardProcessIds -notcontains [int]$portOwnerProcess.ProcessId) {
+        $dashboardProcesses += [PSCustomObject]@{
+            ProcessId = [int]$portOwnerProcess.ProcessId
+            ProcessIds = @([int]$portOwnerProcess.ProcessId)
+            Name = $portOwnerProcess.Name
+            Role = "dashboard_port_owner"
+            CommandLine = $portOwnerProcess.CommandLine
+        }
     }
 }
-$supervisorProcesses = @($runtimeProcesses | Where-Object { (Get-TfisRuntimeProcessRole -CommandLine $_.CommandLine) -eq "supervisor" })
+$supervisorProcesses = @($logicalRuntimeProcesses | Where-Object { $_.Role -eq "supervisor" })
 $otherProcesses = @(
-    $runtimeProcesses | Where-Object {
-        $role = Get-TfisRuntimeProcessRole -CommandLine $_.CommandLine
-        $role -ne "dashboard" -and $role -ne "supervisor"
-    }
+    $logicalRuntimeProcesses | Where-Object { $_.Role -ne "dashboard" -and $_.Role -ne "supervisor" }
 )
 $dashboardReady = Test-TfisDashboardPortReady -Port $DashboardPort
 $marketSessionPhase = Get-TfisMarketSessionPhase -Date $RunDate
@@ -377,17 +382,20 @@ else {
 }
 
 Write-Host "RuntimeProcesses: $($runtimeProcesses.Count)"
+Write-Host "RuntimeProcessComponents: $($logicalRuntimeProcesses.Count)"
 Write-Host "DashboardProcesses: $($dashboardProcesses.Count)"
 Write-Host "SupervisorProcesses: $($supervisorProcesses.Count)"
 Write-Host "OtherTfisProcesses: $($otherProcesses.Count)"
-foreach ($proc in $runtimeProcesses) {
-    Write-Host (" - PID={0} Name={1} Role={2}" -f `
+foreach ($proc in $logicalRuntimeProcesses) {
+    Write-Host (" - ComponentPID={0} PIDs={1} Name={2} Role={3}" -f `
         $proc.ProcessId, `
+        ($proc.ProcessIds -join ","), `
         $proc.Name, `
-        (Get-TfisRuntimeProcessRole -CommandLine $proc.CommandLine))
+        $proc.Role)
 }
 foreach ($proc in $dashboardPortOwnerProcesses) {
-    if (@($runtimeProcesses | Where-Object { $_.ProcessId -eq $proc.ProcessId }).Count -eq 0) {
+    $knownRuntimeProcessIds = @($runtimeProcesses | ForEach-Object { [int]$_.ProcessId })
+    if ($knownRuntimeProcessIds -notcontains [int]$proc.ProcessId) {
         Write-Host (" - PID={0} Name={1} Role=dashboard_port_owner" -f $proc.ProcessId, $proc.Name)
     }
 }

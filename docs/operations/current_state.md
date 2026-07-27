@@ -2483,3 +2483,10 @@ Current notes:
   lock file rather than read-modify-written through one shared temp filename,
   stale locks are removed, and held locks time out with an explicit error.
   Focused ledger/supervisor/position-manager coverage passed at `77 passed`.
+- The read-only TFIS runtime status console now distinguishes raw runtime
+  processes from logical runtime components. Dashboard and supervisor counts
+  use logical components, so Windows PowerShell launcher plus Python child
+  pairs do not make one supervisor or dashboard look like multiple independent
+  runtimes. Focused script tests passed at `14 passed`; the real status command
+  ran successfully post-market and reported clean waiting-order/reconciliation
+  checks with no active dashboard or supervisor process.

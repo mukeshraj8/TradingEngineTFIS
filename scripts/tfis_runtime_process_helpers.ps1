@@ -175,6 +175,54 @@ function Get-TfisRuntimeProcesses {
     return @($matchedById.Values | Sort-Object ProcessId)
 }
 
+function Get-TfisLogicalRuntimeProcesses {
+    param(
+        [object[]]$Processes = @()
+    )
+
+    if ($Processes.Count -eq 0) {
+        return @()
+    }
+
+    $processesById = @{}
+    foreach ($proc in $Processes) {
+        $processesById[[int]$proc.ProcessId] = $proc
+    }
+
+    $componentByRoot = @{}
+    foreach ($proc in @($Processes | Sort-Object ProcessId)) {
+        $processId = [int]$proc.ProcessId
+        $role = Get-TfisRuntimeProcessRole -CommandLine $proc.CommandLine
+        $componentRootId = $processId
+        $parentProcessId = [int]$proc.ParentProcessId
+        while ($processesById.ContainsKey($parentProcessId)) {
+            $parent = $processesById[$parentProcessId]
+            $parentRole = Get-TfisRuntimeProcessRole -CommandLine $parent.CommandLine
+            if ($parentRole -eq $role) {
+                $componentRootId = [int]$parent.ProcessId
+                $parentProcessId = [int]$parent.ParentProcessId
+                continue
+            }
+            break
+        }
+
+        if (-not $componentByRoot.ContainsKey($componentRootId)) {
+            $rootProc = $processesById[$componentRootId]
+            $componentByRoot[$componentRootId] = [PSCustomObject]@{
+                ProcessId = [int]$rootProc.ProcessId
+                ProcessIds = @()
+                Name = $rootProc.Name
+                Role = Get-TfisRuntimeProcessRole -CommandLine $rootProc.CommandLine
+                CommandLine = $rootProc.CommandLine
+            }
+        }
+        $component = $componentByRoot[$componentRootId]
+        $component.ProcessIds = @($component.ProcessIds + $processId | Sort-Object -Unique)
+    }
+
+    return @($componentByRoot.Values | Sort-Object ProcessId)
+}
+
 function Wait-ForNoTfisRuntimeProcesses {
     param(
         [Parameter(Mandatory = $true)]

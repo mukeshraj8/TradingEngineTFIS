@@ -61,6 +61,10 @@
   shared temp-file replace path for append operations; session and global
   ledger JSONL rows are appended under per-ledger lock files so concurrent
   supervisor/manager writers do not collide or silently lose rows
+- as of Monday, July 27, 2026, runtime process reporting separates raw process
+  discovery from logical component counting, so Windows launcher/child pairs
+  remain visible for diagnostics but dashboard/supervisor counts reflect one
+  logical runtime component
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate
@@ -1535,6 +1539,10 @@
 - Paper trade ledger append safety is now hardened with per-ledger lock files,
   append-only JSONL writes, stale-lock cleanup, timeout errors for held locks,
   and focused concurrent-write coverage.
+- Runtime status process reporting now prints both raw `RuntimeProcesses` and
+  `RuntimeProcessComponents`, while dashboard/supervisor counts use logical
+  components to avoid double-counting PowerShell launcher plus Python child
+  pairs.
 
 ## Next Recommended Priorities
 

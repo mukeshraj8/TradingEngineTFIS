@@ -18,6 +18,7 @@ def test_reset_script_waits_for_old_tfis_runtime_before_restarting() -> None:
     assert "function Get-TfisProcessCandidates" in helper_script
     assert "function New-TfisPathRegex" in helper_script
     assert "function Get-TfisRuntimeProcesses" in helper_script
+    assert "function Get-TfisLogicalRuntimeProcesses" in helper_script
     assert "function Get-TfisPortOwnerProcesses" in helper_script
     assert "function Get-TfisRuntimeProcessRole" in helper_script
     assert "build_operator_dashboard\\.py|serve_operator_dashboard\\.py" in helper_script
@@ -141,10 +142,13 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "Get-TfisRuntimeProcesses -RepoRoot $repoRoot" in status_script
     assert "DashboardPortReady:" in status_script
     assert "DashboardPortOwnerProcesses:" in status_script
+    assert "Get-TfisLogicalRuntimeProcesses -Processes $runtimeProcesses" in status_script
+    assert "RuntimeProcessComponents:" in status_script
     assert "DashboardProcesses:" in status_script
     assert "SupervisorProcesses:" in status_script
-    assert "Get-TfisRuntimeProcessRole -CommandLine $_.CommandLine" in status_script
-    assert "Role={2}" in status_script
+    assert '$logicalRuntimeProcesses | Where-Object { $_.Role -eq "dashboard" }' in status_script
+    assert '$logicalRuntimeProcesses | Where-Object { $_.Role -eq "supervisor" }' in status_script
+    assert "ComponentPID={0} PIDs={1} Name={2} Role={3}" in status_script
     assert "Role=dashboard_port_owner" in status_script
     assert "load_paper_runtime_guardrail_statuses" in guardrail_script
     assert "GuardrailStatus:" in guardrail_script
@@ -188,6 +192,9 @@ def test_runtime_process_helper_matches_windows_path_variants_and_child_processe
     assert "$parentProcessId = [int]$proc.ParentProcessId" in helper_script
     assert "$matchedById.ContainsKey($parentProcessId)" in helper_script
     assert "Name = 'py.exe'" in helper_script
+    assert "$componentByRoot = @{}" in helper_script
+    assert "$parentRole -eq $role" in helper_script
+    assert "ProcessIds = @()" in helper_script
 
 
 def test_runtime_process_helper_exposes_operator_roles() -> None:
