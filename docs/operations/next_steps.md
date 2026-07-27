@@ -51,10 +51,13 @@ way.
       auto-rebuild stale dashboard pages on normal page requests through a
       configurable `--auto-rebuild-seconds` interval while preserving the
       manual refresh script for immediate rebuilds.
-   7. `IN_PROGRESS` Harden S21 operational trust. Validate S21 reference packet,
-      BankNifty lot/strike/expiry assumptions, carry-forward policy, and
-      readiness evidence before treating it as equally trusted with S23.
-   8. `TODO` Review live-money gates after the runtime fixes. Live routing must
+   7. `DONE` Harden S21 operational trust. `S21` now has an explicit
+      controlled-paper trust audit covering its reference packet, BankNifty
+      lot/strike/OI assumptions, configured monthly expiry value,
+      carry-forward/no-carry-past-expiry policy, paper-only guardrails, and all
+      four S21 rule folders before it is treated as operationally comparable
+      with S23 in paper mode. This is intentionally not live-money approval.
+   8. `IN_PROGRESS` Review live-money gates after the runtime fixes. Live routing must
       remain disabled until broker truth, idempotency, kill-switch, operator
       approval, reconciliation, and websocket/event-ingress evidence are all
       proven through the existing live execution gate.

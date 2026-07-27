@@ -91,6 +91,7 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     lifecycle_audit_script = _script_text("show_paper_runtime_lifecycle_audit_status.py")
     waiting_order_script = _script_text("show_paper_runtime_waiting_order_status.py")
     order_routing_script = _script_text("show_paper_runtime_order_routing_status.py")
+    strategy_trust_script = _script_text("show_paper_runtime_strategy_trust_status.py")
     reconciliation_script = _script_text("show_paper_runtime_reconciliation_status.py")
     fresh_entry_handoff_script = _script_text("show_paper_runtime_fresh_entry_handoff_status.py")
 
@@ -112,6 +113,7 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert 'show_paper_runtime_lifecycle_audit_status.py' in status_script
     assert 'show_paper_runtime_waiting_order_status.py' in status_script
     assert 'show_paper_runtime_order_routing_status.py' in status_script
+    assert 'show_paper_runtime_strategy_trust_status.py' in status_script
     assert 'show_paper_runtime_reconciliation_status.py' in status_script
     assert 'show_paper_runtime_fresh_entry_handoff_status.py' in status_script
     assert "PaperGuardrails:" in status_script
@@ -133,6 +135,7 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "start_or_recover_dashboard" in status_script
     assert "start_shared_supervisor" in status_script
     assert "OrderRoutingSafety:" in status_script
+    assert "StrategyTrust:" in status_script
     assert "RuntimeReconciliation:" in status_script
     assert "FreshEntryHandoffs:" in status_script
     assert "actor=$(if ($latestEvent.actor)" in status_script
@@ -164,6 +167,8 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "WaitingOrderStatus:" in waiting_order_script
     assert "load_paper_runtime_order_routing_statuses" in order_routing_script
     assert "OrderRoutingStatus:" in order_routing_script
+    assert "load_paper_runtime_strategy_trust_statuses" in strategy_trust_script
+    assert "StrategyTrustStatus:" in strategy_trust_script
     assert "load_paper_runtime_reconciliation_statuses" in reconciliation_script
     assert "ReconciliationStatus:" in reconciliation_script
     assert "load_paper_runtime_fresh_entry_handoff_statuses" in fresh_entry_handoff_script

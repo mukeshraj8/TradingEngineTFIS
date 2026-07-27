@@ -183,6 +183,7 @@ $heartbeatScript = Join-Path $scriptDir "show_paper_runtime_heartbeat_status.py"
 $lifecycleAuditScript = Join-Path $scriptDir "show_paper_runtime_lifecycle_audit_status.py"
 $waitingOrderScript = Join-Path $scriptDir "show_paper_runtime_waiting_order_status.py"
 $orderRoutingScript = Join-Path $scriptDir "show_paper_runtime_order_routing_status.py"
+$strategyTrustScript = Join-Path $scriptDir "show_paper_runtime_strategy_trust_status.py"
 $reconciliationScript = Join-Path $scriptDir "show_paper_runtime_reconciliation_status.py"
 $freshEntryHandoffScript = Join-Path $scriptDir "show_paper_runtime_fresh_entry_handoff_status.py"
 $waitingOrderLines = @()
@@ -323,6 +324,26 @@ if ((Test-Path $pythonExe) -and (Test-Path $orderRoutingScript)) {
 }
 else {
     Write-Host "OrderRoutingSafety: unavailable"
+}
+
+if ((Test-Path $pythonExe) -and (Test-Path $strategyTrustScript)) {
+    try {
+        $strategyTrustLines = & $pythonExe $strategyTrustScript 2>$null
+        if ($strategyTrustLines) {
+            Write-Host "StrategyTrust:"
+            foreach ($line in $strategyTrustLines) {
+                if (-not [string]::IsNullOrWhiteSpace($line)) {
+                    Write-Host (" - {0}" -f $line)
+                }
+            }
+        }
+    }
+    catch {
+        Write-Host "StrategyTrust: unavailable"
+    }
+}
+else {
+    Write-Host "StrategyTrust: unavailable"
 }
 
 if ((Test-Path $pythonExe) -and (Test-Path $reconciliationScript)) {

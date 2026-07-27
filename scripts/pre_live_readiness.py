@@ -27,6 +27,7 @@ from tfis.paper import (
     load_live_money_boundary_status,
     load_paper_runtime_order_routing_statuses,
     load_paper_runtime_reconciliation_statuses,
+    load_paper_runtime_strategy_trust_statuses,
     load_paper_runtime_waiting_order_statuses,
     load_paper_lifecycle_supervisor_target_specs,
     prepare_paper_broker_runtime_environment,
@@ -93,6 +94,7 @@ def run_checks(*, require_token: bool, probe_broker_health: bool = False) -> tup
         _paper_runtime_lifecycle_audit_check(),
         _paper_runtime_waiting_order_check(),
         _paper_order_routing_safety_check(),
+        _paper_runtime_strategy_trust_check(),
         _live_money_boundary_check(),
         _paper_runtime_reconciliation_check(),
         _paper_runtime_fresh_entry_handoff_check(),
@@ -574,6 +576,35 @@ def _paper_order_routing_safety_check() -> ReadinessCheck:
         name="paper_order_routing_safety",
         status="PASS",
         message="Paper order routing remains blocked: " + ", ".join(summaries),
+    )
+
+
+def _paper_runtime_strategy_trust_check() -> ReadinessCheck:
+    config_path = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
+    try:
+        statuses = load_paper_runtime_strategy_trust_statuses(config_path, repo_root=REPO_ROOT)
+    except Exception as exc:
+        return ReadinessCheck(
+            name="paper_runtime_strategy_trust",
+            status="FAIL",
+            message=f"Paper strategy trust check failed: {exc}",
+        )
+
+    failures = [item for item in statuses if item.status != "PASS"]
+    if failures:
+        return ReadinessCheck(
+            name="paper_runtime_strategy_trust",
+            status="FAIL",
+            message="; ".join(f"{item.strategy_code}: {item.message}" for item in failures),
+        )
+    summaries = [
+        f"{item.strategy_code}=>{item.trust_level}/rules={item.checked_rule_count}"
+        for item in statuses
+    ]
+    return ReadinessCheck(
+        name="paper_runtime_strategy_trust",
+        status="PASS",
+        message="Paper strategy trust evidence confirmed: " + ", ".join(summaries),
     )
 
 

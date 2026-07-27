@@ -2,6 +2,12 @@
 
 ## Current Snapshot
 
+- as of Monday, July 27, 2026, S21 controlled-paper trust is now explicit and
+  operator-visible: the new strategy-trust status helper validates all four
+  S21 rule folders, BankNifty sizing assumptions, configured expiry evidence,
+  reference-packet scope, paper-only guardrails, and carry-forward policy, and
+  both the TFIS runtime status console and pre-live readiness now include that
+  evidence while live-money routing remains disabled
 - as of Thursday, July 23, 2026, the operator dashboard now separates
   finalized orders from open trades: the global Active Trades Monitor shows
   open paper positions only, the new global Orders Manager shows

@@ -41,6 +41,11 @@ def _stub_additive_runtime_checks(module) -> None:
         status="PASS",
         message="paper fresh-entry handoff confirmed",
     )
+    module._paper_runtime_strategy_trust_check = lambda: module.ReadinessCheck(  # type: ignore[attr-defined]
+        name="paper_runtime_strategy_trust",
+        status="PASS",
+        message="paper strategy trust confirmed",
+    )
 
 
 def test_pre_live_readiness_parser_supports_token_probe_and_json_flags() -> None:
@@ -110,6 +115,7 @@ def test_pre_live_readiness_checks_skip_token_by_default() -> None:
     assert any(check.name == "paper_runtime_lifecycle_audit" for check in checks)
     assert any(check.name == "paper_runtime_waiting_orders" for check in checks)
     assert any(check.name == "paper_order_routing_safety" for check in checks)
+    assert any(check.name == "paper_runtime_strategy_trust" for check in checks)
     assert any(check.name == "live_money_boundary" for check in checks)
     assert any(check.name == "paper_runtime_reconciliation" for check in checks)
     assert any(check.name == "paper_runtime_fresh_entry_handoff" for check in checks)
@@ -683,3 +689,28 @@ def test_pre_live_readiness_reports_live_money_boundary() -> None:
     assert check.status == "PASS"
     assert "routing remains disabled" in check.message
     assert "operator approval" in check.message
+
+
+def test_paper_runtime_strategy_trust_check_fails_config_drift(monkeypatch) -> None:
+    module = _load_module()
+
+    monkeypatch.setattr(
+        module,
+        "load_paper_runtime_strategy_trust_statuses",
+        lambda config_path, repo_root: (
+            SimpleNamespace(
+                strategy_code="S21",
+                status="FAIL",
+                trust_level="CONTROLLED_PAPER_NOT_LIVE_MONEY",
+                checked_rule_count=4,
+                issue_count=1,
+                message="S21 controlled-paper trust checks failed: quantity drift",
+            ),
+        ),
+    )
+
+    check = module._paper_runtime_strategy_trust_check()  # type: ignore[attr-defined]
+
+    assert check.name == "paper_runtime_strategy_trust"
+    assert check.status == "FAIL"
+    assert "S21 controlled-paper trust checks failed" in check.message

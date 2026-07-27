@@ -6,6 +6,16 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Monday, July 27, 2026, S21 has explicit controlled-paper operational
+  trust evidence before being treated as comparable with S23 in the paper
+  runtime: `src/tfis/paper/runtime_strategy_trust_status.py` validates the S21
+  reference packet, BankNifty lot/strike/OI assumptions, parseable configured
+  expiry value, carry-forward/no-carry-past-expiry policy, paper-only
+  guardrails, registry IDs, and all four S21 rule folders; the same evidence
+  is surfaced by `scripts/show_paper_runtime_strategy_trust_status.py`,
+  `scripts/show_tfis_runtime_status.ps1`, and `scripts/pre_live_readiness.py`,
+  with prod readiness reporting `paper_runtime_strategy_trust=PASS`; this is
+  controlled-paper validation only and does not approve live-money routing
 - as of Thursday, July 23, 2026, the operator dashboard terminology has been
   corrected for paper/live-readiness: `trades/index.html` is now the Active
   Trades Monitor and shows only open paper positions, `orders/index.html` is
