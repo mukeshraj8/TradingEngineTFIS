@@ -6,7 +6,8 @@ from dataclasses import dataclass, fields, is_dataclass, replace
 from datetime import date, datetime, time, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from time import sleep as _sleep
+from typing import Any, Callable
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from tfis.brokers.base import BrokerAdapter, BrokerAdapterError
@@ -45,6 +46,8 @@ from .position_state import PaperPositionStateStore
 
 _ARTIFACT_VERSION = 1
 _DEFAULT_ARTIFACT_ROOT = Path("tmp/s23_fyers_snapshot_preflight")
+_DEFAULT_SNAPSHOT_FETCH_ATTEMPTS = 3
+_DEFAULT_SNAPSHOT_FETCH_RETRY_DELAY_SECONDS = 0.5
 
 
 class S23FyersSnapshotCollectorError(RuntimeError):
@@ -154,10 +157,18 @@ class S23FyersSnapshotCollector:
         artifact_root: str | Path = _DEFAULT_ARTIFACT_ROOT,
         prelude_builder: PaperLivePreludeBuilder | None = None,
         position_state_store: PaperPositionStateStore | None = None,
+        snapshot_fetch_attempts: int = _DEFAULT_SNAPSHOT_FETCH_ATTEMPTS,
+        snapshot_fetch_retry_delay_seconds: float = _DEFAULT_SNAPSHOT_FETCH_RETRY_DELAY_SECONDS,
+        sleeper: Callable[[float], None] = _sleep,
     ) -> None:
         self._artifact_root = Path(artifact_root)
         self._prelude_builder = prelude_builder or PaperLivePreludeBuilder()
         self._position_state_store = position_state_store or PaperPositionStateStore()
+        self._snapshot_fetch_attempts = max(1, int(snapshot_fetch_attempts))
+        self._snapshot_fetch_retry_delay_seconds = max(
+            0.0, float(snapshot_fetch_retry_delay_seconds)
+        )
+        self._sleeper = sleeper
 
     def collect_from_files(
         self,
@@ -187,13 +198,15 @@ class S23FyersSnapshotCollector:
                 "MISSING_RUNTIME_FIXTURE",
                 "--dry-run-build-prelude requires --runtime-fixture.",
             )
-        issues = self._collect_preflight_issues(
-            config=config,
-            strategy=strategy,
-            session_date=session_context.session_date,
-            dry_run_build_prelude=dry_run_build_prelude,
-            runtime_fixture=runtime_fixture,
-            adapter_supplied=adapter is not None,
+        issues = list(
+            self._collect_preflight_issues(
+                config=config,
+                strategy=strategy,
+                session_date=session_context.session_date,
+                dry_run_build_prelude=dry_run_build_prelude,
+                runtime_fixture=runtime_fixture,
+                adapter_supplied=adapter is not None,
+            )
         )
         if any(issue.severity == "NO_GO" for issue in issues):
             raise S23FyersSnapshotCollectorError(
@@ -227,21 +240,33 @@ class S23FyersSnapshotCollector:
         prelude_result: PaperLivePreludeResult | None = None
         try:
             active_adapter.connect()
-            underlying_quote = active_adapter.get_underlying_quote(
-                config.market.underlying_symbol,
-                session_date=session_context.session_date,
+            underlying_quote = self._fetch_snapshot_input_with_retries(
+                lambda: active_adapter.get_underlying_quote(
+                    config.market.underlying_symbol,
+                    session_date=session_context.session_date,
+                ),
+                input_name="underlying_quote",
+                issues=issues,
             )
-            underlying_bars = active_adapter.get_underlying_bars(
-                config.market.underlying_symbol,
-                session_date=session_context.session_date,
-                from_time=time(9, 14),
-                to_time=time(9, 30),
-                interval_minutes=1,
+            underlying_bars = self._fetch_snapshot_input_with_retries(
+                lambda: active_adapter.get_underlying_bars(
+                    config.market.underlying_symbol,
+                    session_date=session_context.session_date,
+                    from_time=time(9, 14),
+                    to_time=time(9, 30),
+                    interval_minutes=1,
+                ),
+                input_name="underlying_bars",
+                issues=issues,
             )
-            daily_bars = active_adapter.get_underlying_daily_bars(
-                config.market.underlying_symbol,
-                session_date=session_context.session_date,
-                lookback_days=180,
+            daily_bars = self._fetch_snapshot_input_with_retries(
+                lambda: active_adapter.get_underlying_daily_bars(
+                    config.market.underlying_symbol,
+                    session_date=session_context.session_date,
+                    lookback_days=180,
+                ),
+                input_name="underlying_daily_bars",
+                issues=issues,
             )
             option_chain_snapshot = self._collect_option_chains(
                 active_adapter=active_adapter,
@@ -249,6 +274,7 @@ class S23FyersSnapshotCollector:
                 near_expiry=weekly_expiry,
                 session_date=session_context.session_date,
                 expiry_type=strategy.expiry_policy.expiry_type,
+                issues=issues,
             )
         except (BrokerAdapterError, OSError, ValueError) as exc:
             raise S23FyersSnapshotCollectorError(
@@ -437,7 +463,7 @@ class S23FyersSnapshotCollector:
             prelude_generated=prelude_result is not None,
             preflight_status="READY",
             can_run=True,
-            issues=issues,
+            issues=tuple(issues),
             explicit_disclaimer=(
                 "Snapshot preflight collects one-shot FYERS normalized inputs for S23 paper "
                 "readiness only. It never starts a socket loop, never executes lifecycle "
@@ -762,11 +788,16 @@ class S23FyersSnapshotCollector:
         near_expiry: date,
         session_date: date,
         expiry_type: ExpiryType,
+        issues: list[S23FyersSnapshotPreflightIssue],
     ) -> OptionChainSnapshotEvent:
-        near_chain = active_adapter.get_option_chain(
-            symbol,
-            near_expiry,
-            session_date=session_date,
+        near_chain = self._fetch_snapshot_input_with_retries(
+            lambda: active_adapter.get_option_chain(
+                symbol,
+                near_expiry,
+                session_date=session_date,
+            ),
+            input_name=f"option_chain:{near_expiry.isoformat()}",
+            issues=issues,
         )
         near_chain = self._chain_with_symbol_expiries(
             near_chain,
@@ -778,10 +809,14 @@ class S23FyersSnapshotCollector:
                 "Normalized option-chain snapshot has no contracts.",
             )
         next_expiry = self._next_expiry_after(near_expiry, expiry_type=expiry_type)
-        next_chain = active_adapter.get_option_chain(
-            symbol,
-            next_expiry,
-            session_date=session_date,
+        next_chain = self._fetch_snapshot_input_with_retries(
+            lambda: active_adapter.get_option_chain(
+                symbol,
+                next_expiry,
+                session_date=session_date,
+            ),
+            input_name=f"option_chain:{next_expiry.isoformat()}",
+            issues=issues,
         )
         next_chain = self._chain_with_symbol_expiries(
             next_chain,
@@ -835,6 +870,42 @@ class S23FyersSnapshotCollector:
             expiry=near_chain.expiry,
             contracts=merged_contracts,
         )
+
+    def _fetch_snapshot_input_with_retries(
+        self,
+        fetcher: Callable[[], Any],
+        *,
+        input_name: str,
+        issues: list[S23FyersSnapshotPreflightIssue],
+    ) -> Any:
+        last_error: BrokerAdapterError | OSError | ValueError | None = None
+        for attempt in range(1, self._snapshot_fetch_attempts + 1):
+            try:
+                result = fetcher()
+            except (BrokerAdapterError, OSError, ValueError) as exc:
+                last_error = exc
+                if attempt >= self._snapshot_fetch_attempts:
+                    break
+                if self._snapshot_fetch_retry_delay_seconds > 0:
+                    self._sleeper(self._snapshot_fetch_retry_delay_seconds)
+                continue
+            if attempt > 1:
+                issues.append(
+                    S23FyersSnapshotPreflightIssue(
+                        code="broker_snapshot_retry_succeeded",
+                        message=(
+                            f"{input_name} succeeded on attempt {attempt} after "
+                            f"{attempt - 1} failed attempt(s)."
+                        ),
+                        severity="WARN",
+                    )
+                )
+            return result
+        assert last_error is not None
+        raise BrokerAdapterError(
+            f"{input_name} failed after {self._snapshot_fetch_attempts} attempt(s): "
+            f"{last_error}"
+        ) from last_error
 
     def collect_selected_contract_bars_from_files(
         self,

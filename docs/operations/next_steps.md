@@ -16,11 +16,15 @@ way.
       After the `15:30` lifecycle cutoff, stale selected-contract evidence is
       now displayed as closed/final snapshot evidence; active-market stale
       evidence still raises warnings.
-   2. `TODO` Fix broker snapshot robustness for FYERS-backed morning decisions.
+   2. `DONE` Fix broker snapshot robustness for FYERS-backed morning decisions.
       Missing/malformed FYERS option-chain or quote payloads should get a
       bounded retry/failover path and clear operator evidence instead of a
-      brittle one-shot startup failure.
-   3. `TODO` Make paper trade ledger writes concurrency-safe. Supervisor
+      brittle one-shot startup failure. The FYERS-backed S23 snapshot
+      collector now retries transient broker/normalization snapshot reads,
+      records successful retry evidence in the preflight summary, and still
+      fails closed with the exhausted attempt count when broker data remains
+      malformed.
+   3. `IN_PROGRESS` Make paper trade ledger writes concurrency-safe. Supervisor
       ledger writes must not crash on Windows temp-file replace collisions or
       concurrent appends.
    4. `TODO` Clean dashboard/supervisor process reporting so Windows

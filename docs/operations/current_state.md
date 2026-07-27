@@ -2472,3 +2472,9 @@ Current notes:
   concurrency-safe paper ledger writes, cleaner logical process reporting,
   active-market shared-supervisor recovery, dashboard freshness semantics, S21
   operational trust hardening, and a final live-money gate review.
+- The FYERS-backed S23 snapshot preflight path now has bounded retry handling
+  for transient malformed broker snapshot reads such as missing
+  `optionsChain` option-chain payloads or unusable quote records. Successful
+  retries are recorded as preflight warning evidence, and exhausted retries
+  still fail closed as `BROKER_SNAPSHOT_FAILED`; focused collector regression
+  coverage passed at `9 passed`.

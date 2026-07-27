@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 import pytest
 import yaml
 
+from tfis.brokers import BrokerNormalizationError
 from tfis.market_data import UnderlyingHistoryBar
 from tfis.paper import (
     OptionChainContract,
@@ -46,6 +47,8 @@ class _CountingFakeBrokerAdapter:
         option_chain_by_expiry: dict[date, OptionChainSnapshotEvent] | None = None,
         preserve_contract_symbols_for_expiries: set[date] | None = None,
         return_first_expiry_symbols_on_second_chain_call: bool = False,
+        underlying_quote_failures: tuple[Exception, ...] = (),
+        option_chain_failures: tuple[Exception, ...] = (),
     ) -> None:
         loader = S23NormalizedPaperEventLoader()
         events = loader.load_jsonl(BASE_EVENTS)
@@ -95,6 +98,8 @@ class _CountingFakeBrokerAdapter:
         self._return_first_expiry_symbols_on_second_chain_call = (
             return_first_expiry_symbols_on_second_chain_call
         )
+        self._underlying_quote_failures = list(underlying_quote_failures)
+        self._option_chain_failures = list(option_chain_failures)
         self._first_requested_option_chain_expiry: date | None = None
         self._daily_bars = daily_bars or (
             UnderlyingHistoryBar(
@@ -185,6 +190,8 @@ class _CountingFakeBrokerAdapter:
 
     def get_underlying_quote(self, symbol: str, *, session_date: date):
         self.get_underlying_quote_calls += 1
+        if self._underlying_quote_failures:
+            raise self._underlying_quote_failures.pop(0)
         return self._underlying
 
     def get_underlying_bars(
@@ -212,6 +219,8 @@ class _CountingFakeBrokerAdapter:
     def get_option_chain(self, symbol: str, expiry: date, *, session_date: date):
         self.get_option_chain_calls += 1
         self.requested_option_chain_expiries.append(expiry)
+        if self._option_chain_failures:
+            raise self._option_chain_failures.pop(0)
         if self._first_requested_option_chain_expiry is None:
             self._first_requested_option_chain_expiry = expiry
         source_chain = self._chain_by_expiry.get(expiry, self._chain)
@@ -504,6 +513,114 @@ def test_successful_snapshot_collection(tmp_path: Path) -> None:
     assert adapter.get_underlying_quote_calls == 1
     assert adapter.get_underlying_bars_calls == 1
     assert adapter.get_underlying_daily_bars_calls == 1
+    assert adapter.get_option_chain_calls == 2
+    assert adapter.get_option_quote_calls == 0
+    assert adapter.stream_ticks_calls == 0
+    assert adapter.order_api_calls == 0
+
+
+def test_snapshot_collection_retries_transient_underlying_quote_payload_error(
+    tmp_path: Path,
+) -> None:
+    adapter = _CountingFakeBrokerAdapter(
+        underlying_quote_failures=(
+            BrokerNormalizationError(
+                "FYERS quote payload does not contain a usable quote record."
+            ),
+        ),
+    )
+    sleeps: list[float] = []
+    collector = S23FyersSnapshotCollector(
+        artifact_root=tmp_path / "artifacts",
+        snapshot_fetch_retry_delay_seconds=0.01,
+        sleeper=sleeps.append,
+    )
+
+    artifact_set = collector.collect_from_files(
+        config_path=_write_config(tmp_path),
+        strategy_path=_write_strategy_folder(tmp_path),
+        session_id="snapshot-quote-retry",
+        adapter=adapter,
+    )
+
+    assert artifact_set.summary.preflight_status == "READY"
+    assert adapter.get_underlying_quote_calls == 2
+    assert sleeps == [0.01]
+    assert any(
+        issue.code == "broker_snapshot_retry_succeeded"
+        and "underlying_quote succeeded on attempt 2" in issue.message
+        for issue in artifact_set.summary.issues
+    )
+
+
+def test_snapshot_collection_retries_transient_option_chain_payload_error(
+    tmp_path: Path,
+) -> None:
+    adapter = _CountingFakeBrokerAdapter(
+        option_chain_failures=(
+            BrokerNormalizationError(
+                "FYERS option-chain payload is missing optionsChain."
+            ),
+        ),
+    )
+    collector = S23FyersSnapshotCollector(
+        artifact_root=tmp_path / "artifacts",
+        snapshot_fetch_retry_delay_seconds=0,
+    )
+
+    artifact_set = collector.collect_from_files(
+        config_path=_write_config(tmp_path),
+        strategy_path=_write_strategy_folder(tmp_path),
+        session_id="snapshot-chain-retry",
+        adapter=adapter,
+    )
+
+    assert artifact_set.summary.preflight_status == "READY"
+    assert adapter.get_option_chain_calls == 3
+    assert len(adapter.requested_option_chain_expiries) == 3
+    assert (
+        adapter.requested_option_chain_expiries[0]
+        == adapter.requested_option_chain_expiries[1]
+    )
+    assert any(
+        issue.code == "broker_snapshot_retry_succeeded"
+        and "option_chain:" in issue.message
+        and "succeeded on attempt 2" in issue.message
+        for issue in artifact_set.summary.issues
+    )
+
+
+def test_snapshot_collection_fails_closed_after_retries_are_exhausted(
+    tmp_path: Path,
+) -> None:
+    adapter = _CountingFakeBrokerAdapter(
+        option_chain_failures=(
+            BrokerNormalizationError(
+                "FYERS option-chain payload is missing optionsChain."
+            ),
+            BrokerNormalizationError(
+                "FYERS option-chain payload is missing optionsChain."
+            ),
+        ),
+    )
+    collector = S23FyersSnapshotCollector(
+        artifact_root=tmp_path / "artifacts",
+        snapshot_fetch_attempts=2,
+        snapshot_fetch_retry_delay_seconds=0,
+    )
+
+    with pytest.raises(S23FyersSnapshotCollectorError) as exc:
+        collector.collect_from_files(
+            config_path=_write_config(tmp_path),
+            strategy_path=_write_strategy_folder(tmp_path),
+            session_id="snapshot-chain-retry-exhausted",
+            adapter=adapter,
+        )
+
+    assert exc.value.code == "BROKER_SNAPSHOT_FAILED"
+    assert "option_chain:" in str(exc.value)
+    assert "failed after 2 attempt(s)" in str(exc.value)
+    assert "missing optionsChain" in str(exc.value)
     assert adapter.get_option_chain_calls == 2
     assert adapter.get_option_quote_calls == 0
     assert adapter.stream_ticks_calls == 0

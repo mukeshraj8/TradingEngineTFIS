@@ -52,6 +52,11 @@
   `docs/operations/tfis_go_no_go_review_2026-07-24.md`: paper-live is `GO`
   only for the blocked paper contract, live execution infrastructure is
   `COMPLETE_BUT_DISABLED`, and live-money routing remains `NO-GO`
+- as of Monday, July 27, 2026, the FYERS-backed S23 snapshot preflight path is
+  less brittle during morning startup: transient broker normalization failures
+  for quote or option-chain snapshot reads are retried with bounded attempts,
+  successful retries are visible in preflight issues, and exhausted malformed
+  broker data still fails closed without placing orders
 - as of Wednesday, July 22, 2026, TFIS has an explicit ordered
   application-startup/live-readiness TODO track: centralize provider auth,
   correct the existing startup/reset entrypoint instead of adding duplicate
@@ -1519,6 +1524,10 @@
   stale selected-contract streams and stale-only filesystem supervisor
   heartbeats after the `15:30` lifecycle cutoff are shown as closed/final
   snapshot evidence, while active-market stale evidence remains a warning.
+- FYERS-backed S23 morning snapshot preflight now retries transient malformed
+  quote/option-chain snapshot reads, records retry success as operator-visible
+  preflight evidence, and preserves fail-closed `BROKER_SNAPSHOT_FAILED`
+  behavior after bounded retry exhaustion.
 
 ## Next Recommended Priorities
 
