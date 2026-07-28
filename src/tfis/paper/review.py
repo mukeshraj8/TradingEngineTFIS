@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import date, datetime, time
 from enum import Enum
 from pathlib import Path
 from typing import Any
+
+from tfis.storage import atomic_write_text
 
 from .models import PaperReadinessStatus, PaperSessionState
 from .replay_bundle import S23PaperReplayBundleManager
@@ -1601,15 +1602,7 @@ class S23PaperSessionReviewer:
         return rendered if rendered else None
 
     def _atomic_write_text(self, path: Path, content: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = path.parent / f".{path.name}.tmp"
-        try:
-            with temp_path.open("w", encoding="utf-8", newline="\n") as handle:
-                handle.write(content)
-            os.replace(temp_path, path)
-        finally:
-            if temp_path.exists():
-                temp_path.unlink()
+        atomic_write_text(path, content)
 
     def _normalize(self, value: Any) -> Any:
         if is_dataclass(value):

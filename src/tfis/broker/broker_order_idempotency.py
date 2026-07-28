@@ -9,6 +9,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from tfis.storage import atomic_write_text
+
 
 _REGISTRY_FILENAME = "broker_order_idempotency_records.jsonl"
 
@@ -227,10 +229,7 @@ class BrokerOrderIdempotencyStore:
     def _append_record(path: Path, reservation: BrokerOrderReservation) -> None:
         existing = path.read_text(encoding="utf-8") if path.exists() else ""
         rendered = existing + json.dumps(_normalize(reservation), sort_keys=True) + "\n"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path = path.with_suffix(path.suffix + ".tmp")
-        tmp_path.write_text(rendered, encoding="utf-8")
-        tmp_path.replace(path)
+        atomic_write_text(path, rendered)
 
 
 def _compact_token(value: str, *, max_length: int) -> str:

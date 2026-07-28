@@ -13,6 +13,7 @@ from tfis.brokers import (
     BrokerAdapter,
     BrokerAdapterError,
 )
+from tfis.storage import atomic_write_text
 
 from .ingress_dry_run import (
     PaperNormalizedEventLoader,
@@ -1297,10 +1298,7 @@ class PaperBrokerPaperIngressRunner:
         self._atomic_write_text(path, json.dumps(_normalize(payload), indent=2, sort_keys=True) + "\n")
 
     def _atomic_write_text(self, path: Path, text: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = path.with_name(f"{path.name}.tmp")
-        temp_path.write_text(text, encoding="utf-8")
-        temp_path.replace(path)
+        atomic_write_text(path, text)
 
 
 def _session_datetime(session_date: date, clock_time: time, timezone: str) -> datetime:

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import asdict, dataclass, fields, is_dataclass
 from datetime import date, datetime, time
 from enum import Enum
@@ -9,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from tfis.domain import ExpiryType, OptionType, RolloverPolicy, StrategyRule
+from tfis.storage import atomic_write_text
 
 from .expiry_governance import PaperExpiryGovernance
 from .live_decision import PaperLiveDecisionResult, S23PaperTradeDecisionSummary
@@ -1286,14 +1286,7 @@ class PaperPositionManager:
 
     @staticmethod
     def _atomic_write_text(path: Path, content: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = path.parent / f".{path.name}.tmp"
-        try:
-            temp_path.write_text(content, encoding="utf-8", newline="\n")
-            os.replace(temp_path, path)
-        finally:
-            if temp_path.exists():
-                temp_path.unlink()
+        atomic_write_text(path, content)
 
     def _normalize(self, value: Any) -> Any:
         if is_dataclass(value):

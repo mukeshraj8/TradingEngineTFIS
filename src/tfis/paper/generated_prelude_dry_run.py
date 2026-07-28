@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import date, datetime, time
 from enum import Enum
@@ -12,6 +11,7 @@ from tfis.domain import MarketLevels
 from tfis.domain.enums import MonthlyStatus
 from tfis.importers import load_strategy_rule
 from tfis.monthly_status import MonthlyStatusResult
+from tfis.storage import atomic_write_text
 
 from .ingress_dry_run import (
     PaperEvent,
@@ -436,15 +436,7 @@ class S23GeneratedPreludeDryRunRunner:
         self._atomic_write_text(path, rendered)
 
     def _atomic_write_text(self, path: Path, content: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = path.parent / f".{path.name}.tmp"
-        try:
-            with temp_path.open("w", encoding="utf-8", newline="\n") as handle:
-                handle.write(content)
-            os.replace(temp_path, path)
-        finally:
-            if temp_path.exists():
-                temp_path.unlink()
+        atomic_write_text(path, content)
 
     def _normalize(self, value: Any) -> Any:
         if is_dataclass(value):

@@ -57,6 +57,7 @@ from tfis.paper import (
 from tfis.paper.models import SelectedContractBarEvent, SelectedContractQuoteEvent
 from tfis.paper.operator_controls import load_paper_runtime_control_state_from_root
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
+from tfis.storage import atomic_write_text
 
 
 DEFAULT_TARGETS_CONFIG = REPO_ROOT / "config" / "paper_lifecycle_supervisor_targets.yaml"
@@ -124,6 +125,11 @@ def main(argv: list[str] | None = None) -> int:
         args.targets_config,
         repo_root=REPO_ROOT,
     )
+    _prepare_target_runtime_environments(
+        targets,
+        tfis_root=args.tfis_root,
+        skip_refresh=args.skip_refresh,
+    )
     runtimes = _build_runtimes(targets)
     if not runtimes:
         print("No TFIS lifecycle supervisor targets were configured.", file=sys.stderr, flush=True)
@@ -151,11 +157,6 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     _print_start_banner(args=args, runtimes=runtimes)
-    _prepare_runtime_environments(
-        runtimes,
-        tfis_root=args.tfis_root,
-        skip_refresh=args.skip_refresh,
-    )
     _connect_runtime_adapters(runtimes)
 
     iterations = 0
@@ -307,6 +308,26 @@ def _build_runtimes(
     return tuple(runtimes)
 
 
+def _prepare_target_runtime_environments(
+    targets: tuple[PaperLifecycleSupervisorTargetSpec, ...],
+    *,
+    tfis_root: str | Path,
+    skip_refresh: bool,
+) -> None:
+    prepared_providers: set[str] = set()
+    for spec in targets:
+        broker_runtime = load_paper_broker_runtime(spec.config_path)
+        provider = broker_runtime.config.broker.provider.strip().lower()
+        if provider in prepared_providers:
+            continue
+        prepare_paper_broker_runtime_environment(
+            broker_runtime.config,
+            tfis_root=tfis_root,
+            skip_refresh=skip_refresh,
+        )
+        prepared_providers.add(provider)
+
+
 def _control_signature(state) -> tuple[bool, tuple[str, ...]]:
     return state.global_pause_active, tuple(sorted(state.paused_strategies))
 
@@ -360,15 +381,7 @@ def _append_supervisor_audit_event(
     }
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     rendered = existing + json.dumps(row, sort_keys=True) + "\n"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temp_path = path.parent / f".{path.name}.tmp"
-    try:
-        temp_path.write_text(rendered, encoding="utf-8", newline="\n")
-        os.replace(temp_path, path)
-    finally:
-        if temp_path.exists():
-            temp_path.unlink()
-    return path
+    return atomic_write_text(path, rendered)
 
 
 def _prepare_runtime_environments(

@@ -6,6 +6,38 @@ way.
 
 ## Immediate Next Priorities
 
+0.16. `DONE` Centralize Windows-safe atomic text writes across active TFIS
+   persistence paths. The live-state/order-state fixes from 0.15 are now
+   factored into `tfis.storage.atomic_write.atomic_write_text`; paper artifact,
+   review, ingress, generated-prelude, FYERS snapshot, fill/lifecycle,
+   position/order, broker-order, live operator control, FYERS token, and shared
+   supervisor audit writers now use unique temp files with bounded
+   `PermissionError` retries instead of fixed `.tmp` names. Validation covered
+   the helper directly, the July 28 crash regression paths, and the migrated
+   artifact/broker/token test set.
+
+0.15. `DONE` Clear the July 28 active-market stale warning caused by
+   filesystem live-state mirror contention. The supervisor crash at 10:34 IST
+   was caused by `PermissionError` during `os.replace` under
+   `config/tmp/live_state`; the live-state filesystem writer now uses unique
+   temp files and short replace retries. A second restart surfaced the same
+   Windows contention pattern in paper order event persistence, so
+   `PaperOrderStateStore` now uses the same unique-temp/retry-safe write path.
+   Validation restarted only the TFIS shared supervisor, confirmed fresh
+   S23/S21 heartbeats, verified the supervisor Python process stayed alive
+   after multiple poll cycles, and found no new `PermissionError` traces in the
+   active launch log.
+
+0.14. `DONE` Apply and validate the July 28 shared-supervisor
+   environment-ordering fix during live paper operation. The code now prepares
+   provider auth/environment before constructing broker adapters in
+   `run_tfis_paper_lifecycle_supervisor.py`; a controlled TFIS-only
+   shared-supervisor restart was performed during the July 28 paper session
+   without rerunning strategy calculations or touching non-TFIS processes.
+   The restarted supervisor verified the existing FYERS token, then reported
+   fresh `PAPER_POSITION_HELD` evidence for S23 and
+   `PAPER_ORDER_WAITING_FOR_TRIGGER` evidence for S21.
+
 0.12. `DONE` Close the remaining live-paper/live-money readiness gaps
    one by one, updating status docs and tests after each completed slice.
    This queue starts from the July 27, 2026 operator findings: S23/S21 can run

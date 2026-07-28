@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import asdict, dataclass, fields, is_dataclass
 from datetime import date, datetime, time, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Any
+
+from tfis.storage import atomic_write_text
 
 from .guardrails import (
     PaperGuardrailDecision,
@@ -1375,21 +1376,15 @@ class S23PaperLifecycleSimulator:
         }
 
     def _write_json(self, path: Path, payload: Any) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
         normalized = self._normalize(payload)
         raw = json.dumps(normalized, indent=2, sort_keys=True) + "\n"
-        tmp_path = path.with_suffix(path.suffix + ".tmp")
-        tmp_path.write_text(raw, encoding="utf-8", newline="\n")
-        os.replace(tmp_path, path)
+        atomic_write_text(path, raw)
 
     def _write_jsonl(self, path: Path, rows: tuple[dict[str, Any], ...]) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
         raw = "".join(
             json.dumps(self._normalize(item), sort_keys=True) + "\n" for item in rows
         )
-        tmp_path = path.with_suffix(path.suffix + ".tmp")
-        tmp_path.write_text(raw, encoding="utf-8", newline="\n")
-        os.replace(tmp_path, path)
+        atomic_write_text(path, raw)
 
     def _cleanup_optional_file(self, path: Path) -> None:
         if path.exists():

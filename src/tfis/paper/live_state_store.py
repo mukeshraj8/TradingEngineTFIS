@@ -10,6 +10,8 @@ from typing import Any
 
 import yaml
 
+from tfis.storage import atomic_write_text
+
 
 @dataclass(frozen=True, slots=True)
 class PaperLiveStateSettings:
@@ -501,14 +503,7 @@ class FilesystemPaperLiveStateStore(PaperLiveStateStore):
 
     @staticmethod
     def _write_text(path: Path, content: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = path.parent / f".{path.name}.tmp"
-        try:
-            temp_path.write_text(content, encoding="utf-8", newline="\n")
-            os.replace(temp_path, path)
-        finally:
-            if temp_path.exists():
-                temp_path.unlink()
+        atomic_write_text(path, content)
 
 
 def inspect_paper_live_state_store(

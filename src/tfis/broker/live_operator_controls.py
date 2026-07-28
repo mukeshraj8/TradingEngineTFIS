@@ -7,6 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from tfis.storage import atomic_write_text
+
 
 _APPROVAL_FILENAME = "live_operator_approval.json"
 _KILL_SWITCH_FILENAME = "live_kill_switch.json"
@@ -305,10 +307,7 @@ class LiveOperatorControlStore:
 
     @staticmethod
     def _atomic_write_text(path: Path, content: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path = path.with_suffix(path.suffix + ".tmp")
-        tmp_path.write_text(content, encoding="utf-8")
-        tmp_path.replace(path)
+        atomic_write_text(path, content)
 
     @staticmethod
     def _load_json(path: Path) -> dict[str, Any]:

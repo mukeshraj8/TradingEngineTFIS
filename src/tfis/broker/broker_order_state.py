@@ -7,6 +7,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from tfis.storage import atomic_write_text
+
 
 _ARTIFACT_VERSION = 1
 _STATE_FILENAME = "broker_order_state.json"
@@ -442,10 +444,7 @@ class BrokerOrderStateStore:
 
     @staticmethod
     def _atomic_write_text(path: Path, content: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path = path.with_suffix(path.suffix + ".tmp")
-        tmp_path.write_text(content, encoding="utf-8")
-        tmp_path.replace(path)
+        atomic_write_text(path, content)
 
     @staticmethod
     def _load_json_required(path: Path) -> dict[str, Any]:

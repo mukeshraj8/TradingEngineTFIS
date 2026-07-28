@@ -2,6 +2,27 @@
 
 ## Current Snapshot
 
+- as of Tuesday, July 28, 2026, the Windows-safe atomic persistence pattern is
+  now centralized in `tfis.storage.atomic_write.atomic_write_text` and used by
+  paper lifecycle/artifact/order/position/live-state writers, broker order
+  state/idempotency, live operator controls, FYERS token storage, and shared
+  supervisor audit events, replacing fixed temp-file writes with unique
+  temp-file atomic replacement plus bounded transient `PermissionError`
+  retries
+- as of Tuesday, July 28, 2026, the Active Trades Monitor red stale warning
+  was traced to the shared supervisor exiting on Windows filesystem
+  live-state mirror contention; the filesystem live-state writer now uses
+  unique temp files and bounded replace retries so transient `PermissionError`
+  does not stop paper lifecycle management, and paper order state/event writes
+  now use the same Windows-safe persistence pattern
+- as of Tuesday, July 28, 2026, live-paper monitoring at market open confirmed
+  TFIS scheduled startup produced S21/S23 stage artifacts but exposed a
+  shared-supervisor auth/environment ordering bug; the supervisor entrypoint
+  now prepares broker runtime environment before broker adapter construction
+  so recovered shared supervisors do not inherit empty/stale FYERS credentials
+  while managing current waiting orders and carried positions, and a
+  controlled TFIS-only supervisor restart restored fresh paper lifecycle
+  evidence for S23 and S21 during the same session
 - as of Monday, July 27, 2026, S21 controlled-paper trust is now explicit and
   operator-visible: the new strategy-trust status helper validates all four
   S21 rule folders, BankNifty sizing assumptions, configured expiry evidence,

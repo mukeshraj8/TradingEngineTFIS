@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import date
 from types import SimpleNamespace
@@ -229,6 +230,36 @@ def test_filesystem_live_state_persists_values_and_locks(tmp_path) -> None:
     files = list((tmp_path / "live_state").rglob("*"))
     assert any(path.name.endswith(".json") for path in files)
     assert any(path.name.endswith(".jsonl") for path in files)
+
+
+def test_filesystem_live_state_retries_transient_replace_permission_error(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    settings = _settings(provider="filesystem", root=str(tmp_path / "live_state"))
+    store = build_s23_paper_live_state_store(settings, strict=True)
+    real_replace = os.replace
+    calls = 0
+
+    def flaky_replace(src, dst):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise PermissionError("transient file contention")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr("tfis.storage.atomic_write.os.replace", flaky_replace)
+    monkeypatch.setattr("tfis.storage.atomic_write.time.sleep", lambda _seconds: None)
+
+    store.mirror_position_state(
+        session_date=date(2026, 6, 23),
+        trade_id="trade-4",
+        payload={"status": "OPEN"},
+    )
+
+    assert calls >= 2
+    assert list((tmp_path / "live_state").rglob("*.tmp")) == []
+    assert any(path.name.endswith(".json") for path in (tmp_path / "live_state").rglob("*"))
 
 
 def test_live_state_diagnostics_pass_for_filesystem_provider(tmp_path) -> None:

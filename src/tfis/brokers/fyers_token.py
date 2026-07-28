@@ -16,6 +16,8 @@ import pyotp
 import requests
 from dotenv import load_dotenv
 
+from tfis.storage import atomic_write_text
+
 
 VAGATOR_BASE = "https://api-t2.fyers.in/vagator/v2"
 API_V3_BASE = "https://api-t1.fyers.in/api/v3"
@@ -436,11 +438,8 @@ def _step5_exchange_token(
 
 
 def _write_token(paths: FyersTokenPaths, access_token: str) -> None:
-    paths.token_store.parent.mkdir(parents=True, exist_ok=True)
     payload = {"access_token": access_token, "refreshed_at": datetime.now().isoformat()}
-    tmp = paths.token_store.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-    tmp.replace(paths.token_store)
+    atomic_write_text(paths.token_store, json.dumps(payload, indent=2))
     _log(paths, f"Step 6: OK -- token written to {paths.token_store}")
 
 

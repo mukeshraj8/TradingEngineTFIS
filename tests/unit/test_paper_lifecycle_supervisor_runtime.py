@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sys
 from dataclasses import replace
 from datetime import date, datetime, time
@@ -1446,6 +1447,47 @@ def test_runtime_environment_preparation_is_deduped_per_provider(
     assert calls == [("fyers", False)]
 
 
+def test_supervisor_main_prepares_environment_before_building_adapters(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    target = object()
+    calls: list[str] = []
+
+    monkeypatch.setattr(
+        module,
+        "load_paper_lifecycle_supervisor_target_specs",
+        lambda *args, **kwargs: (target,),
+    )
+
+    def _fake_prepare(targets, *, tfis_root, skip_refresh):
+        assert targets == (target,)
+        assert tfis_root == str(tmp_path)
+        assert skip_refresh is True
+        calls.append("prepare")
+
+    def _fake_build(targets):
+        assert targets == (target,)
+        assert calls == ["prepare"]
+        calls.append("build")
+        return ()
+
+    monkeypatch.setattr(module, "_prepare_target_runtime_environments", _fake_prepare)
+    monkeypatch.setattr(module, "_build_runtimes", _fake_build)
+
+    result = module.main(["--tfis-root", str(tmp_path), "--skip-refresh"])
+
+    assert result == 1
+    assert calls == ["prepare", "build"]
+
+
 def test_supervisor_script_supports_operator_control_root_and_signatures() -> None:
     script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
     spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
@@ -1511,6 +1553,48 @@ def test_supervisor_script_appends_lifecycle_audit_event(tmp_path: Path) -> None
             "trade_id": "trade-1",
         }
     ]
+
+
+def test_supervisor_audit_event_append_retries_transient_replace_permission_error(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    import tfis.storage.atomic_write as atomic_write_module
+
+    real_replace = os.replace
+    calls = 0
+
+    def flaky_replace(src, dst):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise PermissionError("transient file contention")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(atomic_write_module.os, "replace", flaky_replace)
+    monkeypatch.setattr(atomic_write_module.time, "sleep", lambda _seconds: None)
+
+    result_path = module._append_supervisor_audit_event(
+        tmp_path / "state",
+        event_timestamp=datetime(2026, 7, 22, 10, 15),
+        strategy_code="S21",
+        trade_id="trade-2",
+        event_type="LIFECYCLE_STEP",
+        status="PAPER_ORDER_WAITING_FOR_TRIGGER",
+        reason_code="paper_order_waiting_quote_above_entry",
+        message="order waiting",
+    )
+
+    assert calls >= 2
+    assert list((tmp_path / "state").rglob("*.tmp")) == []
+    assert "paper_order_waiting_quote_above_entry" in result_path.read_text(encoding="utf-8")
 
 
 def test_connect_paper_broker_runtime_returns_health() -> None:

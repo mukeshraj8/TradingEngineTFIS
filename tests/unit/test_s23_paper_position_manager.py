@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import date, datetime, time
 from pathlib import Path
 
@@ -25,6 +26,7 @@ from tfis.paper import (
     S23OpenPaperPositionDiscovery,
     S23PaperOrderStateStore,
     S23PaperOrderStatus,
+    S23PaperOrderEvent,
     S23PaperExpiryGovernance,
     S23PaperPositionManager,
     S23PaperPositionManagerStatus,
@@ -76,6 +78,44 @@ def test_ready_decision_creates_waiting_order_before_position(tmp_path: Path) ->
     assert state_path == tmp_path / "paper_order_state.json"
     assert events_path == tmp_path / "paper_order_events.jsonl"
     assert not (tmp_path / "paper_position_state.json").exists()
+
+
+def test_order_event_append_retries_transient_replace_permission_error(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    store = S23PaperOrderStateStore()
+    real_replace = os.replace
+    calls = 0
+
+    def flaky_replace(src, dst):
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            raise PermissionError("transient file contention")
+        return real_replace(src, dst)
+
+    monkeypatch.setattr("tfis.storage.atomic_write.os.replace", flaky_replace)
+    monkeypatch.setattr("tfis.storage.atomic_write.time.sleep", lambda _seconds: None)
+
+    events_path = store.append_event(
+        tmp_path,
+        S23PaperOrderEvent(
+            artifact_version=1,
+            timestamp=datetime(2026, 6, 22, 9, 31),
+            session_date=date(2026, 6, 22),
+            status=S23PaperOrderStatus.PAPER_ORDER_WAITING_FOR_TRIGGER,
+            selected_contract_symbol="NIFTY_20260625_24150_PE",
+            planned_entry_price=195.0,
+            reason_code="paper_order_waiting_quote_above_entry",
+            message="waiting",
+        ),
+    )
+
+    assert calls >= 2
+    assert events_path == tmp_path / "paper_order_events.jsonl"
+    assert list(tmp_path.rglob("*.tmp")) == []
+    assert "paper_order_waiting_quote_above_entry" in events_path.read_text(encoding="utf-8")
 
 
 def test_quote_above_entry_keeps_order_waiting_and_does_not_open_position(tmp_path: Path) -> None:

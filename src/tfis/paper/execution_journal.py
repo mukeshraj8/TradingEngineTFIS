@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass, fields, is_dataclass
 from datetime import date, datetime, time, timedelta
 from enum import Enum
 from pathlib import Path
 from typing import Any
+
+from tfis.storage import atomic_write_text
 
 from .guardrails import (
     PaperGuardrailDecision,
@@ -2633,15 +2634,7 @@ class S23PaperExecutionJournalWriter:
         self._atomic_write_text(path, rendered)
 
     def _atomic_write_text(self, path: Path, content: str) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        temp_path = path.parent / f".{path.name}.tmp"
-        try:
-            with temp_path.open("w", encoding="utf-8", newline="\n") as handle:
-                handle.write(content)
-            os.replace(temp_path, path)
-        finally:
-            if temp_path.exists():
-                temp_path.unlink()
+        atomic_write_text(path, content)
 
     def _cleanup_optional_file(self, path: Path) -> None:
         if path.exists():

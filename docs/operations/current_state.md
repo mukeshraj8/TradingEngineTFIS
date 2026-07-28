@@ -6,6 +6,34 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Tuesday, July 28, 2026, TFIS now has a shared
+  `tfis.storage.atomic_write.atomic_write_text` helper for Windows-safe atomic
+  text persistence; paper artifact, ingress, lifecycle, order/position,
+  live-state, broker-order, operator-control, FYERS token, and shared
+  supervisor audit writers that previously used fixed `.tmp` filenames now
+  write through unique temp files with bounded `PermissionError` retries,
+  reducing the chance that dashboard reads, antivirus scans, or adjacent TFIS
+  processes can crash active paper lifecycle supervision
+- as of Tuesday, July 28, 2026, the Active Trades Monitor red stale warning
+  after 10:34 IST was traced to the shared supervisor crashing on a Windows
+  `PermissionError` while replacing a filesystem live-state mirror file; the
+  filesystem live-state writer now uses unique temp files and short
+  `PermissionError` retries so transient dashboard/OS file contention does not
+  kill lifecycle supervision; the same Windows-safe write pattern is also used
+  for paper order state/event persistence after a second crash surfaced on
+  `paper_order_events.jsonl`
+- as of Tuesday, July 28, 2026, the scheduled TFIS morning startup launched,
+  the dashboard was available, and S21/S23 produced morning stage artifacts,
+  but active monitoring exposed a shared-supervisor environment-ordering bug:
+  the supervisor prepared FYERS auth after constructing broker adapters, so a
+  recovered supervisor could remain connected at the health-check layer while
+  selected-contract quote reads failed with `MARKET_DATA_UNAVAILABLE`; the
+  supervisor entrypoint now prepares provider auth/environment before adapter
+  construction, preserving one app-level provider preparation and keeping the
+  fix in operational runtime wiring rather than strategy logic; the running
+  shared supervisor was then restarted TFIS-only, without rerunning strategy
+  calculations or touching non-TFIS processes, and fresh S23/S21 lifecycle
+  heartbeats returned to normal paper states
 - as of Monday, July 27, 2026, S21 has explicit controlled-paper operational
   trust evidence before being treated as comparable with S23 in the paper
   runtime: `src/tfis/paper/runtime_strategy_trust_status.py` validates the S21
