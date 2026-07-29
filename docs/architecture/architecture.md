@@ -41,3 +41,10 @@ TradingEngineTFIS is a clean, lightweight rule-engine project for TFIS strategy 
 - `tfis.storage`: persistence for normalized artifacts and outputs
 - `tfis.importers`: Excel-to-normalized import pipeline
 - `tfis.integrations`: future adapter interfaces to external systems
+
+## Phase 3C Certification
+
+The authoritative Gap/Missed-Entry Business Engine specification is
+`docs/architecture/tfis_phase3c_gap_missed_entry_engine.md`. Phase 3C is
+complete for offline architecture and supported legacy parity only; runtime
+activation, paper decision authority, and live-money authority remain deferred.

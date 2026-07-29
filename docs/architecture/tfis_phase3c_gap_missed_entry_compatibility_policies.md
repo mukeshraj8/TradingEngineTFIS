@@ -3,6 +3,10 @@
 Status: Milestone 3 compatibility adapter implementation. Offline-only; no
 paper, live, replay, or backtest runtime path is activated.
 
+Authoritative Phase 3C certification/specification is consolidated in
+`docs/architecture/tfis_phase3c_gap_missed_entry_engine.md`. This policy
+document is retained for Milestone 3 traceability.
+
 ## Implemented Profiles
 
 Compatibility policies live under `src/tfis/adapters/legacy_policies/` and

@@ -6,6 +6,16 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Wednesday, July 29, 2026, Phase 3C Milestone 5 certifies the Generic
+  Gap/Missed-Entry Business Engine as offline-complete for architecture and
+  supported legacy parity. The authoritative specification is
+  `docs/architecture/tfis_phase3c_gap_missed_entry_engine.md`; the open-rule
+  register is `docs/architecture/tfis_phase3c_open_rule_register.md`; the
+  deterministic certification artifacts are
+  `reports/phase3c/phase3c_certification.json` and
+  `reports/phase3c/phase3c_certification_summary.md`. Final verdict:
+  `PHASE_3C_ACCEPT` for offline use only. Disabled runtime shadow, paper
+  decision authority, and live-money authority remain deferred and not ready.
 - as of Wednesday, July 29, 2026, Phase 3C Milestone 4 adds deterministic
   offline Gap/Missed-Entry parity and typed decision-evidence integration.
   The report runner writes JSON/CSV/Markdown/sample-packet artifacts under

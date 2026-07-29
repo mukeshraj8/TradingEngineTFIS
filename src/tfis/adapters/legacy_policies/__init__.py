@@ -74,6 +74,12 @@ from .gap_missed_entry_parity import (
     run_gap_missed_entry_parity,
     write_gap_missed_entry_parity_reports,
 )
+from .gap_missed_entry_certification import (
+    PHASE3C_CERTIFICATION_SCHEMA_VERSION,
+    PHASE3C_FINAL_VERDICT,
+    build_phase3c_certification,
+    write_phase3c_certification_reports,
+)
 from .parity import (
     LegacyPolicyParityCase,
     LegacyPolicyParityResult,
@@ -125,6 +131,8 @@ __all__ = [
     "GapMissedEntryParityReport",
     "GapMissedEntryParityResult",
     "GapMissedEntryParitySourceClassification",
+    "PHASE3C_CERTIFICATION_SCHEMA_VERSION",
+    "PHASE3C_FINAL_VERDICT",
     "LegacyDecisionObservation",
     "LegacyGapMissedEntryComposition",
     "LegacyGapMissedEntryCompositionConfig",
@@ -162,6 +170,7 @@ __all__ = [
     "build_captured_parity_report",
     "build_gap_missed_entry_evidence_packet_sample",
     "build_gap_missed_entry_parity_cases",
+    "build_phase3c_certification",
     "build_s23_synthetic_golden_packet",
     "captured_cases_to_packets",
     "compare_gap_missed_entry_fields",
@@ -189,4 +198,5 @@ __all__ = [
     "write_captured_parity_reports",
     "write_decision_packet_reports",
     "write_gap_missed_entry_parity_reports",
+    "write_phase3c_certification_reports",
 ]

@@ -6,10 +6,18 @@ way.
 
 ## Immediate Next Priorities
 
-0.27. `TODO` After explicit approval, start Phase 3C Milestone 5. Do not
-   activate runtime migration until the Milestone 4 parity/evidence report is
-   reviewed and the unresolved S23 PUT and S21 ORPT/RC blockers are accepted
-   or explicitly scoped.
+0.28. `TODO` Wait for explicit approval before starting Phase 3D Entry Engine
+   work. Phase 3D must consume the Gap/Missed-Entry output as a downstream
+   input, preserve compatibility-only fields as audit evidence, keep S23 PUT
+   authority unresolved until clarified, and avoid runtime activation unless a
+   separate shadow-evaluation change is approved.
+
+0.27. `DONE` Complete Phase 3C Milestone 5 certification. Phase 3C is accepted
+   for offline architecture and supported legacy parity with 8 cases, 8
+   passing supported comparisons, 0 mismatches, and 2 intentional fail-closed
+   cases. Runtime shadow, paper authority, and live-money authority remain not
+   ready because S23 PUT authority, S21 ORPT/RC applicability, and full
+   captured parity remain unresolved.
 
 0.26. `DONE` Complete Phase 3C Milestone 4 full offline parity/evidence
    reporting for Gap/Missed-Entry. The generated `reports/phase3c/` artifacts

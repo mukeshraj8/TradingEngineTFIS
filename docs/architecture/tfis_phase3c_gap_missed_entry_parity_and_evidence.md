@@ -3,6 +3,10 @@
 Status: Milestone 4 offline parity and packet-evidence integration. Runtime
 activation remains out of scope.
 
+Authoritative Phase 3C certification/specification is consolidated in
+`docs/architecture/tfis_phase3c_gap_missed_entry_engine.md`. This parity and
+evidence document is retained for Milestone 4 traceability.
+
 ## Purpose
 
 Milestone 4 proves that the generic `GapMissedEntryEngine` plus compatibility

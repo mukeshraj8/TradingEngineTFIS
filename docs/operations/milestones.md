@@ -2,6 +2,14 @@
 
 ## Current Snapshot
 
+- as of Wednesday, July 29, 2026, Phase 3C Milestone 5 produced the final
+  Gap/Missed-Entry certification: authoritative specification, stable
+  `TFIS-GME-*` requirement identifiers, open-rule register, deterministic
+  certification JSON/Markdown reports, runtime-readiness matrix, security/audit
+  notes, Entry Engine handoff contract, and validation coverage. Final verdict
+  is `PHASE_3C_ACCEPT` for offline architecture and supported legacy parity
+  only; runtime activation, paper decision authority, and live-money authority
+  remain deferred.
 - as of Wednesday, July 29, 2026, Phase 3C Milestone 4 added deterministic
   offline Gap/Missed-Entry parity and typed decision-evidence integration:
   immutable parity case/result/comparison models, normalized legacy versus

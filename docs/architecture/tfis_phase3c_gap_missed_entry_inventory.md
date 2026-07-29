@@ -1,5 +1,9 @@
 # TFIS Phase 3C Gap and Missed-Entry Inventory
 
+Authoritative Phase 3C certification/specification is consolidated in
+`docs/architecture/tfis_phase3c_gap_missed_entry_engine.md`. This inventory is
+retained for Milestone 1 traceability.
+
 Date: Wednesday, July 29, 2026
 
 Milestone: 1 - Legacy gap and missed-entry behaviour inventory

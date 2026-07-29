@@ -3,6 +3,10 @@
 Status: Milestone 2 contract specification only. Runtime activation and
 strategy compatibility policies remain out of scope.
 
+Authoritative Phase 3C certification/specification is consolidated in
+`docs/architecture/tfis_phase3c_gap_missed_entry_engine.md`. This contract is
+retained for Milestone 2 traceability.
+
 Milestone 3 compatibility policies are documented in
 `docs/architecture/tfis_phase3c_gap_missed_entry_compatibility_policies.md`.
 They remain isolated under `src/tfis/adapters/legacy_policies/` and do not

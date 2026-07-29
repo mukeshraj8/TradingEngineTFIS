@@ -1,0 +1,1141 @@
+{
+  "architecture_certification": {
+    "active_runtime_invokes_gap_missed_entry_engine": false,
+    "business_engine_catalog_dependencies_valid": true,
+    "compatibility_policies_isolated": true,
+    "default_compatibility_profile_inferred": false,
+    "execution_is_deterministic": true,
+    "generic_engine_imports_broker_or_runtime_modules": false,
+    "generic_engine_imports_strategy_modules": false,
+    "global_mutable_engine_state": false,
+    "results_are_immutable": true,
+    "strategy_resolution_uses_definition_plus_version": true,
+    "typed_evidence_integration": true
+  },
+  "behavior_profiles": [
+    {
+      "evidence_classification": "LEGACY_FIXTURE_PARITY",
+      "fail_closed_conditions": [
+        "invalid generic input"
+      ],
+      "gap_capability": "NOT_APPLICABLE; no confirmed S21 gap formula.",
+      "missed_entry_comparison": "NOT_APPLICABLE",
+      "observation_requirements": "No executable ORPT/RC requirement is inferred.",
+      "parity_evidence": "legacy fixture parity",
+      "policy_key": "legacy.s21.gap_missed_entry.evidence_only_v1",
+      "profile": "S21 evidence-only",
+      "recalculation_capability": "NOT_REQUIRED",
+      "supported_branches": [
+        "S21 evidence-only fixture branch"
+      ],
+      "timing_applicability": "NOT_APPLICABLE",
+      "unresolved_issues": [
+        "S21_ORPT_RC_APPLICABILITY_UNRESOLVED remains outside this evidence-only profile."
+      ]
+    },
+    {
+      "evidence_classification": "LEGACY_FIXTURE_PARITY",
+      "fail_closed_conditions": [
+        "S21_ORPT_RC_APPLICABILITY_UNRESOLVED"
+      ],
+      "gap_capability": "INVALID fail-closed; no confirmed S21 gap formula.",
+      "missed_entry_comparison": "INVALID fail-closed",
+      "observation_requirements": "S21 ORPT/RC applicability requires workbook/user confirmation.",
+      "parity_evidence": "legacy fixture parity",
+      "policy_key": "legacy.s21.gap_missed_entry.unresolved_timing_v1",
+      "profile": "S21 unresolved timing",
+      "recalculation_capability": "INVALID fail-closed",
+      "supported_branches": [
+        "S21 unresolved applicability fixture branch"
+      ],
+      "timing_applicability": "UNRESOLVED",
+      "unresolved_issues": [
+        "S21_ORPT_RC_APPLICABILITY_UNRESOLVED"
+      ]
+    },
+    {
+      "evidence_classification": "SYNTHETIC_GOLDEN_PARITY and LEGACY_FIXTURE_PARITY",
+      "fail_closed_conditions": [
+        "missing ORPT/RC",
+        "invalid chronology",
+        "missing entry",
+        "unsupported branch/status",
+        "missing option observation"
+      ],
+      "gap_capability": "GAP_UP/GAP_DOWN/NORMAL_OR_NO_GAP from supplied current-day references.",
+      "missed_entry_comparison": "OPTION_LOW < entry",
+      "observation_requirements": "ORPT, RC, current-day high/low, entry reference, branch, option type, monthly status.",
+      "parity_evidence": "synthetic golden plus legacy fixture parity",
+      "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1",
+      "profile": "S23 backtest-low",
+      "recalculation_capability": "Delegated compatibility output when missed entry requires recalculation.",
+      "supported_branches": [
+        "BULL_CALL",
+        "BEAR_CALL",
+        "BULL_PUT",
+        "BEAR_PUT"
+      ],
+      "timing_applicability": "REQUIRED",
+      "unresolved_issues": [
+        "S23 PUT authority is not resolved by this profile."
+      ]
+    },
+    {
+      "evidence_classification": "PARTIAL_CAPTURED_PARITY",
+      "fail_closed_conditions": [
+        "missing ORPT/RC",
+        "invalid chronology",
+        "missing entry",
+        "unsupported branch/status",
+        "missing option observation"
+      ],
+      "gap_capability": "GAP_UP/GAP_DOWN/NORMAL_OR_NO_GAP from supplied current-day references.",
+      "missed_entry_comparison": "OPTION_HIGH < entry for PUT compatibility evidence; CALL remains low-detector compatible.",
+      "observation_requirements": "ORPT, RC, current-day high/low, entry reference, branch, option type, monthly status.",
+      "parity_evidence": "partial captured parity",
+      "policy_key": "legacy.s23.gap_missed_entry.paper_live_high_v1",
+      "profile": "S23 paper/live-high",
+      "recalculation_capability": "Delegated compatibility output when missed entry requires recalculation.",
+      "supported_branches": [
+        "BULL_CALL",
+        "BEAR_CALL",
+        "BULL_PUT",
+        "BEAR_PUT"
+      ],
+      "timing_applicability": "REQUIRED",
+      "unresolved_issues": [
+        "S23 PUT authority is not resolved by this profile."
+      ]
+    },
+    {
+      "evidence_classification": "UNSUPPORTED_FOR_PARITY",
+      "fail_closed_conditions": [
+        "S23_PUT_MISSED_ENTRY_COMPARISON_UNRESOLVED"
+      ],
+      "gap_capability": "INVALID fail-closed",
+      "missed_entry_comparison": "No authoritative source selected.",
+      "observation_requirements": "Both competing PUT observations are retained as unresolved evidence.",
+      "parity_evidence": "unsupported parity case used to prove fail-closed behavior",
+      "policy_key": "legacy.s23.gap_missed_entry.unresolved_put_v1",
+      "profile": "S23 unresolved PUT",
+      "recalculation_capability": "INVALID fail-closed",
+      "supported_branches": [
+        "BULL_PUT",
+        "BEAR_PUT"
+      ],
+      "timing_applicability": "REQUIRED",
+      "unresolved_issues": [
+        "S23_PUT_MISSED_ENTRY_COMPARISON_UNRESOLVED"
+      ]
+    }
+  ],
+  "blockers": [
+    "S23 PUT authoritative comparison remains unresolved.",
+    "S21 ORPT/RC applicability remains unresolved for executable behavior.",
+    "Full captured parity is unavailable.",
+    "Runtime activation has not been approved."
+  ],
+  "entry_engine_handoff": {
+    "authoritative_fields": [
+      "validation.passed",
+      "status",
+      "quality",
+      "gap",
+      "missed_entry",
+      "recalculation.status",
+      "recalculation.downstream_action",
+      "failures",
+      "unresolved_issues"
+    ],
+    "compatibility_only_fields": [
+      "recalculation.compatibility_outputs",
+      "legacy compatibility profile names",
+      "legacy detector metadata"
+    ],
+    "future_consumer": "Phase 3D Entry Engine",
+    "must_consume": [
+      "gap.classification",
+      "gap.direction",
+      "missed_entry.status",
+      "missed_entry.comparison_rule.policy_key",
+      "missed_entry.comparison_rule.observed_source",
+      "missed_entry.comparison_rule.operator",
+      "missed_entry.observed_value",
+      "missed_entry.entry_reference_value",
+      "recalculation.status",
+      "recalculation.branch_key",
+      "recalculation.downstream_action",
+      "recalculation.compatibility_outputs",
+      "warnings",
+      "failures",
+      "unresolved_issues",
+      "provenance"
+    ],
+    "must_not_do": [
+      "move target/stop/contract formulas into Gap/Missed-Entry",
+      "select an authoritative S23 PUT profile",
+      "activate runtime behavior without approval"
+    ],
+    "required_decisions": [
+      "whether base entry applies",
+      "whether recalculation is required",
+      "whether compatibility output is available",
+      "whether required evidence is missing",
+      "whether evaluation must stop",
+      "which formula or policy key applies",
+      "which current-day references are supplied",
+      "which warnings or unresolved issues propagate"
+    ]
+  },
+  "final_verdict": "PHASE_3C_ACCEPT",
+  "generated_at": "2026-07-29T00:00:00+00:00",
+  "objective": "Certify the Generic Gap/Missed-Entry Business Engine as offline-complete and behavior-preserving for supported legacy parity without activating runtime behavior.",
+  "open_rules": [
+    {
+      "affected_branch": "BULL_PUT, BEAR_PUT",
+      "affected_strategy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0",
+      "blocks_live_money": true,
+      "blocks_offline_use": false,
+      "blocks_runtime_shadow": true,
+      "business_impact": "A PUT candle can produce MISSED under one profile and NOT_MISSED under the other.",
+      "competing_evidence": [
+        "backtest compares OPTION_LOW < entry",
+        "paper/live timing audit compares OPTION_HIGH < entry"
+      ],
+      "current_safe_behavior": "Resolved low/high compatibility profiles can run offline by explicit key; unresolved profile fails closed.",
+      "issue_id": "TFIS-GME-OPEN-001",
+      "required_resolution_source": "workbook verification or explicit user rule decision",
+      "status": [
+        "LEGACY_INCONSISTENCY",
+        "WORKBOOK_VERIFICATION_REQUIRED",
+        "USER_CLARIFICATION_REQUIRED"
+      ],
+      "title": "S23 PUT missed-entry authoritative comparison"
+    },
+    {
+      "affected_branch": "all S21 gap/missed-entry branches",
+      "affected_strategy": "S21_BANKNIFTY_OP_SELL_MONTHLY@1.0.0",
+      "blocks_live_money": true,
+      "blocks_offline_use": false,
+      "blocks_runtime_shadow": true,
+      "business_impact": "TFIS must not invent an S21 gap formula or infer S23 timing semantics for S21.",
+      "competing_evidence": [
+        "evidence-only profile declares timing not applicable",
+        "unresolved applicability profile fails closed"
+      ],
+      "current_safe_behavior": "S21 may emit evidence-only NOT_APPLICABLE; unresolved timing execution fails closed.",
+      "issue_id": "TFIS-GME-OPEN-002",
+      "required_resolution_source": "workbook verification or explicit user rule decision",
+      "status": [
+        "INSUFFICIENT_EVIDENCE",
+        "USER_CLARIFICATION_REQUIRED"
+      ],
+      "title": "S21 ORPT/RC applicability"
+    },
+    {
+      "affected_branch": "all branches needing captured parity",
+      "affected_strategy": "S21/S23 captured runtime evidence",
+      "blocks_live_money": true,
+      "blocks_offline_use": false,
+      "blocks_runtime_shadow": true,
+      "business_impact": "Offline parity is supported, but full runtime-shadow confidence is incomplete.",
+      "competing_evidence": [
+        "Milestone 4 has partial captured parity for one case",
+        "remaining cases use synthetic golden or legacy fixtures"
+      ],
+      "current_safe_behavior": "Runtime shadow remains deferred unless supplemental evidence is explicitly approved.",
+      "issue_id": "TFIS-GME-OPEN-003",
+      "required_resolution_source": "captured option-chain/timing evidence or approved supplemental evidence plan",
+      "status": [
+        "EVIDENCE_CAPTURE_GAP",
+        "NOT_FORMULA_RULE_DEFECT"
+      ],
+      "title": "Full captured parity availability"
+    }
+  ],
+  "parity_counts": {
+    "branch_coverage": [
+      "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+      "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+      "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+      "S21_EVIDENCE_ONLY"
+    ],
+    "captured_with_synthetic_supplement_cases": 0,
+    "fail_closed_cases": 2,
+    "full_captured_parity_cases": 0,
+    "legacy_fixture_parity_cases": 5,
+    "mismatched_cases": 0,
+    "mismatches_by_classification": {},
+    "packet_integration_status": "TYPED_FRAGMENT_ROUND_TRIP",
+    "partial_captured_parity_cases": 1,
+    "passed_cases": 8,
+    "policy_profile_coverage": [
+      "legacy.s21.gap_missed_entry.evidence_only_v1",
+      "legacy.s21.gap_missed_entry.unresolved_timing_v1",
+      "legacy.s23.gap_missed_entry.backtest_low_v1",
+      "legacy.s23.gap_missed_entry.paper_live_high_v1",
+      "legacy.s23.gap_missed_entry.unresolved_put_v1"
+    ],
+    "runtime_migration_blockers": [
+      "S23_PUT_AUTHORITATIVE_RULE_UNRESOLVED",
+      "S21_ORPT_RC_APPLICABILITY_UNRESOLVED",
+      "MILESTONE_4_OFFLINE_ONLY"
+    ],
+    "synthetic_golden_parity_cases": 1,
+    "total_cases": 8,
+    "unsupported_for_parity_cases": 1
+  },
+  "parity_matrix": [
+    {
+      "branch": "S21_EVIDENCE_ONLY",
+      "case_id": "S21:EVIDENCE_ONLY",
+      "evidence_classification": "LEGACY_FIXTURE_PARITY",
+      "fail_closed_result": false,
+      "generic_evaluated_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "legacy_reproducible_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "mismatch_count": 0,
+      "parity_result": "PASSED",
+      "profile": "legacy.s21.gap_missed_entry.evidence_only_v1",
+      "runtime_migration_relevance": "supports offline behavior-preserving evaluation only",
+      "strategy": "S21_BANKNIFTY_OP_SELL_MONTHLY@1.0.0"
+    },
+    {
+      "branch": "S21_EVIDENCE_ONLY",
+      "case_id": "S21:UNRESOLVED_TIMING",
+      "evidence_classification": "LEGACY_FIXTURE_PARITY",
+      "fail_closed_result": true,
+      "generic_evaluated_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "legacy_reproducible_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "mismatch_count": 0,
+      "parity_result": "PASSED",
+      "profile": "legacy.s21.gap_missed_entry.unresolved_timing_v1",
+      "runtime_migration_relevance": "blocks runtime shadow until unresolved rule is clarified",
+      "strategy": "S21_BANKNIFTY_OP_SELL_MONTHLY@1.0.0"
+    },
+    {
+      "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+      "case_id": "S23:BEAR_CALL:NORMAL",
+      "evidence_classification": "LEGACY_FIXTURE_PARITY",
+      "fail_closed_result": false,
+      "generic_evaluated_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "legacy_reproducible_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "mismatch_count": 0,
+      "parity_result": "PASSED",
+      "profile": "legacy.s23.gap_missed_entry.backtest_low_v1",
+      "runtime_migration_relevance": "supports offline behavior-preserving evaluation only",
+      "strategy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0"
+    },
+    {
+      "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+      "case_id": "S23:BEAR_PUT:MISSED_BACKTEST_LOW",
+      "evidence_classification": "LEGACY_FIXTURE_PARITY",
+      "fail_closed_result": false,
+      "generic_evaluated_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "legacy_reproducible_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "mismatch_count": 0,
+      "parity_result": "PASSED",
+      "profile": "legacy.s23.gap_missed_entry.backtest_low_v1",
+      "runtime_migration_relevance": "supports offline behavior-preserving evaluation only",
+      "strategy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0"
+    },
+    {
+      "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+      "case_id": "S23:BEAR_PUT:PAPER_LIVE_HIGH_NOT_MISSED",
+      "evidence_classification": "PARTIAL_CAPTURED_PARITY",
+      "fail_closed_result": false,
+      "generic_evaluated_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "legacy_reproducible_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "mismatch_count": 0,
+      "parity_result": "PASSED",
+      "profile": "legacy.s23.gap_missed_entry.paper_live_high_v1",
+      "runtime_migration_relevance": "supports offline behavior-preserving evaluation only",
+      "strategy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0"
+    },
+    {
+      "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+      "case_id": "S23:BEAR_PUT:UNRESOLVED_PROFILE",
+      "evidence_classification": "UNSUPPORTED_FOR_PARITY",
+      "fail_closed_result": true,
+      "generic_evaluated_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "legacy_reproducible_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "mismatch_count": 0,
+      "parity_result": "PASSED",
+      "profile": "legacy.s23.gap_missed_entry.unresolved_put_v1",
+      "runtime_migration_relevance": "blocks runtime shadow until unresolved rule is clarified",
+      "strategy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0"
+    },
+    {
+      "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "case_id": "S23:BULL_CALL:NORMAL",
+      "evidence_classification": "SYNTHETIC_GOLDEN_PARITY",
+      "fail_closed_result": false,
+      "generic_evaluated_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "legacy_reproducible_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "mismatch_count": 0,
+      "parity_result": "PASSED",
+      "profile": "legacy.s23.gap_missed_entry.backtest_low_v1",
+      "runtime_migration_relevance": "supports offline behavior-preserving evaluation only",
+      "strategy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0"
+    },
+    {
+      "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+      "case_id": "S23:BULL_PUT:MISSED_BACKTEST_LOW",
+      "evidence_classification": "LEGACY_FIXTURE_PARITY",
+      "fail_closed_result": false,
+      "generic_evaluated_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "legacy_reproducible_fields": [
+        "evidence",
+        "evidence.failures",
+        "evidence.unresolved_issue_codes",
+        "evidence.warnings",
+        "gap",
+        "gap.classification",
+        "gap.direction",
+        "identity",
+        "identity.evaluation_id",
+        "identity.policy_profile",
+        "identity.strategy_definition_id",
+        "identity.strategy_instance_id",
+        "identity.strategy_version",
+        "missed_entry",
+        "missed_entry.comparison_operator",
+        "missed_entry.comparison_source",
+        "missed_entry.observed_value",
+        "missed_entry.reference_value",
+        "missed_entry.status",
+        "recalculation",
+        "recalculation.branch",
+        "recalculation.compatibility_outputs",
+        "recalculation.status",
+        "timing",
+        "timing.applicability",
+        "timing.chronology_status",
+        "timing.orpt_timestamp",
+        "timing.rc_timestamp"
+      ],
+      "mismatch_count": 0,
+      "parity_result": "PASSED",
+      "profile": "legacy.s23.gap_missed_entry.backtest_low_v1",
+      "runtime_migration_relevance": "supports offline behavior-preserving evaluation only",
+      "strategy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0"
+    }
+  ],
+  "performance_certification": {
+    "acceptable_for_shadow": true,
+    "deterministic_artifact_policy": "Exact wall-clock measurements are intentionally not persisted because report artifacts must be deterministic.",
+    "environment": "local offline Python validation in repository virtual environment",
+    "evidence_fragment_size_bytes": 12980,
+    "limitations": [
+      "No live-money throughput claim.",
+      "No broker/network path was exercised.",
+      "Full captured parity evidence remains incomplete."
+    ],
+    "representative_upper_bounds_seconds": {
+      "case_import": 0.01,
+      "comparator": 0.01,
+      "engine_execution": 0.01,
+      "evidence_serialization": 0.01,
+      "policy_resolution": 0.01,
+      "repeated_deterministic_evaluation": 0.01
+    },
+    "sample_count": 8,
+    "verified_absent": [
+      "YAML parsing per engine evaluation",
+      "registry scan per engine evaluation",
+      "external storage lookup",
+      "broker call",
+      "shared global lock",
+      "mutable module-level strategy state"
+    ]
+  },
+  "readiness_verdicts": {
+    "architecture": "READY",
+    "complete_captured_parity": "NOT_READY",
+    "disabled_runtime_shadow": "NOT_READY",
+    "live_money_authority": "NOT_READY",
+    "paper_decision_authority": "NOT_READY",
+    "supported_offline_parity": "READY"
+  },
+  "recommended_phase3d": "Implement the Entry Engine as a downstream consumer of Gap/Missed-Entry output, keeping runtime shadow disabled until explicit approval and evidence enrichment.",
+  "requirements": [
+    {
+      "id": "TFIS-GME-001",
+      "statement": "Generic engine remains broker, strategy, runtime, and adapter neutral.",
+      "tests": [
+        "tests/architecture/test_business_engine_boundary.py"
+      ]
+    },
+    {
+      "id": "TFIS-GME-002",
+      "statement": "Inputs, outputs, validation, evidence, and unresolved-rule models are immutable.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_contracts_are_immutable_and_mapping_fields_are_frozen"
+      ]
+    },
+    {
+      "id": "TFIS-GME-003",
+      "statement": "The engine consumes supplied upstream observations and does not fetch market data.",
+      "tests": [
+        "tests/architecture/test_business_engine_boundary.py"
+      ]
+    },
+    {
+      "id": "TFIS-GME-004",
+      "statement": "The engine owns no mutable timing state and validates supplied chronology only.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_invalid_chronology_fails_closed"
+      ]
+    },
+    {
+      "id": "TFIS-GME-005",
+      "statement": "Gap and missed-entry outputs are independent auditable results.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_gap_and_missed_entry_outputs_are_independent"
+      ]
+    },
+    {
+      "id": "TFIS-GME-006",
+      "statement": "ORPT and RC applicability is explicit and can be not applicable, required, optional, or unresolved.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_orpt_and_rc_can_be_not_applicable"
+      ]
+    },
+    {
+      "id": "TFIS-GME-007",
+      "statement": "Missed-entry comparison source is explicit.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_comparison_source_operator_and_reference_are_explicit"
+      ]
+    },
+    {
+      "id": "TFIS-GME-008",
+      "statement": "Missed-entry comparison operator is explicit.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_comparison_source_operator_and_reference_are_explicit"
+      ]
+    },
+    {
+      "id": "TFIS-GME-009",
+      "statement": "Observed and reference values are typed and preserve null versus zero.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_result_serialization_is_deterministic_and_keeps_null_distinct_from_zero"
+      ]
+    },
+    {
+      "id": "TFIS-GME-010",
+      "statement": "Recalculation is a downstream instruction, not target, stop, contract, or lifecycle authority.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_recalculation_is_downstream_instruction_and_target_stop_fields_are_outside_engine"
+      ]
+    },
+    {
+      "id": "TFIS-GME-011",
+      "statement": "Missing required evidence fails closed.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_compatibility_policies.py::test_s23_fail_closed_for_missing_or_invalid_evidence"
+      ]
+    },
+    {
+      "id": "TFIS-GME-012",
+      "statement": "Unresolved policy semantics fail closed.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_compatibility_policies.py::test_unresolved_s23_put_profile_fails_closed_and_records_both_observed_behaviors"
+      ]
+    },
+    {
+      "id": "TFIS-GME-013",
+      "statement": "Compatibility policy resolution uses strategy definition plus version without default profile inference.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_compatibility_policies.py::test_policy_resolution_uses_definition_and_version_without_defaults"
+      ]
+    },
+    {
+      "id": "TFIS-GME-014",
+      "statement": "Evidence serialization and reports are deterministic.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_parity_and_evidence.py::test_gap_missed_entry_reports_are_deterministic"
+      ]
+    },
+    {
+      "id": "TFIS-GME-015",
+      "statement": "Evidence preserves provenance, policy profile, warnings, failures, and unresolved issue codes.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_parity_and_evidence.py::test_typed_decision_evidence_packet_fragment_round_trips_and_preserves_audit_values"
+      ]
+    },
+    {
+      "id": "TFIS-GME-016",
+      "statement": "Compatibility output preserves null-versus-zero behavior and does not coerce unavailable data.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_result_serialization_is_deterministic_and_keeps_null_distinct_from_zero"
+      ]
+    },
+    {
+      "id": "TFIS-GME-017",
+      "statement": "Strategy-instance identity remains isolated in input and parity evidence.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_compatibility_policies.py::test_adapter_mapping_preserves_identity_values_and_null_entry"
+      ]
+    },
+    {
+      "id": "TFIS-GME-018",
+      "statement": "S23 PUT profile authority is not selected by the generic engine.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_contracts.py::test_generic_engine_uses_policy_result_without_selecting_between_competing_rules"
+      ]
+    },
+    {
+      "id": "TFIS-GME-019",
+      "statement": "Target, stop, contract selection, risk, lifecycle, and orders remain outside Gap/Missed-Entry.",
+      "tests": [
+        "tests/unit/test_phase3c_gap_missed_entry_compatibility_policies.py::test_evidence_fragment_serialization_contains_profile_and_comparison_details"
+      ]
+    },
+    {
+      "id": "TFIS-GME-020",
+      "statement": "No active runtime path imports or invokes GapMissedEntryEngine.",
+      "tests": [
+        "tests/architecture/test_legacy_policy_adapter_boundary.py::test_active_runtime_paths_do_not_import_generic_decision_engine_or_legacy_policies"
+      ]
+    }
+  ],
+  "runtime_readiness_matrix": {
+    "disabled_runtime_shadow_evaluation": {
+      "blockers": [
+        "S23 PUT authority",
+        "S21 ORPT/RC applicability",
+        "full captured parity"
+      ],
+      "evidence": "No active runtime imports/invokes the engine; blockers are documented.",
+      "permitted_behavior": "Design review only.",
+      "prohibited_behavior": "Import/invoke engine from paper/live/backtest runtime.",
+      "required_next_action": "Obtain explicit approval and add additive observer wiring only after evidence plan is accepted.",
+      "verdict": "NOT_READY"
+    },
+    "live_money_decision_authority": {
+      "blockers": [
+        "paper authority not ready",
+        "live-money gates",
+        "open business rules"
+      ],
+      "evidence": "Live-money routing remains disabled by separate project contract.",
+      "permitted_behavior": "None.",
+      "prohibited_behavior": "Use result for live orders.",
+      "required_next_action": "Separate live-money go/no-go process after paper authority evidence.",
+      "verdict": "NOT_READY"
+    },
+    "offline_deterministic_replay": {
+      "blockers": [
+        "full captured parity availability"
+      ],
+      "evidence": "Deterministic report writer and parity harness are replay-safe when supplied evidence is complete.",
+      "permitted_behavior": "Offline replay with explicit fixture/captured evidence classification.",
+      "prohibited_behavior": "Treat partial/synthetic evidence as full captured parity.",
+      "required_next_action": "Enrich captured ORPT/RC and option-chain evidence.",
+      "verdict": "READY_WITH_CONDITIONS"
+    },
+    "offline_unit_fixture_evaluation": {
+      "blockers": [],
+      "evidence": "8 deterministic cases, 8 passed, 0 mismatches, immutable typed evidence.",
+      "permitted_behavior": "Offline fixture/unit evaluation.",
+      "prohibited_behavior": "Runtime decision authority.",
+      "required_next_action": "Keep tests and generated reports in the Phase 3C validation set.",
+      "verdict": "READY"
+    },
+    "paper_decision_authority": {
+      "blockers": [
+        "runtime shadow not approved",
+        "open business rules"
+      ],
+      "evidence": "Runtime activation remains deferred.",
+      "permitted_behavior": "None.",
+      "prohibited_behavior": "Use result to authorize paper entries.",
+      "required_next_action": "Complete disabled shadow first and review operator evidence.",
+      "verdict": "NOT_READY"
+    }
+  },
+  "schema_version": "phase3c.gap_missed_entry.certification.v1",
+  "security_audit": {
+    "account_reference_policy": "Exported reports should keep logical or redacted account references.",
+    "credential_policy": "Broker credentials must never appear in packets or reports.",
+    "deterministic_evidence_requirements": [
+      "configuration hash",
+      "policy profile",
+      "provenance"
+    ],
+    "failure_message_policy": "Failures must report missing/unresolved evidence without exposing sensitive configuration.",
+    "retention_policy_needed": true,
+    "schema_traceability": [
+      "phase3c.gap_missed_entry.certification.v1",
+      "TFISDecisionEvidencePacket"
+    ],
+    "sensitive_evidence_classes": [
+      "prices",
+      "strategy identities",
+      "logical account references"
+    ]
+  },
+  "validation_results": {
+    "focused_phase3c_and_architecture_suite": {
+      "command": "python -m pytest tests/unit/test_phase3c_gap_missed_entry_certification.py tests/unit/test_phase3c_gap_missed_entry_parity_and_evidence.py tests/unit/test_phase3c_gap_missed_entry_compatibility_policies.py tests/unit/test_phase3c_gap_missed_entry_contracts.py tests/architecture/test_business_engine_boundary.py tests/architecture/test_legacy_policy_adapter_boundary.py -q",
+      "status": "PASSED",
+      "summary": "51 passed"
+    },
+    "full_repository_pytest": {
+      "classification": [
+        "S23 strike/workbook expectation failures: PRE_EXISTING, WORKBOOK_VERIFICATION_PENDING, NOT_PHASE_3C_REGRESSION",
+        "historical backtest/monthly-status/lifecycle expectation failures: OUTSIDE_PHASE_3C_CHANGED_FILES",
+        "paper ingress CLI wording expectation failure: OUTSIDE_PHASE_3C_CHANGED_FILES",
+        "S23 supervised decision process-lock helper failures: OUTSIDE_PHASE_3C_CHANGED_FILES"
+      ],
+      "command": "python -m pytest -q",
+      "status": "FAILED_OUTSIDE_PHASE3C_SCOPE",
+      "summary": "1052 passed, 27 failed"
+    },
+    "git_diff_check": {
+      "command": "git diff --check",
+      "status": "PASSED_WITH_WARNINGS",
+      "summary": "no whitespace errors; CRLF normalization warnings only"
+    },
+    "phase3c_certification_report_generation": {
+      "command": "python scripts/run_phase3c_certification_report.py",
+      "status": "PASSED",
+      "summary": "PHASE_3C_ACCEPT; offline complete, runtime deferred"
+    },
+    "phase3c_parity_report_generation": {
+      "command": "python scripts/run_phase3c_gap_missed_entry_parity_report.py",
+      "status": "PASSED",
+      "summary": "8 total, 8 passed, 0 mismatches, 2 fail-closed"
+    },
+    "project_validation": {
+      "command": "python scripts/validate_project.py",
+      "status": "PASSED",
+      "summary": "PROJECT VALIDATION PASSED"
+    },
+    "py_compile": {
+      "command": "python -m py_compile changed Phase 3C modules, scripts, and tests",
+      "status": "PASSED",
+      "summary": "no syntax errors"
+    },
+    "requested_targeted_suite": {
+      "command": "python -m pytest Phase 3C, Phase 3B, Phase 3A, Phase 2 evidence/parity, architecture, generic decision, runtime-contract, and S23 recalculation tests -q",
+      "status": "PASSED",
+      "summary": "138 passed"
+    },
+    "strategy_config_validation": {
+      "command": "python scripts/validate_strategy_configs.py",
+      "status": "PASSED",
+      "summary": "all listed legacy/current strategy configs passed"
+    }
+  }
+}

@@ -60,6 +60,26 @@ def test_active_runtime_paths_do_not_import_generic_decision_engine_or_legacy_po
             assert all(item not in source for item in forbidden), path
 
 
+def test_active_runtime_paths_do_not_import_or_invoke_gap_missed_entry_engine_recursively() -> None:
+    active_roots = (
+        REPO_ROOT / "src/tfis/paper",
+        REPO_ROOT / "src/tfis/backtest",
+        REPO_ROOT / "src/tfis/execution",
+        REPO_ROOT / "src/tfis/broker",
+        REPO_ROOT / "src/tfis/brokers",
+    )
+    forbidden = (
+        "tfis.domain.gap_missed_entry",
+        "tfis.adapters.legacy_policies.gap_missed_entry",
+        "GapMissedEntryEngine",
+        "evaluate_legacy_gap_missed_entry",
+    )
+    for root in active_roots:
+        for path in root.rglob("*.py"):
+            source = path.read_text(encoding="utf-8")
+            assert all(item not in source for item in forbidden), path
+
+
 def test_legacy_adapter_package_has_no_broker_lifecycle_or_persistence_dependencies() -> None:
     forbidden_prefixes = (
         "tfis.broker",
