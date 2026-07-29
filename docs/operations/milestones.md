@@ -2,6 +2,41 @@
 
 ## Current Snapshot
 
+- as of Wednesday, July 29, 2026, Phase 3B introduced the generic TFIS
+  Business Engine Framework: immutable engine definitions, context/input/
+  result/evidence/validation/metrics/performance contracts, explicit
+  capabilities and dependency graph validation, the metadata-only
+  `config/business_engines/catalog.yaml` catalog, a deterministic report under
+  `reports/phase3b/`, and architecture tests proving the framework remains
+  free of broker, runtime, S21/S23, and legacy policy dependencies. Active
+  runtime behavior remains unchanged.
+- as of Wednesday, July 29, 2026, Phase 3A introduced strategy family,
+  definition, version, instance, resolved configuration, evaluation, and
+  position-cycle identity contracts, with additive configuration folders and
+  identity pass-through in the generic runtime/decision contracts.
+- as of Wednesday, July 29, 2026, Phase 2D.1 made decision evidence packets
+  first-class for offline shadow/parity flows, preserving deterministic JSON
+  round-trips, validation, provenance, synthetic/captured classification, and
+  compatibility with the generic decision engine.
+- as of Wednesday, July 29, 2026, Phase 2C extended the isolated generic
+  decision engine with Target and MSL stages, added immutable target/MSL policy
+  result models, wired S21/S23 legacy target/MSL adapters for offline parity,
+  added external strategy-instance policy composition config, and moved the
+  Monthly Status v1.0 spec to `docs/specification/`. Captured S23 Bear Put
+  prelude evidence is now inventoried, with option-chain evidence still
+  synthetic for parity.
+- as of Wednesday, July 29, 2026, Phase 2B introduced isolated S21/S23 legacy
+  policy adapters under `src/tfis/adapters/legacy_policies`, plus an offline
+  parity harness comparing legacy actual formula/contract-selection output
+  against `TFISRuntimeInput -> TFISDecisionEngine -> TFISDecision`. All
+  configured S21/S23 branch folders are covered by deterministic parity tests;
+  active paper/live/replay/backtest paths are not migrated.
+- as of Wednesday, July 29, 2026, Phase 2A introduced the isolated
+  `tfis.decision` package with five immutable policy contracts/results,
+  explicit name-based policy composition, deterministic policy order and
+  evidence, and a fail-closed `TFISDecisionEngine`. The generic package has no
+  S21/S23, broker, execution, paper, backtest, persistence, or active-runtime
+  dependency; existing operational behavior remains unchanged.
 - as of Tuesday, July 28, 2026, the Windows-safe atomic persistence pattern is
   now centralized in `tfis.storage.atomic_write.atomic_write_text` and used by
   paper lifecycle/artifact/order/position/live-state writers, broker order
@@ -1600,14 +1635,37 @@
   contract-only lifecycle models for targets/stops/TSL/APS/exits, and
   documented the four S23 start-strike failures as pre-existing workbook
   verification items.
+- Phase 2A generic decision orchestration is complete in isolation. The next
+  architecture milestone is Phase 2B parity-fixture and compatibility-adapter
+  work, followed by shadow/offline comparison; active runtime migration remains
+  deferred.
+- Phase 2D captured shadow parity added a deterministic offline pipeline for
+  captured S23 JSONL evidence. Reports are generated under `reports/phase2d`;
+  current counts are 2 total captured cases, 0 full captured cases, 2 partial
+  captured cases, and 0 passed cases. Verdict is `PHASE_2D_CONDITIONAL`
+  because captured formula-input evidence is still missing and runtime shadow
+  activation remains deferred.
+- Phase 2D.1 added the immutable `TFISDecisionEvidencePacket` contract,
+  validator, offline S23 packet producer, packet parity evaluator, report
+  runner, and synthetic golden packet. The S23 golden packet validates as
+  `FULL_DECISION_EVIDENCE` and passes legacy-versus-generic parity with zero
+  mismatches; existing captured packets remain partial. Verdict is
+  `PHASE_2D1_ACCEPT` for offline contract readiness, with runtime capture still
+  deferred.
+- Phase 3A added the generic strategy identity/configuration hierarchy:
+  families, definitions, immutable versions, deployed instances, deterministic
+  evaluation identities, and position-cycle identities. S21/S23 now have
+  additive identity-layer config examples and policy composition by
+  definition/version. `TFISRuntimeInput` and `TFISDecision` can carry resolved
+  identity/hash evidence without activating any runtime migration.
 
 ## Next Recommended Priorities
 
 - validate the corrected S23 paper flow on the next real NSE trading day,
   including watcher startup, current-price updates, fill status, P&L, and
   cancellation/non-carry-forward of unfilled waiting orders
-- extract reusable strategy policy interfaces behind the new generic runtime
-  contracts before adding more strategies
+- add behavior-preserving S21/S23 policy adapters and external policy
+  composition in Phase 2B before adding more strategies
 - keep monthly-status calculation independent and reusable for future enabled
   strategies
 - validate the durable S23 data-root default on the next scheduled market run

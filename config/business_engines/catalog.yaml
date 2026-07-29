@@ -1,0 +1,437 @@
+schema_version: "phase3b.business_engine_catalog.v1"
+engines:
+  - engine_id: market_structure
+    display_name: Market Structure Engine
+    purpose: Classifies reusable market context needed by downstream strategies.
+    stage: MARKET_STRUCTURE
+    schema_version: "phase3b.business_engine_definition.v1"
+    required_inputs:
+      - price_context
+      - market_levels
+      - evaluation_timestamp
+    optional_inputs:
+      - session_context
+      - higher_timeframe_context
+    produced_outputs:
+      - market_structure_state
+    evidence_outputs:
+      - raw_price_context
+      - derived_market_structure
+      - market_level_references
+    validation_rules:
+      - required price context must be present
+      - market levels must match the evaluated product and timestamp
+      - evaluation timestamp must be internally consistent
+    failure_modes:
+      - MISSING_REQUIRED_INPUT
+      - INCONSISTENT_INPUT
+      - TIMESTAMP_INCONSISTENCY
+    quality_metrics:
+      - source_completeness
+      - level_freshness
+      - classification_completeness
+    state_requirements: STATELESS
+    dependencies: []
+    required_capabilities: []
+    provided_capabilities:
+      - MARKET_STRUCTURE
+    supported_products:
+      - FUTURES
+      - OPTION_SELLING
+      - OPTION_BUYING
+      - EQUITY
+    supported_strategy_families:
+      - "*"
+    performance:
+      expected_execution_frequency: once per evaluation
+      expected_input_size: bounded market context snapshot
+      cacheable: true
+      deterministic: true
+      parallel_safe: true
+      state_requirement: STATELESS
+      criticality: HIGH
+
+  - engine_id: monthly_status
+    display_name: Monthly Status Engine
+    purpose: Produces instrument-driven monthly status as reusable market context.
+    stage: MONTHLY_STATUS
+    schema_version: "phase3b.business_engine_definition.v1"
+    required_inputs:
+      - monthly_status_source
+      - evaluation_timestamp
+    optional_inputs:
+      - market_structure_state
+    produced_outputs:
+      - monthly_status
+    evidence_outputs:
+      - monthly_status_steps
+      - monthly_status_source_refs
+    validation_rules:
+      - monthly status source must be explicit
+      - source instrument must match evaluated product
+      - market structure dependency must be available when configured
+    failure_modes:
+      - MISSING_REQUIRED_INPUT
+      - UNSUPPORTED_PRODUCT
+      - MISSING_CAPABILITY
+    quality_metrics:
+      - status_completeness
+      - source_freshness
+      - branch_trace_completeness
+    state_requirements: STATELESS
+    dependencies:
+      - market_structure
+    required_capabilities:
+      - MARKET_STRUCTURE
+    provided_capabilities:
+      - MONTHLY_STATUS
+    supported_products:
+      - FUTURES
+      - OPTION_SELLING
+      - OPTION_BUYING
+      - EQUITY
+    supported_strategy_families:
+      - "*"
+    performance:
+      expected_execution_frequency: once per instrument session or evaluation
+      expected_input_size: bounded monthly status source snapshot
+      cacheable: true
+      deterministic: true
+      parallel_safe: true
+      state_requirement: STATELESS
+      criticality: HIGH
+
+  - engine_id: gap
+    display_name: Gap Engine
+    purpose: Evaluates reusable opening gap context without owning strategy entry policy.
+    stage: GAP
+    schema_version: "phase3b.business_engine_definition.v1"
+    required_inputs:
+      - price_context
+      - evaluation_timestamp
+    optional_inputs:
+      - monthly_status
+      - market_structure_state
+    produced_outputs:
+      - gap_state
+    evidence_outputs:
+      - gap_inputs
+      - gap_calculations
+      - gap_quality_notes
+    validation_rules:
+      - price context must include comparable reference values
+      - monthly status dependency must be available for monthly-status strategies
+    failure_modes:
+      - MISSING_REQUIRED_INPUT
+      - MISSING_CAPABILITY
+      - INCONSISTENT_INPUT
+    quality_metrics:
+      - reference_price_availability
+      - gap_trace_completeness
+    state_requirements: STATELESS
+    dependencies:
+      - market_structure
+      - monthly_status
+    required_capabilities:
+      - MARKET_STRUCTURE
+      - MONTHLY_STATUS
+    provided_capabilities:
+      - GAP
+    supported_products:
+      - FUTURES
+      - OPTION_SELLING
+      - OPTION_BUYING
+      - EQUITY
+    supported_strategy_families:
+      - "*"
+    performance:
+      expected_execution_frequency: once per entry evaluation window
+      expected_input_size: bounded price reference snapshot
+      cacheable: true
+      deterministic: true
+      parallel_safe: true
+      state_requirement: STATELESS
+      criticality: HIGH
+
+  - engine_id: entry
+    display_name: Entry Engine
+    purpose: Evaluates reusable entry qualification evidence without selecting execution contracts.
+    stage: ENTRY
+    schema_version: "phase3b.business_engine_definition.v1"
+    required_inputs:
+      - entry_context
+      - evaluation_timestamp
+    optional_inputs:
+      - gap_state
+      - monthly_status
+      - market_structure_state
+    produced_outputs:
+      - entry_state
+      - missed_entry_state
+    evidence_outputs:
+      - entry_rule_trace
+      - missed_entry_trace
+      - entry_data_warnings
+    validation_rules:
+      - configured entry inputs must be complete
+      - required capabilities must be present
+      - timestamp must be aligned to the evaluation window
+    failure_modes:
+      - MISSING_REQUIRED_INPUT
+      - MISSING_CAPABILITY
+      - TIMESTAMP_INCONSISTENCY
+    quality_metrics:
+      - rule_trace_completeness
+      - input_completeness
+      - timestamp_alignment
+    state_requirements: STATELESS
+    dependencies:
+      - market_structure
+      - monthly_status
+      - gap
+    required_capabilities:
+      - MARKET_STRUCTURE
+      - MONTHLY_STATUS
+      - GAP
+    provided_capabilities:
+      - ENTRY
+      - MISSED_ENTRY
+    supported_products:
+      - FUTURES
+      - OPTION_SELLING
+      - OPTION_BUYING
+      - EQUITY
+    supported_strategy_families:
+      - "*"
+    performance:
+      expected_execution_frequency: per strategy evaluation
+      expected_input_size: bounded rule input snapshot
+      cacheable: false
+      deterministic: true
+      parallel_safe: true
+      state_requirement: STATELESS
+      criticality: SAFETY_CRITICAL
+
+  - engine_id: contract_selection
+    display_name: Contract Selection Engine
+    purpose: Converts qualified intent into product-specific contract references.
+    stage: CONTRACT_SELECTION
+    schema_version: "phase3b.business_engine_definition.v1"
+    required_inputs:
+      - product_reference
+      - entry_state
+      - evaluation_timestamp
+    optional_inputs:
+      - option_chain
+      - premium_reference
+      - oi_reference
+    produced_outputs:
+      - selected_contract
+      - product_reference_state
+    evidence_outputs:
+      - candidate_contracts
+      - selected_contract_trace
+      - product_reference_evidence
+    validation_rules:
+      - product reference must match supported product
+      - entry capability must be available
+      - option products must provide option-chain-compatible references
+    failure_modes:
+      - MISSING_REQUIRED_INPUT
+      - UNSUPPORTED_PRODUCT
+      - MISSING_CAPABILITY
+    quality_metrics:
+      - candidate_coverage
+      - selection_trace_completeness
+      - reference_data_freshness
+    state_requirements: STATELESS
+    dependencies:
+      - entry
+    required_capabilities:
+      - ENTRY
+    provided_capabilities:
+      - OPTION_CHAIN
+      - STRIKE_SELECTION
+      - PREMIUM_REFERENCE
+      - OI_REFERENCE
+    supported_products:
+      - FUTURES
+      - OPTION_SELLING
+      - OPTION_BUYING
+      - EQUITY
+    supported_strategy_families:
+      - "*"
+    performance:
+      expected_execution_frequency: per qualified entry
+      expected_input_size: bounded contract universe snapshot
+      cacheable: false
+      deterministic: true
+      parallel_safe: true
+      state_requirement: STATELESS
+      criticality: SAFETY_CRITICAL
+
+  - engine_id: risk
+    display_name: Risk Engine
+    purpose: Defines reusable target, stop, and risk references for a selected business intent.
+    stage: RISK
+    schema_version: "phase3b.business_engine_definition.v1"
+    required_inputs:
+      - selected_contract
+      - risk_configuration
+      - evaluation_timestamp
+    optional_inputs:
+      - premium_reference
+      - oi_reference
+    produced_outputs:
+      - target_plan
+      - msl_plan
+      - risk_state
+    evidence_outputs:
+      - target_trace
+      - msl_trace
+      - risk_formula_references
+    validation_rules:
+      - selected contract must be available
+      - configured risk model must be compatible with product
+      - target and stop references must fail closed when incomplete
+    failure_modes:
+      - MISSING_REQUIRED_INPUT
+      - INCOMPATIBLE_CONFIGURATION
+      - UNSUPPORTED_PRODUCT
+    quality_metrics:
+      - risk_trace_completeness
+      - formula_reference_completeness
+      - target_stop_consistency
+    state_requirements: STATELESS
+    dependencies:
+      - contract_selection
+    required_capabilities:
+      - STRIKE_SELECTION
+    provided_capabilities:
+      - TARGET
+      - MSL
+      - TSL
+      - APS
+      - RISK
+    supported_products:
+      - FUTURES
+      - OPTION_SELLING
+      - OPTION_BUYING
+      - EQUITY
+    supported_strategy_families:
+      - "*"
+    performance:
+      expected_execution_frequency: per selected intent and lifecycle update
+      expected_input_size: bounded risk configuration snapshot
+      cacheable: false
+      deterministic: true
+      parallel_safe: true
+      state_requirement: STATELESS
+      criticality: SAFETY_CRITICAL
+
+  - engine_id: lifecycle
+    display_name: Lifecycle Engine
+    purpose: Tracks reusable position lifecycle state requirements and transitions.
+    stage: LIFECYCLE
+    schema_version: "phase3b.business_engine_definition.v1"
+    required_inputs:
+      - risk_state
+      - position_state
+      - evaluation_timestamp
+    optional_inputs:
+      - target_plan
+      - msl_plan
+    produced_outputs:
+      - lifecycle_state
+      - position_state_update
+    evidence_outputs:
+      - lifecycle_transition_trace
+      - position_state_evidence
+    validation_rules:
+      - read-only position state must be available
+      - lifecycle inputs must match strategy identity
+      - lifecycle timestamps must be monotonic where supplied
+    failure_modes:
+      - MISSING_REQUIRED_INPUT
+      - MISSING_STATE
+      - TIMESTAMP_INCONSISTENCY
+    quality_metrics:
+      - state_freshness
+      - transition_trace_completeness
+      - identity_consistency
+    state_requirements: READ_ONLY_STATE
+    dependencies:
+      - risk
+    required_capabilities:
+      - RISK
+    provided_capabilities:
+      - LIFECYCLE
+      - POSITION_STATE
+    supported_products:
+      - FUTURES
+      - OPTION_SELLING
+      - OPTION_BUYING
+      - EQUITY
+    supported_strategy_families:
+      - "*"
+    performance:
+      expected_execution_frequency: per lifecycle event
+      expected_input_size: bounded position lifecycle snapshot
+      cacheable: false
+      deterministic: true
+      parallel_safe: false
+      state_requirement: READ_ONLY_STATE
+      criticality: SAFETY_CRITICAL
+
+  - engine_id: execution_intent
+    display_name: Execution Intent Engine
+    purpose: Converts lifecycle-approved business state into broker-agnostic execution intent.
+    stage: EXECUTION_INTENT
+    schema_version: "phase3b.business_engine_definition.v1"
+    required_inputs:
+      - lifecycle_state
+      - selected_contract
+      - evaluation_timestamp
+    optional_inputs:
+      - risk_state
+      - position_state
+    produced_outputs:
+      - execution_intent
+    evidence_outputs:
+      - execution_intent_trace
+      - lifecycle_gate_evidence
+    validation_rules:
+      - lifecycle capability must be available
+      - execution intent must remain broker agnostic
+      - selected contract identity must be present
+    failure_modes:
+      - MISSING_REQUIRED_INPUT
+      - MISSING_CAPABILITY
+      - INCONSISTENT_INPUT
+    quality_metrics:
+      - intent_trace_completeness
+      - lifecycle_gate_consistency
+      - broker_agnostic_completeness
+    state_requirements: STATELESS
+    dependencies:
+      - lifecycle
+    required_capabilities:
+      - LIFECYCLE
+    provided_capabilities:
+      - EXECUTION
+      - EXECUTION_INTENT
+    supported_products:
+      - FUTURES
+      - OPTION_SELLING
+      - OPTION_BUYING
+      - EQUITY
+    supported_strategy_families:
+      - "*"
+    performance:
+      expected_execution_frequency: per approved lifecycle action
+      expected_input_size: bounded intent snapshot
+      cacheable: false
+      deterministic: true
+      parallel_safe: true
+      state_requirement: STATELESS
+      criticality: SAFETY_CRITICAL

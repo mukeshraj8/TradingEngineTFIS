@@ -399,12 +399,20 @@ class TFISRuntimeInput:
     configuration_version: str | None
     runtime_values: Mapping[str, Any] = MappingProxyType({})
     product_specific: Mapping[str, Any] = MappingProxyType({})
+    strategy_family_id: str | None = None
+    strategy_definition_id: str | None = None
+    strategy_instance_id: str | None = None
+    resolved_configuration_hash: str | None = None
 
     def __post_init__(self) -> None:
         if not self.evaluation_id.strip():
             raise ValueError("evaluation_id must be a non-empty string")
         if not self.strategy_code.strip():
             raise ValueError("strategy_code must be a non-empty string")
+        if self.strategy_instance_id is not None and not self.strategy_instance_id.strip():
+            raise ValueError("strategy_instance_id must be non-empty when provided")
+        if self.strategy_definition_id is not None and not self.strategy_definition_id.strip():
+            raise ValueError("strategy_definition_id must be non-empty when provided")
         if not self.symbol.strip():
             raise ValueError("symbol must be a non-empty string")
         if product_type_from_segment(self.segment) is not self.product_type:
@@ -462,6 +470,11 @@ class TFISDecision:
     data_versions: Mapping[str, Any]
     configuration_versions: Mapping[str, Any]
     compatibility_payload: Mapping[str, Any] = MappingProxyType({})
+    strategy_family_id: str | None = None
+    strategy_definition_id: str | None = None
+    strategy_version_identity: str | None = None
+    strategy_instance_id: str | None = None
+    resolved_configuration_hash: str | None = None
 
     def __post_init__(self) -> None:
         if not self.evaluation_id.strip():

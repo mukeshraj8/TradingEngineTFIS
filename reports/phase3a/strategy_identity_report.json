@@ -1,0 +1,27 @@
+{
+  "cached_resolution_seconds": 3.2999996619764715e-06,
+  "definitions": 2,
+  "families": 4,
+  "instances": 2,
+  "load_and_validation_seconds": 0.11254440000084287,
+  "memory_current_bytes": 35216,
+  "memory_peak_bytes": 171183,
+  "resolved_examples": [
+    {
+      "configuration_hash": "d182d62ea73b5948f41fe6396c63f046492b1311c96aadb394a18b096b9a4994",
+      "entry_policy": "legacy.s23.option_selling.entry",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0"
+    },
+    {
+      "configuration_hash": "3f13d88b4a9c2f351147745c17a08800d79d68cea30935cb9dce67832d9f3088",
+      "entry_policy": "legacy.s21.option_selling.entry",
+      "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0"
+    }
+  ],
+  "single_resolution_seconds": 0.0048908000007941155,
+  "versions": 2
+}

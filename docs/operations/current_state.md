@@ -6,6 +6,42 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Wednesday, July 29, 2026, Phase 3B adds the generic immutable TFIS
+  Business Engine Framework in `src/tfis/domain/business_engine.py`, the
+  metadata-only catalog at `config/business_engines/catalog.yaml`, architecture
+  documentation at
+  `docs/architecture/tfis_phase3b_business_engine_framework.md`, tests for
+  registry/dependency/capability/immutability/determinism/evidence boundaries,
+  and the report script/artifact under `scripts/run_phase3b_business_engine_report.py`
+  and `reports/phase3b/`. Business engines now declare identity, purpose,
+  inputs, outputs, evidence, validation rules, failure modes, quality metrics,
+  state requirements, dependencies, capabilities, supported products/families,
+  and performance expectations. No Gap, Entry, Strike, Target, MSL, TSL, APS,
+  runtime, paper/live, broker, or S21/S23 behavior was migrated.
+- as of Wednesday, July 29, 2026, Phase 2C extends the isolated generic
+  `TFISDecisionEngine` with explicit Target and MSL policy stages after
+  contract selection, adds immutable `TargetPolicyResult` /
+  `MSLPolicyResult` models, external strategy-instance policy composition
+  config at `config/strategy_policy_composition.yaml`, and offline parity
+  comparison of target/MSL evidence. The Monthly Status v1.0 spec has been
+  moved to `docs/specification/`. Active paper/live/replay/backtest runtime
+  paths remain unchanged.
+- as of Wednesday, July 29, 2026, Phase 2B adds isolated legacy policy
+  adapters under `src/tfis/adapters/legacy_policies` for offline S21/S23
+  parity with the generic `TFISDecisionEngine`. Product, entry, contract
+  selection, and explicit not-configured gap/missed-entry compatibility
+  policies are composed outside `tfis.decision`; entry formulas delegate to
+  `StrategyEvaluator`, contract selection delegates to the existing selector,
+  and active paper/live/replay/backtest runtime paths remain unchanged.
+- as of Wednesday, July 29, 2026, Phase 2A adds an isolated generic decision
+  foundation under `src/tfis/decision`: immutable typed inputs/results for
+  Product, Entry, Gap, Missed Entry, and Contract Selection policies; explicit
+  name-based policy registration/composition; and a deterministic
+  `TFISDecisionEngine` that consumes `TFISRuntimeInput` and emits
+  `TFISDecision`. Missing policies, unavailable/UNKNOWN Monthly Status,
+  unavailable results, policy errors, product mismatches, and timestamp drift
+  fail closed. The package has no broker, execution, paper, backtest, S21, or
+  S23 dependency, and it is not wired into active runtime paths.
 - as of Tuesday, July 28, 2026, TFIS now has a shared
   `tfis.storage.atomic_write.atomic_write_text` helper for Windows-safe atomic
   text persistence; paper artifact, ingress, lifecycle, order/position,
@@ -2565,3 +2601,43 @@ Current notes:
   lifecycle contract definitions exist without active runtime wiring. Isolated
   Phase 1 tests passed at `20 passed`; the four S23 start-strike failures
   remain pre-existing and workbook-verification pending.
+- Phase 2A preserves the Phase 1 contracts and adapters. Existing S21/S23 paper
+  decisions, formulas, contract selection, lifecycle, and broker behavior are
+  unchanged. New S21/S23 policy adapters are intentionally deferred until
+  Phase 2B parity fixtures can isolate those currently combined legacy seams.
+- Phase 2B preserves active runtime behavior. Offline parity currently covers
+  all configured S21/S23 branch folders at formula/contract-selection level;
+  S23 ORPT/RC timing still belongs to the legacy paper decision builder and
+  remains a Phase 2C parity-fixture target before any runtime migration.
+- Phase 2C found captured partial S23 Bear Put prelude evidence under
+  `tests/fixtures/paper/s23_fyers_prelude.jsonl`, including Monthly Status,
+  ORPT/RC snapshots, target, and MSL, but no saved option-chain snapshot.
+  Contract-selection parity therefore still uses synthetic option-chain
+  fixtures until captured option-chain evidence is added.
+- Phase 2D now has an offline captured-data shadow parity pipeline under
+  `src/tfis/adapters/legacy_policies/captured_shadow.py` and a deterministic
+  report runner at `scripts/run_phase2d_captured_shadow_parity.py`. It
+  inventories repository JSON/JSONL evidence, imports captured S23 decision
+  cases, compares captured legacy observations against the generic
+  `TFISDecisionEngine` plus existing S23 adapters, and writes JSON/CSV/Markdown
+  reports under `reports/phase2d`. Current result is conditional: 2 captured
+  S23 Bear Put cases were found, both are `PARTIAL_CAPTURED_PARITY`, 0 are full
+  captured parity, and Phase 2E runtime shadow mode is not ready because raw
+  market-structure and option-reference formula inputs are not captured.
+- Phase 2D.1 now has an immutable product-neutral
+  `TFISDecisionEvidencePacket` contract in `src/tfis/domain/decision_evidence.py`
+  plus offline-only S21/S23 packet producers/evaluators under
+  `src/tfis/adapters/legacy_policies/decision_packet.py`. The generated S23
+  synthetic golden packet is `FULL_DECISION_EVIDENCE` and reproduces legacy and
+  generic decisions with zero mismatches. Existing captured S23 packets remain
+  `PARTIAL_DECISION_EVIDENCE`; runtime capture/shadow activation remains
+  deferred until real captured packets include full formula, ORPT/RC,
+  option-chain, selected-contract, target/MSL, and final-decision evidence.
+- Phase 3A now defines generic strategy family, definition, version, instance,
+  evaluation, and position-cycle identity models in
+  `src/tfis/domain/strategy_identity.py`. Additive config examples live under
+  `config/strategy_families`, `config/strategy_definitions`, and
+  `config/strategy_instances`; S21/S23 policy composition also resolves by
+  `strategy_definition_id@strategy_version`. `TFISRuntimeInput` and
+  `TFISDecision` carry optional authoritative strategy identity/hash fields,
+  while active paper/live/replay/backtest paths remain unmigrated.

@@ -6,6 +6,54 @@ way.
 
 ## Immediate Next Priorities
 
+0.23. `TODO` Begin Phase 3C by migrating one low-risk business capability
+   behind the Phase 3B `BusinessEngine` contract, preferably Market Structure
+   or Monthly Status. Keep active paper/live/replay/backtest runtime activation
+   disabled until a separate reviewed change proves parity, evidence mapping,
+   and operator visibility.
+
+0.22. `DONE` Complete Phase 3B Generic Business Engine Framework. The generic
+   domain now has immutable business engine context/input/result/evidence/
+   validation/metrics/performance/definition/registry contracts, explicit
+   capability and dependency validation, a metadata-only initial catalog for
+   Market Structure, Monthly Status, Gap, Entry, Contract Selection, Risk,
+   Lifecycle, and Execution Intent, architecture boundary tests, focused unit
+   tests, and a generated Phase 3B report. No business logic or active runtime
+   path was migrated.
+
+0.21. `DONE` Complete Phase 3A strategy identity and configuration. Strategy
+   family, definition, version, instance, resolved configuration, evaluation,
+   and position-cycle identity are explicit and immutable; identity fields are
+   carried through the generic runtime/decision contracts for offline flows.
+
+0.20. `TODO` Begin Phase 2D only as captured-evidence enrichment and offline
+   shadow reporting. Add saved option-chain evidence for the captured S23 Bear
+   Put prelude, add saved legacy live-decision summary parity including ORPT/RC
+   timing output, and add S21 captured paper evidence before claiming
+   operational S21 parity. Runtime activation remains out of scope.
+
+0.19. `DONE` Complete Phase 2C offline shadow parity foundation. The generic
+   engine now has Target and MSL policy stages, S21/S23 legacy adapters
+   preserve current target/MSL trade-plan evidence, external
+   strategy-instance policy composition is validated from
+   `config/strategy_policy_composition.yaml`, and captured S23 prelude evidence
+   is inventoried as partial because it lacks option-chain data.
+
+0.18. `DONE` Add Phase 2B behavior-preserving S21/S23 policy adapters for
+   offline parity. `src/tfis/adapters/legacy_policies` now wraps current
+   option-selling product resolution, `StrategyEvaluator` entry formulas, and
+   existing option-chain selection behind generic policy contracts, with
+   external policy-key composition and deterministic parity tests for all
+   configured S21/S23 branch folders. Active runtime paths remain unchanged.
+
+0.17. `DONE` Add the Phase 2A generic decision-orchestration foundation.
+   `tfis.decision` now provides immutable typed policy inputs/results, five
+   product-neutral policy protocols, explicit policy selection/registry
+   composition, deterministic execution order and evidence, and a fail-closed
+   `TFISDecisionEngine`. Architecture tests prohibit strategy/broker/execution
+   dependencies and strategy-code branches. Active S21/S23 runtime wiring is
+   unchanged.
+
 0.16. `DONE` Centralize Windows-safe atomic text writes across active TFIS
    persistence paths. The live-state/order-state fixes from 0.15 are now
    factored into `tfis.storage.atomic_write.atomic_write_text`; paper artifact,
@@ -1305,18 +1353,42 @@ Comparison reporting note:
   fail each wrapper with `BROKER_SNAPSHOT_FAILED`; that now reports as a
   per-strategy startup failure while dashboard/supervisor startup is still
   attempted.
-- Phase 1 generic runtime contracts are now in place. Before adding more
-  strategies, keep the next architecture slice focused on extracting reusable
-  policy interfaces behind `TFISRuntimeInput` and `TFISDecision` while
-  preserving S21/S23 parity.
+- Phase 1 generic runtime contracts and the isolated Phase 2A policy engine are
+  now in place. Before adding more strategies, keep Phase 2B focused on
+  behavior-preserving S21/S23 policy adapters, external composition, and
+  shadow/offline parity evidence.
 - Certification corrections are in place through strict, future-facing adapter
-  APIs and contract-only lifecycle models. Post-market, decide whether any
-  legacy adapter call sites should migrate to strict mode; do not start Phase 2
-  policy extraction until the S23 start-strike workbook verification is closed.
+  APIs and contract-only lifecycle models. The four S23 start-strike
+  expectations remain pre-existing and workbook-verification pending; do not
+  alter them during Phase 2B adapter extraction.
+- Phase 2D captured shadow parity is implemented as an offline-only pipeline,
+  but it is conditionally accepted rather than ready for runtime shadow mode.
+  The next evidence priority is full S23 captured decision packets with raw
+  market-structure references, option reference values, ORPT/RC timing outcome,
+  option-chain snapshot, selected-contract quote, target, MSL, and final legacy
+  decision in the same saved case. Do not activate runtime dual execution until
+  those reports show full captured parity.
+- Phase 2D.1 packet contract is accepted for offline use. The next task should
+  be a reviewed, disabled-by-default post-market capture design for the
+  reference implementation that can emit complete decision packets without
+  changing legacy decision behavior. Do not wire packet production into active
+  paper/live runtime before that design is reviewed and a full captured S23
+  packet passes offline parity.
+- Phase 3A strategy identity/configuration foundation is accepted for offline
+  domain/config use. Phase 3B should design disabled runtime resolution and
+  state-key adoption using `strategy_instance_id + trading_date +
+  position_cycle_id`, without migrating active execution or changing formulas.
 
 ## Deferred
 
 - futures rollover module for future-based strategy families
+- full captured S23 parity evidence with formula inputs; current Phase 2D
+  reports have 0 full captured cases and 2 partial captured cases
+- post-market reference capture implementation for complete decision evidence
+  packets, disabled by default and reviewed before any runtime use
+- disabled runtime strategy-resolution design using Phase 3A identities before
+  active paper/live paths require resolved configuration
+- S21 captured decision evidence before any S21 shadow-readiness claim
 - monthly option buying
 - broader S21 BankNifty monthly runtime hardening beyond the current controlled
   paper-mode candidate

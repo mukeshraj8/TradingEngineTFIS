@@ -1,0 +1,211 @@
+{
+  "catalog_json_size_bytes": 11090,
+  "catalog_path": "config\\business_engines\\catalog.yaml",
+  "deterministic_loading": true,
+  "engine_count": 8,
+  "engines": {
+    "contract_selection": {
+      "cacheable": false,
+      "criticality": "SAFETY_CRITICAL",
+      "dependencies": [
+        "entry"
+      ],
+      "parallel_safe": true,
+      "provided_capabilities": [
+        "OPTION_CHAIN",
+        "STRIKE_SELECTION",
+        "PREMIUM_REFERENCE",
+        "OI_REFERENCE"
+      ],
+      "required_capabilities": [
+        "ENTRY"
+      ],
+      "stage": "CONTRACT_SELECTION",
+      "state_requirements": "STATELESS",
+      "supported_products": [
+        "FUTURES",
+        "OPTION_SELLING",
+        "OPTION_BUYING",
+        "EQUITY"
+      ]
+    },
+    "entry": {
+      "cacheable": false,
+      "criticality": "SAFETY_CRITICAL",
+      "dependencies": [
+        "market_structure",
+        "monthly_status",
+        "gap"
+      ],
+      "parallel_safe": true,
+      "provided_capabilities": [
+        "ENTRY",
+        "MISSED_ENTRY"
+      ],
+      "required_capabilities": [
+        "MARKET_STRUCTURE",
+        "MONTHLY_STATUS",
+        "GAP"
+      ],
+      "stage": "ENTRY",
+      "state_requirements": "STATELESS",
+      "supported_products": [
+        "FUTURES",
+        "OPTION_SELLING",
+        "OPTION_BUYING",
+        "EQUITY"
+      ]
+    },
+    "execution_intent": {
+      "cacheable": false,
+      "criticality": "SAFETY_CRITICAL",
+      "dependencies": [
+        "lifecycle"
+      ],
+      "parallel_safe": true,
+      "provided_capabilities": [
+        "EXECUTION",
+        "EXECUTION_INTENT"
+      ],
+      "required_capabilities": [
+        "LIFECYCLE"
+      ],
+      "stage": "EXECUTION_INTENT",
+      "state_requirements": "STATELESS",
+      "supported_products": [
+        "FUTURES",
+        "OPTION_SELLING",
+        "OPTION_BUYING",
+        "EQUITY"
+      ]
+    },
+    "gap": {
+      "cacheable": true,
+      "criticality": "HIGH",
+      "dependencies": [
+        "market_structure",
+        "monthly_status"
+      ],
+      "parallel_safe": true,
+      "provided_capabilities": [
+        "GAP"
+      ],
+      "required_capabilities": [
+        "MARKET_STRUCTURE",
+        "MONTHLY_STATUS"
+      ],
+      "stage": "GAP",
+      "state_requirements": "STATELESS",
+      "supported_products": [
+        "FUTURES",
+        "OPTION_SELLING",
+        "OPTION_BUYING",
+        "EQUITY"
+      ]
+    },
+    "lifecycle": {
+      "cacheable": false,
+      "criticality": "SAFETY_CRITICAL",
+      "dependencies": [
+        "risk"
+      ],
+      "parallel_safe": false,
+      "provided_capabilities": [
+        "LIFECYCLE",
+        "POSITION_STATE"
+      ],
+      "required_capabilities": [
+        "RISK"
+      ],
+      "stage": "LIFECYCLE",
+      "state_requirements": "READ_ONLY_STATE",
+      "supported_products": [
+        "FUTURES",
+        "OPTION_SELLING",
+        "OPTION_BUYING",
+        "EQUITY"
+      ]
+    },
+    "market_structure": {
+      "cacheable": true,
+      "criticality": "HIGH",
+      "dependencies": [],
+      "parallel_safe": true,
+      "provided_capabilities": [
+        "MARKET_STRUCTURE"
+      ],
+      "required_capabilities": [],
+      "stage": "MARKET_STRUCTURE",
+      "state_requirements": "STATELESS",
+      "supported_products": [
+        "FUTURES",
+        "OPTION_SELLING",
+        "OPTION_BUYING",
+        "EQUITY"
+      ]
+    },
+    "monthly_status": {
+      "cacheable": true,
+      "criticality": "HIGH",
+      "dependencies": [
+        "market_structure"
+      ],
+      "parallel_safe": true,
+      "provided_capabilities": [
+        "MONTHLY_STATUS"
+      ],
+      "required_capabilities": [
+        "MARKET_STRUCTURE"
+      ],
+      "stage": "MONTHLY_STATUS",
+      "state_requirements": "STATELESS",
+      "supported_products": [
+        "FUTURES",
+        "OPTION_SELLING",
+        "OPTION_BUYING",
+        "EQUITY"
+      ]
+    },
+    "risk": {
+      "cacheable": false,
+      "criticality": "SAFETY_CRITICAL",
+      "dependencies": [
+        "contract_selection"
+      ],
+      "parallel_safe": true,
+      "provided_capabilities": [
+        "TARGET",
+        "MSL",
+        "TSL",
+        "APS",
+        "RISK"
+      ],
+      "required_capabilities": [
+        "STRIKE_SELECTION"
+      ],
+      "stage": "RISK",
+      "state_requirements": "STATELESS",
+      "supported_products": [
+        "FUTURES",
+        "OPTION_SELLING",
+        "OPTION_BUYING",
+        "EQUITY"
+      ]
+    }
+  },
+  "execution_order": [
+    "market_structure",
+    "monthly_status",
+    "gap",
+    "entry",
+    "contract_selection",
+    "risk",
+    "lifecycle",
+    "execution_intent"
+  ],
+  "load_seconds": 0.11669899999833433,
+  "memory_current_bytes": 43788,
+  "memory_peak_bytes": 455916,
+  "phase": "3B",
+  "verdict": "PHASE_3B_ACCEPT"
+}

@@ -1,0 +1,123 @@
+{
+  "phase": "3C",
+  "milestone": 1,
+  "verdict": "MILESTONE_CONDITIONAL",
+  "date": "2026-07-29",
+  "objective": "Legacy gap and missed-entry behaviour inventory",
+  "production_code_changed": false,
+  "files_inspected": [
+    "docs/TFIS_FTAS_v0.7_Business_Engines_Market_Data_Structure_Monthly_Status.docx",
+    "docs/specification/TFIS_Monthly_Status_Reference_and_Implementation_Specification_v1.0.docx",
+    "docs/strategy/s23_gap_recalculation_design.md",
+    "docs/strategy/s23_entry_missed_detection.md",
+    "docs/architecture/s21_banknifty_monthly_option_selling_contract.md",
+    "docs/architecture/tfis_phase2b_s21_s23_policy_adapters.md",
+    "docs/architecture/tfis_phase3b_business_engine_framework.md",
+    "src/tfis/backtest/entry_missed.py",
+    "src/tfis/strategy/s23_recalculation.py",
+    "src/tfis/backtest/s23_current_day_fsl_trp.py",
+    "src/tfis/backtest/historical_runner.py",
+    "src/tfis/paper/live_decision.py",
+    "src/tfis/paper/orchestrator.py",
+    "src/tfis/adapters/legacy_policies/policies.py",
+    "src/tfis/strategy/strategy_evaluator.py",
+    "config/strategies/options_sell/nifty",
+    "config/strategies/options_sell/banknifty",
+    "tests/unit/test_s23_entry_missed.py",
+    "tests/unit/test_s23_recalculation.py",
+    "tests/unit/test_s23_current_day_fsl_trp.py",
+    "tests/integration/test_historical_backtest_s23_recalculation_mode.py",
+    "tests/integration/test_historical_backtest_s23_current_day_fsl_trp_mode.py"
+  ],
+  "generic_concepts": [
+    "opening observation",
+    "ORPT observation",
+    "RC observation",
+    "gap classification",
+    "timing-window state",
+    "missed-entry state",
+    "recalculation request",
+    "no-trade or fallback result",
+    "deterministic evidence"
+  ],
+  "strategy_specific_rules": [
+    "S23 branch unique-code formulas",
+    "S23 ORPT missed-entry comparison",
+    "S23 recalculation formulas",
+    "S23 current-day FSL/TRP rows 183-188",
+    "S21 branch formula matrix",
+    "S21 ORPT/RC applicability pending confirmation"
+  ],
+  "runtime_concerns": [
+    "historical S23 recalculation is opt-in only",
+    "historical current-day FSL/TRP is opt-in only",
+    "historical runner rejects enabling both S23 overlays together",
+    "paper orchestrator waits for 0915, ORPT, and RC snapshots where required",
+    "future generic engine must consume supplied observations and not scan runtime state"
+  ],
+  "downstream_effects": [
+    "S23 recalculation can change effective lifecycle strike, premium, and entry values",
+    "historical recalculation filters lifecycle bars after RC",
+    "paper/live ORPT/RC audit can recalculate target and stoploss in audit output",
+    "current-day FSL/TRP rows 183-186 can override entry and strike/premium fields",
+    "current-day FSL/TRP rows 184, 185, 187, and 188 can override stoploss/FSL",
+    "unsupported current-day paths keep the base plan and record warnings"
+  ],
+  "ambiguities": [
+    {
+      "id": "s23_put_missed_entry_comparison",
+      "classification": "LEGACY_INCONSISTENCY",
+      "summary": "Backtest diagnostic detector uses option_low < entry_price for PUT; paper/live timing audit uses option_high < entry_price for PUT."
+    },
+    {
+      "id": "full_gap_up_gap_down_rules",
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "summary": "FTAS confirms gap-aware behaviour, but current code does not implement generic gap-up/gap-down classification."
+    },
+    {
+      "id": "s21_orpt_rc_applicability",
+      "classification": "USER_CLARIFICATION_REQUIRED",
+      "summary": "S21 folders declare entry/recalculation timing, but architecture documentation says S21 ORPT/RC runtime handling remains open."
+    },
+    {
+      "id": "s23_current_day_row_184",
+      "classification": "SPEC_CONFIRMED",
+      "summary": "Existing design records row 184 mixed Call/Put formula family as workbook-directed after user confirmation."
+    },
+    {
+      "id": "s23_rows_187_188_blank_fields",
+      "classification": "SPEC_CONFIRMED",
+      "summary": "Rows 187-188 are FSL-only; strike, premium, and entry must not be inferred."
+    },
+    {
+      "id": "current_day_target_override",
+      "classification": "INSUFFICIENT_EVIDENCE",
+      "summary": "No additional target override formulas were found in the inspected AB6 OS rows 162-191."
+    }
+  ],
+  "proposed_engine_boundary": {
+    "decision": "combined_gap_missed_entry_engine_with_internal_stages",
+    "generic_owns": [
+      "orchestration types",
+      "timing and evidence shape",
+      "validation",
+      "result status",
+      "quality and failure semantics",
+      "downstream instruction model"
+    ],
+    "strategy_policy_owns": [
+      "formula references",
+      "branch mappings",
+      "option-side comparison rules",
+      "row-specific workbook compatibility"
+    ],
+    "runtime_owns": [
+      "capturing observations",
+      "supplying state",
+      "ordering evaluation timestamps",
+      "paper/live/replay activation"
+    ]
+  },
+  "tests_run": [],
+  "tests_run_note": "No tests were run because Milestone 1 changed only inventory documentation/reporting and no executable behaviour."
+}

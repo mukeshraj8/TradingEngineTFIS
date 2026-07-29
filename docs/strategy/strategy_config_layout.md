@@ -163,6 +163,40 @@ Important note:
 - a folder-based strategy may intentionally differ from its legacy YAML counterpart when the folder version is correcting workbook semantics
 - when that happens, the difference should be documented and covered by tests
 
+## Phase 3A Identity Layout
+
+Phase 3A adds an additive identity/configuration layer without moving existing
+strategy folders:
+
+- `config/strategy_families/`
+- `config/strategy_definitions/<strategy_definition_id>/strategy.yaml`
+- `config/strategy_definitions/<strategy_definition_id>/versions/<version>.yaml`
+- `config/strategy_instances/<strategy_instance_id>.yaml`
+
+These files identify family, business strategy, immutable version, and deployed
+instance. Runtime formula files remain in the existing strategy folders until a
+later migration explicitly changes that.
+
+Policy composition for the identity layer is keyed by
+`strategy_definition_id@strategy_version` in
+`config/strategy_policy_composition.yaml`.
+
+## Phase 3B Business Engine Catalog
+
+Phase 3B adds a generic business-capability catalog at:
+
+- `config/business_engines/catalog.yaml`
+
+This catalog is not a strategy folder and does not contain executable strategy
+formulas. It defines reusable engine contracts, dependencies, capabilities,
+supported products, supported strategy families, validation expectations,
+evidence outputs, state requirements, and performance expectations for future
+business-engine migrations.
+
+The initial catalog is metadata-only. It must not be used as evidence that Gap,
+Entry, Strike, Target, MSL, TSL, APS, or runtime execution behavior has been
+migrated.
+
 ## Backtest Acceptance Requirements
 
 Folder-based strategies are eligible for backtesting only when:
