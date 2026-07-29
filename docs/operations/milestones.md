@@ -2,6 +2,13 @@
 
 ## Current Snapshot
 
+- as of Wednesday, July 29, 2026, Phase 3C Milestone 2 defined the generic
+  Gap/Missed-Entry Business Engine contract: immutable typed inputs/results
+  for supplied timing evidence, gap classification, missed-entry comparison,
+  recalculation instruction, validation/failure/quality, evidence fragments,
+  and unresolved rule semantics. The metadata-only catalog now treats `gap` as
+  the combined engine providing `GAP` and `MISSED_ENTRY`; active runtime
+  behavior and strategy formulas remain unchanged pending Milestone 3 approval.
 - as of Wednesday, July 29, 2026, Phase 3B introduced the generic TFIS
   Business Engine Framework: immutable engine definitions, context/input/
   result/evidence/validation/metrics/performance contracts, explicit

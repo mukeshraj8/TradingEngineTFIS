@@ -102,32 +102,57 @@ engines:
       criticality: HIGH
 
   - engine_id: gap
-    display_name: Gap Engine
-    purpose: Evaluates reusable opening gap context without owning strategy entry policy.
+    display_name: Gap And Missed Entry Engine
+    purpose: Classifies supplied gap and missed-entry evidence, then emits downstream recalculation instructions without owning entry formulas.
     stage: GAP
     schema_version: "phase3b.business_engine_definition.v1"
     required_inputs:
-      - price_context
-      - evaluation_timestamp
-    optional_inputs:
+      - session_timing_evidence
+      - strategy_rule_policy_key
+      - entry_reference_evidence
       - monthly_status
       - market_structure_state
+      - evaluation_timestamp
+    optional_inputs:
+      - opening_observation
+      - orpt_observation
+      - rc_observation
+      - current_day_high_low
+      - unresolved_rule_issues
     produced_outputs:
-      - gap_state
+      - gap_classification
+      - missed_entry_state
+      - recalculation_instruction
+      - gap_missed_entry_result
     evidence_outputs:
-      - gap_inputs
-      - gap_calculations
-      - gap_quality_notes
+      - timing_observation_evidence
+      - gap_classification_evidence
+      - missed_entry_comparison_evidence
+      - recalculation_instruction_evidence
+      - unresolved_rule_evidence
     validation_rules:
-      - price context must include comparable reference values
+      - supplied observations must include all policy-required timing values
+      - timing evidence must be chronological
+      - stale observations must fail closed when trading behavior could be affected
+      - market structure references required by the policy must be present
       - monthly status dependency must be available for monthly-status strategies
+      - unresolved comparison policy must fail closed unless explicitly evidence-only
     failure_modes:
       - MISSING_REQUIRED_INPUT
       - MISSING_CAPABILITY
       - INCONSISTENT_INPUT
+      - REQUIRED_OBSERVATION_MISSING
+      - INVALID_TIMING_ORDER
+      - STALE_OBSERVATION
+      - MISSING_MARKET_STRUCTURE_REFERENCE
+      - UNRESOLVED_COMPARISON_POLICY
+      - RECALCULATION_INPUT_MISSING
     quality_metrics:
-      - reference_price_availability
+      - timing_observation_completeness
       - gap_trace_completeness
+      - missed_entry_trace_completeness
+      - recalculation_instruction_completeness
+      - unresolved_semantics_visibility
     state_requirements: STATELESS
     dependencies:
       - market_structure
@@ -137,6 +162,7 @@ engines:
       - MONTHLY_STATUS
     provided_capabilities:
       - GAP
+      - MISSED_ENTRY
     supported_products:
       - FUTURES
       - OPTION_SELLING
@@ -193,6 +219,7 @@ engines:
       - MARKET_STRUCTURE
       - MONTHLY_STATUS
       - GAP
+      - MISSED_ENTRY
     provided_capabilities:
       - ENTRY
       - MISSED_ENTRY

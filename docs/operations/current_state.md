@@ -6,6 +6,14 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Wednesday, July 29, 2026, Phase 3C Milestone 2 defines the generic
+  Gap and Missed-Entry Business Engine contract in
+  `src/tfis/domain/gap_missed_entry.py`, with immutable timing, gap,
+  missed-entry, recalculation, validation, evidence, quality, and unresolved
+  semantics models. The `gap` catalog entry now represents the combined
+  metadata-only engine and provides both `GAP` and `MISSED_ENTRY`; active
+  paper/live/replay/backtest runtime behavior, strategy formulas, target/FSL/
+  TRP/MSL/TSL/APS logic, and contract selection remain unchanged.
 - as of Wednesday, July 29, 2026, Phase 3B adds the generic immutable TFIS
   Business Engine Framework in `src/tfis/domain/business_engine.py`, the
   metadata-only catalog at `config/business_engines/catalog.yaml`, architecture

@@ -63,6 +63,7 @@ def test_engine_definitions_and_registry_are_immutable() -> None:
         BusinessEngineCapability.MARKET_STRUCTURE,
         BusinessEngineCapability.MONTHLY_STATUS,
         BusinessEngineCapability.GAP,
+        BusinessEngineCapability.MISSED_ENTRY,
     )
 
 

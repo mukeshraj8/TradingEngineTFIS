@@ -6,6 +6,20 @@ way.
 
 ## Immediate Next Priorities
 
+0.25. `TODO` After explicit approval, start Phase 3C Milestone 3 by adding
+   strategy-specific compatibility policies/adapters for the generic
+   Gap/Missed-Entry contract. Do not choose the unresolved S23 PUT comparison
+   or infer S21 ORPT/RC applicability without workbook/user evidence, and keep
+   runtime activation deferred.
+
+0.24. `DONE` Complete Phase 3C Milestone 2 Generic Gap and Missed-Entry Engine
+   contracts. The new immutable contract module defines supplied timing
+   evidence, independent gap classification, independent missed-entry
+   classification, downstream recalculation instruction, typed unresolved
+   semantics, and minimum decision-evidence fragment integration. The catalog
+   now models the combined `gap` engine as providing both `GAP` and
+   `MISSED_ENTRY`. No strategy formula or active runtime path was migrated.
+
 0.23. `TODO` Begin Phase 3C by migrating one low-risk business capability
    behind the Phase 3B `BusinessEngine` contract, preferably Market Structure
    or Monthly Status. Keep active paper/live/replay/backtest runtime activation
