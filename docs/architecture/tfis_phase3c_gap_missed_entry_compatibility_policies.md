@@ -100,6 +100,9 @@ Focused tests prove:
 Milestone 4 remains responsible for full parity reports and decision-packet
 report integration.
 
+Milestone 4 parity results and typed packet-evidence integration are documented
+in `docs/architecture/tfis_phase3c_gap_missed_entry_parity_and_evidence.md`.
+
 ## Open Issues Before Milestone 4
 
 - Confirm authoritative S23 PUT missed-entry behavior from workbook/user

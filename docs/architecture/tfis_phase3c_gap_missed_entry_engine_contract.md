@@ -8,6 +8,9 @@ Milestone 3 compatibility policies are documented in
 They remain isolated under `src/tfis/adapters/legacy_policies/` and do not
 change this generic contract boundary.
 
+Milestone 4 parity and typed packet-evidence integration are documented in
+`docs/architecture/tfis_phase3c_gap_missed_entry_parity_and_evidence.md`.
+
 ## Boundary
 
 `GapMissedEntryEngine` is a generic business engine contract for supplied

@@ -259,3 +259,7 @@ Milestone 2 should define immutable generic contracts for:
 - failure and quality status
 
 Milestone 2 must stop before implementing any S21/S23 compatibility policy.
+
+Milestone 4 follow-up: offline parity and typed decision-evidence integration
+are documented in
+`docs/architecture/tfis_phase3c_gap_missed_entry_parity_and_evidence.md`.

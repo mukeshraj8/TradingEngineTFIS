@@ -6,6 +6,13 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Wednesday, July 29, 2026, Phase 3C Milestone 4 adds deterministic
+  offline Gap/Missed-Entry parity and typed decision-evidence integration.
+  The report runner writes JSON/CSV/Markdown/sample-packet artifacts under
+  `reports/phase3c/`, with 8 offline cases, 8 passing supported comparisons,
+  0 mismatches, and 2 intentional fail-closed cases. Runtime activation remains
+  deferred; S23 PUT authority and S21 ORPT/RC applicability remain blockers
+  before any future migration.
 - as of Wednesday, July 29, 2026, Phase 3C Milestone 3 adds offline-only
   S21/S23 compatibility policies under `src/tfis/adapters/legacy_policies/`
   for the generic Gap/Missed-Entry engine. S21 is represented as evidence-only

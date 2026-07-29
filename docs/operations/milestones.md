@@ -2,6 +2,13 @@
 
 ## Current Snapshot
 
+- as of Wednesday, July 29, 2026, Phase 3C Milestone 4 added deterministic
+  offline Gap/Missed-Entry parity and typed decision-evidence integration:
+  immutable parity case/result/comparison models, normalized legacy versus
+  generic field comparison, mismatch taxonomy support, generated JSON/CSV/
+  Markdown/sample-packet reports under `reports/phase3c/`, and an optional
+  typed `GapMissedEntryBusinessEngineFragment` on the decision-evidence
+  packet. Active runtime behavior remains unchanged.
 - as of Wednesday, July 29, 2026, Phase 3C Milestone 3 implemented
   offline-only S21/S23 Gap/Missed-Entry compatibility policies and adapters
   behind the generic engine contract. S21 remains evidence-only/unresolved for

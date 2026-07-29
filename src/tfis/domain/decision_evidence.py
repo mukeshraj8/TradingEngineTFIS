@@ -166,6 +166,53 @@ class PriceContextEvidence:
 
 
 @dataclass(frozen=True, slots=True)
+class GapMissedEntryBusinessEngineFragment:
+    engine_id: str
+    policy_key: str
+    profile: str
+    timing_applicability: str
+    chronology_status: str
+    gap_classification: str
+    gap_direction: str
+    missed_entry_status: str
+    comparison_source: str | None
+    comparison_operator: str | None
+    observed_value: ProvenancedValue
+    reference_value: ProvenancedValue
+    recalculation_status: str
+    recalculation_branch: str | None
+    downstream_action: str
+    compatibility_outputs: Mapping[str, ProvenancedValue] = MappingProxyType({})
+    unresolved_issue_codes: tuple[str, ...] = ()
+    warnings: tuple[str, ...] = ()
+    failures: tuple[str, ...] = ()
+    provenance: Mapping[str, str] = MappingProxyType({})
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self,
+            "compatibility_outputs",
+            MappingProxyType(
+                {
+                    str(key): value
+                    for key, value in sorted(
+                        self.compatibility_outputs.items(),
+                        key=lambda pair: str(pair[0]),
+                    )
+                }
+            ),
+        )
+        object.__setattr__(self, "unresolved_issue_codes", tuple(self.unresolved_issue_codes))
+        object.__setattr__(self, "warnings", tuple(self.warnings))
+        object.__setattr__(self, "failures", tuple(self.failures))
+        object.__setattr__(
+            self,
+            "provenance",
+            MappingProxyType({str(key): str(value) for key, value in sorted(self.provenance.items())}),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class GapMissedEntryEvidence:
     opening_price: ProvenancedValue
     reference_price: ProvenancedValue
@@ -176,6 +223,7 @@ class GapMissedEntryEvidence:
     recalculation_branch: str
     formulas: tuple[str, ...]
     intermediate_values: tuple[tuple[str, ProvenancedValue], ...]
+    business_engine_fragment: GapMissedEntryBusinessEngineFragment | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "formulas", tuple(self.formulas))
@@ -557,6 +605,43 @@ def _gap_from_dict(data: Mapping[str, Any]) -> GapMissedEntryEvidence:
         recalculation_branch=str(data["recalculation_branch"]),
         formulas=tuple(str(item) for item in data["formulas"]),
         intermediate_values=tuple((str(key), _pv(value)) for key, value in data["intermediate_values"]),
+        business_engine_fragment=(
+            _business_gap_fragment_from_dict(data["business_engine_fragment"])
+            if data.get("business_engine_fragment") is not None
+            else None
+        ),
+    )
+
+
+def _business_gap_fragment_from_dict(data: Mapping[str, Any]) -> GapMissedEntryBusinessEngineFragment:
+    return GapMissedEntryBusinessEngineFragment(
+        engine_id=str(data["engine_id"]),
+        policy_key=str(data["policy_key"]),
+        profile=str(data["profile"]),
+        timing_applicability=str(data["timing_applicability"]),
+        chronology_status=str(data["chronology_status"]),
+        gap_classification=str(data["gap_classification"]),
+        gap_direction=str(data["gap_direction"]),
+        missed_entry_status=str(data["missed_entry_status"]),
+        comparison_source=str(data["comparison_source"]) if data["comparison_source"] is not None else None,
+        comparison_operator=str(data["comparison_operator"]) if data["comparison_operator"] is not None else None,
+        observed_value=_pv(data["observed_value"]),
+        reference_value=_pv(data["reference_value"]),
+        recalculation_status=str(data["recalculation_status"]),
+        recalculation_branch=(
+            str(data["recalculation_branch"])
+            if data["recalculation_branch"] is not None
+            else None
+        ),
+        downstream_action=str(data["downstream_action"]),
+        compatibility_outputs={
+            str(key): _pv(value)
+            for key, value in data["compatibility_outputs"].items()
+        },
+        unresolved_issue_codes=tuple(str(item) for item in data["unresolved_issue_codes"]),
+        warnings=tuple(str(item) for item in data["warnings"]),
+        failures=tuple(str(item) for item in data["failures"]),
+        provenance=data["provenance"],
     )
 
 

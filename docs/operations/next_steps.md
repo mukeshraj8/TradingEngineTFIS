@@ -6,9 +6,17 @@ way.
 
 ## Immediate Next Priorities
 
-0.26. `TODO` After explicit approval, start Phase 3C Milestone 4 full
-   parity/evidence reporting for Gap/Missed-Entry. Keep runtime activation
-   deferred until full packet/report parity is reviewed.
+0.27. `TODO` After explicit approval, start Phase 3C Milestone 5. Do not
+   activate runtime migration until the Milestone 4 parity/evidence report is
+   reviewed and the unresolved S23 PUT and S21 ORPT/RC blockers are accepted
+   or explicitly scoped.
+
+0.26. `DONE` Complete Phase 3C Milestone 4 full offline parity/evidence
+   reporting for Gap/Missed-Entry. The generated `reports/phase3c/` artifacts
+   cover 8 offline cases with 8 passing supported comparisons, 0 mismatches,
+   and 2 intentional fail-closed cases, plus a typed
+   `TFISDecisionEvidencePacket` fragment sample. Runtime activation remains
+   deferred.
 
 0.25. `DONE` Complete Phase 3C Milestone 3 strategy compatibility policies
    and adapters. S21 is represented by evidence-only and unresolved timing
