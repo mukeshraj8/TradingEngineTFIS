@@ -49,6 +49,8 @@ def test_active_runtime_paths_do_not_import_generic_decision_engine_or_legacy_po
     forbidden = (
         "tfis.decision",
         "tfis.adapters.legacy_policies",
+        "tfis.domain.gap_missed_entry",
+        "GapMissedEntryEngine",
         "TFISDecisionEngine",
         "PolicyRegistry",
     )

@@ -3,6 +3,11 @@
 Status: Milestone 2 contract specification only. Runtime activation and
 strategy compatibility policies remain out of scope.
 
+Milestone 3 compatibility policies are documented in
+`docs/architecture/tfis_phase3c_gap_missed_entry_compatibility_policies.md`.
+They remain isolated under `src/tfis/adapters/legacy_policies/` and do not
+change this generic contract boundary.
+
 ## Boundary
 
 `GapMissedEntryEngine` is a generic business engine contract for supplied

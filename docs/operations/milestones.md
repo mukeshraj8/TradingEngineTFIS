@@ -2,6 +2,12 @@
 
 ## Current Snapshot
 
+- as of Wednesday, July 29, 2026, Phase 3C Milestone 3 implemented
+  offline-only S21/S23 Gap/Missed-Entry compatibility policies and adapters
+  behind the generic engine contract. S21 remains evidence-only/unresolved for
+  ORPT/RC timing; S23 supports Bull Call, Bear Call, Bull Put, and Bear Put
+  with explicit PUT backtest-low and paper/live-high profiles, typed evidence,
+  fail-closed validation, and delegated recalculation compatibility outputs.
 - as of Wednesday, July 29, 2026, Phase 3C Milestone 2 defined the generic
   Gap/Missed-Entry Business Engine contract: immutable typed inputs/results
   for supplied timing evidence, gap classification, missed-entry comparison,

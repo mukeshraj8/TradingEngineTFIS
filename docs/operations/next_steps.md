@@ -6,11 +6,16 @@ way.
 
 ## Immediate Next Priorities
 
-0.25. `TODO` After explicit approval, start Phase 3C Milestone 3 by adding
-   strategy-specific compatibility policies/adapters for the generic
-   Gap/Missed-Entry contract. Do not choose the unresolved S23 PUT comparison
-   or infer S21 ORPT/RC applicability without workbook/user evidence, and keep
-   runtime activation deferred.
+0.26. `TODO` After explicit approval, start Phase 3C Milestone 4 full
+   parity/evidence reporting for Gap/Missed-Entry. Keep runtime activation
+   deferred until full packet/report parity is reviewed.
+
+0.25. `DONE` Complete Phase 3C Milestone 3 strategy compatibility policies
+   and adapters. S21 is represented by evidence-only and unresolved timing
+   profiles; S23 has explicit backtest-low and paper/live-high PUT profiles,
+   supported branch mapping, ORPT/RC validation, and delegated recalculation
+   compatibility outputs. The new path is offline-only and does not activate
+   paper/live/replay/backtest runtime behavior.
 
 0.24. `DONE` Complete Phase 3C Milestone 2 Generic Gap and Missed-Entry Engine
    contracts. The new immutable contract module defines supplied timing

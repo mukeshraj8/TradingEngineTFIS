@@ -6,6 +6,15 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Wednesday, July 29, 2026, Phase 3C Milestone 3 adds offline-only
+  S21/S23 compatibility policies under `src/tfis/adapters/legacy_policies/`
+  for the generic Gap/Missed-Entry engine. S21 is represented as evidence-only
+  or unresolved timing applicability; S23 has explicit backtest-low and
+  paper/live-high PUT profiles, branch mapping, ORPT/RC validation, and
+  delegated recalculation compatibility outputs. Active paper/live/replay/
+  backtest runtime paths remain unchanged, and the authoritative S23 PUT rule
+  plus S21 ORPT/RC applicability remain unresolved pending workbook/user
+  evidence.
 - as of Wednesday, July 29, 2026, Phase 3C Milestone 2 defines the generic
   Gap and Missed-Entry Business Engine contract in
   `src/tfis/domain/gap_missed_entry.py`, with immutable timing, gap,

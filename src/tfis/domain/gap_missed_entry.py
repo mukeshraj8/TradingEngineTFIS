@@ -463,8 +463,16 @@ class GapMissedEntryEngine:
         input_validation = validate_gap_missed_entry_input(engine_input)
         outcome = self._policy.evaluate(engine_input)
         unresolved = tuple(engine_input.unresolved_issues) + tuple(outcome.unresolved_issues)
+        policy_failure_issues = tuple(
+            GapMissedEntryValidationIssue(
+                failure=failure,
+                field="policy_outcome",
+                message=f"policy reported fail-closed failure {failure.value}",
+            )
+            for failure in outcome.failures
+        )
         validation = GapMissedEntryValidation(
-            issues=input_validation.issues,
+            issues=input_validation.issues + policy_failure_issues,
             unresolved_issues=unresolved,
         )
         failures = tuple(input_validation_issue.failure for input_validation_issue in input_validation.issues) + tuple(outcome.failures)
