@@ -2552,3 +2552,16 @@ Current notes:
   while full reset is no longer needed for ordinary dashboard visibility.
   Focused dashboard coverage passed at `36 passed`, the dashboard rebuilt
   successfully under `tmp/operator_dashboard`, and project validation passed.
+- Phase 1 architecture remediation now introduces immutable generic
+  AB15-equivalent and AB16-equivalent runtime contracts:
+  `TFISRuntimeInput` and `TFISDecision` under `src/tfis/domain`. Existing S21
+  and S23 paper behavior remains unchanged through compatibility adapters in
+  `src/tfis/paper/runtime_contract_adapters.py`; policy extraction, generic
+  strategy onboarding, and broker execution changes remain deferred.
+- Phase 1 certification corrections are additive and market-safe: strict
+  future adapter APIs now require explicit product/direction/side and strategy
+  identity, selected-instrument segment is retained in strict mappings,
+  successful strict generic decisions clear `rejection_reason`, and immutable
+  lifecycle contract definitions exist without active runtime wiring. Isolated
+  Phase 1 tests passed at `20 passed`; the four S23 start-strike failures
+  remain pre-existing and workbook-verification pending.

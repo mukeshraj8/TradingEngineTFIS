@@ -1591,12 +1591,23 @@
 - Dashboard pages now include visible built-at freshness information, and the
   local dashboard server supports configurable stale-page auto-rebuilds while
   retaining the manual refresh script for immediate rebuilds.
+- Phase 1 TFIS architecture remediation added immutable generic
+  `TFISRuntimeInput` and `TFISDecision` contracts plus paper compatibility
+  adapters, giving generic consumers AB15/AB16-equivalent objects without
+  changing existing S21/S23 paper behavior.
+- Phase 1 certification corrections added strict future adapter APIs, retained
+  selected-instrument segment in strict generic decisions, introduced
+  contract-only lifecycle models for targets/stops/TSL/APS/exits, and
+  documented the four S23 start-strike failures as pre-existing workbook
+  verification items.
 
 ## Next Recommended Priorities
 
 - validate the corrected S23 paper flow on the next real NSE trading day,
   including watcher startup, current-price updates, fill status, P&L, and
   cancellation/non-carry-forward of unfilled waiting orders
+- extract reusable strategy policy interfaces behind the new generic runtime
+  contracts before adding more strategies
 - keep monthly-status calculation independent and reusable for future enabled
   strategies
 - validate the durable S23 data-root default on the next scheduled market run

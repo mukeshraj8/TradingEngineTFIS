@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 from typing import Any
 
-from tfis.domain import MarketLevels, StrategyRule
+from tfis.domain import MarketLevels, StrategyRule, TFISRuntimeInput
 from tfis.formulas import FormulaEngine
 from tfis.market_data import UnderlyingHistoryBar
 from tfis.monthly_status import (
@@ -549,6 +549,7 @@ def _validate_supported_strategy_rule(strategy_rule: StrategyRule) -> tuple[str,
 PaperMonthlyStatusReferencePacket = S23MonthlyStatusReferencePacket
 PaperMarketReferencePacket = S23MarketReferencePacket
 PaperDecisionReferencePacket = S23DecisionReferencePacket
+PaperRuntimeInput = TFISRuntimeInput
 PaperDerivedRuntimeInputs = S23DerivedRuntimeInputs
 PaperRuntimeInputDerivationError = S23RuntimeInputDerivationError
 PaperRuntimeInputDeriver = S23RuntimeInputDeriver

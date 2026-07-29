@@ -1305,6 +1305,14 @@ Comparison reporting note:
   fail each wrapper with `BROKER_SNAPSHOT_FAILED`; that now reports as a
   per-strategy startup failure while dashboard/supervisor startup is still
   attempted.
+- Phase 1 generic runtime contracts are now in place. Before adding more
+  strategies, keep the next architecture slice focused on extracting reusable
+  policy interfaces behind `TFISRuntimeInput` and `TFISDecision` while
+  preserving S21/S23 parity.
+- Certification corrections are in place through strict, future-facing adapter
+  APIs and contract-only lifecycle models. Post-market, decide whether any
+  legacy adapter call sites should migrate to strict mode; do not start Phase 2
+  policy extraction until the S23 start-strike workbook verification is closed.
 
 ## Deferred
 
