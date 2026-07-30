@@ -2,6 +2,20 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 10 implemented immutable
+  offline `OpeningMarketContext` contracts and S23 Call-side context
+  composition. Reports are
+  `reports/phase3d/milestone10_opening_market_context_summary.md`,
+  `reports/phase3d/milestone10_s23_bull_call_opening_context.json`,
+  `reports/phase3d/milestone10_s23_bear_call_opening_context.json`,
+  `reports/phase3d/milestone10_s23_partial_real_opening_context.json`, and
+  `reports/phase3d/milestone10_opening_context_gap_matrix.json`. Verdict:
+  `PHASE3D_M10_ACCEPT`. `PreMarketStrategyPlan`: `IMPLEMENTED_OFFLINE`.
+  `OpeningMarketContext`: `IMPLEMENTED_OFFLINE_FOR_S23_CALL`.
+  `EffectiveExecutionPlan`: `NOT_IMPLEMENTED`. `PositionLifecycleContext`:
+  `NOT_IMPLEMENTED`. Shared live event routing: `NOT_IMPLEMENTED`. Runtime
+  execution authority: `NONE`. Real complete OpeningMarketContext packets:
+  `0`. Partial real OpeningMarketContext packets: `1`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 9 implemented the first
   immutable offline `PreMarketStrategyPlan` builder and S23 Call-side
   compatibility composition. Reports are

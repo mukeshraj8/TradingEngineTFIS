@@ -1,0 +1,54 @@
+{
+  "broker_paper_live_impact": "NONE",
+  "contexts": {
+    "bear_fixture": {
+      "gap": "GAP_DOWN",
+      "hash": "7590f983c4fb7ee5087a7e8909d81a7feb9713c9903fdd778f556ece9f34875e",
+      "orpt": "AVAILABLE",
+      "rc": "AVAILABLE",
+      "status": "COMPLETE"
+    },
+    "bull_fixture": {
+      "gap": "GAP_UP",
+      "hash": "cd49e501b4470dc278724c0abf8dc54b32f2ea0befb3d3c3576cf2a0e91bd38a",
+      "orpt": "AVAILABLE",
+      "rc": "AVAILABLE",
+      "status": "COMPLETE"
+    },
+    "partial_real": {
+      "gap": "INSUFFICIENT_EVIDENCE",
+      "hash": "d2863ef30e58c0dc88156436038f51289883dc08dfd2f347af174de1180d4b23",
+      "missing_fields": [
+        "gap_reference",
+        "official_exchange_open_timestamp",
+        "orpt_observation",
+        "selected_contract_opening.oi"
+      ],
+      "orpt": "MISSING",
+      "rc": "AVAILABLE",
+      "status": "PARTIAL"
+    }
+  },
+  "partial_real_opening_context_packets": 1,
+  "performance_invariants": [
+    "shared instrument observations normalized once and reusable",
+    "subscription routing remains specification/test invariant only",
+    "business engines consume immutable snapshots",
+    "future live mutable state must have single-writer ownership",
+    "broker order paths must not block market-data context construction",
+    "official open/ORPT/RC remain non-conflatable",
+    "equivalent snapshots and policies are deterministic",
+    "bounded work scales with required observations only"
+  ],
+  "real_complete_opening_context_packets": 0,
+  "remaining_gaps": [
+    "EffectiveExecutionPlan not implemented",
+    "OpeningMarketContext has no live feed subscription or scheduler",
+    "M7 partial real context lacks selected-contract opening/OI and ORPT selected-contract evidence",
+    "Gap/Missed-Entry final business outcome not evaluated",
+    "PositionLifecycleContext not implemented"
+  ],
+  "runtime_authority": "NONE",
+  "schema_version": "phase3d.milestone10.opening_context_gap_matrix.v1",
+  "verdict": "PHASE3D_M10_ACCEPT"
+}

@@ -156,6 +156,22 @@ from .premarket_plan import (
     PreMarketStrategyPlan,
     premarket_plan_hash,
 )
+from .opening_market_context import (
+    OpeningBarEvidence,
+    OpeningConsumerReadiness,
+    OpeningContextStatus,
+    OpeningFailure,
+    OpeningFreshnessStatus,
+    OpeningGapClassification,
+    OpeningGapContext,
+    OpeningGapDirection,
+    OpeningMarketContext,
+    OpeningObservationAvailability,
+    OpeningQuoteEvidence,
+    OpeningTimestampClassification,
+    TimedOpeningObservation,
+    opening_context_hash,
+)
 from .strategy_rule import StrategyExpiryPolicy, StrategyRule
 from .strategy_identity import (
     PositionCycleIdentity,
@@ -287,6 +303,19 @@ __all__ = [
     "PreMarketPlanStatus",
     "PreMarketReferenceSet",
     "PreMarketStrategyPlan",
+    "OpeningBarEvidence",
+    "OpeningConsumerReadiness",
+    "OpeningContextStatus",
+    "OpeningFailure",
+    "OpeningFreshnessStatus",
+    "OpeningGapClassification",
+    "OpeningGapContext",
+    "OpeningGapDirection",
+    "OpeningMarketContext",
+    "OpeningObservationAvailability",
+    "OpeningQuoteEvidence",
+    "OpeningTimestampClassification",
+    "TimedOpeningObservation",
     "ProvenancedValue",
     "ResolvedStrategyConfiguration",
     "RolloverPolicy",
@@ -346,4 +375,5 @@ __all__ = [
     "UnresolvedRuleIssue",
     "product_type_from_segment",
     "premarket_plan_hash",
+    "opening_context_hash",
 ]

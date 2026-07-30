@@ -1,0 +1,158 @@
+{
+  "consumer_readiness": {
+    "carried_position_observation": "COMPLETE",
+    "gap_missed_entry_evaluation": "PARTIAL",
+    "normal_opening_validation": "COMPLETE",
+    "orpt_only_flow": "PARTIAL",
+    "orpt_plus_rc_flow": "COMPLETE",
+    "reasons": {
+      "gap_reference": "Gap comparison value is required.",
+      "official_exchange_open_timestamp": "Official exchange open was unavailable; local/derived evidence is preserved.",
+      "orpt_observation": "ORPT underlying and selected-contract observations are required for ORPT flow.",
+      "selected_contract_opening.oi": "Selected-contract opening OI is required by this context."
+    }
+  },
+  "context_hash": "d2863ef30e58c0dc88156436038f51289883dc08dfd2f347af174de1180d4b23",
+  "context_id": "m10-s23-partial-real-opening-context",
+  "context_status": "PARTIAL",
+  "data_quality_failures": [
+    {
+      "code": "INSUFFICIENT_GAP_REFERENCE",
+      "field": "gap_reference",
+      "reason": "Gap comparison value is required."
+    },
+    {
+      "code": "OFFICIAL_OPEN_UNAVAILABLE",
+      "field": "official_exchange_open_timestamp",
+      "reason": "Official exchange open was unavailable; local/derived evidence is preserved."
+    },
+    {
+      "code": "ORPT_OBSERVATION_MISSING",
+      "field": "orpt_observation",
+      "reason": "ORPT underlying and selected-contract observations are required for ORPT flow."
+    },
+    {
+      "code": "OI_UNAVAILABLE",
+      "field": "selected_contract_opening.oi",
+      "reason": "Selected-contract opening OI is required by this context."
+    }
+  ],
+  "derived_fields": [
+    "exchange_open_timestamp_from_configured_market_open",
+    "opening_underlying_bar_from_first_capture_window"
+  ],
+  "evidence_classification": "PARTIAL_CAPTURE",
+  "exchange": "NSE",
+  "first_local_quote_timestamp": "2026-06-05T09:15:00+05:30",
+  "gap_context": {
+    "abnormal_opening_classification": null,
+    "classification": "INSUFFICIENT_EVIDENCE",
+    "comparison_reference": "M7_PREVIOUS_CLOSE_UNAVAILABLE",
+    "comparison_value": null,
+    "direction": "UNKNOWN",
+    "evidence": {},
+    "gap_amount": null,
+    "gap_percentage": null,
+    "policy_identity": "legacy.s23.opening_gap.fixture_v1"
+  },
+  "missing_fields": [
+    "gap_reference",
+    "official_exchange_open_timestamp",
+    "orpt_observation",
+    "selected_contract_opening.oi"
+  ],
+  "official_exchange_open_timestamp": null,
+  "opening_bar_timestamp": "2026-06-05T09:15:00+05:30",
+  "orpt_observation": {
+    "availability": "MISSING",
+    "configured_timestamp": "2026-06-05T09:24:59+05:30",
+    "label": "ORPT",
+    "policy_applicability": "APPLICABLE",
+    "provenance": "opening_context_builder",
+    "selected_contract_observation": null,
+    "underlying_observation": {
+      "bar_timestamp": "2026-06-05T09:24:59+05:30",
+      "close": 23451.65,
+      "high": 23458.0,
+      "instrument": "NSE:NIFTY",
+      "low": 23445.2,
+      "open": 23455.4,
+      "provenance": "M7_PARTIAL_REAL_CAPTURE",
+      "timestamp_classification": "ORPT_OBSERVATION"
+    }
+  },
+  "performance": {
+    "context_construction_seconds": 9.200000204145908e-05,
+    "evidence_serialization_bytes": 0,
+    "gap_classification_seconds": 1.1299998732283711e-05,
+    "hash_generation_seconds": 0.0,
+    "observation_normalization_seconds": 0.0
+  },
+  "rc_observation": {
+    "availability": "AVAILABLE",
+    "configured_timestamp": "2026-06-05T09:29:59+05:30",
+    "label": "RC",
+    "policy_applicability": "APPLICABLE",
+    "provenance": "opening_context_builder",
+    "selected_contract_observation": {
+      "ask": 856.0,
+      "bid": 850.25,
+      "candidate_timestamps": [],
+      "freshness": "FRESH",
+      "instrument": "NIFTY_20260609_22650_CE",
+      "ltp": 850.0,
+      "oi": null,
+      "oi_unit": "LOTS",
+      "provenance": "M7_PARTIAL_REAL_CAPTURE",
+      "selection_policy_identity": null,
+      "selection_reason": null,
+      "source_label": "NSE:NIFTY2660922650CE",
+      "source_timestamp": "2026-06-05T09:29:50+05:30",
+      "timestamp_classification": "RC_OBSERVATION"
+    },
+    "underlying_observation": {
+      "bar_timestamp": "2026-06-05T09:29:59+05:30",
+      "close": 23462.05,
+      "high": 23465.45,
+      "instrument": "NSE:NIFTY",
+      "low": 23453.95,
+      "open": 23456.1,
+      "provenance": "M7_PARTIAL_REAL_CAPTURE",
+      "timestamp_classification": "RC_OBSERVATION"
+    }
+  },
+  "scheduled_exchange_open_time": "09:15:00",
+  "schema_version": "tfis.opening_market_context.v1",
+  "selected_contract": {
+    "exchange": null,
+    "expiry": "2026-06-09",
+    "metadata": {
+      "source": "M7_PARTIAL_REAL_CAPTURE"
+    },
+    "option_type": "CALL",
+    "product_type": "OPTION_SELLING",
+    "segment": "OPTIONS_SELL",
+    "strike": 22650.0,
+    "symbol": "NIFTY_20260609_22650_CE",
+    "token": null
+  },
+  "selected_contract_opening_evidence": null,
+  "session_id": "live_20260605_090537_prod_pid14520",
+  "source_plan_hash": "m7-partial-real-plan-hash",
+  "source_plan_id": "phase3d-m3-s23-bull-call:premarket",
+  "stale_fields": [],
+  "supplemented_fields": [],
+  "timestamp_classification": "DERIVED_OPENING_BAR",
+  "trading_date": "2026-06-05",
+  "underlying_instrument": "NSE:NIFTY",
+  "underlying_opening_evidence": {
+    "bar_timestamp": "2026-06-05T09:15:00+05:30",
+    "close": 23489.95,
+    "high": 23489.95,
+    "instrument": "NSE:NIFTY",
+    "low": 23478.95,
+    "open": 23478.95,
+    "provenance": "M7_PARTIAL_REAL_CAPTURE",
+    "timestamp_classification": "DERIVED_OPENING_BAR"
+  }
+}

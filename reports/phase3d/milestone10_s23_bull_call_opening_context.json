@@ -1,0 +1,186 @@
+{
+  "consumer_readiness": {
+    "carried_position_observation": "COMPLETE",
+    "gap_missed_entry_evaluation": "COMPLETE",
+    "normal_opening_validation": "COMPLETE",
+    "orpt_only_flow": "COMPLETE",
+    "orpt_plus_rc_flow": "COMPLETE",
+    "reasons": {}
+  },
+  "context_hash": "cd49e501b4470dc278724c0abf8dc54b32f2ea0befb3d3c3576cf2a0e91bd38a",
+  "context_id": "m10-s23_bull_call_opening",
+  "context_status": "COMPLETE",
+  "data_quality_failures": [],
+  "derived_fields": [],
+  "evidence_classification": "SYNTHETIC_FIXTURE",
+  "exchange": "NSE",
+  "first_local_quote_timestamp": "2026-07-30T09:15:00+05:30",
+  "gap_context": {
+    "abnormal_opening_classification": null,
+    "classification": "GAP_UP",
+    "comparison_reference": "PREVIOUS_CLOSE_FIXTURE",
+    "comparison_value": 22400.0,
+    "direction": "UP",
+    "evidence": {},
+    "gap_amount": 40.0,
+    "gap_percentage": 0.17857142857142858,
+    "policy_identity": "legacy.s23.opening_gap.fixture_v1"
+  },
+  "missing_fields": [],
+  "official_exchange_open_timestamp": "2026-07-30T09:15:00+05:30",
+  "opening_bar_timestamp": "2026-07-30T09:15:00+05:30",
+  "orpt_observation": {
+    "availability": "AVAILABLE",
+    "configured_timestamp": "2026-07-30T09:19:59+05:30",
+    "label": "ORPT",
+    "policy_applicability": "APPLICABLE",
+    "provenance": "opening_context_builder",
+    "selected_contract_observation": {
+      "ask": 267.0,
+      "bid": 265.0,
+      "candidate_timestamps": [
+        "2026-07-30T09:19:59+05:30"
+      ],
+      "freshness": "FRESH",
+      "instrument": "NIFTY_20260806_22250_CALL",
+      "ltp": 266.0,
+      "oi": 999999.0,
+      "oi_unit": "LOTS",
+      "provenance": "S23_OPENING_FIXTURE",
+      "selection_policy_identity": "exact_timestamp_fixture",
+      "selection_reason": "exact configured timestamp",
+      "source_label": null,
+      "source_timestamp": "2026-07-30T09:19:59+05:30",
+      "timestamp_classification": "ORPT_OBSERVATION"
+    },
+    "underlying_observation": {
+      "ask": null,
+      "bid": null,
+      "candidate_timestamps": [
+        "2026-07-30T09:19:59+05:30"
+      ],
+      "freshness": "FRESH",
+      "instrument": "NSE:NIFTY",
+      "ltp": 22445.0,
+      "oi": null,
+      "oi_unit": null,
+      "provenance": "S23_OPENING_FIXTURE",
+      "selection_policy_identity": "exact_timestamp_fixture",
+      "selection_reason": "exact configured timestamp",
+      "source_label": null,
+      "source_timestamp": "2026-07-30T09:19:59+05:30",
+      "timestamp_classification": "ORPT_OBSERVATION"
+    }
+  },
+  "performance": {
+    "context_construction_seconds": 0.00012349999451544136,
+    "evidence_serialization_bytes": 0,
+    "gap_classification_seconds": 1.9099999917671084e-05,
+    "hash_generation_seconds": 0.0,
+    "observation_normalization_seconds": 0.0
+  },
+  "rc_observation": {
+    "availability": "AVAILABLE",
+    "configured_timestamp": "2026-07-30T09:29:59+05:30",
+    "label": "RC",
+    "policy_applicability": "APPLICABLE",
+    "provenance": "opening_context_builder",
+    "selected_contract_observation": {
+      "ask": 267.5,
+      "bid": 265.5,
+      "candidate_timestamps": [
+        "2026-07-30T09:29:59+05:30"
+      ],
+      "freshness": "FRESH",
+      "instrument": "NIFTY_20260806_22250_CALL",
+      "ltp": 266.5,
+      "oi": 999999.0,
+      "oi_unit": "LOTS",
+      "provenance": "S23_OPENING_FIXTURE",
+      "selection_policy_identity": "exact_timestamp_fixture",
+      "selection_reason": "exact configured timestamp",
+      "source_label": null,
+      "source_timestamp": "2026-07-30T09:29:59+05:30",
+      "timestamp_classification": "RC_OBSERVATION"
+    },
+    "underlying_observation": {
+      "ask": null,
+      "bid": null,
+      "candidate_timestamps": [
+        "2026-07-30T09:29:59+05:30"
+      ],
+      "freshness": "FRESH",
+      "instrument": "NSE:NIFTY",
+      "ltp": 22448.0,
+      "oi": null,
+      "oi_unit": null,
+      "provenance": "S23_OPENING_FIXTURE",
+      "selection_policy_identity": "exact_timestamp_fixture",
+      "selection_reason": "exact configured timestamp",
+      "source_label": null,
+      "source_timestamp": "2026-07-30T09:29:59+05:30",
+      "timestamp_classification": "RC_OBSERVATION"
+    }
+  },
+  "scheduled_exchange_open_time": "09:15:00",
+  "schema_version": "tfis.opening_market_context.v1",
+  "selected_contract": {
+    "exchange": null,
+    "expiry": "2026-08-06",
+    "metadata": {
+      "ltp": 264.0,
+      "oi": 999999.0,
+      "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+    },
+    "option_type": "CALL",
+    "product_type": "OPTION_SELLING",
+    "segment": "OPTIONS_SELL",
+    "strike": 22250.0,
+    "symbol": "NIFTY_20260806_22250_CALL",
+    "token": null
+  },
+  "selected_contract_opening_evidence": {
+    "ask": 266.0,
+    "bid": 264.0,
+    "candidate_timestamps": [
+      "2026-07-30T09:15:00+05:30"
+    ],
+    "freshness": "FRESH",
+    "instrument": "NIFTY_20260806_22250_CALL",
+    "ltp": 265.0,
+    "oi": 999999.0,
+    "oi_unit": "LOTS",
+    "provenance": "S23_OPENING_FIXTURE",
+    "selection_policy_identity": "exact_timestamp_fixture",
+    "selection_reason": "exact configured timestamp",
+    "source_label": null,
+    "source_timestamp": "2026-07-30T09:15:00+05:30",
+    "timestamp_classification": "FIRST_COMPLETE_LOCAL_QUOTE"
+  },
+  "session_id": "S23_BULL_CALL_OPENING_FIXTURE_SESSION",
+  "source_plan_hash": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22",
+  "source_plan_id": "phase3d-m3-s23-bull-call:premarket",
+  "stale_fields": [],
+  "supplemented_fields": [],
+  "timestamp_classification": "OFFICIAL_EXCHANGE_OPEN",
+  "trading_date": "2026-07-30",
+  "underlying_instrument": "NSE:NIFTY",
+  "underlying_opening_evidence": {
+    "ask": null,
+    "bid": null,
+    "candidate_timestamps": [
+      "2026-07-30T09:15:00+05:30"
+    ],
+    "freshness": "FRESH",
+    "instrument": "NSE:NIFTY",
+    "ltp": 22440.0,
+    "oi": null,
+    "oi_unit": null,
+    "provenance": "S23_OPENING_FIXTURE",
+    "selection_policy_identity": "exact_timestamp_fixture",
+    "selection_reason": "exact configured timestamp",
+    "source_label": null,
+    "source_timestamp": "2026-07-30T09:15:00+05:30",
+    "timestamp_classification": "OFFICIAL_EXCHANGE_OPEN"
+  }
+}

@@ -6,6 +6,15 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 10 implements the
+  immutable offline `OpeningMarketContext` contract and generic builder for
+  S23 Call-side opening evidence. `PreMarketStrategyPlan`:
+  `IMPLEMENTED_OFFLINE`. `OpeningMarketContext`:
+  `IMPLEMENTED_OFFLINE_FOR_S23_CALL`. `EffectiveExecutionPlan`:
+  `NOT_IMPLEMENTED`. `PositionLifecycleContext`: `NOT_IMPLEMENTED`. Shared
+  live event routing: `NOT_IMPLEMENTED`. Runtime execution authority: `NONE`.
+  Real complete OpeningMarketContext packets: `0`. Partial real
+  OpeningMarketContext packets: `1`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 9 implements the first
   immutable offline `PreMarketStrategyPlan` builder path for the existing
   supported S23 Call-side cases. Supported S23 vertical cases: `2`. Offline

@@ -6,14 +6,25 @@ way.
 
 ## Immediate Next Priorities
 
-0.38. `TODO` Select exactly one next Milestone 10 path: implement an offline
+0.39. `TODO` Implement offline `EffectiveExecutionPlan` composition from
+   `PreMarketStrategyPlan` plus `OpeningMarketContext` for S23 Call-side only.
+   Do not add event bus, scheduler, concurrency, broker execution, lifecycle,
+   paper/live authority, PUT branches, S21, or futures in the same milestone.
+
+0.38. `DONE` Implement immutable offline `OpeningMarketContext` contract and
+   builder for S23 Bull Call and Bear Call opening evidence. Bull and Bear
+   fixture contexts are `COMPLETE`; the M7-derived real context is `PARTIAL`.
+   Shared live event routing remains `NOT_IMPLEMENTED`; runtime execution
+   authority remains `NONE`.
+
+0.37. `DONE` Select exactly one next Milestone 10 path: implement an offline
    `OpeningMarketContext` contract and builder for S23 Call-side, replace
    legacy/synthetic pre-market plan inputs with a real captured pre-market
    packet if such data becomes available, or fix a precise
    `PreMarketStrategyPlan` gap found during review. Do not implement all
    remaining runtime objects together.
 
-0.37. `DONE` Implement the first offline S23 Call-side
+0.36. `DONE` Implement the first offline S23 Call-side
    `PreMarketStrategyPlan` builder artifact selected from the Phase 3D
    Milestone 8 gap matrix. Bull Call and Bear Call now produce immutable
    `PREPARED` pre-market plans from completed fixture/configuration inputs.
