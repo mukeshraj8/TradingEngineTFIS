@@ -1,0 +1,90 @@
+{
+  "disabled_by_default": true,
+  "redaction": {
+    "account_identity": "logical strategy instance only; broker account id is not captured",
+    "rejected_or_redacted_key_fragments": [
+      "api_key",
+      "apikey",
+      "access_token",
+      "refresh_token",
+      "authorization",
+      "auth_header",
+      "cookie",
+      "password",
+      "secret",
+      "session_cookie",
+      "token"
+    ]
+  },
+  "schema_version": "tfis.s23.evaluation_capture_packet.v1",
+  "sections": {
+    "contract_selection": [
+      "option_chain_snapshot",
+      "expiry_candidates",
+      "strike_candidates",
+      "premium_fields",
+      "oi_values",
+      "oi_units",
+      "quote_timestamps",
+      "qualification_outcomes",
+      "selected_expiry",
+      "selected_strike",
+      "selected_contract",
+      "selected_contract_quote",
+      "non_selected_rejection_reasons"
+    ],
+    "decision": [
+      "TFISDecision"
+    ],
+    "decision_evidence_packet": [
+      "TFISDecisionEvidencePacket"
+    ],
+    "entry": [
+      "selected_contract_historical_references",
+      "orpt_observation",
+      "rc_observation",
+      "base_entry_inputs",
+      "base_entry_result",
+      "gap_missed_entry_inputs",
+      "gap_missed_entry_result",
+      "effective_entry_inputs",
+      "effective_entry_result",
+      "downstream_permission"
+    ],
+    "identity": [
+      "schema_version",
+      "capture_id",
+      "evaluation_id",
+      "strategy_family",
+      "strategy_definition",
+      "strategy_version",
+      "strategy_instance",
+      "resolved_configuration_hash",
+      "trading_date",
+      "source_session_identity"
+    ],
+    "market_context": [
+      "monthly_status",
+      "resolved_branch",
+      "source_timestamps",
+      "underlying_references",
+      "reference_identities"
+    ],
+    "provenance": [
+      "evidence_classification",
+      "section_sources",
+      "capture_timestamp",
+      "source_event_timestamps",
+      "supplemented_fields",
+      "missing_real_world_fields",
+      "redaction_metadata",
+      "capture_locations_for_missing_fields"
+    ],
+    "risk_compatibility": [
+      "target_inputs",
+      "target_result",
+      "msl_inputs",
+      "msl_result"
+    ]
+  }
+}

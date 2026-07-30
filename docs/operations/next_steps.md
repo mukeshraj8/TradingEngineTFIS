@@ -6,13 +6,21 @@ way.
 
 ## Immediate Next Priorities
 
-0.33. `TODO` Resolve the specific S23 Call-side captured-evidence gaps found
-   in Phase 3D Milestone 5 before claiming captured parity: real trading date,
-   captured option-chain snapshot, captured selected-contract quote, captured
-   ORPT option observation, captured RC option observation, and captured
-   legacy runtime decision packet. If existing operational archives cannot
-   provide these fields, design only a disabled-by-default capture hook with no
-   runtime authority change.
+0.34. `TODO` Run one explicitly approved non-authoritative shadow/debug
+   session with S23 Call-side capture enabled to obtain the first complete real
+   S23 Bull Call or Bear Call packet. Keep capture disabled in normal profiles
+   and do not grant decision, paper, live, broker, order, lifecycle, or
+   position authority through the capture path.
+
+0.33. `DONE` Implement the smallest disabled-by-default S23 Call-side evidence
+   capture hook. Capture now observes completed S23 vertical fixture results
+   after the generic orchestrator returns, emits an immutable
+   `S23EvaluationCapturePacket` only when an observer/sink is explicitly
+   supplied, and isolates sink/serialization/observer failures from decision
+   authority. Supported S23 vertical cases: `2`. Evidence classification:
+   Bull Call `LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT`; Bear Call
+   `LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT`. Real captured packets obtained:
+   `0`. Runtime impact: `NONE`.
 
 0.32. `DONE` Begin a captured-evidence replacement task for the two supported
    S23 Call-side vertical cases (`Bull Call`, `Bear Call`) only. Keep the same

@@ -133,13 +133,13 @@ def load_s23_call_evidence_fixtures(path: str | Path = DEFAULT_FIXTURE_PATH) -> 
     return tuple(sorted(fixtures, key=lambda item: item.case_key))
 
 
-def run_s23_call_evidence_fixture(case_key: str) -> Any:
+def run_s23_call_evidence_fixture(case_key: str, capture_observer: Any | None = None) -> Any:
     fixtures = {item.case_key: item for item in load_s23_call_evidence_fixtures()}
     if case_key not in fixtures:
         raise ValueError(f"Unknown S23 Call evidence fixture: {case_key}")
     fixture = fixtures[case_key]
     case = _vertical_case_from_fixture(fixture)
-    return vertical.run_s23_vertical_case(case)
+    return vertical.run_s23_vertical_case(case, capture_observer=capture_observer)
 
 
 def run_all_s23_call_evidence_fixtures() -> tuple[Any, ...]:

@@ -6,6 +6,16 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 6 adds the smallest
+  disabled-by-default S23 Call-side evaluation capture hook at the S23 vertical
+  adapter boundary after the generic offline orchestrator returns. Supported
+  S23 vertical cases remain `2`. Evidence classification is now recorded as
+  `LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT` for both Bull Call and Bear Call.
+  Capture capability is implemented, disabled by default, fixture-validated
+  for both Call cases, and real captured packets obtained remain `0`. No
+  runtime shadow, paper authority, live authority, broker behavior, lifecycle,
+  execution routing, order placement, position state, or generic orchestrator
+  behavior changed.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 5 strengthens the two
   supported S23 Call-side vertical cases with workbook-derived legacy fixture
   provenance. Supported S23 vertical cases remain `2`. Captured-evidence S23

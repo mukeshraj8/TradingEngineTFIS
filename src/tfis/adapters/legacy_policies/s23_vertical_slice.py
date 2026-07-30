@@ -21,6 +21,10 @@ from tfis.adapters.legacy_policies.policies import (
     S23ProductPolicyAdapter,
     S23TargetPolicyAdapter,
 )
+from tfis.adapters.legacy_policies.s23_evaluation_capture import (
+    EvaluationCaptureObserver,
+    record_s23_capture_safely,
+)
 from tfis.decision import (
     ContractSelectionPolicyInput,
     EntryPolicyInput,
@@ -243,20 +247,20 @@ class _Stage:
         return self.runner(context)
 
 
-def run_s23_bull_call_vertical_slice() -> Any:
-    return run_s23_vertical_slice(BULL_CALL_SPEC)
+def run_s23_bull_call_vertical_slice(capture_observer: EvaluationCaptureObserver | None = None) -> Any:
+    return run_s23_vertical_slice(BULL_CALL_SPEC, capture_observer=capture_observer)
 
 
-def run_s23_bear_call_vertical_slice() -> Any:
-    return run_s23_vertical_slice(BEAR_CALL_SPEC)
+def run_s23_bear_call_vertical_slice(capture_observer: EvaluationCaptureObserver | None = None) -> Any:
+    return run_s23_vertical_slice(BEAR_CALL_SPEC, capture_observer=capture_observer)
 
 
-def run_s23_vertical_slice(spec: S23VerticalBranchSpec) -> Any:
+def run_s23_vertical_slice(spec: S23VerticalBranchSpec, capture_observer: EvaluationCaptureObserver | None = None) -> Any:
     case = build_s23_vertical_case(spec)
-    return run_s23_vertical_case(case)
+    return run_s23_vertical_case(case, capture_observer=capture_observer)
 
 
-def run_s23_vertical_case(case: S23VerticalSliceCase) -> Any:
+def run_s23_vertical_case(case: S23VerticalSliceCase, capture_observer: EvaluationCaptureObserver | None = None) -> Any:
     stages = (
         _Stage("strategy_resolution", _strategy_resolution),
         _Stage("monthly_status_and_branch", _monthly_status_and_branch),
@@ -270,7 +274,9 @@ def run_s23_vertical_case(case: S23VerticalSliceCase) -> Any:
         _Stage("evidence_packet", _evidence_packet),
         _Stage("legacy_comparison", _legacy_comparison),
     )
-    return OfflineStrategyDecisionOrchestrator().evaluate({"case": case}, stages)
+    result = OfflineStrategyDecisionOrchestrator().evaluate({"case": case}, stages)
+    record_s23_capture_safely(capture_observer, result, case=case)
+    return result
 
 
 def build_s23_bull_call_vertical_case() -> S23VerticalSliceCase:

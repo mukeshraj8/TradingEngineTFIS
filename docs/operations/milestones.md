@@ -2,6 +2,20 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 6 implemented a
+  disabled-by-default S23 Call-side evidence capture hook. The insertion point
+  is the S23 vertical adapter boundary after the generic orchestrator returns,
+  so capture can observe the final `TFISDecision`,
+  `TFISDecisionEvidencePacket`, and S23 stage payloads without changing
+  decision authority. Reports are
+  `reports/phase3d/milestone6_s23_capture_hook_summary.md`,
+  `reports/phase3d/milestone6_s23_bull_call_capture_packet.json`,
+  `reports/phase3d/milestone6_s23_bear_call_capture_packet.json`, and
+  `reports/phase3d/milestone6_capture_schema.json`. Supported S23 vertical
+  cases remain `2`; Bull Call and Bear Call evidence classification is
+  `LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT`; capture capability is
+  implemented and disabled by default; real captured packets obtained remain
+  `0`. Runtime impact: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 5 strengthened the two
   supported S23 Call-side vertical cases with checked-in workbook-derived
   legacy fixture evidence. Supported S23 vertical cases remain `2`. Captured
