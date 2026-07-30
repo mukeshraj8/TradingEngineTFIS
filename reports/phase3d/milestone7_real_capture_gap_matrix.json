@@ -1,0 +1,81 @@
+{
+  "derived_fields": [
+    {
+      "classification": "CAPTURED_WITH_DERIVED_FIELDS",
+      "field": "exchange_open_timestamp_from_configured_market_open"
+    },
+    {
+      "classification": "CAPTURED_WITH_DERIVED_FIELDS",
+      "field": "opening_underlying_bar_from_first_capture_window"
+    }
+  ],
+  "evidence_classification": "PARTIAL_CAPTURE",
+  "gaps": [
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "authoritative_s23_call_decision"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "monthly_status"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "completed_historical_references"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "pre_market_option_chain_snapshot"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "previous_selected_contract_high_low_references"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "previous_oi"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "base_entry_from_real_plan"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "target_from_real_plan"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "msl_from_real_plan"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "selected_contract_orpt_quote"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "gap_classification"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "missed_entry_classification"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "recalculation_inputs"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "recalculated_result"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "legacy_authorized_timing"
+    },
+    {
+      "classification": "MISSING_CAPTURED_INPUT",
+      "field": "option_oi_values"
+    }
+  ],
+  "schema_version": "tfis.phase3d.m7.real_capture_gap_matrix.v1",
+  "supplemented_fields": []
+}

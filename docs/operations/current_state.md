@@ -6,6 +6,18 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 7 attempted the first
+  real non-authoritative S23 Call-side capture using the existing
+  `2026-06-05` post-market TradingData session. The packet is classified
+  `PARTIAL_CAPTURE`: real opening/ORPT/RC market observations and a refactored
+  Bull Call shadow result were preserved, but no authoritative S23 Call-side
+  legacy decision output, pre-market S23 plan, Monthly Status, completed
+  historical references, ORPT selected-contract quote, OI values, or
+  recalculation inputs were available from the selected source. Supported S23
+  vertical cases: `2`. Real S23 capture sessions attempted: `1`. Complete
+  real packets obtained: `0`. Partial real packets obtained: `1`.
+  Call-side captured parity cases: `0`. Capture default: `DISABLED`.
+  Refactored execution authority: `NONE`. Runtime impact: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 6 adds the smallest
   disabled-by-default S23 Call-side evaluation capture hook at the S23 vertical
   adapter boundary after the generic offline orchestrator returns. Supported

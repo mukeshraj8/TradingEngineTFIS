@@ -2,6 +2,18 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 7 produced the first real
+  non-authoritative S23 Call-side capture attempt from the existing
+  `2026-06-05` post-market TradingData session. Reports are
+  `reports/phase3d/milestone7_first_real_s23_capture_summary.md`,
+  `reports/phase3d/milestone7_s23_real_capture_packet.json`,
+  `reports/phase3d/milestone7_s23_real_parity.json`, and
+  `reports/phase3d/milestone7_real_capture_gap_matrix.json`. Verdict:
+  `PHASE3D_M7_CONDITIONAL`. Evidence classification: `PARTIAL_CAPTURE`.
+  Supported S23 vertical cases: `2`. Real S23 capture sessions attempted:
+  `1`. Complete real packets obtained: `0`. Partial real packets obtained:
+  `1`. Call-side captured parity cases: `0`. Capture default: `DISABLED`.
+  Refactored execution authority: `NONE`. Runtime impact: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 6 implemented a
   disabled-by-default S23 Call-side evidence capture hook. The insertion point
   is the S23 vertical adapter boundary after the generic orchestrator returns,

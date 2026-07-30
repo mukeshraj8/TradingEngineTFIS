@@ -1,0 +1,2504 @@
+{
+  "authoritative_legacy_result": {
+    "final_decision_status": null,
+    "missing_reason": "The selected operational trade log contains old NIFTY intraday trade checks, not an authoritative S23 Call-side decision packet.",
+    "non_s23_operational_result": {
+      "message": "trade built for SHORT at 23433.80",
+      "timestamp": "2026-06-05 11:18:15"
+    },
+    "s23_call_side_result_present": false,
+    "source": "D:\\TradingData\\logs\\trade\\trade_evaluation_20260605_090537_prod_pid14520.log",
+    "source_type": "authoritative_operational_log"
+  },
+  "carried_position": {
+    "provenance": "No S23 carried-position state artifact was supplied for the selected post-market capture.",
+    "status": "CARRIED_POSITION_NOT_PRESENT"
+  },
+  "decision_runtime_influence": "NONE",
+  "enablement": {
+    "default_capture_state": "DISABLED",
+    "enabled": true,
+    "limited_output_directory": "reports\\phase3d",
+    "limited_session_id": "live_20260605_090537_prod_pid14520",
+    "limited_strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "limited_trading_date": "2026-06-05",
+    "method": "EXPLICIT_SESSION_DEBUG_OVERRIDE",
+    "output_dir": "reports\\phase3d",
+    "reason": "M7 non-authoritative post-market evidence capture from an existing real session.",
+    "session_id": "live_20260605_090537_prod_pid14520",
+    "strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "trading_date": "2026-06-05"
+  },
+  "evidence_classification": "PARTIAL_CAPTURE",
+  "execution_authority": {
+    "can_alter_downstream_permission": false,
+    "can_cancel_order": false,
+    "can_change_broker_state": false,
+    "can_change_quantity": false,
+    "can_influence_reference_runtime": false,
+    "can_modify_order": false,
+    "can_mutate_open_position": false,
+    "can_place_order": false,
+    "refactored_authority": "NONE"
+  },
+  "field_provenance": {
+    "authoritative_legacy_result": "real operational trade_evaluation log, non-S23 output only",
+    "opening_context.option_chain_snapshot": "real option quote archive at RC",
+    "opening_context.underlying_opening_price": "real ticks_context.csv 09:15 window",
+    "orpt_observation.underlying_observation": "real ticks_context.csv ORPT window",
+    "rc_observation.selected_contract_observation": "real option quote archive at RC",
+    "rc_observation.underlying_observation": "real ticks_context.csv RC window",
+    "refactored_shadow_result": "TFISRefactored S23 Bull Call vertical observer, no authority",
+    "source_session": "real D:/TradingData capture manifests and logs"
+  },
+  "missing_or_derived_fields": {
+    "derived": [
+      "exchange_open_timestamp_from_configured_market_open",
+      "opening_underlying_bar_from_first_capture_window"
+    ],
+    "missing": [
+      "authoritative_s23_call_decision",
+      "monthly_status",
+      "completed_historical_references",
+      "pre_market_option_chain_snapshot",
+      "previous_selected_contract_high_low_references",
+      "previous_oi",
+      "base_entry_from_real_plan",
+      "target_from_real_plan",
+      "msl_from_real_plan",
+      "selected_contract_orpt_quote",
+      "gap_classification",
+      "missed_entry_classification",
+      "recalculation_inputs",
+      "recalculated_result",
+      "legacy_authorized_timing",
+      "option_oi_values"
+    ],
+    "supplemented": []
+  },
+  "opening_context": {
+    "abnormal_opening_classification": "MISSING_CAPTURED_INPUT",
+    "exchange_open_timestamp": "2026-06-05T09:15:00+05:30",
+    "gap_classification": "MISSING_CAPTURED_INPUT",
+    "opening_bid_ask_ltp": {
+      "status": "MISSING_CAPTURED_INPUT",
+      "symbol": "NIFTY_20260609_22650_CE"
+    },
+    "opening_oi": null,
+    "opening_timestamp_limitation": "The source does not distinguish official exchange open from first received quote; 09:15 window bar is derived from captured ticks.",
+    "option_chain_snapshot": {
+      "contract_count": 2,
+      "effective_timestamp": "2026-06-05T09:29:59+05:30",
+      "symbols": [
+        "NIFTY_20260609_22650_CE",
+        "NIFTY_20260609_24250_PE"
+      ]
+    },
+    "quote_freshness": {
+      "status": "MISSING_CAPTURED_INPUT"
+    },
+    "selected_contract_opening_quote": {
+      "status": "MISSING_CAPTURED_INPUT",
+      "symbol": "NIFTY_20260609_22650_CE"
+    },
+    "selected_contract_quote": {
+      "ask": 856.0,
+      "bid": 850.25,
+      "ltp": 850.0,
+      "oi": null,
+      "source_symbol": "NSE:NIFTY2660922650CE",
+      "symbol": "NIFTY_20260609_22650_CE",
+      "timestamp": "2026-06-05T09:29:50+05:30",
+      "volume": 325.0
+    },
+    "source_timestamps": {
+      "underlying": "2026-06-05T09:15:00+05:30"
+    },
+    "underlying_opening_price": {
+      "captured_at": "2026-06-05T09:15:00+05:30",
+      "close": 23489.95,
+      "high": 23489.95,
+      "low": 23478.95,
+      "open": 23478.95,
+      "row_count": 9
+    }
+  },
+  "orpt_observation": {
+    "data_freshness": {
+      "age_seconds": 6.0,
+      "status": "FRESH"
+    },
+    "gap_missed_entry_classification": "MISSING_CAPTURED_INPUT",
+    "missing_event_status": "AVAILABLE",
+    "recalculated_result": "MISSING_CAPTURED_INPUT",
+    "recalculation_inputs": "MISSING_CAPTURED_INPUT",
+    "selected_contract_observation": {
+      "ask": 851.3,
+      "bid": 839.9,
+      "ltp": 850.0,
+      "oi": null,
+      "source_symbol": "NSE:NIFTY2660922650CE",
+      "symbol": "NIFTY_20260609_22650_CE",
+      "timestamp": "2026-06-05T09:24:53+05:30",
+      "volume": 325.0
+    },
+    "timestamp": "2026-06-05T09:24:59+05:30",
+    "underlying_observation": {
+      "captured_at": "2026-06-05T09:24:59+05:30",
+      "close": 23451.65,
+      "high": 23458.0,
+      "low": 23445.2,
+      "open": 23455.4,
+      "row_count": 141
+    }
+  },
+  "parity": {
+    "authorized_timing": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "SHADOW_ONLY_NO_AUTHORIZED_EXECUTION_TIME"
+    },
+    "base_entry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "203.5"
+    },
+    "effective_entry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "203.5"
+    },
+    "final_decision_status": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "SHADOW_DECISION_TRADE"
+    },
+    "gap_classification": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "UNAVAILABLE"
+    },
+    "missed_entry_classification": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "NOT_MISSED"
+    },
+    "msl": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 321.0
+    },
+    "oi": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 999999.0
+    },
+    "policy_identities": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": [
+        "legacy.s23.vertical.entry",
+        "legacy.s23.gap_missed_entry.backtest_low_v1"
+      ]
+    },
+    "premium": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 264.0
+    },
+    "recalculated_entry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "203.5"
+    },
+    "rejection_no_trade_reason": {
+      "classification": "NOT_COMPARABLE",
+      "legacy": null,
+      "shadow": null
+    },
+    "selected_contract": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "NIFTY_20260806_22250_CALL"
+    },
+    "selected_expiry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "2026-08-06"
+    },
+    "selected_strike": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 22250.0
+    },
+    "strategy_branch": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    },
+    "target": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 81.4
+    }
+  },
+  "pre_market_plan": {
+    "account_portfolio_logical_reference": "REDACTED",
+    "base_entry": "MISSING_CAPTURED_INPUT",
+    "blocked_reason": "No authoritative S23 Call-side pre-market plan artifact was present in the selected operational session.",
+    "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+    "completed_historical_references": "MISSING_CAPTURED_INPUT",
+    "existing_position_reconciliation_result": "CARRIED_POSITION_NOT_PRESENT",
+    "monthly_status": "MISSING_CAPTURED_INPUT",
+    "option_chain_snapshot_used_before_market_open": "MISSING_CAPTURED_INPUT",
+    "option_expiry_candidates": [
+      "2026-06-09"
+    ],
+    "orpt": "09:24:59",
+    "plan_status": "PARTIAL",
+    "preliminary_msl_sl": "MISSING_CAPTURED_INPUT",
+    "preliminary_target": "MISSING_CAPTURED_INPUT",
+    "previous_oi_and_unit": "MISSING_CAPTURED_INPUT",
+    "previous_selected_contract_high_low_references": "MISSING_CAPTURED_INPUT",
+    "rc_time": "09:29:59",
+    "selected_contract_or_candidate_set": [
+      "NIFTY_20260609_22650_CE"
+    ],
+    "strategy_identity": "S23",
+    "strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "strategy_version": "1.0.0",
+    "trading_date": "2026-06-05"
+  },
+  "provenance": {
+    "capture_classification_reason": "Real session observations were captured, but authoritative S23 Call-side decision output and several S23 rule inputs are absent.",
+    "capture_created_by": "tmp/generate_phase3d_m7_reports.py",
+    "capture_timestamp": "2026-07-30T10:23:57.945951"
+  },
+  "rc_observation": {
+    "data_freshness": {
+      "age_seconds": 9.0,
+      "status": "FRESH"
+    },
+    "gap_missed_entry_classification": "MISSING_CAPTURED_INPUT",
+    "missing_event_status": "AVAILABLE",
+    "rc_applicability": "APPLICABLE_BY_S23_CONFIG_ENTRY_RECALCULATION_TIME",
+    "recalculated_result": "MISSING_CAPTURED_INPUT",
+    "recalculation_inputs": "MISSING_CAPTURED_INPUT",
+    "selected_contract_observation": {
+      "ask": 856.0,
+      "bid": 850.25,
+      "ltp": 850.0,
+      "oi": null,
+      "source_symbol": "NSE:NIFTY2660922650CE",
+      "symbol": "NIFTY_20260609_22650_CE",
+      "timestamp": "2026-06-05T09:29:50+05:30",
+      "volume": 325.0
+    },
+    "timestamp": "2026-06-05T09:29:59+05:30",
+    "underlying_observation": {
+      "captured_at": "2026-06-05T09:29:59+05:30",
+      "close": 23462.05,
+      "high": 23465.45,
+      "low": 23453.95,
+      "open": 23456.1,
+      "row_count": 144
+    }
+  },
+  "refactored_shadow_capture_packet": {
+    "contract_selection": {
+      "expiry_candidates": [
+        "2026-08-06"
+      ],
+      "non_selected_rejection_reasons": [],
+      "oi_units": "contracts",
+      "oi_values": {
+        "selected_contract": 999999.0
+      },
+      "option_chain_snapshot": {
+        "contracts": [
+          {
+            "ask": 265.0,
+            "bid": 263.0,
+            "expiry": "2026-08-06",
+            "ltp": 264.0,
+            "oi": 999999.0,
+            "option_type": "CALL",
+            "strike": 22250.0,
+            "symbol": "NIFTY_20260806_22250_CALL",
+            "volume": null
+          }
+        ],
+        "envelope": {
+          "captured_at": "2026-07-30T09:29:59+05:30",
+          "data_quality_flags": [],
+          "effective_timestamp": "2026-07-30T09:29:59+05:30",
+          "event_type": "OPTION_CHAIN_SNAPSHOT",
+          "integrity_hash": null,
+          "normalized_by": "phase3d_m3",
+          "session_date": "2026-07-30",
+          "source_id": "phase3d_m3",
+          "source_sequence": null,
+          "source_type": "synthetic",
+          "synthetic_fixture": true,
+          "timezone": "Asia/Kolkata"
+        },
+        "expiry": "2026-08-06",
+        "underlying_symbol": "NIFTY"
+      },
+      "premium_fields": {
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003,
+        "selected_ask": null,
+        "selected_bid": null,
+        "selected_ltp": 264.0
+      },
+      "qualification_outcomes": [
+        {
+          "contract": "NIFTY_20260806_22250_CALL",
+          "reason": "Selected first strike meeting ideal premium in rule-sheet search order.",
+          "status": "QUALIFIED"
+        }
+      ],
+      "quote_timestamps": {
+        "selected_contract": "2026-07-30T09:29:59+05:30"
+      },
+      "selected_contract": "NIFTY_20260806_22250_CALL",
+      "selected_contract_quote": {
+        "ask": null,
+        "bid": null,
+        "ltp": 264.0,
+        "oi": 999999.0,
+        "symbol": "NIFTY_20260806_22250_CALL",
+        "timestamp": "2026-07-30T09:29:59+05:30"
+      },
+      "selected_expiry": "2026-08-06",
+      "selected_strike": 22250.0,
+      "strike_candidates": [
+        22250.0,
+        21950.0
+      ]
+    },
+    "decision": {
+      "aps_policy": null,
+      "compatibility_payload": {
+        "vertical_slice": "S23_BULL_CALL"
+      },
+      "configuration_versions": {
+        "resolved_configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1"
+      },
+      "data_versions": {
+        "source": "synthetic"
+      },
+      "decided_at": "2026-07-30T09:29:59+05:30",
+      "decision_id": "tfis-decision-phase3d-m3-s23-bull-call",
+      "direction": "SHORT",
+      "entry_calculation": {
+        "evidence": {
+          "contract": "entry",
+          "engine_id": "entry",
+          "evidence": {
+            "base_entry": {
+              "component_evidence": [
+                {
+                  "component_id": "legacy_entry",
+                  "evidence": {},
+                  "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                  "intermediate_result": null,
+                  "operand_role": "LEFT_OPERAND",
+                  "operand_source": "SELECTED_OPTION_CONTRACT",
+                  "operator": "SUPPLIED_VALUE",
+                  "output_precision": null,
+                  "percentage_base_reference_id": null,
+                  "percentage_value": null,
+                  "reference_id": "legacy_entry_value",
+                  "requirement_reference": null,
+                  "rounding_rule": "NONE"
+                }
+              ],
+              "downstream_permission": "PERMITTED",
+              "failures": [],
+              "formula_descriptor": {
+                "components": [
+                  {
+                    "component_id": "legacy_entry",
+                    "evidence": {},
+                    "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                    "intermediate_result": null,
+                    "operand_role": "LEFT_OPERAND",
+                    "operand_source": "SELECTED_OPTION_CONTRACT",
+                    "operator": "SUPPLIED_VALUE",
+                    "output_precision": null,
+                    "percentage_base_reference_id": null,
+                    "percentage_value": null,
+                    "reference_id": "legacy_entry_value",
+                    "requirement_reference": null,
+                    "rounding_rule": "NONE"
+                  }
+                ],
+                "description": null,
+                "formula_family": "legacy_s23_option_sell_entry",
+                "formula_id": "s23_bull_call_entry",
+                "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                "requirement_references": []
+              },
+              "provenance": {
+                "adapter": "S23VerticalEntryPolicy"
+              },
+              "quality": "VALID",
+              "source": "BASE_POLICY",
+              "trigger_condition": {
+                "comparison_value": "203.5",
+                "order_side": "SELL",
+                "position_intent": "SHORT_OPTION",
+                "reference_id": "legacy_entry_value",
+                "trigger_direction": "PRICE_AT_OR_BELOW"
+              },
+              "validation": {
+                "issues": [],
+                "unresolved_semantics": []
+              },
+              "value": "203.5",
+              "warnings": []
+            },
+            "branch": {
+              "branch_label": null,
+              "instrument_type": "SELECTED_OPTION_CONTRACT",
+              "market_bias": "BULLISH",
+              "option_right": "CALL",
+              "order_side": "SELL",
+              "position_intent": "SHORT_OPTION",
+              "product": "OPTION_SELLING",
+              "provenance": {},
+              "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+              "trigger_direction": "PRICE_AT_OR_BELOW"
+            },
+            "deterministic_hash": "97ec8b9baaa61ef7700f3808b732a25b461904c5449d6a381539e1f789ca3d32",
+            "effective_entry": {
+              "base_candidate": {
+                "component_evidence": [
+                  {
+                    "component_id": "legacy_entry",
+                    "evidence": {},
+                    "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                    "intermediate_result": null,
+                    "operand_role": "LEFT_OPERAND",
+                    "operand_source": "SELECTED_OPTION_CONTRACT",
+                    "operator": "SUPPLIED_VALUE",
+                    "output_precision": null,
+                    "percentage_base_reference_id": null,
+                    "percentage_value": null,
+                    "reference_id": "legacy_entry_value",
+                    "requirement_reference": null,
+                    "rounding_rule": "NONE"
+                  }
+                ],
+                "downstream_permission": "PERMITTED",
+                "failures": [],
+                "formula_descriptor": {
+                  "components": [
+                    {
+                      "component_id": "legacy_entry",
+                      "evidence": {},
+                      "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                      "intermediate_result": null,
+                      "operand_role": "LEFT_OPERAND",
+                      "operand_source": "SELECTED_OPTION_CONTRACT",
+                      "operator": "SUPPLIED_VALUE",
+                      "output_precision": null,
+                      "percentage_base_reference_id": null,
+                      "percentage_value": null,
+                      "reference_id": "legacy_entry_value",
+                      "requirement_reference": null,
+                      "rounding_rule": "NONE"
+                    }
+                  ],
+                  "description": null,
+                  "formula_family": "legacy_s23_option_sell_entry",
+                  "formula_id": "s23_bull_call_entry",
+                  "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                  "requirement_references": []
+                },
+                "provenance": {
+                  "adapter": "S23VerticalEntryPolicy"
+                },
+                "quality": "VALID",
+                "source": "BASE_POLICY",
+                "trigger_condition": {
+                  "comparison_value": "203.5",
+                  "order_side": "SELL",
+                  "position_intent": "SHORT_OPTION",
+                  "reference_id": "legacy_entry_value",
+                  "trigger_direction": "PRICE_AT_OR_BELOW"
+                },
+                "validation": {
+                  "issues": [],
+                  "unresolved_semantics": []
+                },
+                "value": "203.5",
+                "warnings": []
+              },
+              "downstream_permission": "PERMITTED",
+              "failures": [],
+              "gap_missed_entry_status": "NOT_MISSED",
+              "provenance": {
+                "adapter": "S23VerticalEntryPolicy"
+              },
+              "quality": "VALID",
+              "recalculation_status": "NOT_REQUIRED",
+              "source": "BASE_POLICY",
+              "status": "ENTRY_NOT_MISSED",
+              "trigger_condition": {
+                "comparison_value": "203.5",
+                "order_side": "SELL",
+                "position_intent": "SHORT_OPTION",
+                "reference_id": "legacy_entry_value",
+                "trigger_direction": "PRICE_AT_OR_BELOW"
+              },
+              "validation": {
+                "issues": [],
+                "unresolved_semantics": []
+              },
+              "value": "203.5",
+              "warnings": []
+            },
+            "failures": [],
+            "formula_descriptor": {
+              "components": [
+                {
+                  "component_id": "legacy_entry",
+                  "evidence": {},
+                  "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                  "intermediate_result": null,
+                  "operand_role": "LEFT_OPERAND",
+                  "operand_source": "SELECTED_OPTION_CONTRACT",
+                  "operator": "SUPPLIED_VALUE",
+                  "output_precision": null,
+                  "percentage_base_reference_id": null,
+                  "percentage_value": null,
+                  "reference_id": "legacy_entry_value",
+                  "requirement_reference": null,
+                  "rounding_rule": "NONE"
+                }
+              ],
+              "description": null,
+              "formula_family": "legacy_s23_option_sell_entry",
+              "formula_id": "s23_bull_call_entry",
+              "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+              "requirement_references": []
+            },
+            "gap_missed_entry_dependency": {
+              "downstream_action": "NONE",
+              "missed_entry": "NOT_MISSED",
+              "recalculation": "NOT_REQUIRED",
+              "required": true,
+              "status": "PASSED"
+            },
+            "input_references": [
+              {
+                "effective_date": "2026-07-30",
+                "event_timestamp": "2026-07-30T09:29:59+05:30",
+                "instrument_id": "NIFTY_20260806_22250_CALL",
+                "lookback": "LEGACY",
+                "product": "OPTION_SELLING",
+                "provenance": {
+                  "source": "legacy_entry_adapter"
+                },
+                "quality": "VALID",
+                "reference_id": "legacy_entry_value",
+                "reference_type": "OPT_PRV_REFERENCE",
+                "requirement": "REQUIRED",
+                "segment": "OPTIONS_SELL",
+                "source": "SELECTED_OPTION_CONTRACT",
+                "value": "203.5",
+                "value_type": "PRICE"
+              },
+              {
+                "effective_date": "2026-07-30",
+                "event_timestamp": "2026-07-30T09:29:59+05:30",
+                "instrument_id": "NIFTY_20260806_22250_CALL",
+                "lookback": "STATIC",
+                "product": "OPTION_SELLING",
+                "provenance": {
+                  "source": "contract_selection"
+                },
+                "quality": "VALID",
+                "reference_id": "final_strike",
+                "reference_type": "STRIKE",
+                "requirement": "REQUIRED",
+                "segment": "OPTIONS_SELL",
+                "source": "FINAL_STRIKE_VALUE",
+                "value": "22250.0",
+                "value_type": "STRIKE"
+              }
+            ],
+            "policy_key": "legacy.s23.vertical.entry",
+            "product": "OPTION_SELLING",
+            "provenance": {
+              "source": "phase3d_m3_s23_vertical"
+            },
+            "quality": "VALID",
+            "resolved_instrument": {
+              "exchange": null,
+              "expiry": "2026-08-06",
+              "metadata": {
+                "ltp": 264.0,
+                "oi": 999999.0,
+                "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+              },
+              "option_type": "CALL",
+              "product_type": "OPTION_SELLING",
+              "segment": "OPTIONS_SELL",
+              "strike": 22250.0,
+              "symbol": "NIFTY_20260806_22250_CALL",
+              "token": "REDACTED"
+            },
+            "strategy_identity": {
+              "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+              "evaluation_id": "eval-0fd2f2e64d476ce3eef14849",
+              "position_cycle_id": "cycle-f71eb183bd402473c3617f71",
+              "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+              "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+              "strategy_version": "1.0.0"
+            },
+            "validation": {
+              "issues": [],
+              "unresolved_semantics": []
+            },
+            "warnings": []
+          }
+        },
+        "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+        "inputs": {},
+        "name": "phase3d.entry.effective",
+        "resolved_formula": null,
+        "result": 203.5
+      },
+      "evaluation_id": "phase3d-m3-s23-bull-call",
+      "execution_side": "SELL",
+      "final_exit_rule": {},
+      "gap_result": {
+        "classification": "UNAVAILABLE",
+        "direction": "UNKNOWN",
+        "quality": "VALID"
+      },
+      "intermediate_calculation_evidence": {
+        "base_entry_hash": "07ccd90f47ca16ab54d1c3f05c1b1bb047a3ea043e162dd168c371723d2dd7ff",
+        "effective_entry_hash": "97ec8b9baaa61ef7700f3808b732a25b461904c5449d6a381539e1f789ca3d32",
+        "pipeline": "phase3d_m3_s23_vertical"
+      },
+      "lots": 1,
+      "missed_entry_result": {
+        "entry_reference_value": "203.5",
+        "observed_value": "260",
+        "status": "NOT_MISSED"
+      },
+      "monthly_status_branch": "BULL",
+      "msl_policy": {
+        "evidence": {
+          "activation_timing": "INITIAL",
+          "applicable": true,
+          "calculated_value": 321.0,
+          "direction": "SHORT",
+          "evaluated_at": "2026-07-30T09:29:59+05:30",
+          "evidence": {
+            "adapter": "S23MSLPolicyAdapter",
+            "trade_plan": {
+              "end_strike": 21950,
+              "entry_price": 203.5,
+              "ideal_premium": 264.0,
+              "minimum_premium": 198.00000000000003,
+              "option_type": "CALL",
+              "start_strike": 22250,
+              "stoploss_price": 321.0,
+              "strategy_code": "S23",
+              "symbol": "NIFTY",
+              "target_price": 81.4
+            }
+          },
+          "formula": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+          "inputs": {
+            "entry_result": {
+              "applicable": true,
+              "calculated_value": 203.5,
+              "entry_value": 203.5,
+              "evaluated_at": "2026-07-30T09:29:59+05:30",
+              "evidence": {
+                "adapter": "S23EntryPolicyAdapter",
+                "formulas": {
+                  "end_strike": "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)",
+                  "entry": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                  "ideal_premium": "PRV_3DLL * PARAM(ideal_premium_pct)%",
+                  "minimum_premium": "PRV_3DLL * PARAM(minimum_premium_pct)%",
+                  "start_strike": "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)",
+                  "stoploss": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+                  "target": "ENTRY - PARAM(target_pct)%"
+                },
+                "parameters": {
+                  "entry_discount_pct": 7.5,
+                  "ideal_premium_pct": 1.2,
+                  "minimum_premium_pct": 0.9,
+                  "sl_entry_pct": 60.0,
+                  "sl_reference_pct": 7.0,
+                  "strike_buffer_pct": 1.2,
+                  "strike_step": 50.0,
+                  "target_pct": 60.0
+                },
+                "trade_plan": {
+                  "end_strike": 21950,
+                  "entry_price": 203.5,
+                  "ideal_premium": 264.0,
+                  "minimum_premium": 198.00000000000003,
+                  "option_type": "CALL",
+                  "start_strike": 22250,
+                  "stoploss_price": 321.0,
+                  "strategy_code": "S23",
+                  "symbol": "NIFTY",
+                  "target_price": 81.4
+                }
+              },
+              "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+              "formula_trace": {
+                "evidence": {
+                  "adapter": "S23EntryPolicyAdapter",
+                  "formulas": {
+                    "end_strike": "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)",
+                    "entry": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                    "ideal_premium": "PRV_3DLL * PARAM(ideal_premium_pct)%",
+                    "minimum_premium": "PRV_3DLL * PARAM(minimum_premium_pct)%",
+                    "start_strike": "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)",
+                    "stoploss": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+                    "target": "ENTRY - PARAM(target_pct)%"
+                  },
+                  "parameters": {
+                    "entry_discount_pct": 7.5,
+                    "ideal_premium_pct": 1.2,
+                    "minimum_premium_pct": 0.9,
+                    "sl_entry_pct": 60.0,
+                    "sl_reference_pct": 7.0,
+                    "strike_buffer_pct": 1.2,
+                    "strike_step": 50.0,
+                    "target_pct": 60.0
+                  },
+                  "trade_plan": {
+                    "end_strike": 21950,
+                    "entry_price": 203.5,
+                    "ideal_premium": 264.0,
+                    "minimum_premium": 198.00000000000003,
+                    "option_type": "CALL",
+                    "start_strike": 22250,
+                    "stoploss_price": 321.0,
+                    "strategy_code": "S23",
+                    "symbol": "NIFTY",
+                    "target_price": 81.4
+                  }
+                },
+                "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                "inputs": {
+                  "market_structure_references": {
+                    "current_day_high": 22400.0,
+                    "current_day_low": 22100.0,
+                    "d2hh": 22500.0,
+                    "d2ll": 21900.0,
+                    "d3hh": 22600.0,
+                    "d3ll": 22000.0
+                  },
+                  "runtime_values": {
+                    "ENTRY": 200.0,
+                    "OPT_LEVELS": {
+                      "OPT_PRV_2DHH": 300.0,
+                      "OPT_PRV_2DLL": 210.0,
+                      "OPT_PRV_3DHH": 330.0,
+                      "OPT_PRV_3DLL": 220.0
+                    }
+                  }
+                },
+                "name": "S23.entry",
+                "resolved_formula": null,
+                "result": 203.5
+              },
+              "inputs": {
+                "market_structure_references": {
+                  "current_day_high": 22400.0,
+                  "current_day_low": 22100.0,
+                  "d2hh": 22500.0,
+                  "d2ll": 21900.0,
+                  "d3hh": 22600.0,
+                  "d3ll": 22000.0
+                },
+                "runtime_values": {
+                  "ENTRY": 200.0,
+                  "OPT_LEVELS": {
+                    "OPT_PRV_2DHH": 300.0,
+                    "OPT_PRV_2DLL": 210.0,
+                    "OPT_PRV_3DHH": 330.0,
+                    "OPT_PRV_3DLL": 220.0
+                  }
+                }
+              },
+              "intermediate_values": {
+                "end_strike": 21950,
+                "ideal_premium": 264.0,
+                "minimum_premium": 198.00000000000003,
+                "start_strike": 22250,
+                "stoploss_price": 321.0,
+                "target_price": 81.4
+              },
+              "policy_name": "legacy.s23.option_selling.entry",
+              "quality_status": "VALID",
+              "reason": "Legacy strategy formulas evaluated through StrategyEvaluator.",
+              "reference": null,
+              "requirement_id": "AB16-ENTRY",
+              "status": "PASSED"
+            }
+          },
+          "intermediate_values": {
+            "stoploss_price": 321.0
+          },
+          "policy_name": "legacy.s23.option_selling.msl",
+          "quality_status": "VALID",
+          "quantity": 50,
+          "quantity_pct": null,
+          "reason": "Legacy MSL/stoploss preserved from StrategyEvaluator trade plan.",
+          "reference": null,
+          "requirement_id": "AB16-MSL",
+          "status": "PASSED",
+          "stop_price": 321.0
+        },
+        "formula_trace": null,
+        "policy_name": "legacy.s23.option_selling.msl",
+        "result": 321.0
+      },
+      "product_type": "OPTION_SELLING",
+      "quantity": 50,
+      "rejection_reason": null,
+      "rejection_reason_code": null,
+      "resolved_configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+      "selected_instrument": {
+        "exchange": null,
+        "expiry": "2026-08-06",
+        "metadata": {
+          "ltp": 264.0,
+          "oi": 999999.0,
+          "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+        },
+        "option_type": "CALL",
+        "product_type": "OPTION_SELLING",
+        "segment": "OPTIONS_SELL",
+        "strike": 22250.0,
+        "symbol": "NIFTY_20260806_22250_CALL",
+        "token": "REDACTED"
+      },
+      "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_code": "S23",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family_id": "S23",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version_identity": "1.0.0",
+      "target_policy": {
+        "evidence": {
+          "applicable": true,
+          "calculated_value": 81.4,
+          "evaluated_at": "2026-07-30T09:29:59+05:30",
+          "evidence": {
+            "adapter": "S23TargetPolicyAdapter",
+            "trade_plan": {
+              "end_strike": 21950,
+              "entry_price": 203.5,
+              "ideal_premium": 264.0,
+              "minimum_premium": 198.00000000000003,
+              "option_type": "CALL",
+              "start_strike": 22250,
+              "stoploss_price": 321.0,
+              "strategy_code": "S23",
+              "symbol": "NIFTY",
+              "target_price": 81.4
+            }
+          },
+          "formula": "ENTRY - PARAM(target_pct)%",
+          "inputs": {
+            "entry_result": {
+              "applicable": true,
+              "calculated_value": 203.5,
+              "entry_value": 203.5,
+              "evaluated_at": "2026-07-30T09:29:59+05:30",
+              "evidence": {
+                "adapter": "S23EntryPolicyAdapter",
+                "formulas": {
+                  "end_strike": "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)",
+                  "entry": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                  "ideal_premium": "PRV_3DLL * PARAM(ideal_premium_pct)%",
+                  "minimum_premium": "PRV_3DLL * PARAM(minimum_premium_pct)%",
+                  "start_strike": "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)",
+                  "stoploss": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+                  "target": "ENTRY - PARAM(target_pct)%"
+                },
+                "parameters": {
+                  "entry_discount_pct": 7.5,
+                  "ideal_premium_pct": 1.2,
+                  "minimum_premium_pct": 0.9,
+                  "sl_entry_pct": 60.0,
+                  "sl_reference_pct": 7.0,
+                  "strike_buffer_pct": 1.2,
+                  "strike_step": 50.0,
+                  "target_pct": 60.0
+                },
+                "trade_plan": {
+                  "end_strike": 21950,
+                  "entry_price": 203.5,
+                  "ideal_premium": 264.0,
+                  "minimum_premium": 198.00000000000003,
+                  "option_type": "CALL",
+                  "start_strike": 22250,
+                  "stoploss_price": 321.0,
+                  "strategy_code": "S23",
+                  "symbol": "NIFTY",
+                  "target_price": 81.4
+                }
+              },
+              "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+              "formula_trace": {
+                "evidence": {
+                  "adapter": "S23EntryPolicyAdapter",
+                  "formulas": {
+                    "end_strike": "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)",
+                    "entry": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                    "ideal_premium": "PRV_3DLL * PARAM(ideal_premium_pct)%",
+                    "minimum_premium": "PRV_3DLL * PARAM(minimum_premium_pct)%",
+                    "start_strike": "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)",
+                    "stoploss": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+                    "target": "ENTRY - PARAM(target_pct)%"
+                  },
+                  "parameters": {
+                    "entry_discount_pct": 7.5,
+                    "ideal_premium_pct": 1.2,
+                    "minimum_premium_pct": 0.9,
+                    "sl_entry_pct": 60.0,
+                    "sl_reference_pct": 7.0,
+                    "strike_buffer_pct": 1.2,
+                    "strike_step": 50.0,
+                    "target_pct": 60.0
+                  },
+                  "trade_plan": {
+                    "end_strike": 21950,
+                    "entry_price": 203.5,
+                    "ideal_premium": 264.0,
+                    "minimum_premium": 198.00000000000003,
+                    "option_type": "CALL",
+                    "start_strike": 22250,
+                    "stoploss_price": 321.0,
+                    "strategy_code": "S23",
+                    "symbol": "NIFTY",
+                    "target_price": 81.4
+                  }
+                },
+                "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                "inputs": {
+                  "market_structure_references": {
+                    "current_day_high": 22400.0,
+                    "current_day_low": 22100.0,
+                    "d2hh": 22500.0,
+                    "d2ll": 21900.0,
+                    "d3hh": 22600.0,
+                    "d3ll": 22000.0
+                  },
+                  "runtime_values": {
+                    "ENTRY": 200.0,
+                    "OPT_LEVELS": {
+                      "OPT_PRV_2DHH": 300.0,
+                      "OPT_PRV_2DLL": 210.0,
+                      "OPT_PRV_3DHH": 330.0,
+                      "OPT_PRV_3DLL": 220.0
+                    }
+                  }
+                },
+                "name": "S23.entry",
+                "resolved_formula": null,
+                "result": 203.5
+              },
+              "inputs": {
+                "market_structure_references": {
+                  "current_day_high": 22400.0,
+                  "current_day_low": 22100.0,
+                  "d2hh": 22500.0,
+                  "d2ll": 21900.0,
+                  "d3hh": 22600.0,
+                  "d3ll": 22000.0
+                },
+                "runtime_values": {
+                  "ENTRY": 200.0,
+                  "OPT_LEVELS": {
+                    "OPT_PRV_2DHH": 300.0,
+                    "OPT_PRV_2DLL": 210.0,
+                    "OPT_PRV_3DHH": 330.0,
+                    "OPT_PRV_3DLL": 220.0
+                  }
+                }
+              },
+              "intermediate_values": {
+                "end_strike": 21950,
+                "ideal_premium": 264.0,
+                "minimum_premium": 198.00000000000003,
+                "start_strike": 22250,
+                "stoploss_price": 321.0,
+                "target_price": 81.4
+              },
+              "policy_name": "legacy.s23.option_selling.entry",
+              "quality_status": "VALID",
+              "reason": "Legacy strategy formulas evaluated through StrategyEvaluator.",
+              "reference": null,
+              "requirement_id": "AB16-ENTRY",
+              "status": "PASSED"
+            }
+          },
+          "intermediate_values": {
+            "target_price": 81.4
+          },
+          "policy_name": "legacy.s23.option_selling.target",
+          "quality_status": "VALID",
+          "reason": "Legacy single target preserved from StrategyEvaluator trade plan.",
+          "reference": null,
+          "requirement_id": "AB16-TARGET",
+          "status": "PASSED",
+          "targets": [
+            {
+              "evidence": {
+                "source": "StrategyEvaluator.trade_plan.target_price"
+              },
+              "formula": "ENTRY - PARAM(target_pct)%",
+              "order": 1,
+              "quantity": 50,
+              "quantity_pct": null,
+              "reference": null,
+              "target_price": 81.4
+            }
+          ]
+        },
+        "formula_trace": null,
+        "policy_name": "legacy.s23.option_selling.target",
+        "result": 81.4
+      },
+      "trade_result": "TRADE",
+      "tsl_policy": null
+    },
+    "decision_evidence_packet": {
+      "audit": {
+        "compatibility_payload": {
+          "label": "PHASE3D_M3_S23_BULL_CALL"
+        },
+        "data_quality_warnings": [],
+        "evidence_classifications": [
+          "SYNTHETIC"
+        ],
+        "formula_expressions": [
+          [
+            "entry",
+            "OPT_PRV_3DLL - PARAM(entry_discount_pct)%"
+          ],
+          [
+            "target",
+            "ENTRY - PARAM(target_pct)%"
+          ],
+          [
+            "stoploss",
+            "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)"
+          ]
+        ],
+        "intermediate_values": [
+          [
+            "base_entry",
+            {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "203.5"
+            }
+          ],
+          [
+            "effective_entry",
+            {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "203.5"
+            }
+          ]
+        ],
+        "policy_keys": [
+          [
+            "entry",
+            "legacy.s23.vertical.entry"
+          ],
+          [
+            "gap_missed_entry",
+            "legacy.s23.gap_missed_entry.backtest_low_v1"
+          ]
+        ],
+        "requirement_ids": [
+          "AB16-ENTRY",
+          "AB16-CONTRACT",
+          "AB16-TARGET",
+          "AB16-MSL"
+        ]
+      },
+      "calculated_decision": {
+        "aps_plan": {
+          "availability": "NOT_APPLICABLE",
+          "provenance": "NOT_APPLICABLE",
+          "source": null,
+          "value": null
+        },
+        "direction": "SHORT",
+        "entry": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "203.5"
+        },
+        "execution_side": "SELL",
+        "final_reason": "S23 Bull Call vertical slice expected TRADE.",
+        "lots": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "1"
+        },
+        "msl": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "321.0"
+        },
+        "quantity": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "50"
+        },
+        "targets": [
+          {
+            "availability": "AVAILABLE",
+            "provenance": "SYNTHETIC",
+            "source": "synthetic",
+            "value": "81.4"
+          }
+        ],
+        "trade_result": "TRADE",
+        "tsl_plan": {
+          "availability": "NOT_APPLICABLE",
+          "provenance": "NOT_APPLICABLE",
+          "source": null,
+          "value": null
+        }
+      },
+      "entry": {
+        "base_entry": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "203.5"
+        },
+        "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "deterministic_hash": "97ec8b9baaa61ef7700f3808b732a25b461904c5449d6a381539e1f789ca3d32",
+        "effective_entry": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "203.5"
+        },
+        "effective_entry_source": "BASE_POLICY",
+        "engine_id": "entry",
+        "failures": [],
+        "formula_components": [],
+        "formula_reference": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+        "gap_missed_entry_dependency": {
+          "missed_entry": "NOT_MISSED"
+        },
+        "input_references": [
+          [
+            "legacy_entry_value",
+            {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "203.5"
+            }
+          ]
+        ],
+        "intermediate_values": [],
+        "policy_key": "legacy.s23.vertical.entry",
+        "product": "OPTION_SELLING",
+        "profile": "phase3d_m3",
+        "provenance": {
+          "source": "phase3d_m3"
+        },
+        "quality": "VALID",
+        "selected_or_resolved_instrument": "NIFTY_20260806_22250_CALL",
+        "trigger_condition": {
+          "trigger_direction": "PRICE_AT_OR_BELOW"
+        },
+        "validation": [],
+        "warnings": []
+      },
+      "gap_missed_entry": {
+        "business_engine_fragment": null,
+        "formulas": [
+          "S23_ORPT_RC_COMPATIBILITY"
+        ],
+        "gap_classification": "UNAVAILABLE",
+        "intermediate_values": [],
+        "missed_entry_classification": "NOT_MISSED",
+        "opening_price": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22300"
+        },
+        "orpt_observation": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "260"
+        },
+        "rc_observation": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "252"
+        },
+        "recalculation_branch": "NOT_REQUIRED",
+        "reference_price": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22400"
+        }
+      },
+      "identity": {
+        "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+        "configuration_version": "1.0.0",
+        "evaluation_id": "phase3d-m3-s23-bull-call",
+        "evaluation_timestamp": "2026-07-30T09:29:59+05:30",
+        "event_timestamp": "2026-07-30T09:29:59+05:30",
+        "packet_id": "SYNTHETIC_GOLDEN:S23:BULL_CALL:PHASE3D_M3",
+        "packet_schema_version": "tfis.decision_evidence_packet.v1",
+        "processing_timestamp": "2026-07-30T09:30:00+05:30",
+        "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "strategy_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "trading_date": "2026-07-30"
+      },
+      "instrument_product": {
+        "contract_availability": "AVAILABLE",
+        "contract_identity": {
+          "exchange": null,
+          "expiry": "2026-08-06",
+          "metadata": {
+            "ltp": 264.0,
+            "oi": 999999.0,
+            "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+          },
+          "option_type": "CALL",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 22250.0,
+          "symbol": "NIFTY_20260806_22250_CALL",
+          "token": "REDACTED"
+        },
+        "expiry": "2026-08-06",
+        "price_source_identity": "synthetic:nifty_spot",
+        "product_type": "OPTION_SELLING",
+        "rollover_context": "T_MINUS_1_NEXT_WEEKLY_IF_EXPIRY_RISK",
+        "underlying_identity": "NSE:NIFTY"
+      },
+      "market_structure": {
+        "current_day_high": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22400.0"
+        },
+        "current_day_low": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22100.0"
+        },
+        "included_candle_dates": [
+          "2026-07-27",
+          "2026-07-28",
+          "2026-07-29"
+        ],
+        "provenance": "SYNTHETIC",
+        "prv_1d_hh": {
+          "availability": "NOT_APPLICABLE",
+          "provenance": "NOT_APPLICABLE",
+          "source": null,
+          "value": null
+        },
+        "prv_1d_ll": {
+          "availability": "NOT_APPLICABLE",
+          "provenance": "NOT_APPLICABLE",
+          "source": null,
+          "value": null
+        },
+        "prv_2d_hh": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22500.0"
+        },
+        "prv_2d_ll": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "21900.0"
+        },
+        "prv_3d_hh": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22600.0"
+        },
+        "prv_3d_ll": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22000.0"
+        },
+        "prv_4d_hh": {
+          "availability": "NOT_APPLICABLE",
+          "provenance": "NOT_APPLICABLE",
+          "source": null,
+          "value": null
+        },
+        "prv_4d_ll": {
+          "availability": "NOT_APPLICABLE",
+          "provenance": "NOT_APPLICABLE",
+          "source": null,
+          "value": null
+        },
+        "quality": "VALID",
+        "source_contract": "synthetic:nifty_spot"
+      },
+      "monthly_status": {
+        "cmh": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "24750"
+        },
+        "cml": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "23950"
+        },
+        "cwh": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "24550"
+        },
+        "cwl": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "23820"
+        },
+        "parameter_a_pct": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "0.75"
+        },
+        "parameter_b_pct": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "0.75"
+        },
+        "parameter_c_pct": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "0.15"
+        },
+        "pmh": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "24900"
+        },
+        "pml": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "24000"
+        },
+        "previous_persisted_status": "BULL",
+        "pwh": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "24680"
+        },
+        "pwl": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "23840"
+        },
+        "resolved_current_status": "BULL",
+        "status_evidence": "synthetic monthly status",
+        "status_quality": "VALID",
+        "transition_condition": "NO_TRANSITION",
+        "transition_reason": "Synthetic BULL status."
+      },
+      "option_chain": {
+        "availability": "AVAILABLE",
+        "candidates": [
+          {
+            "ask": {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "265.0"
+            },
+            "bid": {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "263.0"
+            },
+            "contract_identity": {
+              "exchange": null,
+              "expiry": "2026-08-06",
+              "metadata": {
+                "ltp": 264.0,
+                "oi": 999999.0,
+                "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+              },
+              "option_type": "CALL",
+              "product_type": "OPTION_SELLING",
+              "segment": "OPTIONS_SELL",
+              "strike": 22250.0,
+              "symbol": "NIFTY_20260806_22250_CALL",
+              "token": "REDACTED"
+            },
+            "expiry": "2026-08-06",
+            "freshness_seconds": "0",
+            "ltp": {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "264.0"
+            },
+            "oi": {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "999999.0"
+            },
+            "option_type": "CALL",
+            "quality": "VALID",
+            "quote_timestamp": "2026-07-30T09:29:59+05:30",
+            "strike": {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "22250.0"
+            }
+          }
+        ],
+        "rejected_candidate_reasons": []
+      },
+      "option_product_references": {
+        "availability": "AVAILABLE",
+        "expiries_to_check": 1,
+        "expiry_candidates": [
+          "2026-08-06"
+        ],
+        "ideal_premium": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "264.0"
+        },
+        "minimum_oi": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "32500"
+        },
+        "minimum_premium": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "198.00000000000003"
+        },
+        "option_reference_values": [
+          [
+            "OPT_PRV_2DHH",
+            {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "300.0"
+            }
+          ],
+          [
+            "OPT_PRV_2DLL",
+            {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "210.0"
+            }
+          ],
+          [
+            "OPT_PRV_3DHH",
+            {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "330.0"
+            }
+          ],
+          [
+            "OPT_PRV_3DLL",
+            {
+              "availability": "AVAILABLE",
+              "provenance": "SYNTHETIC",
+              "source": "synthetic",
+              "value": "220.0"
+            }
+          ]
+        ],
+        "strike_range_end": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "21950"
+        },
+        "strike_range_start": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22250"
+        }
+      },
+      "price_context": {
+        "ask": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22400.5"
+        },
+        "bid": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22399.5"
+        },
+        "cmp": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22400"
+        },
+        "cmp_source": "synthetic:nifty_spot",
+        "event_timestamp": "2026-07-30T09:29:59+05:30",
+        "freshness_seconds": "0",
+        "ltp": {
+          "availability": "AVAILABLE",
+          "provenance": "SYNTHETIC",
+          "source": "synthetic",
+          "value": "22400"
+        }
+      },
+      "selected_contract": {
+        "availability": "AVAILABLE",
+        "rejected_candidate_reasons": [],
+        "selected_identity": {
+          "exchange": null,
+          "expiry": "2026-08-06",
+          "metadata": {
+            "ltp": 264.0,
+            "oi": 999999.0,
+            "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+          },
+          "option_type": "CALL",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 22250.0,
+          "symbol": "NIFTY_20260806_22250_CALL",
+          "token": "REDACTED"
+        },
+        "selected_quote": {
+          "ask": {
+            "availability": "AVAILABLE",
+            "provenance": "SYNTHETIC",
+            "source": "synthetic",
+            "value": "265.0"
+          },
+          "bid": {
+            "availability": "AVAILABLE",
+            "provenance": "SYNTHETIC",
+            "source": "synthetic",
+            "value": "263.0"
+          },
+          "contract_identity": {
+            "exchange": null,
+            "expiry": "2026-08-06",
+            "metadata": {
+              "ltp": 264.0,
+              "oi": 999999.0,
+              "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+            },
+            "option_type": "CALL",
+            "product_type": "OPTION_SELLING",
+            "segment": "OPTIONS_SELL",
+            "strike": 22250.0,
+            "symbol": "NIFTY_20260806_22250_CALL",
+            "token": "REDACTED"
+          },
+          "expiry": "2026-08-06",
+          "freshness_seconds": "0",
+          "ltp": {
+            "availability": "AVAILABLE",
+            "provenance": "SYNTHETIC",
+            "source": "synthetic",
+            "value": "264.0"
+          },
+          "oi": {
+            "availability": "AVAILABLE",
+            "provenance": "SYNTHETIC",
+            "source": "synthetic",
+            "value": "999999.0"
+          },
+          "option_type": "CALL",
+          "quality": "VALID",
+          "quote_timestamp": "2026-07-30T09:29:59+05:30",
+          "strike": {
+            "availability": "AVAILABLE",
+            "provenance": "SYNTHETIC",
+            "source": "synthetic",
+            "value": "22250.0"
+          }
+        },
+        "selection_reason": "Selected by existing S23 contract-selection adapter."
+      },
+      "session": {
+        "exchange": "NSE",
+        "segment": "OPTIONS_SELL",
+        "time_window": {
+          "evaluation_reason": "S23 Bull Call vertical slice.",
+          "evaluation_trigger": "PHASE3D_M3_SYNTHETIC",
+          "market_end": "15:30:00",
+          "market_start": "09:15:00",
+          "orpt_time": "09:24:59",
+          "rc_time": "09:29:59"
+        },
+        "timezone": "Asia/Kolkata"
+      }
+    },
+    "entry": {
+      "base_entry_inputs": {
+        "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+        "legacy_entry_value": 203.5
+      },
+      "base_entry_result": "203.5",
+      "downstream_permission": "PERMITTED",
+      "effective_entry_inputs": {
+        "base_entry": "203.5",
+        "gap_missed_entry_status": "NOT_MISSED"
+      },
+      "effective_entry_result": "203.5",
+      "gap_missed_entry_inputs": {
+        "base_entry_price": "203.5",
+        "policy_key": "legacy.s23.gap_missed_entry.backtest_low"
+      },
+      "gap_missed_entry_result": {
+        "contract": "gap_missed_entry",
+        "engine_id": "gap",
+        "evidence": {
+          "failures": [],
+          "formula_references": [
+            "S23_ORPT_RC_COMPATIBILITY"
+          ],
+          "gap": {
+            "applicable": true,
+            "classification": "UNAVAILABLE",
+            "direction": "UNKNOWN",
+            "formula_reference": null,
+            "measurement": {
+              "absolute_gap": "56.5",
+              "comparison_operator": "GREATER_THAN",
+              "percentage_gap": null,
+              "threshold_buffer": null
+            },
+            "observation": {
+              "applicable": true,
+              "opening_price": {
+                "observed_at": "2026-07-30T09:24:59+05:30",
+                "provenance": {},
+                "source": "OPTION_LOW",
+                "value": "260"
+              },
+              "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1",
+              "provenance": {
+                "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1"
+              },
+              "reference": {
+                "formula_reference": null,
+                "price": "203.5",
+                "provenance": {
+                  "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1"
+                },
+                "reference_key": "entry_price",
+                "requirement_reference": "S23_GAP_COMPATIBILITY",
+                "source": "LTP"
+              }
+            },
+            "provenance": {
+              "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1"
+            },
+            "quality": "VALID",
+            "requirement_reference": "S23_GAP_COMPATIBILITY",
+            "warnings": []
+          },
+          "missed_entry": {
+            "applicable": true,
+            "branch_key": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+            "comparison_rule": {
+              "branch_key": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+              "compatibility_metadata": {
+                "legacy_low_detector_result": "False",
+                "profile": "legacy.s23.gap_missed_entry.backtest_low_v1"
+              },
+              "formula_reference": "S23_ORPT_RC_COMPATIBILITY",
+              "observed_source": "OPTION_LOW",
+              "operator": "LESS_THAN",
+              "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1",
+              "reference_key": "entry_price",
+              "requirement_reference": "S23_ORPT_RC",
+              "rule_id": "legacy.s23.gap_missed_entry.backtest_low_v1.missed_entry"
+            },
+            "direction": "FLAT",
+            "entry_reference_value": "203.5",
+            "observed_value": "260",
+            "provenance": {
+              "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1",
+              "profile": "legacy.s23.gap_missed_entry.backtest_low_v1"
+            },
+            "quality": "VALID",
+            "status": "NOT_MISSED",
+            "warnings": []
+          },
+          "provenance": {
+            "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1",
+            "strategy": "S23"
+          },
+          "recalculation": {
+            "applicable": false,
+            "branch_key": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+            "compatibility_outputs": {},
+            "downstream_action": "NONE",
+            "failures": [],
+            "formula_reference": null,
+            "intermediate_evidence": {},
+            "policy_key": "legacy.s23.gap_missed_entry.backtest_low_v1",
+            "provenance": {},
+            "required_input_refs": [],
+            "requirement_reference": null,
+            "status": "NOT_REQUIRED",
+            "supplied_values": {},
+            "warnings": []
+          },
+          "requirement_references": [
+            "S23_GAP_COMPATIBILITY",
+            "S23_ORPT_RC"
+          ],
+          "timing": {
+            "chronology_warnings": [],
+            "current_day_high": null,
+            "current_day_low": null,
+            "evaluation_timestamp": "2026-07-30T09:29:59+05:30",
+            "late_observations": [],
+            "market_open_timestamp": "2026-07-30T09:15:00+05:30",
+            "missing_observations": [],
+            "orpt_observation": {
+              "observed_at": "2026-07-30T09:24:59+05:30",
+              "provenance": {},
+              "source": "OPTION_LOW",
+              "value": "260"
+            },
+            "orpt_requirement": "REQUIRED",
+            "orpt_timestamp": "2026-07-30T09:24:59+05:30",
+            "processing_timestamp": "2026-07-30T09:29:59+05:30",
+            "rc_observation": {
+              "observed_at": "2026-07-30T09:29:59+05:30",
+              "provenance": {},
+              "source": "OPTION_LOW",
+              "value": "252"
+            },
+            "rc_requirement": "REQUIRED",
+            "rc_timestamp": "2026-07-30T09:29:59+05:30",
+            "source_event_timestamp": "2026-07-30T09:24:59+05:30",
+            "stale_observations": [],
+            "timezone": "Asia/Kolkata",
+            "timing_window_state": "AVAILABLE"
+          },
+          "unresolved_issues": [],
+          "warnings": []
+        }
+      },
+      "orpt_observation": {
+        "source": "OPTION_LOW",
+        "timestamp": "2026-07-30T09:24:59+05:30",
+        "value": "260"
+      },
+      "rc_observation": {
+        "source": "OPTION_LOW",
+        "timestamp": "2026-07-30T09:29:59+05:30",
+        "value": "252"
+      },
+      "selected_contract_historical_references": {
+        "OPT_PRV_2DHH": 300.0,
+        "OPT_PRV_2DLL": 210.0,
+        "OPT_PRV_3DHH": 330.0,
+        "OPT_PRV_3DLL": 220.0
+      }
+    },
+    "final_rejection_reason": null,
+    "identity": {
+      "capture_id": "s23-evaluation-capture-480bcc67f2acf276ff525fc5",
+      "evaluation_id": "phase3d-m3-s23-bull-call",
+      "resolved_configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+      "schema_version": "tfis.s23.evaluation_capture_packet.v1",
+      "source_session_identity": "PHASE3D_M3_SYNTHETIC",
+      "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family": "S23",
+      "strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "trading_date": "2026-07-30"
+    },
+    "market_context": {
+      "monthly_status": "BULL",
+      "reference_identities": {
+        "current_day_high": "market_structure:current_day_high",
+        "current_day_low": "market_structure:current_day_low",
+        "d2hh": "market_structure:d2hh",
+        "d2ll": "market_structure:d2ll",
+        "d3hh": "market_structure:d3hh",
+        "d3ll": "market_structure:d3ll"
+      },
+      "resolved_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "source_timestamps": {
+        "evaluation": "2026-07-30T09:29:59+05:30",
+        "option_chain": "2026-07-30T09:29:59+05:30"
+      },
+      "underlying_references": {
+        "current_day_high": 22400.0,
+        "current_day_low": 22100.0,
+        "d2hh": 22500.0,
+        "d2ll": 21900.0,
+        "d3hh": 22600.0,
+        "d3ll": 22000.0
+      }
+    },
+    "provenance": {
+      "capture_locations_for_missing_fields": {
+        "captured ORPT option observation": "entry.orpt_observation",
+        "captured RC option observation": "entry.rc_observation",
+        "captured legacy/runtime decision packet": "decision and decision_evidence_packet",
+        "captured option-chain snapshot": "contract_selection.option_chain_snapshot",
+        "captured selected-contract quote": "contract_selection.selected_contract_quote",
+        "real trading date": "capture identity.trading_date from runtime session date"
+      },
+      "capture_timestamp": "2026-07-30T09:29:59+05:30",
+      "evidence_classification": "LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT",
+      "missing_real_world_fields": [],
+      "redaction_metadata": {
+        "account_id": "not_captured",
+        "broker_auth_material": "rejected_by_key_scan",
+        "raw_http_auth_material": "rejected_by_key_scan"
+      },
+      "section_sources": {
+        "contract_selection": "fixture_option_chain",
+        "decision": "tfis_vertical_result",
+        "decision_evidence_packet": "tfis_vertical_result",
+        "entry": "legacy_fixture_adapter",
+        "identity": "strategy_config",
+        "market_context": "fixture_runtime_input",
+        "risk_compatibility": "legacy_fixture_adapter"
+      },
+      "source_event_timestamps": {
+        "evaluation": "2026-07-30T09:29:59+05:30",
+        "option_chain": "2026-07-30T09:29:59+05:30"
+      },
+      "supplemented_fields": []
+    },
+    "risk_compatibility": {
+      "msl_inputs": {
+        "activation_timing": "INITIAL",
+        "applicable": true,
+        "calculated_value": 321.0,
+        "direction": "SHORT",
+        "evaluated_at": "2026-07-30T09:29:59+05:30",
+        "evidence": {
+          "adapter": "S23MSLPolicyAdapter",
+          "trade_plan": {
+            "end_strike": 21950,
+            "entry_price": 203.5,
+            "ideal_premium": 264.0,
+            "minimum_premium": 198.00000000000003,
+            "option_type": "CALL",
+            "start_strike": 22250,
+            "stoploss_price": 321.0,
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "target_price": 81.4
+          }
+        },
+        "formula": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+        "inputs": {
+          "entry_result": {
+            "applicable": true,
+            "calculated_value": 203.5,
+            "entry_value": 203.5,
+            "evaluated_at": "2026-07-30T09:29:59+05:30",
+            "evidence": {
+              "adapter": "S23EntryPolicyAdapter",
+              "formulas": {
+                "end_strike": "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)",
+                "entry": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                "ideal_premium": "PRV_3DLL * PARAM(ideal_premium_pct)%",
+                "minimum_premium": "PRV_3DLL * PARAM(minimum_premium_pct)%",
+                "start_strike": "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)",
+                "stoploss": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+                "target": "ENTRY - PARAM(target_pct)%"
+              },
+              "parameters": {
+                "entry_discount_pct": 7.5,
+                "ideal_premium_pct": 1.2,
+                "minimum_premium_pct": 0.9,
+                "sl_entry_pct": 60.0,
+                "sl_reference_pct": 7.0,
+                "strike_buffer_pct": 1.2,
+                "strike_step": 50.0,
+                "target_pct": 60.0
+              },
+              "trade_plan": {
+                "end_strike": 21950,
+                "entry_price": 203.5,
+                "ideal_premium": 264.0,
+                "minimum_premium": 198.00000000000003,
+                "option_type": "CALL",
+                "start_strike": 22250,
+                "stoploss_price": 321.0,
+                "strategy_code": "S23",
+                "symbol": "NIFTY",
+                "target_price": 81.4
+              }
+            },
+            "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+            "formula_trace": {
+              "evidence": {
+                "adapter": "S23EntryPolicyAdapter",
+                "formulas": {
+                  "end_strike": "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)",
+                  "entry": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                  "ideal_premium": "PRV_3DLL * PARAM(ideal_premium_pct)%",
+                  "minimum_premium": "PRV_3DLL * PARAM(minimum_premium_pct)%",
+                  "start_strike": "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)",
+                  "stoploss": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+                  "target": "ENTRY - PARAM(target_pct)%"
+                },
+                "parameters": {
+                  "entry_discount_pct": 7.5,
+                  "ideal_premium_pct": 1.2,
+                  "minimum_premium_pct": 0.9,
+                  "sl_entry_pct": 60.0,
+                  "sl_reference_pct": 7.0,
+                  "strike_buffer_pct": 1.2,
+                  "strike_step": 50.0,
+                  "target_pct": 60.0
+                },
+                "trade_plan": {
+                  "end_strike": 21950,
+                  "entry_price": 203.5,
+                  "ideal_premium": 264.0,
+                  "minimum_premium": 198.00000000000003,
+                  "option_type": "CALL",
+                  "start_strike": 22250,
+                  "stoploss_price": 321.0,
+                  "strategy_code": "S23",
+                  "symbol": "NIFTY",
+                  "target_price": 81.4
+                }
+              },
+              "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+              "inputs": {
+                "market_structure_references": {
+                  "current_day_high": 22400.0,
+                  "current_day_low": 22100.0,
+                  "d2hh": 22500.0,
+                  "d2ll": 21900.0,
+                  "d3hh": 22600.0,
+                  "d3ll": 22000.0
+                },
+                "runtime_values": {
+                  "ENTRY": 200.0,
+                  "OPT_LEVELS": {
+                    "OPT_PRV_2DHH": 300.0,
+                    "OPT_PRV_2DLL": 210.0,
+                    "OPT_PRV_3DHH": 330.0,
+                    "OPT_PRV_3DLL": 220.0
+                  }
+                }
+              },
+              "name": "S23.entry",
+              "resolved_formula": null,
+              "result": 203.5
+            },
+            "inputs": {
+              "market_structure_references": {
+                "current_day_high": 22400.0,
+                "current_day_low": 22100.0,
+                "d2hh": 22500.0,
+                "d2ll": 21900.0,
+                "d3hh": 22600.0,
+                "d3ll": 22000.0
+              },
+              "runtime_values": {
+                "ENTRY": 200.0,
+                "OPT_LEVELS": {
+                  "OPT_PRV_2DHH": 300.0,
+                  "OPT_PRV_2DLL": 210.0,
+                  "OPT_PRV_3DHH": 330.0,
+                  "OPT_PRV_3DLL": 220.0
+                }
+              }
+            },
+            "intermediate_values": {
+              "end_strike": 21950,
+              "ideal_premium": 264.0,
+              "minimum_premium": 198.00000000000003,
+              "start_strike": 22250,
+              "stoploss_price": 321.0,
+              "target_price": 81.4
+            },
+            "policy_name": "legacy.s23.option_selling.entry",
+            "quality_status": "VALID",
+            "reason": "Legacy strategy formulas evaluated through StrategyEvaluator.",
+            "reference": null,
+            "requirement_id": "AB16-ENTRY",
+            "status": "PASSED"
+          }
+        },
+        "intermediate_values": {
+          "stoploss_price": 321.0
+        },
+        "policy_name": "legacy.s23.option_selling.msl",
+        "quality_status": "VALID",
+        "quantity": 50,
+        "quantity_pct": null,
+        "reason": "Legacy MSL/stoploss preserved from StrategyEvaluator trade plan.",
+        "reference": null,
+        "requirement_id": "AB16-MSL",
+        "status": "PASSED",
+        "stop_price": 321.0
+      },
+      "msl_result": 321.0,
+      "target_inputs": {
+        "applicable": true,
+        "calculated_value": 81.4,
+        "evaluated_at": "2026-07-30T09:29:59+05:30",
+        "evidence": {
+          "adapter": "S23TargetPolicyAdapter",
+          "trade_plan": {
+            "end_strike": 21950,
+            "entry_price": 203.5,
+            "ideal_premium": 264.0,
+            "minimum_premium": 198.00000000000003,
+            "option_type": "CALL",
+            "start_strike": 22250,
+            "stoploss_price": 321.0,
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "target_price": 81.4
+          }
+        },
+        "formula": "ENTRY - PARAM(target_pct)%",
+        "inputs": {
+          "entry_result": {
+            "applicable": true,
+            "calculated_value": 203.5,
+            "entry_value": 203.5,
+            "evaluated_at": "2026-07-30T09:29:59+05:30",
+            "evidence": {
+              "adapter": "S23EntryPolicyAdapter",
+              "formulas": {
+                "end_strike": "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)",
+                "entry": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                "ideal_premium": "PRV_3DLL * PARAM(ideal_premium_pct)%",
+                "minimum_premium": "PRV_3DLL * PARAM(minimum_premium_pct)%",
+                "start_strike": "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)",
+                "stoploss": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+                "target": "ENTRY - PARAM(target_pct)%"
+              },
+              "parameters": {
+                "entry_discount_pct": 7.5,
+                "ideal_premium_pct": 1.2,
+                "minimum_premium_pct": 0.9,
+                "sl_entry_pct": 60.0,
+                "sl_reference_pct": 7.0,
+                "strike_buffer_pct": 1.2,
+                "strike_step": 50.0,
+                "target_pct": 60.0
+              },
+              "trade_plan": {
+                "end_strike": 21950,
+                "entry_price": 203.5,
+                "ideal_premium": 264.0,
+                "minimum_premium": 198.00000000000003,
+                "option_type": "CALL",
+                "start_strike": 22250,
+                "stoploss_price": 321.0,
+                "strategy_code": "S23",
+                "symbol": "NIFTY",
+                "target_price": 81.4
+              }
+            },
+            "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+            "formula_trace": {
+              "evidence": {
+                "adapter": "S23EntryPolicyAdapter",
+                "formulas": {
+                  "end_strike": "ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)",
+                  "entry": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                  "ideal_premium": "PRV_3DLL * PARAM(ideal_premium_pct)%",
+                  "minimum_premium": "PRV_3DLL * PARAM(minimum_premium_pct)%",
+                  "start_strike": "ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)",
+                  "stoploss": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
+                  "target": "ENTRY - PARAM(target_pct)%"
+                },
+                "parameters": {
+                  "entry_discount_pct": 7.5,
+                  "ideal_premium_pct": 1.2,
+                  "minimum_premium_pct": 0.9,
+                  "sl_entry_pct": 60.0,
+                  "sl_reference_pct": 7.0,
+                  "strike_buffer_pct": 1.2,
+                  "strike_step": 50.0,
+                  "target_pct": 60.0
+                },
+                "trade_plan": {
+                  "end_strike": 21950,
+                  "entry_price": 203.5,
+                  "ideal_premium": 264.0,
+                  "minimum_premium": 198.00000000000003,
+                  "option_type": "CALL",
+                  "start_strike": 22250,
+                  "stoploss_price": 321.0,
+                  "strategy_code": "S23",
+                  "symbol": "NIFTY",
+                  "target_price": 81.4
+                }
+              },
+              "formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+              "inputs": {
+                "market_structure_references": {
+                  "current_day_high": 22400.0,
+                  "current_day_low": 22100.0,
+                  "d2hh": 22500.0,
+                  "d2ll": 21900.0,
+                  "d3hh": 22600.0,
+                  "d3ll": 22000.0
+                },
+                "runtime_values": {
+                  "ENTRY": 200.0,
+                  "OPT_LEVELS": {
+                    "OPT_PRV_2DHH": 300.0,
+                    "OPT_PRV_2DLL": 210.0,
+                    "OPT_PRV_3DHH": 330.0,
+                    "OPT_PRV_3DLL": 220.0
+                  }
+                }
+              },
+              "name": "S23.entry",
+              "resolved_formula": null,
+              "result": 203.5
+            },
+            "inputs": {
+              "market_structure_references": {
+                "current_day_high": 22400.0,
+                "current_day_low": 22100.0,
+                "d2hh": 22500.0,
+                "d2ll": 21900.0,
+                "d3hh": 22600.0,
+                "d3ll": 22000.0
+              },
+              "runtime_values": {
+                "ENTRY": 200.0,
+                "OPT_LEVELS": {
+                  "OPT_PRV_2DHH": 300.0,
+                  "OPT_PRV_2DLL": 210.0,
+                  "OPT_PRV_3DHH": 330.0,
+                  "OPT_PRV_3DLL": 220.0
+                }
+              }
+            },
+            "intermediate_values": {
+              "end_strike": 21950,
+              "ideal_premium": 264.0,
+              "minimum_premium": 198.00000000000003,
+              "start_strike": 22250,
+              "stoploss_price": 321.0,
+              "target_price": 81.4
+            },
+            "policy_name": "legacy.s23.option_selling.entry",
+            "quality_status": "VALID",
+            "reason": "Legacy strategy formulas evaluated through StrategyEvaluator.",
+            "reference": null,
+            "requirement_id": "AB16-ENTRY",
+            "status": "PASSED"
+          }
+        },
+        "intermediate_values": {
+          "target_price": 81.4
+        },
+        "policy_name": "legacy.s23.option_selling.target",
+        "quality_status": "VALID",
+        "reason": "Legacy single target preserved from StrategyEvaluator trade plan.",
+        "reference": null,
+        "requirement_id": "AB16-TARGET",
+        "status": "PASSED",
+        "targets": [
+          {
+            "evidence": {
+              "source": "StrategyEvaluator.trade_plan.target_price"
+            },
+            "formula": "ENTRY - PARAM(target_pct)%",
+            "order": 1,
+            "quantity": 50,
+            "quantity_pct": null,
+            "reference": null,
+            "target_price": 81.4
+          }
+        ]
+      },
+      "target_result": 81.4
+    }
+  },
+  "refactored_shadow_result": {
+    "authorized_timing": "SHADOW_ONLY_NO_AUTHORIZED_EXECUTION_TIME",
+    "base_entry": "203.5",
+    "capture_packet_id": "s23-evaluation-capture-480bcc67f2acf276ff525fc5",
+    "capture_packet_schema": "tfis.s23.evaluation_capture_packet.v1",
+    "decision_hash": "4d2e514f05f873c17b7077ce6710c559dac54422ed6898cbb51e6ed9bbb24b84",
+    "effective_entry": "203.5",
+    "execution_intent": "NONE",
+    "final_decision_status": "SHADOW_DECISION_TRADE",
+    "gap_classification": "UNAVAILABLE",
+    "missed_entry_classification": "NOT_MISSED",
+    "msl": 321.0,
+    "oi": 999999.0,
+    "policy_identities": [
+      "legacy.s23.vertical.entry",
+      "legacy.s23.gap_missed_entry.backtest_low_v1"
+    ],
+    "premium": 264.0,
+    "recalculated_entry": "203.5",
+    "rejection_no_trade_reason": null,
+    "selected_contract": "NIFTY_20260806_22250_CALL",
+    "selected_expiry": "2026-08-06",
+    "selected_strike": 22250.0,
+    "source": "TFISRefactored offline S23 Bull Call vertical with explicit M7 capture observer",
+    "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+    "target": 81.4
+  },
+  "runtime_impact": "NONE",
+  "schema_version": "tfis.phase3d.m7.real_s23_capture.v1",
+  "session_comparable": true,
+  "source_session": {
+    "audit": {
+      "artifact_version": 1,
+      "capture_sequence_monotonic": true,
+      "context_columns": [
+        "capture_sequence",
+        "timestamp",
+        "symbol",
+        "ltp",
+        "qty",
+        "vtt",
+        "volume",
+        "prev_close_price",
+        "open_price",
+        "ch",
+        "chp",
+        "signal_global_context",
+        "signal_event_risk",
+        "signal_daily_trend",
+        "signal_option_positioning",
+        "signal_market_breadth",
+        "signal_sector_strength",
+        "signal_intraday_trend",
+        "signal_liquidity_sweep",
+        "signal_order_flow",
+        "signal_institutional_flow",
+        "signal_market_regime",
+        "signal_orb_breakout",
+        "score_long",
+        "score_short",
+        "option_pcr",
+        "option_put_wall",
+        "option_call_wall",
+        "option_bias",
+        "option_source",
+        "global_sentiment",
+        "global_source",
+        "global_net_bias",
+        "global_net_bias_score",
+        "breadth_mode",
+        "breadth_bias",
+        "breadth_ratio",
+        "breadth_advancer_count",
+        "breadth_decliner_count",
+        "breadth_available",
+        "breadth_valid_instruments",
+        "sector_bias",
+        "sector_mode",
+        "sector_weighted_avg_change",
+        "sector_active_weight",
+        "sector_bank_change",
+        "sector_it_change",
+        "sector_financial_change",
+        "event_count",
+        "trade_posture",
+        "trade_posture_direction",
+        "trade_posture_reason",
+        "orb_high",
+        "orb_low",
+        "price_action_bias",
+        "price_action_fast_bias",
+        "price_action_structure_bias",
+        "price_action_swing_structure",
+        "price_action_swing_break_direction",
+        "price_action_range_state",
+        "price_action_range_expansion_direction",
+        "price_action_structure_strength",
+        "local_transition_direction",
+        "local_transition_maturity",
+        "transition_evidence_count",
+        "transition_missing_fields",
+        "price_action_reversal_warning",
+        "price_action_structure_reversal_warning",
+        "price_action_current_price",
+        "price_action_net_change_points",
+        "price_action_structure_net_change_points",
+        "price_action_drop_from_high_points",
+        "price_action_bounce_from_low_points",
+        "price_action_structure_drop_from_high_points",
+        "price_action_structure_bounce_from_low_points",
+        "price_action_sample_count",
+        "price_action_structure_sample_count",
+        "selected_option_symbol",
+        "selected_option_ltp",
+        "selected_option_bid",
+        "selected_option_ask",
+        "selected_option_quote_timestamp",
+        "selected_option_quote_sequence",
+        "selected_option_quote_freshness_seconds",
+        "selected_option_quote_source",
+        "option_selection_decision_timestamp",
+        "option_selection_direction",
+        "option_selection_underlying_price",
+        "option_selection_initial_candidate_symbol",
+        "option_selection_rejected_candidates",
+        "option_selection_fallback_candidates_considered",
+        "option_selection_final_selected_symbol",
+        "option_selection_final_bid",
+        "option_selection_final_ask",
+        "option_selection_final_ltp",
+        "option_selection_final_spread",
+        "option_selection_final_selection_reason",
+        "option_selection_sequence_id",
+        "option_selection_source",
+        "option_selection_provenance",
+        "india_vix"
+      ],
+      "context_session_dir": "D:\\TradingData\\captures\\context_sessions\\2026-06-05\\live_20260605_090537_prod_pid14520",
+      "context_timestamp_monotonic": false,
+      "converter_scope": [
+        "market_events_only",
+        "requires_external_prelude_for_calendar_monthly_status_trade_plan",
+        "read_only_source_inputs"
+      ],
+      "covers_0915": true,
+      "covers_orpt": true,
+      "covers_rc": true,
+      "ended_at": "2026-06-05T12:03:53.541994",
+      "first_underlying_timestamp": "2026-06-05T09:05:51+05:30",
+      "has_option_quotes_archive": true,
+      "last_underlying_timestamp": "2026-06-05T12:03:25+05:30",
+      "max_underlying_gap_seconds": 53.0,
+      "missing_requirements": [],
+      "option_chain_contract_count_at_rc": 2,
+      "option_quote_columns": [
+        "capture_sequence",
+        "timestamp",
+        "underlying_symbol",
+        "option_chain_symbol",
+        "underlying_ltp",
+        "option_symbol",
+        "strike",
+        "option_type",
+        "expiry",
+        "ltp",
+        "bid",
+        "ask",
+        "spread_points",
+        "volume",
+        "oi",
+        "oi_change",
+        "iv"
+      ],
+      "option_quotes_path": "D:\\TradingData\\data\\nifty\\20260605\\options\\index\\NIFTY50_option_quotes_20260605.csv",
+      "option_symbol_rows_in_context": 2496,
+      "recommendation": "usable",
+      "sample_normalized_option_symbol": "NIFTY_20260609_22700_CE",
+      "sample_raw_option_symbol": "NSE:NIFTY2660922700CE",
+      "selected_contract_observed_at_rc": null,
+      "session_date": "2026-06-05",
+      "session_id": "live_20260605_090537_prod_pid14520",
+      "session_status": "completed",
+      "started_at": "2026-06-05T09:05:47.228476",
+      "ticks_context_path": "D:\\TradingData\\captures\\context_sessions\\2026-06-05\\live_20260605_090537_prod_pid14520\\ticks_context.csv",
+      "underlying_row_count": 23504,
+      "underlying_rows_with_selected_contract": 6331,
+      "underlying_timestamp_monotonic": false,
+      "warnings": [
+        "ticks_context.csv is not globally timestamp ordered; normalize by capture_sequence and explicit timestamps rather than file order alone.",
+        "NIFTY underlying rows are not perfectly timestamp ordered in the raw capture; minute-window aggregation should sort within each window.",
+        "Underlying quote gaps reach 53.0s in this session.",
+        "No selected_option_symbol is embedded on NIFTY rows during the RC window; selected contract must be supplied externally for deterministic conversion."
+      ]
+    },
+    "context_session_dir": "D:\\TradingData\\captures\\context_sessions\\2026-06-05\\live_20260605_090537_prod_pid14520",
+    "data_sources": {
+      "context_ticks": "D:\\TradingData\\captures\\context_sessions\\2026-06-05\\live_20260605_090537_prod_pid14520\\ticks_context.csv",
+      "legacy_trade_log": "D:\\TradingData\\logs\\trade\\trade_evaluation_20260605_090537_prod_pid14520.log",
+      "option_quotes": "D:\\TradingData\\data\\nifty\\20260605\\options\\index\\NIFTY50_option_quotes_20260605.csv"
+    },
+    "instrument": "NIFTY",
+    "non_authoritative_reason": "Only historical files were read; no broker, order, lifecycle, paper, or live authority path was invoked.",
+    "reference_repository": "D:/TradingEngineTFIS (read-only reference source, not modified)",
+    "session_type": "post-market",
+    "session_window": "2026-06-05T09:05:47.228476 to 2026-06-05T12:03:53.541994",
+    "source_repository_process": "D:/TradingData captured operational post-market artifacts",
+    "trade_log": "D:\\TradingData\\logs\\trade\\trade_evaluation_20260605_090537_prod_pid14520.log",
+    "trading_date": "2026-06-05"
+  }
+}

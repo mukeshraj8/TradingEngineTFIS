@@ -6,11 +6,22 @@ way.
 
 ## Immediate Next Priorities
 
-0.34. `TODO` Run one explicitly approved non-authoritative shadow/debug
-   session with S23 Call-side capture enabled to obtain the first complete real
-   S23 Bull Call or Bear Call packet. Keep capture disabled in normal profiles
-   and do not grant decision, paper, live, broker, order, lifecycle, or
-   position authority through the capture path.
+0.35. `TODO` Resolve the exact capture gaps preventing a complete real S23
+   Call-side packet: authoritative S23 Call-side legacy result, pre-market S23
+   plan, Monthly Status, completed historical references, ORPT
+   selected-contract quote, option OI values, and recalculation inputs/results.
+   Keep capture disabled in normal profiles and keep refactored execution
+   authority at `NONE`.
+
+0.34. `DONE` Attempt the first explicitly scoped real non-authoritative S23
+   Call-side capture from the existing `2026-06-05` post-market TradingData
+   session. Result: one `PARTIAL_CAPTURE` packet and gap matrix were produced;
+   complete real packets remain `0` because the selected source does not
+   contain an authoritative S23 Call-side decision output or full S23
+   pre-market plan evidence. Supported S23 vertical cases: `2`. Real S23
+   capture sessions attempted: `1`. Partial real packets obtained: `1`.
+   Call-side captured parity cases: `0`. Capture default: `DISABLED`.
+   Refactored execution authority: `NONE`. Runtime impact: `NONE`.
 
 0.33. `DONE` Implement the smallest disabled-by-default S23 Call-side evidence
    capture hook. Capture now observes completed S23 vertical fixture results

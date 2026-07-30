@@ -1,0 +1,98 @@
+{
+  "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "evidence_classification": "PARTIAL_CAPTURE",
+  "field_comparison": {
+    "authorized_timing": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "SHADOW_ONLY_NO_AUTHORIZED_EXECUTION_TIME"
+    },
+    "base_entry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "203.5"
+    },
+    "effective_entry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "203.5"
+    },
+    "final_decision_status": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "SHADOW_DECISION_TRADE"
+    },
+    "gap_classification": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "UNAVAILABLE"
+    },
+    "missed_entry_classification": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "NOT_MISSED"
+    },
+    "msl": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 321.0
+    },
+    "oi": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 999999.0
+    },
+    "policy_identities": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": [
+        "legacy.s23.vertical.entry",
+        "legacy.s23.gap_missed_entry.backtest_low_v1"
+      ]
+    },
+    "premium": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 264.0
+    },
+    "recalculated_entry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "203.5"
+    },
+    "rejection_no_trade_reason": {
+      "classification": "NOT_COMPARABLE",
+      "legacy": null,
+      "shadow": null
+    },
+    "selected_contract": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "NIFTY_20260806_22250_CALL"
+    },
+    "selected_expiry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "2026-08-06"
+    },
+    "selected_strike": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 22250.0
+    },
+    "strategy_branch": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    },
+    "target": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": 81.4
+    }
+  },
+  "schema_version": "tfis.phase3d.m7.real_s23_parity.v1",
+  "strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
+  "trading_date": "2026-06-05",
+  "unexplained_mismatches": []
+}
