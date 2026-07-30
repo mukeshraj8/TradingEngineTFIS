@@ -146,6 +146,16 @@ from .runtime_contracts import (
     TrailingStopStep,
     product_type_from_segment,
 )
+from .premarket_plan import (
+    PreMarketContractResolution,
+    PreMarketFieldProvenance,
+    PreMarketPlanFailure,
+    PreMarketPlannedValues,
+    PreMarketPlanStatus,
+    PreMarketReferenceSet,
+    PreMarketStrategyPlan,
+    premarket_plan_hash,
+)
 from .strategy_rule import StrategyExpiryPolicy, StrategyRule
 from .strategy_identity import (
     PositionCycleIdentity,
@@ -270,6 +280,13 @@ __all__ = [
     "ExitRule",
     "PriceContextEvidence",
     "PositionCycleIdentity",
+    "PreMarketContractResolution",
+    "PreMarketFieldProvenance",
+    "PreMarketPlanFailure",
+    "PreMarketPlannedValues",
+    "PreMarketPlanStatus",
+    "PreMarketReferenceSet",
+    "PreMarketStrategyPlan",
     "ProvenancedValue",
     "ResolvedStrategyConfiguration",
     "RolloverPolicy",
@@ -328,4 +345,5 @@ __all__ = [
     "validate_gap_missed_entry_input",
     "UnresolvedRuleIssue",
     "product_type_from_segment",
+    "premarket_plan_hash",
 ]

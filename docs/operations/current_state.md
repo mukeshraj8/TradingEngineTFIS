@@ -6,6 +6,14 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 9 implements the first
+  immutable offline `PreMarketStrategyPlan` builder path for the existing
+  supported S23 Call-side cases. Supported S23 vertical cases: `2`. Offline
+  S23 pre-market plans: Bull Call `IMPLEMENTED`, Bear Call `IMPLEMENTED`.
+  Real captured pre-market plans: `0`. `OpeningMarketContext`:
+  `NOT_IMPLEMENTED`. `EffectiveExecutionPlan`: `NOT_IMPLEMENTED`.
+  `PositionLifecycleContext`: `NOT_IMPLEMENTED`. Runtime authority: `NONE`.
+  Broker/paper/live impact: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 8 defines the
   authoritative TFIS runtime operational model as a specification-only
   architecture document. TFIS is now documented as a precomputed-plan system:

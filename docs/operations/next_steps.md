@@ -6,30 +6,35 @@ way.
 
 ## Immediate Next Priorities
 
-0.37. `TODO` Implement only the first offline S23 Call-side
-   `PreMarketStrategyPlan` builder artifact selected from the Phase 3D
-   Milestone 8 gap matrix. The artifact should compose resolved strategy
-   identity/configuration, completed historical references, Monthly Status,
-   Contract Selection compatibility, Base Entry, preliminary Target/MSL, ORPT,
-   RC, and explicit block reasons. Do not implement `OpeningMarketContext`,
-   `EffectiveExecutionPlan`, broker/account reconciliation, execution,
-   lifecycle authority, paper authority, or live authority in the same
-   milestone.
+0.38. `TODO` Select exactly one next Milestone 10 path: implement an offline
+   `OpeningMarketContext` contract and builder for S23 Call-side, replace
+   legacy/synthetic pre-market plan inputs with a real captured pre-market
+   packet if such data becomes available, or fix a precise
+   `PreMarketStrategyPlan` gap found during review. Do not implement all
+   remaining runtime objects together.
 
-0.36. `DONE` Define the Phase 3D Milestone 8 runtime operational model and
+0.37. `DONE` Implement the first offline S23 Call-side
+   `PreMarketStrategyPlan` builder artifact selected from the Phase 3D
+   Milestone 8 gap matrix. Bull Call and Bear Call now produce immutable
+   `PREPARED` pre-market plans from completed fixture/configuration inputs.
+   Real captured pre-market plans remain `0`; `OpeningMarketContext`,
+   `EffectiveExecutionPlan`, `PositionLifecycleContext`, runtime authority,
+   broker/paper/live authority, and execution remain unimplemented.
+
+0.35. `DONE` Define the Phase 3D Milestone 8 runtime operational model and
    gap matrix. Result: TFIS is specified as a precomputed-plan system with
    separate normal fresh-entry, Gap/Missed-Entry recalculation, and
    carried-position lifecycle-opening paths. Runtime implementation remains
    `NONE`; broker/paper/live impact remains `NONE`.
 
-0.35. `TODO` Resolve the exact capture gaps preventing a complete real S23
+0.34. `TODO` Resolve the exact capture gaps preventing a complete real S23
    Call-side packet: authoritative S23 Call-side legacy result, pre-market S23
    plan, Monthly Status, completed historical references, ORPT
    selected-contract quote, option OI values, and recalculation inputs/results.
    Keep capture disabled in normal profiles and keep refactored execution
    authority at `NONE`.
 
-0.34. `DONE` Attempt the first explicitly scoped real non-authoritative S23
+0.33. `DONE` Attempt the first explicitly scoped real non-authoritative S23
    Call-side capture from the existing `2026-06-05` post-market TradingData
    session. Result: one `PARTIAL_CAPTURE` packet and gap matrix were produced;
    complete real packets remain `0` because the selected source does not
@@ -39,7 +44,7 @@ way.
    Call-side captured parity cases: `0`. Capture default: `DISABLED`.
    Refactored execution authority: `NONE`. Runtime impact: `NONE`.
 
-0.33. `DONE` Implement the smallest disabled-by-default S23 Call-side evidence
+0.32. `DONE` Implement the smallest disabled-by-default S23 Call-side evidence
    capture hook. Capture now observes completed S23 vertical fixture results
    after the generic orchestrator returns, emits an immutable
    `S23EvaluationCapturePacket` only when an observer/sink is explicitly

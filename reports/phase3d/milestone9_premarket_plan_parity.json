@@ -1,0 +1,69 @@
+{
+  "accepted_hashes_preserved": {
+    "m3_bull_call_vertical": "4d2e514f05f873c17b7077ce6710c559dac54422ed6898cbb51e6ed9bbb24b84",
+    "m5_bear_call_fixture": "3a8dbc6b507ac7603f2c0a4b289f3ecf9855f17206b3d96744b3291af8f20d41",
+    "m5_bull_call_fixture": "4e327a977aeaad6841891b2a044155ca8a1f644c1b11a261e255252506deaa1c"
+  },
+  "broker_paper_live_impact": "NONE",
+  "cases": {
+    "S23_BEAR_CALL_PREMARKET": {
+      "base_entry": 194.25,
+      "comparison": {
+        "base_entry": "MATCH",
+        "effective_entry": "NOT_EVALUATED_PREMARKET",
+        "gap_missed_entry": "NOT_EVALUATED_PREMARKET",
+        "preliminary_msl": "MATCH",
+        "preliminary_target": "MATCH",
+        "selected_contract": "MATCH"
+      },
+      "normal_orpt": "09:19:59",
+      "oi": 999999.0,
+      "plan_hash": "cfb09a5b41ee667a045e89d36cf4167dfe3acb46630bf76dd03e16f51e3e576b",
+      "plan_status": "PREPARED",
+      "preliminary_msl": 310.8,
+      "preliminary_target": 77.7,
+      "premium": 262.8,
+      "rc_time": "09:29:59",
+      "selected_contract": "NIFTY_20260806_22150_CALL",
+      "selected_expiry": "2026-08-06",
+      "selected_strike": 22150.0
+    },
+    "S23_BULL_CALL_PREMARKET": {
+      "base_entry": 203.5,
+      "comparison": {
+        "base_entry": "MATCH",
+        "effective_entry": "NOT_EVALUATED_PREMARKET",
+        "gap_missed_entry": "NOT_EVALUATED_PREMARKET",
+        "preliminary_msl": "MATCH",
+        "preliminary_target": "MATCH",
+        "selected_contract": "MATCH"
+      },
+      "normal_orpt": "09:19:59",
+      "oi": 999999.0,
+      "plan_hash": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22",
+      "plan_status": "PREPARED",
+      "preliminary_msl": 321.0,
+      "preliminary_target": 81.4,
+      "premium": 264.0,
+      "rc_time": "09:29:59",
+      "selected_contract": "NIFTY_20260806_22250_CALL",
+      "selected_expiry": "2026-08-06",
+      "selected_strike": 22250.0
+    }
+  },
+  "evidence_classification": "LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT",
+  "offline_s23_premarket_plans": {
+    "bear_call": "IMPLEMENTED",
+    "bull_call": "IMPLEMENTED"
+  },
+  "real_captured_premarket_plans": 0,
+  "runtime_authority": "NONE",
+  "schema_version": "phase3d.milestone9.premarket_plan_parity.v1",
+  "supported_s23_vertical_cases": 2,
+  "unchanged_runtime_objects": {
+    "EffectiveExecutionPlan": "NOT_IMPLEMENTED",
+    "OpeningMarketContext": "NOT_IMPLEMENTED",
+    "PositionLifecycleContext": "NOT_IMPLEMENTED"
+  },
+  "verdict": "PHASE3D_M9_ACCEPT"
+}

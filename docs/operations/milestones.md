@@ -2,6 +2,19 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 9 implemented the first
+  immutable offline `PreMarketStrategyPlan` builder and S23 Call-side
+  compatibility composition. Reports are
+  `reports/phase3d/milestone9_s23_premarket_plan_summary.md`,
+  `reports/phase3d/milestone9_s23_bull_call_premarket_plan.json`,
+  `reports/phase3d/milestone9_s23_bear_call_premarket_plan.json`, and
+  `reports/phase3d/milestone9_premarket_plan_parity.json`. Verdict:
+  `PHASE3D_M9_ACCEPT`. Supported S23 vertical cases: `2`. Offline S23
+  pre-market plans: Bull Call `IMPLEMENTED`, Bear Call `IMPLEMENTED`. Real
+  captured pre-market plans: `0`. `OpeningMarketContext`:
+  `NOT_IMPLEMENTED`. `EffectiveExecutionPlan`: `NOT_IMPLEMENTED`.
+  `PositionLifecycleContext`: `NOT_IMPLEMENTED`. Runtime authority: `NONE`.
+  Broker/paper/live impact: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 8 produced the
   specification-only TFIS runtime operational model. The architecture spec is
   `docs/architecture/tfis_runtime_operational_model.md`; reports are
