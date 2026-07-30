@@ -2,6 +2,18 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 4 extended the first
+  offline S23 vertical decision slice to Bear Call using the same generic
+  orchestrator and typed business-engine contracts. Supported S23 vertical
+  cases: `2` (`S23 Bull Call` synthetic golden, `S23 Bear Call` synthetic
+  golden). The generated reports are
+  `reports/phase3d/milestone4_s23_bear_call_summary.md`,
+  `reports/phase3d/milestone4_s23_vertical_parity.json`, and
+  `reports/phase3d/milestone4_s23_bear_call_evidence_packet.json`. Bull Call
+  preserves its accepted Milestone 3 hash. Future capability observations were
+  recorded in S23 adapter/report evidence only; no Contract Selection, Risk,
+  Market Structure, runtime, broker, paper/live, lifecycle, execution, or
+  strategy configuration behavior was activated.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 3 implemented the first
   offline S23 vertical decision slice through the new architecture. Supported
   S23 vertical cases: `1` (`S23 Bull Call` synthetic golden). The slice

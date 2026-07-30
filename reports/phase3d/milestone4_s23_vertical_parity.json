@@ -1,0 +1,379 @@
+{
+  "cases": {
+    "S23_BEAR_CALL_SYNTHETIC_GOLDEN": {
+      "base_entry": 194.25,
+      "deterministic_hash": "39113635711a32f33036bae3f29efab0fe1a3ede898c7d6e0a39df88b238d053",
+      "evidence_classification": "SYNTHETIC_GOLDEN",
+      "field_comparison": {
+        "base_entry": {
+          "classification": "MATCH",
+          "legacy": 194.25,
+          "vertical": 194.25
+        },
+        "branch": {
+          "classification": "MATCH",
+          "legacy": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+          "vertical": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+        },
+        "configuration_hash": {
+          "classification": "MATCH",
+          "legacy": "phase3d-m4-s23-bear-call-synthetic-v1",
+          "vertical": "phase3d-m4-s23-bear-call-synthetic-v1"
+        },
+        "effective_entry": {
+          "classification": "MATCH",
+          "legacy": 194.25,
+          "vertical": 194.25
+        },
+        "gap_missed_entry_status": {
+          "classification": "MATCH",
+          "legacy": "NOT_MISSED",
+          "vertical": "NOT_MISSED"
+        },
+        "monthly_status": {
+          "classification": "MATCH",
+          "legacy": "BEAR",
+          "vertical": "BEAR"
+        },
+        "msl": {
+          "classification": "MATCH",
+          "legacy": 310.8,
+          "vertical": 310.8
+        },
+        "oi": {
+          "classification": "MATCH",
+          "legacy": 999999.0,
+          "vertical": 999999.0
+        },
+        "option_side": {
+          "classification": "MATCH",
+          "legacy": "CALL",
+          "vertical": "CALL"
+        },
+        "order_intent": {
+          "classification": "MATCH",
+          "legacy": "SHORT/SELL",
+          "vertical": "SHORT/SELL"
+        },
+        "policy_identities": {
+          "classification": "MATCH",
+          "legacy": [
+            "legacy.s23.option_selling.entry",
+            "legacy.s23.option_selling.target",
+            "legacy.s23.option_selling.msl"
+          ],
+          "vertical": [
+            "legacy.s23.option_selling.entry",
+            "legacy.s23.option_selling.target",
+            "legacy.s23.option_selling.msl"
+          ]
+        },
+        "premium": {
+          "classification": "MATCH",
+          "legacy": 262.8,
+          "vertical": 262.8
+        },
+        "recalculated_entry": {
+          "classification": "MATCH",
+          "legacy": "NOT_REQUIRED",
+          "vertical": "NOT_REQUIRED"
+        },
+        "rejection_reason": {
+          "classification": "MATCH",
+          "legacy": null,
+          "vertical": null
+        },
+        "selected_contract": {
+          "classification": "MATCH",
+          "legacy": "NIFTY_20260806_22150_CALL",
+          "vertical": "NIFTY_20260806_22150_CALL"
+        },
+        "selected_expiry": {
+          "classification": "MATCH",
+          "legacy": "2026-08-06",
+          "vertical": "2026-08-06"
+        },
+        "selected_strike": {
+          "classification": "MATCH",
+          "legacy": 22150.0,
+          "vertical": 22150.0
+        },
+        "strategy_identity": {
+          "classification": "MATCH",
+          "legacy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+          "vertical": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+        },
+        "target": {
+          "classification": "MATCH",
+          "legacy": 77.7,
+          "vertical": 77.7
+        },
+        "trade_result": {
+          "classification": "MATCH",
+          "legacy": "TRADE",
+          "vertical": "TRADE"
+        }
+      },
+      "future_capability_mismatch_classification": {
+        "additional_historical_reference_lookbacks": "MATCH: preserved in S23 formula/reference evidence; no Market Structure redesign",
+        "configurable_oi_thresholds": "MATCH: minimum_oi=32500 from strategy configuration",
+        "directional_strike_traversal": "MATCH: represented by Bear Call start/end strike evidence",
+        "ideal_and_minimum_premium_phases": "MATCH: preserved in adapter request/evidence",
+        "min_max_bounded_risk_formulas": "MATCH: MSL MIN formula preserved; no generic Risk redesign",
+        "near_expiry_to_next_expiry_fallback": "MATCH: existing adapter capability recorded; not exercised by golden case",
+        "non_positive_risk_prices": "RULE_AUTHORITY_UNRESOLVED: not observed by this golden case and not inferred"
+      },
+      "future_capability_observations": [
+        "near-expiry to next-expiry fallback remains an existing contract-selection adapter capability; the Bear Call golden selected the supplied expiry and did not exercise fallback",
+        "directional strike traversal is represented by Bear Call start/end strike evidence from the existing S23 rule evaluation; no generic traversal engine was introduced",
+        "ideal-premium and minimum-premium phases are preserved as S23 contract-selection adapter request/evidence fields",
+        "configurable OI threshold is preserved from the Bear Call strategy configuration as minimum_oi=32500",
+        "MSL uses the existing MIN-bounded stoploss formula; Target is the existing ENTRY - PARAM(target_pct)% formula for this branch",
+        "non-positive calculated risk prices were not observed in this golden case and no new risk authority was inferred",
+        "additional historical lookbacks are preserved as branch-specific references in strategy formulas and evidence; no Market Structure redesign was introduced",
+        "any unobserved future rule requirement remains RULE_AUTHORITY_UNRESOLVED for later Contract Selection, Risk, or Market Structure certification"
+      ],
+      "mismatch_classifications": {},
+      "msl": 310.8,
+      "performance": {
+        "duration_seconds": 0.02045969999744557,
+        "evidence_packet_size_bytes": 12849,
+        "stage_count": 11
+      },
+      "selected_instrument": {
+        "exchange": null,
+        "expiry": "2026-08-06",
+        "metadata": {
+          "ltp": 262.8,
+          "oi": 999999.0,
+          "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+        },
+        "option_type": "CALL",
+        "product_type": "OPTION_SELLING",
+        "segment": "OPTIONS_SELL",
+        "strike": 22150.0,
+        "symbol": "NIFTY_20260806_22150_CALL",
+        "token": null
+      },
+      "stage_order": [
+        "strategy_resolution",
+        "monthly_status_and_branch",
+        "underlying_references",
+        "contract_selection",
+        "base_entry",
+        "gap_missed_entry",
+        "effective_entry",
+        "target_msl",
+        "decision",
+        "evidence_packet",
+        "legacy_comparison"
+      ],
+      "stage_statuses": [
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "strategy_resolution",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "monthly_status_and_branch",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "underlying_references",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "contract_selection",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "base_entry",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "gap_missed_entry",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "effective_entry",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "target_msl",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "decision",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "evidence_packet",
+          "status": "PASSED"
+        },
+        {
+          "failure_code": null,
+          "reason": null,
+          "stage_name": "legacy_comparison",
+          "status": "PASSED"
+        }
+      ],
+      "target": 77.7,
+      "trade_result": "TRADE"
+    },
+    "S23_BULL_CALL_SYNTHETIC_GOLDEN": {
+      "base_entry": 203.5,
+      "deterministic_hash": "4d2e514f05f873c17b7077ce6710c559dac54422ed6898cbb51e6ed9bbb24b84",
+      "msl": 321.0,
+      "regression": "MATCH_ACCEPTED_MILESTONE3",
+      "selected_instrument": {
+        "exchange": null,
+        "expiry": "2026-08-06",
+        "metadata": {
+          "ltp": 264.0,
+          "oi": 999999.0,
+          "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+        },
+        "option_type": "CALL",
+        "product_type": "OPTION_SELLING",
+        "segment": "OPTIONS_SELL",
+        "strike": 22250.0,
+        "symbol": "NIFTY_20260806_22250_CALL",
+        "token": null
+      },
+      "target": 81.4,
+      "trade_result": "TRADE"
+    }
+  },
+  "changed_policies_or_adapters": [
+    "S23 vertical-slice composition generalized from Bull Call constants to immutable branch specs",
+    "S23 vertical-slice composition adds Bear Call synthetic golden case"
+  ],
+  "component_map": [
+    {
+      "bear_call_input": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL + MonthlyStatus.BEAR",
+      "blocking_failure": "UNKNOWN_S23_BRANCH",
+      "evidence": "AB16-PRODUCT adapter evidence",
+      "existing_implementation": "S23ProductPolicyAdapter",
+      "stage": "Strategy Resolution",
+      "typed_input": "ProductPolicyInput(TFISRuntimeInput)",
+      "typed_output": "ProductPolicyResult"
+    },
+    {
+      "bear_call_input": "D2LL/D3LL market references and OPT_PRV levels",
+      "blocking_failure": "UNDERLYING_REFERENCE_FAILURE",
+      "evidence": "trade_plan formulas and intermediate values",
+      "existing_implementation": "S23EntryPolicyAdapter + StrategyEvaluator",
+      "stage": "Underlying References",
+      "typed_input": "EntryPolicyInput",
+      "typed_output": "EntryPolicyResult"
+    },
+    {
+      "bear_call_input": "CALL option chain, strike range, premium/OI thresholds",
+      "blocking_failure": "NO_QUALIFYING_CONTRACT",
+      "evidence": "selected contract and candidate trace",
+      "existing_implementation": "S23ContractSelectionPolicyAdapter",
+      "stage": "Contract Selection",
+      "typed_input": "ContractSelectionPolicyInput",
+      "typed_output": "ContractSelectionPolicyResult"
+    },
+    {
+      "bear_call_input": "selected CALL contract and legacy entry value",
+      "blocking_failure": "BASE_ENTRY_FAILURE",
+      "evidence": "EntryBusinessEngineFragment base entry evidence",
+      "existing_implementation": "EntryEngine + S23VerticalEntryPolicy",
+      "stage": "Base Entry",
+      "typed_input": "EntryEngineInput",
+      "typed_output": "EntryEngineResult"
+    },
+    {
+      "bear_call_input": "S23 Bear Call branch + CALL low-observation profile",
+      "blocking_failure": "GAP_MISSED_ENTRY_BLOCKED",
+      "evidence": "GapMissedEntryEvidence",
+      "existing_implementation": "evaluate_legacy_gap_missed_entry",
+      "stage": "Gap/Missed Entry",
+      "typed_input": "LegacyGapMissedEntryEvaluationInput",
+      "typed_output": "GapMissedEntryEngineResult"
+    },
+    {
+      "bear_call_input": "Base Entry plus Phase 3C Gap/Missed-Entry result",
+      "blocking_failure": "EFFECTIVE_ENTRY_FAILURE",
+      "evidence": "EntryBusinessEngineFragment effective entry evidence",
+      "existing_implementation": "EntryEngine + S23VerticalEntryPolicy",
+      "stage": "Effective Entry",
+      "typed_input": "EntryEngineInput",
+      "typed_output": "EntryEngineResult"
+    },
+    {
+      "bear_call_input": "effective entry, selected contract, supplied GME compatibility result",
+      "blocking_failure": "TARGET_ADAPTER_FAILURE / MSL_ADAPTER_FAILURE",
+      "evidence": "target and MSL policy evidence",
+      "existing_implementation": "S23TargetPolicyAdapter + S23MSLPolicyAdapter",
+      "stage": "Target/MSL",
+      "typed_input": "TargetPolicyInput + MSLPolicyInput",
+      "typed_output": "TargetPolicyResult + MSLPolicyResult"
+    },
+    {
+      "bear_call_input": "all prior stage outputs",
+      "blocking_failure": "evidence packet validation failure",
+      "evidence": "full synthetic golden packet",
+      "existing_implementation": "TFISDecision + TFISDecisionEvidencePacket",
+      "stage": "Decision and Evidence Packet",
+      "typed_input": "stage context",
+      "typed_output": "TFISDecision + TFISDecisionEvidencePacket"
+    }
+  ],
+  "fail_closed_scenarios": [
+    "incompatible Monthly Status -> monthly_status_and_branch / UNKNOWN_S23_BRANCH",
+    "unknown branch mismatch -> monthly_status_and_branch / UNKNOWN_S23_BRANCH",
+    "missing underlying reference -> underlying_references / UNDERLYING_REFERENCE_FAILURE",
+    "no qualifying Call contract -> contract_selection / NO_QUALIFYING_CONTRACT",
+    "missing selected-contract historical reference -> base_entry / BASE_ENTRY_FAILURE",
+    "Base Entry unknown policy -> BusinessEngineStatus.BLOCKED",
+    "required Gap/Missed-Entry evidence missing -> EntryFailure.GAP_MISSED_ENTRY_REQUIRED_BUT_MISSING",
+    "Effective Entry recalculation output missing -> effective_entry / EFFECTIVE_ENTRY_FAILURE",
+    "Target adapter failure -> target_msl / TARGET_ADAPTER_FAILURE",
+    "MSL adapter failure -> target_msl / MSL_ADAPTER_FAILURE",
+    "invalid selected-contract evidence packet -> SELECTED_CONTRACT_NOT_IN_CANDIDATES"
+  ],
+  "generic_orchestrator_changes": "NONE",
+  "open_rules_unchanged": [
+    "S23 PUT missed-entry authority remains unresolved and excluded",
+    "No S21, futures, lifecycle, paper, live, or broker behavior changed"
+  ],
+  "reused_components": [
+    "OfflineStrategyDecisionOrchestrator",
+    "S23ProductPolicyAdapter",
+    "S23EntryPolicyAdapter",
+    "S23ContractSelectionPolicyAdapter",
+    "EntryEngine",
+    "S23VerticalEntryPolicy",
+    "Phase 3C S23 Gap/Missed-Entry backtest-low compatibility policy",
+    "S23TargetPolicyAdapter",
+    "S23MSLPolicyAdapter",
+    "TFISDecision",
+    "TFISDecisionEvidencePacket"
+  ],
+  "runtime_impact": "NONE",
+  "schema_version": "phase3d.milestone4.s23_vertical_slice.v1",
+  "supported_vertical_cases": 2,
+  "verdict": "PHASE3D_M4_ACCEPT"
+}

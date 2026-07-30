@@ -6,12 +6,20 @@ way.
 
 ## Immediate Next Priorities
 
-0.31. `TODO` Extend the same Phase 3D offline vertical-slice composition to
-   the remaining supported CALL-side S23 branch, beginning with Bear Call.
-   Keep the generic orchestrator unchanged. Do not add another isolated
-   Entry-only milestone, do not activate runtime shadow/paper/live authority,
-   and do not use PUT missed-entry authority until the unresolved rule is
-   settled.
+0.32. `TODO` Begin a captured-evidence replacement task for the two supported
+   S23 Call-side vertical cases (`Bull Call`, `Bear Call`) only. Keep the same
+   offline pipeline, do not change the generic orchestrator, do not add PUT
+   branches, and classify any missing captured evidence explicitly rather than
+   inferring rules.
+
+0.31. `DONE` Extend the same Phase 3D offline vertical-slice composition to
+   Bear Call. Supported S23 vertical cases: `2` (`S23 Bull Call` synthetic
+   golden, `S23 Bear Call` synthetic golden). The generic orchestrator remains
+   unchanged. Future capability requirements observed around expiry fallback,
+   strike traversal, premium/OI phases, MIN-bounded MSL, non-positive risk
+   prices, and historical lookbacks were recorded as S23 adapter/report
+   evidence only; Contract Selection, Risk, Market Structure, runtime shadow,
+   paper/live authority, and PUT authority remain unchanged.
 
 0.30. `DONE` Complete the accelerated Phase 3D Milestone 3 offline S23
    vertical slice: Strategy Resolution -> Contract Selection compatibility

@@ -6,6 +6,17 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 4 extends the same offline
+  S23 vertical decision slice to Bear Call. Supported S23 vertical cases: `2`
+  (`S23 Bull Call` synthetic golden, `S23 Bear Call` synthetic golden). The
+  generic orchestrator was unchanged; Bear Call support is represented through
+  S23 vertical branch specs and existing compatibility adapters. Future
+  capability requirements observed around expiry fallback, strike traversal,
+  premium/OI phases, MIN-bounded MSL, non-positive risk prices, and historical
+  lookbacks were recorded as S23 adapter/report evidence only; Contract
+  Selection, Risk, Market Structure, runtime shadow, paper authority, live
+  authority, broker behavior, lifecycle, and execution routing remain
+  unchanged.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 3 adds the first offline
   S23 vertical decision slice through the new architecture. Supported S23
   vertical cases: `1` (`S23 Bull Call` synthetic golden). The slice composes
