@@ -6,6 +6,22 @@ way.
 
 ## Immediate Next Priorities
 
+0.37. `TODO` Implement only the first offline S23 Call-side
+   `PreMarketStrategyPlan` builder artifact selected from the Phase 3D
+   Milestone 8 gap matrix. The artifact should compose resolved strategy
+   identity/configuration, completed historical references, Monthly Status,
+   Contract Selection compatibility, Base Entry, preliminary Target/MSL, ORPT,
+   RC, and explicit block reasons. Do not implement `OpeningMarketContext`,
+   `EffectiveExecutionPlan`, broker/account reconciliation, execution,
+   lifecycle authority, paper authority, or live authority in the same
+   milestone.
+
+0.36. `DONE` Define the Phase 3D Milestone 8 runtime operational model and
+   gap matrix. Result: TFIS is specified as a precomputed-plan system with
+   separate normal fresh-entry, Gap/Missed-Entry recalculation, and
+   carried-position lifecycle-opening paths. Runtime implementation remains
+   `NONE`; broker/paper/live impact remains `NONE`.
+
 0.35. `TODO` Resolve the exact capture gaps preventing a complete real S23
    Call-side packet: authoritative S23 Call-side legacy result, pre-market S23
    plan, Monthly Status, completed historical references, ORPT

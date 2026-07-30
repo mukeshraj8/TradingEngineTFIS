@@ -2,6 +2,18 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 8 produced the
+  specification-only TFIS runtime operational model. The architecture spec is
+  `docs/architecture/tfis_runtime_operational_model.md`; reports are
+  `reports/phase3d/milestone8_runtime_operational_model_summary.md`,
+  `reports/phase3d/milestone8_runtime_gap_matrix.json`, and
+  `reports/phase3d/milestone8_runtime_state_catalog.json`. Verdict:
+  `PHASE3D_M8_ACCEPT`. The model defines `PreMarketStrategyPlan`,
+  `OpeningMarketContext`, `EffectiveExecutionPlan`, and
+  `PositionLifecycleContext`; separates normal fresh-entry, Gap/Missed-Entry
+  recalculation, and carried-position lifecycle-opening paths; and records
+  runtime gaps without activating source/runtime behavior. Runtime impact:
+  `NONE`. Broker/paper/live impact: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 7 produced the first real
   non-authoritative S23 Call-side capture attempt from the existing
   `2026-06-05` post-market TradingData session. Reports are

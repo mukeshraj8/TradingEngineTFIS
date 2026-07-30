@@ -1,0 +1,128 @@
+{
+  "schema_version": "tfis.phase3d.m8.runtime_gap_matrix.v1",
+  "generated_for": "PHASE3D_M8",
+  "runtime_authority": "NONE",
+  "broker_paper_live_impact": "NONE",
+  "concepts": [
+    {
+      "concept": "Strategy identity and configuration resolution",
+      "existing_implementation_status": "IMPLEMENTED_AND_PROVEN",
+      "reference_implementation_support": "REFERENCE_ONLY",
+      "refactored_support": "IMPLEMENTED_AND_PROVEN",
+      "evidence_available": "Phase 3A reports and strategy identity contracts",
+      "missing_contract": null,
+      "missing_runtime_behavior": "Runtime startup composition still deferred",
+      "future_milestone": "PreMarketStrategyPlan builder"
+    },
+    {
+      "concept": "PreMarketStrategyPlan",
+      "existing_implementation_status": "CONTRACT_ONLY",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "M8 specification only",
+      "missing_contract": "Concrete immutable domain contract",
+      "missing_runtime_behavior": "Plan generation, publication, hash, blocked-plan artifact",
+      "future_milestone": "Implement offline S23 Call-side PreMarketStrategyPlan builder"
+    },
+    {
+      "concept": "OpeningMarketContext",
+      "existing_implementation_status": "CONTRACT_ONLY",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "M7 partial capture, tradingengine capture adapter",
+      "missing_contract": "Concrete immutable opening-context contract",
+      "missing_runtime_behavior": "Open/ORPT/RC capture and validation pipeline",
+      "future_milestone": "Opening context capture after pre-market plan"
+    },
+    {
+      "concept": "EffectiveExecutionPlan",
+      "existing_implementation_status": "CONTRACT_ONLY",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "TFISDecision and evidence packet contracts",
+      "missing_contract": "Concrete effective-plan contract",
+      "missing_runtime_behavior": "Final authorization, revised timing, execution handoff",
+      "future_milestone": "Offline opening-to-effective-plan shadow"
+    },
+    {
+      "concept": "PositionLifecycleContext",
+      "existing_implementation_status": "CONTRACT_ONLY",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "PositionCycleIdentity and lifecycle plan contracts",
+      "missing_contract": "Concrete carried-position lifecycle context",
+      "missing_runtime_behavior": "Broker reconciliation and lifecycle opening decisions",
+      "future_milestone": "Carried-position reconciliation specification/contract"
+    },
+    {
+      "concept": "Fresh-entry state machine",
+      "existing_implementation_status": "CONTRACT_ONLY",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "M8 specification",
+      "missing_contract": "State catalogue and transition events",
+      "missing_runtime_behavior": "Runtime coordinator",
+      "future_milestone": "After PreMarketStrategyPlan and OpeningMarketContext"
+    },
+    {
+      "concept": "Normal ORPT authorization path",
+      "existing_implementation_status": "CONTRACT_ONLY",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "Entry/GME/S23 vertical reports",
+      "missing_contract": "Effective plan and order-ready event",
+      "missing_runtime_behavior": "Authorized-time wait and final validation",
+      "future_milestone": "Offline opening-to-effective-plan shadow"
+    },
+    {
+      "concept": "Fresh-entry gap/recalculation path",
+      "existing_implementation_status": "IMPLEMENTED_OFFLINE_ONLY",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "IMPLEMENTED_OFFLINE_ONLY",
+      "evidence_available": "Phase 3C certification and S23 vertical slices",
+      "missing_contract": "OpeningMarketContext and EffectiveExecutionPlan",
+      "missing_runtime_behavior": "Real ORPT/RC observation capture and revised authorization",
+      "future_milestone": "Opening context capture after pre-market plan"
+    },
+    {
+      "concept": "Carried-position opening gap handling",
+      "existing_implementation_status": "RULE_AUTHORITY_UNRESOLVED",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "Reference lifecycle concepts only",
+      "missing_contract": "PositionLifecycleContext action policy",
+      "missing_runtime_behavior": "Gap-through-protection handling and broker-order reconciliation",
+      "future_milestone": "Carried-position lifecycle authority review"
+    },
+    {
+      "concept": "Evidence capture",
+      "existing_implementation_status": "IMPLEMENTED_OFFLINE_ONLY",
+      "reference_implementation_support": "PARTIALLY_SUPPORTED",
+      "refactored_support": "IMPLEMENTED_OFFLINE_ONLY",
+      "evidence_available": "M6 packets and M7 partial packet",
+      "missing_contract": null,
+      "missing_runtime_behavior": "Explicit approved runtime/debug activation only",
+      "future_milestone": "Use only when approved for evidence sessions"
+    },
+    {
+      "concept": "Broker/account reconciliation",
+      "existing_implementation_status": "REFERENCE_ONLY",
+      "reference_implementation_support": "REFERENCE_ONLY",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "Reference/paper docs and concepts",
+      "missing_contract": "Broker truth snapshot and reconciliation result",
+      "missing_runtime_behavior": "Startup reconciliation and mismatch recovery",
+      "future_milestone": "After first offline pre-market/opening path"
+    },
+    {
+      "concept": "Execution authority",
+      "existing_implementation_status": "NOT_IMPLEMENTED",
+      "reference_implementation_support": "REFERENCE_ONLY",
+      "refactored_support": "NOT_IMPLEMENTED",
+      "evidence_available": "No refactored authority evidence; M7 says NONE",
+      "missing_contract": "Execution intent and broker submission contract",
+      "missing_runtime_behavior": "All execution behavior",
+      "future_milestone": "Not before shadow/parity readiness"
+    }
+  ]
+}

@@ -6,6 +6,16 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 8 defines the
+  authoritative TFIS runtime operational model as a specification-only
+  architecture document. TFIS is now documented as a precomputed-plan system:
+  strategy configuration, historical references, Monthly Status, Contract
+  Selection compatibility, Base Entry, preliminary risk values, ORPT, and RC
+  should form an immutable `PreMarketStrategyPlan` before market-open
+  validation. Market-open processing then separates normal fresh-entry,
+  Gap/Missed-Entry recalculation, and carried-position lifecycle paths.
+  Runtime implementation remains `NONE`; broker, paper, live, scheduler,
+  state-store, execution, and lifecycle authority remain unmodified.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 7 attempted the first
   real non-authoritative S23 Call-side capture using the existing
   `2026-06-05` post-market TradingData session. The packet is classified
