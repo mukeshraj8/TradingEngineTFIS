@@ -1,0 +1,75 @@
+{
+  "cases": {
+    "partial_real": {
+      "authorized_time": null,
+      "gap_classification": "INSUFFICIENT_EVIDENCE",
+      "gme_applicability": "UNKNOWN",
+      "gme_status": null,
+      "hash": "413cfb509cb5d511b9d08ef013d6ec6c8064aedb5962e251b1ea576673475fbd",
+      "msl_status": "BLOCKED",
+      "offline_execution_candidate": false,
+      "path": "BLOCKED_OPENING_VALIDATION",
+      "plan_status": "INSUFFICIENT_EVIDENCE",
+      "recalculation_required": false,
+      "runtime_authority": "NONE",
+      "target_status": "BLOCKED"
+    },
+    "s23_bear_gap": {
+      "authorized_time": "09:29:59",
+      "gap_classification": "GAP_DOWN",
+      "gme_applicability": "APPLICABLE",
+      "gme_status": "MISSED",
+      "hash": "f21d868f8e78edd54b5c231848e9b4f820150e2d65d5855b30adde35ea8a505e",
+      "msl_status": "RECALCULATED",
+      "offline_execution_candidate": true,
+      "path": "GAP_RECALCULATED",
+      "plan_status": "READY_OFFLINE",
+      "recalculation_required": true,
+      "runtime_authority": "NONE",
+      "target_status": "RECALCULATED"
+    },
+    "s23_bear_normal": {
+      "authorized_time": "09:19:59",
+      "gap_classification": "NO_GAP",
+      "gme_applicability": "NOT_APPLICABLE",
+      "gme_status": null,
+      "hash": "3830fd5b913db77e765d2203740ebbd6e16d8549f4cee8a3a5051f26afba8051",
+      "msl_status": "RETAINED_FROM_PREMARKET",
+      "offline_execution_candidate": true,
+      "path": "NORMAL_RETAINED",
+      "plan_status": "READY_OFFLINE",
+      "recalculation_required": false,
+      "runtime_authority": "NONE",
+      "target_status": "RETAINED_FROM_PREMARKET"
+    },
+    "s23_bull_gap": {
+      "authorized_time": "09:29:59",
+      "gap_classification": "GAP_UP",
+      "gme_applicability": "APPLICABLE",
+      "gme_status": "MISSED",
+      "hash": "45a5106bb1027881abf5d937224fd6def4237476941f2c8d8603d2963526df51",
+      "msl_status": "RECALCULATED",
+      "offline_execution_candidate": true,
+      "path": "GAP_RECALCULATED",
+      "plan_status": "READY_OFFLINE",
+      "recalculation_required": true,
+      "runtime_authority": "NONE",
+      "target_status": "RECALCULATED"
+    },
+    "s23_bull_normal": {
+      "authorized_time": "09:19:59",
+      "gap_classification": "NO_GAP",
+      "gme_applicability": "NOT_APPLICABLE",
+      "gme_status": null,
+      "hash": "c30bd67eeeb2063c90ddce7afd9a175cb38c049c2896ed914a6948382c16ebb1",
+      "msl_status": "RETAINED_FROM_PREMARKET",
+      "offline_execution_candidate": true,
+      "path": "NORMAL_RETAINED",
+      "plan_status": "READY_OFFLINE",
+      "recalculation_required": false,
+      "runtime_authority": "NONE",
+      "target_status": "RETAINED_FROM_PREMARKET"
+    }
+  },
+  "schema_version": "tfis.phase3d.milestone11.gap_matrix.v1"
+}

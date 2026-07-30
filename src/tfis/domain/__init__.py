@@ -172,6 +172,15 @@ from .opening_market_context import (
     TimedOpeningObservation,
     opening_context_hash,
 )
+from .effective_execution_plan import (
+    EffectiveExecutionFailure,
+    EffectiveExecutionPath,
+    EffectiveExecutionPlan,
+    EffectiveExecutionPlanStatus,
+    EffectiveExecutionValues,
+    EffectiveRiskValueStatus,
+    effective_execution_plan_hash,
+)
 from .strategy_rule import StrategyExpiryPolicy, StrategyRule
 from .strategy_identity import (
     PositionCycleIdentity,
@@ -376,4 +385,11 @@ __all__ = [
     "product_type_from_segment",
     "premarket_plan_hash",
     "opening_context_hash",
+    "EffectiveExecutionFailure",
+    "EffectiveExecutionPath",
+    "EffectiveExecutionPlan",
+    "EffectiveExecutionPlanStatus",
+    "EffectiveExecutionValues",
+    "EffectiveRiskValueStatus",
+    "effective_execution_plan_hash",
 ]

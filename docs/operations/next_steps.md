@@ -6,10 +6,20 @@ way.
 
 ## Immediate Next Priorities
 
-0.39. `TODO` Implement offline `EffectiveExecutionPlan` composition from
+0.40. `TODO` Select the next approved boundary: implement
+   `PositionLifecycleContext`, implement one complete offline trading-day
+   state transition from pre-market plan through execution-plan handoff, or
+   correct a precise `EffectiveExecutionPlan` defect found during Milestone
+   11 review. Do not move to live event bus, scheduler, broker execution,
+   paper authority, live authority, or shared routing yet.
+
+0.39. `DONE` Implement offline `EffectiveExecutionPlan` composition from
    `PreMarketStrategyPlan` plus `OpeningMarketContext` for S23 Call-side only.
    Do not add event bus, scheduler, concurrency, broker execution, lifecycle,
    paper/live authority, PUT branches, S21, or futures in the same milestone.
+   Result: Bull/Bear normal retained plans, Bull/Bear gap recalculated plans,
+   and one M7-derived partial real insufficient-evidence plan are produced as
+   immutable offline artifacts. Runtime execution authority remains `NONE`.
 
 0.38. `DONE` Implement immutable offline `OpeningMarketContext` contract and
    builder for S23 Bull Call and Bear Call opening evidence. Bull and Bear

@@ -6,6 +6,17 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 11 implements immutable
+  offline `EffectiveExecutionPlan` composition for the existing supported S23
+  Call-side cases. `PreMarketStrategyPlan`: `IMPLEMENTED_OFFLINE`.
+  `OpeningMarketContext`: `IMPLEMENTED_OFFLINE_FOR_S23_CALL`.
+  `EffectiveExecutionPlan`: `IMPLEMENTED_OFFLINE_FOR_S23_CALL`.
+  `PositionLifecycleContext`: `NOT_IMPLEMENTED`. Full trading-day
+  coordination: `NOT_IMPLEMENTED`. Shared live routing: `NOT_IMPLEMENTED`.
+  Runtime execution authority: `NONE`. Broker/paper/live impact: `NONE`.
+  Supported execution-plan outputs now include Bull normal retained, Bull gap
+  recalculated, Bear normal retained, Bear gap recalculated, and one honest
+  M7-derived partial real insufficient-evidence plan.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 10 implements the
   immutable offline `OpeningMarketContext` contract and generic builder for
   S23 Call-side opening evidence. `PreMarketStrategyPlan`:
