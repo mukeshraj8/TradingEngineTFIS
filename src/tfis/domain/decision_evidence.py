@@ -231,6 +231,69 @@ class GapMissedEntryEvidence:
 
 
 @dataclass(frozen=True, slots=True)
+class EntryBusinessEngineFragment:
+    engine_id: str
+    policy_key: str
+    profile: str
+    product: str
+    branch: str
+    selected_or_resolved_instrument: str | None
+    formula_reference: str | None
+    input_references: tuple[tuple[str, ProvenancedValue], ...] = ()
+    formula_components: tuple[Mapping[str, str], ...] = ()
+    intermediate_values: tuple[tuple[str, ProvenancedValue], ...] = ()
+    base_entry: ProvenancedValue = ProvenancedValue(
+        value=None,
+        availability=EvidenceAvailability.UNAVAILABLE,
+        provenance=EvidenceProvenance.NOT_APPLICABLE,
+    )
+    gap_missed_entry_dependency: Mapping[str, str] = MappingProxyType({})
+    effective_entry: ProvenancedValue = ProvenancedValue(
+        value=None,
+        availability=EvidenceAvailability.UNAVAILABLE,
+        provenance=EvidenceProvenance.NOT_APPLICABLE,
+    )
+    effective_entry_source: str | None = None
+    trigger_condition: Mapping[str, str] = MappingProxyType({})
+    validation: tuple[str, ...] = ()
+    warnings: tuple[str, ...] = ()
+    failures: tuple[str, ...] = ()
+    quality: str = "UNAVAILABLE"
+    provenance: Mapping[str, str] = MappingProxyType({})
+    deterministic_hash: str | None = None
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "input_references", tuple(self.input_references))
+        object.__setattr__(
+            self,
+            "formula_components",
+            tuple(
+                MappingProxyType({str(key): str(value) for key, value in sorted(item.items())})
+                for item in self.formula_components
+            ),
+        )
+        object.__setattr__(self, "intermediate_values", tuple(self.intermediate_values))
+        object.__setattr__(
+            self,
+            "gap_missed_entry_dependency",
+            MappingProxyType({str(key): str(value) for key, value in sorted(self.gap_missed_entry_dependency.items())}),
+        )
+        object.__setattr__(
+            self,
+            "trigger_condition",
+            MappingProxyType({str(key): str(value) for key, value in sorted(self.trigger_condition.items())}),
+        )
+        object.__setattr__(self, "validation", tuple(self.validation))
+        object.__setattr__(self, "warnings", tuple(self.warnings))
+        object.__setattr__(self, "failures", tuple(self.failures))
+        object.__setattr__(
+            self,
+            "provenance",
+            MappingProxyType({str(key): str(value) for key, value in sorted(self.provenance.items())}),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class OptionProductReferenceEvidence:
     option_reference_values: tuple[tuple[str, ProvenancedValue], ...]
     expiry_candidates: tuple[date, ...]
@@ -341,6 +404,7 @@ class TFISDecisionEvidencePacket:
     selected_contract: SelectedContractEvidence
     calculated_decision: CalculatedDecisionEvidence
     audit: AuditEvidence
+    entry: EntryBusinessEngineFragment | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return _serializable(self)
@@ -538,6 +602,49 @@ def _packet_from_dict(data: Mapping[str, Any]) -> TFISDecisionEvidencePacket:
         selected_contract=_selected_from_dict(data["selected_contract"]),
         calculated_decision=_calculated_from_dict(data["calculated_decision"]),
         audit=_audit_from_dict(data["audit"]),
+        entry=_entry_fragment_from_dict(data["entry"]) if data.get("entry") is not None else None,
+    )
+
+
+def _entry_fragment_from_dict(data: Mapping[str, Any]) -> EntryBusinessEngineFragment:
+    return EntryBusinessEngineFragment(
+        engine_id=str(data["engine_id"]),
+        policy_key=str(data["policy_key"]),
+        profile=str(data["profile"]),
+        product=str(data["product"]),
+        branch=str(data["branch"]),
+        selected_or_resolved_instrument=(
+            str(data["selected_or_resolved_instrument"])
+            if data["selected_or_resolved_instrument"] is not None
+            else None
+        ),
+        formula_reference=(
+            str(data["formula_reference"])
+            if data["formula_reference"] is not None
+            else None
+        ),
+        input_references=tuple((str(key), _pv(value)) for key, value in data.get("input_references", ())),
+        formula_components=tuple(data.get("formula_components", ())),
+        intermediate_values=tuple((str(key), _pv(value)) for key, value in data.get("intermediate_values", ())),
+        base_entry=_pv(data["base_entry"]),
+        gap_missed_entry_dependency=data.get("gap_missed_entry_dependency") or {},
+        effective_entry=_pv(data["effective_entry"]),
+        effective_entry_source=(
+            str(data["effective_entry_source"])
+            if data["effective_entry_source"] is not None
+            else None
+        ),
+        trigger_condition=data.get("trigger_condition") or {},
+        validation=tuple(str(item) for item in data.get("validation", ())),
+        warnings=tuple(str(item) for item in data.get("warnings", ())),
+        failures=tuple(str(item) for item in data.get("failures", ())),
+        quality=str(data["quality"]),
+        provenance=data.get("provenance") or {},
+        deterministic_hash=(
+            str(data["deterministic_hash"])
+            if data["deterministic_hash"] is not None
+            else None
+        ),
     )
 
 

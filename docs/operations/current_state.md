@@ -6,6 +6,24 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 2 defines the immutable
+  generic Entry contracts and minimal fail-closed Entry orchestration shell.
+  Entry now has explicit Base Entry and Effective Entry stages, typed
+  reference identity, bounded formula-component evidence, optional
+  `TFISDecisionEvidencePacket` Entry fragment support, and catalog metadata
+  for `BASE_ENTRY`, `EFFECTIVE_ENTRY`, `ENTRY_QUALIFICATION`, and
+  `RECALCULATED_ENTRY`. This is offline architecture/domain-contract work
+  only; no S21/S23 formulas, compatibility policies, runtime shadow, paper
+  authority, live authority, broker behavior, or strategy configs were
+  activated.
+- as of Wednesday, July 29, 2026, Phase 3D Milestone 1A updates the Entry
+  business-capability inventory with user-provided cross-strategy rule-sheet
+  evidence for option buying, option selling, futures, and rollover context.
+  The corrected architecture is product-aware: option strategies require
+  Contract Selection and selected-contract references before Base Entry,
+  while futures can derive Base Entry from resolved futures references before
+  ORPT/RC Gap/Missed-Entry. No source code, runtime configuration, strategy
+  policy, or live/paper behavior changed.
 - as of Wednesday, July 29, 2026, Phase 3C Milestone 5 certifies the Generic
   Gap/Missed-Entry Business Engine as offline-complete for architecture and
   supported legacy parity. The authoritative specification is

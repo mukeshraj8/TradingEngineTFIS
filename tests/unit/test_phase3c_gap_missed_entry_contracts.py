@@ -191,14 +191,16 @@ def test_recalculation_is_downstream_instruction_and_target_stop_fields_are_outs
     assert {"target", "fsl", "trp", "msl", "tsl", "aps"}.isdisjoint(field_names)
 
 
-def test_catalog_dependencies_validate_with_gap_providing_missed_entry_capability() -> None:
+def test_catalog_dependencies_keep_gap_separate_from_entry_effective_stage() -> None:
     registry = load_business_engine_registry(CATALOG)
     gap = registry.get("gap")
     entry = registry.get("entry")
 
     assert BusinessEngineCapability.GAP in gap.provided_capabilities
     assert BusinessEngineCapability.MISSED_ENTRY in gap.provided_capabilities
-    assert BusinessEngineCapability.MISSED_ENTRY in entry.required_capabilities
+    assert BusinessEngineCapability.MISSED_ENTRY not in entry.required_capabilities
+    assert BusinessEngineCapability.BASE_ENTRY in entry.provided_capabilities
+    assert BusinessEngineCapability.EFFECTIVE_ENTRY in entry.provided_capabilities
     assert business_engine_catalog_json(registry) == business_engine_catalog_json(load_business_engine_registry(CATALOG))
 
 

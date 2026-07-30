@@ -6,11 +6,25 @@ way.
 
 ## Immediate Next Priorities
 
-0.28. `TODO` Wait for explicit approval before starting Phase 3D Entry Engine
-   work. Phase 3D must consume the Gap/Missed-Entry output as a downstream
-   input, preserve compatibility-only fields as audit evidence, keep S23 PUT
-   authority unresolved until clarified, and avoid runtime activation unless a
-   separate shadow-evaluation change is approved.
+0.30. `TODO` Proceed only with explicit approval to the accelerated Phase 3D
+   Milestone 3 offline S23 vertical slice: Strategy Resolution -> Contract
+   Selection compatibility adapter -> Base Entry -> Gap/Missed-Entry ->
+   Effective Entry -> Target/MSL compatibility adapters -> `TFISDecision` ->
+   `TFISDecisionEvidencePacket`. Do not add another isolated Entry-only
+   milestone.
+
+0.29. `DONE` Complete Phase 3D Milestone 2 Generic Entry Engine Contract
+   Design. Entry now exposes explicit Base Entry and Effective Entry contracts,
+   product-aware reference identity, bounded formula-component evidence, a
+   minimal generic fail-closed shell, catalog capabilities, and optional
+   decision-evidence packet integration. Runtime activation remains out of
+   scope.
+
+0.28. `DONE` Phase 3D Entry contract design is complete through Milestone 2.
+   Correct relationship for applicable strategies is Base Entry ->
+   Gap/Missed-Entry -> Effective Entry. S23 PUT authority and S21 ORPT/RC
+   applicability remain unresolved and must not be silently fixed during the
+   next vertical slice.
 
 0.27. `DONE` Complete Phase 3C Milestone 5 certification. Phase 3C is accepted
    for offline architecture and supported legacy parity with 8 cases, 8

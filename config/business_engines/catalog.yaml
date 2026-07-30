@@ -181,48 +181,90 @@ engines:
 
   - engine_id: entry
     display_name: Entry Engine
-    purpose: Evaluates reusable entry qualification evidence without selecting execution contracts.
+    purpose: Produces base and effective entry evidence for a resolved tradable instrument or selected contract without owning contract selection, risk, lifecycle, or execution.
     stage: ENTRY
     schema_version: "phase3b.business_engine_definition.v1"
     required_inputs:
-      - entry_context
+      - strategy_evaluation_identity
+      - position_cycle_identity
+      - resolved_configuration_hash
+      - resolved_trade_branch
+      - resolved_tradable_instrument
+      - entry_policy_key
+      - formula_descriptor
+      - entry_references
       - evaluation_timestamp
     optional_inputs:
-      - gap_state
       - monthly_status
       - market_structure_state
+      - gap_missed_entry_result
+      - unresolved_rule_evidence
     produced_outputs:
-      - entry_state
-      - missed_entry_state
+      - base_entry_candidate
+      - effective_entry_trigger
+      - entry_qualification
     evidence_outputs:
-      - entry_rule_trace
-      - missed_entry_trace
-      - entry_data_warnings
+      - entry_reference_identity_evidence
+      - entry_formula_component_evidence
+      - base_entry_evidence
+      - effective_entry_evidence
+      - gap_missed_entry_dependency_evidence
+      - unresolved_entry_semantics_evidence
     validation_rules:
-      - configured entry inputs must be complete
-      - required capabilities must be present
-      - timestamp must be aligned to the evaluation window
+      - strategy identity, position-cycle identity, and resolved configuration hash must be present
+      - resolved tradable instrument must be supplied before Entry runs
+      - option products must supply a selected option contract before Base Entry
+      - reference identities must include source instrument identity and product context
+      - formula descriptor must be supplied by the resolved policy context
+      - Gap/Missed-Entry is consumed only after Base Entry and only where applicable
+      - timestamp evidence must be timezone-aware and chronological
+      - unresolved authority must fail closed unless explicitly evidence-only
     failure_modes:
-      - MISSING_REQUIRED_INPUT
-      - MISSING_CAPABILITY
-      - TIMESTAMP_INCONSISTENCY
+      - MISSING_STRATEGY_IDENTITY
+      - MISSING_POSITION_CYCLE_IDENTITY
+      - MISSING_RESOLVED_CONFIGURATION_HASH
+      - MISSING_ENTRY_POLICY
+      - UNKNOWN_ENTRY_POLICY
+      - POLICY_COMPOSITION_MISMATCH
+      - MISSING_RESOLVED_INSTRUMENT
+      - MISSING_SELECTED_OPTION_CONTRACT
+      - MISSING_REFERENCE
+      - AMBIGUOUS_REFERENCE_IDENTITY
+      - MISSING_FORMULA_DESCRIPTOR
+      - UNSUPPORTED_FORMULA_COMPONENT
+      - FORMULA_EVALUATION_ERROR
+      - INVALID_ENTRY_VALUE
+      - INVALID_TRIGGER_DIRECTION
+      - INVALID_ORDER_SIDE
+      - GAP_MISSED_ENTRY_REQUIRED_BUT_MISSING
+      - GAP_MISSED_ENTRY_BLOCKED
+      - RECALCULATION_REQUIRED_BUT_MISSING
+      - RECALCULATION_OUTPUT_INCOMPATIBLE
+      - UNRESOLVED_ENTRY_SEMANTICS
+      - UNSUPPORTED_PRODUCT
+      - TIMESTAMP_CHRONOLOGY_INVALID
+      - STALE_REFERENCE_EVIDENCE
+      - NONDETERMINISTIC_OUTPUT
     quality_metrics:
-      - rule_trace_completeness
-      - input_completeness
-      - timestamp_alignment
+      - reference_identity_completeness
+      - formula_component_trace_completeness
+      - base_entry_evidence_completeness
+      - effective_entry_evidence_completeness
+      - deterministic_output_hash
+      - serialized_result_size
     state_requirements: STATELESS
     dependencies:
       - market_structure
       - monthly_status
-      - gap
     required_capabilities:
       - MARKET_STRUCTURE
       - MONTHLY_STATUS
-      - GAP
-      - MISSED_ENTRY
     provided_capabilities:
       - ENTRY
-      - MISSED_ENTRY
+      - BASE_ENTRY
+      - EFFECTIVE_ENTRY
+      - ENTRY_QUALIFICATION
+      - RECALCULATED_ENTRY
     supported_products:
       - FUTURES
       - OPTION_SELLING
@@ -241,12 +283,11 @@ engines:
 
   - engine_id: contract_selection
     display_name: Contract Selection Engine
-    purpose: Converts qualified intent into product-specific contract references.
+    purpose: Resolves product-specific tradable instruments or option contracts before entry/risk composition consumes them.
     stage: CONTRACT_SELECTION
     schema_version: "phase3b.business_engine_definition.v1"
     required_inputs:
       - product_reference
-      - entry_state
       - evaluation_timestamp
     optional_inputs:
       - option_chain
@@ -261,7 +302,6 @@ engines:
       - product_reference_evidence
     validation_rules:
       - product reference must match supported product
-      - entry capability must be available
       - option products must provide option-chain-compatible references
     failure_modes:
       - MISSING_REQUIRED_INPUT
@@ -273,10 +313,13 @@ engines:
       - reference_data_freshness
     state_requirements: STATELESS
     dependencies:
-      - entry
+      - market_structure
+      - monthly_status
     required_capabilities:
-      - ENTRY
+      - MARKET_STRUCTURE
+      - MONTHLY_STATUS
     provided_capabilities:
+      - TRADABLE_INSTRUMENT_RESOLVED
       - OPTION_CHAIN
       - STRIKE_SELECTION
       - PREMIUM_REFERENCE

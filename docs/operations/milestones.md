@@ -2,6 +2,20 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 2 implemented the final
+  standalone Generic Entry Engine Contract Design milestone. New contracts live
+  in `src/tfis/domain/entry.py`, the minimal orchestration shell lives in
+  `src/tfis/entry/engine.py`, the architecture spec is
+  `docs/architecture/tfis_phase3d_entry_engine_contract.md`, and the summary
+  report is `reports/phase3d/milestone2_entry_contract_summary.md`. The work
+  is offline-only and prepares the next S23 vertical slice; no runtime behavior
+  was activated.
+- as of Wednesday, July 29, 2026, Phase 3D Milestone 1A revised the Entry
+  business-capability inventory using the newly supplied cross-strategy rule
+  sheets. The addendum records product-aware pipelines for option strategies
+  and futures, separates underlying, futures, selected-option, equity, and
+  final-strike references, adds a rule matrix under `reports/phase3d/`, and
+  leaves unreadable formulas marked for verification before contract design.
 - as of Wednesday, July 29, 2026, Phase 3C Milestone 5 produced the final
   Gap/Missed-Entry certification: authoritative specification, stable
   `TFIS-GME-*` requirement identifiers, open-rule register, deterministic

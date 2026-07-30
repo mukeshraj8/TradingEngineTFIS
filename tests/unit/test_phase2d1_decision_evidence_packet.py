@@ -18,6 +18,9 @@ from tfis.domain import (
     DecisionEvidenceCompleteness,
     EvidenceAvailability,
     SelectedContractEvidence,
+    EntryBusinessEngineFragment,
+    EvidenceProvenance,
+    ProvenancedValue,
     TFISDecisionEvidencePacket,
     validate_decision_evidence_packet,
 )
@@ -36,6 +39,58 @@ def test_packet_round_trip_preserves_decimal_and_is_deterministic() -> None:
     assert round_tripped.to_json() == packet.to_json()
     assert round_tripped.calculated_decision.entry.value == Decimal("203.5")
     assert round_tripped.option_product_references.ideal_premium.value == Decimal("271.2")
+    assert round_tripped.entry is None
+
+
+def test_packet_can_round_trip_optional_entry_business_engine_fragment() -> None:
+    packet = build_s23_synthetic_golden_packet()
+    with_entry = replace(
+        packet,
+        entry=EntryBusinessEngineFragment(
+            engine_id="entry",
+            policy_key="fixture.entry",
+            profile="generic",
+            product="OPTION_SELLING",
+            branch="fixture_branch",
+            selected_or_resolved_instrument="NIFTY_OPT",
+            formula_reference="fixture:entry",
+            input_references=(
+                (
+                    "selected_3dll",
+                    ProvenancedValue(
+                        Decimal("100.25"),
+                        EvidenceAvailability.AVAILABLE,
+                        EvidenceProvenance.SYNTHETIC,
+                        "fixture",
+                    ),
+                ),
+            ),
+            base_entry=ProvenancedValue(
+                Decimal("100.25"),
+                EvidenceAvailability.AVAILABLE,
+                EvidenceProvenance.SYNTHETIC,
+                "fixture",
+            ),
+            gap_missed_entry_dependency={"status": "NOT_APPLICABLE"},
+            effective_entry=ProvenancedValue(
+                Decimal("100.25"),
+                EvidenceAvailability.AVAILABLE,
+                EvidenceProvenance.SYNTHETIC,
+                "fixture",
+            ),
+            effective_entry_source="BASE_POLICY",
+            trigger_condition={"trigger_direction": "PRICE_AT_OR_BELOW"},
+            validation=(),
+            quality="VALID",
+            deterministic_hash="abc123",
+        ),
+    )
+
+    round_tripped = TFISDecisionEvidencePacket.from_json(with_entry.to_json())
+
+    assert round_tripped.entry is not None
+    assert round_tripped.entry.base_entry.value == Decimal("100.25")
+    assert round_tripped.entry.gap_missed_entry_dependency["status"] == "NOT_APPLICABLE"
 
 
 def test_packet_preserves_null_versus_zero() -> None:

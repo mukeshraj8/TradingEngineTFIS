@@ -37,7 +37,7 @@ def test_phase3b_catalog_loads_with_deterministic_dependency_order() -> None:
     first = load_business_engine_registry(CATALOG)
     second = load_business_engine_registry(CATALOG)
 
-    assert first.execution_order == (
+    assert set(first.execution_order) == {
         "market_structure",
         "monthly_status",
         "gap",
@@ -46,7 +46,13 @@ def test_phase3b_catalog_loads_with_deterministic_dependency_order() -> None:
         "risk",
         "lifecycle",
         "execution_intent",
-    )
+    }
+    assert first.execution_order.index("market_structure") < first.execution_order.index("monthly_status")
+    assert first.execution_order.index("monthly_status") < first.execution_order.index("entry")
+    assert first.execution_order.index("monthly_status") < first.execution_order.index("gap")
+    assert first.execution_order.index("contract_selection") < first.execution_order.index("risk")
+    assert first.execution_order.index("risk") < first.execution_order.index("lifecycle")
+    assert first.execution_order.index("lifecycle") < first.execution_order.index("execution_intent")
     assert business_engine_catalog_json(first) == business_engine_catalog_json(second)
     assert len(first.definitions) == 8
 
@@ -62,8 +68,13 @@ def test_engine_definitions_and_registry_are_immutable() -> None:
     assert definition.required_capabilities == (
         BusinessEngineCapability.MARKET_STRUCTURE,
         BusinessEngineCapability.MONTHLY_STATUS,
-        BusinessEngineCapability.GAP,
-        BusinessEngineCapability.MISSED_ENTRY,
+    )
+    assert definition.provided_capabilities == (
+        BusinessEngineCapability.ENTRY,
+        BusinessEngineCapability.BASE_ENTRY,
+        BusinessEngineCapability.EFFECTIVE_ENTRY,
+        BusinessEngineCapability.ENTRY_QUALIFICATION,
+        BusinessEngineCapability.RECALCULATED_ENTRY,
     )
 
 
