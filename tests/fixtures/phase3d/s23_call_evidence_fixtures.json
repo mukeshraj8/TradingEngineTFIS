@@ -1,0 +1,225 @@
+{
+  "schema_version": "tfis.phase3d.s23_call_evidence_fixture.v1",
+  "cases": [
+    {
+      "case_key": "s23_bull_call_workbook_fixture",
+      "branch": "S23_BULL_CALL",
+      "vertical_spec": "BULL_CALL_SPEC",
+      "evidence_classification": "LEGACY_FIXTURE",
+      "evidence_source": "workbook-derived strategy configuration and excel_crosscheck sample",
+      "trading_date": null,
+      "source_artifacts": [
+        {
+          "artifact": "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D/strategy.yaml",
+          "date_or_session": "undated workbook-normalized config",
+          "applicability": "Bull Call",
+          "captured_fields": [
+            "strategy_code",
+            "strategy_instance_identity",
+            "monthly_status_allowed_values",
+            "option_side",
+            "entry_time",
+            "recalculation_time",
+            "minimum_oi",
+            "policy configuration identity"
+          ],
+          "missing_fields": [
+            "real trading date",
+            "captured option-chain snapshot",
+            "captured selected-contract quote",
+            "captured ORPT/RC option observations",
+            "legacy runtime decision packet"
+          ],
+          "trust_classification": "LEGACY_FIXTURE",
+          "usable_without_supplementation": false,
+          "provenance": "checked-in workbook-normalized strategy configuration"
+        },
+        {
+          "artifact": "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D/excel_crosscheck.yaml",
+          "date_or_session": "undated workbook-derived sample",
+          "applicability": "Bull Call",
+          "captured_fields": [
+            "source sheet",
+            "source cells",
+            "spot references",
+            "selected-contract historical references",
+            "expected ideal premium",
+            "expected minimum premium",
+            "expected entry",
+            "expected target",
+            "expected stoploss"
+          ],
+          "missing_fields": [
+            "real trading date",
+            "captured expiry candidate list",
+            "captured strike traversal result",
+            "captured OI",
+            "captured premium",
+            "captured final decision packet"
+          ],
+          "trust_classification": "LEGACY_FIXTURE",
+          "usable_without_supplementation": false,
+          "provenance": "checked-in workbook-derived cross-check values"
+        }
+      ],
+      "field_provenance": {
+        "strategy_identity": "WORKBOOK_AUTHORITY",
+        "strategy_version": "WORKBOOK_AUTHORITY",
+        "strategy_instance_identity": "WORKBOOK_AUTHORITY",
+        "trading_date": "SYNTHETIC_SUPPLEMENT",
+        "monthly_status": "WORKBOOK_AUTHORITY",
+        "resolved_branch": "WORKBOOK_AUTHORITY",
+        "underlying_spot_futures_references": "WORKBOOK_AUTHORITY",
+        "option_chain_snapshot": "SYNTHETIC_SUPPLEMENT",
+        "expiry_candidates": "SYNTHETIC_SUPPLEMENT",
+        "strike_candidates": "WORKBOOK_AUTHORITY",
+        "premium_values": "SYNTHETIC_SUPPLEMENT",
+        "oi_values_and_units": "SYNTHETIC_SUPPLEMENT",
+        "selected_expiry": "SYNTHETIC_SUPPLEMENT",
+        "selected_strike": "WORKBOOK_AUTHORITY",
+        "selected_contract_identity": "SYNTHETIC_SUPPLEMENT",
+        "selected_contract_historical_references": "WORKBOOK_AUTHORITY",
+        "orpt_observation": "SYNTHETIC_SUPPLEMENT",
+        "rc_observation": "SYNTHETIC_SUPPLEMENT",
+        "base_entry_inputs": "WORKBOOK_AUTHORITY",
+        "gap_missed_entry_inputs": "SYNTHETIC_SUPPLEMENT",
+        "gap_missed_entry_outcome": "SYNTHETIC_SUPPLEMENT",
+        "effective_entry": "LEGACY_OUTPUT",
+        "target_inputs_and_output": "LEGACY_OUTPUT",
+        "msl_inputs_and_output": "LEGACY_OUTPUT",
+        "final_legacy_compatible_decision": "LEGACY_OUTPUT",
+        "rejection_or_no_trade_reason": "NOT_APPLICABLE",
+        "source_timestamps": "SYNTHETIC_SUPPLEMENT",
+        "configuration_policy_identity": "WORKBOOK_AUTHORITY"
+      },
+      "synthetic_supplements": [
+        "stable evaluation timestamp",
+        "single qualifying option-chain candidate",
+        "selected expiry",
+        "selected contract symbol",
+        "selected contract OI",
+        "selected contract premium quote",
+        "ORPT option observation",
+        "RC option observation"
+      ],
+      "missing_fields": [
+        "real trading date",
+        "captured option-chain snapshot",
+        "captured selected-contract quote",
+        "captured ORPT option observation",
+        "captured RC option observation",
+        "captured legacy runtime decision packet"
+      ]
+    },
+    {
+      "case_key": "s23_bear_call_workbook_fixture",
+      "branch": "S23_BEAR_CALL",
+      "vertical_spec": "BEAR_CALL_SPEC",
+      "evidence_classification": "LEGACY_FIXTURE",
+      "evidence_source": "workbook-derived strategy configuration and excel_crosscheck sample",
+      "trading_date": null,
+      "source_artifacts": [
+        {
+          "artifact": "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL/strategy.yaml",
+          "date_or_session": "undated workbook-normalized config",
+          "applicability": "Bear Call",
+          "captured_fields": [
+            "strategy_code",
+            "strategy_instance_identity",
+            "monthly_status_allowed_values",
+            "option_side",
+            "entry_time",
+            "recalculation_time",
+            "minimum_oi",
+            "policy configuration identity"
+          ],
+          "missing_fields": [
+            "real trading date",
+            "captured option-chain snapshot",
+            "captured selected-contract quote",
+            "captured ORPT/RC option observations",
+            "legacy runtime decision packet"
+          ],
+          "trust_classification": "LEGACY_FIXTURE",
+          "usable_without_supplementation": false,
+          "provenance": "checked-in workbook-normalized strategy configuration"
+        },
+        {
+          "artifact": "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL/excel_crosscheck.yaml",
+          "date_or_session": "undated workbook-derived sample",
+          "applicability": "Bear Call",
+          "captured_fields": [
+            "source sheet",
+            "source cells",
+            "spot references",
+            "selected-contract historical references",
+            "expected ideal premium",
+            "expected minimum premium",
+            "expected entry",
+            "expected target",
+            "expected stoploss"
+          ],
+          "missing_fields": [
+            "real trading date",
+            "captured expiry candidate list",
+            "captured strike traversal result",
+            "captured OI",
+            "captured premium",
+            "captured final decision packet"
+          ],
+          "trust_classification": "LEGACY_FIXTURE",
+          "usable_without_supplementation": false,
+          "provenance": "checked-in workbook-derived cross-check values"
+        }
+      ],
+      "field_provenance": {
+        "strategy_identity": "WORKBOOK_AUTHORITY",
+        "strategy_version": "WORKBOOK_AUTHORITY",
+        "strategy_instance_identity": "WORKBOOK_AUTHORITY",
+        "trading_date": "SYNTHETIC_SUPPLEMENT",
+        "monthly_status": "WORKBOOK_AUTHORITY",
+        "resolved_branch": "WORKBOOK_AUTHORITY",
+        "underlying_spot_futures_references": "WORKBOOK_AUTHORITY",
+        "option_chain_snapshot": "SYNTHETIC_SUPPLEMENT",
+        "expiry_candidates": "SYNTHETIC_SUPPLEMENT",
+        "strike_candidates": "WORKBOOK_AUTHORITY",
+        "premium_values": "SYNTHETIC_SUPPLEMENT",
+        "oi_values_and_units": "SYNTHETIC_SUPPLEMENT",
+        "selected_expiry": "SYNTHETIC_SUPPLEMENT",
+        "selected_strike": "WORKBOOK_AUTHORITY",
+        "selected_contract_identity": "SYNTHETIC_SUPPLEMENT",
+        "selected_contract_historical_references": "WORKBOOK_AUTHORITY",
+        "orpt_observation": "SYNTHETIC_SUPPLEMENT",
+        "rc_observation": "SYNTHETIC_SUPPLEMENT",
+        "base_entry_inputs": "WORKBOOK_AUTHORITY",
+        "gap_missed_entry_inputs": "SYNTHETIC_SUPPLEMENT",
+        "gap_missed_entry_outcome": "SYNTHETIC_SUPPLEMENT",
+        "effective_entry": "LEGACY_OUTPUT",
+        "target_inputs_and_output": "LEGACY_OUTPUT",
+        "msl_inputs_and_output": "LEGACY_OUTPUT",
+        "final_legacy_compatible_decision": "LEGACY_OUTPUT",
+        "rejection_or_no_trade_reason": "NOT_APPLICABLE",
+        "source_timestamps": "SYNTHETIC_SUPPLEMENT",
+        "configuration_policy_identity": "WORKBOOK_AUTHORITY"
+      },
+      "synthetic_supplements": [
+        "stable evaluation timestamp",
+        "single qualifying option-chain candidate",
+        "selected expiry",
+        "selected contract symbol",
+        "selected contract OI",
+        "selected contract premium quote",
+        "ORPT option observation",
+        "RC option observation"
+      ],
+      "missing_fields": [
+        "real trading date",
+        "captured option-chain snapshot",
+        "captured selected-contract quote",
+        "captured ORPT option observation",
+        "captured RC option observation",
+        "captured legacy runtime decision packet"
+      ]
+    }
+  ]
+}

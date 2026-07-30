@@ -1,0 +1,227 @@
+﻿{
+  "branch": "S23_BEAR_CALL",
+  "case_key": "s23_bear_call_workbook_fixture",
+  "classification_after": "LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT",
+  "classification_before": "SYNTHETIC_GOLDEN",
+  "deterministic_hash": "3a8dbc6b507ac7603f2c0a4b289f3ecf9855f17206b3d96744b3291af8f20d41",
+  "evidence_source": "workbook-derived strategy configuration and excel_crosscheck sample",
+  "field_comparisons": {
+    "base_entry": {
+      "classification": "MATCH",
+      "legacy": 194.25,
+      "vertical": 194.25
+    },
+    "branch": {
+      "classification": "MATCH",
+      "legacy": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+      "vertical": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    },
+    "configuration_hash": {
+      "classification": "MATCH",
+      "legacy": "phase3d-m4-s23-bear-call-synthetic-v1",
+      "vertical": "phase3d-m4-s23-bear-call-synthetic-v1"
+    },
+    "effective_entry": {
+      "classification": "MATCH",
+      "legacy": 194.25,
+      "vertical": 194.25
+    },
+    "gap_missed_entry_status": {
+      "classification": "MATCH",
+      "legacy": "NOT_MISSED",
+      "vertical": "NOT_MISSED"
+    },
+    "monthly_status": {
+      "classification": "MATCH",
+      "legacy": "BEAR",
+      "vertical": "BEAR"
+    },
+    "msl": {
+      "classification": "MATCH",
+      "legacy": 310.8,
+      "vertical": 310.8
+    },
+    "oi": {
+      "classification": "MATCH",
+      "legacy": 999999.0,
+      "vertical": 999999.0
+    },
+    "option_side": {
+      "classification": "MATCH",
+      "legacy": "CALL",
+      "vertical": "CALL"
+    },
+    "order_intent": {
+      "classification": "MATCH",
+      "legacy": "SHORT/SELL",
+      "vertical": "SHORT/SELL"
+    },
+    "policy_identities": {
+      "classification": "MATCH",
+      "legacy": [
+        "legacy.s23.option_selling.entry",
+        "legacy.s23.option_selling.target",
+        "legacy.s23.option_selling.msl"
+      ],
+      "vertical": [
+        "legacy.s23.option_selling.entry",
+        "legacy.s23.option_selling.target",
+        "legacy.s23.option_selling.msl"
+      ]
+    },
+    "premium": {
+      "classification": "MATCH",
+      "legacy": 262.8,
+      "vertical": 262.8
+    },
+    "recalculated_entry": {
+      "classification": "MATCH",
+      "legacy": "NOT_REQUIRED",
+      "vertical": "NOT_REQUIRED"
+    },
+    "rejection_reason": {
+      "classification": "MATCH",
+      "legacy": null,
+      "vertical": null
+    },
+    "selected_contract": {
+      "classification": "MATCH",
+      "legacy": "NIFTY_20260806_22150_CALL",
+      "vertical": "NIFTY_20260806_22150_CALL"
+    },
+    "selected_expiry": {
+      "classification": "MATCH",
+      "legacy": "2026-08-06",
+      "vertical": "2026-08-06"
+    },
+    "selected_strike": {
+      "classification": "MATCH",
+      "legacy": 22150.0,
+      "vertical": 22150.0
+    },
+    "strategy_identity": {
+      "classification": "MATCH",
+      "legacy": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+      "vertical": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL"
+    },
+    "target": {
+      "classification": "MATCH",
+      "legacy": 77.7,
+      "vertical": 77.7
+    },
+    "trade_result": {
+      "classification": "MATCH",
+      "legacy": "TRADE",
+      "vertical": "TRADE"
+    }
+  },
+  "field_provenance": {
+    "base_entry_inputs": "WORKBOOK_AUTHORITY",
+    "configuration_policy_identity": "WORKBOOK_AUTHORITY",
+    "effective_entry": "LEGACY_OUTPUT",
+    "expiry_candidates": "SYNTHETIC_SUPPLEMENT",
+    "final_legacy_compatible_decision": "LEGACY_OUTPUT",
+    "gap_missed_entry_inputs": "SYNTHETIC_SUPPLEMENT",
+    "gap_missed_entry_outcome": "SYNTHETIC_SUPPLEMENT",
+    "monthly_status": "WORKBOOK_AUTHORITY",
+    "msl_inputs_and_output": "LEGACY_OUTPUT",
+    "oi_values_and_units": "SYNTHETIC_SUPPLEMENT",
+    "option_chain_snapshot": "SYNTHETIC_SUPPLEMENT",
+    "orpt_observation": "SYNTHETIC_SUPPLEMENT",
+    "premium_values": "SYNTHETIC_SUPPLEMENT",
+    "rc_observation": "SYNTHETIC_SUPPLEMENT",
+    "rejection_or_no_trade_reason": "NOT_APPLICABLE",
+    "resolved_branch": "WORKBOOK_AUTHORITY",
+    "selected_contract_historical_references": "WORKBOOK_AUTHORITY",
+    "selected_contract_identity": "SYNTHETIC_SUPPLEMENT",
+    "selected_expiry": "SYNTHETIC_SUPPLEMENT",
+    "selected_strike": "WORKBOOK_AUTHORITY",
+    "source_timestamps": "SYNTHETIC_SUPPLEMENT",
+    "strategy_identity": "WORKBOOK_AUTHORITY",
+    "strategy_instance_identity": "WORKBOOK_AUTHORITY",
+    "strategy_version": "WORKBOOK_AUTHORITY",
+    "strike_candidates": "WORKBOOK_AUTHORITY",
+    "target_inputs_and_output": "LEGACY_OUTPUT",
+    "trading_date": "SYNTHETIC_SUPPLEMENT",
+    "underlying_spot_futures_references": "WORKBOOK_AUTHORITY"
+  },
+  "generated_at": "2026-07-30T00:00:00",
+  "mismatch_classifications": {},
+  "missing_fields": [
+    "real trading date",
+    "captured option-chain snapshot",
+    "captured selected-contract quote",
+    "captured ORPT option observation",
+    "captured RC option observation",
+    "captured legacy runtime decision packet"
+  ],
+  "parity_result": "PASSED",
+  "runtime_impact": "NONE",
+  "schema_version": "tfis.phase3d.milestone5.call_parity.v1",
+  "selected_contract": "NIFTY_20260806_22150_CALL",
+  "source_artifacts": [
+    {
+      "applicability": "Bear Call",
+      "artifact": "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL/strategy.yaml",
+      "captured_fields": [
+        "strategy_code",
+        "strategy_instance_identity",
+        "monthly_status_allowed_values",
+        "option_side",
+        "entry_time",
+        "recalculation_time",
+        "minimum_oi",
+        "policy configuration identity"
+      ],
+      "date_or_session": "undated workbook-normalized config",
+      "missing_fields": [
+        "real trading date",
+        "captured option-chain snapshot",
+        "captured selected-contract quote",
+        "captured ORPT/RC option observations",
+        "legacy runtime decision packet"
+      ],
+      "provenance": "checked-in workbook-normalized strategy configuration",
+      "trust_classification": "LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT",
+      "usable_without_supplementation": false
+    },
+    {
+      "applicability": "Bear Call",
+      "artifact": "config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL/excel_crosscheck.yaml",
+      "captured_fields": [
+        "source sheet",
+        "source cells",
+        "spot references",
+        "selected-contract historical references",
+        "expected ideal premium",
+        "expected minimum premium",
+        "expected entry",
+        "expected target",
+        "expected stoploss"
+      ],
+      "date_or_session": "undated workbook-derived sample",
+      "missing_fields": [
+        "real trading date",
+        "captured expiry candidate list",
+        "captured strike traversal result",
+        "captured OI",
+        "captured premium",
+        "captured final decision packet"
+      ],
+      "provenance": "checked-in workbook-derived cross-check values",
+      "trust_classification": "LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT",
+      "usable_without_supplementation": false
+    }
+  ],
+  "synthetic_supplements": [
+    "stable evaluation timestamp",
+    "single qualifying option-chain candidate",
+    "selected expiry",
+    "selected contract symbol",
+    "selected contract OI",
+    "selected contract premium quote",
+    "ORPT option observation",
+    "RC option observation"
+  ],
+  "trade_result": "TRADE"
+}

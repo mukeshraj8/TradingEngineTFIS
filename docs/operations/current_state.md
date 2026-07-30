@@ -1,4 +1,4 @@
-# Current State
+﻿# Current State
 
 This is the living operational snapshot for TFIS. It should be updated whenever
 implemented behavior, architecture shape, test posture, or known limitations
@@ -6,6 +6,18 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 5 strengthens the two
+  supported S23 Call-side vertical cases with workbook-derived legacy fixture
+  provenance. Supported S23 vertical cases remain `2`. Captured-evidence S23
+  cases remain `0`: fully captured `0`, captured with derived fields `0`,
+  captured with synthetic supplement `0`. Legacy fixture cases are `2` (`S23
+  Bull Call`, `S23 Bear Call`), and synthetic-only M5 cases are `0`; the
+  accepted M3/M4 synthetic goldens remain preserved as regression fixtures.
+  No complete real historical Call-side evaluation packet was found in the
+  searched repository/reference artifacts, so missing captured option-chain,
+  selected-contract quote, ORPT/RC option observations, real trading date, and
+  legacy runtime decision packet evidence remain blockers before captured
+  parity can be claimed. Runtime impact: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 4 extends the same offline
   S23 vertical decision slice to Bear Call. Supported S23 vertical cases: `2`
   (`S23 Bull Call` synthetic golden, `S23 Bear Call` synthetic golden). The
@@ -1587,7 +1599,7 @@ live-order design. This checklist must be updated after each completed slice.
   checks remain green.
 - `DONE`: Phase 1 now also aligns blocked-fresh-order recovery and captured
   session replay with shared lifecycle vocabulary. `paper_position_blocks_new_entry`
-  now owns the “still blocks a fresh order” status rule, the blocked-fresh
+  now owns the â€œstill blocks a fresh orderâ€ status rule, the blocked-fresh
   promotion script uses it instead of a local status set, and the captured
   session validator now uses shared position/order status truth where that was
   already safe. Focused alias, promotion, captured-session, and wrapper tests

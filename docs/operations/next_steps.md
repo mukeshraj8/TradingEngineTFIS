@@ -1,4 +1,4 @@
-# Next Steps
+﻿# Next Steps
 
 This document is the execution queue for TFIS. It should be updated whenever
 task ordering, blockers, or the recommended next action change in a meaningful
@@ -6,11 +6,26 @@ way.
 
 ## Immediate Next Priorities
 
-0.32. `TODO` Begin a captured-evidence replacement task for the two supported
+0.33. `TODO` Resolve the specific S23 Call-side captured-evidence gaps found
+   in Phase 3D Milestone 5 before claiming captured parity: real trading date,
+   captured option-chain snapshot, captured selected-contract quote, captured
+   ORPT option observation, captured RC option observation, and captured
+   legacy runtime decision packet. If existing operational archives cannot
+   provide these fields, design only a disabled-by-default capture hook with no
+   runtime authority change.
+
+0.32. `DONE` Begin a captured-evidence replacement task for the two supported
    S23 Call-side vertical cases (`Bull Call`, `Bear Call`) only. Keep the same
    offline pipeline, do not change the generic orchestrator, do not add PUT
    branches, and classify any missing captured evidence explicitly rather than
-   inferring rules.
+   inferring rules. Result: no complete real historical Call-side packet was
+   found; both Call-side cases improved from `SYNTHETIC_GOLDEN` to
+   `LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT` using checked-in workbook-derived strategy configuration
+   and `excel_crosscheck.yaml` evidence, with all synthetic supplements and
+   missing captured fields disclosed. Supported S23 vertical cases: `2`.
+   Fully captured cases: `0`; captured with derived fields: `0`; captured with
+   synthetic supplement: `0`; legacy fixture cases: `2`; synthetic-only M5
+   cases: `0`. Runtime impact: `NONE`.
 
 0.31. `DONE` Extend the same Phase 3D offline vertical-slice composition to
    Bear Call. Supported S23 vertical cases: `2` (`S23 Bull Call` synthetic
@@ -717,8 +732,8 @@ way.
    compatibility-target scans and launches. Its last dead inline target-scan
    logic should now give way to the next explicit refactor seam: shared
    session/trade-state authority across finalization, dashboard rendering, and
-   promotion flows wherever they still reconstruct “latest authoritative
-   session or latest authoritative trade state” independently beyond the new
+   promotion flows wherever they still reconstruct â€œlatest authoritative
+   session or latest authoritative trade stateâ€ independently beyond the new
    shared paper-session discovery helpers.
    The next small candidate inside that seam is the remaining mix of direct
    position/trade-history scans and dashboard-local sparse-artifact fallback

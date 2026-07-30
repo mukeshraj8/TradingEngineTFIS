@@ -128,6 +128,7 @@ class S23VerticalSliceCase:
     session_reason: str
     final_reason: str
     evidence_classification: str = "SYNTHETIC_GOLDEN"
+    evidence_metadata: Mapping[str, Any] | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -252,6 +253,10 @@ def run_s23_bear_call_vertical_slice() -> Any:
 
 def run_s23_vertical_slice(spec: S23VerticalBranchSpec) -> Any:
     case = build_s23_vertical_case(spec)
+    return run_s23_vertical_case(case)
+
+
+def run_s23_vertical_case(case: S23VerticalSliceCase) -> Any:
     stages = (
         _Stage("strategy_resolution", _strategy_resolution),
         _Stage("monthly_status_and_branch", _monthly_status_and_branch),
@@ -451,6 +456,8 @@ def _decision(context: Mapping[str, Any]) -> OfflineStageResult:
     observations = _future_capability_observations(case)
     if observations:
         compatibility_payload["future_capability_observations"] = observations
+    if case.evidence_metadata:
+        compatibility_payload["m5_evidence"] = case.evidence_metadata
     decision = TFISDecision(
         evaluation_id=case.runtime_input.evaluation_id,
         decision_id=case.decision_id,
@@ -488,7 +495,7 @@ def _decision(context: Mapping[str, Any]) -> OfflineStageResult:
             "base_entry_hash": context["base_entry"].deterministic_hash,
             "effective_entry_hash": context["effective_entry"].deterministic_hash,
         },
-        data_versions={"source": "synthetic"},
+        data_versions={"source": case.evidence_classification if case.evidence_metadata else "synthetic"},
         configuration_versions={"resolved_configuration_hash": case.runtime_input.resolved_configuration_hash},
         compatibility_payload=compatibility_payload,
         strategy_family_id="S23",
@@ -574,6 +581,11 @@ def _packet(case: S23VerticalSliceCase, context: Mapping[str, Any]) -> TFISDecis
     observations = _future_capability_observations(case)
     if observations:
         audit_payload.update({f"future_capability_{index + 1}": item for index, item in enumerate(observations)})
+    if case.evidence_metadata:
+        audit_payload["m5_evidence_classification"] = case.evidence_classification
+        audit_payload["m5_evidence_source"] = case.evidence_metadata.get("evidence_source")
+        audit_payload["m5_missing_fields"] = case.evidence_metadata.get("missing_fields")
+        audit_payload["m5_synthetic_supplements"] = case.evidence_metadata.get("synthetic_supplements")
     return TFISDecisionEvidencePacket(
         identity=IdentityEvidence(SCHEMA_VERSION, case.evidence_label, case.runtime_input.evaluation_id, "S23_NIFTY_ACCOUNT_A_PAPER", case.strategy_rule.unique_code, case.strategy_rule.unique_code, "1.0.0", case.runtime_input.resolved_configuration_hash, ts.date(), ts, ts, ts + timedelta(seconds=1)),
         session=SessionEvidence("NSE", Segment.OPTIONS_SELL, "Asia/Kolkata", TimeWindowEvidence(time(9, 15), time(15, 30), time(9, 24, 59), time(9, 29, 59), case.runtime_input.session_label or "PHASE3D_SYNTHETIC", case.session_reason)),

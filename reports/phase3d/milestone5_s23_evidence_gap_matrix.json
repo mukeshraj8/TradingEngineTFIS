@@ -1,0 +1,112 @@
+﻿{
+  "cases": [
+    {
+      "branch": "S23_BEAR_CALL",
+      "case_key": "s23_bear_call_workbook_fixture",
+      "evidence_classification": "LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT",
+      "field_provenance": {
+        "base_entry_inputs": "WORKBOOK_AUTHORITY",
+        "configuration_policy_identity": "WORKBOOK_AUTHORITY",
+        "effective_entry": "LEGACY_OUTPUT",
+        "expiry_candidates": "SYNTHETIC_SUPPLEMENT",
+        "final_legacy_compatible_decision": "LEGACY_OUTPUT",
+        "gap_missed_entry_inputs": "SYNTHETIC_SUPPLEMENT",
+        "gap_missed_entry_outcome": "SYNTHETIC_SUPPLEMENT",
+        "monthly_status": "WORKBOOK_AUTHORITY",
+        "msl_inputs_and_output": "LEGACY_OUTPUT",
+        "oi_values_and_units": "SYNTHETIC_SUPPLEMENT",
+        "option_chain_snapshot": "SYNTHETIC_SUPPLEMENT",
+        "orpt_observation": "SYNTHETIC_SUPPLEMENT",
+        "premium_values": "SYNTHETIC_SUPPLEMENT",
+        "rc_observation": "SYNTHETIC_SUPPLEMENT",
+        "rejection_or_no_trade_reason": "NOT_APPLICABLE",
+        "resolved_branch": "WORKBOOK_AUTHORITY",
+        "selected_contract_historical_references": "WORKBOOK_AUTHORITY",
+        "selected_contract_identity": "SYNTHETIC_SUPPLEMENT",
+        "selected_expiry": "SYNTHETIC_SUPPLEMENT",
+        "selected_strike": "WORKBOOK_AUTHORITY",
+        "source_timestamps": "SYNTHETIC_SUPPLEMENT",
+        "strategy_identity": "WORKBOOK_AUTHORITY",
+        "strategy_instance_identity": "WORKBOOK_AUTHORITY",
+        "strategy_version": "WORKBOOK_AUTHORITY",
+        "strike_candidates": "WORKBOOK_AUTHORITY",
+        "target_inputs_and_output": "LEGACY_OUTPUT",
+        "trading_date": "SYNTHETIC_SUPPLEMENT",
+        "underlying_spot_futures_references": "WORKBOOK_AUTHORITY"
+      },
+      "missing_fields": [
+        "real trading date",
+        "captured option-chain snapshot",
+        "captured selected-contract quote",
+        "captured ORPT option observation",
+        "captured RC option observation",
+        "captured legacy runtime decision packet"
+      ],
+      "synthetic_supplements": [
+        "stable evaluation timestamp",
+        "single qualifying option-chain candidate",
+        "selected expiry",
+        "selected contract symbol",
+        "selected contract OI",
+        "selected contract premium quote",
+        "ORPT option observation",
+        "RC option observation"
+      ]
+    },
+    {
+      "branch": "S23_BULL_CALL",
+      "case_key": "s23_bull_call_workbook_fixture",
+      "evidence_classification": "LEGACY_FIXTURE_WITH_SYNTHETIC_SUPPLEMENT",
+      "field_provenance": {
+        "base_entry_inputs": "WORKBOOK_AUTHORITY",
+        "configuration_policy_identity": "WORKBOOK_AUTHORITY",
+        "effective_entry": "LEGACY_OUTPUT",
+        "expiry_candidates": "SYNTHETIC_SUPPLEMENT",
+        "final_legacy_compatible_decision": "LEGACY_OUTPUT",
+        "gap_missed_entry_inputs": "SYNTHETIC_SUPPLEMENT",
+        "gap_missed_entry_outcome": "SYNTHETIC_SUPPLEMENT",
+        "monthly_status": "WORKBOOK_AUTHORITY",
+        "msl_inputs_and_output": "LEGACY_OUTPUT",
+        "oi_values_and_units": "SYNTHETIC_SUPPLEMENT",
+        "option_chain_snapshot": "SYNTHETIC_SUPPLEMENT",
+        "orpt_observation": "SYNTHETIC_SUPPLEMENT",
+        "premium_values": "SYNTHETIC_SUPPLEMENT",
+        "rc_observation": "SYNTHETIC_SUPPLEMENT",
+        "rejection_or_no_trade_reason": "NOT_APPLICABLE",
+        "resolved_branch": "WORKBOOK_AUTHORITY",
+        "selected_contract_historical_references": "WORKBOOK_AUTHORITY",
+        "selected_contract_identity": "SYNTHETIC_SUPPLEMENT",
+        "selected_expiry": "SYNTHETIC_SUPPLEMENT",
+        "selected_strike": "WORKBOOK_AUTHORITY",
+        "source_timestamps": "SYNTHETIC_SUPPLEMENT",
+        "strategy_identity": "WORKBOOK_AUTHORITY",
+        "strategy_instance_identity": "WORKBOOK_AUTHORITY",
+        "strategy_version": "WORKBOOK_AUTHORITY",
+        "strike_candidates": "WORKBOOK_AUTHORITY",
+        "target_inputs_and_output": "LEGACY_OUTPUT",
+        "trading_date": "SYNTHETIC_SUPPLEMENT",
+        "underlying_spot_futures_references": "WORKBOOK_AUTHORITY"
+      },
+      "missing_fields": [
+        "real trading date",
+        "captured option-chain snapshot",
+        "captured selected-contract quote",
+        "captured ORPT option observation",
+        "captured RC option observation",
+        "captured legacy runtime decision packet"
+      ],
+      "synthetic_supplements": [
+        "stable evaluation timestamp",
+        "single qualifying option-chain candidate",
+        "selected expiry",
+        "selected contract symbol",
+        "selected contract OI",
+        "selected contract premium quote",
+        "ORPT option observation",
+        "RC option observation"
+      ]
+    }
+  ],
+  "generated_at": "2026-07-30T00:00:00",
+  "schema_version": "tfis.phase3d.milestone5.evidence_gap_matrix.v1"
+}

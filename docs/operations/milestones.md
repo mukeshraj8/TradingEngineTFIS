@@ -1,7 +1,22 @@
-# Milestones
+﻿# Milestones
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 5 strengthened the two
+  supported S23 Call-side vertical cases with checked-in workbook-derived
+  legacy fixture evidence. Supported S23 vertical cases remain `2`. Captured
+  S23 cases remain `0`; legacy fixture cases are `2`; M5 synthetic-only cases
+  are `0`. Reports are
+  `reports/phase3d/milestone5_s23_call_captured_evidence_summary.md`,
+  `reports/phase3d/milestone5_s23_bull_call_parity.json`,
+  `reports/phase3d/milestone5_s23_bear_call_parity.json`,
+  `reports/phase3d/milestone5_s23_bull_call_evidence_packet.json`,
+  `reports/phase3d/milestone5_s23_bear_call_evidence_packet.json`, and
+  `reports/phase3d/milestone5_s23_evidence_gap_matrix.json`. No complete real
+  historical Bull Call or Bear Call evaluation packet was found, so captured
+  parity is still blocked by missing real trading date, option-chain,
+  selected-contract quote, ORPT/RC option observation, and legacy runtime
+  decision-packet evidence. Runtime impact: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 4 extended the first
   offline S23 vertical decision slice to Bear Call using the same generic
   orchestrator and typed business-engine contracts. Supported S23 vertical
