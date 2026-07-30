@@ -1,0 +1,157 @@
+{
+  "case_id": "S23_BULL_CALL_SYNTHETIC_GOLDEN",
+  "deterministic_hash": "4d2e514f05f873c17b7077ce6710c559dac54422ed6898cbb51e6ed9bbb24b84",
+  "field_comparison": {
+    "base_entry": {
+      "classification": "MATCH",
+      "legacy": 203.5,
+      "vertical": 203.5
+    },
+    "branch": {
+      "classification": "MATCH",
+      "legacy": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "vertical": "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+    },
+    "effective_entry": {
+      "classification": "MATCH",
+      "legacy": 203.5,
+      "vertical": 203.5
+    },
+    "msl": {
+      "classification": "MATCH",
+      "legacy": 321.0,
+      "vertical": 321.0
+    },
+    "selected_strike": {
+      "classification": "MATCH",
+      "legacy": 22250.0,
+      "vertical": 22250.0
+    },
+    "target": {
+      "classification": "MATCH",
+      "legacy": 81.4,
+      "vertical": 81.4
+    },
+    "trade_result": {
+      "classification": "MATCH",
+      "legacy": "TRADE",
+      "vertical": "TRADE"
+    }
+  },
+  "limitations": [
+    "offline synthetic golden case only",
+    "CALL-side authority only: S23 Bull Call first; Bear Call is next compatible extension",
+    "PUT missed-entry authority remains unresolved and intentionally excluded",
+    "no runtime shadow, paper authority, live authority, broker adapter, lifecycle, risk, or execution activation"
+  ],
+  "mismatch_classifications": {},
+  "performance": {
+    "duration_seconds": 0.01971830000184127,
+    "evidence_packet_size_bytes": 11530,
+    "stage_count": 11
+  },
+  "schema_version": "phase3d.milestone3.s23_vertical_slice.v1",
+  "selected_instrument": {
+    "exchange": null,
+    "expiry": "2026-08-06",
+    "metadata": {
+      "ltp": 264.0,
+      "oi": 999999.0,
+      "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+    },
+    "option_type": "CALL",
+    "product_type": "OPTION_SELLING",
+    "segment": "OPTIONS_SELL",
+    "strike": 22250.0,
+    "symbol": "NIFTY_20260806_22250_CALL",
+    "token": null
+  },
+  "stage_order": [
+    "strategy_resolution",
+    "monthly_status_and_branch",
+    "underlying_references",
+    "contract_selection",
+    "base_entry",
+    "gap_missed_entry",
+    "effective_entry",
+    "target_msl",
+    "decision",
+    "evidence_packet",
+    "legacy_comparison"
+  ],
+  "stage_statuses": [
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "strategy_resolution",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "monthly_status_and_branch",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "underlying_references",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "contract_selection",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "base_entry",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "gap_missed_entry",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "effective_entry",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "target_msl",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "decision",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "evidence_packet",
+      "status": "PASSED"
+    },
+    {
+      "failure_code": null,
+      "reason": null,
+      "stage_name": "legacy_comparison",
+      "status": "PASSED"
+    }
+  ],
+  "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "strategy_family_id": "S23",
+  "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+  "supported_vertical_cases": 1,
+  "trade_result": "TRADE",
+  "verdict": "PHASE3D_M3_ACCEPT"
+}

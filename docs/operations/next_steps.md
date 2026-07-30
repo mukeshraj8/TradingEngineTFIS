@@ -6,12 +6,21 @@ way.
 
 ## Immediate Next Priorities
 
-0.30. `TODO` Proceed only with explicit approval to the accelerated Phase 3D
-   Milestone 3 offline S23 vertical slice: Strategy Resolution -> Contract
-   Selection compatibility adapter -> Base Entry -> Gap/Missed-Entry ->
-   Effective Entry -> Target/MSL compatibility adapters -> `TFISDecision` ->
-   `TFISDecisionEvidencePacket`. Do not add another isolated Entry-only
-   milestone.
+0.31. `TODO` Extend the same Phase 3D offline vertical-slice composition to
+   the remaining supported CALL-side S23 branch, beginning with Bear Call.
+   Keep the generic orchestrator unchanged. Do not add another isolated
+   Entry-only milestone, do not activate runtime shadow/paper/live authority,
+   and do not use PUT missed-entry authority until the unresolved rule is
+   settled.
+
+0.30. `DONE` Complete the accelerated Phase 3D Milestone 3 offline S23
+   vertical slice: Strategy Resolution -> Contract Selection compatibility
+   adapter -> Base Entry -> Gap/Missed-Entry -> Effective Entry -> Target/MSL
+   compatibility adapters -> `TFISDecision` ->
+   `TFISDecisionEvidencePacket`. Supported S23 vertical cases: `1` (`S23 Bull
+   Call` synthetic golden). No runtime shadow, paper authority, live authority,
+   broker behavior, lifecycle, risk, execution routing, or strategy
+   configuration activation was added.
 
 0.29. `DONE` Complete Phase 3D Milestone 2 Generic Entry Engine Contract
    Design. Entry now exposes explicit Base Entry and Effective Entry contracts,

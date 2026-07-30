@@ -2,6 +2,20 @@
 
 ## Current Snapshot
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 3 implemented the first
+  offline S23 vertical decision slice through the new architecture. Supported
+  S23 vertical cases: `1` (`S23 Bull Call` synthetic golden). The slice
+  composes strategy resolution, Monthly Status branch resolution, existing S23
+  Contract Selection compatibility, selected-contract references, generic
+  Entry Base Entry, Phase 3C Gap/Missed-Entry, generic Entry Effective Entry,
+  existing Target/MSL compatibility adapters, `TFISDecision`, and
+  `TFISDecisionEvidencePacket`. The generated reports are
+  `reports/phase3d/milestone3_s23_vertical_slice_summary.md`,
+  `reports/phase3d/milestone3_s23_vertical_parity.json`, and
+  `reports/phase3d/milestone3_s23_vertical_evidence_packet.json`. The work is
+  offline-only and does not activate runtime shadow, paper authority, live
+  authority, broker behavior, lifecycle, risk, execution routing, or strategy
+  configuration.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 2 implemented the final
   standalone Generic Entry Engine Contract Design milestone. New contracts live
   in `src/tfis/domain/entry.py`, the minimal orchestration shell lives in
