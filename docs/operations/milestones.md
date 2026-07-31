@@ -2,6 +2,25 @@
 
 ## Current Snapshot
 
+- as of Friday, July 31, 2026, Phase 3D Milestone 15 implemented
+  deterministic, in-memory runtime coordination over the accepted S23
+  fresh-entry and carried-position offline flows. Reports are
+  `reports/phase3d/milestone15_runtime_coordination_summary.md`,
+  `reports/phase3d/milestone15_fresh_entry_normal_stream.json`,
+  `reports/phase3d/milestone15_fresh_entry_gap_stream.json`,
+  `reports/phase3d/milestone15_carried_target_stream.json`,
+  `reports/phase3d/milestone15_carried_revised_sl_stream.json`,
+  `reports/phase3d/milestone15_multi_instance_stream.json`,
+  `reports/phase3d/milestone15_multi_position_stream.json`,
+  `reports/phase3d/milestone15_backpressure_metrics.json`, and
+  `reports/phase3d/milestone15_runtime_gap_matrix.json`. Verdict:
+  `PHASE3D_M15_ACCEPT`. Runtime event contract:
+  `IMPLEMENTED_NON_AUTHORITATIVE`. Instrument snapshots, single-writer state,
+  subscription routing, backpressure/conflation, replay/resume checkpoints,
+  multi-instance isolation, and multi-position isolation:
+  `IMPLEMENTED_IN_MEMORY_NON_AUTHORITATIVE`. Real market shadow connection:
+  `NOT_IMPLEMENTED`. Broker reconciliation service: `NOT_IMPLEMENTED`.
+  Broker/paper/live/order/position authority: `NONE`.
 - as of Friday, July 31, 2026, Phase 3D Milestone 14 implemented complete
   offline carried-position trading-day coordination. Reports are
   `reports/phase3d/milestone14_carried_position_trading_day_summary.md`,

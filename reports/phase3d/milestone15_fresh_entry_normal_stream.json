@@ -1,0 +1,285 @@
+{
+  "authority": {
+    "broker_submission": false,
+    "carry_persistence": false,
+    "live_submission": false,
+    "mode": "SHADOW_ONLY",
+    "order_cancellation": false,
+    "order_modification": false,
+    "paper_submission": false,
+    "position_mutation": false,
+    "square_off_execution": false
+  },
+  "blocked_streams": {},
+  "checkpoints": {
+    "bull-normal": {
+      "artifact_hashes": {
+        "effective_plan": "c30bd67eeeb2063c90ddce7afd9a175cb38c049c2896ed914a6948382c16ebb1",
+        "handoff": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1:offline-handoff",
+        "opening_context": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+        "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+      },
+      "checkpoint_hash": "9e922ad34eec559b8130a457aaa3b8bbccefd640ce26f7f8841cf4d735cdaa50",
+      "configuration_hash": "m15-s23-runtime-config",
+      "consumed_event_ids": [
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER-config-1",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER-enabled-2",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER-premarket-3",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER-open-4",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER-orpt-5",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER-handoff-6"
+      ],
+      "current_state": "COMPLETED",
+      "latest_snapshot_hashes": {
+        "NSE:NIFTY": "fa2f23dad2165c636eb488dbf8857fd937055a51704f9f358e2d2990ffc70bf5"
+      },
+      "rule_matrix_version": "tfis_authoritative_workbook_rule_matrix.v1",
+      "runtime_stream_identity": "bull-normal"
+    }
+  },
+  "conflation_diagnostics": {
+    "owner_conflations": 0,
+    "pending_latest_updates": 0
+  },
+  "critical_event_ids": [
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-config-1",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-enabled-2",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-premarket-3",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-open-4",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-orpt-5",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-handoff-6"
+  ],
+  "fresh_entry_results": {
+    "bull-normal": {
+      "block_code": null,
+      "block_reason": null,
+      "carried_position_status": "NOT_DETECTED",
+      "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+      "coordination_hash": "aa54b773e65dd4e28b8398f5503e2b55910268900b3f590d796105aba51a87c0",
+      "coordination_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER-bull-normal",
+      "current_state": "COMPLETED_OFFLINE",
+      "daily_path": "NORMAL_FRESH_ENTRY",
+      "derived_fields": [
+        "coordination_hash",
+        "handoff_id"
+      ],
+      "effective_execution_plan_hash": "c30bd67eeeb2063c90ddce7afd9a175cb38c049c2896ed914a6948382c16ebb1",
+      "effective_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "effective_plan_ready_event_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER-orpt-5",
+      "execution_handoff_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1:offline-handoff",
+      "failures": [],
+      "fresh_entry_eligible": true,
+      "market_open_event_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER-open-4",
+      "missing_events": [],
+      "offline_handoff": {
+        "authority_mode": "OFFLINE_ONLY",
+        "authorized_placement_time": "09:19:59",
+        "broker_submission_permitted": false,
+        "effective_entry": 203.5,
+        "effective_execution_plan_hash": "c30bd67eeeb2063c90ddce7afd9a175cb38c049c2896ed914a6948382c16ebb1",
+        "effective_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+        "effective_msl": 321.0,
+        "effective_target": 81.4,
+        "evidence_hash": "fbf8ab8d2fdbcfe884320de81a572ec4cdb72794228b00d66cfadce0c08a1e29",
+        "handoff_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1:offline-handoff",
+        "live_submission_permitted": false,
+        "lots": 1,
+        "order_side": "SELL",
+        "order_type": "LIMIT",
+        "paper_submission_permitted": false,
+        "position_mutation_permitted": false,
+        "quantity": 50,
+        "selected_contract": {
+          "exchange": null,
+          "expiry": "2026-08-06",
+          "metadata": {
+            "ltp": 264.0,
+            "oi": 999999.0,
+            "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+          },
+          "option_type": "CALL",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 22250.0,
+          "symbol": "NIFTY_20260806_22250_CALL",
+          "token": null
+        },
+        "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "trading_date": "2026-07-30"
+      },
+      "offline_handoff_event_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER-handoff-6",
+      "opening_context_hash": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+      "opening_context_id": "m10-s23_bull_call_opening",
+      "orpt_event_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER-orpt-5",
+      "performance": {
+        "coordination_seconds": 0.05497599998489022,
+        "event_count": 5
+      },
+      "policy_identities": {
+        "contract_selection": "legacy.s23.option_selling.contract_selection",
+        "entry": "legacy.s23.vertical.entry",
+        "execution_risk": "OFFLINE_PREMARKET_NO_EXECUTION",
+        "gap_missed_entry": "legacy.s23.gap_missed_entry.backtest_low_v1",
+        "msl": "legacy.s23.option_selling.msl",
+        "product": "legacy.s23.option_selling.product",
+        "target": "legacy.s23.option_selling.target"
+      },
+      "premarket_completion_event_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER-premarket-3",
+      "premarket_plan_hash": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22",
+      "premarket_plan_id": "phase3d-m3-s23-bull-call:premarket",
+      "rc_event_id": null,
+      "schema_version": "tfis.offline_trading_day_coordination.v1",
+      "startup_event_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER-config-1",
+      "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family": "S23",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "supplemented_fields": [
+        "offline_fixture_events"
+      ],
+      "terminal_state": "COMPLETED_OFFLINE",
+      "trading_date": "2026-07-30",
+      "transition_evidence": [
+        {
+          "artifact_hashes": {},
+          "event_type": "STARTUP_COMPLETED",
+          "from_state": "PREPARING_PREMARKET_PLAN",
+          "reason": "Startup completed.",
+          "to_state": "PREPARING_PREMARKET_PLAN"
+        },
+        {
+          "artifact_hashes": {
+            "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+          },
+          "event_type": "PREMARKET_DATA_READY",
+          "from_state": "PREPARING_PREMARKET_PLAN",
+          "reason": "Pre-market plan prepared.",
+          "to_state": "PREMARKET_PLAN_PREPARED"
+        },
+        {
+          "artifact_hashes": {
+            "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+          },
+          "event_type": "PREMARKET_DATA_READY",
+          "from_state": "PREMARKET_PLAN_PREPARED",
+          "reason": "Awaiting market-open evidence.",
+          "to_state": "AWAITING_MARKET_OPEN"
+        },
+        {
+          "artifact_hashes": {
+            "opening_context": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+            "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+          },
+          "event_type": "MARKET_OPEN_OBSERVED",
+          "from_state": "AWAITING_MARKET_OPEN",
+          "reason": "Opening context building.",
+          "to_state": "OPENING_CONTEXT_BUILDING"
+        },
+        {
+          "artifact_hashes": {
+            "opening_context": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+            "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+          },
+          "event_type": "MARKET_OPEN_OBSERVED",
+          "from_state": "OPENING_CONTEXT_BUILDING",
+          "reason": "Opening context ready.",
+          "to_state": "OPENING_CONTEXT_READY"
+        },
+        {
+          "artifact_hashes": {
+            "opening_context": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+            "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+          },
+          "event_type": "MARKET_OPEN_OBSERVED",
+          "from_state": "OPENING_CONTEXT_READY",
+          "reason": "Normal path selected.",
+          "to_state": "AWAITING_NORMAL_ORPT"
+        },
+        {
+          "artifact_hashes": {
+            "effective_execution_plan": "c30bd67eeeb2063c90ddce7afd9a175cb38c049c2896ed914a6948382c16ebb1",
+            "opening_context": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+            "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+          },
+          "event_type": "ORPT_REACHED",
+          "from_state": "AWAITING_NORMAL_ORPT",
+          "reason": "Normal effective execution plan ready.",
+          "to_state": "EFFECTIVE_PLAN_READY"
+        },
+        {
+          "artifact_hashes": {
+            "effective_execution_plan": "c30bd67eeeb2063c90ddce7afd9a175cb38c049c2896ed914a6948382c16ebb1",
+            "offline_handoff": "fbf8ab8d2fdbcfe884320de81a572ec4cdb72794228b00d66cfadce0c08a1e29",
+            "opening_context": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+            "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+          },
+          "event_type": "OFFLINE_HANDOFF_REQUESTED",
+          "from_state": "EFFECTIVE_PLAN_READY",
+          "reason": "Offline-only handoff produced.",
+          "to_state": "OFFLINE_HANDOFF_READY"
+        },
+        {
+          "artifact_hashes": {
+            "effective_execution_plan": "c30bd67eeeb2063c90ddce7afd9a175cb38c049c2896ed914a6948382c16ebb1",
+            "offline_handoff": "fbf8ab8d2fdbcfe884320de81a572ec4cdb72794228b00d66cfadce0c08a1e29",
+            "opening_context": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+            "premarket_plan": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22"
+          },
+          "event_type": "OFFLINE_HANDOFF_REQUESTED",
+          "from_state": "OFFLINE_HANDOFF_READY",
+          "reason": "Offline coordination completed.",
+          "to_state": "COMPLETED_OFFLINE"
+        }
+      ]
+    }
+  },
+  "performance": {
+    "critical_event_processing_count": 6,
+    "event_count": 6,
+    "instrument_count": 1,
+    "maximum_pending_conflatable_updates": 0,
+    "per_event_median_seconds": 7.399998139590025e-06,
+    "per_event_p95_seconds": 1.0299991117790341e-05,
+    "position_cycle_count": 0,
+    "quote_burst_size": 0,
+    "strategy_instance_count": 1,
+    "total_processing_seconds": 0.13372749998234212
+  },
+  "position_cycle_results": {},
+  "processed_event_ids": [
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-config-1",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-enabled-2",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-premarket-3",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-open-4",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-orpt-5",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER-handoff-6"
+  ],
+  "result_hash": "d5bc3905fa95e7f4147365783e42b7fa73de811b43586faff0476c0b3c8ab5df",
+  "schema_version": "tfis.phase3d.m15.runtime_coordination.v1",
+  "subscription_snapshot": {
+    "contract_to_position_cycles": {
+      "NIFTY24JUL22250CE": [
+        "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE"
+      ]
+    },
+    "contract_to_strategy_instances": {
+      "NIFTY24JUL22250CE": [
+        "S23_NIFTY_ACCOUNT_A_PAPER",
+        "S23_NIFTY_BEAR_ACCOUNT_A_PAPER"
+      ]
+    },
+    "subscription_hash": "d9d9c04cae3b9b28f62ba405ec24192b840db7ce94ad89f8497f2bc5998f9399",
+    "underlying_to_position_cycles": {
+      "NSE:NIFTY": [
+        "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE"
+      ]
+    },
+    "underlying_to_strategy_instances": {
+      "NSE:NIFTY": [
+        "S23_NIFTY_ACCOUNT_A_PAPER",
+        "S23_NIFTY_BEAR_ACCOUNT_A_PAPER"
+      ]
+    }
+  },
+  "trading_date": "2026-07-30"
+}

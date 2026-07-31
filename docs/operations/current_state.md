@@ -6,6 +6,18 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Friday, July 31, 2026, Phase 3D Milestone 15 implements deterministic,
+  in-memory, non-authoritative runtime event coordination over the accepted
+  S23 offline fresh-entry and carried-position paths. Fresh-entry offline
+  business path: `IMPLEMENTED`. Carried-position offline business path:
+  `IMPLEMENTED`. Deterministic runtime event coordination:
+  `IMPLEMENTED_NON_AUTHORITATIVE`. Shared instrument snapshot processing:
+  `IMPLEMENTED_IN_MEMORY_NON_AUTHORITATIVE`. Subscription routing:
+  `IMPLEMENTED_IN_MEMORY_NON_AUTHORITATIVE`. Backpressure/conflation model:
+  `IMPLEMENTED_IN_MEMORY_NON_AUTHORITATIVE`. Real market shadow connection:
+  `NOT_IMPLEMENTED`. Broker reconciliation service: `NOT_IMPLEMENTED`.
+  Broker/paper/live authority: `NONE`. Order and position mutation authority:
+  `NONE`.
 - as of Friday, July 31, 2026, Phase 3D Milestone 14 implements complete
   offline carried-position trading-day coordination. The slice composes M13
   `PositionLifecycleContext`, M13B 15:00 EOD square-off/carry authority, an

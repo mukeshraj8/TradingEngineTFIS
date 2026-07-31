@@ -19,7 +19,7 @@ from tfis.domain.effective_execution_plan import EffectiveExecutionPlan
 from tfis.domain.gap_missed_entry import MissedEntryObservationSource, ObservationValue, SessionTimingEvidence, TimingObservationRequirement, TimingWindowState
 from tfis.domain.opening_market_context import OpeningGapClassification, OpeningGapDirection
 from tfis.entry import EntryEngine
-from tfis.execution_plan import EffectiveExecutionPlanComposer, EffectiveExecutionPolicies
+from ...execution_plan import EffectiveExecutionPlanComposer, EffectiveExecutionPolicies
 from tfis.strategy import StrategyEvaluator
 from tfis.strategy.s23_recalculation import IntradaySnapshot
 

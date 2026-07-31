@@ -1,0 +1,66 @@
+{
+  "authority": {
+    "broker_submission": false,
+    "carry_persistence": false,
+    "live_submission": false,
+    "mode": "SHADOW_ONLY",
+    "order_cancellation": false,
+    "order_modification": false,
+    "paper_submission": false,
+    "position_mutation": false,
+    "square_off_execution": false
+  },
+  "capabilities": [
+    {
+      "capability": "normalized_runtime_event_contract",
+      "status": "IMPLEMENTED_NON_AUTHORITATIVE"
+    },
+    {
+      "capability": "delivery_classes",
+      "status": "IMPLEMENTED_NON_AUTHORITATIVE"
+    },
+    {
+      "capability": "instrument_snapshot_model",
+      "status": "IMPLEMENTED_IN_MEMORY_NON_AUTHORITATIVE"
+    },
+    {
+      "capability": "single_writer_instrument_state",
+      "status": "IMPLEMENTED_IN_MEMORY_NON_AUTHORITATIVE"
+    },
+    {
+      "capability": "subscription_routing",
+      "status": "IMPLEMENTED_IN_MEMORY_NON_AUTHORITATIVE"
+    },
+    {
+      "capability": "fresh_entry_runtime_coordination",
+      "status": "IMPLEMENTED_NON_AUTHORITATIVE"
+    },
+    {
+      "capability": "carried_position_runtime_coordination",
+      "status": "IMPLEMENTED_NON_AUTHORITATIVE"
+    },
+    {
+      "capability": "real_market_shadow_connection",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "capability": "broker_reconciliation_service",
+      "status": "NOT_IMPLEMENTED"
+    },
+    {
+      "capability": "paper_live_authority",
+      "status": "NONE"
+    }
+  ],
+  "carried_revised_sl_hash": "1914903b7be6c9cb36ae9e6b0cc58502b462def9c763eb43bef13340224c9d37",
+  "fresh_entry_gap_hash": "176b9abd83c557609f74b4364c738e767cb706fbdd8a8a172620cacfe3a3dcd3",
+  "fresh_entry_normal_hash": "d5bc3905fa95e7f4147365783e42b7fa73de811b43586faff0476c0b3c8ab5df",
+  "remaining_gaps": [
+    "No live or captured market stream is connected to the runtime coordinator.",
+    "No broker reconciliation read boundary is implemented.",
+    "No production persistence or scheduler is implemented.",
+    "Runtime scope remains S23 Call-side fixtures only; S21, Futures and Put expansion are not implemented."
+  ],
+  "schema_version": "tfis.phase3d.m15.runtime_gap_matrix.v1",
+  "verdict": "PHASE3D_M15_ACCEPT"
+}

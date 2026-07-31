@@ -6,7 +6,25 @@ way.
 
 ## Immediate Next Priorities
 
-0.45. `TODO` Review and accept Phase 3D Milestone 14 before selecting the next
+0.47. `TODO` Connect the deterministic M15 runtime coordinator to one existing
+   captured/replay market stream in shadow-only mode. Preserve the current
+   authority boundary: no broker submission, no paper/live authority, no order
+   modification/cancellation, no square-off execution, and no position
+   mutation. Use the M15 normalized event contract, subscription routing,
+   shared instrument snapshots, and checkpoint/resume evidence.
+
+0.46. `DONE` Review and accept Phase 3D Milestone 15 runtime coordination
+   before connecting captured/replay data. Result: M15 implements deterministic
+   runtime-style event coordination for accepted S23 fresh-entry and
+   carried-position offline flows. Shared instrument snapshot processing,
+   subscription routing, critical event preservation, ordinary tick conflation,
+   replay/resume checkpointing, multi-instance isolation, multi-position
+   isolation, and no-authority proof are implemented in-memory and
+   non-authoritatively. Reports:
+   `reports/phase3d/milestone15_runtime_coordination_summary.md` and
+   `reports/phase3d/milestone15_runtime_gap_matrix.json`.
+
+0.45. `DONE` Review and accept Phase 3D Milestone 14 before selecting the next
    implementation slice. M14 is offline-only carried-position trading-day
    coordination and does not add broker, paper, live, scheduler, event-bus,
    order-modification, square-off, or position-mutation authority. Reports:

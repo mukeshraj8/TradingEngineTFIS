@@ -1,5 +1,28 @@
-"""Runtime guardrails for TFIS operational processes."""
+"""Runtime guardrails and deterministic non-authoritative coordination."""
 
+from .coordination import (
+    ContractMarketSnapshot,
+    DeterministicRuntimeCoordinator,
+    FreshEntryRuntimeCoordinator,
+    InstrumentMarketSnapshot,
+    InstrumentStateOwner,
+    NormalizedRuntimeEvent,
+    PositionCycleRuntimeCoordinator,
+    RuntimeCheckpoint,
+    RuntimeCoherentSnapshotPolicy,
+    RuntimeDeliveryClass,
+    RuntimeEventType,
+    RuntimeFreshness,
+    RuntimeSimulationResult,
+    RuntimeSnapshotCoherenceResult,
+    RuntimeStreamKind,
+    RuntimeStreamStatus,
+    RuntimeSubscriptionIndex,
+    RuntimeSubscriptionSnapshot,
+    SnapshotUpdateResult,
+    runtime_hash,
+    validate_snapshot_coherence,
+)
 from .process_lock import (
     CRITICAL_DUPLICATE_PROCESS_SHUTDOWN,
     STALE_PROCESS_LOCK_RECLAIMED,
@@ -9,9 +32,30 @@ from .process_lock import (
 )
 
 __all__ = [
+    "ContractMarketSnapshot",
+    "DeterministicRuntimeCoordinator",
+    "FreshEntryRuntimeCoordinator",
+    "InstrumentMarketSnapshot",
+    "InstrumentStateOwner",
+    "NormalizedRuntimeEvent",
+    "PositionCycleRuntimeCoordinator",
+    "RuntimeCheckpoint",
+    "RuntimeCoherentSnapshotPolicy",
+    "RuntimeDeliveryClass",
+    "RuntimeEventType",
+    "RuntimeFreshness",
+    "RuntimeSimulationResult",
+    "RuntimeSnapshotCoherenceResult",
+    "RuntimeStreamKind",
+    "RuntimeStreamStatus",
+    "RuntimeSubscriptionIndex",
+    "RuntimeSubscriptionSnapshot",
+    "SnapshotUpdateResult",
     "CRITICAL_DUPLICATE_PROCESS_SHUTDOWN",
     "STALE_PROCESS_LOCK_RECLAIMED",
     "ProcessLockError",
     "ProcessLockHandle",
     "acquire_process_lock",
+    "runtime_hash",
+    "validate_snapshot_coherence",
 ]

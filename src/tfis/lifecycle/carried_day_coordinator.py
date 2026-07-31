@@ -33,7 +33,7 @@ class OfflineCarriedPositionTradingDayCoordinator:
         block_reason = None
         terminal = CarriedPositionDayStage.COMPLETED_OFFLINE
 
-        if intraday is CarriedPositionIntradayState.BLOCKED:
+        if intraday in (CarriedPositionIntradayState.BLOCKED, CarriedPositionIntradayState.WAITING_FOR_AUTHORIZED_OBSERVATION):
             block_code = context.action_requirement.value
             block_reason = "Lifecycle context is not sufficient for offline carried-position day completion."
             terminal = CarriedPositionDayStage.BLOCKED

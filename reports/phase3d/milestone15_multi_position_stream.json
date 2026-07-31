@@ -1,0 +1,810 @@
+{
+  "authority": {
+    "broker_submission": false,
+    "carry_persistence": false,
+    "live_submission": false,
+    "mode": "SHADOW_ONLY",
+    "order_cancellation": false,
+    "order_modification": false,
+    "paper_submission": false,
+    "position_mutation": false,
+    "square_off_execution": false
+  },
+  "blocked_streams": {},
+  "checkpoints": {
+    "normal-position": {
+      "artifact_hashes": {
+        "eod_decision": "5ac2b24bd2dbe4113d506a1edfb889816c9a414ac0ffa707e2382fb66a56e86f",
+        "lifecycle_context": "6003b9e469b4a8c7a4360d6bebc5360d6fe4bbbd6dd29e62b6a5984992e2871d",
+        "lifecycle_handoff": "54db9c6462472eb5593d08be75d271419d75253820293a3e77180bd5637780ce"
+      },
+      "checkpoint_hash": "47731d83ec3c9fb8614a53c7e53c247286ca4e4e3f236b60c7eef22e063e801e",
+      "configuration_hash": "m15-s23-runtime-config",
+      "consumed_event_ids": [
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-reconcile-101",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-open-102",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-orpt-quote-103",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-orpt-104",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-eod-107"
+      ],
+      "current_state": "COMPLETED",
+      "latest_snapshot_hashes": {
+        "NSE:NIFTY:NIFTY24JUL22250CE": "0b89d418b1319d2c015a5d309fb0db2f2d33a945c055688a7238bdefeef60e7c",
+        "NSE:NIFTY:NIFTY24JUL22300CE": "c81b4b4c4e9be4479f765c429a4090894e5c99c56a2073496e185972fd91370d"
+      },
+      "rule_matrix_version": "tfis_authoritative_workbook_rule_matrix.v1",
+      "runtime_stream_identity": "normal-position"
+    },
+    "target-position": {
+      "artifact_hashes": {
+        "eod_decision": "",
+        "lifecycle_context": "778760ceece5e260aff92f45c3ef2679d21e907733bd5ebd539b19c2d47039ba",
+        "lifecycle_handoff": "44a99ce1386afe0931296ff4c6072c102335b596d5046304abf6e6b96f3ac843"
+      },
+      "checkpoint_hash": "b6e42faf9ccfae95c74df29d5c6863c461d039f9725e6ca1ab38e1d90c1730d7",
+      "configuration_hash": "m15-s23-runtime-config",
+      "consumed_event_ids": [
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-reconcile-1",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-open-2",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-orpt-quote-3",
+        "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-orpt-4"
+      ],
+      "current_state": "COMPLETED",
+      "latest_snapshot_hashes": {
+        "NSE:NIFTY:NIFTY24JUL22250CE": "0b89d418b1319d2c015a5d309fb0db2f2d33a945c055688a7238bdefeef60e7c",
+        "NSE:NIFTY:NIFTY24JUL22300CE": "c81b4b4c4e9be4479f765c429a4090894e5c99c56a2073496e185972fd91370d"
+      },
+      "rule_matrix_version": "tfis_authoritative_workbook_rule_matrix.v1",
+      "runtime_stream_identity": "target-position"
+    }
+  },
+  "conflation_diagnostics": {
+    "owner_conflations": 2,
+    "pending_latest_updates": 2
+  },
+  "critical_event_ids": [
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-reconcile-1",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-reconcile-101",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-open-2",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-open-102",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-orpt-4",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-orpt-104",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-eod-107"
+  ],
+  "fresh_entry_results": {},
+  "performance": {
+    "critical_event_processing_count": 7,
+    "event_count": 9,
+    "instrument_count": 2,
+    "maximum_pending_conflatable_updates": 2,
+    "per_event_median_seconds": 3.9000005926936865e-06,
+    "per_event_p95_seconds": 0.00020650000078603625,
+    "position_cycle_count": 2,
+    "quote_burst_size": 2,
+    "strategy_instance_count": 0,
+    "total_processing_seconds": 0.14139840001007542
+  },
+  "position_cycle_results": {
+    "normal-position": {
+      "block_code": null,
+      "block_reason": null,
+      "broker_mutation_permitted": false,
+      "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+      "day_hash": "4ae4f4fcff258fcbf0c18bdcf456c60abe5398b314b5258bcd5848e931846f6b",
+      "day_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE",
+      "eod_decision": {
+        "broker_mutation_permitted": false,
+        "carry_forward_outcome": "CARRY_FORWARD_AND_CALCULATE_NEXT_DAY_SL",
+        "comparison_time": "15:00:00",
+        "decision_hash": "5ac2b24bd2dbe4113d506a1edfb889816c9a414ac0ffa707e2382fb66a56e86f",
+        "decision_id": "m14-s23-bull_carried_normal_day_carry:eod-15-00",
+        "effective_carry_forward_operator": "<=",
+        "equality_outcome": "CARRY_FORWARD_AND_CALCULATE_NEXT_DAY_SL",
+        "evidence": {
+          "broker_authority": "NONE",
+          "carry_forward_rule": "15:00 close <= original SL",
+          "equality_rule": "USER_CLARIFIED_AND_RECORDED: 15:00 close == original SL carries forward",
+          "live_authority": "NONE",
+          "m14_scope": "offline_carried_position_trading_day",
+          "paper_authority": "NONE",
+          "source_authority": "TFISRulesAndSpec/All in One - TFIS 26-12-2023.xlsx",
+          "source_cells": [
+            "AB6 OS!F190:J190",
+            "AB6 OS!F191:J191"
+          ],
+          "source_rule_id": "S23-EOD-CARRY-AB6OS-191-USER-EQUALITY",
+          "square_off_rule": "15:00 close > original SL",
+          "workbook_carry_forward_rule": "15:00 close < original SL"
+        },
+        "live_mutation_permitted": false,
+        "observed_price": 250.0,
+        "option_side": "CALL",
+        "original_sl": 300.0,
+        "outcome": "CARRY_FORWARD_AND_CALCULATE_NEXT_DAY_SL",
+        "paper_mutation_permitted": false,
+        "position_cycle_id": "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY_20260806_22250_CALL",
+        "source_cells": [
+          "AB6 OS!F190:J190",
+          "AB6 OS!F191:J191"
+        ],
+        "source_rule_id": "S23-EOD-CARRY-AB6OS-191-USER-EQUALITY",
+        "square_off_outcome": "SQUARE_OFF_AT_CMP_REQUIRED",
+        "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "trading_date": "2026-07-30",
+        "workbook_carry_forward_operator": "<",
+        "workbook_square_off_operator": ">"
+      },
+      "intraday_state": "NORMAL_SL_REQUIRED",
+      "lifecycle_context": {
+        "action_requirement": "NORMAL_SL_PLACEMENT_REQUIRED",
+        "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+        "context_hash": "6003b9e469b4a8c7a4360d6bebc5360d6fe4bbbd6dd29e62b6a5984992e2871d",
+        "context_id": "m13-s23-bull_carried_normal:S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE",
+        "evidence": {
+          "builder": "PositionLifecycleContextBuilder",
+          "classification_scope": "observation_only"
+        },
+        "failures": [],
+        "gap_observation": {
+          "amount": 0.0,
+          "direction": "NONE",
+          "economic_effect": "NEUTRAL",
+          "evidence": {
+            "comparison": "opening_ltp_vs_prior_reference_price",
+            "economic_basis": "position_side_and_carried_contract_premium",
+            "option_type": "CALL",
+            "position_side": "SELL"
+          },
+          "observed_price": 203.5,
+          "percentage": 0.0,
+          "reference_price": 203.5
+        },
+        "level_observation": {
+          "comparison_basis": "carried_contract_opening_ltp",
+          "comparison_price": 203.5,
+          "crossed_protective_levels": [],
+          "crossed_targets": [],
+          "evidence": {
+            "comparison_rule": "side_aware_target_and_protection_threshold_observation"
+          },
+          "protective_level_crossed": false,
+          "rule_authority": "OBSERVATION_ONLY",
+          "target_crossed": false
+        },
+        "missing_fields": [],
+        "opening_evidence": {
+          "carried_contract_quote": {
+            "ask": 204.0,
+            "bid": 203.0,
+            "contract": {
+              "exchange": null,
+              "expiry": "2026-08-06",
+              "metadata": {
+                "ltp": 264.0,
+                "oi": 999999.0,
+                "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+              },
+              "option_type": "CALL",
+              "product_type": "OPTION_SELLING",
+              "segment": "OPTIONS_SELL",
+              "strike": 22250.0,
+              "symbol": "NIFTY_20260806_22250_CALL",
+              "token": null
+            },
+            "freshness": "FRESH",
+            "high": 203.5,
+            "low": 203.5,
+            "ltp": 203.5,
+            "oi": 999999.0,
+            "prior_reference_price": 203.5,
+            "provenance": {
+              "independent_carried_contract_quote": "true",
+              "source": "phase3d_m13_s23_carried_contract_opening_quote_fixture"
+            },
+            "source_timestamp": "2026-07-30T09:19:59+05:30"
+          },
+          "evidence_id": "m13-s23-bull_carried_normal:opening-evidence",
+          "max_quote_age_seconds": 300,
+          "observation_timestamp": "2026-07-30T09:19:59+05:30",
+          "orpt_contract_observation": {
+            "ask": null,
+            "bid": null,
+            "contract": {
+              "exchange": null,
+              "expiry": "2026-08-06",
+              "metadata": {
+                "ltp": 264.0,
+                "oi": 999999.0,
+                "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+              },
+              "option_type": "CALL",
+              "product_type": "OPTION_SELLING",
+              "segment": "OPTIONS_SELL",
+              "strike": 22250.0,
+              "symbol": "NIFTY_20260806_22250_CALL",
+              "token": null
+            },
+            "freshness": "FRESH",
+            "high": 300.0,
+            "low": 203.5,
+            "ltp": 300.0,
+            "oi": null,
+            "prior_reference_price": 203.5,
+            "provenance": {
+              "source": "AB6_OS_183_188_ORPT_ORIGINAL_SL_COMPARISON_FIXTURE"
+            },
+            "source_timestamp": "2026-07-30T09:19:59+05:30"
+          },
+          "provenance": {
+            "source": "phase3d_m13_s23_lifecycle_fixture"
+          },
+          "rc_contract_observation": null,
+          "shared_underlying_snapshot_permitted": true,
+          "trading_date": "2026-07-30",
+          "underlying_opening_snapshot": {
+            "instrument": "NSE:NIFTY",
+            "shared_with_opening_context": true,
+            "timestamp": "2026-07-30T09:19:59+05:30"
+          }
+        },
+        "opening_status": "NORMAL_OPENING_CONTINUATION",
+        "performance": {
+          "build_ms": 0.084
+        },
+        "policy_identities": {
+          "contract_selection": "legacy.s23.option_selling.contract_selection",
+          "entry": "legacy.s23.vertical.entry",
+          "execution_risk": "OFFLINE_PREMARKET_NO_EXECUTION",
+          "gap_missed_entry": "legacy.s23.gap_missed_entry.backtest_low_v1",
+          "msl": "legacy.s23.option_selling.msl",
+          "position_lifecycle_context": "phase3d.generic.position_lifecycle_context_builder.v1",
+          "product": "legacy.s23.option_selling.product",
+          "s23_lifecycle_adapter": "phase3d.s23.call.carried_position_adapter.v1",
+          "target": "legacy.s23.option_selling.target"
+        },
+        "position_snapshot": {
+          "account_reference": "ACCOUNT_A_PAPER_LOGICAL",
+          "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+          "contract": {
+            "exchange": null,
+            "expiry": "2026-08-06",
+            "metadata": {
+              "ltp": 264.0,
+              "oi": 999999.0,
+              "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+            },
+            "option_type": "CALL",
+            "product_type": "OPTION_SELLING",
+            "segment": "OPTIONS_SELL",
+            "strike": 22250.0,
+            "symbol": "NIFTY_20260806_22250_CALL",
+            "token": null
+          },
+          "entry_price": 203.5,
+          "evidence": {
+            "fresh_entry_isolation": "carried snapshot is constructed independently from fresh-entry plan execution",
+            "source": "phase3d_m13_s23_fixture"
+          },
+          "external_quantity": 50,
+          "local_quantity": 50,
+          "opened_at": "2026-07-30T09:19:59+05:30",
+          "partial_exit_state": "NONE",
+          "position_cycle_id": "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE",
+          "product": "OPTION_SELLING",
+          "reconciled_quantity": 50,
+          "reconciliation_id": "m13-s23-bull_carried_normal:reconciliation",
+          "reconciliation_status": "MATCHED",
+          "side": "SELL",
+          "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+          "strategy_family": "S23",
+          "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+          "strategy_version": "1.0.0",
+          "trading_date": "2026-07-30"
+        },
+        "protection_state": {
+          "lifecycle_recalculation_time": "09:29:59",
+          "protective_levels": {
+            "msl": 321.0
+          },
+          "protective_order_identities": {
+            "msl": "offline-protective:NIFTY_20260806_22250_CALL:msl",
+            "target_1": "offline-target:NIFTY_20260806_22250_CALL:target_1"
+          },
+          "protective_order_status": "MATCHED",
+          "provenance": {
+            "msl": "Prior-day SL is not blindly reused; adverse carried-position gaps require revised SL calculation at configured lifecycle recalculation time.",
+            "revised_sl_formula": "AB6 OS!M184 09:29:59 AM HH + 7.00%",
+            "target": "Target protection is available from market open through approved offline terminal/broker target evidence."
+          },
+          "revised_protective_formula_policy_id": "S23-CARRIED-CALL-MISSED-BULL-AB6OS-184",
+          "target_levels": {
+            "target_1": 81.4
+          },
+          "unresolved_fields": []
+        },
+        "schema_version": "phase3d.position_lifecycle_context.v1",
+        "stale_fields": [],
+        "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "strategy_family": "S23",
+        "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "strategy_version": "1.0.0",
+        "trading_date": "2026-07-30",
+        "unresolved_rule_authorities": []
+      },
+      "lifecycle_handoff": {
+        "action_requirement": "NORMAL_SL_PLACEMENT_REQUIRED",
+        "authority_mode": "OFFLINE_ONLY",
+        "broker_mutation_permitted": false,
+        "evidence_hash": "54db9c6462472eb5593d08be75d271419d75253820293a3e77180bd5637780ce",
+        "handoff_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE:offline-lifecycle-handoff",
+        "lifecycle_context_hash": "6003b9e469b4a8c7a4360d6bebc5360d6fe4bbbd6dd29e62b6a5984992e2871d",
+        "lifecycle_context_id": "m13-s23-bull_carried_normal:S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE",
+        "live_mutation_permitted": false,
+        "opening_status": "NORMAL_OPENING_CONTINUATION",
+        "order_cancellation_permitted": false,
+        "order_modification_permitted": false,
+        "paper_mutation_permitted": false,
+        "position_cycle_id": "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE",
+        "position_mutation_permitted": false,
+        "square_off_permitted": false,
+        "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "trading_date": "2026-07-30"
+      },
+      "live_mutation_permitted": false,
+      "order_cancellation_permitted": false,
+      "order_modification_permitted": false,
+      "paper_mutation_permitted": false,
+      "performance": {
+        "coordination_seconds": 0.043004100007237867
+      },
+      "policy_identities": {
+        "contract_selection": "legacy.s23.option_selling.contract_selection",
+        "entry": "legacy.s23.vertical.entry",
+        "execution_risk": "OFFLINE_PREMARKET_NO_EXECUTION",
+        "gap_missed_entry": "legacy.s23.gap_missed_entry.backtest_low_v1",
+        "msl": "legacy.s23.option_selling.msl",
+        "position_lifecycle_context": "phase3d.generic.position_lifecycle_context_builder.v1",
+        "product": "legacy.s23.option_selling.product",
+        "s23_lifecycle_adapter": "phase3d.s23.call.carried_position_adapter.v1",
+        "target": "legacy.s23.option_selling.target"
+      },
+      "position_cycle_id": "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE",
+      "position_mutation_permitted": false,
+      "square_off_permitted": false,
+      "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family": "S23",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "terminal_stage": "COMPLETED_OFFLINE",
+      "trading_date": "2026-07-30",
+      "transition_evidence": [
+        {
+          "artifact_hashes": {
+            "lifecycle_context": "6003b9e469b4a8c7a4360d6bebc5360d6fe4bbbd6dd29e62b6a5984992e2871d"
+          },
+          "reason": "Position reconciliation status is MATCHED.",
+          "stage": "POSITION_RECONCILED",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "lifecycle_context": "6003b9e469b4a8c7a4360d6bebc5360d6fe4bbbd6dd29e62b6a5984992e2871d"
+          },
+          "reason": "Target-first opening assessment produced NORMAL_OPENING_CONTINUATION.",
+          "stage": "TARGET_PROTECTION_ASSESSED",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "lifecycle_context": "6003b9e469b4a8c7a4360d6bebc5360d6fe4bbbd6dd29e62b6a5984992e2871d"
+          },
+          "reason": "ORPT original-SL evaluation requires normal SL placement.",
+          "stage": "ORPT_ORIGINAL_SL_ASSESSED",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "lifecycle_context": "6003b9e469b4a8c7a4360d6bebc5360d6fe4bbbd6dd29e62b6a5984992e2871d"
+          },
+          "reason": "Intraday lifecycle state derived from NORMAL_SL_PLACEMENT_REQUIRED.",
+          "stage": "INTRADAY_LIFECYCLE_READY",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "eod_decision": "5ac2b24bd2dbe4113d506a1edfb889816c9a414ac0ffa707e2382fb66a56e86f"
+          },
+          "reason": "15:00 EOD decision resolved as CARRY_FORWARD_AND_CALCULATE_NEXT_DAY_SL.",
+          "stage": "EOD_DECISION_READY",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "lifecycle_handoff": "54db9c6462472eb5593d08be75d271419d75253820293a3e77180bd5637780ce"
+          },
+          "reason": "Offline lifecycle handoff produced without mutation authority.",
+          "stage": "OFFLINE_HANDOFF_READY",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "eod_decision": "5ac2b24bd2dbe4113d506a1edfb889816c9a414ac0ffa707e2382fb66a56e86f",
+            "lifecycle_context": "6003b9e469b4a8c7a4360d6bebc5360d6fe4bbbd6dd29e62b6a5984992e2871d",
+            "lifecycle_handoff": "54db9c6462472eb5593d08be75d271419d75253820293a3e77180bd5637780ce"
+          },
+          "reason": "Offline carried-position day completed.",
+          "stage": "COMPLETED_OFFLINE",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        }
+      ]
+    },
+    "target-position": {
+      "block_code": null,
+      "block_reason": null,
+      "broker_mutation_permitted": false,
+      "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+      "day_hash": "c4eb51245dab878d122e4d14341691a83b95d392cf552b1b8b6bf3b3bccc2615",
+      "day_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE",
+      "eod_decision": null,
+      "intraday_state": "EXIT_REQUIRED_FROM_OPEN",
+      "lifecycle_context": {
+        "action_requirement": "EXIT_REQUIRED",
+        "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+        "context_hash": "778760ceece5e260aff92f45c3ef2679d21e907733bd5ebd539b19c2d47039ba",
+        "context_id": "m13-s23-bull_carried_target_crossed:S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE",
+        "evidence": {
+          "builder": "PositionLifecycleContextBuilder",
+          "classification_scope": "observation_only"
+        },
+        "failures": [],
+        "gap_observation": {
+          "amount": -128.5,
+          "direction": "DOWN",
+          "economic_effect": "FAVORABLE",
+          "evidence": {
+            "comparison": "opening_ltp_vs_prior_reference_price",
+            "economic_basis": "position_side_and_carried_contract_premium",
+            "option_type": "CALL",
+            "position_side": "SELL"
+          },
+          "observed_price": 75.0,
+          "percentage": -63.145,
+          "reference_price": 203.5
+        },
+        "level_observation": {
+          "comparison_basis": "carried_contract_opening_ltp",
+          "comparison_price": 75.0,
+          "crossed_protective_levels": [],
+          "crossed_targets": [
+            "target_1"
+          ],
+          "evidence": {
+            "comparison_rule": "side_aware_target_and_protection_threshold_observation"
+          },
+          "protective_level_crossed": false,
+          "rule_authority": "OBSERVATION_ONLY",
+          "target_crossed": true
+        },
+        "missing_fields": [],
+        "opening_evidence": {
+          "carried_contract_quote": {
+            "ask": 75.5,
+            "bid": 74.5,
+            "contract": {
+              "exchange": null,
+              "expiry": "2026-08-06",
+              "metadata": {
+                "ltp": 264.0,
+                "oi": 999999.0,
+                "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+              },
+              "option_type": "CALL",
+              "product_type": "OPTION_SELLING",
+              "segment": "OPTIONS_SELL",
+              "strike": 22250.0,
+              "symbol": "NIFTY_20260806_22250_CALL",
+              "token": null
+            },
+            "freshness": "FRESH",
+            "high": 75.0,
+            "low": 75.0,
+            "ltp": 75.0,
+            "oi": 999999.0,
+            "prior_reference_price": 203.5,
+            "provenance": {
+              "independent_carried_contract_quote": "true",
+              "source": "phase3d_m13_s23_carried_contract_opening_quote_fixture"
+            },
+            "source_timestamp": "2026-07-30T09:19:59+05:30"
+          },
+          "evidence_id": "m13-s23-bull_carried_target_crossed:opening-evidence",
+          "max_quote_age_seconds": 300,
+          "observation_timestamp": "2026-07-30T09:19:59+05:30",
+          "orpt_contract_observation": {
+            "ask": null,
+            "bid": null,
+            "contract": {
+              "exchange": null,
+              "expiry": "2026-08-06",
+              "metadata": {
+                "ltp": 264.0,
+                "oi": 999999.0,
+                "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+              },
+              "option_type": "CALL",
+              "product_type": "OPTION_SELLING",
+              "segment": "OPTIONS_SELL",
+              "strike": 22250.0,
+              "symbol": "NIFTY_20260806_22250_CALL",
+              "token": null
+            },
+            "freshness": "FRESH",
+            "high": 330.0,
+            "low": 75.0,
+            "ltp": 330.0,
+            "oi": null,
+            "prior_reference_price": 203.5,
+            "provenance": {
+              "source": "AB6_OS_183_188_ORPT_ORIGINAL_SL_COMPARISON_FIXTURE"
+            },
+            "source_timestamp": "2026-07-30T09:19:59+05:30"
+          },
+          "provenance": {
+            "source": "phase3d_m13_s23_lifecycle_fixture"
+          },
+          "rc_contract_observation": {
+            "ask": null,
+            "bid": null,
+            "contract": {
+              "exchange": null,
+              "expiry": "2026-08-06",
+              "metadata": {
+                "ltp": 264.0,
+                "oi": 999999.0,
+                "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+              },
+              "option_type": "CALL",
+              "product_type": "OPTION_SELLING",
+              "segment": "OPTIONS_SELL",
+              "strike": 22250.0,
+              "symbol": "NIFTY_20260806_22250_CALL",
+              "token": null
+            },
+            "freshness": "FRESH",
+            "high": 335.0,
+            "low": 75.0,
+            "ltp": 335.0,
+            "oi": null,
+            "prior_reference_price": 203.5,
+            "provenance": {
+              "source": "AB6_OS_184_185_187_188_RC_REVISED_FSL_FIXTURE"
+            },
+            "source_timestamp": "2026-07-30T09:29:59+05:30"
+          },
+          "shared_underlying_snapshot_permitted": true,
+          "trading_date": "2026-07-30",
+          "underlying_opening_snapshot": {
+            "instrument": "NSE:NIFTY",
+            "shared_with_opening_context": true,
+            "timestamp": "2026-07-30T09:19:59+05:30"
+          }
+        },
+        "opening_status": "TARGET_CROSSED_AT_OPEN",
+        "performance": {
+          "build_ms": 0.078
+        },
+        "policy_identities": {
+          "contract_selection": "legacy.s23.option_selling.contract_selection",
+          "entry": "legacy.s23.vertical.entry",
+          "execution_risk": "OFFLINE_PREMARKET_NO_EXECUTION",
+          "gap_missed_entry": "legacy.s23.gap_missed_entry.backtest_low_v1",
+          "msl": "legacy.s23.option_selling.msl",
+          "position_lifecycle_context": "phase3d.generic.position_lifecycle_context_builder.v1",
+          "product": "legacy.s23.option_selling.product",
+          "s23_lifecycle_adapter": "phase3d.s23.call.carried_position_adapter.v1",
+          "target": "legacy.s23.option_selling.target"
+        },
+        "position_snapshot": {
+          "account_reference": "ACCOUNT_A_PAPER_LOGICAL",
+          "configuration_hash": "phase3d-m3-s23-bull-call-synthetic-v1",
+          "contract": {
+            "exchange": null,
+            "expiry": "2026-08-06",
+            "metadata": {
+              "ltp": 264.0,
+              "oi": 999999.0,
+              "selection_reason": "Selected first strike meeting ideal premium in rule-sheet search order."
+            },
+            "option_type": "CALL",
+            "product_type": "OPTION_SELLING",
+            "segment": "OPTIONS_SELL",
+            "strike": 22250.0,
+            "symbol": "NIFTY_20260806_22250_CALL",
+            "token": null
+          },
+          "entry_price": 203.5,
+          "evidence": {
+            "fresh_entry_isolation": "carried snapshot is constructed independently from fresh-entry plan execution",
+            "source": "phase3d_m13_s23_fixture"
+          },
+          "external_quantity": 50,
+          "local_quantity": 50,
+          "opened_at": "2026-07-30T09:19:59+05:30",
+          "partial_exit_state": "NONE",
+          "position_cycle_id": "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE",
+          "product": "OPTION_SELLING",
+          "reconciled_quantity": 50,
+          "reconciliation_id": "m13-s23-bull_carried_target_crossed:reconciliation",
+          "reconciliation_status": "MATCHED",
+          "side": "SELL",
+          "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+          "strategy_family": "S23",
+          "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+          "strategy_version": "1.0.0",
+          "trading_date": "2026-07-30"
+        },
+        "protection_state": {
+          "lifecycle_recalculation_time": "09:29:59",
+          "protective_levels": {
+            "msl": 321.0
+          },
+          "protective_order_identities": {
+            "msl": "offline-protective:NIFTY_20260806_22250_CALL:msl",
+            "target_1": "offline-target:NIFTY_20260806_22250_CALL:target_1"
+          },
+          "protective_order_status": "MATCHED",
+          "provenance": {
+            "msl": "Prior-day SL is not blindly reused; adverse carried-position gaps require revised SL calculation at configured lifecycle recalculation time.",
+            "revised_sl_formula": "AB6 OS!M184 09:29:59 AM HH + 7.00%",
+            "target": "Target protection is available from market open through approved offline terminal/broker target evidence."
+          },
+          "revised_protective_formula_policy_id": "S23-CARRIED-CALL-MISSED-BULL-AB6OS-184",
+          "target_levels": {
+            "target_1": 81.4
+          },
+          "unresolved_fields": []
+        },
+        "schema_version": "phase3d.position_lifecycle_context.v1",
+        "stale_fields": [],
+        "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "strategy_family": "S23",
+        "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "strategy_version": "1.0.0",
+        "trading_date": "2026-07-30",
+        "unresolved_rule_authorities": []
+      },
+      "lifecycle_handoff": {
+        "action_requirement": "EXIT_REQUIRED",
+        "authority_mode": "OFFLINE_ONLY",
+        "broker_mutation_permitted": false,
+        "evidence_hash": "44a99ce1386afe0931296ff4c6072c102335b596d5046304abf6e6b96f3ac843",
+        "handoff_id": "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE:offline-lifecycle-handoff",
+        "lifecycle_context_hash": "778760ceece5e260aff92f45c3ef2679d21e907733bd5ebd539b19c2d47039ba",
+        "lifecycle_context_id": "m13-s23-bull_carried_target_crossed:S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE",
+        "live_mutation_permitted": false,
+        "opening_status": "TARGET_CROSSED_AT_OPEN",
+        "order_cancellation_permitted": false,
+        "order_modification_permitted": false,
+        "paper_mutation_permitted": false,
+        "position_cycle_id": "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE",
+        "position_mutation_permitted": false,
+        "square_off_permitted": false,
+        "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "trading_date": "2026-07-30"
+      },
+      "live_mutation_permitted": false,
+      "order_cancellation_permitted": false,
+      "order_modification_permitted": false,
+      "paper_mutation_permitted": false,
+      "performance": {
+        "coordination_seconds": 0.0002514999941922724
+      },
+      "policy_identities": {
+        "contract_selection": "legacy.s23.option_selling.contract_selection",
+        "entry": "legacy.s23.vertical.entry",
+        "execution_risk": "OFFLINE_PREMARKET_NO_EXECUTION",
+        "gap_missed_entry": "legacy.s23.gap_missed_entry.backtest_low_v1",
+        "msl": "legacy.s23.option_selling.msl",
+        "position_lifecycle_context": "phase3d.generic.position_lifecycle_context_builder.v1",
+        "product": "legacy.s23.option_selling.product",
+        "s23_lifecycle_adapter": "phase3d.s23.call.carried_position_adapter.v1",
+        "target": "legacy.s23.option_selling.target"
+      },
+      "position_cycle_id": "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE",
+      "position_mutation_permitted": false,
+      "square_off_permitted": false,
+      "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family": "S23",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "terminal_stage": "COMPLETED_OFFLINE",
+      "trading_date": "2026-07-30",
+      "transition_evidence": [
+        {
+          "artifact_hashes": {
+            "lifecycle_context": "778760ceece5e260aff92f45c3ef2679d21e907733bd5ebd539b19c2d47039ba"
+          },
+          "reason": "Position reconciliation status is MATCHED.",
+          "stage": "POSITION_RECONCILED",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "lifecycle_context": "778760ceece5e260aff92f45c3ef2679d21e907733bd5ebd539b19c2d47039ba"
+          },
+          "reason": "Target-first opening assessment produced TARGET_CROSSED_AT_OPEN.",
+          "stage": "TARGET_PROTECTION_ASSESSED",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "lifecycle_context": "778760ceece5e260aff92f45c3ef2679d21e907733bd5ebd539b19c2d47039ba"
+          },
+          "reason": "Intraday lifecycle state derived from EXIT_REQUIRED.",
+          "stage": "INTRADAY_LIFECYCLE_READY",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "lifecycle_handoff": "44a99ce1386afe0931296ff4c6072c102335b596d5046304abf6e6b96f3ac843"
+          },
+          "reason": "Offline lifecycle handoff produced without mutation authority.",
+          "stage": "OFFLINE_HANDOFF_READY",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        },
+        {
+          "artifact_hashes": {
+            "lifecycle_context": "778760ceece5e260aff92f45c3ef2679d21e907733bd5ebd539b19c2d47039ba",
+            "lifecycle_handoff": "44a99ce1386afe0931296ff4c6072c102335b596d5046304abf6e6b96f3ac843"
+          },
+          "reason": "Offline carried-position day completed.",
+          "stage": "COMPLETED_OFFLINE",
+          "timestamp": "2026-07-30T09:19:59+05:30"
+        }
+      ]
+    }
+  },
+  "processed_event_ids": [
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-reconcile-1",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-reconcile-101",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-open-2",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-open-102",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-orpt-quote-3",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-orpt-quote-103",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE-orpt-4",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-orpt-104",
+    "m15-S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE-eod-107"
+  ],
+  "result_hash": "119f308a1efbe1a01481a00d540b35c60cb77ab307242e8fa98dfc2dc1795cd1",
+  "schema_version": "tfis.phase3d.m15.runtime_coordination.v1",
+  "subscription_snapshot": {
+    "contract_to_position_cycles": {
+      "NIFTY24JUL22250CE": [
+        "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE"
+      ],
+      "NIFTY24JUL22300CE": [
+        "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE"
+      ]
+    },
+    "contract_to_strategy_instances": {
+      "NIFTY24JUL22250CE": [
+        "S23_NIFTY_ACCOUNT_A_PAPER",
+        "S23_NIFTY_BEAR_ACCOUNT_A_PAPER"
+      ]
+    },
+    "subscription_hash": "8115203e3b881d9c96a5a65f22a46971298f083b13e0412b5ecc891caae7be98",
+    "underlying_to_position_cycles": {
+      "NSE:NIFTY": [
+        "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE",
+        "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22300CE"
+      ]
+    },
+    "underlying_to_strategy_instances": {
+      "NSE:NIFTY": [
+        "S23_NIFTY_ACCOUNT_A_PAPER",
+        "S23_NIFTY_BEAR_ACCOUNT_A_PAPER"
+      ]
+    }
+  },
+  "trading_date": "2026-07-30"
+}

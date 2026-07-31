@@ -1,0 +1,119 @@
+{
+  "authority": {
+    "broker_submission": false,
+    "carry_persistence": false,
+    "live_submission": false,
+    "mode": "SHADOW_ONLY",
+    "order_cancellation": false,
+    "order_modification": false,
+    "paper_submission": false,
+    "position_mutation": false,
+    "square_off_execution": false
+  },
+  "blocked_streams": {},
+  "checkpoints": {},
+  "conflation_diagnostics": {
+    "owner_conflations": 49,
+    "pending_latest_updates": 1
+  },
+  "critical_event_ids": [
+    "m15-market-orpt-51",
+    "m15-market-rc-52"
+  ],
+  "fresh_entry_results": {},
+  "performance": {
+    "critical_event_processing_count": 2,
+    "event_count": 52,
+    "instrument_count": 1,
+    "maximum_pending_conflatable_updates": 1,
+    "per_event_median_seconds": 0.0001799000019673258,
+    "per_event_p95_seconds": 0.0002558999985922128,
+    "position_cycle_count": 0,
+    "quote_burst_size": 50,
+    "strategy_instance_count": 0,
+    "total_processing_seconds": 0.010232500004349276
+  },
+  "position_cycle_results": {},
+  "processed_event_ids": [
+    "m15-market-burst-0-1",
+    "m15-market-burst-1-2",
+    "m15-market-burst-2-3",
+    "m15-market-burst-3-4",
+    "m15-market-burst-4-5",
+    "m15-market-burst-5-6",
+    "m15-market-burst-6-7",
+    "m15-market-burst-7-8",
+    "m15-market-burst-8-9",
+    "m15-market-burst-9-10",
+    "m15-market-burst-10-11",
+    "m15-market-burst-11-12",
+    "m15-market-burst-12-13",
+    "m15-market-burst-13-14",
+    "m15-market-burst-14-15",
+    "m15-market-burst-15-16",
+    "m15-market-burst-16-17",
+    "m15-market-burst-17-18",
+    "m15-market-burst-18-19",
+    "m15-market-burst-19-20",
+    "m15-market-burst-20-21",
+    "m15-market-burst-21-22",
+    "m15-market-burst-22-23",
+    "m15-market-burst-23-24",
+    "m15-market-burst-24-25",
+    "m15-market-burst-25-26",
+    "m15-market-burst-26-27",
+    "m15-market-burst-27-28",
+    "m15-market-burst-28-29",
+    "m15-market-burst-29-30",
+    "m15-market-burst-30-31",
+    "m15-market-burst-31-32",
+    "m15-market-burst-32-33",
+    "m15-market-burst-33-34",
+    "m15-market-burst-34-35",
+    "m15-market-burst-35-36",
+    "m15-market-burst-36-37",
+    "m15-market-burst-37-38",
+    "m15-market-burst-38-39",
+    "m15-market-burst-39-40",
+    "m15-market-burst-40-41",
+    "m15-market-burst-41-42",
+    "m15-market-burst-42-43",
+    "m15-market-burst-43-44",
+    "m15-market-burst-44-45",
+    "m15-market-burst-45-46",
+    "m15-market-burst-46-47",
+    "m15-market-burst-47-48",
+    "m15-market-burst-48-49",
+    "m15-market-burst-49-50",
+    "m15-market-orpt-51",
+    "m15-market-rc-52"
+  ],
+  "result_hash": "495fcec6861b409f4f785ac494a5626fa45fdf035bcb0d5fd9cb9e1bfa8f47d7",
+  "schema_version": "tfis.phase3d.m15.runtime_coordination.v1",
+  "subscription_snapshot": {
+    "contract_to_position_cycles": {
+      "NIFTY24JUL22250CE": [
+        "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE"
+      ]
+    },
+    "contract_to_strategy_instances": {
+      "NIFTY24JUL22250CE": [
+        "S23_NIFTY_ACCOUNT_A_PAPER",
+        "S23_NIFTY_BEAR_ACCOUNT_A_PAPER"
+      ]
+    },
+    "subscription_hash": "d9d9c04cae3b9b28f62ba405ec24192b840db7ce94ad89f8497f2bc5998f9399",
+    "underlying_to_position_cycles": {
+      "NSE:NIFTY": [
+        "S23_NIFTY_ACCOUNT_A_PAPER:CARRY:NIFTY24JUL22250CE"
+      ]
+    },
+    "underlying_to_strategy_instances": {
+      "NSE:NIFTY": [
+        "S23_NIFTY_ACCOUNT_A_PAPER",
+        "S23_NIFTY_BEAR_ACCOUNT_A_PAPER"
+      ]
+    }
+  },
+  "trading_date": "2026-07-30"
+}
