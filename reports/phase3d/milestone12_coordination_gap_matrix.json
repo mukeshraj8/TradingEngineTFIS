@@ -1,0 +1,83 @@
+{
+  "cases": {
+    "carried_position": {
+      "block_code": null,
+      "broker_paper_live_authority": "NONE",
+      "coordination_hash": "bd4f5361c703d93c35ce1be3c93cf893c8270bd67e81ba42784ed3819b56dcde",
+      "effective_execution_plan_hash": null,
+      "handoff_hash": null,
+      "handoff_id": null,
+      "opening_context_hash": null,
+      "path": "CARRIED_POSITION",
+      "premarket_plan_hash": null,
+      "runtime_authority": "NONE",
+      "state": "CARRIED_POSITION_HANDOFF_REQUIRED"
+    },
+    "partial_real_blocked": {
+      "block_code": "OPENING_CONTEXT_INCOMPLETE",
+      "broker_paper_live_authority": "NONE",
+      "coordination_hash": "c22762df9e7f47b4fbd3707c168661b0d6200236f9868bb256ecbce0442f15ac",
+      "effective_execution_plan_hash": "413cfb509cb5d511b9d08ef013d6ec6c8064aedb5962e251b1ea576673475fbd",
+      "handoff_hash": null,
+      "handoff_id": null,
+      "opening_context_hash": "d2863ef30e58c0dc88156436038f51289883dc08dfd2f347af174de1180d4b23",
+      "path": "INSUFFICIENT_EVIDENCE",
+      "premarket_plan_hash": "m7-partial-real-plan-hash",
+      "runtime_authority": "NONE",
+      "state": "BLOCKED"
+    },
+    "s23_bear_gap": {
+      "block_code": null,
+      "broker_paper_live_authority": "NONE",
+      "coordination_hash": "f372aa20e65992705bc1f4058896208a4a0d240eea6ee702ffa19fbcafc77b5d",
+      "effective_execution_plan_hash": "f21d868f8e78edd54b5c231848e9b4f820150e2d65d5855b30adde35ea8a505e",
+      "handoff_hash": "61ed533f33a9f5cac07cb37e141a4d8907202d1694f50d4a65d0c352647a3020",
+      "handoff_id": "phase3d-m4-s23-bear-call:premarket:m10-s23_bear_call_opening:execution:1:offline-handoff",
+      "opening_context_hash": "7590f983c4fb7ee5087a7e8909d81a7feb9713c9903fdd778f556ece9f34875e",
+      "path": "GAP_RECALCULATION",
+      "premarket_plan_hash": "cfb09a5b41ee667a045e89d36cf4167dfe3acb46630bf76dd03e16f51e3e576b",
+      "runtime_authority": "NONE",
+      "state": "COMPLETED_OFFLINE"
+    },
+    "s23_bear_normal": {
+      "block_code": null,
+      "broker_paper_live_authority": "NONE",
+      "coordination_hash": "66140e35c42146c5d6445f98c907bfab6ad4b1d1b2111f442e8a8a5b01da17d1",
+      "effective_execution_plan_hash": "3830fd5b913db77e765d2203740ebbd6e16d8549f4cee8a3a5051f26afba8051",
+      "handoff_hash": "cfdc0d2fa62f33f7651f6a093ed63ff4e8077d9498c00f93aa7bb32a4b2bc06e",
+      "handoff_id": "phase3d-m4-s23-bear-call:premarket:m10-s23_bear_call_opening:execution:1:offline-handoff",
+      "opening_context_hash": "db2fcb14e3dcbb5f408a372db3444cfd3dff0b6beef816f9e90b06caa09ae545",
+      "path": "NORMAL_FRESH_ENTRY",
+      "premarket_plan_hash": "cfb09a5b41ee667a045e89d36cf4167dfe3acb46630bf76dd03e16f51e3e576b",
+      "runtime_authority": "NONE",
+      "state": "COMPLETED_OFFLINE"
+    },
+    "s23_bull_gap": {
+      "block_code": null,
+      "broker_paper_live_authority": "NONE",
+      "coordination_hash": "aa519c4204e25d077c27fc5b1c6da69321040b6657258729ba4e9c9c5891a9a2",
+      "effective_execution_plan_hash": "45a5106bb1027881abf5d937224fd6def4237476941f2c8d8603d2963526df51",
+      "handoff_hash": "2f54145247edc3bbefdbf79a8d838bd049b37be263db7a09c43f97dc0fca8af2",
+      "handoff_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1:offline-handoff",
+      "opening_context_hash": "cd49e501b4470dc278724c0abf8dc54b32f2ea0befb3d3c3576cf2a0e91bd38a",
+      "path": "GAP_RECALCULATION",
+      "premarket_plan_hash": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22",
+      "runtime_authority": "NONE",
+      "state": "COMPLETED_OFFLINE"
+    },
+    "s23_bull_normal": {
+      "block_code": null,
+      "broker_paper_live_authority": "NONE",
+      "coordination_hash": "55405243f9e3262f59d9b852b6743e184f6d673b429c33c552c881d18370df78",
+      "effective_execution_plan_hash": "c30bd67eeeb2063c90ddce7afd9a175cb38c049c2896ed914a6948382c16ebb1",
+      "handoff_hash": "fbf8ab8d2fdbcfe884320de81a572ec4cdb72794228b00d66cfadce0c08a1e29",
+      "handoff_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1:offline-handoff",
+      "opening_context_hash": "835a688d74b8eb1faac87568f076594651a16e89d6e4e72e8c957f5878386d3a",
+      "path": "NORMAL_FRESH_ENTRY",
+      "premarket_plan_hash": "873a7662f321b70af350a5d3b2e0b9fccf72852ae0bfc88e4471faca4cd91f22",
+      "runtime_authority": "NONE",
+      "state": "COMPLETED_OFFLINE"
+    }
+  },
+  "schema_version": "tfis.phase3d.milestone12.coordination_gap_matrix.v1"
+}

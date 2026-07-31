@@ -6,6 +6,17 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Thursday, July 30, 2026, Phase 3D Milestone 12 implements one
+  complete offline trading-day coordination slice for existing S23 Call-side
+  cases. `PreMarketStrategyPlan`: `IMPLEMENTED_OFFLINE`.
+  `OpeningMarketContext`: `IMPLEMENTED_OFFLINE_FOR_S23_CALL`.
+  `EffectiveExecutionPlan`: `IMPLEMENTED_OFFLINE_FOR_S23_CALL`. Offline
+  trading-day coordination: `IMPLEMENTED_FOR_S23_CALL`. Offline execution
+  handoff: `IMPLEMENTED_NON_AUTHORITATIVE`. `PositionLifecycleContext`:
+  `NOT_IMPLEMENTED`. Live event routing: `NOT_IMPLEMENTED`.
+  Broker/paper/live authority: `NONE`. Supported timelines now include Bull
+  normal, Bull gap, Bear normal, Bear gap, partial-real blocked, and
+  carried-position handoff-required paths.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 11 implements immutable
   offline `EffectiveExecutionPlan` composition for the existing supported S23
   Call-side cases. `PreMarketStrategyPlan`: `IMPLEMENTED_OFFLINE`.

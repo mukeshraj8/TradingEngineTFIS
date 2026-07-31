@@ -6,12 +6,21 @@ way.
 
 ## Immediate Next Priorities
 
-0.40. `TODO` Select the next approved boundary: implement
+0.41. `TODO` Implement the `PositionLifecycleContext` boundary and
+   carried-position opening-gap observation model. Keep it non-authoritative
+   and do not add broker execution, live authority, order management, or a
+   production event bus.
+
+0.40. `DONE` Select the next approved boundary: implement
    `PositionLifecycleContext`, implement one complete offline trading-day
    state transition from pre-market plan through execution-plan handoff, or
    correct a precise `EffectiveExecutionPlan` defect found during Milestone
    11 review. Do not move to live event bus, scheduler, broker execution,
    paper authority, live authority, or shared routing yet.
+   Result: one complete offline trading-day state transition from pre-market
+   plan through non-authoritative execution-plan handoff is implemented for
+   S23 Call-side normal/gap paths, with partial-real blocked and
+   carried-position handoff-required boundaries.
 
 0.39. `DONE` Implement offline `EffectiveExecutionPlan` composition from
    `PreMarketStrategyPlan` plus `OpeningMarketContext` for S23 Call-side only.
