@@ -1,0 +1,28 @@
+{
+  "artifact": "milestone13_lifecycle_gap_matrix",
+  "verdict": "PHASE3D_M13_ACCEPT",
+  "cases": [
+    {"case": "bull_carried_normal", "direction": "NONE", "economic_effect": "NEUTRAL", "amount": 0.0, "percentage": 0.0, "status": "NORMAL_OPENING_CONTINUATION", "action": "NORMAL_SL_PLACEMENT_REQUIRED"},
+    {"case": "bull_carried_adverse_gap", "direction": "UP", "economic_effect": "ADVERSE", "amount": 56.5, "percentage": 27.7641, "status": "PROTECTIVE_LEVEL_CROSSED_AT_OPEN", "action": "REVISED_SL_PLACEMENT_REQUIRED"},
+    {"case": "bull_carried_favorable_gap", "direction": "DOWN", "economic_effect": "FAVORABLE", "amount": -53.5, "percentage": -26.2899, "status": "NORMAL_OPENING_CONTINUATION", "action": "NORMAL_SL_PLACEMENT_REQUIRED"},
+    {"case": "bull_target_crossed", "direction": "DOWN", "economic_effect": "FAVORABLE", "amount": -128.5, "percentage": -63.145, "status": "TARGET_CROSSED_AT_OPEN", "action": "EXIT_REQUIRED"},
+    {"case": "bull_protection_crossed", "direction": "UP", "economic_effect": "ADVERSE", "amount": 126.5, "percentage": 62.1622, "status": "PROTECTIVE_LEVEL_CROSSED_AT_OPEN", "action": "REVISED_SL_PLACEMENT_REQUIRED"},
+    {"case": "bear_carried_normal", "direction": "NONE", "economic_effect": "NEUTRAL", "amount": 0.0, "percentage": 0.0, "status": "NORMAL_OPENING_CONTINUATION", "action": "NORMAL_SL_PLACEMENT_REQUIRED"},
+    {"case": "bear_carried_adverse_gap", "direction": "UP", "economic_effect": "ADVERSE", "amount": 55.75, "percentage": 28.7001, "status": "PROTECTIVE_LEVEL_CROSSED_AT_OPEN", "action": "REVISED_SL_PLACEMENT_REQUIRED"},
+    {"case": "missing_carried_contract_quote", "direction": "UNKNOWN", "economic_effect": "UNKNOWN", "amount": null, "percentage": null, "status": "OPENING_QUOTE_UNAVAILABLE", "action": "BLOCKED_INSUFFICIENT_EVIDENCE"},
+    {"case": "reconciliation_mismatch", "direction": "NONE", "economic_effect": "NEUTRAL", "amount": 0.0, "percentage": 0.0, "status": "BLOCKED_LIFECYCLE_CONTEXT", "action": "BLOCKED_INSUFFICIENT_EVIDENCE"}
+  ],
+  "source_closure": "M13B_SOURCE_CLOSURE_ACCEPT",
+  "closed_rule_authorities": [
+    "Target/protection simultaneous crossing priority: target-first EXIT_REQUIRED",
+    "S23 Call carried-position revised FSL formulas: AB6 OS rows 184 and 185",
+    "S23 option-selling non-positive risk-price behavior: positive by construction for valid positive premium inputs",
+    "15:00 close equal to original SL: user clarified carry-forward"
+  ],
+  "rule_authority_gaps": [
+    "Put-side carried-position formulas are recorded but not activated in the current S23 Call vertical slice",
+    "Zero/negative invalid S23 market inputs remain fail-closed because no source authorizes placement"
+  ],
+  "runtime_authority": "NONE",
+  "broker_paper_live_authority": "NONE"
+}

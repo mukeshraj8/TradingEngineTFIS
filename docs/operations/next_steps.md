@@ -6,10 +6,46 @@ way.
 
 ## Immediate Next Priorities
 
-0.41. `TODO` Implement the `PositionLifecycleContext` boundary and
+0.45. `TODO` Review and accept Phase 3D Milestone 14 before selecting the next
+   implementation slice. M14 is offline-only carried-position trading-day
+   coordination and does not add broker, paper, live, scheduler, event-bus,
+   order-modification, square-off, or position-mutation authority. Reports:
+   `reports/phase3d/milestone14_carried_position_trading_day_summary.md` and
+   `reports/phase3d/milestone14_carried_position_gap_matrix.json`.
+
+0.44. `DONE` Review and accept Phase 3D Milestone 13B source closure before
+   starting M14.
+   Result: M14 consumed the accepted M13B equality closure. Equality at
+   `15:00 close == original SL` carries forward.
+
+0.43. `DONE` Resolve the concrete M13A user questions before M14.
+   Result: M13B source closure reviewed the actual workbook files supplied in
+   `TFISRulesAndSpec`; Q001, Q002, and Q003 are closed with the boundaries
+   recorded in `reports/phase3d/milestone13a_questions_for_user.md`.
+
+0.42. `DONE` Complete one offline carried-position trading-day coordination
+   timeline that composes the existing M12 carried-position boundary with the
+   M13 lifecycle context handoff. Keep it non-authoritative and do not add
+   broker execution, order modification, square-off, paper authority, live
+   authority, scheduler behavior, or a production event bus.
+   Result: M14 implemented complete offline carried-position day coordination
+   with position reconciliation, target-first assessment, ORPT/RC lifecycle
+   states, 15:00 EOD decision, and offline lifecycle handoff.
+
+0.41. `DONE` Implement the `PositionLifecycleContext` boundary and
    carried-position opening-gap observation model. Keep it non-authoritative
    and do not add broker execution, live authority, order management, or a
    production event bus.
+   Result: immutable offline `PositionLifecycleContext`,
+   `ReconciledPositionSnapshot`, carried-contract opening quote evidence,
+   target/protection crossing observation, and `OfflineLifecycleHandoff` are
+   implemented for S23 Call-side carried-position fixtures. Target crossed at
+   open now produces offline `EXIT_REQUIRED`; adverse carried-premium gaps with
+   configured lifecycle recalculation policy inputs produce offline
+   `REVISED_SL_PLACEMENT_REQUIRED`; favorable carried-premium gaps continue
+   normal monitoring. Lifecycle action execution, broker reconciliation engine,
+   live event routing, and broker/paper/live authority remain `NONE` /
+   `NOT_IMPLEMENTED`.
 
 0.40. `DONE` Select the next approved boundary: implement
    `PositionLifecycleContext`, implement one complete offline trading-day

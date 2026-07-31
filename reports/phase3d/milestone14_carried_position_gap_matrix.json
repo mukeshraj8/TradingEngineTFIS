@@ -1,0 +1,35 @@
+{
+  "artifact": "milestone14_carried_position_gap_matrix",
+  "verdict": "PHASE3D_M14_ACCEPT",
+  "implemented": [
+    "offline carried-position trading-day domain result",
+    "offline carried-position day coordinator",
+    "S23 normal SL carried-day fixture",
+    "S23 equality carry-forward fixture",
+    "S23 square-off-required fixture",
+    "S23 RC revised FSL/TRP carried-day fixture",
+    "S23 target-first exit fixture",
+    "offline lifecycle handoff with no mutation authority"
+  ],
+  "not_implemented": [
+    "broker reconciliation engine beyond supplied offline position snapshot",
+    "paper order mutation",
+    "live order mutation",
+    "scheduler/event-bus runtime",
+    "Put-side runtime activation",
+    "actual 15:00 market data capture"
+  ],
+  "source_closure": {
+    "target_first": "USER_CLARIFIED_AND_RECORDED",
+    "orpt_rc": "AB6 OS rows 183-188",
+    "eod_call": "AB6 OS F190:J191 plus user equality clarification",
+    "eod_put": "AB6 OS Q190:U191 plus user equality clarification"
+  },
+  "authority": {
+    "runtime": "NONE",
+    "broker": "NONE",
+    "paper": "NONE",
+    "live": "NONE"
+  },
+  "next_recommended_milestone": "Phase 3D Milestone 15 review/acceptance or captured-evidence enrichment, not live/paper activation"
+}

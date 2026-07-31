@@ -2,6 +2,71 @@
 
 ## Current Snapshot
 
+- as of Friday, July 31, 2026, Phase 3D Milestone 14 implemented complete
+  offline carried-position trading-day coordination. Reports are
+  `reports/phase3d/milestone14_carried_position_trading_day_summary.md`,
+  `reports/phase3d/milestone14_carried_position_gap_matrix.json`, and five
+  S23 carried-day fixture JSON packets under `reports/phase3d/`. Verdict:
+  `PHASE3D_M14_ACCEPT`. The new generic carried-day coordinator composes
+  position reconciliation, target protection from market open, target-first
+  opening assessment, ORPT original-SL evaluation, normal SL or RC revised
+  FSL/TRP requirement, intraday lifecycle state, 15:00 square-off/carry
+  decision, and offline lifecycle handoff. Runtime activated: `NONE`.
+  Broker/paper/live authority: `NONE`.
+- as of Friday, July 31, 2026, Phase 3D Milestone 13B closed the M13A
+  carried-position source questions against the actual workbook files in
+  `TFISRulesAndSpec`. Reports are
+  `reports/phase3d/milestone13b_source_closure_summary.md`,
+  `reports/phase3d/milestone13b_cell_trace.json`,
+  `reports/phase3d/milestone13a_authoritative_reconciliation_summary.md`,
+  and `reports/phase3d/milestone13a_authoritative_rule_matrix.json`; the
+  architecture source index is
+  `docs/architecture/tfis_authoritative_workbook_rule_matrix.md`. Verdict:
+  `PHASE3D_M13B_ACCEPTED`. Q001 EOD carry/square-off is closed by direct AB6
+  OS rows 190-191 plus user equality clarification: close equal to Original SL
+  carries forward. Q002 S23 option-selling non-positive risk behavior is closed
+  for valid positive premium inputs by workbook formula domain with invalid
+  market inputs fail-closed; Q003 simultaneous target/protection priority is
+  closed as target-first `EXIT_REQUIRED`. Runtime activated:
+  `NONE`. Broker/paper/live authority: `NONE`. M14 readiness:
+  `READY_FOR_USER_REVIEW`.
+- as of Friday, July 31, 2026, Phase 3D Milestone 13A performed a
+  source-first corrective reconciliation of M13 carried-position semantics
+  against latest user clarification and accepted AB6 OS workbook-cell audits.
+  Reports are
+  `reports/phase3d/milestone13a_authoritative_reconciliation_summary.md`,
+  `reports/phase3d/milestone13a_authoritative_rule_matrix.json`, and
+  `reports/phase3d/milestone13a_questions_for_user.md`; architecture source
+  index is `docs/architecture/tfis_authoritative_workbook_rule_matrix.md`.
+  Verdict: `PHASE3D_M13A_CONDITIONAL`. Source rules verified: target
+  protection, target exit, fresh-entry rows `175-180`, carried-position rows
+  `183-188`, and EOD rows `190-191` process text. Implemented offline:
+  target crossed -> `EXIT_REQUIRED`; original SL not missed at ORPT ->
+  `NORMAL_SL_PLACEMENT_REQUIRED`; original SL missed with RC/policy evidence
+  -> `REVISED_SL_PLACEMENT_REQUIRED`. Runtime activated: `NONE`.
+  Broker/paper/live authority: `NONE`. M14 readiness:
+  `BLOCKED_BY_EXACT_QUESTIONS`.
+- as of Friday, July 31, 2026, Phase 3D Milestone 13 implemented the
+  immutable offline `PositionLifecycleContext` boundary and carried-position
+  opening-gap observation model. Reports are
+  `reports/phase3d/milestone13_position_lifecycle_context_summary.md`,
+  `reports/phase3d/milestone13_bull_carried_normal.json`,
+  `reports/phase3d/milestone13_bull_carried_adverse_gap.json`,
+  `reports/phase3d/milestone13_bull_carried_target_crossed.json`,
+  `reports/phase3d/milestone13_bull_carried_protection_crossed.json`,
+  `reports/phase3d/milestone13_bear_carried_normal.json`,
+  `reports/phase3d/milestone13_bear_carried_adverse_gap.json`, and
+  `reports/phase3d/milestone13_lifecycle_gap_matrix.json`. Verdict:
+  `PHASE3D_M13_ACCEPT`. `PositionLifecycleContext`:
+  `IMPLEMENTED_OFFLINE_BOUNDARY`. Carried-position opening-gap observation:
+  `IMPLEMENTED_OFFLINE`. Target crossed at carried-contract open produces
+  offline `EXIT_REQUIRED`; adverse carried-premium gaps with configured
+  lifecycle recalculation policy inputs produce offline
+  `REVISED_SL_PLACEMENT_REQUIRED`; fresh-entry Gap/Missed-Entry and
+  carried-position SL recalculation remain separate. Lifecycle action
+  execution: `NOT_IMPLEMENTED`.
+  Broker reconciliation engine: `NOT_IMPLEMENTED`. Live event routing:
+  `NOT_IMPLEMENTED`. Broker/paper/live authority: `NONE`.
 - as of Thursday, July 30, 2026, Phase 3D Milestone 12 implemented one
   complete offline trading-day coordination slice for existing S23 Call-side
   cases. Reports are

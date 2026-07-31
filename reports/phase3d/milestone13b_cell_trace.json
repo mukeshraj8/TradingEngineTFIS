@@ -1,0 +1,174 @@
+{
+  "artifact": "milestone13b_cell_trace",
+  "verdict": "M13B_SOURCE_CLOSURE_ACCEPT",
+  "source_authority": {
+    "path": "TFISRulesAndSpec/All in One - TFIS 26-12-2023.xlsx",
+    "sha256": "1D2DB2C2834C2081AE21E460471CD1546D988DCF8125B312AD453BA8027BD301",
+    "supporting_individual_workbook": "TFISRulesAndSpec/AB7 OS.xlsx"
+  },
+  "questions_closed": [
+    {
+      "question_id": "M13A-Q001",
+      "status": "CLOSED_BY_WORKBOOK_CELL_TRACE",
+      "decision": "15:00 close above original SL requires square-off at CMP; 15:00 close below or equal to original SL carries the position and next-day SL is governed by AB6 OS rows 183-188.",
+      "equality_closure": "The workbook source defines > and < only. User clarified that close == original SL carries forward to the next day.",
+      "cells": [
+        {
+          "sheet": "AB6 OS",
+          "cell": "F190",
+          "value": "Check If Close at 03:00:00 PM  > Call Original SL",
+          "formula": "=IF(C162=\"\",\"\",CONCATENATE('AB5'!$G$120,TEXT(B191,\"HH:MM:SS AM/PM\"),'AB5'!$B$121,'AB5'!$H$120))"
+        },
+        {
+          "sheet": "AB6 OS",
+          "cell": "J190",
+          "value": "Then Square Off The Position At CMP at 03:00:00 PM",
+          "formula": "=IF(C162=\"\",\"\",CONCATENATE('AB5'!$K$120,TEXT(B191,\"HH:MM:SS AM/PM\")))"
+        },
+        {
+          "sheet": "AB6 OS",
+          "cell": "F191",
+          "value": "Check If Close at 03:00:00 PM  < Call Original SL",
+          "formula": "=IF(C162=\"\",\"\",CONCATENATE('AB5'!$G$37,TEXT(B191,\"HH:MM:SS AM/PM\"),'AB5'!$B$37,'AB5'!$H$121))"
+        },
+        {
+          "sheet": "AB6 OS",
+          "cell": "J191",
+          "value": "Then Continue the Position for Next Day And Calculate Stop Loss Price as per the Rules",
+          "formula": "=IF(C162=\"\",\"\",CONCATENATE('AB5'!$K$121))"
+        },
+        {
+          "sheet": "AB6 OS",
+          "cell": "Q190",
+          "value": "Check If Close at 03:00:00 PM  > Put Original SL",
+          "formula": "=IF(C162=\"\",\"\",CONCATENATE('AB5'!$R$120,TEXT(B191,\"HH:MM:SS AM/PM\"),'AB5'!$B$121,'AB5'!$S$120))"
+        },
+        {
+          "sheet": "AB6 OS",
+          "cell": "U190",
+          "value": "Then Square Off The Position At CMP at 03:00:00 PM",
+          "formula": "=IF(C162=\"\",\"\",CONCATENATE('AB5'!$W$120,TEXT(B191,\"HH:MM:SS AM/PM\")))"
+        },
+        {
+          "sheet": "AB6 OS",
+          "cell": "Q191",
+          "value": "Check If Close at 03:00:00 PM  < Put Original SL",
+          "formula": "=IF(C162=\"\",\"\",CONCATENATE('AB5'!$R$121,TEXT(B191,\"HH:MM:SS AM/PM\"),'AB5'!$B$122,'AB5'!$S$121))"
+        },
+        {
+          "sheet": "AB6 OS",
+          "cell": "U191",
+          "value": "Then Continue the Position for Next Day And Calculate Stop Loss Price as per the Rules",
+          "formula": "=IF(C162=\"\",\"\",CONCATENATE('AB5'!$W$121))"
+        }
+      ]
+    },
+    {
+      "question_id": "M13B-EQUALITY",
+      "status": "CLOSED_BY_USER_CLARIFICATION",
+      "decision": "At 15:00, when observed price equals Original SL, S23 Option Selling carries forward.",
+      "call": {
+        "source_rule_id": "S23-EOD-CARRY-AB6OS-191-USER-EQUALITY",
+        "workbook_square_off_cells": "AB6 OS!F190:J190",
+        "workbook_carry_cells": "AB6 OS!F191:J191",
+        "comparison_value": "15:00 observed Call option close",
+        "original_sl_reference": "Call Original SL",
+        "workbook_square_off_operator": ">",
+        "workbook_carry_operator": "<",
+        "effective_operator_after_user_clarification": "<=",
+        "equality_outcome": "CARRY_FORWARD_AND_CALCULATE_NEXT_DAY_SL",
+        "square_off_outcome": "SQUARE_OFF_AT_CMP_REQUIRED when close > original SL",
+        "carry_forward_outcome": "CARRY_FORWARD_AND_CALCULATE_NEXT_DAY_SL when close <= original SL"
+      },
+      "put": {
+        "source_rule_id": "S23-EOD-CARRY-AB6OS-191-USER-EQUALITY",
+        "workbook_square_off_cells": "AB6 OS!Q190:U190",
+        "workbook_carry_cells": "AB6 OS!Q191:U191",
+        "comparison_value": "15:00 observed Put option close",
+        "original_sl_reference": "Put Original SL",
+        "workbook_square_off_operator": ">",
+        "workbook_carry_operator": "<",
+        "effective_operator_after_user_clarification": "<=",
+        "equality_outcome": "CARRY_FORWARD_AND_CALCULATE_NEXT_DAY_SL",
+        "square_off_outcome": "SQUARE_OFF_AT_CMP_REQUIRED when close > original SL",
+        "carry_forward_outcome": "CARRY_FORWARD_AND_CALCULATE_NEXT_DAY_SL when close <= original SL"
+      }
+    },
+    {
+      "question_id": "M13A-Q002",
+      "status": "CLOSED_BY_WORKBOOK_FORMULA_DOMAIN",
+      "decision": "S23 option-selling does not have a separate non-positive risk-price order-placement rule. For valid positive premium inputs, target/SL/MSL/revised FSL formulas remain positive by construction. Invalid market inputs fail closed as unresolved authority.",
+      "cells": [
+        {
+          "sheet": "AB16",
+          "cell": "P104",
+          "value": "TGT",
+          "formula_summary": "OPTIONS SELL target uses MROUND(entry * (1 - target_pct), tick)"
+        },
+        {
+          "sheet": "AB16",
+          "cell": "P105",
+          "value": "SL",
+          "formula_summary": "OPTIONS SELL SL uses MROUND(reference * (1 + buffer), tick) and MIN bounded SL when no current-day trigger exists"
+        },
+        {
+          "sheet": "AB16",
+          "cell": "AI107",
+          "value": "MSL 1 & 2",
+          "formula_summary": "OPTIONS SELL MSL uses MROUND(entry * (1 + msl_pct), tick)"
+        },
+        {
+          "sheet": "AB16",
+          "cell": "P112",
+          "value": "Put SL",
+          "formula_summary": "OPTIONS SELL Put SL uses MROUND(reference * (1 + buffer), tick) and MIN bounded SL"
+        },
+        {
+          "sheet": "AB16",
+          "cell": "AI114",
+          "value": "Put MSL",
+          "formula_summary": "OPTIONS SELL Put MSL uses MROUND(entry * (1 + msl_pct), tick)"
+        }
+      ],
+      "non_s23_contrast": "AB16 formulas contain explicit negative-result handling for S27 option-buying branches only; that rule was not generalized into S23 option selling."
+    },
+    {
+      "question_id": "M13A-Q003",
+      "status": "CLOSED_BY_USER_CLARIFICATION",
+      "decision": "When target and protection are both observed as crossed, target profit-booking exit has priority and the offline lifecycle output is EXIT_REQUIRED.",
+      "authority": "AUTHORITATIVE_CARRIED_POSITION_PROTECTION_SEMANTICS supplied by user on 2026-07-31."
+    }
+  ],
+  "next_day_carried_position_rows": [
+    {
+      "rule_id": "S23-CARRIED-CALL-NOT-MISSED-AB6OS-183",
+      "cell": "AB6 OS!E183:H183",
+      "value": "Check If 09:15:00 AM HH > Call Sell SL; No; FSL / TRP Not Missed",
+      "runtime_effect": "If original SL was not crossed at opening observation, require normal SL placement at ORPT."
+    },
+    {
+      "rule_id": "S23-CARRIED-CALL-MISSED-BULL-AB6OS-184",
+      "cell": "AB6 OS!M184:O184",
+      "value": "09:29:59 AM HH + 7.00%",
+      "runtime_effect": "Bull/Bull CF Call revised FSL formula input after original SL missed."
+    },
+    {
+      "rule_id": "S23-CARRIED-CALL-MISSED-BEAR-AB6OS-185",
+      "cell": "AB6 OS!M185:O185",
+      "value": "09:29:59 AM HH + 10.00%",
+      "runtime_effect": "Bear/Bear CF Call revised FSL formula input after original SL missed."
+    },
+    {
+      "rule_id": "S23-CARRIED-PUT-MISSED-BULL-AB6OS-187",
+      "cell": "AB6 OS!M187:O187",
+      "value": "09:29:59 AM HH + 10.00%",
+      "runtime_effect": "Bull/Bull CF Put revised FSL formula input after original SL missed; recorded but not activated in the Call vertical slice."
+    },
+    {
+      "rule_id": "S23-CARRIED-PUT-MISSED-BEAR-AB6OS-188",
+      "cell": "AB6 OS!M188:O188",
+      "value": "09:29:59 AM HH + 7.00%",
+      "runtime_effect": "Bear/Bear CF Put revised FSL formula input after original SL missed; recorded but not activated in the Call vertical slice."
+    }
+  ]
+}
