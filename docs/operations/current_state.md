@@ -6,6 +6,17 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Friday, July 31, 2026, Phase 3E Milestone 3 defines the minimum
+  Version 1 persistence, recovery, reconciliation, risk/control, market-data
+  performance, degraded-mode, failure-isolation, observability, audit, and P&L
+  reliability architecture. The preferred V1 shape is a transactional
+  operational database plus append-only facts/events, current-state
+  projections, and broker reconciliation. Supporting catalogs are
+  `reports/phase3e/persistence_entity_catalog.json`,
+  `reports/phase3e/risk_control_catalog.json`,
+  `reports/phase3e/failure_isolation_matrix.json`, and
+  `reports/phase3e/performance_budget_catalog.json`. No production runtime
+  code was changed. Broker/paper/live/order/position authority remains `NONE`.
 - as of Friday, July 31, 2026, Phase 3E Milestone 2 defines the minimum
   production-grade domain ownership model for TFIS V1. The architecture now
   separates `AccountCoordinator`, `OrderStateMachine`,

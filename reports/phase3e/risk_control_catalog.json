@@ -1,0 +1,250 @@
+{
+  "milestone": "Phase 3E Milestone 3",
+  "status": "ARCHITECTURE_SPECIFICATION_ONLY",
+  "date": "2026-07-31",
+  "controls": [
+    {
+      "control_id": "GLOBAL-001",
+      "scope": "GLOBAL",
+      "owner": "PortfolioRiskAndControlSupervisor",
+      "input": "authority mode, global config, operator actions",
+      "threshold_config": "global_trading_enabled",
+      "enforcement_point": "before any intent acceptance",
+      "block_action": "GLOBAL_BLOCKED",
+      "evidence": "global control decision fact",
+      "reset_rule": "explicit operator or approved configuration transition",
+      "required_before_paper_live": "paper",
+      "implementation_status": "PARTIAL"
+    },
+    {
+      "control_id": "GLOBAL-002",
+      "scope": "GLOBAL",
+      "owner": "PortfolioRiskAndControlSupervisor",
+      "input": "daily realized/unrealized PnL facts",
+      "threshold_config": "global_daily_loss_limit",
+      "enforcement_point": "before new entry and during lifecycle risk review",
+      "block_action": "BLOCK_NEW_ENTRIES or REDUCE_RISK according to mode",
+      "evidence": "risk decision with PnL input hash",
+      "reset_rule": "next trading session or explicit reviewed reset",
+      "required_before_paper_live": "paper",
+      "implementation_status": "NOT_IMPLEMENTED"
+    },
+    {
+      "control_id": "GLOBAL-003",
+      "scope": "GLOBAL",
+      "owner": "PortfolioRiskAndControlSupervisor",
+      "input": "active order and position projections",
+      "threshold_config": "max_aggregate_active_orders|max_aggregate_active_positions",
+      "enforcement_point": "intent validation",
+      "block_action": "PORTFOLIO_CONTROL_REJECTED",
+      "evidence": "active exposure snapshot",
+      "reset_rule": "projection changes after order/position closure",
+      "required_before_paper_live": "paper",
+      "implementation_status": "NOT_IMPLEMENTED"
+    },
+    {
+      "control_id": "ACCOUNT-001",
+      "scope": "ACCOUNT",
+      "owner": "AccountCoordinator",
+      "input": "account config and reconciliation state",
+      "threshold_config": "account_enabled and reconciliation_complete",
+      "enforcement_point": "before account accepts intent",
+      "block_action": "ACCOUNT_BLOCKED",
+      "evidence": "account control decision",
+      "reset_rule": "successful reconciliation and enabled account",
+      "required_before_paper_live": "paper",
+      "implementation_status": "NOT_IMPLEMENTED"
+    },
+    {
+      "control_id": "ACCOUNT-002",
+      "scope": "ACCOUNT",
+      "owner": "AccountCoordinator",
+      "input": "broker connection health and margin snapshot",
+      "threshold_config": "broker_connection_healthy and margin_available",
+      "enforcement_point": "before accepted intent becomes order",
+      "block_action": "ACCOUNT_BLOCKED or BROKER_DEGRADED",
+      "evidence": "broker health and margin snapshot",
+      "reset_rule": "fresh passing health and margin snapshot",
+      "required_before_paper_live": "paper",
+      "implementation_status": "PARTIAL"
+    },
+    {
+      "control_id": "ACCOUNT-003",
+      "scope": "ACCOUNT",
+      "owner": "AccountCoordinator",
+      "input": "account orders, positions, rate-limit status",
+      "threshold_config": "max_account_orders|max_account_positions|broker_rate_limit_health",
+      "enforcement_point": "intent validation and broker submission readiness",
+      "block_action": "ACCOUNT_CONTROL_REJECTED",
+      "evidence": "account exposure and rate-limit snapshot",
+      "reset_rule": "capacity restored or operator reset",
+      "required_before_paper_live": "paper",
+      "implementation_status": "NOT_IMPLEMENTED"
+    },
+    {
+      "control_id": "STRATEGY-001",
+      "scope": "STRATEGY_INSTANCE",
+      "owner": "StrategyConfigurationResolver",
+      "input": "strategy enablement and config version",
+      "threshold_config": "enabled and valid_config_version",
+      "enforcement_point": "premarket planning and intent validation",
+      "block_action": "STRATEGY_INSTANCE_DISABLED or CONFIGURATION_INVALID",
+      "evidence": "configuration hash and enablement fact",
+      "reset_rule": "new valid configuration publication",
+      "required_before_paper_live": "paper",
+      "implementation_status": "IMPLEMENTED_AND_PROVEN"
+    },
+    {
+      "control_id": "STRATEGY-002",
+      "scope": "STRATEGY_INSTANCE",
+      "owner": "PortfolioRiskAndControlSupervisor",
+      "input": "active cycles, quantities, account/product permissions",
+      "threshold_config": "max_active_cycles|max_quantity|allowed_products|allowed_accounts",
+      "enforcement_point": "intent validation",
+      "block_action": "STRATEGY_CONTROL_REJECTED",
+      "evidence": "strategy exposure snapshot",
+      "reset_rule": "exposure changes or config update",
+      "required_before_paper_live": "paper",
+      "implementation_status": "NOT_IMPLEMENTED"
+    },
+    {
+      "control_id": "INTENT-001",
+      "scope": "EXECUTION_INTENT",
+      "owner": "ExecutionIntentValidator",
+      "input": "intent quantity, price, timing, instrument identity, evidence hash",
+      "threshold_config": "positive_quantity|valid_price_policy|fresh_data|max_slippage|valid_session",
+      "enforcement_point": "intent validation pipeline",
+      "block_action": "INVALID_INTENT or STALE_DATA",
+      "evidence": "intent validation decision",
+      "reset_rule": "new intent with fresh evidence",
+      "required_before_paper_live": "paper",
+      "implementation_status": "CONTRACT_ONLY"
+    },
+    {
+      "control_id": "ORDER-001",
+      "scope": "ORDER",
+      "owner": "OrderStateMachine",
+      "input": "client order id, broker order id, status, pending action",
+      "threshold_config": "one_owner_per_client_order|legal_transition",
+      "enforcement_point": "order event ingestion",
+      "block_action": "ORDER_STREAM_QUARANTINED",
+      "evidence": "order transition or rejected transition event",
+      "reset_rule": "reconciliation or manual review",
+      "required_before_paper_live": "paper",
+      "implementation_status": "PARTIAL"
+    },
+    {
+      "control_id": "POSITION-001",
+      "scope": "POSITION_CYCLE",
+      "owner": "PositionCycleCoordinator",
+      "input": "confirmed quantity, remaining quantity, protection generation, lifecycle state",
+      "threshold_config": "no_over_exit|active_protection_quantity_cap|remaining_quantity_non_negative",
+      "enforcement_point": "fill processing and protection intent validation",
+      "block_action": "POSITION_CYCLE_BLOCKED",
+      "evidence": "position invariant decision",
+      "reset_rule": "reconciliation or valid lifecycle transition",
+      "required_before_paper_live": "paper",
+      "implementation_status": "CONTRACT_ONLY"
+    },
+    {
+      "control_id": "DATA-001",
+      "scope": "STREAM",
+      "owner": "RuntimeCoordinator",
+      "input": "snapshot freshness, timestamp skew, source quality",
+      "threshold_config": "max_snapshot_age|max_timestamp_skew|required_fields",
+      "enforcement_point": "business evaluation context creation",
+      "block_action": "DATA_DEGRADED for affected stream",
+      "evidence": "snapshot quality decision",
+      "reset_rule": "fresh coherent snapshot",
+      "required_before_paper_live": "paper",
+      "implementation_status": "PARTIAL"
+    },
+    {
+      "control_id": "PERSIST-001",
+      "scope": "SYSTEM",
+      "owner": "PersistenceAndRecoveryService",
+      "input": "database health, commit latency, projection lag",
+      "threshold_config": "database_healthy|max_persistence_lag|max_projection_lag",
+      "enforcement_point": "authority mode transition and every financial transaction",
+      "block_action": "READ_ONLY_RECOVERY_MODE or PERSISTENCE_DEGRADED",
+      "evidence": "persistence health fact",
+      "reset_rule": "database health restored and reconciliation complete",
+      "required_before_paper_live": "paper",
+      "implementation_status": "NOT_IMPLEMENTED"
+    }
+  ],
+  "kill_switch_actions": [
+    {
+      "action": "BLOCK_NEW_ENTRIES",
+      "scope": "global/account/strategy",
+      "order_impacts": "new entry intents rejected",
+      "carried_position_impacts": "existing lifecycle may continue if reconciliation and persistence are healthy",
+      "protection_handling": "preserve existing protection",
+      "manual_approval_required_to_reset": true
+    },
+    {
+      "action": "CANCEL_PENDING_ENTRY_ORDERS",
+      "scope": "account/strategy/order",
+      "order_impacts": "future authoritative mode may cancel unfilled entry orders only",
+      "carried_position_impacts": "no direct carried-position exit",
+      "protection_handling": "do not cancel protection",
+      "manual_approval_required_to_reset": true
+    },
+    {
+      "action": "PRESERVE_EXISTING_PROTECTION",
+      "scope": "position_cycle",
+      "order_impacts": "working protection remains expected",
+      "carried_position_impacts": "continue protection monitoring",
+      "protection_handling": "do not cancel or reduce without separate authority",
+      "manual_approval_required_to_reset": false
+    },
+    {
+      "action": "CANCEL_AND_REPLACE_UNSAFE_PROTECTION",
+      "scope": "position_cycle",
+      "order_impacts": "future authoritative replacement only after reconciliation",
+      "carried_position_impacts": "requires lifecycle evidence",
+      "protection_handling": "new generation supersedes old only transactionally",
+      "manual_approval_required_to_reset": true
+    },
+    {
+      "action": "REDUCE_RISK",
+      "scope": "account/portfolio/position_cycle",
+      "order_impacts": "future authority may reduce exposure, not increase it",
+      "carried_position_impacts": "risk-reduction exits may be permitted where approved",
+      "protection_handling": "maintain or tighten protection only with evidence",
+      "manual_approval_required_to_reset": true
+    },
+    {
+      "action": "EMERGENCY_EXIT",
+      "scope": "account/portfolio/position_cycle",
+      "order_impacts": "future authority may submit exit orders only",
+      "carried_position_impacts": "position closure required",
+      "protection_handling": "exit intent supersedes protection after reconciliation",
+      "manual_approval_required_to_reset": true
+    },
+    {
+      "action": "ACCOUNT_HALT",
+      "scope": "account",
+      "order_impacts": "block account-level new actions",
+      "carried_position_impacts": "manual review for protection/exit continuation",
+      "protection_handling": "preserve if safe; block replacements without reconciliation",
+      "manual_approval_required_to_reset": true
+    },
+    {
+      "action": "GLOBAL_HALT",
+      "scope": "global",
+      "order_impacts": "block all accounts",
+      "carried_position_impacts": "manual review required for all lifecycle actions",
+      "protection_handling": "preserve existing protection unless emergency exit is separately approved",
+      "manual_approval_required_to_reset": true
+    },
+    {
+      "action": "READ_ONLY_RECOVERY_MODE",
+      "scope": "system/account",
+      "order_impacts": "no new broker/paper mutations",
+      "carried_position_impacts": "observe and reconcile only",
+      "protection_handling": "do not change protection; alert if missing/stale",
+      "manual_approval_required_to_reset": true
+    }
+  ]
+}

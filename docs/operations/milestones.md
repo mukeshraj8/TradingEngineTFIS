@@ -2,6 +2,20 @@
 
 ## Current Snapshot
 
+- as of Friday, July 31, 2026, Phase 3E Milestone 3 defined the minimum V1
+  persistence, recovery, broker reconciliation, risk/control, market-data
+  performance, degraded-mode, failure-isolation, observability, audit, and P&L
+  reliability architecture. Files:
+  `docs/architecture/tfis_minimum_production_architecture_v1.md`,
+  `docs/architecture/tfis_first_10_strategy_delivery_roadmap.md`,
+  `reports/phase3e/persistence_entity_catalog.json`,
+  `reports/phase3e/risk_control_catalog.json`,
+  `reports/phase3e/failure_isolation_matrix.json`,
+  `reports/phase3e/performance_budget_catalog.json`, and
+  `reports/phase3e/milestone3_persistence_risk_performance_summary.md`.
+  Verdict: `MILESTONE_ACCEPT`. Runtime impact: `NONE`.
+  Broker/paper/live/order/position authority: `NONE`. Milestone 4 is pending
+  user approval.
 - as of Friday, July 31, 2026, Phase 3E Milestone 2 defined the minimum
   production-grade domain ownership model for TFIS V1. Files:
   `docs/architecture/tfis_minimum_production_architecture_v1.md`,

@@ -123,3 +123,26 @@ pass before paper authority:
 
 These gates do not change the first candidate direction. They prevent the
 first-10 work from recreating one strategy-specific paper path per strategy.
+
+## 7. Milestone 3 Recovery, Risk, And Performance Gates
+
+Phase 3E Milestone 3 adds additional gates before a first-10 candidate can move
+from offline/shadow into paper authority:
+
+- strategy plans and evidence packets must be persisted as immutable facts
+- every candidate must produce idempotent `ExecutionIntent` records
+- order/fill/position projections must be recoverable after restart
+- broker or paper truth must reconcile before resumed authority
+- candidate lifecycle behavior must define protection status after restart,
+  partial fill, cancel/replace, EOD, and next-day carried startup
+- strategy-specific fresh entry must be separable from carried-position
+  protection when global new entries are blocked
+- strategy data requirements must fit the coherent snapshot policy
+- ordinary quote/OI bursts may be conflated, but ORPT, RC, EOD, fills,
+  reconciliation, and position transitions must be preserved
+- candidate onboarding must define minimum observability: plan state, block
+  reason, active cycle, order state, protection generation, and P&L source facts
+
+These gates make S23 Call-side still the correct first implementation
+candidate, because it has the deepest current offline evidence and already
+exercises fresh-entry, gap, carried-position, and lifecycle paths.

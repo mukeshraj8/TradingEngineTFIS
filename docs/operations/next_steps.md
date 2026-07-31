@@ -6,10 +6,20 @@ way.
 
 ## Immediate Next Priorities
 
-0.50. `TODO` After user approval of Phase 3E Milestone 2, proceed to
-   Milestone 3: define persistence/recovery, risk/control refinement,
-   market-data performance expectations, and failure-isolation implementation
-   planning. Do not add paper or live authority in Milestone 3.
+0.51. `TODO` After user approval of Phase 3E Milestone 3, proceed to
+   Milestone 4: essential analytics/P&L facts, first-10 candidate strategy
+   matrix, and strategy-onboarding process. Do not add paper or live authority
+   in Milestone 4.
+
+0.50. `DONE` Complete Phase 3E Milestone 3 persistence, recovery, risk, and
+   performance architecture. Result: defined the V1 transactional persistence
+   model, entity persistence classifications, transaction boundaries,
+   idempotency model, broker reconciliation classifications, restart/recovery
+   sequence, risk hierarchy, kill-switch semantics, degraded modes,
+   market-data/backpressure rules, coherent snapshot rules, provisional
+   performance budgets, failure isolation, operational observability, audit
+   evidence, P&L reliability, and Phase 4 implementation order. Runtime impact:
+   `NONE`. Broker/paper/live authority: `NONE`.
 
 0.49. `DONE` Complete Phase 3E Milestone 2 domain ownership architecture.
    Result: defined minimum production-grade ownership for

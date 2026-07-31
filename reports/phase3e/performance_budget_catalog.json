@@ -1,0 +1,129 @@
+{
+  "milestone": "Phase 3E Milestone 3",
+  "status": "ARCHITECTURE_SPECIFICATION_ONLY",
+  "date": "2026-07-31",
+  "note": "Budgets are provisional design targets. They are measurable planning numbers, not benchmark guarantees.",
+  "throughput_scenarios": [
+    {
+      "scenario": "10_strategies_single_account",
+      "description": "10 enabled strategy instances, one account, shared underlying plus selected contracts",
+      "expected_behavior": "shared market observations update once, then route to subscribed streams only"
+    },
+    {
+      "scenario": "multiple_accounts",
+      "description": "same strategy family across two or more account sessions",
+      "expected_behavior": "account coordinators isolate reconciliation and authority decisions"
+    },
+    {
+      "scenario": "quote_burst",
+      "description": "ordinary LTP/bid/ask/OI burst around ORPT or RC",
+      "expected_behavior": "ordinary updates conflate to latest state; critical ORPT/RC events are preserved"
+    },
+    {
+      "scenario": "simultaneous_fills",
+      "description": "multiple broker fills arrive close together",
+      "expected_behavior": "order streams serialize by client order and position projections serialize by position cycle"
+    }
+  ],
+  "budgets": [
+    {
+      "operation": "provider_event_normalization",
+      "target_p50_ms": 2,
+      "target_p95_ms": 10,
+      "measurement": "adapter payload to normalized event",
+      "failure_threshold": "sustained p95 above 50ms enters DATA_DEGRADED for affected source"
+    },
+    {
+      "operation": "instrument_state_update",
+      "target_p50_ms": 1,
+      "target_p95_ms": 5,
+      "measurement": "normalized event to immutable snapshot",
+      "failure_threshold": "snapshot lag beyond freshness policy blocks affected streams"
+    },
+    {
+      "operation": "subscription_lookup",
+      "target_p50_ms": 1,
+      "target_p95_ms": 5,
+      "measurement": "snapshot identity to affected stream ids",
+      "failure_threshold": "lookup errors block routing for affected event"
+    },
+    {
+      "operation": "strategy_instance_dispatch",
+      "target_p50_ms": 5,
+      "target_p95_ms": 25,
+      "measurement": "critical event routed to strategy stream handler",
+      "failure_threshold": "consumer lag alert and affected stream block"
+    },
+    {
+      "operation": "one_business_evaluation",
+      "target_p50_ms": 20,
+      "target_p95_ms": 100,
+      "measurement": "coherent context to business result",
+      "failure_threshold": "missed authorized time blocks execution intent"
+    },
+    {
+      "operation": "one_lifecycle_evaluation",
+      "target_p50_ms": 20,
+      "target_p95_ms": 100,
+      "measurement": "position context to lifecycle requirement",
+      "failure_threshold": "stale lifecycle decision blocks mutation and alerts"
+    },
+    {
+      "operation": "execution_intent_construction",
+      "target_p50_ms": 5,
+      "target_p95_ms": 20,
+      "measurement": "effective plan or lifecycle requirement to immutable intent",
+      "failure_threshold": "intent rejected with evidence"
+    },
+    {
+      "operation": "order_event_dispatch",
+      "target_p50_ms": 5,
+      "target_p95_ms": 25,
+      "measurement": "broker/paper event to order state transition",
+      "failure_threshold": "order stream quarantined"
+    },
+    {
+      "operation": "fill_processing",
+      "target_p50_ms": 10,
+      "target_p95_ms": 50,
+      "measurement": "fill fact to order, position, lifecycle, fact projection transaction",
+      "failure_threshold": "fill processing retry; duplicate fill idempotency must hold"
+    },
+    {
+      "operation": "reconciliation_per_account",
+      "target_p50_ms": 500,
+      "target_p95_ms": 3000,
+      "measurement": "broker snapshot fetch excluded unless measured separately",
+      "failure_threshold": "account remains blocked until reconciliation completes"
+    },
+    {
+      "operation": "restart_recovery",
+      "target_p50_ms": 5000,
+      "target_p95_ms": 30000,
+      "measurement": "process start to matched stream readiness after broker truth fetched",
+      "failure_threshold": "stay in READ_ONLY_RECOVERY_MODE"
+    },
+    {
+      "operation": "persistence_commit",
+      "target_p50_ms": 10,
+      "target_p95_ms": 100,
+      "measurement": "single operational transaction commit",
+      "failure_threshold": "persistence degraded; no authority transition"
+    },
+    {
+      "operation": "pnl_projection_update",
+      "target_p50_ms": 20,
+      "target_p95_ms": 100,
+      "measurement": "source fact to updated PnL projection",
+      "failure_threshold": "analytics degraded unless risk PnL inputs are unavailable"
+    }
+  ],
+  "future_test_design": [
+    "synthetic quote burst with critical ORPT/RC preservation",
+    "simultaneous fill replay with duplicate fill events",
+    "multi-account reconciliation replay",
+    "restart recovery with active order and carried position",
+    "projection rebuild from immutable facts",
+    "persistence latency injection and authority downgrade"
+  ]
+}

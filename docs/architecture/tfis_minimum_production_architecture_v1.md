@@ -865,3 +865,665 @@ Milestone 2 is acceptable when:
 - JSON catalogs validate
 - no production source code is changed
 - runtime/broker/paper/live authority remains `NONE`
+
+## 12. Milestone 3 Persistence, Recovery, Risk, And Performance Model
+
+Status: Phase 3E Milestone 3 architecture/specification.
+
+Milestone 3 defines the minimum V1 architecture for reliable persistence,
+deterministic restart/recovery, broker reconciliation, risk/control,
+market-data performance, degraded operating modes, failure isolation, and
+operational observability. It does not implement persistence, broker access,
+order placement, or paper/live authority.
+
+### 12.1 Current Persistence And Recovery Audit
+
+Existing refactored and reference-code observations:
+
+- paper order state is file-backed through `paper_order_state.json` and
+  `paper_order_events.jsonl`
+- paper position state is file-backed through `paper_position_state.json` and
+  `paper_position_state_events.jsonl`
+- trade ledger evidence exists as append-like JSONL rows with lock handling
+- broker order state and idempotency have useful JSON/JSONL artifacts
+- live-state mirrors and heartbeat stores exist for operational dashboards
+- reconciliation helpers compare local position/order expectations against
+  supplied broker snapshots
+- M15 runtime checkpoints prove deterministic in-memory replay/resume, but not
+  durable production recovery
+
+Gaps before paper authority:
+
+- no approved transactional operational database exists
+- current file artifacts are useful evidence but not sufficient as the single
+  V1 authority store
+- several keys remain strategy-code/symbol shaped instead of account/session/
+  position-cycle shaped
+- broker truth is not yet the mandatory gate before resumed authority
+- duplicate-order prevention exists only in partial broker-order paths
+- lost-fill, stale-protection, and local-commit/broker-response races are not
+  closed by a durable transaction model
+
+### 12.2 Version 1 Persistence Principles
+
+V1 should use:
+
+```text
+transactional operational database
++ append-only domain events and immutable facts
++ current-state projections
++ read-first broker reconciliation
+```
+
+No Kafka, distributed event bus, distributed database, or full event-sourcing
+infrastructure is required for V1. The minimum reliable model is a single
+transactional store with append-only history and transactional projections.
+
+Principles:
+
+- immutable business facts are never updated in place
+- order, fill, lifecycle, control, and operator events are append-only
+- current projections are mutable but reconstructible
+- every financial transition has an idempotency key
+- every mutable projection has an optimistic version
+- every state change stores previous state, new state, source, timestamp,
+  config/rule version, and evidence hash
+- local projections never override broker truth after reconciliation mismatch
+- soft deletion applies only to projections; facts/events remain immutable
+- daily archival preserves a complete replayable operational record
+- recovery checkpoints speed restart but are not the sole source of truth
+
+```mermaid
+flowchart TD
+    Facts[Immutable Facts] --> Events[Append-only Events]
+    Events --> Txn[Transactional Commit Boundary]
+    Txn --> Proj[Current State Projections]
+    Broker[Broker/Paper Truth] --> Reconcile[Reconciliation Result]
+    Proj --> Reconcile
+    Reconcile --> Resume[Authority Resume Gate]
+    Events --> Archive[Daily Archive]
+    Facts --> Archive
+```
+
+### 12.3 Persistence Classification
+
+The machine-readable catalog is
+`reports/phase3e/persistence_entity_catalog.json`.
+
+Summary:
+
+- `IMMUTABLE_FACT`: trading session, resolved config, plans, intents, risk
+  decisions, fills, reconciliation results, evidence packets
+- `APPEND_ONLY_EVENT`: order events, lifecycle requirements, kill-switch
+  actions, operator actions
+- `CURRENT_STATE_PROJECTION`: client orders, position cycles, protection
+  generations
+- `RECONSTRUCTIBLE_CACHE`: runtime checkpoints and derived snapshots
+- `EXTERNAL_BROKER_TRUTH`: broker orders, broker positions, broker margins
+- `ANALYTICAL_PROJECTION`: trade facts and P&L facts
+
+### 12.4 Transaction Boundaries
+
+Minimum atomic transactions:
+
+| Transaction | Atomically persists | Rollback/retry behavior |
+| --- | --- | --- |
+| ExecutionIntent acceptance | intent, risk/account decision, idempotency reservation, current intent state | retry by intent idempotency key; conflicting duplicate rejects |
+| Broker submission acknowledgement | client order projection, broker order identity, acknowledgement event, submission timestamp | if broker response is lost, reconcile before retry |
+| Fill processing | fill fact, order filled quantity, position quantity change, average price, lifecycle/protection requirement, source fact reference | duplicate fill ignored by fill id; conflicting fill quarantines order |
+| Protection replacement | new protection generation, old supersession state, replacement intent, expected protection projection | retry by protection generation; stale generation cannot overwrite newer one |
+| Position closure | final exit fill, remaining quantity zero, terminal cycle state, trade closure fact, realized P&L inputs | duplicate close is idempotent; quantity mismatch requires reconciliation |
+| EOD carry-forward | carry decision, lifecycle continuation, next-session recovery requirement, unresolved protection state | retry by position cycle/date; recovery must preserve pending requirement |
+
+```mermaid
+flowchart LR
+    Plan[EffectiveExecutionPlan] --> Intent[ExecutionIntent]
+    Intent --> Risk[RiskDecision]
+    Risk --> Reserve[Idempotency Reservation]
+    Reserve --> State[Current Intent State]
+    State --> Commit[(Atomic Commit A)]
+    Commit --> Account[AccountCoordinator Accepted Intent]
+```
+
+```mermaid
+flowchart LR
+    Fill[Broker/Paper Fill] --> FillFact[Fill Fact]
+    FillFact --> OrderQty[Order Filled Quantity]
+    OrderQty --> PositionQty[Position Quantity Projection]
+    PositionQty --> Avg[Average Price]
+    Avg --> Lifecycle[Lifecycle/Protection Requirement]
+    Lifecycle --> Commit[(Atomic Commit C)]
+    Commit --> Facts[Trade/PnL Source Fact]
+```
+
+```mermaid
+flowchart LR
+    Old[Active Protection Generation N] --> Supersede[Supersession State]
+    Supersede --> NewReq[Protection Requirement N+1]
+    NewReq --> Intent[Replacement ExecutionIntent]
+    Intent --> Projection[Expected Protection Projection]
+    Projection --> Commit[(Atomic Commit D)]
+```
+
+### 12.5 Idempotency Model
+
+Idempotency keys:
+
+- strategy evaluation: `strategy_instance_id|trading_date|config_hash|input_hash`
+- plan generation: `strategy_evaluation_id|plan_hash`
+- execution intent: `account_session_id|source_requirement_id|intent_hash`
+- broker submission: `account_session_id|client_order_id|submit_attempt`
+- order event: `client_order_id|broker_event_id_or_event_sequence`
+- fill: `client_order_id|broker_fill_id_or_fill_hash`
+- cancellation: `client_order_id|cancel_generation`
+- replacement: `position_cycle_id|protection_type|new_generation`
+- lifecycle requirement: `position_cycle_id|requirement_type|generation|hash`
+- reconciliation action: `account_session_id|scope|broker_snapshot_hash|local_hash`
+- trade fact: `source_event_id|fact_type|projection_version`
+- PnL fact: `position_cycle_id|as_of_timestamp|input_hash|projection_version`
+- operator action: `actor|scope|action_type|timestamp|action_hash`
+
+Handling:
+
+- duplicate identical request returns the existing result
+- duplicate conflicting request is rejected and retained as evidence
+- replay after timeout checks durable reservation before action
+- lost broker acknowledgement triggers broker order-book reconciliation
+- local commit succeeds but response is lost returns committed state on retry
+- broker accepts while local process crashes enters recovery and reconciles
+- duplicate fill event is ignored by fill idempotency key
+- delayed broker event after restart is applied only if legal for the current
+  order generation
+
+No retry may produce a second financial action.
+
+### 12.6 Broker Reconciliation Architecture
+
+Inputs:
+
+- broker orders, trades/fills, positions, margin/funds
+- local intents, orders, fills, position-cycle projections
+- expected active protection
+- previous reconciliation results
+
+Outputs:
+
+- `ReconciliationResult`
+- correction requirement
+- block decision
+- manual-review requirement
+- projected state repair proposal
+
+Scopes:
+
+- account startup
+- process restart
+- periodic intraday
+- after broker reconnect
+- after order timeout
+- after partial fill
+- after replace/cancel
+- before new entry
+- before EOD closure
+- next-day carried-position startup
+
+```mermaid
+flowchart TD
+    BrokerOrders[Broker Orders] --> Reconcile[Reconciliation Service]
+    BrokerFills[Broker Fills] --> Reconcile
+    BrokerPositions[Broker Positions] --> Reconcile
+    BrokerMargin[Broker Margin] --> Reconcile
+    LocalOrders[Local Orders] --> Reconcile
+    LocalPositions[Local Position Cycles] --> Reconcile
+    Protection[Expected Protection] --> Reconcile
+    Reconcile --> Result[ReconciliationResult]
+    Result --> Repair[Projection Repair Proposal]
+    Result --> Block[Block Decision]
+    Result --> Review[Manual Review Requirement]
+```
+
+Automatic projection repair is allowed only when broker truth is complete,
+identity match is unambiguous, and the repair reduces local inconsistency
+without broker mutation. Manual review is always required for unknown broker
+orders, duplicate protection, local-closed/broker-open conflicts, missing
+broker state, and any repair that could hide exposure.
+
+### 12.7 Reconciliation Classifications
+
+| Classification | Fresh entry | Lifecycle | Future cancel/modify | Account status | Repair |
+| --- | --- | --- | --- | --- | --- |
+| `MATCHED` | allowed if other gates pass | allowed | allowed by mode | active | none |
+| `BROKER_ONLY_ORDER` | blocked for affected account | review dependent position | manual review | blocked | no automatic broker mutation |
+| `LOCAL_ONLY_ORDER` | blocked for affected scope | reconcile before action | no until broker query complete | degraded | mark expired only if broker proves absent |
+| `BROKER_ONLY_POSITION` | blocked | lifecycle manual review | no | blocked | create projection only with explicit repair evidence |
+| `LOCAL_ONLY_POSITION` | blocked | blocked unless broker confirms | no | blocked | close projection only with evidence |
+| `QUANTITY_MISMATCH` | blocked | risk-reduction only after review | no | blocked | maybe, if broker truth complete |
+| `AVERAGE_PRICE_MISMATCH` | allowed only if quantity matched and risk ok | allowed with P&L correction | allowed by mode | degraded | yes for accounting projection |
+| `ORDER_STATUS_MISMATCH` | blocked for dependent orders | depends on status | no until resolved | degraded | maybe |
+| `UNKNOWN_BROKER_ORDER` | blocked | blocked for dependent cycle | no | blocked | no |
+| `MISSING_PROTECTION` | block new entries for affected strategy/account | protection-required alert | future placement only after authority | degraded | no broker mutation |
+| `DUPLICATE_PROTECTION` | blocked | manual review | no | blocked | no |
+| `STALE_PROTECTION` | blocked for affected cycle | replacement required after authority | no until reconciled | degraded | projection only if broker confirms |
+| `PARTIAL_FILL_MISMATCH` | blocked for affected strategy/account | reconcile quantity first | no | blocked | maybe with broker fill truth |
+| `CLOSED_BROKER_POSITION_LOCAL_OPEN` | allowed only after local projection repair | close local cycle | no | degraded | yes with broker evidence |
+| `LOCAL_CLOSED_BROKER_OPEN` | blocked | manual review/emergency policy | no | blocked | no |
+| `MARGIN_UNAVAILABLE` | blocked | protection may continue if safe | no risk-increasing actions | degraded | no |
+| `BROKER_STATE_UNAVAILABLE` | blocked | read-only only | no | blocked | no |
+| `MANUAL_REVIEW_REQUIRED` | blocked for affected scope | depends on review | no | blocked/degraded | no until reviewed |
+
+Every classification retains broker snapshot hash, local projection hash,
+identity scope, operator message, and repair decision.
+
+### 12.8 Restart And Recovery Sequence
+
+```mermaid
+flowchart TD
+    Start[Process Start] --> NoAuth[NO_AUTHORITY / RECOVERY]
+    NoAuth --> Config[Load Config And Rule Versions]
+    Config --> Db[Verify DB And Schema Health]
+    Db --> Accounts[Restore AccountCoordinator Projections]
+    Accounts --> Orders[Restore OrderStateMachines]
+    Orders --> Positions[Restore PositionCycles]
+    Positions --> Pending[Restore Pending Intents And Lifecycle Requirements]
+    Pending --> Broker[Query Broker/Paper Truth]
+    Broker --> Reconcile[Reconcile Account By Account]
+    Reconcile --> Subs[Rebuild Subscriptions]
+    Subs --> Freshness[Validate Market Data Freshness]
+    Freshness --> Clock[Validate Clock And Session State]
+    Clock --> Resume[Resume Matched Streams Only]
+    Clock --> Block[Block Inconsistent Streams]
+    Resume --> Authority[Explicit Authority Transition If Required]
+```
+
+Recovery cases:
+
+- before market: rebuild plans and reconcile carried positions first
+- after market open: require coherent opening snapshot before evaluation
+- between ORPT and RC: replay critical ORPT state and wait for/validate RC
+- pending entry: reconcile order book before retry or expiry decision
+- partial fill: process broker fills, resize protection requirement
+- active SL/Target: reconcile protection order status before lifecycle action
+- cancel/replace pending: query order book; do not retry blindly
+- near EOD: recover in read-only mode until EOD authority gate passes
+- carried positions: broker position truth first, then lifecycle requirement
+- broker disconnect: account stays blocked until reconnect and reconciliation
+
+### 12.9 Checkpoint And Replay Model
+
+Checkpoint identity:
+
+```text
+stream_id|trading_date|checkpoint_sequence|configuration_hash|rule_matrix_version|checkpoint_hash
+```
+
+Checkpoint contents:
+
+- event sequence watermark
+- configuration hash
+- rule-matrix version
+- projection versions
+- current order and position generations
+- latest immutable snapshot hashes
+- pending critical events
+- checkpoint hash
+
+Recovery method:
+
+- order/position state: projection plus broker reconciliation
+- business plans/evidence: immutable artifact reload
+- runtime streams: checkpoint plus event watermark
+- market data: live or replay snapshot refresh, not unlimited tick replay
+- analytics: rebuild from immutable facts/events
+
+### 12.10 Risk Control Hierarchy
+
+```mermaid
+flowchart TD
+    Global[Global / Portfolio Controls] --> Account[Account Controls]
+    Account --> Strategy[Strategy Instance Controls]
+    Strategy --> Intent[ExecutionIntent Controls]
+    Intent --> Order[Order Controls]
+    Order --> Position[Position Cycle Controls]
+```
+
+Precedence:
+
+- higher-level block cannot be overridden below
+- broker reconciliation block cannot be overridden by strategy logic
+- lifecycle protection may continue when fresh entry is blocked if
+  persistence, reconciliation, and authority mode allow it
+- kill-switch behavior must specify whether it blocks entries, cancels working
+  entries, preserves protection, reduces risk, or exits exposure
+
+Required controls are cataloged in
+`reports/phase3e/risk_control_catalog.json`.
+
+### 12.11 Kill Switch Semantics
+
+```mermaid
+flowchart TD
+    Kill[Kill Switch / Control Action] --> Block[BLOCK_NEW_ENTRIES]
+    Kill --> CancelEntries[CANCEL_PENDING_ENTRY_ORDERS]
+    Kill --> Preserve[PRESERVE_EXISTING_PROTECTION]
+    Kill --> Replace[CANCEL_AND_REPLACE_UNSAFE_PROTECTION]
+    Kill --> Reduce[REDUCE_RISK]
+    Kill --> Exit[EMERGENCY_EXIT]
+    Kill --> AccountHalt[ACCOUNT_HALT]
+    Kill --> GlobalHalt[GLOBAL_HALT]
+    Kill --> ReadOnly[READ_ONLY_RECOVERY_MODE]
+```
+
+One kill switch is not one boolean. Every action must define initiating
+authority, affected scope, order impact, carried-position impact, protection
+handling, evidence, reset conditions, and manual approval requirements.
+
+### 12.12 Degraded Operating Modes
+
+```mermaid
+stateDiagram-v2
+    [*] --> READ_ONLY
+    READ_ONLY --> RECOVERY
+    RECOVERY --> SHADOW_ONLY
+    SHADOW_ONLY --> PAPER_AUTHORIZED
+    PAPER_AUTHORIZED --> LIVE_AUTHORIZED
+    SHADOW_ONLY --> DATA_DEGRADED
+    PAPER_AUTHORIZED --> DATA_DEGRADED
+    PAPER_AUTHORIZED --> BROKER_DEGRADED
+    PAPER_AUTHORIZED --> PERSISTENCE_DEGRADED
+    PAPER_AUTHORIZED --> ACCOUNT_BLOCKED
+    PAPER_AUTHORIZED --> GLOBAL_BLOCKED
+    DATA_DEGRADED --> SHADOW_ONLY
+    BROKER_DEGRADED --> RECOVERY
+    PERSISTENCE_DEGRADED --> READ_ONLY
+    ACCOUNT_BLOCKED --> RECOVERY
+    GLOBAL_BLOCKED --> READ_ONLY
+```
+
+Permissions:
+
+- `NORMAL`: all approved mode actions allowed
+- `SHADOW_ONLY`: calculations and evidence only
+- `PAPER_AUTHORIZED`: paper actions only after all gates pass
+- `LIVE_AUTHORIZED`: separate future live approval only
+- `RECOVERY`: no financial mutation; reconcile and rebuild
+- `READ_ONLY`: observe and report only
+- `DATA_DEGRADED`: block affected strategy/position streams
+- `BROKER_DEGRADED`: block affected accounts
+- `ANALYTICS_DEGRADED`: trading may continue if risk inputs remain available
+- `PERSISTENCE_DEGRADED`: downgrade authority because actions cannot be durably
+  recorded
+- `ACCOUNT_BLOCKED`: one account isolated
+- `GLOBAL_BLOCKED`: all authority blocked
+
+### 12.13 Market-Data Performance Architecture
+
+```mermaid
+flowchart LR
+    Provider[Provider Feed] --> Adapter[Provider Adapter]
+    Adapter --> Normalized[Normalized Event]
+    Normalized --> Owner[Instrument State Owner]
+    Owner --> Snapshot[Immutable Snapshot]
+    Snapshot --> Subs[Subscription Index]
+    Subs --> Strategy[Strategy Streams]
+    Subs --> Position[Position Streams]
+```
+
+Rules:
+
+- normalize each provider observation once
+- one mutable owner per instrument/contract
+- consumers receive immutable snapshots
+- ordinary quotes/OI are conflatable
+- critical events are never conflated
+- stale data blocks affected streams
+- timestamp semantics distinguish source, effective, dispatch, and received
+  times
+- option-chain snapshots and OI updates have their own freshness policy
+- cross-source quotes require source quality and coherent snapshot identity
+- exchange-session separation is mandatory
+
+### 12.14 Backpressure And Queue Policy
+
+Conflatable:
+
+- ordinary LTP refresh
+- bid/ask refresh
+- OI refresh
+- non-critical market depth refresh
+
+Non-conflatable:
+
+- market open, ORPT, RC, EOD
+- strategy enable/disable
+- operator/risk action
+- broker acknowledgement
+- fill
+- cancel/replace result
+- reconciliation result
+- position transition
+
+Policy:
+
+- maximum one pending ordinary update per instrument per stream
+- retain latest ordinary state
+- preserve critical-event order and identity
+- measure dropped/conflated event count
+- alert on consumer lag
+- block stale snapshots at evaluation boundary
+
+```mermaid
+flowchart TD
+    Event[Normalized Event] --> Class{Delivery Class}
+    Class -->|Conflatable| Latest[Latest State Slot Per Instrument]
+    Class -->|Critical| Queue[Critical Event Queue]
+    Latest --> Snapshot[Immutable Snapshot]
+    Queue --> Dispatch[Ordered Dispatch]
+    Snapshot --> Eval[Evaluation Context]
+    Dispatch --> Eval
+    Eval --> Lag[Consumer Lag Metrics]
+```
+
+### 12.15 Coherent Snapshot Rules
+
+A business decision must consume one immutable evaluation context. It may use:
+
+- underlying snapshot
+- selected-contract snapshot
+- OI snapshot
+- option-chain snapshot
+- clock event
+
+Rules:
+
+- same trading date and exchange session
+- max age per strategy/config
+- max timestamp skew per evaluation type
+- source quality must meet policy
+- required fields are fail-closed
+- missing optional fields must be recorded
+- evaluation snapshot identity is hashed
+- no arbitrary mutable state reads during business evaluation
+
+### 12.16 Performance Budgets
+
+Provisional measurable budgets are recorded in
+`reports/phase3e/performance_budget_catalog.json`.
+
+V1 scenarios:
+
+- 10 enabled strategies
+- multiple accounts
+- shared underlying plus selected contracts
+- ordinary quote burst
+- ORPT/RC critical-event spike
+- simultaneous broker fills
+
+Budgets are design targets only until benchmarked. Later tests should include
+quote bursts, duplicate fills, multi-account reconciliation, active-order
+restart, projection rebuild, and persistence-latency injection.
+
+### 12.17 Failure Isolation
+
+The detailed matrix is recorded in
+`reports/phase3e/failure_isolation_matrix.json`.
+
+```mermaid
+flowchart TD
+    Failure[Failure] --> Strategy[Strategy Scope]
+    Failure --> Order[Order Scope]
+    Failure --> Position[Position Scope]
+    Failure --> Account[Account Scope]
+    Failure --> Broker[Broker/Provider Scope]
+    Failure --> Global[Global Scope]
+    Strategy --> Continue1[Unrelated Strategies Continue]
+    Order --> Continue2[Unrelated Orders Continue]
+    Position --> Continue3[Unrelated Cycles Continue]
+    Account --> Continue4[Other Accounts Continue]
+    Broker --> Continue5[Other Providers/Read-only Continue]
+    Global --> Halt[All Authority Halted]
+```
+
+Rule: isolate to the smallest safe scope unless evidence proves broader risk.
+
+### 12.18 Operational Observability
+
+Before paper authority V1 must expose:
+
+- system health: process, queue lag, snapshot freshness, database health,
+  persistence lag, reconciliation health, authority mode
+- account health: connection, reconciliation, margin, open orders, positions,
+  rejection count, rate-limit state
+- strategy health: enabled status, premarket plan, runtime state, block reason,
+  latest decision, active cycle
+- order health: state, broker id, quantity, filled quantity, pending action,
+  last event
+- position health: confirmed quantity, average entry, remaining quantity,
+  active Target/SL generation, lifecycle state, carried status, unrealized P&L
+- risk health: limit usage, active blocks, kill-switch state
+
+This milestone does not design dashboards in detail.
+
+### 12.19 Audit And Evidence Requirements
+
+Mandatory evidence for:
+
+- authority-mode transition
+- strategy enable/disable
+- configuration change
+- risk block
+- kill switch
+- intent acceptance/rejection
+- broker submission and acknowledgement
+- fill
+- cancel/replace
+- reconciliation correction
+- position closure
+- carry-forward
+- manual override
+
+Every material state change must record actor/source, timestamp, rule/config
+version, previous state, new state, and evidence hash.
+
+### 12.20 PnL Reliability
+
+P&L must use:
+
+- broker-confirmed fills
+- confirmed quantities
+- brokerage/charges where available
+- corrected reconciliation facts
+- contract multiplier/lot size
+- currency/unit rules
+- realized and unrealized separation
+
+```mermaid
+flowchart LR
+    Fill[Broker-confirmed Fill] --> TradeFact[TradeFact]
+    Charges[Broker Charges] --> PnL[PnLFact]
+    Position[PositionCycle Quantity] --> PnL
+    Market[Market Mark] --> PnL
+    TradeFact --> PnL
+    Reconcile[Reconciliation Correction] --> TradeFact
+    Reconcile --> PnL
+```
+
+Correction behavior:
+
+- late fill creates a correction fact and rebuilds affected P&L
+- revised charges update P&L projection, not original fill fact
+- quantity reconciliation repairs position projection with evidence
+- trade-date changes produce correction facts
+- corporate action/contract adjustment requires explicit adjustment fact
+- duplicate fills are removed from projection, not from immutable history
+
+Analytical projections must be rebuildable.
+
+### 12.21 Phase 4 Implementation Order
+
+Recommended order:
+
+1. Captured/replay shadow connection.
+2. Broker read-only boundary.
+3. Persistence foundation.
+4. Reconciliation engine.
+5. `ExecutionIntent` and risk validation.
+6. `AccountCoordinator`.
+7. `OrderStateMachine`.
+8. `PositionCycle` execution integration.
+9. Operational facts.
+10. Essential P&L projections.
+
+Parallelizable:
+
+- captured/replay shadow and broker read-only interface design can begin in
+  parallel
+- operational observability read models can begin after persistence schemas are
+  named
+- P&L projection design can proceed after fill/position fact shape is stable
+
+Strict dependencies:
+
+- paper authority depends on persistence, reconciliation, idempotency,
+  AccountCoordinator, OrderStateMachine, PositionCycle integration, and risk
+  controls
+- live authority depends on a later separate live gate after paper acceptance
+
+### 12.22 User Decisions For Later Milestones
+
+These do not block Milestone 3:
+
+1. Preferred transactional database. Recommended default: SQLite for local V1
+   paper/shadow with a schema that can migrate later.
+2. Read-only broker reconciliation availability. Recommended default: require
+   order book, trade/fill book, positions, and funds/margin before paper
+   authority.
+3. Paper source of truth. Recommended default: internal simulator until a
+   broker paper facility is explicitly approved and reconciled.
+4. Persistence-degraded protection behavior. Recommended default: no new
+   financial mutation; preserve broker-side protection and alert.
+5. Automatic projection repair scope. Recommended default: allow only
+   unambiguous broker-confirmed repairs that reduce inconsistency; otherwise
+   manual review.
+6. Provisional limits. Recommended default: keep placeholders in config until
+   paper activation, but require the controls to exist before authority.
+
+### 12.23 Milestone 3 Acceptance Gate
+
+Milestone 3 is acceptable when:
+
+- every V1 state has persistence/recovery classification
+- critical financial transitions have transaction boundaries
+- idempotency prevents duplicate financial actions
+- broker reconciliation gates resumed authority
+- restart covers entries, partial fills, protection, and carried positions
+- risk hierarchy and kill-switch semantics are explicit
+- degraded modes distinguish fresh entry from protection
+- market-data processing is bounded and selective
+- critical events cannot be conflated
+- coherent snapshot rules are explicit
+- performance budgets are measurable
+- failure isolation is defined from strategy/order/position/account/global
+  scopes
+- operational observability before paper authority is defined
+- P&L projections are rebuildable from broker-confirmed facts
+- no runtime implementation or authority is added
