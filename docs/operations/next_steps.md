@@ -6,6 +6,17 @@ way.
 
 ## Immediate Next Priorities
 
+0.49. `TODO` After user approval of Phase 3E Milestone 1, proceed to
+   Milestone 2: define the core domain/ownership model, account architecture,
+   order state-machine architecture, position-cycle architecture, and stable
+   `ExecutionIntent` boundary. Do not implement production runtime, broker
+   execution, persistence, dashboards, or paper/live authority.
+
+0.48. `DONE` Complete Phase 3E Milestone 1 architecture checkpoint.
+   Result: created the Version 1 minimum production architecture draft, first-10
+   strategy roadmap draft, initial mandatory capability classification, and
+   gap matrix. Runtime impact: `NONE`. Broker/paper/live authority: `NONE`.
+
 0.47. `TODO` Connect the deterministic M15 runtime coordinator to one existing
    captured/replay market stream in shadow-only mode. Preserve the current
    authority boundary: no broker submission, no paper/live authority, no order

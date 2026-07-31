@@ -6,6 +6,14 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Friday, July 31, 2026, Phase 3E Milestone 1 creates the Version 1
+  minimum production architecture draft and initial capability classification.
+  The first complete system target is now explicitly scoped as a safe
+  end-to-end paper-authorized system with verified strategy configs,
+  multi-account reconciliation, runtime event coordination, execution intents,
+  order/fill/position-cycle tracking, restart recovery, P&L facts, and
+  read-only analytics. No production runtime implementation was added.
+  Broker/paper/live/order/position authority remains `NONE`.
 - as of Friday, July 31, 2026, Phase 3D Milestone 15 implements deterministic,
   in-memory, non-authoritative runtime event coordination over the accepted
   S23 offline fresh-entry and carried-position paths. Fresh-entry offline

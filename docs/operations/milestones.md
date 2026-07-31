@@ -2,6 +2,17 @@
 
 ## Current Snapshot
 
+- as of Friday, July 31, 2026, Phase 3E Milestone 1 created the initial
+  Version 1 minimum production architecture and delivery classification. Files:
+  `docs/architecture/tfis_minimum_production_architecture_v1.md`,
+  `docs/architecture/tfis_first_10_strategy_delivery_roadmap.md`,
+  `reports/phase3e/minimum_production_gap_matrix.json`, and
+  `reports/phase3e/phase3e_architecture_summary.md`. Verdict:
+  `MILESTONE_ACCEPT`. Capability categories now use only
+  `REQUIRED_FOR_FIRST_END_TO_END_SYSTEM`,
+  `REQUIRED_BEFORE_PAPER_AUTHORITY`, `REQUIRED_BEFORE_LIVE_AUTHORITY`, and
+  `DEFERRED_EXTENSION`. Runtime impact: `NONE`. Broker/paper/live/order/
+  position authority: `NONE`. Milestone 2 is pending user approval.
 - as of Friday, July 31, 2026, Phase 3D Milestone 15 implemented
   deterministic, in-memory runtime coordination over the accepted S23
   fresh-entry and carried-position offline flows. Reports are
