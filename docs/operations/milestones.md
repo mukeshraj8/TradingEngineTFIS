@@ -2,6 +2,20 @@
 
 ## Current Snapshot
 
+- as of Friday, July 31, 2026, Phase 3E Milestone 2 defined the minimum
+  production-grade domain ownership model for TFIS V1. Files:
+  `docs/architecture/tfis_minimum_production_architecture_v1.md`,
+  `docs/architecture/tfis_first_10_strategy_delivery_roadmap.md`,
+  `reports/phase3e/domain_ownership_catalog.json`,
+  `reports/phase3e/order_position_invariants.json`, and
+  `reports/phase3e/milestone2_domain_ownership_summary.md`. Verdict:
+  `MILESTONE_ACCEPT`. Ownership is split across `AccountCoordinator`,
+  `OrderStateMachine`, `PositionCycleCoordinator`, and
+  `PortfolioRiskAndControlSupervisor`; `ExecutionIntent` and
+  `LifecycleRequirement` remain immutable broker-neutral boundaries; aggregate
+  quantity plus ordered fill facts is the V1 quantity model. Runtime impact:
+  `NONE`. Broker/paper/live/order/position authority: `NONE`. Milestone 3 is
+  pending user approval.
 - as of Friday, July 31, 2026, Phase 3E Milestone 1 created the initial
   Version 1 minimum production architecture and delivery classification. Files:
   `docs/architecture/tfis_minimum_production_architecture_v1.md`,

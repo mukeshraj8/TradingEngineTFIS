@@ -6,6 +6,17 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Friday, July 31, 2026, Phase 3E Milestone 2 defines the minimum
+  production-grade domain ownership model for TFIS V1. The architecture now
+  separates `AccountCoordinator`, `OrderStateMachine`,
+  `PositionCycleCoordinator`, and `PortfolioRiskAndControlSupervisor`
+  ownership; defines the `ExecutionIntent` and `LifecycleRequirement`
+  boundaries; documents account/strategy/order/fill/position-cycle traceability;
+  and records quantity/protection invariants for partial fills, replacement,
+  multiple accounts, multiple positions, and failure isolation. Supporting
+  catalogs are `reports/phase3e/domain_ownership_catalog.json` and
+  `reports/phase3e/order_position_invariants.json`. No production runtime code
+  was changed. Broker/paper/live/order/position authority remains `NONE`.
 - as of Friday, July 31, 2026, Phase 3E Milestone 1 creates the Version 1
   minimum production architecture draft and initial capability classification.
   The first complete system target is now explicitly scoped as a safe

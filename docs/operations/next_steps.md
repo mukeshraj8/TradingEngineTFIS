@@ -6,11 +6,19 @@ way.
 
 ## Immediate Next Priorities
 
-0.49. `TODO` After user approval of Phase 3E Milestone 1, proceed to
-   Milestone 2: define the core domain/ownership model, account architecture,
-   order state-machine architecture, position-cycle architecture, and stable
-   `ExecutionIntent` boundary. Do not implement production runtime, broker
-   execution, persistence, dashboards, or paper/live authority.
+0.50. `TODO` After user approval of Phase 3E Milestone 2, proceed to
+   Milestone 3: define persistence/recovery, risk/control refinement,
+   market-data performance expectations, and failure-isolation implementation
+   planning. Do not add paper or live authority in Milestone 3.
+
+0.49. `DONE` Complete Phase 3E Milestone 2 domain ownership architecture.
+   Result: defined minimum production-grade ownership for
+   `AccountCoordinator`, `OrderStateMachine`, `PositionCycleCoordinator`,
+   `PortfolioRiskAndControlSupervisor`, `ExecutionIntent`,
+   `LifecycleRequirement`, order/fill/position-cycle traceability,
+   multiple-account isolation, quantity/protection invariants, failure
+   isolation, and analytics fact connectivity. Runtime impact: `NONE`.
+   Broker/paper/live authority: `NONE`.
 
 0.48. `DONE` Complete Phase 3E Milestone 1 architecture checkpoint.
    Result: created the Version 1 minimum production architecture draft, first-10

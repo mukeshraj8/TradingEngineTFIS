@@ -99,3 +99,27 @@ deferred to Phase 3E Milestone 4.
 - Option Buying, Futures, and Equity must not be claimed implementation-ready
   until workbook extraction and normalized configuration are complete.
 - First-10 onboarding must stay source-first and evidence-driven.
+
+## 6. Milestone 2 Ownership Gates For Strategy Onboarding
+
+Phase 3E Milestone 2 adds ownership gates that every first-10 strategy must
+pass before paper authority:
+
+- each candidate must resolve to a unique `StrategyInstance`
+- each candidate must declare the approved account/session scope
+- each candidate must produce `ExecutionIntent` objects without broker-specific
+  payloads
+- fresh-entry and carried-position lifecycle requirements must reference a
+  `PositionCycle`
+- target, SL, FSL, TRP, MSL, expiry, square-off, and carry-forward requirements
+  must be expressed as `LifecycleRequirement` / `ProtectionRequirement`
+  records, not direct order mutation
+- order/fill/position state must be traceable through account, strategy
+  instance, trading session, position cycle, client order, broker order, and
+  evidence packet identities
+- onboarding cannot rely on strategy code plus symbol as the durable state key
+- candidates with unresolved quantity/protection semantics remain blocked
+  before paper authority
+
+These gates do not change the first candidate direction. They prevent the
+first-10 work from recreating one strategy-specific paper path per strategy.

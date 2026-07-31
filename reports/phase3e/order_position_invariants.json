@@ -1,0 +1,190 @@
+{
+  "milestone": "Phase 3E Milestone 2",
+  "status": "ARCHITECTURE_SPECIFICATION_ONLY",
+  "date": "2026-07-31",
+  "authority": {
+    "broker": "NONE",
+    "paper": "NONE",
+    "live": "NONE",
+    "order_mutation": "NONE",
+    "position_mutation": "NONE"
+  },
+  "invariants": [
+    {
+      "id": "QTY-001",
+      "entity": "PositionCycle",
+      "invariant": "Confirmed open quantity must never be negative.",
+      "financial_risk_prevented": "prevents impossible short accounting and over-close projections",
+      "enforcement_owner": "PositionCycleCoordinator",
+      "enforcement_point": "fill projection and reconciliation replay",
+      "required_evidence": ["fill quantity", "position cycle quantity before event", "position cycle quantity after event"],
+      "failure_behavior": "quarantine position cycle and reject dependent intents",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "QTY-002",
+      "entity": "PositionCycle",
+      "invariant": "Remaining quantity must never be negative after exit fills.",
+      "financial_risk_prevented": "prevents over-exit and accidental reverse exposure",
+      "enforcement_owner": "PositionCycleCoordinator",
+      "enforcement_point": "exit fill projection",
+      "required_evidence": ["exit fill", "remaining quantity before event", "remaining quantity after event"],
+      "failure_behavior": "quarantine position cycle and require reconciliation",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "QTY-003",
+      "entity": "PositionCycle",
+      "invariant": "Exited quantity cannot exceed confirmed filled entry quantity unless reconciliation correction explicitly proves broker truth.",
+      "financial_risk_prevented": "prevents local state from closing more quantity than exists",
+      "enforcement_owner": "PositionCycleCoordinator",
+      "enforcement_point": "exit fill and reconciliation correction",
+      "required_evidence": ["entry fills", "exit fills", "reconciliation result"],
+      "failure_behavior": "block new exits for the cycle until reconciled",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "PROT-001",
+      "entity": "ProtectionRequirement",
+      "invariant": "Active protection quantity cannot exceed confirmed remaining quantity unless broker-proven OCO semantics are recorded.",
+      "financial_risk_prevented": "prevents over-protection and accidental reverse orders",
+      "enforcement_owner": "PositionCycleCoordinator",
+      "enforcement_point": "protection requirement creation and replacement",
+      "required_evidence": ["remaining quantity", "protection quantity", "OCO capability evidence if used"],
+      "failure_behavior": "reject protection intent and flag protection missing",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "PROT-002",
+      "entity": "ProtectionRequirement",
+      "invariant": "No protection may be placed for unfilled entry quantity.",
+      "financial_risk_prevented": "prevents naked exit orders before exposure exists",
+      "enforcement_owner": "PositionCycleCoordinator",
+      "enforcement_point": "protection intent validation",
+      "required_evidence": ["confirmed fill quantity", "protection requirement quantity"],
+      "failure_behavior": "reject protection intent",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "PROT-003",
+      "entity": "ProtectionRequirement",
+      "invariant": "Protection generation numbers must increase monotonically per position cycle and protection type.",
+      "financial_risk_prevented": "prevents stale replacement events from overwriting active protection",
+      "enforcement_owner": "PositionCycleCoordinator",
+      "enforcement_point": "replacement requirement creation and event replay",
+      "required_evidence": ["previous generation", "new generation", "source requirement id"],
+      "failure_behavior": "ignore stale event, preserve newer generation, emit rejected transition evidence",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "ORD-001",
+      "entity": "BrokerOrder",
+      "invariant": "Exactly one OrderStateMachine owns each ClientOrderIdentity.",
+      "financial_risk_prevented": "prevents duplicate submits, duplicate cancels, and conflicting order state",
+      "enforcement_owner": "AccountCoordinator",
+      "enforcement_point": "client order identity allocation",
+      "required_evidence": ["account session id", "client order id", "owner id"],
+      "failure_behavior": "reject duplicate owner and quarantine order stream",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "ORD-002",
+      "entity": "OrderEvent",
+      "invariant": "Duplicate submit, acknowledge, cancel, replace, and fill events must be idempotent by identity and event sequence.",
+      "financial_risk_prevented": "prevents double counting fills or repeated cancellations",
+      "enforcement_owner": "OrderStateMachine",
+      "enforcement_point": "order event ingestion",
+      "required_evidence": ["event identity", "event sequence", "broker event id when available"],
+      "failure_behavior": "record duplicate as ignored evidence without state mutation",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "ORD-003",
+      "entity": "BrokerOrder",
+      "invariant": "Fill after cancel request must be reconciled and projected; it must not be discarded because cancel was requested.",
+      "financial_risk_prevented": "prevents hidden exposure after late broker fills",
+      "enforcement_owner": "OrderStateMachine",
+      "enforcement_point": "late fill event handling",
+      "required_evidence": ["cancel request", "fill event", "broker state"],
+      "failure_behavior": "project fill, update position, require reconciliation if broker state is unclear",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "POS-001",
+      "entity": "PositionCycle",
+      "invariant": "Closed position cycles cannot accept new protection or fresh-entry mutation.",
+      "financial_risk_prevented": "prevents reopening closed trades through stale lifecycle events",
+      "enforcement_owner": "PositionCycleCoordinator",
+      "enforcement_point": "lifecycle requirement ingestion",
+      "required_evidence": ["position cycle state", "incoming requirement"],
+      "failure_behavior": "reject requirement and preserve closed state",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "POS-002",
+      "entity": "PositionCycle",
+      "invariant": "Fresh-entry requirements cannot mutate a carried-position cycle unless an authoritative re-entry rule explicitly permits it.",
+      "financial_risk_prevented": "prevents mixing fresh and carried lifecycle exposure",
+      "enforcement_owner": "PositionCycleCoordinator",
+      "enforcement_point": "fresh-entry intent validation",
+      "required_evidence": ["source requirement type", "position cycle carry status", "strategy policy"],
+      "failure_behavior": "create a new cycle or reject with RULE_AUTHORITY_UNRESOLVED",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "ACC-001",
+      "entity": "AccountSession",
+      "invariant": "Orders, fills, and positions from one account must not mutate another account.",
+      "financial_risk_prevented": "prevents cross-account exposure corruption",
+      "enforcement_owner": "AccountCoordinator",
+      "enforcement_point": "event partitioning and reconciliation",
+      "required_evidence": ["broker account identity", "account session id", "event source"],
+      "failure_behavior": "reject cross-account event and halt affected account session",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "REC-001",
+      "entity": "ReconciliationResult",
+      "invariant": "Local order or position truth cannot override broker or paper truth after reconciliation proves a mismatch.",
+      "financial_risk_prevented": "prevents acting on stale local projections",
+      "enforcement_owner": "AccountCoordinator",
+      "enforcement_point": "pre-intent acceptance and recovery replay",
+      "required_evidence": ["local projection", "broker or paper projection", "mismatch classification"],
+      "failure_behavior": "block affected account or position cycle until reconciled",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "FAIL-001",
+      "entity": "PortfolioControlDecision",
+      "invariant": "A failure must be isolated to the smallest safe owner unless portfolio control evidence explicitly escalates scope.",
+      "financial_risk_prevented": "prevents unnecessary global shutdowns and prevents hidden broad failures",
+      "enforcement_owner": "PortfolioRiskAndControlSupervisor",
+      "enforcement_point": "failure classification",
+      "required_evidence": ["failure source", "affected identities", "escalation reason"],
+      "failure_behavior": "block affected intent/order/position/account or global portfolio according to evidence",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "AUTH-001",
+      "entity": "ExecutionIntent",
+      "invariant": "No intent may advance beyond offline evidence unless the requested authority mode is explicitly approved.",
+      "financial_risk_prevented": "prevents accidental paper or live order activation",
+      "enforcement_owner": "ExecutionIntent validator",
+      "enforcement_point": "intent validation pipeline",
+      "required_evidence": ["requested authority mode", "approved authority mode", "policy source"],
+      "failure_behavior": "reject intent with AUTHORITY_MODE_NOT_APPROVED",
+      "test_required_before_paper_authority": true
+    },
+    {
+      "id": "ANA-001",
+      "entity": "TradeFact",
+      "invariant": "Analytics facts are downstream projections and cannot mutate orders, fills, positions, or account sessions.",
+      "financial_risk_prevented": "prevents reports or dashboards from becoming hidden trading authority",
+      "enforcement_owner": "Analytics fact projection",
+      "enforcement_point": "fact projection and consumer boundary",
+      "required_evidence": ["source event id", "projection id"],
+      "failure_behavior": "reject attempted reverse dependency in architecture tests",
+      "test_required_before_paper_authority": true
+    }
+  ]
+}
