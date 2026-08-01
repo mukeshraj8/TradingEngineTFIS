@@ -37,6 +37,7 @@ KNOWN_ARTIFACT_TYPES = frozenset(
         "M15RuntimeCheckpointResult",
         "Phase4AShadowResult",
         "Phase4AShadowEvidence",
+        "RiskValidationResult",
     }
 )
 KNOWN_EVENT_TYPES = frozenset(
@@ -48,6 +49,7 @@ KNOWN_EVENT_TYPES = frozenset(
         "RUNTIME_CHECKPOINT_PERSISTED",
         "IDEMPOTENCY_RESERVED",
         "RECONCILIATION_COMPLETED",
+        "EXECUTION_INTENT_VALIDATED",
     }
 )
 
@@ -597,7 +599,18 @@ class PersistenceRepositories:
         status: str = "RESERVED_OFFLINE",
         position_cycle_id: str | None = None,
     ) -> str:
-        if status not in {"RESERVED_OFFLINE", "CANCELLED_OFFLINE", "CONFLICT", "EXPIRED_OFFLINE"}:
+        if status not in {
+            "RESERVED_OFFLINE",
+            "VALIDATION_PENDING",
+            "VALIDATED_NOT_SUBMITTABLE",
+            "REJECTED",
+            "BLOCKED",
+            "DUPLICATE",
+            "EXPIRED",
+            "CANCELLED_OFFLINE",
+            "CONFLICT",
+            "EXPIRED_OFFLINE",
+        }:
             raise ValueError("Phase 4C execution-intent reservation status is not allowed.")
         self.connection.execute(
             """
@@ -624,6 +637,193 @@ class PersistenceRepositories:
             ),
         )
         return reservation_id
+
+    def put_validated_execution_intent(
+        self,
+        *,
+        intent: object,
+        validation_result: object,
+        expected_projection_version: int | None,
+    ) -> str:
+        intent_dict = intent.to_dict()  # type: ignore[attr-defined]
+        result_dict = validation_result.to_dict()  # type: ignore[attr-defined]
+        reservation_id = f"eir:{intent_dict['execution_intent_id']}"
+        request_hash = canonical_hash(intent_dict)
+        reservation = self.connection.execute(
+            "SELECT request_hash, status FROM execution_intent_reservations WHERE reservation_id = ?",
+            (reservation_id,),
+        ).fetchone()
+        if reservation:
+            if reservation["request_hash"] != request_hash:
+                self.connection.execute(
+                    "UPDATE execution_intent_reservations SET status = ?, updated_timestamp = ? WHERE reservation_id = ?",
+                    ("CONFLICT", _now(), reservation_id),
+                )
+                raise IdempotencyConflictError(f"Intent reservation conflict: {reservation_id}")
+        else:
+            self.put_execution_intent_reservation(
+                reservation_id=reservation_id,
+                proposed_execution_intent_id=intent_dict["execution_intent_id"],
+                broker_account_id=intent_dict["broker_account_id"],
+                strategy_instance_id=intent_dict["strategy_instance_id"],
+                position_cycle_id=intent_dict["position_cycle_id"],
+                source_artifact_id=intent_dict["source_artifact_id"],
+                idempotency_key=intent_dict["idempotency_key"],
+                request_payload=intent_dict,
+                status="VALIDATION_PENDING",
+            )
+        row = self.connection.execute(
+            "SELECT intent_hash FROM execution_intents WHERE execution_intent_id = ?",
+            (intent_dict["execution_intent_id"],),
+        ).fetchone()
+        if row:
+            if row["intent_hash"] != intent_dict["intent_hash"]:
+                raise ArtifactConflictError(f"Intent identity conflict: {intent_dict['execution_intent_id']}")
+        else:
+            self.connection.execute(
+                """
+                INSERT INTO execution_intents(
+                    execution_intent_id, reservation_id, broker_account_id, strategy_instance_id, position_cycle_id,
+                    source_artifact_id, idempotency_key, intent_hash, purpose, authority_mode, payload_json, created_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    intent_dict["execution_intent_id"],
+                    reservation_id,
+                    intent_dict["broker_account_id"],
+                    intent_dict["strategy_instance_id"],
+                    intent_dict["position_cycle_id"],
+                    intent_dict["source_artifact_id"],
+                    intent_dict["idempotency_key"],
+                    intent_dict["intent_hash"],
+                    intent_dict["action"]["purpose"],
+                    intent_dict["evidence"]["authority_mode"],
+                    canonical_json(intent_dict),
+                    _now(),
+                ),
+            )
+        existing_result = self.connection.execute(
+            "SELECT result_hash FROM intent_validation_results WHERE validation_id = ?",
+            (result_dict["validation_id"],),
+        ).fetchone()
+        if existing_result:
+            if existing_result["result_hash"] == result_dict["result_hash"]:
+                return str(result_dict["validation_id"])
+            raise ArtifactConflictError(f"Validation identity conflict: {result_dict['validation_id']}")
+        self.connection.execute(
+            """
+            INSERT INTO intent_validation_results(
+                validation_id, execution_intent_id, intent_hash, decision, result_hash, authority_mode,
+                payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                result_dict["validation_id"],
+                intent_dict["execution_intent_id"],
+                result_dict["intent_hash"],
+                result_dict["decision"],
+                result_dict["result_hash"],
+                result_dict["authority_mode"],
+                canonical_json(result_dict),
+                _now(),
+            ),
+        )
+        for check in result_dict["checks"]:
+            self.connection.execute(
+                """
+                INSERT INTO intent_validation_checks(validation_id, check_id, scope, result, severity, payload_json)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    result_dict["validation_id"],
+                    check["check_id"],
+                    check["scope"],
+                    check["result"],
+                    check["severity"],
+                    canonical_json(check),
+                ),
+            )
+        self.connection.execute(
+            "UPDATE execution_intent_reservations SET status = ?, updated_timestamp = ? WHERE reservation_id = ?",
+            (result_dict["decision"], _now(), reservation_id),
+        )
+        self._upsert_intent_validation_projection(
+            intent_dict=intent_dict,
+            result_dict=result_dict,
+            expected_version=expected_projection_version,
+        )
+        self.append_event(
+            event_id=f"{result_dict['validation_id']}:event",
+            event_type="EXECUTION_INTENT_VALIDATED",
+            aggregate_type="execution_intent",
+            aggregate_id=intent_dict["execution_intent_id"],
+            trading_session_id=intent_dict["trading_session_id"],
+            broker_account_id=intent_dict["broker_account_id"],
+            effective_timestamp=datetime.fromisoformat(intent_dict["action"]["authorized_not_before"]),
+            payload={
+                "execution_intent_id": intent_dict["execution_intent_id"],
+                "intent_hash": intent_dict["intent_hash"],
+                "validation_id": result_dict["validation_id"],
+                "result_hash": result_dict["result_hash"],
+                "decision": result_dict["decision"],
+            },
+            idempotency_scope="execution_intent_validation",
+            idempotency_key=result_dict["validation_id"],
+        )
+        return str(result_dict["validation_id"])
+
+    def _upsert_intent_validation_projection(
+        self,
+        *,
+        intent_dict: Mapping[str, Any],
+        result_dict: Mapping[str, Any],
+        expected_version: int | None,
+    ) -> int:
+        projection_id = f"{intent_dict['broker_account_id']}|{intent_dict['strategy_instance_id']}|{intent_dict['execution_intent_id']}"
+        row = self.connection.execute(
+            "SELECT version FROM latest_intent_validation_projection WHERE projection_id = ?",
+            (projection_id,),
+        ).fetchone()
+        if row is None:
+            if expected_version not in (None, 0):
+                raise OptimisticConcurrencyError("Intent validation projection does not exist for expected version.")
+            version = 1
+            self.connection.execute(
+                """
+                INSERT INTO latest_intent_validation_projection(
+                    projection_id, broker_account_id, strategy_instance_id, position_cycle_id, execution_intent_id,
+                    intent_hash, latest_validation_id, latest_result_hash, decision, purpose, version, updated_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    projection_id,
+                    intent_dict["broker_account_id"],
+                    intent_dict["strategy_instance_id"],
+                    intent_dict["position_cycle_id"],
+                    intent_dict["execution_intent_id"],
+                    intent_dict["intent_hash"],
+                    result_dict["validation_id"],
+                    result_dict["result_hash"],
+                    result_dict["decision"],
+                    intent_dict["action"]["purpose"],
+                    version,
+                    _now(),
+                ),
+            )
+            return version
+        current_version = int(row["version"])
+        if expected_version != current_version:
+            raise OptimisticConcurrencyError("Stale intent validation projection writer.")
+        version = current_version + 1
+        self.connection.execute(
+            """
+            UPDATE latest_intent_validation_projection
+            SET latest_validation_id = ?, latest_result_hash = ?, decision = ?, version = ?, updated_timestamp = ?
+            WHERE projection_id = ? AND version = ?
+            """,
+            (result_dict["validation_id"], result_dict["result_hash"], result_dict["decision"], version, _now(), projection_id, current_version),
+        )
+        return version
 
     def put_runtime_checkpoint(
         self,

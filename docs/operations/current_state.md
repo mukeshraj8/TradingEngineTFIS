@@ -2955,3 +2955,15 @@ Current notes:
   `reports/phase4d`. Runtime impact is `NON-AUTHORITATIVE RECONCILIATION
   ONLY`; broker, paper, live, order mutation and position mutation authority
   remain `NONE`.
+- Phase 4E Milestone 1 now adds an immutable broker-neutral
+  `ExecutionIntent` and minimum risk-validation boundary under
+  `src/tfis/execution_intent`, with S23 first-slice composition isolated under
+  `src/tfis/adapters/phase4e`. Supported produced purposes are `ENTRY`,
+  `TARGET`, `ORIGINAL_SL`, `REVISED_SL`, `EOD_EXIT`, `RISK_EXIT`, and
+  `OPERATOR_EXIT`; deferred enum values remain behaviorless. Validation gates
+  recovery, reconciliation, account, strategy, portfolio, quantity, price,
+  timing, market-data quality, idempotency and protection invariants, then
+  persists reservations/results transactionally through Phase 4C. Reports live
+  under `reports/phase4e`. Runtime impact is `VALIDATED NON-SUBMITTABLE
+  EXECUTION INTENTS ONLY`; broker, paper, live, order creation and position
+  mutation authority remain `NONE`.

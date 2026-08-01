@@ -1731,3 +1731,18 @@ Phase 4D Milestone 1 result:
   are not automatically repaired or mutated
 - next priority is Phase 4E: build the `ExecutionIntent` and minimum risk
   validation boundary using Phase 4D readiness output, without order submission
+
+Phase 4E Milestone 1 result:
+
+- immutable broker-neutral `ExecutionIntent` exists for the first S23
+  Call-side vertical purposes: `ENTRY`, `TARGET`, `ORIGINAL_SL`, `REVISED_SL`,
+  `EOD_EXIT`, `RISK_EXIT`, and `OPERATOR_EXIT`
+- minimum risk validation now consumes recovery and reconciliation readiness,
+  enforces account/strategy/portfolio/quantity/price/timing/data-quality/
+  idempotency/protection gates, and fails closed with check-level evidence
+- validation results and reservations persist transactionally and remain
+  explicitly `VALIDATED_NOT_SUBMITTABLE`; no `ClientOrder`, `BrokerOrder`,
+  broker write, paper write or position mutation path is enabled
+- next priority is Phase 4F: AccountCoordinator plus internal deterministic
+  paper adapter, converting validated non-submittable intents into internal
+  simulation requests only after explicit approval

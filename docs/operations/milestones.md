@@ -2025,6 +2025,15 @@
   transactional and idempotent through Phase 4C tables and projections. Reports
   under `reports/phase4d` show `PHASE4D_M1_ACCEPT`; broker, paper, live, order
   mutation and position mutation authority remain `NONE`.
+- Phase 4E Milestone 1 added the immutable broker-neutral ExecutionIntent and
+  minimum risk-validation pipeline under `src/tfis/execution_intent`, with S23
+  first-slice mapping kept in `src/tfis/adapters/phase4e`. The validator
+  applies the required recovery, reconciliation, account, strategy, portfolio,
+  quantity, price, timing, market-data quality, duplicate-action and
+  protection-invariant checks, then persists intent reservations and validation
+  evidence through Phase 4C migration 3. Reports under `reports/phase4e` show
+  `PHASE4E_M1_ACCEPT`; validated intents remain non-submittable and broker,
+  paper, live, order creation and position mutation authority remain `NONE`.
 
 ## Next Recommended Priorities
 

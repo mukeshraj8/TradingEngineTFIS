@@ -1,0 +1,256 @@
+{
+  "account_disabled": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "ACCOUNT_ENABLED"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "active_duplicate_cycle_blocks_entry": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "DUPLICATE_ENTRY_CYCLE"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "closed_position_blocks_lifecycle": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "POSITION_PROTECTION_INVARIANTS"
+    ],
+    "intent_purpose": "TARGET"
+  },
+  "conflicting_duplicate": {
+    "authority": "NONE",
+    "decision": "DUPLICATE",
+    "failure_codes": [
+      "DUPLICATE_ACTION"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "different_account_isolated": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "ENTRY"
+  },
+  "duplicate_identical": {
+    "authority": "NONE",
+    "decision": "DUPLICATE",
+    "failure_codes": [
+      "DUPLICATE_ACTION"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "expired_timing": {
+    "authority": "NONE",
+    "decision": "EXPIRED",
+    "failure_codes": [
+      "TIMING_WINDOW"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "global_halt_behavior": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "PORTFOLIO_CONTROLS"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "insufficient_margin_evidence": {
+    "authority": "NONE",
+    "decision": "INSUFFICIENT_EVIDENCE",
+    "failure_codes": [
+      "ACCOUNT_MARGIN_EVIDENCE"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "invalid_lot_multiple": {
+    "authority": "NONE",
+    "decision": "REJECTED",
+    "failure_codes": [
+      "CONFIGURED_QUANTITY",
+      "QUANTITY_VALID"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "invalid_price": {
+    "authority": "NONE",
+    "decision": "REJECTED",
+    "failure_codes": [
+      "PRICE_POSITIVE"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "invalid_quantity": {
+    "authority": "NONE",
+    "decision": "REJECTED",
+    "failure_codes": [
+      "CONFIGURED_QUANTITY",
+      "QUANTITY_VALID"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "invalid_tick": {
+    "authority": "NONE",
+    "decision": "REJECTED",
+    "failure_codes": [
+      "PRICE_TICK_SIZE"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "missing_oi": {
+    "authority": "NONE",
+    "decision": "INSUFFICIENT_EVIDENCE",
+    "failure_codes": [
+      "MARKET_DATA_QUALITY"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "missing_position_lifecycle": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "QUANTITY_VALID"
+    ],
+    "intent_purpose": "TARGET"
+  },
+  "new_entries_blocked_protection_allowed": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "TARGET"
+  },
+  "portfolio_new_entry_block": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "PORTFOLIO_CONTROLS"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "protection_quantity_exceeds_position": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "QUANTITY_VALID"
+    ],
+    "intent_purpose": "TARGET"
+  },
+  "reconciliation_blocked_entry": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "RECONCILIATION_GATE"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "recovery_blocked": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "RECOVERY_READY"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "source_hash_mismatch": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "SOURCE_HASH_MATCH"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "source_missing": {
+    "authority": "NONE",
+    "decision": "INSUFFICIENT_EVIDENCE",
+    "failure_codes": [
+      "SOURCE_ARTIFACT_AVAILABLE"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "stale_market_data": {
+    "authority": "NONE",
+    "decision": "INSUFFICIENT_EVIDENCE",
+    "failure_codes": [
+      "MARKET_DATA_QUALITY"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "stale_protection_generation": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "POSITION_PROTECTION_INVARIANTS"
+    ],
+    "intent_purpose": "ORIGINAL_SL"
+  },
+  "strategy_disabled": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "STRATEGY_ENABLED"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "timing_not_reached": {
+    "authority": "NONE",
+    "decision": "BLOCKED",
+    "failure_codes": [
+      "TIMING_WINDOW"
+    ],
+    "intent_purpose": "ENTRY"
+  },
+  "valid_bear_call_entry": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "ENTRY"
+  },
+  "valid_bear_gap_entry": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "ENTRY"
+  },
+  "valid_bull_call_entry": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "ENTRY"
+  },
+  "valid_eod_exit": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "EOD_EXIT"
+  },
+  "valid_gap_entry": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "ENTRY"
+  },
+  "valid_original_sl": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "ORIGINAL_SL"
+  },
+  "valid_revised_sl": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "REVISED_SL"
+  },
+  "valid_target": {
+    "authority": "NONE",
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "failure_codes": [],
+    "intent_purpose": "TARGET"
+  }
+}

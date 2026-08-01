@@ -1,0 +1,37 @@
+{
+  "entry_100": {
+    "fixture_only": true,
+    "median_ms": 1338.4212,
+    "p95_ms": 1368.6254
+  },
+  "idempotency_hash": {
+    "fixture_only": true,
+    "median_ms": 0.0643,
+    "p95_ms": 0.0678
+  },
+  "intent_construction": {
+    "fixture_only": true,
+    "median_ms": 56.2347,
+    "p95_ms": 58.9044
+  },
+  "multi_account_batch": {
+    "fixture_only": true,
+    "median_ms": 131.5917,
+    "p95_ms": 165.1377
+  },
+  "one_validation": {
+    "fixture_only": true,
+    "median_ms": 12.6692,
+    "p95_ms": 13.3212
+  },
+  "protection_100": {
+    "fixture_only": true,
+    "median_ms": 1379.0059,
+    "p95_ms": 1613.1152
+  },
+  "serialization_hash": {
+    "fixture_only": true,
+    "median_ms": 0.8469,
+    "p95_ms": 0.9219
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "action": {
+    "authorized_not_after": null,
+    "authorized_not_before": "2026-07-30T09:15:59+05:30",
+    "limit_price": "90.00",
+    "maximum_allowed_slippage": "0.05",
+    "order_type": "LIMIT",
+    "protection_generation": 1,
+    "purpose": "TARGET",
+    "quantity_unit": "LOTS",
+    "requested_quantity": 50,
+    "side": "BUY",
+    "time_in_force": "DAY",
+    "trigger_price": null
+  },
+  "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+  "broker_submission_permitted": false,
+  "evidence": {
+    "authority_mode": "OFFLINE_ONLY",
+    "configuration_hash": "s23-first-slice-config-hash",
+    "evidence_packet_hash": "de1007eee53a2d22f0ec5b51e85ff6ac680e00dbe91edfee831bc45ccccadfff",
+    "market_snapshot_hash": "market:lifecycle-target",
+    "provenance": {
+      "adapter": "S23ExecutionIntentAdapter",
+      "source_artifact_type": "PositionLifecycleContext",
+      "superseded_requirement_id": null
+    },
+    "reconciliation_result_hash": "phase4d-s23-ready-hash",
+    "reconciliation_result_id": "phase4d-s23-ready",
+    "recovery_assessment_hash": "phase4e-recovery-hash",
+    "recovery_assessment_id": "phase4e-recovery-fixture",
+    "rule_matrix_version": "s23_authoritative_matrix_phase3d_m13b",
+    "source_rule_ids": [
+      "S23_TARGET_PROTECTION_FROM_OPEN"
+    ]
+  },
+  "execution_intent_id": "exec-intent:bf9e9b4780ac07071412c5f0",
+  "idempotency_key": "phase4e:ee5a297a1e878b3cf83afd4ccb471ed634cff75541cc3ab95143d4ed2c5e7362",
+  "instrument": {
+    "contract": "NIFTY_20260806_22250_CALL",
+    "currency": "INR",
+    "exchange": "NSE",
+    "expiry": "2026-08-06",
+    "lot_size": 75,
+    "multiplier": "1",
+    "option_type": "CALL",
+    "product": "OPTION_SELLING",
+    "segment": "OPTIONS_SELL",
+    "strike": "22250.0",
+    "tick_size": "0.05",
+    "underlying": "NIFTY"
+  },
+  "intent_hash": "8aa32da89e29fbb5a148fc2c9d15c32cd01b4bb84046f86422a9147fd552e994",
+  "live_submission_permitted": false,
+  "order_creation_permitted": false,
+  "paper_submission_permitted": false,
+  "position_cycle_id": "pc-s23-call-1",
+  "position_mutation_permitted": false,
+  "schema_version": "phase4e.execution_intent.v1",
+  "source_artifact_hash": "hash-target",
+  "source_artifact_id": "lifecycle-target",
+  "source_artifact_type": "PositionLifecycleContext",
+  "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "strategy_family_id": "S23",
+  "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+  "strategy_version": "1.0.0",
+  "trading_date": "2026-07-30",
+  "trading_session_id": "NSE:2026-07-30"
+}

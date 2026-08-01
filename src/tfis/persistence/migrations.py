@@ -332,6 +332,68 @@ CREATE TABLE IF NOT EXISTS latest_reconciliation_projection (
 );
 """,
     ),
+    Migration(
+        3,
+        "phase4e_execution_intent_validation",
+        """
+CREATE TABLE IF NOT EXISTS execution_intents (
+    execution_intent_id TEXT PRIMARY KEY,
+    reservation_id TEXT NOT NULL,
+    broker_account_id TEXT NOT NULL,
+    strategy_instance_id TEXT NOT NULL,
+    position_cycle_id TEXT,
+    source_artifact_id TEXT NOT NULL,
+    idempotency_key TEXT NOT NULL,
+    intent_hash TEXT NOT NULL,
+    purpose TEXT NOT NULL,
+    authority_mode TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(reservation_id) REFERENCES execution_intent_reservations(reservation_id),
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id),
+    FOREIGN KEY(strategy_instance_id) REFERENCES strategy_instances(strategy_instance_id),
+    FOREIGN KEY(position_cycle_id) REFERENCES position_cycle_identities(position_cycle_id),
+    FOREIGN KEY(source_artifact_id) REFERENCES immutable_artifacts(artifact_id)
+);
+CREATE TABLE IF NOT EXISTS intent_validation_results (
+    validation_id TEXT PRIMARY KEY,
+    execution_intent_id TEXT NOT NULL,
+    intent_hash TEXT NOT NULL,
+    decision TEXT NOT NULL,
+    result_hash TEXT NOT NULL,
+    authority_mode TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(execution_intent_id) REFERENCES execution_intents(execution_intent_id)
+);
+CREATE TABLE IF NOT EXISTS intent_validation_checks (
+    validation_id TEXT NOT NULL,
+    check_id TEXT NOT NULL,
+    scope TEXT NOT NULL,
+    result TEXT NOT NULL,
+    severity TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    PRIMARY KEY(validation_id, check_id),
+    FOREIGN KEY(validation_id) REFERENCES intent_validation_results(validation_id)
+);
+CREATE TABLE IF NOT EXISTS latest_intent_validation_projection (
+    projection_id TEXT PRIMARY KEY,
+    broker_account_id TEXT NOT NULL,
+    strategy_instance_id TEXT NOT NULL,
+    position_cycle_id TEXT,
+    execution_intent_id TEXT NOT NULL,
+    intent_hash TEXT NOT NULL,
+    latest_validation_id TEXT NOT NULL,
+    latest_result_hash TEXT NOT NULL,
+    decision TEXT NOT NULL,
+    purpose TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    updated_timestamp TEXT NOT NULL,
+    UNIQUE(broker_account_id, strategy_instance_id, execution_intent_id),
+    FOREIGN KEY(latest_validation_id) REFERENCES intent_validation_results(validation_id)
+);
+""",
+    ),
 )
 
 

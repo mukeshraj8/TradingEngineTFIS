@@ -1,0 +1,12 @@
+[
+  {
+    "description": "Actual AccountCoordinator conversion from validated intent to client-order request is Phase 4F.",
+    "gap_id": "PHASE4E-GAP-001",
+    "status": "DEFERRED"
+  },
+  {
+    "description": "Advanced portfolio optimization, VaR and PnL calculation remain outside the first S23 paper vertical.",
+    "gap_id": "PHASE4E-GAP-002",
+    "status": "DEFERRED"
+  }
+]
