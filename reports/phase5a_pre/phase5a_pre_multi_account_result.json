@@ -1,0 +1,100 @@
+{
+  "accounting_result": {
+    "account_a": "trade-fact:c04dea0984e3dc230e21fe20",
+    "account_b": "trade-fact:ebba1f5ed7df8922b6711716"
+  },
+  "authority": {
+    "authority_grant_id": "phase5a-pre-cert-authority:aec323eafefb445a",
+    "authority_mode": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+    "broker_account_id": "INTERNAL_PAPER_ACCOUNT",
+    "broker_sandbox_submission_permitted": false,
+    "external_broker_submission_permitted": false,
+    "external_order_mutation_permitted": false,
+    "external_position_mutation_permitted": false,
+    "grant_hash": "ffb8c2d84f35312346c0521a39e13c4a317d6677a732935a4de04a7c0538faa4",
+    "live_submission_permitted": false,
+    "reusable_as_live_authority": false,
+    "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "trading_session_id": "NSE:2026-07-30",
+    "valid_scope": "S23_CALL_SIDE_INTERNAL_PAPER_CERTIFICATION"
+  },
+  "component_artifacts": {
+    "account_a_trade_fact": "trade-fact:c04dea0984e3dc230e21fe20",
+    "account_b_trade_fact": "trade-fact:ebba1f5ed7df8922b6711716"
+  },
+  "event_counts": {
+    "runtime_events": 2,
+    "shared_market_streams": 1
+  },
+  "failures": [],
+  "fill_counts": {
+    "duplicate_fills": 0,
+    "entry_fills": 2,
+    "exit_fills": 2
+  },
+  "idempotency": {
+    "account_scope_isolated": true,
+    "strategy_instance_scope_isolated": true
+  },
+  "order_counts": {
+    "client_orders": 2,
+    "entry_orders": 2,
+    "exit_or_protection_orders": 2
+  },
+  "position_result": {
+    "account_a_position_cycle_id": "ipc:0f8cf3828469f3803743f295",
+    "account_b_position_cycle_id": "ipc:3114eff45e9c7637e469900d",
+    "independent_cycles": true
+  },
+  "projection_result": {
+    "portfolio_projection_count": 6,
+    "reconciled": true
+  },
+  "scenario_hash": "121a8e61a452a26e3a9c532cd8037e136df6119368b3987185ffdf9c63e501eb",
+  "scenario_id": "multi_account",
+  "shutdown_sequence": [
+    "STOP_ACCEPTING_NEW_ENTRY_INTENTS",
+    "COMPLETE_REQUIRED_PERSISTENCE_TRANSACTIONS",
+    "CHECKPOINT_RUNTIME_STATE",
+    "PERSIST_ACTIVE_CLIENT_ORDERS",
+    "PERSIST_OPEN_POSITIONCYCLES",
+    "PERSIST_PROTECTION_GENERATIONS",
+    "PERSIST_PROJECTION_WATERMARKS",
+    "PRODUCE_SHUTDOWN_ASSESSMENT",
+    "CLASSIFY_PENDING_STATES"
+  ],
+  "startup_sequence": [
+    "SCHEMA_DATABASE_VALIDATION",
+    "CONFIGURATION_RULE_VERSION_VALIDATION",
+    "TRADING_SESSION_INITIALIZATION",
+    "RECOVERY_ASSESSMENT",
+    "BROKER_OBSERVATION_SNAPSHOT_LOAD",
+    "ADVISORY_RECONCILIATION",
+    "AUTHORITY_GRANT_VALIDATION",
+    "STRATEGY_ENABLEMENT",
+    "PRE_MARKET_PLANNING",
+    "MARKET_DATA_SUBSCRIPTION_READINESS",
+    "RUNTIME_EVENT_PROCESSING",
+    "INTENT_ORDER_LIFECYCLE_OPERATION"
+  ],
+  "status": "PASSED",
+  "trace": [
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "59d8c6b114683da9f8308de71870c8906ca50bcadd8939a8685b22b53b7b6b90",
+      "node_type": "AccountA",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "trade-fact:c04dea0984e3dc230e21fe20",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "ba900586c5210aa35fb4539324d93e79bda6961f58e01a431aaad931916329f9",
+      "node_type": "AccountB",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "trade-fact:ebba1f5ed7df8922b6711716",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    }
+  ],
+  "warnings": []
+}

@@ -1800,3 +1800,19 @@ Phase 4I Milestone 1 result:
   remaining accounting gaps
 - next priority is Phase 5A-Pre complete internal-paper end-to-end
   certification; do not add broker/live authority before that certification
+
+Phase 5A-Pre result:
+
+- the first S23 Call-side internal-paper vertical is now certified end to end
+  through an explicit runner under `src/tfis/internal_paper/end_to_end`, with
+  Phase 5A-Pre S23 reporting composition under `src/tfis/adapters/phase5a_pre`
+- certified scenarios cover Bull Target, Bear Original SL, gap/RC revised SL,
+  partial fill, EOD exit, carry/next-day recovery, crash after ClientOrder,
+  crash after partial fill, crash with protected position, duplicate replay,
+  blocked reconciliation, multi-account isolation and kill-switch behavior
+- reports under `reports/phase5a_pre` include the certification contract,
+  scenario matrix, scenario results, complete trace, idempotency catalog,
+  scorecard, performance, known failure register and gap register
+- exact next recommendation is controlled one-instance internal-paper
+  activation only; do not enable external broker, broker-sandbox or live write
+  authority from this certification

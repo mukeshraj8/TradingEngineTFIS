@@ -2071,6 +2071,18 @@
   impact is `READ-ONLY INTERNAL-PAPER ACCOUNTING AND PROFITABILITY
   PROJECTIONS`; broker, live, broker-sandbox, external paper, order mutation,
   and PositionCycle mutation authority remain `NONE`.
+- Phase 5A-Pre certified one continuous, recoverable and deterministic S23
+  Call-side internal-paper vertical under `src/tfis/internal_paper/end_to_end`,
+  with S23 certification reports composed by `src/tfis/adapters/phase5a_pre`.
+  The milestone records immutable certification identity and authority,
+  startup/shutdown sequences, Bull Target, Bear Original SL, gap/RC revised SL,
+  partial fill, EOD exit, carry/recovery, crash/restart, duplicate replay,
+  blocked reconciliation, multi-account/multi-instance isolation, kill-switch,
+  end-to-end idempotency, complete decision-to-P&L traceability, known failure
+  classification, scorecard and fixture-only performance evidence. Runtime
+  impact is `CERTIFIED INTERNAL-PAPER END-TO-END S23 CALL-SIDE FLOW`; broker,
+  live, broker-sandbox, external paper, external order mutation and external
+  position mutation authority remain `NONE`.
 
 ## Next Recommended Priorities
 

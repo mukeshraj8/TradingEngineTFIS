@@ -1,0 +1,383 @@
+{
+  "catalog": {
+    "bear_sl": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "bear_sl:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:f915b439240fcd504266fde0",
+        "pnl-fact:bc2300d2efb55a910beb04e5"
+      ],
+      "position_cycle_transition": "position-event:9f33006ff9337c0092c32a45",
+      "projection_update": [
+        "accounting-projection:daily_portfolio:2c9c3f6a6e45959d",
+        "accounting-projection:account:6f733286f4950fe4",
+        "accounting-projection:strategy:094e7885e1dd41fa",
+        "accounting-projection:instrument:30f6218a21d4a5cc",
+        "accounting-projection:exit_reason:00134d3e6022df6c",
+        "accounting-projection:path:66464ce2f0b04b50"
+      ],
+      "protection_generation": 1,
+      "runtime_event": "bear_sl:runtime-event",
+      "trade_fact": "trade-fact:5d24d619e4a9cc768caa7c55"
+    },
+    "blocked_reconciliation": {
+      "reconciliation_gate": "blocks_new_entry_before_order"
+    },
+    "bull_target": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "bull_target:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:d3bd09bac46125d10f113a6a",
+        "pnl-fact:6dc5074e4be4109c229fab1e"
+      ],
+      "position_cycle_transition": "position-event:7c1a2509215e35131cde6d86",
+      "projection_update": [
+        "accounting-projection:daily_portfolio:3ccd8f6ce5cb7a5d",
+        "accounting-projection:account:9e856f6914d4bdec",
+        "accounting-projection:strategy:112b4839c578351a",
+        "accounting-projection:instrument:44af046aea43d377",
+        "accounting-projection:exit_reason:74e746b4838e80fa",
+        "accounting-projection:path:750b52c310bbcfb8"
+      ],
+      "protection_generation": 1,
+      "runtime_event": "bull_target:runtime-event",
+      "trade_fact": "trade-fact:ae598ff512c6fc463f31f5d1"
+    },
+    "carry_recovery": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": "ipc:e5e33d064d0712ee7e3c71f7:carry",
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "carry_recovery:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:ec98cff8918528ae9507fa3d"
+      ],
+      "position_cycle_transition": null,
+      "projection_update": [
+        "accounting-projection:daily_portfolio:b5e3b6801008d912",
+        "accounting-projection:account:c02ab302f5acdfd4",
+        "accounting-projection:strategy:4feeccbd762e84a9",
+        "accounting-projection:instrument:4ce6547193f8b10a",
+        "accounting-projection:exit_reason:29a7a910084839a3",
+        "accounting-projection:path:982009db1aaafc2b"
+      ],
+      "protection_generation": 1,
+      "runtime_event": "carry_recovery:runtime-event",
+      "trade_fact": "trade-fact:1277801dbb4c26897525c99f"
+    },
+    "crash_after_order": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "bull_target:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:d3bd09bac46125d10f113a6a",
+        "pnl-fact:6dc5074e4be4109c229fab1e"
+      ],
+      "position_cycle_transition": "position-event:7c1a2509215e35131cde6d86",
+      "projection_update": [
+        "accounting-projection:daily_portfolio:3ccd8f6ce5cb7a5d",
+        "accounting-projection:account:9e856f6914d4bdec",
+        "accounting-projection:strategy:112b4839c578351a",
+        "accounting-projection:instrument:44af046aea43d377",
+        "accounting-projection:exit_reason:74e746b4838e80fa",
+        "accounting-projection:path:750b52c310bbcfb8"
+      ],
+      "protection_generation": 1,
+      "resume_requires_explicit_certification_input": true,
+      "runtime_event": "bull_target:runtime-event",
+      "trade_fact": "trade-fact:ae598ff512c6fc463f31f5d1"
+    },
+    "crash_after_partial_fill": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "bull_target:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:d3bd09bac46125d10f113a6a",
+        "pnl-fact:6dc5074e4be4109c229fab1e"
+      ],
+      "position_cycle_transition": "position-event:7c1a2509215e35131cde6d86",
+      "projection_update": [
+        "accounting-projection:daily_portfolio:3ccd8f6ce5cb7a5d",
+        "accounting-projection:account:9e856f6914d4bdec",
+        "accounting-projection:strategy:112b4839c578351a",
+        "accounting-projection:instrument:44af046aea43d377",
+        "accounting-projection:exit_reason:74e746b4838e80fa",
+        "accounting-projection:path:750b52c310bbcfb8"
+      ],
+      "protection_generation": 1,
+      "resume_requires_explicit_certification_input": true,
+      "runtime_event": "bull_target:runtime-event",
+      "trade_fact": "trade-fact:ae598ff512c6fc463f31f5d1"
+    },
+    "crash_protected_position": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "bull_target:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:d3bd09bac46125d10f113a6a",
+        "pnl-fact:6dc5074e4be4109c229fab1e"
+      ],
+      "position_cycle_transition": "position-event:7c1a2509215e35131cde6d86",
+      "projection_update": [
+        "accounting-projection:daily_portfolio:3ccd8f6ce5cb7a5d",
+        "accounting-projection:account:9e856f6914d4bdec",
+        "accounting-projection:strategy:112b4839c578351a",
+        "accounting-projection:instrument:44af046aea43d377",
+        "accounting-projection:exit_reason:74e746b4838e80fa",
+        "accounting-projection:path:750b52c310bbcfb8"
+      ],
+      "protection_generation": 1,
+      "resume_requires_explicit_certification_input": true,
+      "runtime_event": "bull_target:runtime-event",
+      "trade_fact": "trade-fact:ae598ff512c6fc463f31f5d1"
+    },
+    "duplicate_replay": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "conflicting_duplicates": "FAIL_CLOSED",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "bull_target:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "identical_duplicates": "IDEMPOTENT",
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:d3bd09bac46125d10f113a6a",
+        "pnl-fact:6dc5074e4be4109c229fab1e"
+      ],
+      "position_cycle_transition": "position-event:7c1a2509215e35131cde6d86",
+      "projection_update": [
+        "accounting-projection:daily_portfolio:3ccd8f6ce5cb7a5d",
+        "accounting-projection:account:9e856f6914d4bdec",
+        "accounting-projection:strategy:112b4839c578351a",
+        "accounting-projection:instrument:44af046aea43d377",
+        "accounting-projection:exit_reason:74e746b4838e80fa",
+        "accounting-projection:path:750b52c310bbcfb8"
+      ],
+      "protection_generation": 1,
+      "runtime_event": "bull_target:runtime-event",
+      "trade_fact": "trade-fact:ae598ff512c6fc463f31f5d1"
+    },
+    "eod_exit": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "eod_exit:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:9b9b76dfdd0f57b04b5d1967",
+        "pnl-fact:f99bb0910507fc73d26d120a"
+      ],
+      "position_cycle_transition": "position-event:2c5d2c6e116da5473c447371",
+      "projection_update": [
+        "accounting-projection:daily_portfolio:9fe887c627d07a8e",
+        "accounting-projection:account:02b3516939e09efc",
+        "accounting-projection:strategy:4e6d343aa6d77f14",
+        "accounting-projection:instrument:de82cf3a27dc6beb",
+        "accounting-projection:exit_reason:2dbc665b7aa3ca2f",
+        "accounting-projection:path:9aba896b5d4da7bf"
+      ],
+      "protection_generation": 1,
+      "runtime_event": "eod_exit:runtime-event",
+      "trade_fact": "trade-fact:f1c08545c65d91323c2e46c8"
+    },
+    "gap_revised_sl": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:d37377d9fd2009c428ae9d20",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "gap_revised_sl:evaluation",
+      "execution_intent": "exec-intent:e585f7152d584719dc3b9aef",
+      "fill": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a"
+      ],
+      "lifecycle_requirement": [],
+      "order_event": [
+        "event:e4ff8f231e8fefc525952cb8",
+        "event:827612e8412ae4afa0b65b92",
+        "event:7b7cb8d38394234502a34f44"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:c11d250b259d8278eeaf8b44",
+        "pnl-fact:909635c2bfcf577950cab6db"
+      ],
+      "position_cycle_transition": "position-event:2e5872928bc3f20d81452335",
+      "projection_update": [
+        "accounting-projection:daily_portfolio:3bd3187dd12f97ef",
+        "accounting-projection:account:33cd1deff38f6bce",
+        "accounting-projection:strategy:c4656e1d7c12e7c2",
+        "accounting-projection:instrument:9daf993cf97da2d5",
+        "accounting-projection:exit_reason:ac92dee749aad121",
+        "accounting-projection:path:f26d207216cfdf8a"
+      ],
+      "protection_generation": 1,
+      "runtime_event": "gap_revised_sl:runtime-event",
+      "trade_fact": "trade-fact:956111072e2bfa1db68f85e4"
+    },
+    "kill_switch": {
+      "audited_actions": [
+        "BLOCK_NEW_ENTRIES",
+        "CANCEL_PENDING_ENTRY_ORDERS",
+        "PRESERVE_EXISTING_PROTECTION",
+        "REDUCE_RISK",
+        "ACCOUNT_HALT",
+        "GLOBAL_HALT",
+        "READ_ONLY_RECOVERY_MODE"
+      ]
+    },
+    "multi_account": {
+      "account_scope_isolated": true,
+      "strategy_instance_scope_isolated": true
+    },
+    "partial_fill": {
+      "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+      "carry_event": null,
+      "client_order": "client-order:4560a54a039a6764afa5596c",
+      "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+      "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "evaluation": "partial_fill:evaluation",
+      "execution_intent": "exec-intent:446a2616f8e5d7c9a17304d3",
+      "fill": [
+        "internal-fill:bc6e6a3dfe2156a0484c22b6",
+        "internal-fill:1c8211f20c304a34291b251f"
+      ],
+      "lifecycle_requirement": [
+        "lifecycle-req:07ddcea707ed11aa91b5cedb",
+        "lifecycle-req:3ca208a1166a45e64bd257dd"
+      ],
+      "order_event": [
+        "event:03ae09038946cd05604da4b2",
+        "event:5a8bac85dae42a8b9d614f49",
+        "event:6b9195e1ad0a1aad4d3219ab",
+        "event:0eee513ad0961fd7b4e81079"
+      ],
+      "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "pnl_fact": [
+        "pnl-fact:ce8ae70d73b80f9154baa673",
+        "pnl-fact:b995304fd99ca5151ddb7686",
+        "pnl-fact:92254cedb436e481c58151c2"
+      ],
+      "position_cycle_transition": null,
+      "projection_update": [
+        "accounting-projection:daily_portfolio:877f11c9f4a4a933",
+        "accounting-projection:account:e6257044c5c4b16d",
+        "accounting-projection:strategy:030ea08c13522631",
+        "accounting-projection:instrument:423d6222bf3fc097",
+        "accounting-projection:exit_reason:cead03f289e703a1",
+        "accounting-projection:path:e1633d795d6b1040"
+      ],
+      "protection_generation": 1,
+      "runtime_event": "partial_fill:runtime-event",
+      "trade_fact": "trade-fact:a7ba94f951f48200b88ee2e5"
+    }
+  },
+  "run_id": "phase5a-pre:f645aa5a35115d261b53f1d8"
+}

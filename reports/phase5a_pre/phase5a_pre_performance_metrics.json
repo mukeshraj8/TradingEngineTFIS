@@ -1,0 +1,27 @@
+{
+  "accounting_build_ms": 5103.596,
+  "client_order_creation_ms": 3925.843,
+  "database_transaction_counts": {
+    "certification_transactions": 13
+  },
+  "decision_ms": 3925.843,
+  "event_replay_ms": 5103.596,
+  "intent_validation_ms": 3925.843,
+  "lifecycle_processing_ms": 5103.596,
+  "live_production_latency_claimed": false,
+  "maximum_queue_backlog": 0,
+  "measurement_scope": "fixture_only_internal_paper_certification",
+  "order_fill_processing_ms": 5103.596,
+  "position_cycle_transition_ms": 5103.596,
+  "pre_market_plan_ms": 3925.843,
+  "projection_rebuild_ms": 5103.596,
+  "reconciliation_ms": 3925.843,
+  "record_counts": {
+    "known_failures_classified": 27,
+    "scenarios": 13
+  },
+  "recovery_ms": 3925.843,
+  "startup_ms": 3925.843,
+  "total_scenario_duration_ms_median": 5103.596,
+  "total_scenario_duration_ms_p95": 6379.495
+}

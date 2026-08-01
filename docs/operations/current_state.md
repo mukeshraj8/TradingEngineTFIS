@@ -3009,3 +3009,17 @@ Current notes:
   ACCOUNTING AND PROFITABILITY PROJECTIONS`; broker, live, broker-sandbox,
   external paper, order mutation, and PositionCycle mutation authority remain
   `NONE`.
+- Phase 5A-Pre now certifies the first complete S23 Call-side internal-paper
+  vertical under `src/tfis/internal_paper/end_to_end`, with S23 certification
+  composition isolated under `src/tfis/adapters/phase5a_pre`. The runner
+  orchestrates accepted Phase 4E/4F/4H/4I artifacts for startup gating,
+  recovery assessment, advisory reconciliation readiness, pre-market/opening
+  flow, ExecutionIntent validation, explicit internal-paper certification
+  authority, ClientOrder/order-event/fill handling, PositionCycle lifecycle,
+  TradeFact/PnLFact generation, read-only projections, traceability,
+  idempotency, crash/restart scenarios, duplicate replay, blocked
+  reconciliation, multi-account/multi-instance isolation and kill-switch
+  behavior. Reports live under `reports/phase5a_pre`. Runtime impact is
+  `CERTIFIED INTERNAL-PAPER END-TO-END S23 CALL-SIDE FLOW`; broker, live,
+  broker-sandbox, external paper, external order mutation and external
+  position mutation authority remain `NONE`.
