@@ -1,0 +1,73 @@
+{
+  "fields": [
+    {
+      "field": "strategy identity",
+      "provenance": "DERIVED_FROM_VERIFIED_CONFIGURATION"
+    },
+    {
+      "field": "trading date",
+      "provenance": "CAPTURED"
+    },
+    {
+      "field": "Monthly Status",
+      "provenance": "SOURCE_VERIFIED_STATIC"
+    },
+    {
+      "field": "branch",
+      "provenance": "SOURCE_VERIFIED_STATIC"
+    },
+    {
+      "field": "historical market references",
+      "provenance": "MISSING"
+    },
+    {
+      "field": "selected expiry",
+      "provenance": "CAPTURED"
+    },
+    {
+      "field": "selected contract",
+      "provenance": "CAPTURED"
+    },
+    {
+      "field": "Base Entry",
+      "provenance": "SOURCE_VERIFIED_STATIC"
+    },
+    {
+      "field": "Target",
+      "provenance": "SOURCE_VERIFIED_STATIC"
+    },
+    {
+      "field": "MSL/Original SL",
+      "provenance": "SOURCE_VERIFIED_STATIC"
+    },
+    {
+      "field": "ORPT",
+      "provenance": "DERIVED_FROM_VERIFIED_CONFIGURATION"
+    },
+    {
+      "field": "RC",
+      "provenance": "DERIVED_FROM_VERIFIED_CONFIGURATION"
+    },
+    {
+      "field": "quantity",
+      "provenance": "SOURCE_VERIFIED_STATIC"
+    },
+    {
+      "field": "source rule ids",
+      "provenance": "SOURCE_VERIFIED_STATIC"
+    },
+    {
+      "field": "opening quote",
+      "provenance": "CAPTURED"
+    },
+    {
+      "field": "selected contract RC quote",
+      "provenance": "CAPTURED"
+    },
+    {
+      "field": "EOD observation",
+      "provenance": "MISSING"
+    }
+  ],
+  "schema_version": "tfis.phase4a.field_provenance_matrix.v1"
+}

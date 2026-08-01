@@ -1,0 +1,46 @@
+{
+  "authority_mode": "SHADOW_ONLY",
+  "critical_event_ids": [
+    "live_20260605_090537_prod_pid14520:000001:CONFIGURATION_READY:58e6829d2c24b3625450",
+    "live_20260605_090537_prod_pid14520:000002:STRATEGY_ENABLED:825d3f01da662fe9899c",
+    "live_20260605_090537_prod_pid14520:000003:PREMARKET_PREPARATION_TIME:ac2a9f78cd38fe6ff75c",
+    "live_20260605_090537_prod_pid14520:000006:SESSION_OPEN_OBSERVATION:12329158fba814e8ba48",
+    "live_20260605_090537_prod_pid14520:000004:ORPT_TIME:b4d8a6b2672eca3bbde5",
+    "live_20260605_090537_prod_pid14520:000007:OPENING_BAR_AVAILABLE:2638643254bbc52a7ae7",
+    "live_20260605_090537_prod_pid14520:000005:RC_TIME:e2727b9fa0b01240dd35",
+    "live_20260605_090537_prod_pid14520:000009:OPENING_BAR_AVAILABLE:2ddb851ad81f61bbdc14"
+  ],
+  "critical_events_processed": 8,
+  "diagnostics": {
+    "backward_source_timestamp_count": 2,
+    "captured_event_count": 7,
+    "conflicting_duplicate_event_count": 0,
+    "derived_configuration_event_count": 5,
+    "dispatch_ordering_difference_count": 0,
+    "duplicate_source_timestamp_count": 1,
+    "event_identity_hash": "958bdcc11e3e30ce036128b5221ffbfd4c101b1790b2293623a4eb615dca89e5",
+    "exact_duplicate_event_count": 0,
+    "future_source_timestamp_count": 0,
+    "missing_timestamp_count": 0,
+    "normalized_event_count": 12,
+    "raw_record_count": 6
+  },
+  "duplicate_events_treated_idempotently": 0,
+  "event_type_counts": {
+    "CONFIGURATION_READY": 1,
+    "OI_UPDATE": 1,
+    "OPENING_BAR_AVAILABLE": 2,
+    "OPTION_CONTRACT_QUOTE": 3,
+    "ORPT_TIME": 1,
+    "PREMARKET_PREPARATION_TIME": 1,
+    "RC_TIME": 1,
+    "SESSION_OPEN_OBSERVATION": 1,
+    "STRATEGY_ENABLED": 1
+  },
+  "normalized_events": 12,
+  "ordinary_events_processed": 4,
+  "raw_market_events": 6,
+  "schema_version": "tfis.phase4a.normalized_event_summary.v1",
+  "stale_events_rejected": 0,
+  "unrelated_events_filtered": 0
+}

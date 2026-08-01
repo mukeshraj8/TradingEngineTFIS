@@ -1,0 +1,64 @@
+{
+  "comparison_classification": "MISSING_LEGACY_OUTPUT",
+  "field_comparison": {
+    "base_entry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": null
+    },
+    "branch": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "S23 Bull Call"
+    },
+    "effective_entry": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": null
+    },
+    "eod_outcome": {
+      "classification": "CAPTURE_GAP",
+      "legacy": null,
+      "shadow": null
+    },
+    "final_decision": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": "BLOCKED"
+    },
+    "gap_classification": {
+      "classification": "CAPTURE_GAP",
+      "legacy": null,
+      "shadow": null
+    },
+    "monthly_status": {
+      "classification": "MISSING_REFACTORED_INPUT",
+      "legacy": null,
+      "shadow": "SOURCE_VERIFIED_STATIC_FIXTURE"
+    },
+    "msl_sl": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": null
+    },
+    "selected_contract": {
+      "classification": "REPRESENTATION_DIFFERENCE",
+      "legacy": "NIFTY_20260609_22650_CE",
+      "shadow": "NIFTY_20260609_22650_CE"
+    },
+    "strategy_identity": {
+      "classification": "MATCH",
+      "legacy": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "shadow": "S23_NIFTY_ACCOUNT_A_PAPER"
+    },
+    "target": {
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "legacy": null,
+      "shadow": null
+    }
+  },
+  "legacy_source": "reports/phase3d/milestone7_s23_real_parity.json and milestone7_s23_real_capture_packet.json",
+  "parity_claimed": false,
+  "schema_version": "tfis.phase4a.legacy_comparison.v1",
+  "unexplained_mismatches": []
+}

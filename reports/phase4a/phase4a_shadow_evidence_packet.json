@@ -1,0 +1,31 @@
+{
+  "authority_mode": "SHADOW_ONLY",
+  "event_hash": "958bdcc11e3e30ce036128b5221ffbfd4c101b1790b2293623a4eb615dca89e5",
+  "evidence_hash": "4d26f5466c00b1226eb4b53707fbf29801c3bc9b985fc6c9fa52b12642fcb0fe",
+  "runtime_hash": "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69",
+  "schema_version": "tfis.phase4a.shadow_evidence_packet.v1",
+  "session": {
+    "available_event_range": {
+      "first": "2026-06-05T09:00:00+05:30",
+      "last": "2026-06-05T09:29:59+05:30"
+    },
+    "branch": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_CALL",
+    "classification": "PARTIAL_CAPTURED_SHADOW_CASE",
+    "missing_fields": [
+      "captured Monthly Status",
+      "authoritative S23 legacy final decision",
+      "captured pre-market historical references",
+      "captured Base Entry/Target/MSL plan",
+      "captured EOD observation",
+      "carried-position state",
+      "broker/order evidence"
+    ],
+    "reason_selected": "Best local S23 Call-side captured/replay case aligned with the existing M7 partial-real S23 business artifacts. It contains opening, ORPT and RC observations plus selected-contract evidence, but remains partial because several pre-market and EOD fields are absent.",
+    "selected_contract": "NIFTY_20260609_22650_CE",
+    "session_id": "live_20260605_090537_prod_pid14520",
+    "source_path": "D:\\TradingEngineTFISRefactored\\reports\\phase4a\\phase4a_source_market_events.jsonl",
+    "strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "trading_date": "2026-06-05"
+  },
+  "shadow_handoff_hash": "01d7363613d23a03f1f0b32cd3760e0ac328b82cfbe393945514c1b17262c781"
+}

@@ -1,0 +1,60 @@
+{
+  "gaps": [
+    {
+      "blocks_p4b": false,
+      "blocks_paper_authority": true,
+      "expected_source": "monthly-status capture/review artifact",
+      "field": "captured Monthly Status",
+      "future_capture_point": "monthly-status event capture",
+      "observed_source": "absent",
+      "required_by_engine": "pre-market planning",
+      "shadow_consequence": "uses source-verified static fixture only",
+      "trading_consequence": "cannot prove source-observed branch"
+    },
+    {
+      "blocks_p4b": false,
+      "blocks_paper_authority": true,
+      "expected_source": "source workbook/runtime prelude",
+      "field": "historical references",
+      "future_capture_point": "pre-market plan capture",
+      "observed_source": "absent",
+      "required_by_engine": "pre-market planning",
+      "shadow_consequence": "partial plan",
+      "trading_consequence": "cannot validate real base references"
+    },
+    {
+      "blocks_p4b": false,
+      "blocks_paper_authority": true,
+      "expected_source": "reference decision output",
+      "field": "legacy S23 final decision",
+      "future_capture_point": "reference decision packet capture",
+      "observed_source": "absent for selected packet",
+      "required_by_engine": "legacy comparison",
+      "shadow_consequence": "MISSING_LEGACY_OUTPUT",
+      "trading_consequence": "no parity claim"
+    },
+    {
+      "blocks_p4b": false,
+      "blocks_paper_authority": true,
+      "expected_source": "captured selected-contract close/15:00 observation",
+      "field": "EOD observation",
+      "future_capture_point": "EOD market observation capture",
+      "observed_source": "absent",
+      "required_by_engine": "EOD lifecycle",
+      "shadow_consequence": "MISSING_EOD_EVIDENCE",
+      "trading_consequence": "cannot produce terminal carry/square-off"
+    },
+    {
+      "blocks_p4b": false,
+      "blocks_paper_authority": false,
+      "expected_source": "D:/TradingData raw archive",
+      "field": "raw M7 archive access",
+      "future_capture_point": "grant read or copy raw archive into repo fixture",
+      "observed_source": "sandbox read denied",
+      "required_by_engine": "evidence inventory",
+      "shadow_consequence": "M7 packet used as replay source with access gap recorded",
+      "trading_consequence": "cannot inspect source rows beyond the accepted M7 packet"
+    }
+  ],
+  "schema_version": "tfis.phase4a.capture_gap_register.v1"
+}

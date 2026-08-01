@@ -1,0 +1,43 @@
+{
+  "candidates": [
+    {
+      "broker_order_evidence": false,
+      "carried_position_state": false,
+      "classification": "PARTIAL_CAPTURED_REPLAY_CANDIDATE",
+      "eod_observations": false,
+      "legacy_final_decision": false,
+      "market_open_observations": true,
+      "monthly_status_evidence": false,
+      "oi": false,
+      "option_chain_snapshots": true,
+      "option_contract_quotes": true,
+      "orpt_observations": true,
+      "raw_quote_archives": "embedded summarized observations available; raw D:/TradingData archives read-denied in sandbox",
+      "rc_observations": true,
+      "reason": "Best real S23 Call-side packet aligned with existing partial-real S23 business artifacts.",
+      "session_id": "live_20260605_090537_prod_pid14520",
+      "source": "reports/phase3d/milestone7_s23_real_capture_packet.json with raw paths under D:/TradingData",
+      "underlying_quotes": true
+    },
+    {
+      "broker_order_evidence": false,
+      "carried_position_state": false,
+      "classification": "PARTIAL_CAPTURED_REPLAY_CANDIDATE",
+      "eod_observations": false,
+      "legacy_final_decision": false,
+      "market_open_observations": true,
+      "monthly_status_evidence": false,
+      "oi": true,
+      "option_chain_snapshots": true,
+      "option_contract_quotes": true,
+      "orpt_observations": true,
+      "raw_quote_archives": true,
+      "rc_observations": true,
+      "reason": "Useful local fixture, but not selected because its trading date does not align with the M7 partial-real S23 business artifacts.",
+      "session_id": "live_20260527_090535_dev_pid16276",
+      "source": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\paper\\tradingengine_capture_adapter\\context_session",
+      "underlying_quotes": true
+    }
+  ],
+  "schema_version": "tfis.phase4a.capture_inventory.v1"
+}

@@ -1680,3 +1680,13 @@ Next implementation task:
 3. Keep later source extraction for S23 Put, S21, Futures, Option Buying and
    stock/equity candidates parallel-safe but separate from the Phase 4A
    critical path.
+
+Phase 4A Milestone 1 result:
+
+- `PARTIAL_CAPTURED_SHADOW_CASE` was produced from the M7 `2026-06-05` S23
+  Call-side packet.
+- Replay determinism, checkpoint replay, multi-instance sharing and
+  conflation stability are proven in shadow mode.
+- Phase 4B can proceed on the broker-neutral read-only account/order/position
+  boundary; the remaining capture gaps block paper authority, not the P4B
+  architecture/contract work.

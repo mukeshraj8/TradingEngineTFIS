@@ -2912,3 +2912,14 @@ Current notes:
   roadmap. The first implementation task is Phase 4A: connect M15 to one
   captured/replay stream in shadow-only mode. Broker, paper, live, order
   mutation, and position mutation authority remain `NONE`.
+- Phase 4A Milestone 1 now connects the generic M15 runtime event contract to
+  an existing S23 Call-side captured/replay source in shadow-only mode. The
+  selected primary session is the M7 partial-real S23 packet for
+  `2026-06-05`, normalized into M15 events under
+  `reports/phase4a/phase4a_source_market_events.jsonl`. The run is classified
+  `PARTIAL_CAPTURED_SHADOW_CASE`: opening, ORPT, RC, selected-contract and
+  option-chain evidence are present, but Monthly Status, historical references,
+  authoritative legacy decision output, EOD observation, carried-position
+  state, and raw `D:\TradingData` archive access remain explicit gaps. Three
+  repeated replays are deterministic, checkpoint replay matches, multi-instance
+  shared-stream behavior is proven, and all authority remains `SHADOW_ONLY`.

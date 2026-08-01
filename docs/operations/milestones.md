@@ -1986,6 +1986,14 @@
   implementation backlog. The next approved implementation start is Phase 4A
   captured/replay shadow integration for M15; no broker, paper, live, order
   mutation, or position mutation authority was added.
+- Phase 4A Milestone 1 added a narrow captured/replay adapter boundary under
+  `src/tfis/runtime/replay` and S23-specific shadow composition under
+  `src/tfis/adapters/legacy_policies/s23_replay_shadow.py`. The selected M7
+  S23 Call-side session normalizes captured opening, ORPT, RC, selected
+  contract and option-chain observations into M15 runtime events, produces
+  shadow-only reports under `reports/phase4a`, proves deterministic replay and
+  multi-instance shared-stream behavior, and records exact capture gaps without
+  adding broker, paper, live, order mutation, or position mutation authority.
 
 ## Next Recommended Priorities
 

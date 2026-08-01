@@ -1,0 +1,164 @@
+{
+  "archive_parse_to_report_seconds": 0.9765882999927271,
+  "checkpoint_resume": {
+    "checkpoint_hashes": {
+      "primary": "9f6808fce16cd5089a7988ce6bb03beb8252427fe9449d4ce1c332014c0f5d88"
+    },
+    "full_result_hash": "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69",
+    "matches_full_replay": true,
+    "method": "in-memory checkpoint hash generated and replayed deterministically from same source watermark",
+    "resumed_result_hash": "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69",
+    "status": "MATCH"
+  },
+  "conflation_result_unchanged": true,
+  "contracts": 2,
+  "critical_event_count": 8,
+  "deterministic_three_replay": true,
+  "fail_closed_cases": [
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "monthly_status",
+      "case": "missing Monthly Status",
+      "classification": "MISSING_REFACTORED_INPUT",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "historical_reference",
+      "case": "missing historical reference",
+      "classification": "MISSING_REFACTORED_INPUT",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "selected_contract_quote",
+      "case": "missing selected-contract quote",
+      "classification": "MISSING_SELECTED_CONTRACT_QUOTE",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "selected_contract_oi",
+      "case": "missing OI where required",
+      "classification": "MISSING_OI",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "selected_contract_quote",
+      "case": "stale selected-contract quote",
+      "classification": "STALE_SELECTED_CONTRACT_QUOTE",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "orpt_observation",
+      "case": "missing ORPT observation",
+      "classification": "MISSING_ORPT_OBSERVATION",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "rc_observation",
+      "case": "missing RC observation",
+      "classification": "MISSING_RC_OBSERVATION",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "contract_identity",
+      "case": "wrong contract",
+      "classification": "REJECTED_WRONG_CONTRACT",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "trading_date",
+      "case": "wrong trading date",
+      "classification": "WRONG_TRADING_DATE",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "source_timestamp",
+      "case": "incoherent timestamps",
+      "classification": "INCOHERENT_TIMESTAMPS",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "archive_row",
+      "case": "malformed archive row",
+      "classification": "MALFORMED_ARCHIVE_ROW",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "event_id",
+      "case": "conflicting duplicate",
+      "classification": "CONFLICTING_DUPLICATE",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "legacy_output",
+      "case": "missing legacy output",
+      "classification": "MISSING_LEGACY_OUTPUT",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "carried_position",
+      "case": "unsupported carried-position evidence",
+      "classification": "UNSUPPORTED_CARRIED_POSITION_EVIDENCE",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    },
+    {
+      "authoritative_action": "NONE",
+      "blocking_field": "checkpoint_hash",
+      "case": "checkpoint mismatch",
+      "classification": "CHECKPOINT_MISMATCH",
+      "fabricated_replacement_values": false,
+      "source_evidence_retained": true
+    }
+  ],
+  "maximum_pending_updates": 2,
+  "median_event_processing_time_seconds": 9.565001528244466e-05,
+  "multi_instance": {
+    "account_credentials_required": false,
+    "independent_results": true,
+    "one_blocked_does_not_block_other": true,
+    "result_hash": "cca2efeeb54b08b15f17a25a83cfa3801b3d9dc270ae447f18fb515c4ed941a6",
+    "shared_subscription_hash": "926fa26fc31ec223db995dffef295aa28050a0da44fa41097fefc9979b9d3b7e",
+    "strategy_instances": [
+      "primary",
+      "secondary"
+    ]
+  },
+  "multi_instance_strategy_instances": 2,
+  "normalized_events": 12,
+  "p95_event_processing_time_seconds": 0.0001981999957934022,
+  "schema_version": "tfis.phase4a.performance_metrics.v1",
+  "source_rows": 6,
+  "strategy_instances": 1,
+  "three_replay_hashes": [
+    "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69",
+    "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69",
+    "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69"
+  ],
+  "total_processing_time_seconds": 0.09696510000503622
+}

@@ -1,0 +1,142 @@
+{
+  "authority": {
+    "authority_mode": "SHADOW_ONLY",
+    "broker_submission_permitted": false,
+    "carry_persistence_permitted": false,
+    "live_submission_permitted": false,
+    "order_creation_permitted": false,
+    "order_mutation_permitted": false,
+    "paper_submission_permitted": false,
+    "position_mutation_permitted": false,
+    "runtime_authority": {
+      "broker_submission": false,
+      "carry_persistence": false,
+      "live_submission": false,
+      "mode": "SHADOW_ONLY",
+      "order_cancellation": false,
+      "order_modification": false,
+      "paper_submission": false,
+      "position_mutation": false,
+      "square_off_execution": false
+    },
+    "square_off_permitted": false
+  },
+  "authority_mode": "SHADOW_ONLY",
+  "block_code": "OPENING_CONTEXT_INCOMPLETE",
+  "broker_order_path_reached": false,
+  "business_outputs": {
+    "block_code": "OPENING_CONTEXT_INCOMPLETE",
+    "block_reason": "Opening context is partial.",
+    "carried_position_status": "NOT_DETECTED",
+    "configuration_hash": "phase4a-s23-captured-replay-shadow-v1",
+    "coordination_hash": "4388f2216578ce8a8f79836d58f043508e82f4b4b8af51b36df15a02e6d40130",
+    "coordination_id": "phase4a-S23_NIFTY_ACCOUNT_A_PAPER",
+    "current_state": "BLOCKED",
+    "daily_path": "INSUFFICIENT_EVIDENCE",
+    "derived_fields": [
+      "coordination_hash"
+    ],
+    "effective_execution_plan_hash": "413cfb509cb5d511b9d08ef013d6ec6c8064aedb5962e251b1ea576673475fbd",
+    "effective_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23-partial-real-opening-context:execution:1",
+    "effective_plan_ready_event_id": null,
+    "execution_handoff_id": null,
+    "failures": [
+      {
+        "code": "OPENING_CONTEXT_INCOMPLETE",
+        "event_id": "live_20260605_090537_prod_pid14520:000006:SESSION_OPEN_OBSERVATION:12329158fba814e8ba48",
+        "reason": "Opening context is partial.",
+        "state": "OPENING_CONTEXT_BUILDING"
+      }
+    ],
+    "fresh_entry_eligible": true,
+    "market_open_event_id": "live_20260605_090537_prod_pid14520:000006:SESSION_OPEN_OBSERVATION:12329158fba814e8ba48",
+    "missing_events": [],
+    "offline_handoff": null,
+    "offline_handoff_event_id": null,
+    "opening_context_hash": "d2863ef30e58c0dc88156436038f51289883dc08dfd2f347af174de1180d4b23",
+    "opening_context_id": "m10-s23-partial-real-opening-context",
+    "orpt_event_id": null,
+    "performance": {
+      "coordination_seconds": 0.04771020001498982,
+      "event_count": 5
+    },
+    "policy_identities": {
+      "contract_selection": "legacy.s23.option_selling.contract_selection",
+      "entry": "legacy.s23.vertical.entry",
+      "execution_risk": "OFFLINE_PREMARKET_NO_EXECUTION",
+      "gap_missed_entry": "legacy.s23.gap_missed_entry.backtest_low_v1",
+      "msl": "legacy.s23.option_selling.msl",
+      "product": "legacy.s23.option_selling.product",
+      "target": "legacy.s23.option_selling.target"
+    },
+    "premarket_completion_event_id": "live_20260605_090537_prod_pid14520:000003:PREMARKET_PREPARATION_TIME:ac2a9f78cd38fe6ff75c",
+    "premarket_plan_hash": "m7-partial-real-plan-hash",
+    "premarket_plan_id": "phase3d-m3-s23-bull-call:premarket",
+    "rc_event_id": null,
+    "schema_version": "tfis.offline_trading_day_coordination.v1",
+    "startup_event_id": "live_20260605_090537_prod_pid14520:000001:CONFIGURATION_READY:58e6829d2c24b3625450",
+    "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+    "strategy_family": "S23",
+    "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "strategy_version": "1.0.0",
+    "supplemented_fields": [
+      "offline_fixture_events"
+    ],
+    "terminal_state": "BLOCKED",
+    "trading_date": "2026-06-05",
+    "transition_evidence": [
+      {
+        "artifact_hashes": {},
+        "event_type": "STARTUP_COMPLETED",
+        "from_state": "PREPARING_PREMARKET_PLAN",
+        "reason": "Startup completed.",
+        "to_state": "PREPARING_PREMARKET_PLAN"
+      },
+      {
+        "artifact_hashes": {
+          "premarket_plan": "m7-partial-real-plan-hash"
+        },
+        "event_type": "PREMARKET_DATA_READY",
+        "from_state": "PREPARING_PREMARKET_PLAN",
+        "reason": "Pre-market plan prepared.",
+        "to_state": "PREMARKET_PLAN_PREPARED"
+      },
+      {
+        "artifact_hashes": {
+          "premarket_plan": "m7-partial-real-plan-hash"
+        },
+        "event_type": "PREMARKET_DATA_READY",
+        "from_state": "PREMARKET_PLAN_PREPARED",
+        "reason": "Awaiting market-open evidence.",
+        "to_state": "AWAITING_MARKET_OPEN"
+      },
+      {
+        "artifact_hashes": {
+          "opening_context": "d2863ef30e58c0dc88156436038f51289883dc08dfd2f347af174de1180d4b23",
+          "premarket_plan": "m7-partial-real-plan-hash"
+        },
+        "event_type": "MARKET_OPEN_OBSERVED",
+        "from_state": "AWAITING_MARKET_OPEN",
+        "reason": "Opening context building.",
+        "to_state": "OPENING_CONTEXT_BUILDING"
+      },
+      {
+        "artifact_hashes": {
+          "effective_execution_plan": "413cfb509cb5d511b9d08ef013d6ec6c8064aedb5962e251b1ea576673475fbd",
+          "opening_context": "d2863ef30e58c0dc88156436038f51289883dc08dfd2f347af174de1180d4b23",
+          "premarket_plan": "m7-partial-real-plan-hash"
+        },
+        "event_type": "MARKET_OPEN_OBSERVED",
+        "from_state": "OPENING_CONTEXT_BUILDING",
+        "reason": "Opening context is partial.",
+        "to_state": "BLOCKED"
+      }
+    ]
+  },
+  "classification": "PARTIAL_CAPTURED_SHADOW_CASE",
+  "missing_eod_evidence": true,
+  "paper_order_path_reached": false,
+  "runtime_result_hash": "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69",
+  "schema_version": "tfis.phase4a.shadow_result.v1",
+  "terminal_state": "BLOCKED"
+}
