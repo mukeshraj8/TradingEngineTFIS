@@ -6,6 +6,18 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Saturday, August 1, 2026, Phase 5B completed authoritative S23
+  Bull Put and Bear Put internal-paper onboarding evidence. The Put
+  missed-entry conflict is closed as `AUTHORITATIVE_OPTION_LOW`, with legacy
+  option-high profiles classified `LEGACY_ONLY_NOT_AUTHORITY`. Reports are in
+  `reports/phase5b/`, including `phase5b_put_cell_trace.json`,
+  `phase5b_put_rule_matrix.json`,
+  `phase5b_four_branch_certification.json`, and
+  `phase5b_natural_branch_selection.json`. Runtime profile metadata now names
+  the controlled four-branch S23 profile and permits `BULL_CALL`, `BEAR_CALL`,
+  `BULL_PUT`, and `BEAR_PUT`. Certification outcome:
+  `COMPLETE_S23_INTERNAL_PAPER_CERTIFIED`. External broker/live authority:
+  `NONE`.
 - as of Friday, July 31, 2026, Phase 3E Milestone 4 defines the minimum V1
   analytics/accounting fact model and candidate first-10 strategy onboarding
   roadmap. `TradeFact`, `PnLFact`, essential metrics, win/loss, drawdown,

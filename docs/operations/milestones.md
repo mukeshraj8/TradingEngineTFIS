@@ -2,6 +2,18 @@
 
 ## Current Snapshot
 
+- as of Saturday, August 1, 2026, Phase 5B completed S23 Bull Put and Bear
+  Put internal-paper onboarding and certified the complete S23 four-branch
+  evidence path. Files include
+  `src/tfis/adapters/phase5b/s23_put_four_branch.py`,
+  `tests/integration/test_phase5b_s23_put_four_branch.py`,
+  `tests/architecture/test_phase5b_put_authority_boundary.py`, and the
+  `reports/phase5b/` report set. Verdict: `PHASE5B_M1_ACCEPT`.
+  Certification outcome: `COMPLETE_S23_INTERNAL_PAPER_CERTIFIED`. Put
+  missed-entry authority: `AUTHORITATIVE_OPTION_LOW`; legacy option-high Put
+  profiles: `LEGACY_ONLY_NOT_AUTHORITY`. Runtime impact:
+  `COMPLETE FOUR-BRANCH S23 INTERNAL-PAPER SUPPORT`. Broker/paper/live
+  routing and external order/position mutation authority: `NONE`.
 - as of Friday, July 31, 2026, Phase 3E Milestone 4 defined the minimum V1
   analytics/accounting fact architecture and first-10 strategy onboarding
   roadmap. Files:

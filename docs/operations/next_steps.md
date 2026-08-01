@@ -6,6 +6,21 @@ way.
 
 ## Immediate Next Priorities
 
+0.54. `TODO` Run focused multi-session S23 observation across naturally
+   selected CE and PE sessions using the complete four-branch internal-paper
+   profile. Do not add S21, external broker writes, paper authority expansion,
+   live authority, or arbitrary formula-expression evaluation in this next
+   step.
+
+0.53. `DONE` Complete Phase 5B S23 Bull Put and Bear Put end-to-end
+   internal-paper onboarding. Result: Put missed-entry authority is closed as
+   `AUTHORITATIVE_OPTION_LOW`; Bull Put and Bear Put source cells, gap/RC
+   formulas, target/MSL/FSL/TRP evidence, EOD carry behavior, natural CE/PE
+   branch selection, call-side regression, and four-branch certification are
+   recorded under `reports/phase5b/`. Runtime impact:
+   `COMPLETE FOUR-BRANCH S23 INTERNAL-PAPER SUPPORT`. Broker/live authority:
+   `NONE`.
+
 0.52. `TODO` After user approval of Phase 3E Milestone 4, proceed to
    Milestone 5: finalize the complete Phase 3E roadmap, critical path, user
    decisions, diagrams, and certification. Do not add paper or live authority

@@ -1,0 +1,134 @@
+{
+  "BEAR_PUT": {
+    "carried_next_day": {
+      "authority_status": "USER_CLARIFIED",
+      "cells": {
+        "equality": "M13B_USER_CLARIFICATION",
+        "same_day_only": "P187:P188"
+      },
+      "financially_material_unresolved": false
+    },
+    "eod": {
+      "authority_status": "USER_CLARIFIED",
+      "cells": {
+        "eod": "Q190:U191"
+      },
+      "financially_material_unresolved": false
+    },
+    "gap_missed_entry": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "comparison": "E175",
+        "end": "O180",
+        "entry": "X180",
+        "ideal": "T180",
+        "minimum": "V180",
+        "start": "M180"
+      },
+      "financially_material_unresolved": false
+    },
+    "normal_entry": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "base_entry": "M171",
+        "end_strike": "G172",
+        "ideal_premium": "H171",
+        "minimum_premium": "H172",
+        "monthly_status": "D168",
+        "oi": "I171",
+        "option_type": "F171",
+        "original_sl_msl": "M172",
+        "start_strike": "G171",
+        "target": "O171"
+      },
+      "financially_material_unresolved": false
+    },
+    "original_sl_msl": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "original_sl_msl": "M172"
+      },
+      "financially_material_unresolved": false
+    },
+    "revised_fsl_trp": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "revised_fsl_trp": "M188:O188"
+      },
+      "financially_material_unresolved": false
+    },
+    "target": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "target": "O171"
+      },
+      "financially_material_unresolved": false
+    }
+  },
+  "BULL_PUT": {
+    "carried_next_day": {
+      "authority_status": "USER_CLARIFIED",
+      "cells": {
+        "equality": "M13B_USER_CLARIFICATION",
+        "same_day_only": "P187:P188"
+      },
+      "financially_material_unresolved": false
+    },
+    "eod": {
+      "authority_status": "USER_CLARIFIED",
+      "cells": {
+        "eod": "Q190:U191"
+      },
+      "financially_material_unresolved": false
+    },
+    "gap_missed_entry": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "comparison": "E175",
+        "end": "O179",
+        "entry": "X179",
+        "ideal": "T179",
+        "minimum": "V179",
+        "start": "M179"
+      },
+      "financially_material_unresolved": false
+    },
+    "normal_entry": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "base_entry": "M165",
+        "end_strike": "G166",
+        "ideal_premium": "H165",
+        "minimum_premium": "H166",
+        "monthly_status": "D162",
+        "oi": "I165",
+        "option_type": "F165",
+        "original_sl_msl": "M166",
+        "start_strike": "G165",
+        "target": "O165"
+      },
+      "financially_material_unresolved": false
+    },
+    "original_sl_msl": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "original_sl_msl": "M166"
+      },
+      "financially_material_unresolved": false
+    },
+    "revised_fsl_trp": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "revised_fsl_trp": "M187:O187"
+      },
+      "financially_material_unresolved": false
+    },
+    "target": {
+      "authority_status": "WORKBOOK_VERIFIED",
+      "cells": {
+        "target": "O165"
+      },
+      "financially_material_unresolved": false
+    }
+  }
+}

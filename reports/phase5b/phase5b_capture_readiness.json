@@ -1,0 +1,9 @@
+{
+  "classifications": {
+    "natural_ce_fixture": "CALL_BRANCH_RUNNABLE",
+    "natural_pe_fixture": "PUT_BRANCH_RUNNABLE",
+    "phase4a_partial_capture": "BLOCKED_BY_CAPTURE_GAP",
+    "phase5a_certification_fixture": "COMPLETE_S23_RUNNABLE"
+  },
+  "status": "READY_FOR_FOCUSED_MULTI_SESSION_OBSERVATION"
+}

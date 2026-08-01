@@ -51,8 +51,8 @@ def test_startup_gates_market_input_and_single_instance(runtime: ControlledInter
     assert result.startup_assessment["schema_version"] >= 6
     assert result.market_input["mode"] == "CERTIFICATION_FIXTURE"
     assert result.market_input["timestamp_policy"] == "EVENT_TIME_ONLY"
-    assert result.profile["strategy_instance_id"] == "S23_CALL_SIDE_INTERNAL_PAPER_CONTROLLED"
-    assert result.profile["permitted_branches"] == ["BULL_CALL", "BEAR_CALL"]
+    assert result.profile["strategy_instance_id"] == "S23_FOUR_BRANCH_INTERNAL_PAPER_CONTROLLED"
+    assert result.profile["permitted_branches"] == ["BULL_CALL", "BEAR_CALL", "BULL_PUT", "BEAR_PUT"]
     second = runtime.run(scenario_id="second_instance_blocked", commands=_enable())
     assert second.activation_status == "ACTIVATION_BLOCKED"
     assert "SECOND_AUTHORITATIVE_INSTANCE_BLOCKED" in second.activation_block_reasons
