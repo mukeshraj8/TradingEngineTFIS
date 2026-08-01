@@ -1,0 +1,20 @@
+{
+  "gaps": [
+    {
+      "code": "NO_REAL_BROKER_CALLS_IN_TESTS",
+      "description": "Concrete adapter is proven with FYERS-shaped fixture payloads only.",
+      "status": "EXPECTED"
+    },
+    {
+      "code": "NO_RECONCILIATION_MUTATION",
+      "description": "Snapshots are reconciliation-ready but do not correct orders or positions.",
+      "status": "DEFERRED"
+    },
+    {
+      "code": "BROKER_WRITE_AUTHORITY_ABSENT",
+      "description": "No place, modify, cancel, exit, convert or transfer methods exist on the read protocol.",
+      "status": "INTENTIONAL"
+    }
+  ],
+  "milestone": "Phase 4B M1"
+}

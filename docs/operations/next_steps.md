@@ -1690,3 +1690,16 @@ Phase 4A Milestone 1 result:
 - Phase 4B can proceed on the broker-neutral read-only account/order/position
   boundary; the remaining capture gaps block paper authority, not the P4B
   architecture/contract work.
+
+Phase 4B Milestone 1 result:
+
+- broker-neutral read contracts and snapshots now exist for account/session,
+  funds, margins, orders, order-history events, fills, positions, instruments,
+  capabilities and aggregate account snapshots
+- the concrete FYERS-shaped proof is fixture/captured-payload only; unit tests
+  make no live broker calls
+- reports under `reports/phase4b` show a complete redacted fixture account
+  snapshot and explicit reconciliation gaps
+- next priority is Phase 4C: consume the read snapshot in an offline
+  reconciliation-ready persistence/reporting layer without adding broker,
+  paper, live, order mutation or position mutation authority

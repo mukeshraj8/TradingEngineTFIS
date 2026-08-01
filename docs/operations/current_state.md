@@ -2923,3 +2923,13 @@ Current notes:
   state, and raw `D:\TradingData` archive access remain explicit gaps. Three
   repeated replays are deterministic, checkpoint replay matches, multi-instance
   shared-stream behavior is proven, and all authority remains `SHADOW_ONLY`.
+- Phase 4B Milestone 1 now adds a broker-neutral read-only account-truth
+  boundary under `src/tfis/broker/read_boundary.py`. It defines immutable
+  snapshots for account/session, funds, margin, orders, order-history events,
+  fills, positions, instruments, capabilities, read results, failures and
+  aggregate account snapshots. A FYERS-shaped fixture adapter proves
+  normalization without live broker calls and without exposing place, modify,
+  cancel, exit, convert, transfer, paper or live authority. Reports live under
+  `reports/phase4b`; the fixture account snapshot is `COMPLETE`, redacted, and
+  reconciliation-ready, while reconciliation correction, account coordination
+  mutation, paper authority and live authority remain deferred.

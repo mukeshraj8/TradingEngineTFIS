@@ -1994,6 +1994,17 @@
   shadow-only reports under `reports/phase4a`, proves deterministic replay and
   multi-instance shared-stream behavior, and records exact capture gaps without
   adding broker, paper, live, order mutation, or position mutation authority.
+- Phase 4B Milestone 1 added the broker-neutral read-only account-truth
+  boundary under `src/tfis/broker/read_boundary.py`. It introduces immutable
+  read contracts and snapshots for capabilities, account session, funds,
+  margin, orders, order-history events, fills, positions, instrument identity
+  and aggregate account snapshots. A FYERS-shaped fixture adapter proves
+  normalization for authenticated, unauthorized, empty, active, partial,
+  rejected, target/SL, fill, intraday, carried-position, malformed,
+  rate-limited, timeout, pagination and redaction cases without any live broker
+  calls. Reports under `reports/phase4b` show `PHASE4B_M1_ACCEPT` in fixture
+  mode and preserve broker, paper, live, order mutation and position mutation
+  authority as `NONE`.
 
 ## Next Recommended Priorities
 
