@@ -1,0 +1,15 @@
+{
+  "scopes": [
+    "artifact",
+    "broker_read_cycle",
+    "observed_fill",
+    "runtime_checkpoint",
+    "future_execution_intent"
+  ],
+  "states": [
+    "RESERVED",
+    "COMMITTED",
+    "FAILED_RETRYABLE",
+    "CONFLICT"
+  ]
+}

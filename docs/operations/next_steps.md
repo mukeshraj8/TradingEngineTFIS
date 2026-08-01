@@ -1703,3 +1703,18 @@ Phase 4B Milestone 1 result:
 - next priority is Phase 4C: consume the read snapshot in an offline
   reconciliation-ready persistence/reporting layer without adding broker,
   paper, live, order mutation or position mutation authority
+
+Phase 4C Milestone 1 result:
+
+- SQLite-backed transactional operational persistence now exists for offline
+  and shadow use only
+- deterministic migrations, immutable artifacts, broker observations,
+  append-only events, projection versions, idempotency reservations, runtime
+  checkpoints, recovery assessment, integrity scan and observational
+  comparison are implemented and tested
+- execution-intent, local client order, fill, position-cycle and lifecycle
+  requirement persistence boundaries are schema-only/offline-only; they do not
+  authorize submission or mutate PositionCycles from broker observations
+- next priority is Phase 4D: build the broker/local reconciliation engine on
+  top of persisted broker observations and local expected-state fixtures, still
+  without broker-write authority

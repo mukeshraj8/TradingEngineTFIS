@@ -2005,6 +2005,17 @@
   calls. Reports under `reports/phase4b` show `PHASE4B_M1_ACCEPT` in fixture
   mode and preserve broker, paper, live, order mutation and position mutation
   authority as `NONE`.
+- Phase 4C Milestone 1 added the transactional offline/shadow persistence
+  foundation under `src/tfis/persistence`. The implementation uses SQLite as
+  the `IMPLEMENTATION_AND_TEST DATABASE`, deterministic schema migrations,
+  explicit repositories, a unit-of-work transaction boundary, canonical JSON
+  hashing, immutable artifact writes, broker read-observation persistence,
+  append-only operational events, optimistic-concurrency projections,
+  idempotency reservations, offline execution-intent reservation boundaries,
+  runtime checkpoint persistence, recovery assessment, integrity scanning and
+  observational comparison reporting. Reports under `reports/phase4c` show
+  `PHASE4C_M1_ACCEPT`; broker, paper, live, order mutation and position
+  mutation authority remain `NONE`.
 
 ## Next Recommended Priorities
 

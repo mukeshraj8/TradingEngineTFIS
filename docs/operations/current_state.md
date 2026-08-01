@@ -2933,3 +2933,14 @@ Current notes:
   `reports/phase4b`; the fixture account snapshot is `COMPLETE`, redacted, and
   reconciliation-ready, while reconciliation correction, account coordination
   mutation, paper authority and live authority remain deferred.
+- Phase 4C Milestone 1 now adds a SQLite-backed transactional operational
+  persistence foundation under `src/tfis/persistence`. SQLite is recorded as
+  the `IMPLEMENTATION_AND_TEST DATABASE`, not the final production database.
+  The package provides deterministic migrations, canonical serialization with
+  secret rejection, immutable artifact storage, broker observation storage,
+  append-only operational events, optimistic-concurrency projections,
+  idempotency reservations, offline execution-intent reservation schema,
+  runtime checkpoint persistence, recovery assessment, integrity scan, and
+  observational comparison reports. Reports live under `reports/phase4c`.
+  Runtime impact is `TRANSACTIONAL OFFLINE/SHADOW PERSISTENCE ONLY`; broker,
+  paper, live, order mutation and position mutation authority remain `NONE`.

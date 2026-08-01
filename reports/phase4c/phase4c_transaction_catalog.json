@@ -1,0 +1,10 @@
+{
+  "authority_mode": "OBSERVATIONAL_OR_OFFLINE_ONLY",
+  "transactions": [
+    "shadow_decision_transaction",
+    "broker_account_read_transaction",
+    "broker_order_observation_transaction",
+    "broker_fill_observation_transaction",
+    "rollback_failure_transaction"
+  ]
+}

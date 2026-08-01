@@ -1,0 +1,34 @@
+{
+  "database": "SQLite",
+  "database_role": "IMPLEMENTATION_AND_TEST DATABASE",
+  "migrations": [
+    {
+      "checksum": "5a89a567a879c45de51da7a30f673e0c4bfdaa3e40a0ec05355c126385402c72",
+      "id": 1,
+      "name": "phase4c_operational_persistence"
+    }
+  ],
+  "schema_version": 1,
+  "tables": [
+    "schema_migrations",
+    "trading_sessions",
+    "broker_account_identities",
+    "strategy_instances",
+    "position_cycle_identities",
+    "immutable_artifacts",
+    "broker_observations",
+    "broker_read_failures",
+    "operational_events",
+    "current_runtime_stream_projection",
+    "broker_account_observation_projection",
+    "broker_order_observation_projection",
+    "broker_position_observation_projection",
+    "idempotency_reservations",
+    "execution_intent_reservations",
+    "local_client_orders",
+    "local_fill_facts",
+    "local_position_cycle_projections",
+    "lifecycle_requirement_records",
+    "runtime_checkpoints"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "authority_mode": "OBSERVATIONAL_OR_OFFLINE_ONLY",
+  "checked_at": "2026-08-01T03:35:08.441476+00:00",
+  "findings": [],
+  "latest_broker_projection_count": 1,
+  "latest_runtime_projection_count": 1,
+  "pending_idempotency_count": 0,
+  "schema_version": 1,
+  "status": "RECOVERABLE_OFFLINE"
+}

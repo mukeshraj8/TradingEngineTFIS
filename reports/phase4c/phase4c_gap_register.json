@@ -1,0 +1,16 @@
+{
+  "gaps": [
+    {
+      "code": "PHASE4D_RECONCILIATION_ENGINE_NOT_IMPLEMENTED",
+      "status": "DEFERRED"
+    },
+    {
+      "code": "NO_BROKER_WRITE_AUTHORITY",
+      "status": "INTENTIONAL"
+    },
+    {
+      "code": "SQLITE_IMPLEMENTATION_AND_TEST_DATABASE",
+      "status": "ACCEPTED_FOR_PHASE4C"
+    }
+  ]
+}
