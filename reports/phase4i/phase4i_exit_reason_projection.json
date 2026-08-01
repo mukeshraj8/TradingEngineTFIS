@@ -1,0 +1,29 @@
+{
+  "dimensions": {
+    "dimension": "final_exit_reason"
+  },
+  "metrics": {
+    "CARRIED_FORWARD": "5625.00",
+    "ORIGINAL_SL": "-827.50",
+    "REVISED_SL": "4272.50",
+    "TARGET": "5672.50",
+    "UNKNOWN": "6047.50"
+  },
+  "projection_hash": "a63ba1c975932100d292e0e0fdab9228ea33aa004589924e6da15248d433fcef",
+  "projection_id": "accounting-projection:exit_reason:8fbbe4d80ce7d2fc",
+  "projection_type": "EXIT_REASON",
+  "quality": "CONFIRMED_INTERNAL_PAPER",
+  "source_fact_ids": [
+    "pnl-fact:d3bd09bac46125d10f113a6a",
+    "pnl-fact:6dc5074e4be4109c229fab1e",
+    "pnl-fact:f915b439240fcd504266fde0",
+    "pnl-fact:bc2300d2efb55a910beb04e5",
+    "pnl-fact:c11d250b259d8278eeaf8b44",
+    "pnl-fact:909635c2bfcf577950cab6db",
+    "pnl-fact:08c418122c94712635a96f12",
+    "pnl-fact:ce8ae70d73b80f9154baa673",
+    "pnl-fact:b995304fd99ca5151ddb7686",
+    "pnl-fact:92254cedb436e481c58151c2"
+  ],
+  "watermark": "8fbbe4d80ce7d2fc600646baa863f1df7b76120eb0c0846f3a970e1465bfb8ee"
+}

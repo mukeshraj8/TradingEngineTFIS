@@ -1783,3 +1783,20 @@ Phase 4H Milestone 1 result:
 - next priority is Phase 4I: project TradeFact/PnLFact from the completed
   internal-paper vertical; do not start broker/paper/live authority work from
   Phase 4H
+
+Phase 4I Milestone 1 result:
+
+- immutable `TradeFact` and `PnLFact` records now derive from confirmed
+  internal-paper operational facts only; planned prices and acknowledgements do
+  not affect P&L
+- S23 short-option realized and unrealized P&L is implemented for the first
+  Call-side internal-paper vertical with explicit Phase 4H confirmed-unit
+  semantics, no lot-size double multiplication, conservative short-side ask
+  marking, LTP fallback quality, stale-mark UNKNOWN behavior, estimated
+  charges, correction/supersession, and read-only projections
+- reports under `reports/phase4i` cover trade/PnL contracts, quality and metric
+  catalogs, scenario outputs, daily/account/strategy/instrument/exit/path
+  projections, complete traceability, rebuild equivalence, performance, and
+  remaining accounting gaps
+- next priority is Phase 5A-Pre complete internal-paper end-to-end
+  certification; do not add broker/live authority before that certification

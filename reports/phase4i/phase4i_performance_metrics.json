@@ -1,0 +1,47 @@
+{
+  "correction_rebuild": {
+    "fixture_only": true,
+    "median_ms": 2088.3498,
+    "p95_ms": 2088.3498
+  },
+  "full_rebuild": {
+    "fixture_only": true,
+    "median_ms": 8280.2324,
+    "p95_ms": 8280.2324
+  },
+  "hundred_trade_projection": {
+    "fixture_only": true,
+    "median_ms": 206743.5067,
+    "p95_ms": 206743.5067
+  },
+  "projection_update": {
+    "fixture_only": true,
+    "median_ms": 8545.9434,
+    "p95_ms": 8545.9434
+  },
+  "realized_pnl_fact_build": {
+    "fixture_only": true,
+    "median_ms": 2416.2846,
+    "p95_ms": 2416.2846
+  },
+  "serialization_hash": {
+    "fixture_only": true,
+    "median_ms": 0.1905,
+    "p95_ms": 0.1905
+  },
+  "trace_construction": {
+    "fixture_only": true,
+    "median_ms": 0.013,
+    "p95_ms": 0.013
+  },
+  "trade_fact_build": {
+    "fixture_only": true,
+    "median_ms": 2416.2846,
+    "p95_ms": 2416.2846
+  },
+  "unrealized_pnl_fact_build": {
+    "fixture_only": true,
+    "median_ms": 1095.349,
+    "p95_ms": 1095.349
+  }
+}

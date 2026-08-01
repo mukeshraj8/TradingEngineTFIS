@@ -1,0 +1,64 @@
+{
+  "ClientOrder": {
+    "ids": [
+      "entry-order-0",
+      "TARGET-order"
+    ]
+  },
+  "EffectiveExecutionPlan": {
+    "hash": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+    "id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1"
+  },
+  "ExecutionIntent": {
+    "hash": "88ed6a6968d5a16a1aac1f0d11fc2cb9d1c5ab8d955d5dcf1f97449e46c7043d",
+    "id": "88ed6a6968d5a16a1aac1f0d11fc2cb9d1c5ab8d955d5dcf1f97449e46c7043d"
+  },
+  "InternalPaperFills": {
+    "ids": [
+      "internal-fill:eaa083ff5a113bb997ed8d2a",
+      "internal-fill:d850d2467289a328380bdff9"
+    ]
+  },
+  "InternalPaperOrderEvents": {
+    "ids": [
+      "phase4f-internal-order-events"
+    ]
+  },
+  "LifecycleRequirements": {
+    "ids": []
+  },
+  "OpeningMarketContext": {
+    "hash": "phase4i-opening",
+    "id": "phase4i-opening"
+  },
+  "PnLFact": {
+    "hash": "77c573aa2c7ef3388c7c1b195d569f2473625d4de8806753e0fe4cfaebf31573",
+    "id": "pnl-fact:d3bd09bac46125d10f113a6a"
+  },
+  "PositionCloseOrCarry": {
+    "reason": "TARGET",
+    "state": "CLOSED"
+  },
+  "PositionCycle": {
+    "hash": "88ed6a6968d5a16a1aac1f0d11fc2cb9d1c5ab8d955d5dcf1f97449e46c7043d",
+    "id": "ipc:e5e33d064d0712ee7e3c71f7"
+  },
+  "PreMarketStrategyPlan": {
+    "hash": "phase4i-premarket",
+    "id": "phase4i-premarket"
+  },
+  "Projection": {
+    "ids": [
+      "accounting-projection:daily_portfolio:3ccd8f6ce5cb7a5d",
+      "accounting-projection:account:9e856f6914d4bdec",
+      "accounting-projection:strategy:112b4839c578351a",
+      "accounting-projection:instrument:44af046aea43d377",
+      "accounting-projection:exit_reason:74e746b4838e80fa",
+      "accounting-projection:path:750b52c310bbcfb8"
+    ]
+  },
+  "TradeFact": {
+    "hash": "aa50e7e5f406ef870c10c2c4a90a38efc90ac8b44dff167be954493803b75658",
+    "id": "trade-fact:ae598ff512c6fc463f31f5d1"
+  }
+}

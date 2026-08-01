@@ -2057,6 +2057,20 @@
   Runtime impact is `AUTHORITATIVE INTERNAL-PAPER POSITIONCYCLE STATE ONLY`;
   broker, live, broker-sandbox, external paper, and external position authority
   remain `NONE`.
+- Phase 4I Milestone 1 added read-only internal-paper TradeFact, PnLFact and
+  profitability projections under `src/tfis/accounting`, with S23 first
+  Call-side scenario composition kept in `src/tfis/adapters/phase4i`. The
+  milestone implements immutable trade/accounting facts, S23 short-option
+  realized/unrealized P&L over Phase 4H confirmed units, conservative
+  executable-side marking, LTP fallback and stale-mark quality states,
+  provisional charges, charge correction/supersession, win/loss/open
+  classification, exit/path attribution, duration, MFE/MAE quality, read-only
+  daily/account/strategy/instrument/exit/path projections, projection rebuild,
+  multi-account isolation, migration 6 analytical persistence, focused tests,
+  architecture boundary tests, and reports under `reports/phase4i`. Runtime
+  impact is `READ-ONLY INTERNAL-PAPER ACCOUNTING AND PROFITABILITY
+  PROJECTIONS`; broker, live, broker-sandbox, external paper, order mutation,
+  and PositionCycle mutation authority remain `NONE`.
 
 ## Next Recommended Priorities
 

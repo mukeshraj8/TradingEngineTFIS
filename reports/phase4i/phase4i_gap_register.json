@@ -1,0 +1,17 @@
+{
+  "authority": "INTERNAL_PAPER_ACCOUNTING_ONLY",
+  "deferred": [
+    {
+      "description": "Real broker contract-note/charge ingestion remains out of scope.",
+      "gap_id": "PHASE4I-GAP-001"
+    },
+    {
+      "description": "Futures, equity, currency and commodity PnL formulas remain blocked until source extraction.",
+      "gap_id": "PHASE4I-GAP-002"
+    },
+    {
+      "description": "Dashboards and advanced portfolio analytics are deferred.",
+      "gap_id": "PHASE4I-GAP-003"
+    }
+  ]
+}

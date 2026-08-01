@@ -1,0 +1,16 @@
+{
+  "acknowledgements_affect_pnl": false,
+  "correction_semantics": "immutable superseding facts only",
+  "planned_prices_are_actual_pnl_inputs": false,
+  "source_rule": "confirmed internal-paper fills plus PositionCycle quantities, metadata, charges and marks",
+  "states": [
+    "OPEN_PROVISIONAL",
+    "OPEN_ACCOUNTING_COMPLETE",
+    "CLOSED_PROVISIONAL",
+    "CLOSED_ACCOUNTING_COMPLETE",
+    "CORRECTED",
+    "UNKNOWN_ACCOUNTING_STATE",
+    "INVALID"
+  ],
+  "truth_model": "INTERNAL_PAPER_ACCOUNTING_TRUTH"
+}

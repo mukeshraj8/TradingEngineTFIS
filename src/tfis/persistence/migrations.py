@@ -562,6 +562,83 @@ CREATE TABLE IF NOT EXISTS internal_position_recovery_refs (
 );
 """,
     ),
+    Migration(
+        6,
+        "phase4i_internal_paper_accounting",
+        """
+CREATE TABLE IF NOT EXISTS accounting_trade_facts (
+    trade_fact_id TEXT PRIMARY KEY,
+    trade_id TEXT NOT NULL,
+    position_cycle_id TEXT NOT NULL,
+    trading_session_id TEXT NOT NULL,
+    strategy_instance_id TEXT NOT NULL,
+    logical_account TEXT NOT NULL,
+    state TEXT NOT NULL,
+    fact_hash TEXT NOT NULL,
+    supersedes_trade_fact_id TEXT,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS accounting_pnl_facts (
+    pnl_fact_id TEXT PRIMARY KEY,
+    trade_fact_id TEXT NOT NULL,
+    fact_type TEXT NOT NULL,
+    trading_date TEXT NOT NULL,
+    account_id TEXT NOT NULL,
+    strategy_instance_id TEXT NOT NULL,
+    gross_pnl TEXT,
+    charges TEXT,
+    net_pnl TEXT,
+    quality_state TEXT NOT NULL,
+    fact_hash TEXT NOT NULL,
+    supersedes_pnl_fact_id TEXT,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(trade_fact_id) REFERENCES accounting_trade_facts(trade_fact_id)
+);
+CREATE TABLE IF NOT EXISTS accounting_fact_source_links (
+    link_id TEXT PRIMARY KEY,
+    fact_id TEXT NOT NULL,
+    source_type TEXT NOT NULL,
+    source_id TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS accounting_correction_links (
+    correction_id TEXT PRIMARY KEY,
+    new_fact_id TEXT NOT NULL,
+    superseded_fact_id TEXT NOT NULL,
+    correction_reason TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS accounting_projections (
+    projection_id TEXT PRIMARY KEY,
+    projection_type TEXT NOT NULL,
+    projection_hash TEXT NOT NULL,
+    watermark TEXT NOT NULL,
+    quality_state TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    updated_timestamp TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS accounting_build_events (
+    build_event_id TEXT PRIMARY KEY,
+    result_hash TEXT NOT NULL,
+    trade_fact_id TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(trade_fact_id) REFERENCES accounting_trade_facts(trade_fact_id)
+);
+CREATE TABLE IF NOT EXISTS accounting_error_evidence (
+    error_id TEXT PRIMARY KEY,
+    error_type TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL
+);
+""",
+    ),
 )
 
 

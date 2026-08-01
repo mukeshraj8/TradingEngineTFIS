@@ -1,0 +1,26 @@
+{
+  "dimensions": {
+    "dimension": "normal_gap_path"
+  },
+  "metrics": {
+    "GAP_RECALCULATED": "4272.50",
+    "NORMAL_RETAINED": "16517.50"
+  },
+  "projection_hash": "d9c6b91acf078540aa389670a2243fa6d2a037bd94146f6a22c56458aeea0a49",
+  "projection_id": "accounting-projection:path:313d057e49d80436",
+  "projection_type": "PATH",
+  "quality": "CONFIRMED_INTERNAL_PAPER",
+  "source_fact_ids": [
+    "pnl-fact:d3bd09bac46125d10f113a6a",
+    "pnl-fact:6dc5074e4be4109c229fab1e",
+    "pnl-fact:f915b439240fcd504266fde0",
+    "pnl-fact:bc2300d2efb55a910beb04e5",
+    "pnl-fact:c11d250b259d8278eeaf8b44",
+    "pnl-fact:909635c2bfcf577950cab6db",
+    "pnl-fact:08c418122c94712635a96f12",
+    "pnl-fact:ce8ae70d73b80f9154baa673",
+    "pnl-fact:b995304fd99ca5151ddb7686",
+    "pnl-fact:92254cedb436e481c58151c2"
+  ],
+  "watermark": "313d057e49d80436d5fd211355943310a6b0398a7496e961bc21fd06ae71ec24"
+}

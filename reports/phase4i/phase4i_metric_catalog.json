@@ -1,0 +1,21 @@
+[
+  "total_trades",
+  "open_trades",
+  "closed_trades",
+  "wins",
+  "losses",
+  "breakeven",
+  "win_rate",
+  "gross_pnl",
+  "net_pnl",
+  "realized_pnl",
+  "unrealized_pnl",
+  "average_winner",
+  "average_loser",
+  "payoff_ratio",
+  "profit_factor",
+  "expectancy",
+  "cumulative_daily_pnl",
+  "current_drawdown",
+  "maximum_closed_equity_drawdown"
+]

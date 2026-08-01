@@ -1,0 +1,42 @@
+{
+  "dimensions": {
+    "account": "INTERNAL_PAPER_ACCOUNT"
+  },
+  "metrics": {
+    "average_loser": "826.25",
+    "average_winner": "4344.58",
+    "breakeven": 0,
+    "closed_trades": 3,
+    "current_drawdown": "0.00",
+    "expectancy": "2620.97",
+    "gross_pnl": "20800.00",
+    "losses": 1,
+    "maximum_closed_equity_drawdown": "826.25",
+    "net_pnl": "20790.00",
+    "open_trades": 2,
+    "payoff_ratio": "5.26",
+    "profit_factor": "15.77",
+    "realized_pnl": "12207.50",
+    "total_trades": 5,
+    "unrealized_pnl": "8587.50",
+    "win_rate": "0.67",
+    "wins": 2
+  },
+  "projection_hash": "35a2d61531a27f64b1db9fac7bfda7ae78ebc9758cb87e5d8cf18d116fdf5dea",
+  "projection_id": "accounting-projection:account:2d1ed3119c1949a6",
+  "projection_type": "ACCOUNT",
+  "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+  "source_fact_ids": [
+    "pnl-fact:d3bd09bac46125d10f113a6a",
+    "pnl-fact:6dc5074e4be4109c229fab1e",
+    "pnl-fact:f915b439240fcd504266fde0",
+    "pnl-fact:bc2300d2efb55a910beb04e5",
+    "pnl-fact:c11d250b259d8278eeaf8b44",
+    "pnl-fact:909635c2bfcf577950cab6db",
+    "pnl-fact:08c418122c94712635a96f12",
+    "pnl-fact:ce8ae70d73b80f9154baa673",
+    "pnl-fact:b995304fd99ca5151ddb7686",
+    "pnl-fact:92254cedb436e481c58151c2"
+  ],
+  "watermark": "fc00a7032af23dcc15dac03ab233be28a6bea17042d7f1ef0084242742f5da5b"
+}

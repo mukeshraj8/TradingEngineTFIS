@@ -2994,3 +2994,18 @@ Current notes:
   `AUTHORITATIVE INTERNAL-PAPER POSITIONCYCLE STATE ONLY`; broker, live,
   broker-sandbox, external paper, and external position authority remain
   `NONE`.
+- Phase 4I Milestone 1 now adds read-only internal-paper accounting under
+  `src/tfis/accounting`, with S23 first Call-side accounting scenarios isolated
+  under `src/tfis/adapters/phase4i`. Confirmed Phase 4H PositionCycle
+  quantities and Phase 4F internal-paper fills now project immutable
+  `TradeFact` and `PnLFact` records, S23 short-option realized/unrealized P&L,
+  provisional charge estimates/corrections, win/loss/open classification,
+  exit/path attribution, duration and MFE/MAE quality, daily/account/strategy/
+  instrument/exit/path projections, rebuild equivalence, and a complete
+  decision-to-P&L trace. Persistence migration 6 stores accounting facts,
+  source links, correction links, read-only projections, build events, and
+  accounting error evidence separately from operational trading state. Reports
+  live under `reports/phase4i`. Runtime impact is `READ-ONLY INTERNAL-PAPER
+  ACCOUNTING AND PROFITABILITY PROJECTIONS`; broker, live, broker-sandbox,
+  external paper, order mutation, and PositionCycle mutation authority remain
+  `NONE`.

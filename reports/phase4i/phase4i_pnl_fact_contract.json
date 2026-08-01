@@ -1,0 +1,18 @@
+{
+  "fact_types": [
+    "REALIZED_TRADE_PNL",
+    "UNREALIZED_POSITION_PNL",
+    "DAILY_ACCOUNT_PNL",
+    "DAILY_STRATEGY_PNL",
+    "DAILY_INSTRUMENT_PNL",
+    "DAILY_PORTFOLIO_PNL",
+    "CHARGE_ESTIMATE",
+    "CHARGE_CORRECTION",
+    "ACCOUNTING_CORRECTION"
+  ],
+  "formula_scope": "S23_OPTION_SELLING_ONLY",
+  "lot_size_not_double_multiplied": true,
+  "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+  "short_option_realized": "(entry fill price - exit fill price) * exited quantity * multiplier",
+  "short_option_unrealized": "(average entry - executable-side mark) * remaining quantity * multiplier"
+}

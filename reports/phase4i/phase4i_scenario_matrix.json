@@ -1,0 +1,42 @@
+[
+  {
+    "case": "bull_target",
+    "coverage": "Bull Call target winner"
+  },
+  {
+    "case": "bear_original_sl",
+    "coverage": "Bear Call original SL loser"
+  },
+  {
+    "case": "revised_sl",
+    "coverage": "Gap/RC revised SL result"
+  },
+  {
+    "case": "partial_entry",
+    "coverage": "Partial entry with open mark"
+  },
+  {
+    "case": "partial_exit",
+    "coverage": "Partial exit with remaining quantity"
+  },
+  {
+    "case": "eod_exit",
+    "coverage": "EOD exit"
+  },
+  {
+    "case": "carry_open",
+    "coverage": "Carry-forward open unrealized PnL"
+  },
+  {
+    "case": "charge_correction",
+    "coverage": "Estimated charge superseded by correction"
+  },
+  {
+    "case": "stale_mark",
+    "coverage": "Unrealized UNKNOWN on stale mark"
+  },
+  {
+    "case": "two_accounts",
+    "coverage": "Independent account PnL"
+  }
+]

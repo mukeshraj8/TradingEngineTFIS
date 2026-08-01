@@ -52,6 +52,7 @@ KNOWN_EVENT_TYPES = frozenset(
         "EXECUTION_INTENT_VALIDATED",
         "INTERNAL_PAPER_ORDER_SIMULATED",
         "INTERNAL_PAPER_POSITION_UPDATED",
+        "INTERNAL_PAPER_ACCOUNTING_BUILT",
     }
 )
 
@@ -1306,6 +1307,211 @@ class PersistenceRepositories:
                 version,
                 _now(),
                 position_cycle_id,
+                current_version,
+            ),
+        )
+        return version
+
+    def put_accounting_build_result(
+        self,
+        *,
+        build_result: Mapping[str, Any],
+        expected_projection_version: int | None,
+    ) -> str:
+        trade_fact = build_result["trade_fact"]
+        trade_fact_id = str(trade_fact["trade_fact_id"])
+        row = self.connection.execute(
+            "SELECT fact_hash FROM accounting_trade_facts WHERE trade_fact_id = ?",
+            (trade_fact_id,),
+        ).fetchone()
+        if row:
+            if row["fact_hash"] != trade_fact["fact_hash"]:
+                raise ArtifactConflictError(f"TradeFact conflict: {trade_fact_id}")
+        else:
+            self.connection.execute(
+                """
+                INSERT INTO accounting_trade_facts(
+                    trade_fact_id, trade_id, position_cycle_id, trading_session_id,
+                    strategy_instance_id, logical_account, state, fact_hash,
+                    supersedes_trade_fact_id, payload_json, created_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    trade_fact_id,
+                    trade_fact["trade_id"],
+                    trade_fact["position_cycle_id"],
+                    trade_fact["trading_session_id"],
+                    trade_fact["strategy_instance"],
+                    trade_fact["logical_paper_account"],
+                    trade_fact["state"],
+                    trade_fact["fact_hash"],
+                    trade_fact.get("supersedes_trade_fact_id"),
+                    canonical_json(trade_fact),
+                    _now(),
+                ),
+            )
+        for source_id in trade_fact["provenance"].get("source_fill_ids", []):
+            self._put_accounting_source_link(
+                fact_id=trade_fact_id,
+                source_type="InternalPaperFill",
+                source_id=str(source_id),
+                payload={"trade_fact_id": trade_fact_id, "source_fill_id": source_id},
+            )
+        for source_id in trade_fact["provenance"].get("source_lifecycle_requirement_ids", []):
+            self._put_accounting_source_link(
+                fact_id=trade_fact_id,
+                source_type="LifecycleRequirement",
+                source_id=str(source_id),
+                payload={"trade_fact_id": trade_fact_id, "source_lifecycle_requirement_id": source_id},
+            )
+        for pnl_fact in build_result.get("pnl_facts", []):
+            self._put_pnl_fact(trade_fact_id=trade_fact_id, pnl_fact=pnl_fact)
+        for projection in build_result.get("projections", []):
+            self._upsert_accounting_projection(projection=projection, expected_version=expected_projection_version)
+        event_id = f"{build_result['result_hash']}:accounting-event"
+        self.connection.execute(
+            """
+            INSERT INTO accounting_build_events(
+                build_event_id, result_hash, trade_fact_id, event_type, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(build_event_id) DO NOTHING
+            """,
+            (
+                event_id,
+                build_result["result_hash"],
+                trade_fact_id,
+                "INTERNAL_PAPER_ACCOUNTING_BUILT",
+                canonical_json({"trade_fact_id": trade_fact_id, "result_hash": build_result["result_hash"]}),
+                _now(),
+            ),
+        )
+        self.append_event(
+            event_id=f"{event_id}:operational",
+            event_type="INTERNAL_PAPER_ACCOUNTING_BUILT",
+            aggregate_type="internal_paper_accounting",
+            aggregate_id=trade_fact_id,
+            trading_session_id=None,
+            broker_account_id=None,
+            effective_timestamp=datetime.fromisoformat(str(trade_fact["execution"]["first_entry_timestamp"])),
+            payload={"trade_fact_id": trade_fact_id, "result_hash": build_result["result_hash"]},
+            idempotency_scope="internal_paper_accounting",
+            idempotency_key=build_result["result_hash"],
+        )
+        return trade_fact_id
+
+    def _put_pnl_fact(self, *, trade_fact_id: str, pnl_fact: Mapping[str, Any]) -> None:
+        row = self.connection.execute(
+            "SELECT fact_hash FROM accounting_pnl_facts WHERE pnl_fact_id = ?",
+            (pnl_fact["pnl_fact_id"],),
+        ).fetchone()
+        if row:
+            if row["fact_hash"] == pnl_fact["fact_hash"]:
+                return
+            raise ArtifactConflictError(f"PnLFact conflict: {pnl_fact['pnl_fact_id']}")
+        self.connection.execute(
+            """
+            INSERT INTO accounting_pnl_facts(
+                pnl_fact_id, trade_fact_id, fact_type, trading_date, account_id,
+                strategy_instance_id, gross_pnl, charges, net_pnl, quality_state,
+                fact_hash, supersedes_pnl_fact_id, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                pnl_fact["pnl_fact_id"],
+                trade_fact_id,
+                pnl_fact["fact_type"],
+                pnl_fact["trading_date"],
+                pnl_fact["account"],
+                pnl_fact["strategy"],
+                pnl_fact["gross_pnl"],
+                pnl_fact["charges"],
+                pnl_fact["net_pnl"],
+                pnl_fact["quality_state"],
+                pnl_fact["fact_hash"],
+                pnl_fact.get("supersedes_pnl_fact_id"),
+                canonical_json(pnl_fact),
+                _now(),
+            ),
+        )
+        if pnl_fact.get("supersedes_pnl_fact_id"):
+            self.connection.execute(
+                """
+                INSERT INTO accounting_correction_links(
+                    correction_id, new_fact_id, superseded_fact_id, correction_reason, payload_json, created_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(correction_id) DO NOTHING
+                """,
+                (
+                    f"{pnl_fact['pnl_fact_id']}:supersedes:{pnl_fact['supersedes_pnl_fact_id']}",
+                    pnl_fact["pnl_fact_id"],
+                    pnl_fact["supersedes_pnl_fact_id"],
+                    str(pnl_fact["source_identities"].get("supersession_reason") or "ACCOUNTING_CORRECTION"),
+                    canonical_json(pnl_fact),
+                    _now(),
+                ),
+            )
+
+    def _put_accounting_source_link(self, *, fact_id: str, source_type: str, source_id: str, payload: Mapping[str, Any]) -> None:
+        link_id = f"{fact_id}:{source_type}:{source_id}"
+        self.connection.execute(
+            """
+            INSERT INTO accounting_fact_source_links(
+                link_id, fact_id, source_type, source_id, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(link_id) DO NOTHING
+            """,
+            (link_id, fact_id, source_type, source_id, canonical_json(payload), _now()),
+        )
+
+    def _upsert_accounting_projection(self, *, projection: Mapping[str, Any], expected_version: int | None) -> int:
+        row = self.connection.execute(
+            "SELECT version, projection_hash FROM accounting_projections WHERE projection_id = ?",
+            (projection["projection_id"],),
+        ).fetchone()
+        if row is None:
+            if expected_version not in (None, 0):
+                raise OptimisticConcurrencyError("Accounting projection does not exist for expected version.")
+            version = 1
+            self.connection.execute(
+                """
+                INSERT INTO accounting_projections(
+                    projection_id, projection_type, projection_hash, watermark,
+                    quality_state, payload_json, version, updated_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    projection["projection_id"],
+                    projection["projection_type"],
+                    projection["projection_hash"],
+                    projection["watermark"],
+                    projection["quality"],
+                    canonical_json(projection),
+                    version,
+                    _now(),
+                ),
+            )
+            return version
+        current_version = int(row["version"])
+        if row["projection_hash"] == projection["projection_hash"]:
+            return current_version
+        if expected_version is not None and expected_version != current_version:
+            raise OptimisticConcurrencyError("Stale accounting projection writer.")
+        version = current_version + 1
+        self.connection.execute(
+            """
+            UPDATE accounting_projections
+            SET projection_hash = ?, watermark = ?, quality_state = ?, payload_json = ?,
+                version = ?, updated_timestamp = ?
+            WHERE projection_id = ? AND version = ?
+            """,
+            (
+                projection["projection_hash"],
+                projection["watermark"],
+                projection["quality"],
+                canonical_json(projection),
+                version,
+                _now(),
+                projection["projection_id"],
                 current_version,
             ),
         )

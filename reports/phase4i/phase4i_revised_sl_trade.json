@@ -1,0 +1,405 @@
+{
+  "account_suffix": null,
+  "case": "REVISED_SL",
+  "pnl_facts": [
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT",
+      "as_of_timestamp": "2026-06-05T15:01:00+05:30",
+      "calculation_version": "phase4i.s23.short_option_accounting.v1",
+      "charges": "1.25",
+      "currency": "INR",
+      "evidence_hash": "c11d250b259d8278eeaf8b4485c1802b5758c2bdb53fbcba58727267595a0e74",
+      "fact_hash": "59e10db1179c00481a890683fa75d422705d51eaa62149c0113d06a9bf0f886e",
+      "fact_type": "REALIZED_TRADE_PNL",
+      "gross_pnl": "4275.00",
+      "instrument": {
+        "contract": "NIFTY_20260806_22250_CALL",
+        "currency": "INR",
+        "direction": "CALL_SIDE_VERTICAL",
+        "exchange": "NSE",
+        "expiry": null,
+        "lot_size": 75,
+        "metadata_version": "phase4i.s23.option_selling.v1",
+        "multiplier": "1",
+        "option_type": "CALL",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": null,
+        "tick_size": "0.05",
+        "underlying": "NIFTY"
+      },
+      "metadata_version": "phase4i.s23.option_selling.v1",
+      "net_pnl": "4273.75",
+      "pnl_fact_id": "pnl-fact:c11d250b259d8278eeaf8b44",
+      "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+      "realized_unrealized": "REALIZED",
+      "source_identities": {
+        "position_cycle_id": "ipc:e5e33d064d0712ee7e3c71f7",
+        "source_fill_ids": [
+          "internal-fill:eaa083ff5a113bb997ed8d2a",
+          "phase4i-exit-fill"
+        ],
+        "supersession_reason": null,
+        "trade_fact_id": "trade-fact:956111072e2bfa1db68f85e4"
+      },
+      "strategy": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "supersedes_pnl_fact_id": null,
+      "trading_date": "2026-06-05"
+    },
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT",
+      "as_of_timestamp": "2026-06-05T15:01:00+05:30",
+      "calculation_version": "phase4i.s23.short_option_accounting.v1",
+      "charges": "1.25",
+      "currency": "INR",
+      "evidence_hash": "909635c2bfcf577950cab6db46b7c71c4a8a21447c4ec0bc89ee4853862c0644",
+      "fact_hash": "f4893d45c3d2a10fa5cf4a9d9d0b1ffe2b10411cf850cc9535214710de000f9e",
+      "fact_type": "CHARGE_ESTIMATE",
+      "gross_pnl": "0.00",
+      "instrument": {
+        "contract": "NIFTY_20260806_22250_CALL",
+        "currency": "INR",
+        "direction": "CALL_SIDE_VERTICAL",
+        "exchange": "NSE",
+        "expiry": null,
+        "lot_size": 75,
+        "metadata_version": "phase4i.s23.option_selling.v1",
+        "multiplier": "1",
+        "option_type": "CALL",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": null,
+        "tick_size": "0.05",
+        "underlying": "NIFTY"
+      },
+      "metadata_version": "phase4i.s23.option_selling.v1",
+      "net_pnl": "-1.25",
+      "pnl_fact_id": "pnl-fact:909635c2bfcf577950cab6db",
+      "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+      "realized_unrealized": "CHARGE",
+      "source_identities": {
+        "position_cycle_id": "ipc:e5e33d064d0712ee7e3c71f7",
+        "source_fill_ids": [
+          "internal-fill:eaa083ff5a113bb997ed8d2a",
+          "phase4i-exit-fill"
+        ],
+        "supersession_reason": null,
+        "trade_fact_id": "trade-fact:956111072e2bfa1db68f85e4"
+      },
+      "strategy": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "supersedes_pnl_fact_id": null,
+      "trading_date": "2026-06-05"
+    }
+  ],
+  "projections": [
+    {
+      "dimensions": {
+        "trading_date": "2026-06-05"
+      },
+      "metrics": {
+        "average_loser": "0.00",
+        "average_winner": "4273.75",
+        "breakeven": 0,
+        "closed_trades": 1,
+        "current_drawdown": "0.00",
+        "expectancy": "4273.75",
+        "gross_pnl": "4275.00",
+        "losses": 0,
+        "maximum_closed_equity_drawdown": "0.00",
+        "net_pnl": "4272.50",
+        "open_trades": 0,
+        "payoff_ratio": "0.00",
+        "profit_factor": null,
+        "realized_pnl": "4273.75",
+        "total_trades": 1,
+        "unrealized_pnl": "0.00",
+        "win_rate": "1.00",
+        "wins": 1
+      },
+      "projection_hash": "7243eaedfc5c1401d452bbb841f2c39dd9d00d674101bdc2c86f1b9872853d09",
+      "projection_id": "accounting-projection:daily_portfolio:3bd3187dd12f97ef",
+      "projection_type": "DAILY_PORTFOLIO",
+      "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "source_fact_ids": [
+        "pnl-fact:c11d250b259d8278eeaf8b44",
+        "pnl-fact:909635c2bfcf577950cab6db"
+      ],
+      "watermark": "35a7a44cdd66ba755db4a4ff4dcdc254d582e949542afa1b830e5bfe7f133c15"
+    },
+    {
+      "dimensions": {
+        "account": "INTERNAL_PAPER_ACCOUNT"
+      },
+      "metrics": {
+        "average_loser": "0.00",
+        "average_winner": "4273.75",
+        "breakeven": 0,
+        "closed_trades": 1,
+        "current_drawdown": "0.00",
+        "expectancy": "4273.75",
+        "gross_pnl": "4275.00",
+        "losses": 0,
+        "maximum_closed_equity_drawdown": "0.00",
+        "net_pnl": "4272.50",
+        "open_trades": 0,
+        "payoff_ratio": "0.00",
+        "profit_factor": null,
+        "realized_pnl": "4273.75",
+        "total_trades": 1,
+        "unrealized_pnl": "0.00",
+        "win_rate": "1.00",
+        "wins": 1
+      },
+      "projection_hash": "8015569a81a5d06b657ff5a028fa6a080c0fcff4dc93ae8a72eec4a54b98fec4",
+      "projection_id": "accounting-projection:account:33cd1deff38f6bce",
+      "projection_type": "ACCOUNT",
+      "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "source_fact_ids": [
+        "pnl-fact:c11d250b259d8278eeaf8b44",
+        "pnl-fact:909635c2bfcf577950cab6db"
+      ],
+      "watermark": "35a7a44cdd66ba755db4a4ff4dcdc254d582e949542afa1b830e5bfe7f133c15"
+    },
+    {
+      "dimensions": {
+        "strategy": "S23_NIFTY_ACCOUNT_A_PAPER"
+      },
+      "metrics": {
+        "average_loser": "0.00",
+        "average_winner": "4273.75",
+        "breakeven": 0,
+        "closed_trades": 1,
+        "current_drawdown": "0.00",
+        "expectancy": "4273.75",
+        "gross_pnl": "4275.00",
+        "losses": 0,
+        "maximum_closed_equity_drawdown": "0.00",
+        "net_pnl": "4272.50",
+        "open_trades": 0,
+        "payoff_ratio": "0.00",
+        "profit_factor": null,
+        "realized_pnl": "4273.75",
+        "total_trades": 1,
+        "unrealized_pnl": "0.00",
+        "win_rate": "1.00",
+        "wins": 1
+      },
+      "projection_hash": "baf889c35947cd6e49ec93495efc7e30eeaf7b0404d8810b757dcd14c6bae4f3",
+      "projection_id": "accounting-projection:strategy:c4656e1d7c12e7c2",
+      "projection_type": "STRATEGY",
+      "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "source_fact_ids": [
+        "pnl-fact:c11d250b259d8278eeaf8b44",
+        "pnl-fact:909635c2bfcf577950cab6db"
+      ],
+      "watermark": "35a7a44cdd66ba755db4a4ff4dcdc254d582e949542afa1b830e5bfe7f133c15"
+    },
+    {
+      "dimensions": {
+        "contract": "NIFTY_20260806_22250_CALL"
+      },
+      "metrics": {
+        "average_loser": "0.00",
+        "average_winner": "4273.75",
+        "breakeven": 0,
+        "closed_trades": 1,
+        "current_drawdown": "0.00",
+        "expectancy": "4273.75",
+        "gross_pnl": "4275.00",
+        "losses": 0,
+        "maximum_closed_equity_drawdown": "0.00",
+        "net_pnl": "4272.50",
+        "open_trades": 0,
+        "payoff_ratio": "0.00",
+        "profit_factor": null,
+        "realized_pnl": "4273.75",
+        "total_trades": 1,
+        "unrealized_pnl": "0.00",
+        "win_rate": "1.00",
+        "wins": 1
+      },
+      "projection_hash": "954c5c89fb793df180aa21b259cc175c18a3e962ef6f467e48916d80ea5f6c40",
+      "projection_id": "accounting-projection:instrument:9daf993cf97da2d5",
+      "projection_type": "INSTRUMENT",
+      "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "source_fact_ids": [
+        "pnl-fact:c11d250b259d8278eeaf8b44",
+        "pnl-fact:909635c2bfcf577950cab6db"
+      ],
+      "watermark": "35a7a44cdd66ba755db4a4ff4dcdc254d582e949542afa1b830e5bfe7f133c15"
+    },
+    {
+      "dimensions": {
+        "dimension": "final_exit_reason"
+      },
+      "metrics": {
+        "REVISED_SL": "4272.50"
+      },
+      "projection_hash": "69d60024fc5954d36d143644c16995b75c21bf86996ac2c73b396d7fe53b90d7",
+      "projection_id": "accounting-projection:exit_reason:ac92dee749aad121",
+      "projection_type": "EXIT_REASON",
+      "quality": "CONFIRMED_INTERNAL_PAPER",
+      "source_fact_ids": [
+        "pnl-fact:c11d250b259d8278eeaf8b44",
+        "pnl-fact:909635c2bfcf577950cab6db"
+      ],
+      "watermark": "ac92dee749aad1216206df360fdb15a9ff2c0f81641e7e6856172b8623aed972"
+    },
+    {
+      "dimensions": {
+        "dimension": "normal_gap_path"
+      },
+      "metrics": {
+        "GAP_RECALCULATED": "4272.50"
+      },
+      "projection_hash": "a791bc9332f86c9589c80fed148e067dcd4fd6e2d5e82c8c391ffaa5946b8a83",
+      "projection_id": "accounting-projection:path:f26d207216cfdf8a",
+      "projection_type": "PATH",
+      "quality": "CONFIRMED_INTERNAL_PAPER",
+      "source_fact_ids": [
+        "pnl-fact:c11d250b259d8278eeaf8b44",
+        "pnl-fact:909635c2bfcf577950cab6db"
+      ],
+      "watermark": "f26d207216cfdf8a065f590a9f1195fbfc693170de1dd5235ffd04fc7d7f3b37"
+    }
+  ],
+  "result_hash": "fb1b0acaa779b36b1e3a46e72b401dbf4dc4b3f0fb3ced0508f4296fdf81d5be",
+  "trade_fact": {
+    "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+    "configuration_hash": "phase4i-s23-config",
+    "decision_context": {
+      "acknowledgements_affect_pnl": false,
+      "branch": "BULL_CALL",
+      "capital_or_margin_estimate": "5000.00",
+      "contract_observations": [
+        {
+          "price": "100.00"
+        },
+        {
+          "price": "85.00"
+        },
+        {
+          "price": "125.00"
+        }
+      ],
+      "fresh_carried": "FRESH_ENTRY",
+      "monthly_status": "BEARISH_CONFIRMED",
+      "normal_gap_path": "GAP_RECALCULATED",
+      "orpt_rc_path": "RC",
+      "planned_prices_are_not_pnl_inputs": true,
+      "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+      "selected_contract_evidence": "PHASE4H_SELECTED_CONTRACT_FIXTURE",
+      "source_entry_rule_ids": [
+        "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE"
+      ],
+      "source_exit_rule_ids": [
+        "S23_REVISED_SL"
+      ],
+      "source_plan_context_decision_hashes": {
+        "effective_plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+        "opening": "phase4i-opening",
+        "premarket": "phase4i-premarket"
+      }
+    },
+    "execution": {
+      "average_entry": "203.5",
+      "average_exit": "118.00",
+      "confirmed_entry_quantity": 50,
+      "confirmed_exit_quantity": 50,
+      "entry_fill_count": 1,
+      "exit_fill_count": 1,
+      "final_exit_timestamp": "2026-06-05T15:00:00+05:30",
+      "first_entry_timestamp": "2026-06-05T09:15:00+05:30",
+      "first_exit_timestamp": "2026-06-05T15:00:00+05:30",
+      "last_entry_timestamp": "2026-06-05T09:15:00+05:30",
+      "partial_exit": false,
+      "partial_fill": false,
+      "remaining_quantity": 0,
+      "requested_entry_quantity": 50
+    },
+    "fact_hash": "6d4d1278207fb2851a1c568eb8c12b88559011cc8d7a11802808e82503b33d81",
+    "final_trading_date": "2026-06-05",
+    "instrument": {
+      "contract": "NIFTY_20260806_22250_CALL",
+      "currency": "INR",
+      "direction": "CALL_SIDE_VERTICAL",
+      "exchange": "NSE",
+      "expiry": null,
+      "lot_size": 75,
+      "metadata_version": "phase4i.s23.option_selling.v1",
+      "multiplier": "1",
+      "option_type": "CALL",
+      "product": "OPTION_SELLING",
+      "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+      "strike": null,
+      "tick_size": "0.05",
+      "underlying": "NIFTY"
+    },
+    "lifecycle": {
+      "carry_forward_count": 0,
+      "eod_exit": false,
+      "final_exit_reason": "REVISED_SL",
+      "original_sl_hit": false,
+      "original_sl_linked": false,
+      "revised_sl_hit": true,
+      "revised_sl_linked": false,
+      "target_hit": false,
+      "target_linked": false,
+      "terminal_state": "CLOSED",
+      "win_loss": "WIN"
+    },
+    "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+    "originating_trading_date": "2026-07-30",
+    "performance_inputs": {
+      "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "capital_or_margin_estimate": "5000.00",
+      "current_unrealized_pnl": "0.00",
+      "duration_seconds": 20700,
+      "gross_realized_pnl": "4275.00",
+      "mark_quality": "EXECUTABLE_SIDE",
+      "mfe_mae": {
+        "evidence_hash": "a98692eeb4958bb54cfc75a5ac41912cc6fc4682e82b9ccf260deca91250744b",
+        "mae": "-78.50",
+        "mfe": "118.50",
+        "observation_count": 3,
+        "quality": "COMPLETE"
+      },
+      "net_realized_pnl": "4273.75",
+      "provisional_charges": "1.25"
+    },
+    "position_cycle_id": "ipc:e5e33d064d0712ee7e3c71f7",
+    "provenance": {
+      "correction_source": "NONE",
+      "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+      "source_fill_ids": [
+        "internal-fill:eaa083ff5a113bb997ed8d2a",
+        "phase4i-exit-fill"
+      ],
+      "source_hashes": {
+        "position_cycle_hash": "f8821b2cfdc512b807631145589ed6cf2f4b86d04baa418563b512c5cabc58e7",
+        "position_event_ids": [
+          "phase4h-position-event"
+        ]
+      },
+      "source_lifecycle_requirement_ids": [],
+      "source_order_ids": [
+        "entry-order-0",
+        "REVISED_SL-order"
+      ],
+      "source_position_event_ids": [
+        "phase4h-position-event"
+      ]
+    },
+    "rule_matrix_version": "s23_authoritative_matrix_phase3d_m13b",
+    "state": "CLOSED_PROVISIONAL",
+    "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+    "strategy_family": "S23",
+    "strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "strategy_version": "1.0.0",
+    "supersedes_trade_fact_id": null,
+    "trade_fact_id": "trade-fact:956111072e2bfa1db68f85e4",
+    "trade_fact_version": "phase4i.s23.short_option_accounting.v1",
+    "trade_id": "trade:ipc:e5e33d064d0712ee7e3c71f7",
+    "trading_session_id": "NSE:2026-07-30"
+  }
+}
