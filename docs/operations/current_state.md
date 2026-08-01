@@ -2903,3 +2903,12 @@ Current notes:
   `strategy_definition_id@strategy_version`. `TFISRuntimeInput` and
   `TFISDecision` carry optional authoritative strategy identity/hash fields,
   while active paper/live/replay/backtest paths remain unmigrated.
+- Phase 3E architecture is complete and certified for implementation. Version
+  1 is now defined as the minimum safe paper-authorized architecture with
+  strategy identity, M15 runtime coordination, read-first reconciliation,
+  persistence/recovery, `ExecutionIntent`, risk/control, account coordination,
+  order state, position lifecycle, `TradeFact`/`PnLFact`, read-only analytics,
+  authority ladder, paper/live gates, and a provisional first-10 onboarding
+  roadmap. The first implementation task is Phase 4A: connect M15 to one
+  captured/replay stream in shadow-only mode. Broker, paper, live, order
+  mutation, and position mutation authority remain `NONE`.

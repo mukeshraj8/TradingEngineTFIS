@@ -1978,6 +1978,14 @@
   additive identity-layer config examples and policy composition by
   definition/version. `TFISRuntimeInput` and `TFISDecision` can carry resolved
   identity/hash evidence without activating any runtime migration.
+- Phase 3E Milestone 5 completed the Version 1 production architecture and
+  first-10 strategy delivery roadmap. The architecture is certified for
+  implementation with an explicit critical path to the first paper trade, an
+  authority ladder, paper/live gates, rollback/disable model, user decision
+  register, capability classification, strategy readiness matrix, and
+  implementation backlog. The next approved implementation start is Phase 4A
+  captured/replay shadow integration for M15; no broker, paper, live, order
+  mutation, or position mutation authority was added.
 
 ## Next Recommended Priorities
 

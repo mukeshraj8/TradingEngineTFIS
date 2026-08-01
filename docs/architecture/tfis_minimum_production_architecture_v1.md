@@ -1857,3 +1857,298 @@ flowchart LR
     Future -. read only .-> Reports[Research/AI/Warehouse]
     Future -. no write .-> Trading[Trading State]
 ```
+
+## 14. Final Version 1 Implementation Reference
+
+Status: Phase 3E Milestone 5 final.
+
+Verdict: `CERTIFIED_FOR_IMPLEMENTATION`
+
+Phase 3E finalizes the Version 1 architecture as an implementation reference.
+It does not add broker, paper, live, order mutation, or position mutation
+authority. The first implementation step after this architecture is Phase 4A:
+connect the accepted M15 runtime coordinator to one captured/replay stream in
+shadow-only mode.
+
+### 14.1 Purpose And Version 1 Definition
+
+Version 1 is the smallest financially safe TFIS system that can move from
+source-backed strategy decisions to measured paper trading. It must support
+approximately 10 strategies architecturally, but every strategy must still pass
+its own onboarding gate before receiving authority. The first paper vertical is
+S23 NIFTY option-selling Call-side; Bull Call and Bear Call are certification
+cases under one reusable pipeline.
+
+```mermaid
+flowchart TD
+    Source[Source Verified Strategy Config] --> Resolver[Strategy Resolution]
+    Resolver --> Plan[PreMarketStrategyPlan]
+    Stream[Captured Or Live Market Stream] --> Runtime[M15 Runtime Coordination]
+    Runtime --> Open[OpeningMarketContext]
+    Plan --> Fresh[Fresh Entry Normal Or Gap Path]
+    Open --> Fresh
+    Recon[Read First Reconciliation] --> Carried[Carried Position Lifecycle]
+    Open --> Carried
+    Fresh --> Intent[ExecutionIntent]
+    Carried --> Intent
+    Intent --> Risk[Risk And Control]
+    Risk --> Account[AccountCoordinator]
+    Account --> Order[OrderStateMachine]
+    Order --> Fill[Fill]
+    Fill --> Position[PositionCycle]
+    Position --> Facts[TradeFact And PnLFact]
+    Facts --> Views[Read Only Operational And Profitability Views]
+```
+
+### 14.2 Domain Model, Identity Chain And Truth
+
+Mutable state has exactly one owner: `AccountCoordinator` owns
+`AccountSession`, `OrderStateMachine` owns order projections,
+`PositionCycleCoordinator` owns `PositionCycle`, and fact projectors own
+read-only analytical facts.
+
+```text
+StrategyFamily
+-> StrategyDefinition
+-> StrategyVersion
+-> StrategyInstance
+-> TradingSession
+-> AccountSession
+-> StrategyEvaluation
+-> EffectiveExecutionPlan or LifecycleRequirement
+-> ExecutionIntent
+-> ClientOrderIdentity
+-> BrokerOrderIdentity
+-> Fill
+-> PositionCycle
+-> TradeFact
+-> PnLFact
+```
+
+Truth hierarchy:
+
+```text
+market truth
+-> business-decision truth
+-> execution-intent truth
+-> risk/control truth
+-> broker or paper order truth
+-> position truth
+-> accounting/P&L truth
+-> analytical projection truth
+```
+
+Analytics are read-only and cannot mutate strategy rules, orders, positions or
+authority.
+
+### 14.3 Ownership, Runtime And Market Data
+
+```mermaid
+flowchart LR
+    Account[AccountCoordinator] --> Session[AccountSession]
+    Session --> Order[OrderStateMachine]
+    Order --> BrokerOrder[BrokerOrder Projection]
+    Order --> Fill[Fill Facts]
+    Fill --> Position[PositionCycleCoordinator]
+    Position --> Lifecycle[LifecycleRequirement]
+    Lifecycle --> Intent[ExecutionIntent]
+    Intent --> Risk[PortfolioRiskAndControlSupervisor]
+    Risk --> Account
+```
+
+The M15 runtime layer routes normalized market, clock and lifecycle events to
+affected strategy instances only. Ordinary quote/OI bursts may be conflated;
+ORPT, RC, EOD, fills, reconciliation, position transitions and authority
+changes must be preserved with event watermarks and snapshot-quality evidence.
+
+### 14.4 ExecutionIntent To Broker Boundary
+
+```mermaid
+flowchart LR
+    Business[Effective Plan Or Lifecycle Requirement] --> Intent[ExecutionIntent]
+    Intent --> Validate[Intent Validation]
+    Validate --> Risk[Risk Decision]
+    Risk --> Account[Account Acceptance]
+    Account --> Adapter[Paper Or Broker Adapter Boundary]
+```
+
+`ExecutionIntent` must include strategy identity, account session, position
+cycle, contract, side, quantity, order purpose, idempotency key and evidence
+hash. It is a candidate request, not authority.
+
+### 14.5 Order And Position Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> RESERVED
+    RESERVED --> SUBMITTED
+    SUBMITTED --> ACKNOWLEDGED
+    ACKNOWLEDGED --> PARTIALLY_FILLED
+    ACKNOWLEDGED --> FILLED
+    PARTIALLY_FILLED --> FILLED
+    ACKNOWLEDGED --> CANCEL_REQUESTED
+    PARTIALLY_FILLED --> CANCEL_REQUESTED
+    CANCEL_REQUESTED --> CANCELLED
+    SUBMITTED --> REJECTED
+    ACKNOWLEDGED --> REJECTED
+    FILLED --> [*]
+    CANCELLED --> [*]
+    REJECTED --> [*]
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> PLANNED
+    PLANNED --> ENTRY_WAITING
+    ENTRY_WAITING --> OPEN
+    OPEN --> PROTECTED
+    PROTECTED --> REVISED_PROTECTION_REQUIRED
+    REVISED_PROTECTION_REQUIRED --> PROTECTED
+    PROTECTED --> EXIT_REQUIRED
+    OPEN --> EXIT_REQUIRED
+    EXIT_REQUIRED --> CLOSING
+    CLOSING --> CLOSED
+    PROTECTED --> CARRY_FORWARD_REQUIRED
+    CARRY_FORWARD_REQUIRED --> CARRIED
+    CARRIED --> OPEN
+    CLOSED --> [*]
+```
+
+V1 order purposes are `ENTRY`, `TARGET`, `ORIGINAL_SL`, `REVISED_SL` and
+`EOD_EXIT`. Fresh-entry disable and carried-position protection remain separate.
+
+### 14.6 Persistence, Reconciliation And Recovery
+
+```mermaid
+flowchart TD
+    Events[Append Only Events] --> Proj[Current State Projections]
+    Facts[Immutable Facts] --> Proj
+    Config[Locked Config Facts] --> Recovery[Recovery Loader]
+    Events --> Recovery
+    Facts --> Recovery
+    Proj --> Runtime[Recovered Coordinators]
+```
+
+```mermaid
+flowchart TD
+    Broker[Broker Or Paper Truth] --> Compare[Reconciliation Compare]
+    Local[Local Projections] --> Compare
+    Compare --> Match[MATCH]
+    Compare --> Review[REVIEW_REQUIRED]
+    Compare --> Block[AUTHORITY_BLOCKED]
+```
+
+Restart loads locked configuration, rebuilds facts and projections, queries
+broker/paper truth where available, reconciles, rebuilds subscriptions and
+resumes only the approved authority level. Inconsistent state blocks authority.
+
+### 14.7 Risk, Kill Switches And Degraded Modes
+
+```mermaid
+flowchart TD
+    Intent[ExecutionIntent] --> IntentRisk[Intent Risk]
+    IntentRisk --> StrategyRisk[Strategy Instance Limits]
+    StrategyRisk --> AccountRisk[Account Limits And Health]
+    AccountRisk --> PortfolioRisk[Portfolio Controls]
+    PortfolioRisk --> Kill[Global Kill Switch]
+    Kill --> Decision[Approve Or Block]
+```
+
+```mermaid
+flowchart TD
+    Healthy[NORMAL] --> Data[DATA_DEGRADED]
+    Healthy --> Broker[BROKER_READ_DEGRADED]
+    Healthy --> Persist[PERSISTENCE_DEGRADED]
+    Data --> Shadow[SHADOW_ONLY]
+    Broker --> ReadOnly[READ_ONLY_RECOVERY_MODE]
+    Persist --> ReadOnly
+    ReadOnly --> Halt[AUTHORITY_BLOCKED]
+```
+
+Controls fail closed for stale data, unresolved reconciliation, exceeded
+limits, unhealthy persistence, broker degradation and unsupported strategy
+rules.
+
+### 14.8 Accounting, Analytics And Strategy Onboarding
+
+```mermaid
+flowchart LR
+    Order[Order Events] --> TradeFact[TradeFact]
+    Fill[Fill Facts] --> TradeFact
+    Position[PositionCycle] --> PnLFact[PnLFact]
+    Marks[Market Marks] --> PnLFact
+    TradeFact --> Views[Operational Views]
+    PnLFact --> Views
+    Views --> Review[Profitability And Safety Review]
+```
+
+V1 uses weighted-average cost per `PositionCycle`, provisional estimated
+charges with labels, and conservative executable-side unrealized marks unless
+the user overrides before paper authority.
+
+```mermaid
+flowchart TD
+    SourceCells[Exact Source Cells] --> Matrix[Authoritative Rule Matrix]
+    Matrix --> Config[Locked Strategy Version]
+    Config --> Unit[Formula And Branch Tests]
+    Unit --> Offline[Offline Fixture Parity]
+    Offline --> Replay[Captured Replay Shadow]
+    Replay --> LiveShadow[Live Data Shadow]
+    LiveShadow --> PaperGate[Paper Gate]
+    PaperGate --> Paper[Controlled Paper]
+    Paper --> Review[Operational And Profitability Review]
+```
+
+No strategy implementation starts before source extraction acceptance.
+
+### 14.9 Authority Ladder And Gates
+
+```mermaid
+flowchart TD
+    ConfigOnly[CONFIG_ONLY] --> UnitOnly[UNIT_TEST_ONLY]
+    UnitOnly --> OfflineFixture[OFFLINE_FIXTURE]
+    OfflineFixture --> ReplayShadow[CAPTURED_REPLAY_SHADOW]
+    ReplayShadow --> LiveShadow[LIVE_DATA_SHADOW]
+    LiveShadow --> InternalPaper[INTERNAL_PAPER]
+    InternalPaper --> BrokerPaper[BROKER_PAPER_SANDBOX]
+    BrokerPaper --> ControlledLive[CONTROLLED_LIVE]
+    ControlledLive --> GeneralLive[GENERAL_LIVE]
+```
+
+Detailed gates live in `reports/phase3e/authority_ladder.json` and
+`reports/phase3e/paper_live_readiness_gate.json`. No level may be skipped.
+
+### 14.10 Critical Path
+
+```mermaid
+flowchart TD
+    P4A[P4A Captured Replay Shadow] --> P4B[P4B Broker Read Boundary]
+    P4B --> P4C[P4C Persistence]
+    P4C --> P4D[P4D Reconciliation]
+    P4D --> P4E[P4E ExecutionIntent And Risk]
+    P4E --> P4F[P4F Account And Paper Adapter]
+    P4F --> P4G[P4G OrderStateMachine]
+    P4G --> P4H[P4H PositionCycle Integration]
+    P4H --> P4I[P4I TradeFact And PnLFact]
+    P4I --> P5A[P5A One S23 Call-side Paper Route]
+```
+
+The detailed critical path is recorded in
+`reports/phase3e/critical_path_to_first_paper_trade.md`.
+
+### 14.11 Failure Isolation, Deferred Extensions And User Decisions
+
+Failures isolate by global, account, strategy instance, instrument stream,
+order, position cycle and projection. Strategy fresh-entry disable does not
+cancel protection. Analytics failure does not mutate runtime state but can
+block authority if required evidence is unavailable.
+
+Deferred work includes general live authority, portfolio optimization, advanced
+analytics, AI diagnostics, broad multi-broker live routing, automated strategy
+modification, unverified strategy families, per-lot quantity slices, and full
+first-10 authority rollout.
+
+Open decisions are tracked in
+`reports/phase3e/user_decision_register.md`. They do not block the first Phase
+4A captured/replay shadow implementation unless explicitly marked as a paper
+authority prerequisite.

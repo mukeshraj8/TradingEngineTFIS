@@ -1661,3 +1661,22 @@ Comparison reporting note:
 ## Current Architectural Principle
 
 `Evidence before behavior.`
+
+## Phase 3E Completion And Phase 4A Next Step
+
+- Phase 3E architecture is `COMPLETE`.
+- Version 1 architecture is `CERTIFIED_FOR_IMPLEMENTATION`.
+- First paper critical path is `DEFINED`.
+- First-10 slate is `PROVISIONAL`, not full implementation approval.
+- Broker, paper, live, order mutation, and position mutation authority remain
+  `NONE`.
+
+Next implementation task:
+
+1. Phase 4A: connect the accepted M15 runtime coordinator to one existing
+   captured/replay stream in shadow-only mode.
+2. Prove deterministic fresh-entry and carried-position event flow with no
+   broker, paper, live, order mutation, or position mutation authority.
+3. Keep later source extraction for S23 Put, S21, Futures, Option Buying and
+   stock/equity candidates parallel-safe but separate from the Phase 4A
+   critical path.

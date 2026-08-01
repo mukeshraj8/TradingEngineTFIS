@@ -1,0 +1,116 @@
+{
+  "schema_version": "tfis.phase3e.authority_ladder.v1",
+  "milestone": "Phase 3E Milestone 5",
+  "date": "2026-08-01",
+  "authority_sequence": [
+    {
+      "level": "CONFIG_ONLY",
+      "allowed_inputs": ["source workbooks", "locked normalized configs"],
+      "allowed_outputs": ["configuration facts", "readiness reports"],
+      "broker_access": "NONE",
+      "mutation_permission": "NONE",
+      "risk_requirements": ["schema validation", "source trace"],
+      "reconciliation_requirements": ["not applicable"],
+      "evidence_requirements": ["config hash", "source rule ids"],
+      "rollback_conditions": ["invalid config", "unresolved source rule"],
+      "next_level": "UNIT_TEST_ONLY"
+    },
+    {
+      "level": "UNIT_TEST_ONLY",
+      "allowed_inputs": ["synthetic fixtures", "source-derived expected values"],
+      "allowed_outputs": ["unit results", "formula evidence"],
+      "broker_access": "NONE",
+      "mutation_permission": "NONE",
+      "risk_requirements": ["fail-closed unsupported formulas"],
+      "reconciliation_requirements": ["not applicable"],
+      "evidence_requirements": ["fixture ids", "expected source rule ids"],
+      "rollback_conditions": ["formula mismatch", "missing source trace"],
+      "next_level": "OFFLINE_FIXTURE"
+    },
+    {
+      "level": "OFFLINE_FIXTURE",
+      "allowed_inputs": ["golden fixtures", "offline strategy packets"],
+      "allowed_outputs": ["TFISDecision", "TFISDecisionEvidencePacket"],
+      "broker_access": "NONE",
+      "mutation_permission": "NONE",
+      "risk_requirements": ["no authority-bearing intent output"],
+      "reconciliation_requirements": ["offline simulated account state only"],
+      "evidence_requirements": ["decision packet", "parity summary"],
+      "rollback_conditions": ["offline parity failure"],
+      "next_level": "CAPTURED_REPLAY_SHADOW"
+    },
+    {
+      "level": "CAPTURED_REPLAY_SHADOW",
+      "allowed_inputs": ["captured/replay market stream", "offline account snapshots"],
+      "allowed_outputs": ["shadow decisions", "shadow intents marked non-authoritative"],
+      "broker_access": "READ_NONE_OR_REPLAY_ONLY",
+      "mutation_permission": "NONE",
+      "risk_requirements": ["stale-data blocking", "deterministic replay"],
+      "reconciliation_requirements": ["replay state classification"],
+      "evidence_requirements": ["event watermark", "shadow parity report"],
+      "rollback_conditions": ["non-determinism", "missing event identity"],
+      "next_level": "LIVE_DATA_SHADOW"
+    },
+    {
+      "level": "LIVE_DATA_SHADOW",
+      "allowed_inputs": ["live market data", "read-only broker snapshots"],
+      "allowed_outputs": ["shadow decisions", "read-only reconciliation"],
+      "broker_access": "READ_ONLY",
+      "mutation_permission": "NONE",
+      "risk_requirements": ["kill switch", "freshness checks", "account isolation"],
+      "reconciliation_requirements": ["startup and periodic read-only reconciliation"],
+      "evidence_requirements": ["live shadow run report", "broker snapshot ids"],
+      "rollback_conditions": ["broker read instability", "reconciliation mismatch"],
+      "next_level": "INTERNAL_PAPER"
+    },
+    {
+      "level": "INTERNAL_PAPER",
+      "allowed_inputs": ["live or replay market data", "internal simulator"],
+      "allowed_outputs": ["paper orders", "paper fills", "position cycles", "TradeFact", "PnLFact"],
+      "broker_access": "READ_ONLY_OR_NONE",
+      "mutation_permission": "INTERNAL_SIMULATOR_ONLY",
+      "risk_requirements": ["paper authority gate", "idempotency", "partial fill handling"],
+      "reconciliation_requirements": ["simulator truth reconciliation"],
+      "evidence_requirements": ["paper ledger", "order events", "position facts", "PnL facts"],
+      "rollback_conditions": ["duplicate paper order", "unexplained position mismatch"],
+      "next_level": "BROKER_PAPER_SANDBOX"
+    },
+    {
+      "level": "BROKER_PAPER_SANDBOX",
+      "allowed_inputs": ["broker sandbox market/account/order APIs"],
+      "allowed_outputs": ["sandbox orders", "sandbox fills", "broker-paper reconciliation"],
+      "broker_access": "SANDBOX_READ_WRITE",
+      "mutation_permission": "BROKER_SANDBOX_ONLY",
+      "risk_requirements": ["broker capability config", "rate-limit handling", "operator approval"],
+      "reconciliation_requirements": ["sandbox order, trade and position book reconciliation"],
+      "evidence_requirements": ["sandbox audit trail", "adapter conformance report"],
+      "rollback_conditions": ["adapter mismatch", "rate-limit failures", "unexplained broker state"],
+      "next_level": "CONTROLLED_LIVE"
+    },
+    {
+      "level": "CONTROLLED_LIVE",
+      "allowed_inputs": ["approved live account", "approved strategy instance", "approved quantity"],
+      "allowed_outputs": ["controlled live orders and lifecycle events"],
+      "broker_access": "LIVE_READ_WRITE_RESTRICTED",
+      "mutation_permission": "ONE_APPROVED_ROUTE_ONLY",
+      "risk_requirements": ["live authority gate", "hard limits", "kill switch drill"],
+      "reconciliation_requirements": ["pre-open, post-submit, post-fill, periodic and EOD reconciliation"],
+      "evidence_requirements": ["operator approval", "audit completeness", "live close-out report"],
+      "rollback_conditions": ["safety defect", "duplicate order", "position mismatch", "operator halt"],
+      "next_level": "GENERAL_LIVE"
+    },
+    {
+      "level": "GENERAL_LIVE",
+      "allowed_inputs": ["multiple approved routes"],
+      "allowed_outputs": ["expanded live trading"],
+      "broker_access": "LIVE_READ_WRITE_APPROVED",
+      "mutation_permission": "APPROVED_PORTFOLIO_SCOPE_ONLY",
+      "risk_requirements": ["portfolio controls", "strategy disable", "account halt", "global halt"],
+      "reconciliation_requirements": ["continuous health and EOD controls"],
+      "evidence_requirements": ["periodic profitability, safety and execution quality reviews"],
+      "rollback_conditions": ["breach of any live gate condition"],
+      "next_level": "none"
+    }
+  ],
+  "non_skip_rule": "No authority level may be skipped. A later level may be prepared in design while the system remains at an earlier authority level."
+}

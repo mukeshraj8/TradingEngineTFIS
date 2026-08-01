@@ -1,0 +1,54 @@
+{
+  "schema_version": "tfis.phase3e.paper_live_readiness_gate.v1",
+  "milestone": "Phase 3E Milestone 5",
+  "date": "2026-08-01",
+  "paper_authority_gate": {
+    "name": "FIRST_STRATEGY_INSTANCE_PAPER_AUTHORITY",
+    "minimum_candidate": "S23 NIFTY option-selling Call-side, certified separately for Bull Call and Bear Call cases",
+    "required_conditions": [
+      "source verification complete for supported scope",
+      "configuration version locked and hashed",
+      "all supported branches tested",
+      "captured/replay shadow parity accepted",
+      "live-data shadow parity accepted where broker data is used",
+      "account reconciliation complete",
+      "transactional persistence operational",
+      "idempotency proven for intent, order and fill events",
+      "OrderStateMachine proven for ENTRY, TARGET, ORIGINAL_SL, REVISED_SL and EOD_EXIT purposes",
+      "partial and full fill handling proven",
+      "PositionCycle invariants proven",
+      "Target, Original SL, revised SL and carried-position EOD handling proven",
+      "restart/recovery drill passed",
+      "stale-data blocking proven",
+      "global, account and strategy kill switches tested",
+      "TradeFact and PnLFact verified",
+      "operator dashboard/read model available",
+      "no critical unresolved defect",
+      "explicit paper approval recorded"
+    ],
+    "authority_granted": "INTERNAL_PAPER for one approved strategy instance/account route only",
+    "authority_not_granted": ["broker write", "live money", "portfolio-wide paper", "unverified strategies"]
+  },
+  "live_authority_gate": {
+    "name": "CONTROLLED_LIVE_MONEY_AUTHORITY",
+    "required_conditions": [
+      "stable paper observation period accepted",
+      "acceptable reconciliation health",
+      "zero unexplained duplicate orders",
+      "zero unexplained position mismatches",
+      "restart recovery proven during paper",
+      "kill switch proven during paper",
+      "broker disconnect handling proven",
+      "risk limits approved",
+      "controlled quantity and account approved",
+      "audit completeness accepted",
+      "accounting and PnL correctness accepted",
+      "strategy behavior reviewed",
+      "execution quality reviewed",
+      "explicit live approval recorded"
+    ],
+    "authority_granted": "CONTROLLED_LIVE for one approved route only",
+    "authority_not_granted": ["general live", "all strategies", "automatic scaling"],
+    "safety_rule": "Profitability expectations must not override operational safety failures."
+  }
+}

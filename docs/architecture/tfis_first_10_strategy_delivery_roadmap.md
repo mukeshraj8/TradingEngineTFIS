@@ -305,3 +305,120 @@ flowchart TD
     Expectancy --> Decision[Continue / Observe / Reduce / Disable / Research]
     Decision -. user approval required .-> RuleChange[Rule Change Proposal]
 ```
+
+## 15. Milestone 5 Final Roadmap
+
+Status: `PROVISIONAL_FIRST_10_DEFINED`
+
+The candidate first 10 are not all implementation-ready today. They are a
+sequenced slate of readiness slots. Each slot must pass source extraction,
+offline parity, captured/replay parity, shadow, paper, operational acceptance
+and profitability/behavior review before authority expands.
+
+### 15.1 Provisional First-10 Slate
+
+| Slot | Candidate | Readiness | Purpose |
+| --- | --- | --- | --- |
+| 1 | S23 NIFTY Bull Call | `READY_AFTER_ENGINE_CAPABILITY` | First S23 Call-side paper certification case |
+| 2 | S23 NIFTY Bear Call | `READY_AFTER_ENGINE_CAPABILITY` | Second S23 Call-side certification case |
+| 3 | S23 NIFTY Bull Put | `READY_AFTER_SOURCE_EXTRACTION` | Add Put-side S23 behavior |
+| 4 | S23 NIFTY Bear Put | `READY_AFTER_SOURCE_EXTRACTION` | Complete S23 four-branch proof |
+| 5 | S21 BankNifty option-selling Call-side slot | `READY_AFTER_SOURCE_EXTRACTION` | First monthly BankNifty proof |
+| 6 | S21 BankNifty option-selling Put-side slot | `READY_AFTER_SOURCE_EXTRACTION` | S21 Put-side/monthly variation |
+| 7 | Index Futures slot from AB6 Fut | `READY_AFTER_SOURCE_EXTRACTION` | First non-option product path |
+| 8 | Currency/Commodity or alternate Futures slot | `CONDITIONAL_USER_APPROVAL` | Product/data/broker availability variation |
+| 9 | Option Buying slot from AB8 OB | `READY_AFTER_SOURCE_EXTRACTION` | Long option economics |
+| 10 | Stock/equity-oriented slot | `CONDITIONAL_USER_APPROVAL` | Stock-oriented or cash-equity path |
+
+The machine-readable matrix is
+`reports/phase3e/first_10_strategy_candidate_matrix.json`.
+
+### 15.2 Source Extraction Workstream
+
+Each source-extraction task must produce exact workbook cells, original text or
+formula, normalized formula, timing, inputs, percentage base, rounding,
+contract-selection rule, Target/SL/lifecycle behavior, carry/gap behavior,
+question register, authoritative rule matrix rows and formula fixtures.
+
+Parallel extraction can proceed for S23 Put, S21 branches, selected Futures,
+selected Option Buying, selected stock-oriented strategy and optional Equity.
+Implementation must wait for extraction acceptance.
+
+### 15.3 Onboarding Waves
+
+```mermaid
+flowchart TD
+    W1[Wave 1 S23 Call-side Paper Vertical] --> W2[Wave 2 Complete S23 Put-side]
+    W2 --> W3[Wave 3 S21 Option Selling]
+    W3 --> W4[Wave 4 Futures]
+    W4 --> W5[Wave 5 Option Buying]
+    W5 --> W6[Wave 6 Stock Or Equity Variants]
+```
+
+No wave grants authority to every strategy in the wave simultaneously.
+
+### 15.4 Engine Dependencies
+
+All candidates depend on strategy identity, configuration resolution, runtime
+coordination, evidence packets, `ExecutionIntent`, risk, account coordination,
+order state, position cycle, persistence, reconciliation, `TradeFact` and
+`PnLFact`.
+
+Product-specific dependencies remain source-gated:
+
+- S23 Put: Put-side contract selection and lifecycle parity.
+- S21: monthly expiry, BankNifty metadata, ORPT/RC applicability and carry
+  behavior.
+- Futures: futures contract selection, rollover/expiry and points-based P&L.
+- Option Buying: long option economics, premium/OI phases and risk-price guards.
+- Stock/equity: stock universe, product permissions and non-expiry lifecycle.
+
+### 15.5 Authority Milestones
+
+```mermaid
+flowchart TD
+    Config[CONFIG_ONLY] --> Unit[UNIT_TEST_ONLY]
+    Unit --> Offline[OFFLINE_FIXTURE]
+    Offline --> Replay[CAPTURED_REPLAY_SHADOW]
+    Replay --> LiveShadow[LIVE_DATA_SHADOW]
+    LiveShadow --> Paper[INTERNAL_PAPER]
+    Paper --> Review[Operational Review]
+    Review --> Expand[Next Strategy Candidate]
+```
+
+The detailed authority ladder is
+`reports/phase3e/authority_ladder.json`.
+
+### 15.6 Paper Rollout Sequence
+
+Paper rollout starts with one approved S23 Call-side strategy instance and one
+approved account route. Bull Call and Bear Call are certification cases under
+that same route. S23 Put-side waits for source/lifecycle parity. S21 waits for
+source extraction and monthly lifecycle closure. Futures, Option Buying and
+stock/equity candidates wait for their product-specific extraction packages.
+
+### 15.7 Profitability Review
+
+Profitability review uses `TradeFact` and `PnLFact`, not ad hoc ledger reads.
+It reviews overall, account, strategy, instrument/product, normal/gap,
+ORPT/RC, carried-position outcomes, exit reasons, slippage, broker rejects,
+reconciliation defects, win/loss, expectancy, profit factor and drawdown.
+
+Review conclusions are classified as implementation defect, configuration
+defect, data-quality defect, execution-quality defect, operational defect,
+insufficient sample, market-suitability issue, negative expectancy evidence or
+acceptable behavior. No automatic rule mutation is permitted.
+
+### 15.8 Disable And Rollback
+
+Every authority-bearing phase must support strategy disable, account halt,
+global halt, rollback to shadow, rollback to prior configuration version,
+evidence preservation and operator approval. Open positions remain managed
+through lifecycle/protection rules even when fresh entries are disabled.
+
+### 15.9 First Implementation Phase
+
+The next implementation phase is Phase 4A: connect M15 to one existing
+captured/replay stream in shadow-only mode. This is the shortest safe route to
+implementation because it proves the runtime event path without granting paper,
+broker or live authority.
