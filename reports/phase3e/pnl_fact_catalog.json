@@ -1,0 +1,132 @@
+{
+  "milestone": "Phase 3E Milestone 4",
+  "status": "ARCHITECTURE_SPECIFICATION_ONLY",
+  "date": "2026-07-31",
+  "accounting_truth_model": "broker_confirmed_fills + contract_metadata + charges_taxes + position_quantity_state + market_marks",
+  "cost_basis_method_v1": "weighted_average_cost_per_PositionCycle",
+  "correction_semantics": "historical PnL facts are never overwritten silently; corrections create superseding PnLFact records with supersedes_fact_id and evidence_hash",
+  "fact_types": [
+    "REALIZED_TRADE_PNL",
+    "UNREALIZED_POSITION_PNL",
+    "DAILY_ACCOUNT_PNL",
+    "DAILY_STRATEGY_PNL",
+    "DAILY_BROKER_PNL",
+    "DAILY_INSTRUMENT_PNL",
+    "DAILY_PORTFOLIO_PNL",
+    "CHARGES_ADJUSTMENT",
+    "RECONCILIATION_CORRECTION"
+  ],
+  "required_fields": [
+    {"field": "pnl_fact_id", "data_type": "string", "required": true, "source": "PnLProjectionService"},
+    {"field": "fact_type", "data_type": "enum", "required": true, "source": "PnLProjectionService"},
+    {"field": "as_of_timestamp", "data_type": "timestamp", "required": true, "source": "clock/source event"},
+    {"field": "trading_date", "data_type": "date", "required": true, "source": "TradingSession"},
+    {"field": "source_trade_position_fill_identities", "data_type": "object", "required": true, "source": "TradeFact/PositionCycle/Fill"},
+    {"field": "strategy_dimensions", "data_type": "object", "required": true, "source": "StrategyInstance"},
+    {"field": "account_broker_dimensions", "data_type": "object", "required": true, "source": "AccountCoordinator"},
+    {"field": "instrument_dimensions", "data_type": "object", "required": true, "source": "InstrumentRegistry"},
+    {"field": "gross_pnl", "data_type": "decimal", "required": true, "source": "fill and mark calculation"},
+    {"field": "charges", "data_type": "decimal_or_unknown", "required": true, "source": "broker charges, contract note, estimate or unknown"},
+    {"field": "net_pnl", "data_type": "decimal_or_unknown", "required": true, "source": "gross minus charges/taxes"},
+    {"field": "realized_unrealized", "data_type": "enum", "required": true, "source": "position lifecycle state"},
+    {"field": "currency", "data_type": "string", "required": true, "source": "account/instrument metadata"},
+    {"field": "conversion_rate", "data_type": "decimal_or_null", "required": false, "source": "currency conversion source if applicable"},
+    {"field": "calculation_version", "data_type": "string", "required": true, "source": "PnL formula catalog version"},
+    {"field": "source_metadata_version", "data_type": "string", "required": true, "source": "contract/account metadata version"},
+    {"field": "supersedes_fact_id", "data_type": "string_or_null", "required": false, "source": "correction workflow"},
+    {"field": "evidence_hash", "data_type": "string", "required": true, "source": "fact input hash"}
+  ],
+  "product_unit_catalog": [
+    {
+      "product": "Option Selling",
+      "source_status": "SOURCE_BACKED_FOR_S23_AND_S21_CONFIG_SCOPE",
+      "source": ["AB7 OS.xlsx/AB6 OS", "authoritative S23 matrix", "S21/S23 option-sell configs"],
+      "pnl_formula": "short_option: (average_entry_premium - average_exit_or_mark_premium) * quantity * multiplier - charges",
+      "points_or_premium": "premium difference",
+      "quantity": "filled units; lots * lot_size",
+      "multiplier": "normally 1 rupee per premium point per unit unless exchange metadata says otherwise",
+      "mark_policy": "requires user decision for bid/ask/LTP default",
+      "rounding": "currency precision after calculation; source tick rounding remains contract metadata",
+      "v1_status": "VERIFIED_FOR_FIRST_OPTION_SELLING_SCOPE"
+    },
+    {
+      "product": "Option Buying",
+      "source_status": "SOURCE_AVAILABLE_RULES_NOT_EXTRACTED",
+      "source": ["AB8 OB.xlsx/AB6 OB", "All in One AB6 OB"],
+      "pnl_formula": "long_option candidate: (average_exit_or_mark_premium - average_entry_premium) * quantity * multiplier - charges",
+      "points_or_premium": "premium difference",
+      "quantity": "filled units; lots * lot_size",
+      "multiplier": "requires instrument metadata",
+      "mark_policy": "unresolved",
+      "rounding": "requires source/metadata confirmation",
+      "v1_status": "CONDITIONAL_SOURCE_EXTRACTION_REQUIRED"
+    },
+    {
+      "product": "Index Futures",
+      "source_status": "SOURCE_AVAILABLE_RULES_NOT_EXTRACTED",
+      "source": ["AB6 Fut.xlsx/AB6 FUT", "All in One AB6 FUT"],
+      "pnl_formula": "long: (exit - entry) * quantity * multiplier; short: (entry - exit) * quantity * multiplier; minus charges",
+      "points_or_premium": "futures points",
+      "quantity": "lots * lot_size",
+      "multiplier": "requires exchange metadata",
+      "mark_policy": "unresolved",
+      "rounding": "requires source/metadata confirmation",
+      "v1_status": "CONDITIONAL_SOURCE_EXTRACTION_REQUIRED"
+    },
+    {
+      "product": "Stock Futures",
+      "source_status": "SOURCE_AVAILABLE_RULES_NOT_EXTRACTED",
+      "source": ["AB6 Fut.xlsx/AB6 FUT", "All in One AB6 FUT"],
+      "pnl_formula": "long: (exit - entry) * quantity * multiplier; short: (entry - exit) * quantity * multiplier; minus charges",
+      "points_or_premium": "futures points",
+      "quantity": "lots * lot_size",
+      "multiplier": "requires exchange metadata",
+      "mark_policy": "unresolved",
+      "rounding": "requires source/metadata confirmation",
+      "v1_status": "CONDITIONAL_SOURCE_EXTRACTION_REQUIRED"
+    },
+    {
+      "product": "Equity",
+      "source_status": "SOURCE_AVAILABLE_RULES_NOT_EXTRACTED",
+      "source": ["AB9 Equity.xlsx/AB6 EQ", "All in One AB6 EQ"],
+      "pnl_formula": "long: (exit - entry) * shares - charges; short only if product/account supports and source verifies",
+      "points_or_premium": "cash price difference",
+      "quantity": "shares",
+      "multiplier": "1",
+      "mark_policy": "unresolved",
+      "rounding": "currency precision",
+      "v1_status": "CONDITIONAL_SOURCE_EXTRACTION_REQUIRED"
+    },
+    {
+      "product": "Currency Futures",
+      "source_status": "SOURCE_AVAILABLE_RULES_NOT_EXTRACTED",
+      "source": ["AB6 Fut.xlsx/AB6 FUT"],
+      "pnl_formula": "requires contract multiplier/currency unit verification before authority",
+      "points_or_premium": "currency futures points/ticks",
+      "quantity": "lots * lot_size",
+      "multiplier": "requires exchange metadata",
+      "mark_policy": "unresolved",
+      "rounding": "requires source/metadata confirmation",
+      "v1_status": "CONDITIONAL_SOURCE_EXTRACTION_REQUIRED"
+    },
+    {
+      "product": "Commodity Futures",
+      "source_status": "SOURCE_AVAILABLE_RULES_NOT_EXTRACTED",
+      "source": ["AB6 Fut.xlsx/AB6 FUT"],
+      "pnl_formula": "requires contract multiplier/unit verification before authority",
+      "points_or_premium": "commodity price points/ticks",
+      "quantity": "lots * lot_size",
+      "multiplier": "requires exchange metadata",
+      "mark_policy": "unresolved",
+      "rounding": "requires source/metadata confirmation",
+      "v1_status": "CONDITIONAL_SOURCE_EXTRACTION_REQUIRED"
+    }
+  ],
+  "unrealized_mark_policy": {
+    "status": "USER_DECISION_REQUIRED_BEFORE_PAPER_AUTHORITY",
+    "recommended_default": "risk_conservative_bid_ask: short positions mark at ask, long positions mark at bid; dashboard may show LTP as informational",
+    "stale_mark_behavior": "UNKNOWN, not fabricated PnL"
+  },
+  "charges_priority": ["broker_confirmed_charges", "contract_note_or_ledger_import", "configured_estimate", "unknown"],
+  "charges_types": ["brokerage", "exchange_transaction_charges", "STT_or_CTT", "GST", "stamp_duty", "SEBI_charges", "broker_specific_charges", "currency_or_commodity_differences"]
+}

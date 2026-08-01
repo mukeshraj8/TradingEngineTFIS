@@ -6,6 +6,16 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Friday, July 31, 2026, Phase 3E Milestone 4 defines the minimum V1
+  analytics/accounting fact model and candidate first-10 strategy onboarding
+  roadmap. `TradeFact`, `PnLFact`, essential metrics, win/loss, drawdown,
+  MFE/MAE, execution-quality facts, analytics failure isolation, future
+  analytics boundaries, strategy inventory, first-10 candidate matrix, and
+  source-first onboarding gates are now documented. Verdict:
+  `MILESTONE_CONDITIONAL` because futures, option-buying, and equity source
+  files exist but are not yet extracted into implementation-ready rule
+  matrices/configs. No production runtime code was changed.
+  Broker/paper/live/order/position authority remains `NONE`.
 - as of Friday, July 31, 2026, Phase 3E Milestone 3 defines the minimum
   Version 1 persistence, recovery, reconciliation, risk/control, market-data
   performance, degraded-mode, failure-isolation, observability, audit, and P&L

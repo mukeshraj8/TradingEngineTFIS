@@ -1,0 +1,50 @@
+{
+  "milestone": "Phase 3E Milestone 4",
+  "status": "ARCHITECTURE_SPECIFICATION_ONLY",
+  "date": "2026-07-31",
+  "policy": "No strategy may skip source verification.",
+  "recommended_batch_size": "one_strategy_at_a_time_through_shadow_and_initial_paper_acceptance",
+  "stages": [
+    {"stage": 1, "name": "source_workbook_identified", "required_evidence": "workbook path, sheet, row/cell range", "authority_to_advance": "source reviewer"},
+    {"stage": 2, "name": "exact_cells_formulas_extracted", "required_evidence": "raw cell text/formulas and extracted formula catalog", "authority_to_advance": "source reviewer"},
+    {"stage": 3, "name": "authoritative_rule_matrix_completed", "required_evidence": "rule ids, source cells, unresolved rules", "authority_to_advance": "architecture reviewer"},
+    {"stage": 4, "name": "user_questions_closed", "required_evidence": "question register with decisions", "authority_to_advance": "user"},
+    {"stage": 5, "name": "strategy_definition_version_created", "required_evidence": "immutable strategy definition/version", "authority_to_advance": "configuration reviewer"},
+    {"stage": 6, "name": "strategy_instance_examples_created", "required_evidence": "disabled examples with account/schedule/risk refs", "authority_to_advance": "configuration reviewer"},
+    {"stage": 7, "name": "policy_composition_defined", "required_evidence": "business engine/policy composition", "authority_to_advance": "architecture reviewer"},
+    {"stage": 8, "name": "formula_tests", "required_evidence": "source-backed formula unit tests", "authority_to_advance": "test reviewer"},
+    {"stage": 9, "name": "branch_tests", "required_evidence": "monthly status/branch matrix tests", "authority_to_advance": "test reviewer"},
+    {"stage": 10, "name": "synthetic_golden_fixtures", "required_evidence": "deterministic complete fixtures", "authority_to_advance": "test reviewer"},
+    {"stage": 11, "name": "legacy_fixture_parity", "required_evidence": "legacy/source parity where reference exists", "authority_to_advance": "parity reviewer"},
+    {"stage": 12, "name": "captured_replay_parity", "required_evidence": "captured/replay packets and comparison", "authority_to_advance": "parity reviewer"},
+    {"stage": 13, "name": "performance_profile", "required_evidence": "bounded runtime/queue/performance report", "authority_to_advance": "runtime reviewer"},
+    {"stage": 14, "name": "failure_fail_closed_tests", "required_evidence": "missing data, stale data, invalid formula, idempotency, recovery tests", "authority_to_advance": "safety reviewer"},
+    {"stage": 15, "name": "non_authoritative_shadow", "required_evidence": "shadow-only stream with no authority", "authority_to_advance": "runtime reviewer"},
+    {"stage": 16, "name": "paper_readiness_review", "required_evidence": "persistence/reconciliation/risk/account/order/position/PnL gates passed", "authority_to_advance": "user"},
+    {"stage": 17, "name": "controlled_paper_rollout", "required_evidence": "single strategy/account paper authorization decision", "authority_to_advance": "user"},
+    {"stage": 18, "name": "operational_acceptance", "required_evidence": "operator observability and recovery runbook", "authority_to_advance": "operations reviewer"},
+    {"stage": 19, "name": "profitability_behavior_review", "required_evidence": "separate correctness, execution quality, market suitability, config quality and expectancy analysis", "authority_to_advance": "user"},
+    {"stage": 20, "name": "rollout_or_disable_decision", "required_evidence": "continue, observe, reduce paper allocation, disable, investigate, or research experiment decision", "authority_to_advance": "user"}
+  ],
+  "scorecard_fields": [
+    "source_completeness",
+    "formula_coverage",
+    "branch_coverage",
+    "fixture_coverage",
+    "captured_evidence",
+    "replay_parity",
+    "shadow_parity",
+    "runtime_performance",
+    "risk_control_readiness",
+    "recovery_readiness",
+    "analytics_fact_completeness",
+    "paper_result_quality",
+    "unresolved_defects",
+    "authority_level"
+  ],
+  "profitability_review": {
+    "separates": ["implementation_correctness", "execution_quality", "market_suitability", "configuration_quality", "genuine_strategy_expectancy"],
+    "allowed_outcomes": ["continue", "observe_longer", "reduce_paper_allocation", "disable", "investigate_execution", "investigate_source_or_config", "propose_research_experiment", "require_user_approval_before_rule_change"],
+    "prohibited": "analytics must not automatically alter strategy rules"
+  }
+}

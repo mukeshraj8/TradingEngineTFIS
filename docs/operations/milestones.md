@@ -2,6 +2,22 @@
 
 ## Current Snapshot
 
+- as of Friday, July 31, 2026, Phase 3E Milestone 4 defined the minimum V1
+  analytics/accounting fact architecture and first-10 strategy onboarding
+  roadmap. Files:
+  `docs/architecture/tfis_minimum_production_architecture_v1.md`,
+  `docs/architecture/tfis_first_10_strategy_delivery_roadmap.md`,
+  `reports/phase3e/trade_fact_catalog.json`,
+  `reports/phase3e/pnl_fact_catalog.json`,
+  `reports/phase3e/analytics_metric_catalog.json`,
+  `reports/phase3e/strategy_inventory.json`,
+  `reports/phase3e/first_10_strategy_candidate_matrix.json`,
+  `reports/phase3e/strategy_onboarding_gate.json`, and
+  `reports/phase3e/milestone4_analytics_strategy_summary.md`. Verdict:
+  `MILESTONE_CONDITIONAL` because futures, option-buying, and equity sources
+  remain source-available but not implementation-ready. Runtime impact:
+  `NONE`. Broker/paper/live/order/position authority: `NONE`. Milestone 5 is
+  pending user approval.
 - as of Friday, July 31, 2026, Phase 3E Milestone 3 defined the minimum V1
   persistence, recovery, broker reconciliation, risk/control, market-data
   performance, degraded-mode, failure-isolation, observability, audit, and P&L

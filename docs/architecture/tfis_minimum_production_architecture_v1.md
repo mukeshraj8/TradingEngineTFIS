@@ -1527,3 +1527,333 @@ Milestone 3 is acceptable when:
 - operational observability before paper authority is defined
 - P&L projections are rebuildable from broker-confirmed facts
 - no runtime implementation or authority is added
+
+## 13. Milestone 4 Analytics, Accounting Facts, And Strategy Onboarding
+
+Status: Phase 3E Milestone 4 architecture/source-review/planning.
+
+Milestone 4 defines the minimum V1 accounting and analytics facts needed for
+profitability analysis, execution-quality review, risk reporting, and future
+analytics extensibility. It also defines the first-10 strategy candidate matrix
+and mandatory source-first onboarding gate. No analytics service, P&L code,
+dashboard, strategy config, broker integration, runtime authority, paper
+authority, or live authority is added.
+
+### 13.1 Current Analytics And P&L Audit
+
+Observed current/reference support:
+
+- current paper ledger rows contain S23-shaped trade identity, entry, target,
+  stoploss, lifecycle status, exit/current price, gross points, and gross P&L
+- reference backtest lifecycle code calculates option-selling gross points as
+  entry premium minus exit premium, then applies configured cost/slippage
+  assumptions in reporting
+- backtest docs already define win rate, profit factor, drawdown, cost/slippage
+  assumptions, and conservative same-bar stoploss behavior for S23 studies
+- current dashboards and runtime status surfaces read file-backed orders,
+  positions, ledgers, heartbeats, reconciliation status, and P&L summaries
+
+Gaps:
+
+- P&L is not yet broker-confirmed accounting truth
+- charges/taxes are estimates or absent unless broker/ledger evidence exists
+- current ledger P&L is option-selling specific and should not be generalized
+  to option buying, futures, equity, currency, or commodity products without
+  source/metadata verification
+- MFE/MAE and slippage are not complete durable facts across products
+- analytics projections are not yet reconstructible from V1 immutable facts
+- dimensions are sometimes implied by display names or strategy codes rather
+  than stable source identities
+
+### 13.2 Accounting Truth Model
+
+```text
+broker-confirmed fills
++ contract metadata
++ charges/taxes
++ position quantity state
++ market marks
+= accounting truth
+
+accounting truth
+-> TradeFact
+-> PnLFact
+-> analytical projections
+```
+
+Rules:
+
+- strategy decisions do not directly define actual P&L
+- actual P&L uses confirmed fills
+- planned prices and actual prices remain separate
+- broker charges may arrive later and require correction facts
+- analytical projections are rebuildable
+- analytics cannot mutate trading state
+
+```mermaid
+flowchart TD
+    Fills[Broker/Paper Confirmed Fills] --> Accounting[Accounting Truth]
+    Metadata[Contract Metadata] --> Accounting
+    Charges[Charges And Taxes] --> Accounting
+    Quantity[Position Quantity State] --> Accounting
+    Marks[Market Marks] --> Accounting
+    Accounting --> TradeFact[TradeFact]
+    Accounting --> PnLFact[PnLFact]
+    TradeFact --> Projection[Analytical Projections]
+    PnLFact --> Projection
+```
+
+### 13.3 TradeFact
+
+The immutable TradeFact contract is cataloged in
+`reports/phase3e/trade_fact_catalog.json`.
+
+Required groups:
+
+- identity: trade fact, trade, position cycle, trading session, strategy,
+  account, broker, execution plan, rule/config hashes
+- instrument: exchange, product, underlying, contract, expiry, strike, option
+  type, direction, lot size, multiplier, currency
+- decision context: Monthly Status, branch, market references, selected
+  contract evidence, fresh/carried classification, normal/gap, ORPT/RC, rule
+  ids, source evidence hashes
+- execution: requested and filled quantity, average entry/exit, first entry,
+  final exit, fills, partial-fill status, planned prices, revised SL,
+  authorized time, submission time
+- lifecycle: target, Original SL, revised SL, partial exits, carry count, EOD,
+  expiry, risk/operator exits, final exit reason
+- performance: gross/net P&L, charges, taxes, MFE, MAE, duration, capital or
+  margin, maximum open quantity, entry/exit slippage
+- provenance: source fills/orders, reconciliation version, accounting version,
+  correction/supersession identity
+
+```mermaid
+flowchart TD
+    Decision[Decision Evidence Packet] --> TradeFact
+    Intent[ExecutionIntent] --> TradeFact
+    Orders[Order Events] --> TradeFact
+    Fills[Fill Facts] --> TradeFact
+    Lifecycle[Lifecycle Requirements] --> TradeFact
+    Reconciliation[Reconciliation Results] --> TradeFact
+```
+
+### 13.4 PnLFact
+
+The immutable PnLFact contract is cataloged in
+`reports/phase3e/pnl_fact_catalog.json`.
+
+Minimum fact types:
+
+- `REALIZED_TRADE_PNL`
+- `UNREALIZED_POSITION_PNL`
+- `DAILY_ACCOUNT_PNL`
+- `DAILY_STRATEGY_PNL`
+- `DAILY_BROKER_PNL`
+- `DAILY_INSTRUMENT_PNL`
+- `DAILY_PORTFOLIO_PNL`
+- `CHARGES_ADJUSTMENT`
+- `RECONCILIATION_CORRECTION`
+
+Corrections never overwrite historical facts silently. A correction creates a
+new PnLFact with `supersedes_fact_id`, calculation version, source metadata
+version, and evidence hash.
+
+```mermaid
+flowchart LR
+    Fill[Fill Facts] --> Realized[Realized PnL]
+    Position[Open Position] --> Mark[Coherent Mark Snapshot]
+    Mark --> Unrealized[Unrealized PnL]
+    Charges[Charges/Taxes] --> Realized
+    Charges --> Unrealized
+    Realized --> PnLFact[PnLFact]
+    Unrealized --> PnLFact
+    Correction[Late Fill / Charge / Reconciliation] --> Superseding[Superseding PnLFact]
+```
+
+### 13.5 Product P&L Units
+
+V1 must not infer one P&L formula for every product.
+
+Source-backed status:
+
+- Option Selling: verified for the current S23/S21 option-selling scope; short
+  option gross P&L is entry premium minus exit/mark premium times quantity and
+  multiplier
+- Option Buying: source available in `AB8 OB.xlsx` / `AB6 OB`; exact P&L and
+  mark rules require source extraction before authority
+- Futures: source available in `AB6 Fut.xlsx`; exact strategy rows, multiplier,
+  and contract unit metadata require verification
+- Equity: source available in `AB9 Equity.xlsx`; stock universe, side
+  permission, and accounting metadata require extraction
+- Currency and commodity futures: source available through futures material,
+  but contract unit/multiplier/currency treatment must be verified before V1
+  authority
+
+### 13.6 Realized And Unrealized P&L
+
+Realized P&L:
+
+- fill-based
+- weighted average cost per `PositionCycle` for V1
+- supports multiple entry fills and partial exits
+- remaining quantity stays open
+- charges may be confirmed, imported, estimated, or unknown
+- reconciliation corrections supersede projections
+
+Unrealized P&L:
+
+- uses confirmed remaining quantity
+- uses confirmed average entry
+- uses coherent mark snapshot
+- records mark timestamp, source, and quality
+- stale or unavailable marks produce `UNKNOWN`, not fabricated P&L
+- mark policy remains a user decision before paper authority
+
+Recommended mark default:
+
+- risk-conservative bid/ask: short positions mark at ask, long positions mark
+  at bid
+- dashboard may show LTP as informational
+
+### 13.7 Charges And Taxes
+
+Priority:
+
+1. broker-confirmed charges
+2. contract-note or ledger import
+3. configured estimate
+4. unknown
+
+Charges include brokerage, exchange transaction charges, STT/CTT, GST, stamp
+duty, SEBI charges, broker-specific charges, and currency/commodity
+differences. Estimated charges must be labelled estimated. Later confirmed
+charges supersede estimated values.
+
+### 13.8 Dimensions And Metrics
+
+The metric catalog is `reports/phase3e/analytics_metric_catalog.json`.
+
+Stable dimensions include date/week/month/session, strategy family/definition/
+version/instance, account, broker, exchange, product, underlying, instrument,
+contract, option type, expiry class, direction, Monthly Status, branch,
+normal/gap, ORPT/RC, fresh/carried, exit reason, win/loss, and rule/config
+version.
+
+Dimensions must come from source facts, not display-name parsing.
+
+### 13.9 Win/Loss, Drawdown, MFE/MAE
+
+Win/loss:
+
+- `WIN`: final net P&L above tolerance
+- `LOSS`: final net P&L below negative tolerance
+- `BREAKEVEN`: within tolerance
+- `OPEN`: still open
+- `UNKNOWN_ACCOUNTING_STATE`: fills, charges, quantity, or marks unresolved
+
+Drawdown:
+
+- daily closed-equity curve is authoritative for V1 risk controls
+- intraday realized plus unrealized curve is analytical only unless mark
+  quality is proven
+- high-water mark, drawdown amount/percentage, max drawdown, and duration are
+  required
+
+MFE/MAE:
+
+- window starts at first confirmed fill
+- selected contract price is used for options
+- side sign convention must be explicit
+- carried positions continue across sessions when tick/mark evidence exists
+- incomplete tick evidence produces partial or unknown MFE/MAE
+
+### 13.10 Execution Quality Facts
+
+```mermaid
+flowchart LR
+    Planned[Planned Price] --> Quality[Execution Quality Fact]
+    Submitted[Submitted Price] --> Quality
+    Ack[Acknowledged Price/Time] --> Quality
+    Fill[First/Average Fill] --> Quality
+    Reject[Rejection/Cancel/Replace] --> Quality
+    Data[Stale Data / Broker Disconnect] --> Quality
+```
+
+Required facts include planned price, submitted price, acknowledged price,
+first fill, average fill, fill latency, rejection, partial fill, cancellation,
+replacement count, slippage, missed order, stale data at submission, broker
+disconnect impact, and delayed protection.
+
+### 13.11 Read Models
+
+Minimum read models:
+
+- system health
+- account summary
+- strategy summary
+- open orders
+- open positions
+- daily P&L
+- strategy-wise P&L
+- account-wise P&L
+- broker-wise P&L
+- instrument-wise P&L
+- winning and losing trades
+- trade detail with decision/order/fill trace
+- reconciliation issues
+- risk blocks and kill switches
+- normal versus gap performance
+- ORPT versus RC performance
+- exit-reason breakdown
+- execution-quality summary
+
+This milestone does not design frontend layouts.
+
+### 13.12 Analytics Failure Isolation
+
+```mermaid
+flowchart TD
+    Txn[Financial Transaction] --> Facts[Operational Facts Committed]
+    Facts --> Async[Async Analytical Projection]
+    Async --> Dashboard[Dashboard/Reports]
+    Async --> Failure[Projection Failure]
+    Failure --> Stale[Display Staleness/Watermark]
+    Failure --> Rebuild[Rebuild From Facts]
+    Failure -. no mutation .-> Trading[Trading Authority]
+```
+
+Rules:
+
+- operational facts are committed in the financial transaction path
+- analytical projections may update asynchronously
+- projection failure does not mutate trading state
+- accounting fact persistence failure may block authority
+- dashboards display staleness and projection watermark
+- no analytics query runs synchronously in order submission
+
+### 13.13 Future Analytics Boundaries
+
+Deferred features:
+
+- AI trade diagnosis
+- natural-language analytics
+- decision graphs
+- regime studies
+- strategy comparison
+- capital optimization
+- broker execution ranking
+- feature store
+- research notebooks
+- warehouse export
+
+V1 preserves stable fact ids, strategy identities, evidence hashes, dimensions,
+source facts, and correction chains so these can be added later without
+changing trading authority.
+
+```mermaid
+flowchart LR
+    Facts[Stable V1 Facts] --> ReadModels[Essential Read Models]
+    Facts --> Future[Deferred Analytics Extensions]
+    Future -. read only .-> Reports[Research/AI/Warehouse]
+    Future -. no write .-> Trading[Trading State]
+```

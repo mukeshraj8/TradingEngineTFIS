@@ -6,10 +6,22 @@ way.
 
 ## Immediate Next Priorities
 
-0.51. `TODO` After user approval of Phase 3E Milestone 3, proceed to
-   Milestone 4: essential analytics/P&L facts, first-10 candidate strategy
-   matrix, and strategy-onboarding process. Do not add paper or live authority
-   in Milestone 4.
+0.52. `TODO` After user approval of Phase 3E Milestone 4, proceed to
+   Milestone 5: finalize the complete Phase 3E roadmap, critical path, user
+   decisions, diagrams, and certification. Do not add paper or live authority
+   in Milestone 5.
+
+0.51. `DONE` Complete Phase 3E Milestone 4 analytics/accounting facts and
+   first-10 strategy onboarding architecture. Result: defined `TradeFact`,
+   `PnLFact`, product P&L unit catalog, realized/unrealized P&L rules,
+   charges/tax quality, essential dimensions/metrics, win/loss classification,
+   drawdown/equity method, MFE/MAE method, execution-quality facts, minimum
+   read models, analytics failure isolation, future analytics extension
+   boundaries, strategy inventory, first-10 selection criteria/candidates,
+   onboarding gates, scorecard, batch-size guidance, and profitability review.
+   Verdict: `MILESTONE_CONDITIONAL` because non-option-selling source sheets
+   still require exact extraction before implementation. Runtime impact:
+   `NONE`. Broker/paper/live authority: `NONE`.
 
 0.50. `DONE` Complete Phase 3E Milestone 3 persistence, recovery, risk, and
    performance architecture. Result: defined the V1 transactional persistence
