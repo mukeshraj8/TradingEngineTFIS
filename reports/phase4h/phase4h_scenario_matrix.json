@@ -1,0 +1,50 @@
+[
+  {
+    "case": "bull_open",
+    "coverage": "full entry fill opens PositionCycle and emits target/original SL requirements"
+  },
+  {
+    "case": "bear_open",
+    "coverage": "bear call side uses same generic PositionCycle state machine"
+  },
+  {
+    "case": "partial_fill",
+    "coverage": "partial entry quantity and later protection resize"
+  },
+  {
+    "case": "target_close",
+    "coverage": "target-first exit fill closes only after confirmed fill"
+  },
+  {
+    "case": "original_sl_close",
+    "coverage": "original SL exit fill closes only after confirmed fill"
+  },
+  {
+    "case": "revised_sl_close",
+    "coverage": "revised SL replacement generation and fill"
+  },
+  {
+    "case": "old_sl_fills_before_cancel",
+    "coverage": "late old SL fill is preserved as financial event"
+  },
+  {
+    "case": "eod_exit",
+    "coverage": "EOD square-off closes only after simulated fill"
+  },
+  {
+    "case": "eod_unfilled",
+    "coverage": "unfilled EOD exit remains EXIT_PENDING"
+  },
+  {
+    "case": "carry_forward",
+    "coverage": "15:00 equality carries same PositionCycle forward"
+  },
+  {
+    "case": "next_day_recovery",
+    "coverage": "carried PositionCycle recovery assessment"
+  },
+  {
+    "case": "multi_account",
+    "coverage": "two accounts remain isolated"
+  }
+]

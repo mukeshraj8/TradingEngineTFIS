@@ -2043,6 +2043,20 @@
   migration 4, recovery/consistency checks and Phase 4F reports. Runtime impact
   is `INTERNAL DETERMINISTIC PAPER ORDER SIMULATION ONLY`; broker/live
   authority and PositionCycle mutation authority remain `NONE`.
+- Phase 4H Milestone 1 added the authoritative internal-paper PositionCycle
+  state machine under `src/tfis/internal_position`, with S23 first Call-side
+  composition kept in `src/tfis/adapters/phase4h`. Confirmed deterministic
+  `InternalPaperFill` facts now create/update `InternalPaperPositionCycle`
+  projections; acknowledgements alone do not create positions. The milestone
+  implements quantity-safe entry/exit fill application, Decimal weighted
+  averages, lifecycle requirement generation, target/original-SL/revised-SL
+  protection linkage, protection generations, revised-SL race evidence, EOD
+  exit, EOD equality carry-forward, next-day recovery, consistency assessment,
+  P&L input facts, multi-account isolation, persistence migration 5, focused
+  tests, architecture boundary tests, and reports under `reports/phase4h`.
+  Runtime impact is `AUTHORITATIVE INTERNAL-PAPER POSITIONCYCLE STATE ONLY`;
+  broker, live, broker-sandbox, external paper, and external position authority
+  remain `NONE`.
 
 ## Next Recommended Priorities
 

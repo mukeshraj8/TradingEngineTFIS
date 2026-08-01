@@ -1,0 +1,43 @@
+{
+  "authority_classification": "INTERNAL_PAPER_ONLY",
+  "broker_reconciliation_authority": false,
+  "external_broker_position": false,
+  "identity": {
+    "authority_classification": "INTERNAL_PAPER_ONLY",
+    "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+    "broker_reconciliation_authority": false,
+    "direction": "CALL_SIDE_VERTICAL",
+    "external_broker_position": false,
+    "live_position": false,
+    "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+    "normalized_contract": "NIFTY_20260806_22250_CALL",
+    "originating_entry_execution_intent_id": "exec-intent:e585f7152d584719dc3b9aef",
+    "originating_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+    "originating_trading_date": "2026-07-30",
+    "position_cycle_hash": "156b3eddb2cb1547eea39bfce358a7aaa1e626f86dc2d183cd59823ef5193e32",
+    "position_cycle_id": "ipc:e5e33d064d0712ee7e3c71f7",
+    "side": "SELL",
+    "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+    "strategy_family_id": "S23",
+    "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "strategy_version": "1.0.0",
+    "trading_session_id": "NSE:2026-07-30"
+  },
+  "live_position": false,
+  "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+  "required_state_fields": [
+    "confirmed_entry_quantity",
+    "remaining_quantity",
+    "realized_quantity",
+    "average_entry_price",
+    "average_exit_price",
+    "entry_fill_ids",
+    "exit_fill_ids",
+    "active_target",
+    "active_original_sl",
+    "active_revised_sl",
+    "protection_generation",
+    "carry_forward_status",
+    "projection_version"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "deferred": [
+    {
+      "description": "Phase 4I TradeFact/PnLFact downstream projections are intentionally deferred.",
+      "gap_id": "PHASE4H-GAP-001"
+    },
+    {
+      "description": "External paper/broker authority remains blocked by legacy FYERS ingress/adapter review.",
+      "gap_id": "PHASE4H-GAP-002"
+    }
+  ],
+  "full_suite_blocker_review": [
+    {
+      "can_corrupt_internal_paper_fill_or_order_identity": false,
+      "classification_after_review": "EXTERNAL_BROKER_INGRESS_BLOCKER_ONLY",
+      "imports_or_mutates_position_cycle_path": false,
+      "phase4h_can_proceed": true,
+      "test": "tests/integration/test_run_s23_fyers_paper_ingress_cli.py::test_run_s23_fyers_paper_ingress_cli_preflight_only_writes_outputs"
+    },
+    {
+      "can_corrupt_internal_paper_fill_or_order_identity": false,
+      "classification_after_review": "EXTERNAL_BROKER_ADAPTER_BLOCKER_ONLY",
+      "imports_or_mutates_position_cycle_path": false,
+      "phase4h_can_proceed": true,
+      "test": "tests/unit/test_fyers_adapter.py::test_fyers_adapter_requests_specific_expiry_and_configured_strike_count"
+    }
+  ]
+}

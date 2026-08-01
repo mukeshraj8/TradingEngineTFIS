@@ -490,6 +490,78 @@ CREATE TABLE IF NOT EXISTS latest_internal_client_order_projection (
 );
 """,
     ),
+    Migration(
+        5,
+        "phase4h_internal_paper_position_cycles",
+        """
+CREATE TABLE IF NOT EXISTS internal_position_cycle_projections (
+    position_cycle_id TEXT PRIMARY KEY,
+    broker_account_id TEXT NOT NULL,
+    trading_session_id TEXT NOT NULL,
+    strategy_instance_id TEXT NOT NULL,
+    lifecycle_state TEXT NOT NULL,
+    confirmed_entry_quantity INTEGER NOT NULL,
+    remaining_quantity INTEGER NOT NULL,
+    realized_quantity INTEGER NOT NULL,
+    projection_hash TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    authority_source TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    updated_timestamp TEXT NOT NULL,
+    FOREIGN KEY(position_cycle_id) REFERENCES position_cycle_identities(position_cycle_id),
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id),
+    FOREIGN KEY(trading_session_id) REFERENCES trading_sessions(trading_session_id),
+    FOREIGN KEY(strategy_instance_id) REFERENCES strategy_instances(strategy_instance_id)
+);
+CREATE TABLE IF NOT EXISTS internal_position_events (
+    event_id TEXT PRIMARY KEY,
+    position_cycle_id TEXT NOT NULL,
+    event_sequence INTEGER NOT NULL,
+    event_type TEXT NOT NULL,
+    prior_state TEXT,
+    new_state TEXT NOT NULL,
+    event_hash TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    UNIQUE(position_cycle_id, event_sequence),
+    FOREIGN KEY(position_cycle_id) REFERENCES position_cycle_identities(position_cycle_id)
+);
+CREATE TABLE IF NOT EXISTS internal_position_fill_links (
+    link_id TEXT PRIMARY KEY,
+    position_cycle_id TEXT NOT NULL,
+    internal_fill_id TEXT NOT NULL,
+    client_order_id TEXT NOT NULL,
+    fill_role TEXT NOT NULL,
+    link_hash TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    UNIQUE(position_cycle_id, internal_fill_id, fill_role),
+    FOREIGN KEY(position_cycle_id) REFERENCES position_cycle_identities(position_cycle_id),
+    FOREIGN KEY(internal_fill_id) REFERENCES internal_paper_fills(internal_fill_id),
+    FOREIGN KEY(client_order_id) REFERENCES internal_client_order_records(client_order_id)
+);
+CREATE TABLE IF NOT EXISTS internal_lifecycle_requirements (
+    requirement_id TEXT PRIMARY KEY,
+    position_cycle_id TEXT NOT NULL,
+    requirement_type TEXT NOT NULL,
+    protection_generation INTEGER,
+    requirement_hash TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(position_cycle_id) REFERENCES position_cycle_identities(position_cycle_id)
+);
+CREATE TABLE IF NOT EXISTS internal_position_recovery_refs (
+    recovery_ref_id TEXT PRIMARY KEY,
+    position_cycle_id TEXT NOT NULL,
+    next_trading_session_id TEXT NOT NULL,
+    carry_event_id TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(position_cycle_id) REFERENCES position_cycle_identities(position_cycle_id),
+    FOREIGN KEY(carry_event_id) REFERENCES internal_position_events(event_id)
+);
+""",
+    ),
 )
 
 

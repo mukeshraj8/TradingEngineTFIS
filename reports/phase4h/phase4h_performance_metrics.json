@@ -1,0 +1,27 @@
+{
+  "carry": {
+    "fixture_only": true,
+    "median_ms": 974.3198,
+    "p95_ms": 1022.4205
+  },
+  "exit": {
+    "fixture_only": true,
+    "median_ms": 1896.4493,
+    "p95_ms": 2006.8533
+  },
+  "open": {
+    "fixture_only": true,
+    "median_ms": 939.3275,
+    "p95_ms": 1025.9695
+  },
+  "partial": {
+    "fixture_only": true,
+    "median_ms": 1964.4615,
+    "p95_ms": 2019.517
+  },
+  "report_batch": {
+    "fixture_only": true,
+    "median_ms": 3794.8526,
+    "p95_ms": 4003.7259
+  }
+}

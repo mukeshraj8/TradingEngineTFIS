@@ -1,0 +1,65 @@
+{
+  "authority": "INTERNAL_PAPER_ONLY",
+  "broker_live_authority": "NONE",
+  "case": "next_day_recovery",
+  "evidence": {
+    "recovery": {
+      "assessment_id": "carried-recovery:7bb4ccc2afdd382135c3c7ef",
+      "findings": [],
+      "position_cycle_id": "ipc:e5e33d064d0712ee7e3c71f7",
+      "recovery_hash": "5c4f9ea4e4e19bbf9805e0afafd651b92f597cc0e9809f0aadeb05f1d0d895af",
+      "status": "CARRIED_POSITION_RECOVERABLE"
+    }
+  },
+  "projection": {
+    "active_order_references": [],
+    "active_original_sl": null,
+    "active_revised_sl": null,
+    "active_target": null,
+    "average_entry_price": "203.5",
+    "average_exit_price": null,
+    "cancelled_protections": [],
+    "carry_forward_status": "EOD_EQUAL_OR_BELOW_ORIGINAL_SL_CARRY_FORWARD",
+    "confirmed_entry_quantity": 50,
+    "currency": "INR",
+    "entry_fill_ids": [
+      "internal-fill:eaa083ff5a113bb997ed8d2a"
+    ],
+    "exit_fill_ids": [],
+    "filled_exit_order_id": null,
+    "identity": {
+      "authority_classification": "INTERNAL_PAPER_ONLY",
+      "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+      "broker_reconciliation_authority": false,
+      "direction": "CALL_SIDE_VERTICAL",
+      "external_broker_position": false,
+      "live_position": false,
+      "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+      "normalized_contract": "NIFTY_20260806_22250_CALL",
+      "originating_entry_execution_intent_id": "exec-intent:e585f7152d584719dc3b9aef",
+      "originating_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "originating_trading_date": "2026-07-30",
+      "position_cycle_hash": "156b3eddb2cb1547eea39bfce358a7aaa1e626f86dc2d183cd59823ef5193e32",
+      "position_cycle_id": "ipc:e5e33d064d0712ee7e3c71f7",
+      "side": "SELL",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family_id": "S23",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "trading_session_id": "NSE:2026-07-30"
+    },
+    "lifecycle_state": "CARRIED_FORWARD",
+    "lot_size": 75,
+    "multiplier": "1",
+    "next_trading_session_id": "NSE:2026-06-06",
+    "originating_trading_date": "2026-07-30",
+    "projection_hash": "67b48f803d7ee3e93e35f00b9c36111ddfeb69978550396fd26157ec98abf931",
+    "projection_version": 3,
+    "protection_generation": 0,
+    "realized_quantity": 0,
+    "remaining_quantity": 50,
+    "superseded_protections": [],
+    "terminal_status": null
+  },
+  "transition": null
+}

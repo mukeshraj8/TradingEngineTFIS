@@ -51,6 +51,7 @@ KNOWN_EVENT_TYPES = frozenset(
         "RECONCILIATION_COMPLETED",
         "EXECUTION_INTENT_VALIDATED",
         "INTERNAL_PAPER_ORDER_SIMULATED",
+        "INTERNAL_PAPER_POSITION_UPDATED",
     }
 )
 
@@ -1085,6 +1086,228 @@ class PersistenceRepositories:
             WHERE projection_id = ?
             """,
             (snapshot_hash, snapshot["active_order_count"], snapshot["available_paper_margin"], canonical_json(snapshot), version, _now(), projection_id),
+        )
+        return version
+
+    def put_internal_position_transition(
+        self,
+        *,
+        transition: Mapping[str, Any],
+        expected_projection_version: int | None,
+    ) -> str:
+        projection = transition["projection"]
+        identity = projection["identity"]
+        event = transition["event"]
+        position_cycle_id = str(identity["position_cycle_id"])
+        for requirement in transition.get("requirements", []):
+            self._put_internal_lifecycle_requirement(requirement)
+        self._put_internal_position_event(event)
+        for fill_id in projection.get("entry_fill_ids", []):
+            self._put_internal_position_fill_link(
+                position_cycle_id=position_cycle_id,
+                internal_fill_id=str(fill_id),
+                client_order_id=str(event.get("source_client_order_id") or ""),
+                fill_role="ENTRY",
+                payload={"position_cycle_id": position_cycle_id, "internal_fill_id": fill_id, "fill_role": "ENTRY"},
+            )
+        for fill_id in projection.get("exit_fill_ids", []):
+            self._put_internal_position_fill_link(
+                position_cycle_id=position_cycle_id,
+                internal_fill_id=str(fill_id),
+                client_order_id=str(event.get("source_client_order_id") or ""),
+                fill_role="EXIT",
+                payload={"position_cycle_id": position_cycle_id, "internal_fill_id": fill_id, "fill_role": "EXIT"},
+            )
+        version = self._upsert_internal_position_projection(
+            projection=projection,
+            expected_version=expected_projection_version,
+        )
+        if projection.get("next_trading_session_id"):
+            self.connection.execute(
+                """
+                INSERT INTO internal_position_recovery_refs(
+                    recovery_ref_id, position_cycle_id, next_trading_session_id, carry_event_id, payload_json, created_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(recovery_ref_id) DO NOTHING
+                """,
+                (
+                    f"{position_cycle_id}:{projection['next_trading_session_id']}:recovery",
+                    position_cycle_id,
+                    projection["next_trading_session_id"],
+                    event["event_id"],
+                    canonical_json({"position_cycle_id": position_cycle_id, "projection_version": version}),
+                    _now(),
+                ),
+            )
+        self.append_event(
+            event_id=f"{event['event_id']}:operational",
+            event_type="INTERNAL_PAPER_POSITION_UPDATED",
+            aggregate_type="internal_paper_position",
+            aggregate_id=position_cycle_id,
+            trading_session_id=identity["trading_session_id"],
+            broker_account_id=identity["broker_account_id"],
+            effective_timestamp=datetime.fromisoformat(event["event_timestamp"]),
+            payload={"position_cycle_id": position_cycle_id, "event_id": event["event_id"], "projection_hash": projection["projection_hash"]},
+            idempotency_scope="internal_paper_position",
+            idempotency_key=event["event_hash"],
+        )
+        return position_cycle_id
+
+    def _put_internal_position_event(self, event: Mapping[str, Any]) -> None:
+        row = self.connection.execute(
+            "SELECT event_hash FROM internal_position_events WHERE event_id = ?",
+            (event["event_id"],),
+        ).fetchone()
+        if row:
+            if row["event_hash"] == event["event_hash"]:
+                return
+            raise IdempotencyConflictError(f"Internal position event conflict: {event['event_id']}")
+        self.connection.execute(
+            """
+            INSERT INTO internal_position_events(
+                event_id, position_cycle_id, event_sequence, event_type, prior_state, new_state,
+                event_hash, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                event["event_id"],
+                event["position_cycle_id"],
+                event["event_sequence"],
+                event["event_type"],
+                event["prior_state"],
+                event["new_state"],
+                event["event_hash"],
+                canonical_json(event),
+                _now(),
+            ),
+        )
+
+    def _put_internal_position_fill_link(
+        self,
+        *,
+        position_cycle_id: str,
+        internal_fill_id: str,
+        client_order_id: str,
+        fill_role: str,
+        payload: Mapping[str, Any],
+    ) -> None:
+        if not internal_fill_id:
+            return
+        fill_row = self.connection.execute(
+            "SELECT internal_fill_id FROM internal_paper_fills WHERE internal_fill_id = ?",
+            (internal_fill_id,),
+        ).fetchone()
+        if fill_row is None:
+            return
+        link_id = f"{position_cycle_id}:{internal_fill_id}:{fill_role}"
+        link_hash = canonical_hash(payload)
+        row = self.connection.execute(
+            "SELECT link_hash FROM internal_position_fill_links WHERE link_id = ?",
+            (link_id,),
+        ).fetchone()
+        if row:
+            if row["link_hash"] == link_hash:
+                return
+            raise IdempotencyConflictError(f"Internal position fill-link conflict: {link_id}")
+        self.connection.execute(
+            """
+            INSERT INTO internal_position_fill_links(
+                link_id, position_cycle_id, internal_fill_id, client_order_id, fill_role,
+                link_hash, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (link_id, position_cycle_id, internal_fill_id, client_order_id, fill_role, link_hash, canonical_json(payload), _now()),
+        )
+
+    def _put_internal_lifecycle_requirement(self, requirement: Mapping[str, Any]) -> None:
+        row = self.connection.execute(
+            "SELECT requirement_hash FROM internal_lifecycle_requirements WHERE requirement_id = ?",
+            (requirement["requirement_id"],),
+        ).fetchone()
+        if row:
+            if row["requirement_hash"] == requirement["requirement_hash"]:
+                return
+            raise IdempotencyConflictError(f"Internal lifecycle requirement conflict: {requirement['requirement_id']}")
+        self.connection.execute(
+            """
+            INSERT INTO internal_lifecycle_requirements(
+                requirement_id, position_cycle_id, requirement_type, protection_generation,
+                requirement_hash, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                requirement["requirement_id"],
+                requirement["position_cycle_id"],
+                requirement["requirement_type"],
+                requirement["protection_generation"],
+                requirement["requirement_hash"],
+                canonical_json(requirement),
+                _now(),
+            ),
+        )
+
+    def _upsert_internal_position_projection(self, *, projection: Mapping[str, Any], expected_version: int | None) -> int:
+        identity = projection["identity"]
+        position_cycle_id = str(identity["position_cycle_id"])
+        row = self.connection.execute(
+            "SELECT version, projection_hash FROM internal_position_cycle_projections WHERE position_cycle_id = ?",
+            (position_cycle_id,),
+        ).fetchone()
+        if row is None:
+            if expected_version not in (None, 0):
+                raise OptimisticConcurrencyError("Internal position projection does not exist for expected version.")
+            version = 1
+            self.connection.execute(
+                """
+                INSERT INTO internal_position_cycle_projections(
+                    position_cycle_id, broker_account_id, trading_session_id, strategy_instance_id,
+                    lifecycle_state, confirmed_entry_quantity, remaining_quantity, realized_quantity,
+                    projection_hash, payload_json, authority_source, version, updated_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    position_cycle_id,
+                    identity["broker_account_id"],
+                    identity["trading_session_id"],
+                    identity["strategy_instance_id"],
+                    projection["lifecycle_state"],
+                    projection["confirmed_entry_quantity"],
+                    projection["remaining_quantity"],
+                    projection["realized_quantity"],
+                    projection["projection_hash"],
+                    canonical_json(projection),
+                    "INTERNAL_PAPER_ONLY",
+                    version,
+                    _now(),
+                ),
+            )
+            return version
+        current_version = int(row["version"])
+        if row["projection_hash"] == projection["projection_hash"]:
+            return current_version
+        if expected_version is not None and expected_version != current_version:
+            raise OptimisticConcurrencyError("Stale internal position projection writer.")
+        version = current_version + 1
+        self.connection.execute(
+            """
+            UPDATE internal_position_cycle_projections
+            SET lifecycle_state = ?, confirmed_entry_quantity = ?, remaining_quantity = ?,
+                realized_quantity = ?, projection_hash = ?, payload_json = ?, version = ?,
+                updated_timestamp = ?
+            WHERE position_cycle_id = ? AND version = ?
+            """,
+            (
+                projection["lifecycle_state"],
+                projection["confirmed_entry_quantity"],
+                projection["remaining_quantity"],
+                projection["realized_quantity"],
+                projection["projection_hash"],
+                canonical_json(projection),
+                version,
+                _now(),
+                position_cycle_id,
+                current_version,
+            ),
         )
         return version
 

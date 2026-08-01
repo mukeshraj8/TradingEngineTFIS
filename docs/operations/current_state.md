@@ -2978,3 +2978,19 @@ Current notes:
   PositionCycle update candidates. Reports live under `reports/phase4f`.
   Runtime impact is `INTERNAL DETERMINISTIC PAPER ORDER SIMULATION ONLY`;
   broker/live authority and PositionCycle mutation authority remain `NONE`.
+- Phase 4H Milestone 1 now adds the authoritative internal-paper-only
+  PositionCycle state machine under `src/tfis/internal_position`, with S23
+  first Call-side scenario composition isolated under
+  `src/tfis/adapters/phase4h`. Confirmed Phase 4F `InternalPaperFill` facts
+  create and update PositionCycles; acknowledgements alone do not create open
+  quantity. The coordinator tracks aggregate confirmed quantity, remaining
+  quantity, realized quantity, Decimal weighted entry/exit averages,
+  lifecycle requirements, target/original-SL/revised-SL order references,
+  protection generations, EOD exit/carry-forward, next-day recovery,
+  consistency assessment, and minimum P&L input facts for Phase 4I. Persistence
+  migration 5 stores internal position projections, events, fill links,
+  lifecycle requirements, and carried recovery references transactionally.
+  Reports live under `reports/phase4h`. Runtime impact is
+  `AUTHORITATIVE INTERNAL-PAPER POSITIONCYCLE STATE ONLY`; broker, live,
+  broker-sandbox, external paper, and external position authority remain
+  `NONE`.

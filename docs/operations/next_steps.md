@@ -1764,3 +1764,22 @@ Phase 4F Milestone 1 result:
 - next priority is Phase 4H: integrate simulated fills into PositionCycle,
   because Phase 4F order behavior is sufficient for the first vertical and
   still grants no broker/live/position mutation authority
+
+Phase 4H Milestone 1 result:
+
+- authoritative internal-paper PositionCycle state now consumes confirmed
+  deterministic `InternalPaperFill` facts from Phase 4F and owns only
+  internal-paper position quantity, averages, lifecycle requirements,
+  protection links/generations, exits, carry-forward, recovery, consistency,
+  and P&L input facts
+- S23 first Call-side scenarios cover full entry, partial entry and protection
+  resize, target close, original-SL close, revised-SL replacement/fill, old-SL
+  cancel/replace race evidence, EOD exit, EOD unfilled, equality carry-forward,
+  next-day recovery, and multi-account isolation
+- the two previously unknown full-suite failures were reviewed as legacy
+  FYERS ingress/adapter blockers only; they do not import or mutate the new
+  internal PositionCycle path and cannot corrupt internal-paper fill/order
+  identity
+- next priority is Phase 4I: project TradeFact/PnLFact from the completed
+  internal-paper vertical; do not start broker/paper/live authority work from
+  Phase 4H

@@ -1,0 +1,420 @@
+{
+  "account_a": {
+    "active_order_references": [],
+    "active_original_sl": null,
+    "active_revised_sl": null,
+    "active_target": null,
+    "average_entry_price": "203.5",
+    "average_exit_price": null,
+    "cancelled_protections": [],
+    "carry_forward_status": null,
+    "confirmed_entry_quantity": 50,
+    "currency": "INR",
+    "entry_fill_ids": [
+      "internal-fill:eaa083ff5a113bb997ed8d2a"
+    ],
+    "exit_fill_ids": [],
+    "filled_exit_order_id": null,
+    "identity": {
+      "authority_classification": "INTERNAL_PAPER_ONLY",
+      "broker_account_id": "S23_ACCOUNT_A_SHADOW_A",
+      "broker_reconciliation_authority": false,
+      "direction": "CALL_SIDE_VERTICAL",
+      "external_broker_position": false,
+      "live_position": false,
+      "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+      "normalized_contract": "NIFTY_20260806_22250_CALL",
+      "originating_entry_execution_intent_id": "exec-intent:e585f7152d584719dc3b9aef",
+      "originating_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "originating_trading_date": "2026-07-30",
+      "position_cycle_hash": "43b7ef3941120cf92e85d62910e9101a4257bd6fded7860e51f7e43e7f467e05",
+      "position_cycle_id": "ipc:0f8cf3828469f3803743f295",
+      "side": "SELL",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family_id": "S23",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "trading_session_id": "NSE:2026-07-30"
+    },
+    "lifecycle_state": "OPEN_UNPROTECTED",
+    "lot_size": 75,
+    "multiplier": "1",
+    "next_trading_session_id": null,
+    "originating_trading_date": "2026-07-30",
+    "projection_hash": "7e247d1e4d9f903a4b7cdc780231e5cac4d1873aafc317a2126089c80602da75",
+    "projection_version": 2,
+    "protection_generation": 0,
+    "realized_quantity": 0,
+    "remaining_quantity": 50,
+    "requirements": [
+      {
+        "created_at": "2026-07-30T09:19:59+05:30",
+        "position_cycle_id": "ipc:0f8cf3828469f3803743f295",
+        "price": "80.00",
+        "protection_generation": 1,
+        "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+        "quantity": 50,
+        "requirement_hash": "f3545fa0dd6e47614a5d11c851aa9c8adb98821950b3751b4ae578af01347188",
+        "requirement_id": "lifecycle-req:c0662dc741f0c9cee58f6962",
+        "requirement_type": "TARGET_EXIT_REQUIRED",
+        "side": "BUY",
+        "source_artifact_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+        "source_artifact_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+        "source_rule_ids": [
+          "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+          "M13B_1500_EQUALITY_CARRY_FORWARD"
+        ],
+        "status": "REQUIRED"
+      },
+      {
+        "created_at": "2026-07-30T09:19:59+05:30",
+        "position_cycle_id": "ipc:0f8cf3828469f3803743f295",
+        "price": "120.00",
+        "protection_generation": 1,
+        "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+        "quantity": 50,
+        "requirement_hash": "5217ad0a5df142a587c83b8c84a5c3f991d00cde69e05419ede2eeb34a464120",
+        "requirement_id": "lifecycle-req:c7ff78a12ddaafcf476d0dd5",
+        "requirement_type": "NORMAL_SL_PLACEMENT_REQUIRED",
+        "side": "BUY",
+        "source_artifact_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+        "source_artifact_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+        "source_rule_ids": [
+          "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+          "M13B_1500_EQUALITY_CARRY_FORWARD"
+        ],
+        "status": "REQUIRED"
+      }
+    ],
+    "superseded_protections": [],
+    "terminal_status": null,
+    "transition": {
+      "consistency_status": "MATCHED",
+      "event": {
+        "event_hash": "7f28c67fa0c5771a6e14e395dbcb7d656c9137c42538d7988b5f66fe3c46f873",
+        "event_id": "position-event:c0f9487c29c16f5d959d435d",
+        "event_sequence": 2,
+        "event_timestamp": "2026-07-30T09:19:59+05:30",
+        "event_type": "ENTRY_FULL_FILL_APPLIED",
+        "new_state": "OPEN_UNPROTECTED",
+        "position_cycle_id": "ipc:0f8cf3828469f3803743f295",
+        "price_evidence": {
+          "fill_price": "203.5"
+        },
+        "prior_state": "PLANNED",
+        "quantity_after": 50,
+        "quantity_before": 0,
+        "rule_ids": [
+          "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+          "M13B_1500_EQUALITY_CARRY_FORWARD"
+        ],
+        "source_client_order_id": "client-order:d37377d9fd2009c428ae9d20",
+        "source_fill_id": "internal-fill:eaa083ff5a113bb997ed8d2a",
+        "source_requirement_id": null
+      },
+      "projection": {
+        "active_order_references": [],
+        "active_original_sl": null,
+        "active_revised_sl": null,
+        "active_target": null,
+        "average_entry_price": "203.5",
+        "average_exit_price": null,
+        "cancelled_protections": [],
+        "carry_forward_status": null,
+        "confirmed_entry_quantity": 50,
+        "currency": "INR",
+        "entry_fill_ids": [
+          "internal-fill:eaa083ff5a113bb997ed8d2a"
+        ],
+        "exit_fill_ids": [],
+        "filled_exit_order_id": null,
+        "identity": {
+          "authority_classification": "INTERNAL_PAPER_ONLY",
+          "broker_account_id": "S23_ACCOUNT_A_SHADOW_A",
+          "broker_reconciliation_authority": false,
+          "direction": "CALL_SIDE_VERTICAL",
+          "external_broker_position": false,
+          "live_position": false,
+          "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+          "normalized_contract": "NIFTY_20260806_22250_CALL",
+          "originating_entry_execution_intent_id": "exec-intent:e585f7152d584719dc3b9aef",
+          "originating_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+          "originating_trading_date": "2026-07-30",
+          "position_cycle_hash": "43b7ef3941120cf92e85d62910e9101a4257bd6fded7860e51f7e43e7f467e05",
+          "position_cycle_id": "ipc:0f8cf3828469f3803743f295",
+          "side": "SELL",
+          "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+          "strategy_family_id": "S23",
+          "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+          "strategy_version": "1.0.0",
+          "trading_session_id": "NSE:2026-07-30"
+        },
+        "lifecycle_state": "OPEN_UNPROTECTED",
+        "lot_size": 75,
+        "multiplier": "1",
+        "next_trading_session_id": null,
+        "originating_trading_date": "2026-07-30",
+        "projection_hash": "7e247d1e4d9f903a4b7cdc780231e5cac4d1873aafc317a2126089c80602da75",
+        "projection_version": 2,
+        "protection_generation": 0,
+        "realized_quantity": 0,
+        "remaining_quantity": 50,
+        "superseded_protections": [],
+        "terminal_status": null
+      },
+      "requirements": [
+        {
+          "created_at": "2026-07-30T09:19:59+05:30",
+          "position_cycle_id": "ipc:0f8cf3828469f3803743f295",
+          "price": "80.00",
+          "protection_generation": 1,
+          "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+          "quantity": 50,
+          "requirement_hash": "f3545fa0dd6e47614a5d11c851aa9c8adb98821950b3751b4ae578af01347188",
+          "requirement_id": "lifecycle-req:c0662dc741f0c9cee58f6962",
+          "requirement_type": "TARGET_EXIT_REQUIRED",
+          "side": "BUY",
+          "source_artifact_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+          "source_artifact_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+          "source_rule_ids": [
+            "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+            "M13B_1500_EQUALITY_CARRY_FORWARD"
+          ],
+          "status": "REQUIRED"
+        },
+        {
+          "created_at": "2026-07-30T09:19:59+05:30",
+          "position_cycle_id": "ipc:0f8cf3828469f3803743f295",
+          "price": "120.00",
+          "protection_generation": 1,
+          "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+          "quantity": 50,
+          "requirement_hash": "5217ad0a5df142a587c83b8c84a5c3f991d00cde69e05419ede2eeb34a464120",
+          "requirement_id": "lifecycle-req:c7ff78a12ddaafcf476d0dd5",
+          "requirement_type": "NORMAL_SL_PLACEMENT_REQUIRED",
+          "side": "BUY",
+          "source_artifact_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+          "source_artifact_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+          "source_rule_ids": [
+            "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+            "M13B_1500_EQUALITY_CARRY_FORWARD"
+          ],
+          "status": "REQUIRED"
+        }
+      ],
+      "transition_hash": "27824b7b4ac60cedf3cc42f164c9a640c5fbe46310b52949594e1b13985d5cac",
+      "transition_id": "position-transition:58d7d49b4bb858e3199f1be2"
+    }
+  },
+  "account_b": {
+    "active_order_references": [],
+    "active_original_sl": null,
+    "active_revised_sl": null,
+    "active_target": null,
+    "average_entry_price": "203.5",
+    "average_exit_price": null,
+    "cancelled_protections": [],
+    "carry_forward_status": null,
+    "confirmed_entry_quantity": 50,
+    "currency": "INR",
+    "entry_fill_ids": [
+      "internal-fill:eaa083ff5a113bb997ed8d2a"
+    ],
+    "exit_fill_ids": [],
+    "filled_exit_order_id": null,
+    "identity": {
+      "authority_classification": "INTERNAL_PAPER_ONLY",
+      "broker_account_id": "S23_ACCOUNT_A_SHADOW_B",
+      "broker_reconciliation_authority": false,
+      "direction": "CALL_SIDE_VERTICAL",
+      "external_broker_position": false,
+      "live_position": false,
+      "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+      "normalized_contract": "NIFTY_20260806_22250_CALL",
+      "originating_entry_execution_intent_id": "exec-intent:e585f7152d584719dc3b9aef",
+      "originating_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "originating_trading_date": "2026-07-30",
+      "position_cycle_hash": "8024ca7fcd4ec3e9885c688d1a12ebda5e57ae1702a0b50751b3f3b0113a5e5c",
+      "position_cycle_id": "ipc:3114eff45e9c7637e469900d",
+      "side": "SELL",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family_id": "S23",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "trading_session_id": "NSE:2026-07-30"
+    },
+    "lifecycle_state": "OPEN_UNPROTECTED",
+    "lot_size": 75,
+    "multiplier": "1",
+    "next_trading_session_id": null,
+    "originating_trading_date": "2026-07-30",
+    "projection_hash": "772837ba508bbbff2ecc22dd15f8cf4dc44b675387afe5f81cadbb29490e9662",
+    "projection_version": 2,
+    "protection_generation": 0,
+    "realized_quantity": 0,
+    "remaining_quantity": 50,
+    "requirements": [
+      {
+        "created_at": "2026-07-30T09:19:59+05:30",
+        "position_cycle_id": "ipc:3114eff45e9c7637e469900d",
+        "price": "80.00",
+        "protection_generation": 1,
+        "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+        "quantity": 50,
+        "requirement_hash": "f1aab5ea7f23bfae2c1ca5537259679f1339327cdc7658768dcc10e227923833",
+        "requirement_id": "lifecycle-req:ca3116c807b549fc5c20e48e",
+        "requirement_type": "TARGET_EXIT_REQUIRED",
+        "side": "BUY",
+        "source_artifact_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+        "source_artifact_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+        "source_rule_ids": [
+          "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+          "M13B_1500_EQUALITY_CARRY_FORWARD"
+        ],
+        "status": "REQUIRED"
+      },
+      {
+        "created_at": "2026-07-30T09:19:59+05:30",
+        "position_cycle_id": "ipc:3114eff45e9c7637e469900d",
+        "price": "120.00",
+        "protection_generation": 1,
+        "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+        "quantity": 50,
+        "requirement_hash": "d313f18564068166829adc8fadaf37092427d673ffd54ba6cb70f9515fa6f4cb",
+        "requirement_id": "lifecycle-req:159f570d0db508b1939d7597",
+        "requirement_type": "NORMAL_SL_PLACEMENT_REQUIRED",
+        "side": "BUY",
+        "source_artifact_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+        "source_artifact_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+        "source_rule_ids": [
+          "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+          "M13B_1500_EQUALITY_CARRY_FORWARD"
+        ],
+        "status": "REQUIRED"
+      }
+    ],
+    "superseded_protections": [],
+    "terminal_status": null,
+    "transition": {
+      "consistency_status": "MATCHED",
+      "event": {
+        "event_hash": "525c926b51cb121b997a7b477b1e20e2b2d59a87ae739d4d9d5bdddf7363452d",
+        "event_id": "position-event:a0d8116c338fb4791faef5a6",
+        "event_sequence": 2,
+        "event_timestamp": "2026-07-30T09:19:59+05:30",
+        "event_type": "ENTRY_FULL_FILL_APPLIED",
+        "new_state": "OPEN_UNPROTECTED",
+        "position_cycle_id": "ipc:3114eff45e9c7637e469900d",
+        "price_evidence": {
+          "fill_price": "203.5"
+        },
+        "prior_state": "PLANNED",
+        "quantity_after": 50,
+        "quantity_before": 0,
+        "rule_ids": [
+          "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+          "M13B_1500_EQUALITY_CARRY_FORWARD"
+        ],
+        "source_client_order_id": "client-order:d37377d9fd2009c428ae9d20",
+        "source_fill_id": "internal-fill:eaa083ff5a113bb997ed8d2a",
+        "source_requirement_id": null
+      },
+      "projection": {
+        "active_order_references": [],
+        "active_original_sl": null,
+        "active_revised_sl": null,
+        "active_target": null,
+        "average_entry_price": "203.5",
+        "average_exit_price": null,
+        "cancelled_protections": [],
+        "carry_forward_status": null,
+        "confirmed_entry_quantity": 50,
+        "currency": "INR",
+        "entry_fill_ids": [
+          "internal-fill:eaa083ff5a113bb997ed8d2a"
+        ],
+        "exit_fill_ids": [],
+        "filled_exit_order_id": null,
+        "identity": {
+          "authority_classification": "INTERNAL_PAPER_ONLY",
+          "broker_account_id": "S23_ACCOUNT_A_SHADOW_B",
+          "broker_reconciliation_authority": false,
+          "direction": "CALL_SIDE_VERTICAL",
+          "external_broker_position": false,
+          "live_position": false,
+          "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+          "normalized_contract": "NIFTY_20260806_22250_CALL",
+          "originating_entry_execution_intent_id": "exec-intent:e585f7152d584719dc3b9aef",
+          "originating_execution_plan_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+          "originating_trading_date": "2026-07-30",
+          "position_cycle_hash": "8024ca7fcd4ec3e9885c688d1a12ebda5e57ae1702a0b50751b3f3b0113a5e5c",
+          "position_cycle_id": "ipc:3114eff45e9c7637e469900d",
+          "side": "SELL",
+          "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+          "strategy_family_id": "S23",
+          "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+          "strategy_version": "1.0.0",
+          "trading_session_id": "NSE:2026-07-30"
+        },
+        "lifecycle_state": "OPEN_UNPROTECTED",
+        "lot_size": 75,
+        "multiplier": "1",
+        "next_trading_session_id": null,
+        "originating_trading_date": "2026-07-30",
+        "projection_hash": "772837ba508bbbff2ecc22dd15f8cf4dc44b675387afe5f81cadbb29490e9662",
+        "projection_version": 2,
+        "protection_generation": 0,
+        "realized_quantity": 0,
+        "remaining_quantity": 50,
+        "superseded_protections": [],
+        "terminal_status": null
+      },
+      "requirements": [
+        {
+          "created_at": "2026-07-30T09:19:59+05:30",
+          "position_cycle_id": "ipc:3114eff45e9c7637e469900d",
+          "price": "80.00",
+          "protection_generation": 1,
+          "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+          "quantity": 50,
+          "requirement_hash": "f1aab5ea7f23bfae2c1ca5537259679f1339327cdc7658768dcc10e227923833",
+          "requirement_id": "lifecycle-req:ca3116c807b549fc5c20e48e",
+          "requirement_type": "TARGET_EXIT_REQUIRED",
+          "side": "BUY",
+          "source_artifact_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+          "source_artifact_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+          "source_rule_ids": [
+            "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+            "M13B_1500_EQUALITY_CARRY_FORWARD"
+          ],
+          "status": "REQUIRED"
+        },
+        {
+          "created_at": "2026-07-30T09:19:59+05:30",
+          "position_cycle_id": "ipc:3114eff45e9c7637e469900d",
+          "price": "120.00",
+          "protection_generation": 1,
+          "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+          "quantity": 50,
+          "requirement_hash": "d313f18564068166829adc8fadaf37092427d673ffd54ba6cb70f9515fa6f4cb",
+          "requirement_id": "lifecycle-req:159f570d0db508b1939d7597",
+          "requirement_type": "NORMAL_SL_PLACEMENT_REQUIRED",
+          "side": "BUY",
+          "source_artifact_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+          "source_artifact_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+          "source_rule_ids": [
+            "S23_CALL_SIDE_PHASE4H_SOURCE_BACKED_LIFECYCLE",
+            "M13B_1500_EQUALITY_CARRY_FORWARD"
+          ],
+          "status": "REQUIRED"
+        }
+      ],
+      "transition_hash": "5ecb3226aaa0e7c1a67e7c1784614e9492158b02d8e24ef692219726ff778879",
+      "transition_id": "position-transition:7707cf4cd400b00d22d69265"
+    }
+  },
+  "broker_accounts_independent": true,
+  "isolation": "PASSED",
+  "position_cycles_independent": true,
+  "same_contract": true
+}
