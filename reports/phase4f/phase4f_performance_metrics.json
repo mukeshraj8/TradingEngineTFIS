@@ -1,0 +1,52 @@
+{
+  "acknowledgement": {
+    "fixture_only": true,
+    "median_ms": 2.697,
+    "p95_ms": 3.5334
+  },
+  "cancel_replace": {
+    "fixture_only": true,
+    "median_ms": 2.4136,
+    "p95_ms": 2.4234
+  },
+  "client_order_creation": {
+    "fixture_only": true,
+    "median_ms": 0.4874,
+    "p95_ms": 0.5997
+  },
+  "full_fill": {
+    "fixture_only": true,
+    "median_ms": 2.6364,
+    "p95_ms": 3.1367
+  },
+  "hundred_order_batch": {
+    "fixture_only": true,
+    "median_ms": 19.6492,
+    "p95_ms": 21.4701
+  },
+  "intent_acceptance": {
+    "fixture_only": true,
+    "median_ms": 0.2604,
+    "p95_ms": 0.3161
+  },
+  "partial_fill": {
+    "fixture_only": true,
+    "median_ms": 4.3535,
+    "p95_ms": 5.242
+  },
+  "persistence_transaction": {
+    "fixture_only": true,
+    "median_ms": 0.0006,
+    "p95_ms": 0.0015
+  },
+  "recovery": {
+    "fixture_only": true,
+    "median_ms": 0.0762,
+    "p95_ms": 0.0768
+  },
+  "two_account_batch": {
+    "fixture_only": true,
+    "median_ms": 1020.9647,
+    "p95_ms": 1169.3811
+  }
+}

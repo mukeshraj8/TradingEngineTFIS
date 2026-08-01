@@ -1,0 +1,27 @@
+{
+  "allowed_intent_purposes": [
+    "ENTRY",
+    "TARGET",
+    "ORIGINAL_SL",
+    "REVISED_SL",
+    "EOD_EXIT"
+  ],
+  "authority": "INTERNAL_PAPER_ORDER_SIMULATION_ONLY",
+  "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+  "broker_sandbox_submission_permitted": false,
+  "configuration_hash": "s23-first-slice-config-hash",
+  "external_paper_submission_permitted": false,
+  "grant_hash": "4263dbcc9abb53776cbbe093c56558db0708da75a8967add4eff248da5f7833c",
+  "grant_id": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+  "issued_by": "PHASE4F_FIXTURE",
+  "live_broker_submission_permitted": false,
+  "maximum_quantity": 999,
+  "real_funds_mutation_permitted": false,
+  "real_position_mutation_permitted": false,
+  "reason": "First S23 Call-side internal paper simulation grant.",
+  "rule_version": "s23_authoritative_matrix_phase3d_m13b",
+  "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+  "trading_session_id": "NSE:2026-07-30",
+  "valid_from": "2026-07-30T09:14:59+05:30",
+  "valid_until": "2026-07-30T17:19:59+05:30"
+}

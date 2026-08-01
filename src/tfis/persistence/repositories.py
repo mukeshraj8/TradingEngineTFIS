@@ -50,6 +50,7 @@ KNOWN_EVENT_TYPES = frozenset(
         "IDEMPOTENCY_RESERVED",
         "RECONCILIATION_COMPLETED",
         "EXECUTION_INTENT_VALIDATED",
+        "INTERNAL_PAPER_ORDER_SIMULATED",
     }
 )
 
@@ -822,6 +823,268 @@ class PersistenceRepositories:
             WHERE projection_id = ? AND version = ?
             """,
             (result_dict["validation_id"], result_dict["result_hash"], result_dict["decision"], version, _now(), projection_id, current_version),
+        )
+        return version
+
+    def put_internal_paper_authority_grant(self, *, grant: object) -> str:
+        grant_dict = grant.to_dict()  # type: ignore[attr-defined]
+        row = self.connection.execute(
+            "SELECT grant_hash FROM internal_paper_authority_grants WHERE grant_id = ?",
+            (grant_dict["grant_id"],),
+        ).fetchone()
+        if row:
+            if row["grant_hash"] == grant_dict["grant_hash"]:
+                return str(grant_dict["grant_id"])
+            raise ArtifactConflictError(f"Internal paper grant conflict: {grant_dict['grant_id']}")
+        self.connection.execute(
+            """
+            INSERT INTO internal_paper_authority_grants(
+                grant_id, broker_account_id, trading_session_id, strategy_instance_id, grant_hash, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                grant_dict["grant_id"],
+                grant_dict["broker_account_id"],
+                grant_dict["trading_session_id"],
+                grant_dict["strategy_instance_id"],
+                grant_dict["grant_hash"],
+                canonical_json(grant_dict),
+                _now(),
+            ),
+        )
+        return str(grant_dict["grant_id"])
+
+    def put_internal_paper_result(
+        self,
+        *,
+        grant: object,
+        result: object,
+        expected_account_projection_version: int | None,
+    ) -> str:
+        result_dict = result.to_dict()  # type: ignore[attr-defined]
+        grant_id = self.put_internal_paper_authority_grant(grant=grant)
+        order = result_dict["client_order"]
+        order_row = self.connection.execute(
+            "SELECT order_hash FROM internal_client_order_records WHERE client_order_id = ?",
+            (order["client_order_id"],),
+        ).fetchone()
+        if order_row:
+            if order_row["order_hash"] != order["order_hash"]:
+                raise ArtifactConflictError(f"Internal client order conflict: {order['client_order_id']}")
+        else:
+            self.connection.execute(
+                """
+                INSERT INTO internal_client_order_records(
+                    client_order_id, execution_intent_id, account_coordinator_id, broker_account_id,
+                    strategy_instance_id, trading_session_id, position_cycle_id, idempotency_key,
+                    order_hash, order_purpose, current_state, authority_source, payload_json,
+                    created_timestamp, updated_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    order["client_order_id"],
+                    order["execution_intent_id"],
+                    order["account_coordinator_id"],
+                    order["broker_account_id"],
+                    order["strategy_instance_id"],
+                    order["trading_session_id"],
+                    order["position_cycle_id"],
+                    order["idempotency_key"],
+                    order["order_hash"],
+                    order["order_purpose"],
+                    "CREATED",
+                    "INTERNAL_PAPER_SIMULATION",
+                    canonical_json(order),
+                    _now(),
+                    _now(),
+                ),
+            )
+        for event in result_dict["events"]:
+            self._put_internal_paper_event(event)
+        for fill in result_dict["fills"]:
+            self._put_internal_paper_fill(fill)
+        latest_event = result_dict["events"][-1] if result_dict["events"] else None
+        cumulative = int(latest_event["cumulative_filled_quantity"]) if latest_event else 0
+        final_state = result_dict["final_state"]
+        self.connection.execute(
+            "UPDATE internal_client_order_records SET current_state = ?, updated_timestamp = ? WHERE client_order_id = ?",
+            (final_state, _now(), order["client_order_id"]),
+        )
+        self._upsert_internal_client_order_projection(
+            client_order_id=order["client_order_id"],
+            broker_account_id=order["broker_account_id"],
+            current_state=final_state,
+            cumulative_filled_quantity=cumulative,
+            latest_event_id=latest_event["event_id"] if latest_event else None,
+            order_hash=order["order_hash"],
+        )
+        self._upsert_internal_paper_account_projection(
+            account_coordinator_id=order["account_coordinator_id"],
+            broker_account_id=order["broker_account_id"],
+            trading_session_id=order["trading_session_id"],
+            snapshot=result_dict["account_snapshot"],
+            expected_version=expected_account_projection_version,
+        )
+        self.append_event(
+            event_id=f"{result_dict['result_hash']}:event",
+            event_type="INTERNAL_PAPER_ORDER_SIMULATED",
+            aggregate_type="internal_paper_order",
+            aggregate_id=order["client_order_id"],
+            trading_session_id=order["trading_session_id"],
+            broker_account_id=order["broker_account_id"],
+            effective_timestamp=datetime.fromisoformat(order["authorized_time"]),
+            payload={"client_order_id": order["client_order_id"], "result_hash": result_dict["result_hash"], "grant_id": grant_id},
+            idempotency_scope="internal_paper_order",
+            idempotency_key=result_dict["result_hash"],
+        )
+        return str(order["client_order_id"])
+
+    def _put_internal_paper_event(self, event: Mapping[str, Any]) -> None:
+        row = self.connection.execute(
+            "SELECT event_hash FROM internal_paper_order_events WHERE event_id = ?",
+            (event["event_id"],),
+        ).fetchone()
+        if row:
+            if row["event_hash"] == event["event_hash"]:
+                return
+            raise IdempotencyConflictError(f"Internal paper event conflict: {event['event_id']}")
+        self.connection.execute(
+            """
+            INSERT INTO internal_paper_order_events(
+                event_id, client_order_id, broker_account_id, sequence_number, previous_state, new_state,
+                event_type, event_hash, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                event["event_id"],
+                event["client_order_id"],
+                event["broker_account_id"],
+                event["sequence"],
+                event["previous_state"],
+                event["new_state"],
+                event["event_type"],
+                event["event_hash"],
+                canonical_json(event),
+                _now(),
+            ),
+        )
+
+    def _put_internal_paper_fill(self, fill: Mapping[str, Any]) -> None:
+        row = self.connection.execute(
+            "SELECT fill_hash FROM internal_paper_fills WHERE internal_fill_id = ?",
+            (fill["internal_fill_id"],),
+        ).fetchone()
+        if row:
+            if row["fill_hash"] == fill["fill_hash"]:
+                return
+            raise IdempotencyConflictError(f"Internal paper fill conflict: {fill['internal_fill_id']}")
+        self.connection.execute(
+            """
+            INSERT INTO internal_paper_fills(
+                internal_fill_id, client_order_id, broker_account_id, strategy_instance_id,
+                position_cycle_id, fill_hash, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                fill["internal_fill_id"],
+                fill["client_order_id"],
+                fill["broker_account_id"],
+                fill["strategy_instance_id"],
+                fill["position_cycle_id"],
+                fill["fill_hash"],
+                canonical_json(fill),
+                _now(),
+            ),
+        )
+
+    def _upsert_internal_client_order_projection(
+        self,
+        *,
+        client_order_id: str,
+        broker_account_id: str,
+        current_state: str,
+        cumulative_filled_quantity: int,
+        latest_event_id: str | None,
+        order_hash: str,
+    ) -> None:
+        row = self.connection.execute(
+            "SELECT version FROM latest_internal_client_order_projection WHERE client_order_id = ?",
+            (client_order_id,),
+        ).fetchone()
+        if row is None:
+            self.connection.execute(
+                """
+                INSERT INTO latest_internal_client_order_projection(
+                    client_order_id, broker_account_id, current_state, cumulative_filled_quantity,
+                    latest_event_id, order_hash, version, updated_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (client_order_id, broker_account_id, current_state, cumulative_filled_quantity, latest_event_id, order_hash, 1, _now()),
+            )
+            return
+        version = int(row["version"]) + 1
+        self.connection.execute(
+            """
+            UPDATE latest_internal_client_order_projection
+            SET current_state = ?, cumulative_filled_quantity = ?, latest_event_id = ?, version = ?, updated_timestamp = ?
+            WHERE client_order_id = ?
+            """,
+            (current_state, cumulative_filled_quantity, latest_event_id, version, _now(), client_order_id),
+        )
+
+    def _upsert_internal_paper_account_projection(
+        self,
+        *,
+        account_coordinator_id: str,
+        broker_account_id: str,
+        trading_session_id: str,
+        snapshot: Mapping[str, Any],
+        expected_version: int | None,
+    ) -> int:
+        projection_id = f"{broker_account_id}|{trading_session_id}|{account_coordinator_id}"
+        row = self.connection.execute(
+            "SELECT version FROM internal_paper_account_projections WHERE projection_id = ?",
+            (projection_id,),
+        ).fetchone()
+        snapshot_hash = canonical_hash(snapshot)
+        if row is None:
+            if expected_version not in (None, 0):
+                raise OptimisticConcurrencyError("Internal paper account projection does not exist for expected version.")
+            version = 1
+            self.connection.execute(
+                """
+                INSERT INTO internal_paper_account_projections(
+                    projection_id, broker_account_id, trading_session_id, account_coordinator_id,
+                    latest_snapshot_hash, active_order_count, available_paper_margin, payload_json,
+                    version, updated_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    projection_id,
+                    broker_account_id,
+                    trading_session_id,
+                    account_coordinator_id,
+                    snapshot_hash,
+                    snapshot["active_order_count"],
+                    snapshot["available_paper_margin"],
+                    canonical_json(snapshot),
+                    version,
+                    _now(),
+                ),
+            )
+            return version
+        current_version = int(row["version"])
+        if expected_version is not None and expected_version != current_version:
+            raise OptimisticConcurrencyError("Stale internal paper account projection writer.")
+        version = current_version + 1
+        self.connection.execute(
+            """
+            UPDATE internal_paper_account_projections
+            SET latest_snapshot_hash = ?, active_order_count = ?, available_paper_margin = ?,
+                payload_json = ?, version = ?, updated_timestamp = ?
+            WHERE projection_id = ?
+            """,
+            (snapshot_hash, snapshot["active_order_count"], snapshot["available_paper_margin"], canonical_json(snapshot), version, _now(), projection_id),
         )
         return version
 

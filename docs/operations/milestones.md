@@ -2034,6 +2034,15 @@
   evidence through Phase 4C migration 3. Reports under `reports/phase4e` show
   `PHASE4E_M1_ACCEPT`; validated intents remain non-submittable and broker,
   paper, live, order creation and position mutation authority remain `NONE`.
+- Phase 4F Milestone 1 added the AccountCoordinator and deterministic
+  internal-paper simulation boundary under `src/tfis/internal_paper`, with S23
+  first-slice scenarios kept in `src/tfis/adapters/phase4f`. The milestone
+  introduces explicit internal-paper authority grants, broker-neutral
+  ClientOrder records, internal order states/events, simulated fills,
+  account/margin snapshots, cancel/replace handling, idempotency, persistence
+  migration 4, recovery/consistency checks and Phase 4F reports. Runtime impact
+  is `INTERNAL DETERMINISTIC PAPER ORDER SIMULATION ONLY`; broker/live
+  authority and PositionCycle mutation authority remain `NONE`.
 
 ## Next Recommended Priorities
 

@@ -1746,3 +1746,21 @@ Phase 4E Milestone 1 result:
 - next priority is Phase 4F: AccountCoordinator plus internal deterministic
   paper adapter, converting validated non-submittable intents into internal
   simulation requests only after explicit approval
+
+Phase 4F Milestone 1 result:
+
+- AccountCoordinator identity, internal-paper authority grant, ClientOrder,
+  deterministic internal-paper adapter, order events, simulated fills,
+  recovery/consistency checks and persistence records are implemented for
+  internal paper simulation only
+- S23 first-slice scenarios cover ENTRY, TARGET, ORIGINAL_SL, REVISED_SL,
+  EOD_EXIT, partial/full fills, rejection, cancel/replace, duplicate replay and
+  multi-account isolation without recalculating strategy formulas
+- full-suite failures from the previous run are classified in
+  `reports/phase4f/phase4f_full_suite_failure_classification.json`; two
+  broker/ingress-adjacent failures remain `UNKNOWN_REQUIRES_REVIEW` before any
+  external paper/broker authority, but they do not block internal deterministic
+  simulation
+- next priority is Phase 4H: integrate simulated fills into PositionCycle,
+  because Phase 4F order behavior is sufficient for the first vertical and
+  still grants no broker/live/position mutation authority

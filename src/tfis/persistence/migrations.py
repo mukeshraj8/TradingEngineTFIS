@@ -394,6 +394,102 @@ CREATE TABLE IF NOT EXISTS latest_intent_validation_projection (
 );
 """,
     ),
+    Migration(
+        4,
+        "phase4f_internal_paper_order_simulation",
+        """
+CREATE TABLE IF NOT EXISTS internal_paper_authority_grants (
+    grant_id TEXT PRIMARY KEY,
+    broker_account_id TEXT NOT NULL,
+    trading_session_id TEXT NOT NULL,
+    strategy_instance_id TEXT NOT NULL,
+    grant_hash TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id),
+    FOREIGN KEY(trading_session_id) REFERENCES trading_sessions(trading_session_id),
+    FOREIGN KEY(strategy_instance_id) REFERENCES strategy_instances(strategy_instance_id)
+);
+CREATE TABLE IF NOT EXISTS internal_client_order_records (
+    client_order_id TEXT PRIMARY KEY,
+    execution_intent_id TEXT NOT NULL,
+    account_coordinator_id TEXT NOT NULL,
+    broker_account_id TEXT NOT NULL,
+    strategy_instance_id TEXT NOT NULL,
+    trading_session_id TEXT NOT NULL,
+    position_cycle_id TEXT,
+    idempotency_key TEXT NOT NULL,
+    order_hash TEXT NOT NULL,
+    order_purpose TEXT NOT NULL,
+    current_state TEXT NOT NULL,
+    authority_source TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    updated_timestamp TEXT NOT NULL,
+    UNIQUE(broker_account_id, idempotency_key),
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id),
+    FOREIGN KEY(strategy_instance_id) REFERENCES strategy_instances(strategy_instance_id),
+    FOREIGN KEY(trading_session_id) REFERENCES trading_sessions(trading_session_id),
+    FOREIGN KEY(position_cycle_id) REFERENCES position_cycle_identities(position_cycle_id)
+);
+CREATE TABLE IF NOT EXISTS internal_paper_order_events (
+    event_id TEXT PRIMARY KEY,
+    client_order_id TEXT NOT NULL,
+    broker_account_id TEXT NOT NULL,
+    sequence_number INTEGER NOT NULL,
+    previous_state TEXT,
+    new_state TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    event_hash TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    UNIQUE(client_order_id, sequence_number),
+    FOREIGN KEY(client_order_id) REFERENCES internal_client_order_records(client_order_id),
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id)
+);
+CREATE TABLE IF NOT EXISTS internal_paper_fills (
+    internal_fill_id TEXT PRIMARY KEY,
+    client_order_id TEXT NOT NULL,
+    broker_account_id TEXT NOT NULL,
+    strategy_instance_id TEXT NOT NULL,
+    position_cycle_id TEXT,
+    fill_hash TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(client_order_id) REFERENCES internal_client_order_records(client_order_id),
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id),
+    FOREIGN KEY(strategy_instance_id) REFERENCES strategy_instances(strategy_instance_id),
+    FOREIGN KEY(position_cycle_id) REFERENCES position_cycle_identities(position_cycle_id)
+);
+CREATE TABLE IF NOT EXISTS internal_paper_account_projections (
+    projection_id TEXT PRIMARY KEY,
+    broker_account_id TEXT NOT NULL,
+    trading_session_id TEXT NOT NULL,
+    account_coordinator_id TEXT NOT NULL,
+    latest_snapshot_hash TEXT NOT NULL,
+    active_order_count INTEGER NOT NULL,
+    available_paper_margin TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    updated_timestamp TEXT NOT NULL,
+    UNIQUE(broker_account_id, trading_session_id, account_coordinator_id),
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id),
+    FOREIGN KEY(trading_session_id) REFERENCES trading_sessions(trading_session_id)
+);
+CREATE TABLE IF NOT EXISTS latest_internal_client_order_projection (
+    client_order_id TEXT PRIMARY KEY,
+    broker_account_id TEXT NOT NULL,
+    current_state TEXT NOT NULL,
+    cumulative_filled_quantity INTEGER NOT NULL,
+    latest_event_id TEXT,
+    order_hash TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    updated_timestamp TEXT NOT NULL,
+    FOREIGN KEY(client_order_id) REFERENCES internal_client_order_records(client_order_id),
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id)
+);
+""",
+    ),
 )
 
 

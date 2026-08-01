@@ -1,0 +1,12 @@
+[
+  {
+    "description": "PositionCycle mutation from simulated fills belongs to Phase 4H.",
+    "gap_id": "PHASE4F-GAP-001",
+    "status": "DEFERRED"
+  },
+  {
+    "description": "External broker or broker-paper submission remains unimplemented and unauthorized.",
+    "gap_id": "PHASE4F-GAP-002",
+    "status": "DEFERRED"
+  }
+]

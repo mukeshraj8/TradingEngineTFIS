@@ -1,0 +1,149 @@
+{
+  "account_a": {
+    "account_snapshot": {
+      "account_blocked": false,
+      "account_enabled": true,
+      "active_order_count": 0,
+      "active_order_reservation": "0",
+      "available_paper_margin": "1005000",
+      "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+      "margin_per_quantity": "100",
+      "max_active_order_count": 10,
+      "opening_paper_cash": "1000000",
+      "released_margin": "5000",
+      "reserved_margin": "0",
+      "simulated_charges": "0"
+    },
+    "client_order": {
+      "account_coordinator_id": "acct-coord:f4da074d49761b48cd2a9f31",
+      "authority": "INTERNAL_PAPER_ONLY",
+      "authorized_time": "2026-07-30T09:19:59+05:30",
+      "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+      "broker_submission_permitted": false,
+      "client_order_id": "client-order:d37377d9fd2009c428ae9d20",
+      "execution_intent_id": "exec-intent:e585f7152d584719dc3b9aef",
+      "idempotency_key": "client-order:d37377d9fd2009c428ae9d208e875dc268394aaa1d1c42528f46890921c0d3e1",
+      "limit_price": "203.5",
+      "live_submission_permitted": false,
+      "normalized_contract": "NIFTY_20260806_22250_CALL",
+      "order_hash": "64cbd5c3ac744ea5212267614f53505a966c4acfd2e215e18cbfdc9f69938bb5",
+      "order_purpose": "ENTRY",
+      "order_type": "LIMIT",
+      "position_cycle_id": null,
+      "protection_generation": null,
+      "quantity": 50,
+      "side": "SELL",
+      "source_intent_hash": "341b60fccbeb46be01f4e0bbbddcbd51efb1244d9cf215ef5620f1cc03cc5999",
+      "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "time_in_force": "DAY",
+      "trading_session_id": "NSE:2026-07-30",
+      "trigger_price": null
+    },
+    "events": [
+      {
+        "authority_source": "INTERNAL_PAPER_SIMULATION",
+        "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+        "client_order_id": "client-order:d37377d9fd2009c428ae9d20",
+        "cumulative_filled_quantity": 0,
+        "event_hash": "d0a5534a0eeaf068462d9a1675a1585b1954c5efb6b07e971d86547528c543ed",
+        "event_id": "event:e4ff8f231e8fefc525952cb8",
+        "event_timestamp": "2026-07-30T09:19:59+05:30",
+        "event_type": "CLIENT_ORDER_CREATED",
+        "fill_price": null,
+        "new_state": "READY_FOR_INTERNAL_PAPER",
+        "previous_state": "CREATED",
+        "provenance": {
+          "source": "AccountCoordinator"
+        },
+        "quantity_delta": 0,
+        "reason": "Client order created for internal paper simulation.",
+        "scenario_id": "CLIENT_ORDER_CREATION",
+        "sequence": 1,
+        "simulated_exchange_timestamp": "2026-07-30T09:19:59+05:30"
+      },
+      {
+        "authority_source": "INTERNAL_PAPER_SIMULATION",
+        "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+        "client_order_id": "client-order:d37377d9fd2009c428ae9d20",
+        "cumulative_filled_quantity": 0,
+        "event_hash": "8e03edf404736629170d7eed0940bed623af67b7b93ae4a5f61e0e287452212c",
+        "event_id": "event:827612e8412ae4afa0b65b92",
+        "event_timestamp": "2026-07-30T09:19:59+05:30",
+        "event_type": "INTERNAL_SUBMISSION_ACCEPTED",
+        "fill_price": null,
+        "new_state": "ACKNOWLEDGED_INTERNAL",
+        "previous_state": "READY_FOR_INTERNAL_PAPER",
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "0538cff02400f82f2c09b3dcb14b153b900eeecb43faf945b5739ff411f38374"
+        },
+        "quantity_delta": 0,
+        "reason": "Internal order acknowledged.",
+        "scenario_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+        "sequence": 2,
+        "simulated_exchange_timestamp": "2026-07-30T09:19:59+05:30"
+      },
+      {
+        "authority_source": "INTERNAL_PAPER_SIMULATION",
+        "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+        "client_order_id": "client-order:d37377d9fd2009c428ae9d20",
+        "cumulative_filled_quantity": 50,
+        "event_hash": "344e861bd2d355ab14798e286819806d433342fe1968c6f25d6607037df4bc87",
+        "event_id": "event:7b7cb8d38394234502a34f44",
+        "event_timestamp": "2026-07-30T09:19:59+05:30",
+        "event_type": "INTERNAL_FULL_FILL",
+        "fill_price": "203.5",
+        "new_state": "FILLED_INTERNAL",
+        "previous_state": "ACKNOWLEDGED_INTERNAL",
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "0538cff02400f82f2c09b3dcb14b153b900eeecb43faf945b5739ff411f38374"
+        },
+        "quantity_delta": 50,
+        "reason": "Internal full fill.",
+        "scenario_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+        "sequence": 3,
+        "simulated_exchange_timestamp": "2026-07-30T09:19:59+05:30"
+      }
+    ],
+    "fills": [
+      {
+        "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+        "client_order_id": "client-order:d37377d9fd2009c428ae9d20",
+        "contract": "NIFTY_20260806_22250_CALL",
+        "fill_classification": "INTERNAL_PAPER_SIMULATED_FILL",
+        "fill_hash": "98cff2100ba84442bf754c61c774b0c439466b47cf21720fb67140264ad08120",
+        "fill_price": "203.5",
+        "fill_quantity": 50,
+        "internal_fill_id": "internal-fill:eaa083ff5a113bb997ed8d2a",
+        "position_cycle_id": null,
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "0538cff02400f82f2c09b3dcb14b153b900eeecb43faf945b5739ff411f38374"
+        },
+        "recorded_timestamp": "2026-07-30T09:19:59+05:30",
+        "scenario_id": "s23:ENTRY:IMMEDIATE_FULL_FILL",
+        "side": "SELL",
+        "simulated_exchange_timestamp": "2026-07-30T09:19:59+05:30",
+        "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER"
+      }
+    ],
+    "final_state": "FILLED_INTERNAL",
+    "position_update_candidates": [
+      {
+        "authority_mode": "INTERNAL_PAPER_ONLY",
+        "candidate_hash": "8fb1c908e97c9546f8a6f29fe516640d36346dfc46a8c42b9b6ae7e016b85ef5",
+        "candidate_id": "pc-update-candidate:a2a87bd0da76f18c6778a924",
+        "fill_price": "203.5",
+        "position_cycle_id": null,
+        "quantity_delta": 50,
+        "source_fill_id": "internal-fill:eaa083ff5a113bb997ed8d2a",
+        "suggested_state_impact": "INTERNAL_PAPER_FILL_OBSERVED_NO_POSITION_MUTATION",
+        "update_permitted": false
+      }
+    ],
+    "result_hash": "81d498176f42b007d72f176ddf4e365bf76ebbbbb2edae3314cf1a8dc539978d"
+  },
+  "account_b_blocked_error": "Account is disabled or blocked.",
+  "isolation": "PASSED"
+}

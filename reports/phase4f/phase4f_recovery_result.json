@@ -1,0 +1,21 @@
+{
+  "active_order_count": 1,
+  "assessment_hash": "5ccaaad1e4a029ca412dfeeae1108398e926af4e3c06a85b71995b54149bd0bc",
+  "assessment_id": "internal-paper-recovery:3c6058edbc72ddc511d360ba",
+  "consistency": {
+    "assessment_id": "internal-paper-consistency:e61d2139559fc37730ad1d18",
+    "findings": [],
+    "persisted_event_count": 2,
+    "persisted_fill_count": 1,
+    "persisted_order_count": 1,
+    "projection_count": 1,
+    "status": "MATCHED"
+  },
+  "fill_count": 1,
+  "findings": [
+    "internal paper state can be recovered with explicit resume input"
+  ],
+  "latest_event_sequence": 3,
+  "resume_automatically": false,
+  "status": "INTERNAL_PAPER_RECOVERABLE"
+}

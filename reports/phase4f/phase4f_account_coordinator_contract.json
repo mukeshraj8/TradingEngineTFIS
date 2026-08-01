@@ -1,0 +1,10 @@
+{
+  "account_coordinator_id": "acct-coord:f4da074d49761b48cd2a9f31",
+  "broker_account_id": "S23_ACCOUNT_A_SHADOW",
+  "configuration_hash": "phase4f-account-config",
+  "coordinator_hash": "c4840f1c3e0e55b95800b3ae98f4d3fc350c358f9a91ae6bd380303c63539b4d",
+  "coordinator_version": "phase4f.account_coordinator.v1",
+  "environment": "INTERNAL_PAPER_ONLY",
+  "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+  "trading_session_id": "NSE:2026-07-30"
+}

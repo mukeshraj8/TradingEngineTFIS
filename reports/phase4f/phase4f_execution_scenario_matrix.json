@@ -1,0 +1,145 @@
+{
+  "bear_entry_result": {
+    "cancel_reason": "ACK_THEN_FULL_FILL",
+    "deterministic_seed": null,
+    "event_time": "2026-07-30T09:19:59+05:30",
+    "fill_price": "194.25",
+    "fill_quantity": null,
+    "market_evidence": {
+      "ask": "194.30",
+      "bid": "194.20",
+      "high": "195.25",
+      "low": "193.25",
+      "ltp": "194.25",
+      "snapshot_hash": "market:exec-intent:e1d2f27cad1470ee5a074bbe:ACK_THEN_FULL_FILL",
+      "source_timestamp": "2026-07-30T09:19:59+05:30"
+    },
+    "rejection_reason": "ACK_THEN_FULL_FILL",
+    "scenario": "ACK_THEN_FULL_FILL",
+    "scenario_hash": "e5983f7ded7762704673f3fea56bae3a6097940817752ca9e79c6e328aaaf248",
+    "scenario_id": "s23:ENTRY:ACK_THEN_FULL_FILL"
+  },
+  "bull_entry_result": {
+    "cancel_reason": "IMMEDIATE_FULL_FILL",
+    "deterministic_seed": null,
+    "event_time": "2026-07-30T09:19:59+05:30",
+    "fill_price": "203.5",
+    "fill_quantity": null,
+    "market_evidence": {
+      "ask": "203.55",
+      "bid": "203.45",
+      "high": "204.50",
+      "low": "202.50",
+      "ltp": "203.5",
+      "snapshot_hash": "market:exec-intent:e585f7152d584719dc3b9aef:IMMEDIATE_FULL_FILL",
+      "source_timestamp": "2026-07-30T09:19:59+05:30"
+    },
+    "rejection_reason": "IMMEDIATE_FULL_FILL",
+    "scenario": "IMMEDIATE_FULL_FILL",
+    "scenario_hash": "0538cff02400f82f2c09b3dcb14b153b900eeecb43faf945b5739ff411f38374",
+    "scenario_id": "s23:ENTRY:IMMEDIATE_FULL_FILL"
+  },
+  "eod_exit_result": {
+    "cancel_reason": "IMMEDIATE_FULL_FILL",
+    "deterministic_seed": null,
+    "event_time": "2026-07-30T15:00:59+05:30",
+    "fill_price": "118.00",
+    "fill_quantity": null,
+    "market_evidence": {
+      "ask": "118.05",
+      "bid": "117.95",
+      "high": "119.00",
+      "low": "117.00",
+      "ltp": "118.00",
+      "snapshot_hash": "market:exec-intent:c6dfa53d4ad76db4e9ae0525:IMMEDIATE_FULL_FILL",
+      "source_timestamp": "2026-07-30T15:00:59+05:30"
+    },
+    "rejection_reason": "IMMEDIATE_FULL_FILL",
+    "scenario": "IMMEDIATE_FULL_FILL",
+    "scenario_hash": "22043f515ead591f8e64202c5ee8219be3578cf3f92592a5122500ab344e7e76",
+    "scenario_id": "s23:EOD_EXIT:IMMEDIATE_FULL_FILL"
+  },
+  "multi_account_result": {
+    "isolation": "PASSED"
+  },
+  "original_sl_result": {
+    "cancel_reason": "PARTIAL_REMAINS_OPEN",
+    "deterministic_seed": null,
+    "event_time": "2026-07-30T09:19:59+05:30",
+    "fill_price": "130.00",
+    "fill_quantity": 1,
+    "market_evidence": {
+      "ask": "130.05",
+      "bid": "129.95",
+      "high": "131.00",
+      "low": "129.00",
+      "ltp": "130.00",
+      "snapshot_hash": "market:exec-intent:76fb9ce229d597eec0d63d9f:PARTIAL_REMAINS_OPEN",
+      "source_timestamp": "2026-07-30T09:19:59+05:30"
+    },
+    "rejection_reason": "PARTIAL_REMAINS_OPEN",
+    "scenario": "PARTIAL_REMAINS_OPEN",
+    "scenario_hash": "31bdbcf21b669fcb2f68fe60254f5fe2bbdaf421eb087b05dd51df05673d710b",
+    "scenario_id": "s23:ORIGINAL_SL:PARTIAL_REMAINS_OPEN"
+  },
+  "partial_fill_result": {
+    "cancel_reason": "PARTIAL_THEN_FULL_FILL",
+    "deterministic_seed": null,
+    "event_time": "2026-07-30T09:29:59+05:30",
+    "fill_price": "2.75",
+    "fill_quantity": 25,
+    "market_evidence": {
+      "ask": "2.80",
+      "bid": "2.70",
+      "high": "3.75",
+      "low": "1.75",
+      "ltp": "2.75",
+      "snapshot_hash": "market:exec-intent:446a2616f8e5d7c9a17304d3:PARTIAL_THEN_FULL_FILL",
+      "source_timestamp": "2026-07-30T09:29:59+05:30"
+    },
+    "rejection_reason": "PARTIAL_THEN_FULL_FILL",
+    "scenario": "PARTIAL_THEN_FULL_FILL",
+    "scenario_hash": "21c74af714de016e4db7260f7e08f4f124ac8b68e81db78c89ecf374c3a4659f",
+    "scenario_id": "s23:ENTRY:PARTIAL_THEN_FULL_FILL"
+  },
+  "revised_sl_result": {
+    "cancel_reason": "CANCEL_BEFORE_FILL",
+    "deterministic_seed": null,
+    "event_time": "2026-07-30T09:29:59+05:30",
+    "fill_price": "125.00",
+    "fill_quantity": null,
+    "market_evidence": {
+      "ask": "125.05",
+      "bid": "124.95",
+      "high": "126.00",
+      "low": "124.00",
+      "ltp": "125.00",
+      "snapshot_hash": "market:exec-intent:06294d261cc67434f2faaddc:CANCEL_BEFORE_FILL",
+      "source_timestamp": "2026-07-30T09:29:59+05:30"
+    },
+    "rejection_reason": "CANCEL_BEFORE_FILL",
+    "scenario": "CANCEL_BEFORE_FILL",
+    "scenario_hash": "55d02d63d40bf013d1da7f89aa8a64a5a84cdfccaa082388fa3351a496a7565f",
+    "scenario_id": "s23:REVISED_SL:CANCEL_BEFORE_FILL"
+  },
+  "target_result": {
+    "cancel_reason": "PARTIAL_REMAINS_OPEN",
+    "deterministic_seed": null,
+    "event_time": "2026-07-30T09:15:59+05:30",
+    "fill_price": "90.00",
+    "fill_quantity": 1,
+    "market_evidence": {
+      "ask": "90.05",
+      "bid": "89.95",
+      "high": "91.00",
+      "low": "89.00",
+      "ltp": "90.00",
+      "snapshot_hash": "market:exec-intent:bf9e9b4780ac07071412c5f0:PARTIAL_REMAINS_OPEN",
+      "source_timestamp": "2026-07-30T09:15:59+05:30"
+    },
+    "rejection_reason": "PARTIAL_REMAINS_OPEN",
+    "scenario": "PARTIAL_REMAINS_OPEN",
+    "scenario_hash": "1e606aefbe01c66ce6e5a320cee9c85013004c36b63c63edbeb200c8f73b0549",
+    "scenario_id": "s23:TARGET:PARTIAL_REMAINS_OPEN"
+  }
+}

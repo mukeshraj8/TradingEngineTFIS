@@ -1,0 +1,218 @@
+[
+  {
+    "area": "legacy_backtest_contract_lifecycle",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_contract_specific_lifecycle_mode.py::test_contract_specific_lifecycle_uses_selected_contract_series_when_available"
+  },
+  {
+    "area": "legacy_backtest_contract_lifecycle",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_contract_specific_lifecycle_mode.py::test_contract_specific_lifecycle_uses_added_put_contract_series_when_available"
+  },
+  {
+    "area": "legacy_backtest_contract_lifecycle",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_contract_specific_lifecycle_mode.py::test_contract_specific_lifecycle_achieves_full_fixture_coverage_without_fallback"
+  },
+  {
+    "area": "legacy_backtest_expiry_lifecycle",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_expiry_day_lifecycle_review.py::test_expiry_day_review_marks_satisfied_exit_when_contract_expires_on_trade_date"
+  },
+  {
+    "area": "legacy_backtest_expiry_lifecycle",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_expiry_day_lifecycle_review.py::test_expiry_day_review_warns_when_expiry_day_position_remains_open"
+  },
+  {
+    "area": "monthly_status_backtest",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_historical_backtest_monthly_status_mode.py::test_historical_monthly_status_mode_selects_bull_and_bear_branches"
+  },
+  {
+    "area": "monthly_status_backtest",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_historical_backtest_monthly_status_mode.py::test_historical_monthly_status_mode_option_chain_selection_reports_selected_contract"
+  },
+  {
+    "area": "legacy_s23_fsl_trp_backtest",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_historical_backtest_s23_current_day_fsl_trp_mode.py::test_row_184_bull_call_missed_updates_effective_plan_entry_and_records_resolution_audit"
+  },
+  {
+    "area": "legacy_s23_recalculation_backtest",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_historical_backtest_s23_recalculation_mode.py::test_default_historical_monthly_status_backtest_is_unchanged_without_flag"
+  },
+  {
+    "area": "legacy_s23_recalculation_backtest",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_historical_backtest_s23_recalculation_mode.py::test_recalculation_mode_uses_spot_intraday_csv_when_provided"
+  },
+  {
+    "area": "monthly_status_branch_selection",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_monthly_status_branch_selection_flow.py::test_bull_cf_flow_selects_bull_call_and_bull_put"
+  },
+  {
+    "area": "monthly_status_branch_selection",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_monthly_status_branch_selection_flow.py::test_bear_cf_flow_selects_bear_call_and_bear_put"
+  },
+  {
+    "area": "monthly_status_branch_selection",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_monthly_status_branch_selection_flow.py::test_reversal_dominated_conflict_still_drives_bear_branch_selection"
+  },
+  {
+    "area": "legacy_fyers_ingress_preflight",
+    "classification": "UNKNOWN_REQUIRES_REVIEW",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "broker/ingress adjacent; review before external paper or broker authority",
+    "required_action_before_paper_authority": "review and resolve before external paper/broker authority",
+    "test": "tests/integration/test_run_s23_fyers_paper_ingress_cli.py::test_run_s23_fyers_paper_ingress_cli_preflight_only_writes_outputs"
+  },
+  {
+    "area": "legacy_s23_fsl_trp_backtest",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/integration/test_s23_current_day_fsl_trp_applied_case_comparison.py::test_current_day_fsl_trp_applied_case_is_apples_to_apples_and_uses_workbook_backed_entry_override"
+  },
+  {
+    "area": "broker_read_adapter",
+    "classification": "UNKNOWN_REQUIRES_REVIEW",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "broker/ingress adjacent; review before external paper or broker authority",
+    "required_action_before_paper_authority": "review and resolve before external paper/broker authority",
+    "test": "tests/unit/test_fyers_adapter.py::test_fyers_adapter_requests_specific_expiry_and_configured_strike_count"
+  },
+  {
+    "area": "legacy_s23_strategy_fixture",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_all_branches.py::test_all_s23_branch_folders_evaluate_expected_sample_outputs[S23_NIFTY_OP_SELL_WK_DIFF_2D_3D]"
+  },
+  {
+    "area": "legacy_s23_strategy_fixture",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_all_branches.py::test_all_s23_branch_folders_evaluate_expected_sample_outputs[S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL]"
+  },
+  {
+    "area": "legacy_s23_strategy_fixture",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_all_branches.py::test_all_s23_branch_folders_evaluate_expected_sample_outputs[S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT]"
+  },
+  {
+    "area": "legacy_s23_strategy_fixture",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_all_branches.py::test_all_s23_branch_folders_evaluate_expected_sample_outputs[S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT]"
+  },
+  {
+    "area": "legacy_generated_prelude",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_generated_prelude_dry_run.py::test_generated_fresh_entry_prelude_feeds_existing_dry_run"
+  },
+  {
+    "area": "legacy_generated_prelude",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_generated_prelude_dry_run.py::test_generated_carry_forward_prelude_feeds_existing_dry_run"
+  },
+  {
+    "area": "legacy_generated_prelude",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_generated_prelude_dry_run.py::test_smoke_override_requires_explicit_flag"
+  },
+  {
+    "area": "legacy_generated_prelude",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_generated_prelude_dry_run.py::test_generated_events_preserve_deterministic_ordering"
+  },
+  {
+    "area": "legacy_process_lock",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_supervised_decision_process_lock.py::test_s23_supervised_decision_process_lock_path_is_scoped_to_lock_root"
+  },
+  {
+    "area": "legacy_process_lock",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_supervised_decision_process_lock.py::test_s23_supervised_decision_lock_identity_is_stable_per_artifact_root_and_prefix"
+  },
+  {
+    "area": "legacy_process_lock",
+    "classification": "PRE_EXISTING_UNRELATED",
+    "current_reproduction_status": "REPRODUCED_IN_PREVIOUS_FULL_SUITE_RUN",
+    "relevance_to_phase4f": "not Phase 4F internal paper order simulation",
+    "required_action_before_paper_authority": "none for internal deterministic paper simulation",
+    "test": "tests/unit/test_s23_supervised_decision_process_lock.py::test_s23_supervised_decision_duplicate_live_pid_fails_closed_with_metadata"
+  }
+]

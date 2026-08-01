@@ -2967,3 +2967,14 @@ Current notes:
   under `reports/phase4e`. Runtime impact is `VALIDATED NON-SUBMITTABLE
   EXECUTION INTENTS ONLY`; broker, paper, live, order creation and position
   mutation authority remain `NONE`.
+- Phase 4F Milestone 1 now adds an AccountCoordinator and deterministic
+  internal-paper order simulation boundary under `src/tfis/internal_paper`,
+  with S23 first-slice scenario composition isolated under
+  `src/tfis/adapters/phase4f`. The coordinator accepts only
+  `VALIDATED_NOT_SUBMITTABLE` intents with explicit internal-paper grants,
+  creates broker-neutral client-order records, runs deterministic scenarios for
+  acknowledgement, rejection, partial fill, full fill, expiry and
+  cancel/replace, and produces internal simulated fills plus non-authoritative
+  PositionCycle update candidates. Reports live under `reports/phase4f`.
+  Runtime impact is `INTERNAL DETERMINISTIC PAPER ORDER SIMULATION ONLY`;
+  broker/live authority and PositionCycle mutation authority remain `NONE`.
