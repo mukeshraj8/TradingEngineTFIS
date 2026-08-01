@@ -1,0 +1,18 @@
+{
+  "authority_mode": "INTERNAL_PAPER_CONTROLLED",
+  "disabled_by_default": true,
+  "explicit_enable_flag_required": true,
+  "external_authority": {
+    "broker_sandbox_submission": "NONE",
+    "external_broker_submission": "NONE",
+    "external_order_mutation": "NONE",
+    "external_position_mutation": "NONE",
+    "live_submission": "NONE"
+  },
+  "market_input_modes": [
+    "CAPTURED_REPLAY",
+    "CERTIFICATION_FIXTURE"
+  ],
+  "runtime_profile": "internal_paper_s23_single_instance",
+  "single_authoritative_instance_only": true
+}

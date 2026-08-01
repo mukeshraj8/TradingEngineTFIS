@@ -1,0 +1,10 @@
+{
+  "median_total_runtime_ms": 2.939,
+  "p95_total_runtime_ms": 53032.336,
+  "production_live_performance_claimed": false,
+  "repeated_replay_count": 3,
+  "runs": 12,
+  "scope": "phase5a_controlled_runtime_fixture_set",
+  "stress_100x_event_replay": "PRACTICAL_FIXTURE_SIMULATED",
+  "two_day_carry_fixture": "PASSED"
+}

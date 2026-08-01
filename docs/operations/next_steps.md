@@ -1816,3 +1816,20 @@ Phase 5A-Pre result:
 - exact next recommendation is controlled one-instance internal-paper
   activation only; do not enable external broker, broker-sandbox or live write
   authority from this certification
+
+Phase 5A Milestone 1 result:
+
+- the `internal_paper_s23_single_instance` runtime profile is now available but
+  disabled by default, with explicit operator activation required through the
+  runtime API or `scripts/run_s23_internal_paper.py --enable-internal-paper`
+- the controlled runtime supports preview, enabled Bull/Bear/RC/partial/EOD/
+  carry sessions, blocked reconciliation, expired grant, restart/resume,
+  duplicate replay, disable-new-entry protection preservation, account/global
+  halt, graceful/failure-safe shutdown evidence, read-only operational
+  snapshots and immutable session audit output
+- reports under `reports/phase5a` document the runtime profile, activation
+  contract, session results, operational snapshot, session audit, performance,
+  known limitations and gap register
+- exact next recommendation is repeated internal-paper observation across
+  multiple captured sessions; do not recommend or enable external live
+  authority from Phase 5A

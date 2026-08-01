@@ -3023,3 +3023,16 @@ Current notes:
   `CERTIFIED INTERNAL-PAPER END-TO-END S23 CALL-SIDE FLOW`; broker, live,
   broker-sandbox, external paper, external order mutation and external
   position mutation authority remain `NONE`.
+- Phase 5A Milestone 1 now adds controlled one-instance S23 Call-side
+  internal-paper activation under `src/tfis/internal_paper/runtime`, with a
+  CLI entry point at `scripts/run_s23_internal_paper.py`. The
+  `internal_paper_s23_single_instance` profile is disabled by default and
+  requires an explicit operator enable command before any internal-paper
+  ClientOrder can be created. The runtime exposes startup gates, deterministic
+  fixture/replay market-input metadata, operator controls, health states,
+  read-only operational snapshots, session audits, safe shutdown assessments,
+  restart/resume evidence, kill-switch behavior, known limitations and reports
+  under `reports/phase5a`. Runtime impact is `CONTROLLED ONE-INSTANCE
+  INTERNAL-PAPER S23 ACTIVATION`; broker, live, broker-sandbox, external
+  paper, external order mutation and external position mutation authority
+  remain `NONE`.
