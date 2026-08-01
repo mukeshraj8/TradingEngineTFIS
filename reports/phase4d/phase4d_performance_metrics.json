@@ -1,0 +1,20 @@
+{
+  "account": {
+    "median_seconds": 0.0021721999999044783,
+    "p95_seconds": 0.0040695999999798005
+  },
+  "fills_100": {
+    "median_seconds": 0.08236720000002151,
+    "p95_seconds": 0.09481349999998656
+  },
+  "fixture_mode_only": true,
+  "orders_100": {
+    "median_seconds": 0.10715659999993932,
+    "p95_seconds": 0.12051819999999225
+  },
+  "positions_50": {
+    "median_seconds": 0.0419849999999542,
+    "p95_seconds": 0.04524919999994381
+  },
+  "production_capacity_claimed": false
+}

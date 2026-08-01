@@ -1,0 +1,44 @@
+{
+  "carried": {
+    "blocking_reasons": [
+      "BROKER_ONLY_ORDER",
+      "BROKER_ONLY_ORDER"
+    ],
+    "evidence_hashes": {
+      "item_hash": "4659681ecf4ab30681d0c728aba3d0ef6ff5329be958a9e5f2aaaa7f3ab0d213"
+    },
+    "grants_authority": false,
+    "manual_review_required": false,
+    "recommendation": "LIFECYCLE_ONLY"
+  },
+  "protection": {
+    "blocking_reasons": [
+      "BROKER_ONLY_ORDER",
+      "PROTECTION_MISSING"
+    ],
+    "evidence_hashes": {
+      "item_hash": "e4ce1cbae6f48b2df9dd3034340bfd0d35bb0d301b76f066fe6cf51a3714a21f"
+    },
+    "grants_authority": false,
+    "manual_review_required": false,
+    "recommendation": "NEW_ENTRY_BLOCKED"
+  },
+  "restart": {
+    "blocking_reasons": [],
+    "evidence_hashes": {
+      "item_hash": "1108966785db27fa271540ea62b77ed41f6e0896a0c4ed77f979dea2c874288e"
+    },
+    "grants_authority": false,
+    "manual_review_required": false,
+    "recommendation": "SHADOW_READY"
+  },
+  "startup": {
+    "blocking_reasons": [],
+    "evidence_hashes": {
+      "item_hash": "fe3f64ee516e6ac3e064c527246605dc1ef08ca18ebd0ed54391a6fa6c6c73af"
+    },
+    "grants_authority": false,
+    "manual_review_required": false,
+    "recommendation": "SHADOW_READY"
+  }
+}

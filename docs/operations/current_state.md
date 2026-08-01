@@ -2944,3 +2944,14 @@ Current notes:
   observational comparison reports. Reports live under `reports/phase4c`.
   Runtime impact is `TRANSACTIONAL OFFLINE/SHADOW PERSISTENCE ONLY`; broker,
   paper, live, order mutation and position mutation authority remain `NONE`.
+- Phase 4D Milestone 1 now adds a broker-neutral reconciliation engine under
+  `src/tfis/reconciliation`. It compares `LOCAL_EXPECTED_STATE` against
+  `BROKER_OBSERVED_STATE` and produces immutable non-authoritative
+  reconciliation evidence, repair recommendations and authority-gate
+  recommendations for account, order, fill, position, protection, carried
+  position, startup and restart readiness. Reconciliation results persist
+  through the Phase 4C SQLite unit-of-work into append-only result/item/repair
+  tables and an advisory latest reconciliation projection. Reports live under
+  `reports/phase4d`. Runtime impact is `NON-AUTHORITATIVE RECONCILIATION
+  ONLY`; broker, paper, live, order mutation and position mutation authority
+  remain `NONE`.

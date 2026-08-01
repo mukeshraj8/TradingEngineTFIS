@@ -1,0 +1,197 @@
+{
+  "account_status": "RECONCILED_READY",
+  "as_of": "2026-06-05T09:16:00+05:30",
+  "authority_gate": {
+    "blocking_reasons": [],
+    "evidence_hashes": {
+      "item_hash": "1108966785db27fa271540ea62b77ed41f6e0896a0c4ed77f979dea2c874288e"
+    },
+    "grants_authority": false,
+    "manual_review_required": false,
+    "recommendation": "SHADOW_READY"
+  },
+  "broker_account_id": "acct-a",
+  "broker_snapshot_hash": "broker-hash-partial_fill",
+  "carried_position_status": "MATCHED",
+  "fill_status": "MATCHED",
+  "items": [
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": {
+        "broker_account_id": "acct-a",
+        "completeness": "COMPLETE",
+        "session_status": "AUTHENTICATED"
+      },
+      "classification": "MATCHED",
+      "financial_risk": "Account identity and snapshot availability matched.",
+      "item_id": "account:matched",
+      "item_type": "ACCOUNT",
+      "local_reference": {
+        "broker_account_id": "acct-a",
+        "completeness": "COMPLETE",
+        "session_status": "AUTHENTICATED"
+      },
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "account:matched",
+          "reason": "Account identity and snapshot availability matched."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": {
+        "broker_account_id": "acct-a",
+        "broker_order_id": "broker-1",
+        "client_order_id": "client-1",
+        "correlation_id": null,
+        "exchange_order_id": null,
+        "filled_quantity": 25,
+        "limit_price": 100.0,
+        "normalized_contract": "NIFTY_20260609_22650_CE",
+        "observed_at": null,
+        "protection_generation": null,
+        "purpose": "ENTRY",
+        "quantity": 75,
+        "side": "SELL",
+        "status": "PARTIALLY_FILLED",
+        "trigger_price": null
+      },
+      "classification": "MATCHED",
+      "financial_risk": "Order identity, status, quantity and price matched.",
+      "item_id": "order:local-order-1:matched",
+      "item_type": "ORDER",
+      "local_reference": {
+        "broker_account_id": "acct-a",
+        "broker_order_id": "broker-1",
+        "client_order_id": "client-1",
+        "correlation_id": null,
+        "exchange_order_id": null,
+        "filled_quantity": 25,
+        "limit_price": 100.0,
+        "local_order_id": "local-order-1",
+        "normalized_contract": "NIFTY_20260609_22650_CE",
+        "protection_generation": null,
+        "purpose": "ENTRY",
+        "quantity": 75,
+        "side": "SELL",
+        "status": "PARTIALLY_FILLED",
+        "trigger_price": null,
+        "updated_at": null
+      },
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "order:local-order-1:matched",
+          "reason": "Order identity, status, quantity and price matched."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": null,
+      "classification": "MATCHED",
+      "financial_risk": "No local or broker fills expected.",
+      "item_id": "fill:empty",
+      "item_type": "FILL",
+      "local_reference": null,
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "fill:empty",
+          "reason": "No local or broker fills expected."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": null,
+      "classification": "MATCHED",
+      "financial_risk": "No local or broker positions expected.",
+      "item_id": "position:empty",
+      "item_type": "POSITION",
+      "local_reference": null,
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "position:empty",
+          "reason": "No local or broker positions expected."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": null,
+      "classification": "MATCHED",
+      "financial_risk": "No protection expected or observed.",
+      "item_id": "protection:empty",
+      "item_type": "PROTECTION",
+      "local_reference": null,
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "protection:empty",
+          "reason": "No protection expected or observed."
+        }
+      ]
+    }
+  ],
+  "local_state_version": 1,
+  "manual_review_required": false,
+  "order_status": "MATCHED",
+  "position_status": "MATCHED",
+  "protection_status": "MATCHED",
+  "reconciliation_id": "phase4d-partial_fill",
+  "reconciliation_policy_version": "phase4d.v1",
+  "repair_recommendations": [
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "order:local-order-1:matched",
+      "reason": "Order identity, status, quantity and price matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    }
+  ],
+  "result_hash": "26e6dc9eb65f881a6fc77d1f4855ca97837d0b4d7e21227c0f00ebf18dd70ba3",
+  "scope": "STARTUP_ACCOUNT",
+  "trading_session_id": "session-2026-06-05"
+}

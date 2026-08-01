@@ -1718,3 +1718,16 @@ Phase 4C Milestone 1 result:
 - next priority is Phase 4D: build the broker/local reconciliation engine on
   top of persisted broker observations and local expected-state fixtures, still
   without broker-write authority
+
+Phase 4D Milestone 1 result:
+
+- broker-neutral reconciliation now compares local expected state against
+  broker observed state without collapsing either truth category
+- account, order, fill, position, protection, carried-position, startup and
+  restart readiness classifications are implemented with immutable evidence,
+  non-authoritative repair recommendations and advisory authority gates
+- reconciliation results persist transactionally through the Phase 4C
+  unit-of-work and remain idempotent; broker observations and local projections
+  are not automatically repaired or mutated
+- next priority is Phase 4E: build the `ExecutionIntent` and minimum risk
+  validation boundary using Phase 4D readiness output, without order submission

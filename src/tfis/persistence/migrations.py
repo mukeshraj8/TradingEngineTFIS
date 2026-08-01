@@ -276,6 +276,62 @@ CREATE TABLE IF NOT EXISTS runtime_checkpoints (
 
 MIGRATIONS = (
     Migration(1, "phase4c_operational_persistence", INITIAL_SCHEMA_SQL),
+    Migration(
+        2,
+        "phase4d_reconciliation_evidence",
+        """
+CREATE TABLE IF NOT EXISTS reconciliation_results (
+    reconciliation_id TEXT PRIMARY KEY,
+    broker_account_id TEXT NOT NULL,
+    trading_session_id TEXT NOT NULL,
+    reconciliation_scope TEXT NOT NULL,
+    result_hash TEXT NOT NULL,
+    input_hash TEXT NOT NULL,
+    status TEXT NOT NULL,
+    authority_gate TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    created_timestamp TEXT NOT NULL,
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id),
+    FOREIGN KEY(trading_session_id) REFERENCES trading_sessions(trading_session_id)
+);
+CREATE TABLE IF NOT EXISTS reconciliation_items (
+    item_id TEXT PRIMARY KEY,
+    reconciliation_id TEXT NOT NULL,
+    item_type TEXT NOT NULL,
+    classification TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    FOREIGN KEY(reconciliation_id) REFERENCES reconciliation_results(reconciliation_id)
+);
+CREATE TABLE IF NOT EXISTS reconciliation_repair_recommendations (
+    recommendation_id TEXT PRIMARY KEY,
+    reconciliation_id TEXT NOT NULL,
+    item_id TEXT NOT NULL,
+    recommendation_code TEXT NOT NULL,
+    execution_not_permitted INTEGER NOT NULL,
+    payload_json TEXT NOT NULL,
+    FOREIGN KEY(reconciliation_id) REFERENCES reconciliation_results(reconciliation_id)
+);
+CREATE TABLE IF NOT EXISTS latest_reconciliation_projection (
+    projection_id TEXT PRIMARY KEY,
+    broker_account_id TEXT NOT NULL,
+    trading_session_id TEXT NOT NULL,
+    reconciliation_scope TEXT NOT NULL,
+    latest_result_id TEXT NOT NULL,
+    latest_result_hash TEXT NOT NULL,
+    status TEXT NOT NULL,
+    blocking_classifications_json TEXT NOT NULL,
+    snapshot_watermark TEXT NOT NULL,
+    local_projection_version INTEGER NOT NULL,
+    broker_snapshot_hash TEXT NOT NULL,
+    completed_timestamp TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    UNIQUE(broker_account_id, trading_session_id, reconciliation_scope),
+    FOREIGN KEY(broker_account_id) REFERENCES broker_account_identities(broker_account_id),
+    FOREIGN KEY(trading_session_id) REFERENCES trading_sessions(trading_session_id),
+    FOREIGN KEY(latest_result_id) REFERENCES reconciliation_results(reconciliation_id)
+);
+""",
+    ),
 )
 
 

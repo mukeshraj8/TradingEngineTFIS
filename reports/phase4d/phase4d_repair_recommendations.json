@@ -1,0 +1,707 @@
+{
+  "execution_not_permitted": true,
+  "recommendations": [
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "order:local-order-1:matched",
+      "reason": "Order identity, status, quantity and price matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "order:local-order-1:matched",
+      "reason": "Order identity, status, quantity and price matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:broker-1:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "BLOCK_NEW_ENTRY",
+      "execution_not_permitted": true,
+      "item_id": "order:local-order-1:local_only",
+      "reason": "Local submitted/active order has no broker observation."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "UPDATE_LOCAL_ORDER_STATUS",
+      "execution_not_permitted": true,
+      "item_id": "order:local-order-1:status",
+      "reason": "Order statuses differ."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "INGEST_MISSING_BROKER_FILL",
+      "execution_not_permitted": true,
+      "item_id": "fill:fill-1:broker_only",
+      "reason": "Broker fill is missing locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "fill:duplicate:fill-1",
+      "reason": "Duplicate broker fill identity observed."
+    },
+    {
+      "code": "INGEST_MISSING_BROKER_FILL",
+      "execution_not_permitted": true,
+      "item_id": "fill:fill-1:broker_only",
+      "reason": "Broker fill is missing locally."
+    },
+    {
+      "code": "INGEST_MISSING_BROKER_FILL",
+      "execution_not_permitted": true,
+      "item_id": "fill:fill-1:broker_only",
+      "reason": "Broker fill is missing locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:pc-1:matched",
+      "reason": "Position contract, direction and quantity matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "CREATE_UNLINKED_BROKER_POSITION_CASE",
+      "execution_not_permitted": true,
+      "item_id": "position:NIFTY_20260609_22650_CE:broker_only",
+      "reason": "Broker position has no deterministic local PositionCycle linkage."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "position:pc-1:local_only",
+      "reason": "Local PositionCycle has no broker position."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "UPDATE_LOCAL_POSITION_QUANTITY",
+      "execution_not_permitted": true,
+      "item_id": "position:pc-1:quantity",
+      "reason": "Broker and local quantities differ."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:sl-broker:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:pc-1:matched",
+      "reason": "Position contract, direction and quantity matched."
+    },
+    {
+      "code": "FUTURE_PLACE_MISSING_PROTECTION",
+      "execution_not_permitted": true,
+      "item_id": "protection:target-1:missing",
+      "reason": "Required protection is missing at broker."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:sl-1:matched",
+      "reason": "Protection matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:target-broker:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:pc-1:matched",
+      "reason": "Position contract, direction and quantity matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:target-1:matched",
+      "reason": "Protection matched."
+    },
+    {
+      "code": "FUTURE_PLACE_MISSING_PROTECTION",
+      "execution_not_permitted": true,
+      "item_id": "protection:sl-1:missing",
+      "reason": "Required protection is missing at broker."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:sl-broker:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:sl-broker-2:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "FUTURE_CANCEL_DUPLICATE_ORDER",
+      "execution_not_permitted": true,
+      "item_id": "protection:sl-1:duplicate",
+      "reason": "Duplicate active protection observed."
+    },
+    {
+      "code": "SUPERSEDE_STALE_PROTECTION_PROJECTION",
+      "execution_not_permitted": true,
+      "item_id": "protection:sl-broker:stale",
+      "reason": "Unexpected active protection remains at broker."
+    },
+    {
+      "code": "SUPERSEDE_STALE_PROTECTION_PROJECTION",
+      "execution_not_permitted": true,
+      "item_id": "protection:sl-broker-2:stale",
+      "reason": "Unexpected active protection remains at broker."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "order:s23-entry-local:matched",
+      "reason": "Order identity, status, quantity and price matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:broker-target:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:broker-rsl:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:fill-s23:matched",
+      "reason": "Fill identity, quantity and price matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:pc-s23-1:matched",
+      "reason": "Position contract, direction and quantity matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:target-1:matched",
+      "reason": "Protection matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:rsl-1:matched",
+      "reason": "Protection matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "order:s23-entry-local:matched",
+      "reason": "Order identity, status, quantity and price matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:broker-target:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:broker-rsl:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:fill-s23:matched",
+      "reason": "Fill identity, quantity and price matched."
+    },
+    {
+      "code": "UPDATE_LOCAL_POSITION_QUANTITY",
+      "execution_not_permitted": true,
+      "item_id": "position:pc-s23-1:quantity",
+      "reason": "Broker and local quantities differ."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:target-1:matched",
+      "reason": "Protection matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:rsl-1:matched",
+      "reason": "Protection matched."
+    },
+    {
+      "code": "REQUIRE_BROKER_REFRESH",
+      "execution_not_permitted": true,
+      "item_id": "account:session",
+      "reason": "Broker read session unavailable."
+    },
+    {
+      "code": "REQUIRE_BROKER_REFRESH",
+      "execution_not_permitted": true,
+      "item_id": "account:partial",
+      "reason": "Broker snapshot is incomplete."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "REQUIRE_BROKER_REFRESH",
+      "execution_not_permitted": true,
+      "item_id": "account:partial",
+      "reason": "Broker snapshot is incomplete."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "account:identity",
+      "reason": "Broker account identity mismatch."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "REQUIRE_BROKER_REFRESH",
+      "execution_not_permitted": true,
+      "item_id": "account:stale",
+      "reason": "Broker snapshot is stale for readiness."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:broker-amb:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    },
+    {
+      "code": "REQUIRE_ACCOUNT_HALT",
+      "execution_not_permitted": true,
+      "item_id": "account:recovery",
+      "reason": "Recovery status blocks reconciliation."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "account_status": "RECONCILED_READY",
+  "as_of": "2026-06-05T09:16:00+05:30",
+  "authority_gate": {
+    "blocking_reasons": [],
+    "evidence_hashes": {
+      "item_hash": "fe3f64ee516e6ac3e064c527246605dc1ef08ca18ebd0ed54391a6fa6c6c73af"
+    },
+    "grants_authority": false,
+    "manual_review_required": false,
+    "recommendation": "SHADOW_READY"
+  },
+  "broker_account_id": "acct-a",
+  "broker_snapshot_hash": "broker-hash-empty",
+  "carried_position_status": "MATCHED",
+  "fill_status": "MATCHED",
+  "items": [
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": {
+        "broker_account_id": "acct-a",
+        "completeness": "COMPLETE",
+        "session_status": "AUTHENTICATED"
+      },
+      "classification": "MATCHED",
+      "financial_risk": "Account identity and snapshot availability matched.",
+      "item_id": "account:matched",
+      "item_type": "ACCOUNT",
+      "local_reference": {
+        "broker_account_id": "acct-a",
+        "completeness": "COMPLETE",
+        "session_status": "AUTHENTICATED"
+      },
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "account:matched",
+          "reason": "Account identity and snapshot availability matched."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": null,
+      "classification": "MATCHED",
+      "financial_risk": "No local or broker fills expected.",
+      "item_id": "fill:empty",
+      "item_type": "FILL",
+      "local_reference": null,
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "fill:empty",
+          "reason": "No local or broker fills expected."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": null,
+      "classification": "MATCHED",
+      "financial_risk": "No local or broker positions expected.",
+      "item_id": "position:empty",
+      "item_type": "POSITION",
+      "local_reference": null,
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "position:empty",
+          "reason": "No local or broker positions expected."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": null,
+      "classification": "MATCHED",
+      "financial_risk": "No protection expected or observed.",
+      "item_id": "protection:empty",
+      "item_type": "PROTECTION",
+      "local_reference": null,
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "protection:empty",
+          "reason": "No protection expected or observed."
+        }
+      ]
+    }
+  ],
+  "local_state_version": 1,
+  "manual_review_required": false,
+  "order_status": "INSUFFICIENT_EVIDENCE",
+  "position_status": "MATCHED",
+  "protection_status": "MATCHED",
+  "reconciliation_id": "phase4d-empty",
+  "reconciliation_policy_version": "phase4d.v1",
+  "repair_recommendations": [
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:empty",
+      "reason": "No local or broker positions expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:empty",
+      "reason": "No protection expected or observed."
+    }
+  ],
+  "result_hash": "2814a75696ec6e41ea1397f3fb4b51bc197382d68282fcd8b5bef947715f8e3a",
+  "scope": "STARTUP_ACCOUNT",
+  "trading_session_id": "session-2026-06-05"
+}

@@ -1,0 +1,16 @@
+{
+  "gaps": [
+    {
+      "code": "PHASE4E_EXECUTION_INTENT_NOT_IMPLEMENTED",
+      "status": "DEFERRED"
+    },
+    {
+      "code": "NO_AUTOMATIC_PROJECTION_REPAIR",
+      "status": "INTENTIONAL"
+    },
+    {
+      "code": "NO_BROKER_WRITE_AUTHORITY",
+      "status": "INTENTIONAL"
+    }
+  ]
+}

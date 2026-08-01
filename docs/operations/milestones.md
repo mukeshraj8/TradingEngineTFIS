@@ -2016,6 +2016,15 @@
   observational comparison reporting. Reports under `reports/phase4c` show
   `PHASE4C_M1_ACCEPT`; broker, paper, live, order mutation and position
   mutation authority remain `NONE`.
+- Phase 4D Milestone 1 added the broker-neutral reconciliation engine under
+  `src/tfis/reconciliation`. It keeps local expected state, broker observed
+  state and reconciled state separate while classifying account, order, fill,
+  position, protection and carried-position differences. The engine produces
+  immutable evidence, repair recommendations marked `EXECUTION_NOT_PERMITTED`,
+  and advisory authority-gate recommendations. Reconciliation persistence is
+  transactional and idempotent through Phase 4C tables and projections. Reports
+  under `reports/phase4d` show `PHASE4D_M1_ACCEPT`; broker, paper, live, order
+  mutation and position mutation authority remain `NONE`.
 
 ## Next Recommended Priorities
 

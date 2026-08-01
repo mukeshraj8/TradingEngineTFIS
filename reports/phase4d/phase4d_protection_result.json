@@ -1,0 +1,267 @@
+{
+  "account_status": "NEW_ENTRY_BLOCKED",
+  "as_of": "2026-06-05T09:16:00+05:30",
+  "authority_gate": {
+    "blocking_reasons": [
+      "BROKER_ONLY_ORDER",
+      "PROTECTION_MISSING"
+    ],
+    "evidence_hashes": {
+      "item_hash": "e4ce1cbae6f48b2df9dd3034340bfd0d35bb0d301b76f066fe6cf51a3714a21f"
+    },
+    "grants_authority": false,
+    "manual_review_required": false,
+    "recommendation": "NEW_ENTRY_BLOCKED"
+  },
+  "broker_account_id": "acct-a",
+  "broker_snapshot_hash": "broker-hash-missing_target",
+  "carried_position_status": "MATCHED",
+  "fill_status": "MATCHED",
+  "items": [
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": {
+        "broker_account_id": "acct-a",
+        "completeness": "COMPLETE",
+        "session_status": "AUTHENTICATED"
+      },
+      "classification": "MATCHED",
+      "financial_risk": "Account identity and snapshot availability matched.",
+      "item_id": "account:matched",
+      "item_type": "ACCOUNT",
+      "local_reference": {
+        "broker_account_id": "acct-a",
+        "completeness": "COMPLETE",
+        "session_status": "AUTHENTICATED"
+      },
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "account:matched",
+          "reason": "Account identity and snapshot availability matched."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": true,
+      "broker_reference": {
+        "broker_account_id": "acct-a",
+        "broker_order_id": "sl-broker",
+        "client_order_id": null,
+        "correlation_id": null,
+        "exchange_order_id": null,
+        "filled_quantity": 0,
+        "limit_price": null,
+        "normalized_contract": "NIFTY_20260609_22650_CE",
+        "observed_at": null,
+        "protection_generation": 2,
+        "purpose": "REVISED_SL",
+        "quantity": 75,
+        "side": "BUY",
+        "status": "OPEN",
+        "trigger_price": 130.0
+      },
+      "classification": "BROKER_ONLY_ORDER",
+      "financial_risk": "Broker order is unknown locally.",
+      "item_id": "order:sl-broker:broker_only",
+      "item_type": "ORDER",
+      "local_reference": null,
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "REQUIRE_OPERATOR_REVIEW",
+          "execution_not_permitted": true,
+          "item_id": "order:sl-broker:broker_only",
+          "reason": "Broker order is unknown locally."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": null,
+      "classification": "MATCHED",
+      "financial_risk": "No local or broker fills expected.",
+      "item_id": "fill:empty",
+      "item_type": "FILL",
+      "local_reference": null,
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "fill:empty",
+          "reason": "No local or broker fills expected."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": {
+        "average_price": 100.0,
+        "broker_account_id": "acct-a",
+        "carry_type": "INTRADAY",
+        "net_quantity": -75,
+        "normalized_contract": "NIFTY_20260609_22650_CE",
+        "observed_at": null,
+        "product_type": "NRML",
+        "side": "SHORT"
+      },
+      "classification": "MATCHED",
+      "financial_risk": "Position contract, direction and quantity matched.",
+      "item_id": "position:pc-1:matched",
+      "item_type": "POSITION",
+      "local_reference": {
+        "average_price": 100.0,
+        "broker_account_id": "acct-a",
+        "carry_type": "INTRADAY",
+        "net_quantity": -75,
+        "normalized_contract": "NIFTY_20260609_22650_CE",
+        "position_cycle_id": "pc-1",
+        "previous_day_quantity": null,
+        "product_type": "NRML",
+        "side": "SHORT",
+        "status": "OPEN",
+        "strategy_instance_id": null
+      },
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "position:pc-1:matched",
+          "reason": "Position contract, direction and quantity matched."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": true,
+      "blocks_new_entry": true,
+      "broker_reference": null,
+      "classification": "PROTECTION_MISSING",
+      "financial_risk": "Required protection is missing at broker.",
+      "item_id": "protection:target-1:missing",
+      "item_type": "PROTECTION",
+      "local_reference": {
+        "broker_account_id": "acct-a",
+        "generation": 1,
+        "normalized_contract": "NIFTY_20260609_22650_CE",
+        "position_cycle_id": "pc-1",
+        "price": 60.0,
+        "protection_id": "target-1",
+        "protection_type": "TARGET",
+        "quantity": 75,
+        "side": "BUY",
+        "status": "ACTIVE"
+      },
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "FUTURE_PLACE_MISSING_PROTECTION",
+          "execution_not_permitted": true,
+          "item_id": "protection:target-1:missing",
+          "reason": "Required protection is missing at broker."
+        }
+      ]
+    },
+    {
+      "allows_lifecycle_only": false,
+      "blocks_new_entry": false,
+      "broker_reference": {
+        "broker_account_id": "acct-a",
+        "broker_order_id": "sl-broker",
+        "client_order_id": null,
+        "correlation_id": null,
+        "exchange_order_id": null,
+        "filled_quantity": 0,
+        "limit_price": null,
+        "normalized_contract": "NIFTY_20260609_22650_CE",
+        "observed_at": null,
+        "protection_generation": 2,
+        "purpose": "REVISED_SL",
+        "quantity": 75,
+        "side": "BUY",
+        "status": "OPEN",
+        "trigger_price": 130.0
+      },
+      "classification": "PROTECTION_MATCHED",
+      "financial_risk": "Protection matched.",
+      "item_id": "protection:sl-1:matched",
+      "item_type": "PROTECTION",
+      "local_reference": {
+        "broker_account_id": "acct-a",
+        "generation": 2,
+        "normalized_contract": "NIFTY_20260609_22650_CE",
+        "position_cycle_id": "pc-1",
+        "price": 130.0,
+        "protection_id": "sl-1",
+        "protection_type": "REVISED_SL",
+        "quantity": 75,
+        "side": "BUY",
+        "status": "ACTIVE"
+      },
+      "manual_review_required": false,
+      "recommendations": [
+        {
+          "code": "NO_ACTION_REQUIRED",
+          "execution_not_permitted": true,
+          "item_id": "protection:sl-1:matched",
+          "reason": "Protection matched."
+        }
+      ]
+    }
+  ],
+  "local_state_version": 1,
+  "manual_review_required": false,
+  "order_status": "BROKER_ONLY_ORDER",
+  "position_status": "MATCHED",
+  "protection_status": "PROTECTION_MISSING",
+  "reconciliation_id": "phase4d-missing_target",
+  "reconciliation_policy_version": "phase4d.v1",
+  "repair_recommendations": [
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "account:matched",
+      "reason": "Account identity and snapshot availability matched."
+    },
+    {
+      "code": "REQUIRE_OPERATOR_REVIEW",
+      "execution_not_permitted": true,
+      "item_id": "order:sl-broker:broker_only",
+      "reason": "Broker order is unknown locally."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "fill:empty",
+      "reason": "No local or broker fills expected."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "position:pc-1:matched",
+      "reason": "Position contract, direction and quantity matched."
+    },
+    {
+      "code": "FUTURE_PLACE_MISSING_PROTECTION",
+      "execution_not_permitted": true,
+      "item_id": "protection:target-1:missing",
+      "reason": "Required protection is missing at broker."
+    },
+    {
+      "code": "NO_ACTION_REQUIRED",
+      "execution_not_permitted": true,
+      "item_id": "protection:sl-1:matched",
+      "reason": "Protection matched."
+    }
+  ],
+  "result_hash": "6df751b380ddf44d0bfdf7d93137d2530f61de415629eb66d059b902ae1261cd",
+  "scope": "STARTUP_ACCOUNT",
+  "trading_session_id": "session-2026-06-05"
+}

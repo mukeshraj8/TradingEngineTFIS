@@ -1,0 +1,193 @@
+{
+  "account_identity_mismatch": {
+    "authority_gate": "MANUAL_REVIEW_REQUIRED",
+    "classifications": [
+      "MANUAL_REVIEW_REQUIRED",
+      "MATCHED"
+    ],
+    "manual_review_required": true
+  },
+  "ambiguous_contract_identity": {
+    "authority_gate": "NEW_ENTRY_BLOCKED",
+    "classifications": [
+      "BROKER_ONLY_ORDER",
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "broker_only_fill": {
+    "authority_gate": "NEW_ENTRY_BLOCKED",
+    "classifications": [
+      "BROKER_ONLY_FILL",
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "broker_only_order": {
+    "authority_gate": "NEW_ENTRY_BLOCKED",
+    "classifications": [
+      "BROKER_ONLY_ORDER",
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "broker_only_position": {
+    "authority_gate": "MANUAL_REVIEW_REQUIRED",
+    "classifications": [
+      "BROKER_ONLY_POSITION",
+      "MATCHED"
+    ],
+    "manual_review_required": true
+  },
+  "broker_unavailable": {
+    "authority_gate": "ACCOUNT_BLOCKED",
+    "classifications": [
+      "BROKER_STATE_UNAVAILABLE",
+      "INSUFFICIENT_EVIDENCE",
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "carried_quantity_mismatch": {
+    "authority_gate": "LIFECYCLE_ONLY",
+    "classifications": [
+      "BROKER_ONLY_ORDER",
+      "MATCHED",
+      "POSITION_QUANTITY_MISMATCH",
+      "PROTECTION_MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "duplicate_fill": {
+    "authority_gate": "MANUAL_REVIEW_REQUIRED",
+    "classifications": [
+      "BROKER_ONLY_FILL",
+      "DUPLICATE_FILL",
+      "MATCHED"
+    ],
+    "manual_review_required": true
+  },
+  "duplicate_sl": {
+    "authority_gate": "MANUAL_REVIEW_REQUIRED",
+    "classifications": [
+      "BROKER_ONLY_ORDER",
+      "DUPLICATE_PROTECTION",
+      "MATCHED",
+      "STALE_PROTECTION"
+    ],
+    "manual_review_required": true
+  },
+  "empty_matched_account": {
+    "authority_gate": "SHADOW_READY",
+    "classifications": [
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "local_only_position": {
+    "authority_gate": "NEW_ENTRY_BLOCKED",
+    "classifications": [
+      "LOCAL_ONLY_POSITION",
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "local_only_submitted_order": {
+    "authority_gate": "NEW_ENTRY_BLOCKED",
+    "classifications": [
+      "LOCAL_ONLY_ORDER",
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "matched_carried_position": {
+    "authority_gate": "LIFECYCLE_ONLY",
+    "classifications": [
+      "BROKER_ONLY_ORDER",
+      "MATCHED",
+      "PROTECTION_MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "matched_open_position": {
+    "authority_gate": "SHADOW_READY",
+    "classifications": [
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "matched_partially_filled_entry": {
+    "authority_gate": "SHADOW_READY",
+    "classifications": [
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "matched_working_entry_order": {
+    "authority_gate": "SHADOW_READY",
+    "classifications": [
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "missing_sl": {
+    "authority_gate": "NEW_ENTRY_BLOCKED",
+    "classifications": [
+      "BROKER_ONLY_ORDER",
+      "MATCHED",
+      "PROTECTION_MATCHED",
+      "PROTECTION_MISSING"
+    ],
+    "manual_review_required": false
+  },
+  "missing_target": {
+    "authority_gate": "NEW_ENTRY_BLOCKED",
+    "classifications": [
+      "BROKER_ONLY_ORDER",
+      "MATCHED",
+      "PROTECTION_MATCHED",
+      "PROTECTION_MISSING"
+    ],
+    "manual_review_required": false
+  },
+  "partial_broker_snapshot": {
+    "authority_gate": "READ_ONLY_READY",
+    "classifications": [
+      "INSUFFICIENT_EVIDENCE",
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "quantity_mismatch": {
+    "authority_gate": "NEW_ENTRY_BLOCKED",
+    "classifications": [
+      "MATCHED",
+      "POSITION_QUANTITY_MISMATCH"
+    ],
+    "manual_review_required": false
+  },
+  "restart_pending_idempotency": {
+    "authority_gate": "RECOVERY_BLOCKED",
+    "classifications": [
+      "BROKER_STATE_UNAVAILABLE",
+      "MATCHED"
+    ],
+    "manual_review_required": false
+  },
+  "stale_broker_snapshot": {
+    "authority_gate": "SHADOW_READY",
+    "classifications": [
+      "MATCHED",
+      "STALE_BROKER_ORDER"
+    ],
+    "manual_review_required": false
+  },
+  "status_mismatch": {
+    "authority_gate": "SHADOW_READY",
+    "classifications": [
+      "MATCHED",
+      "ORDER_STATUS_MISMATCH"
+    ],
+    "manual_review_required": false
+  }
+}

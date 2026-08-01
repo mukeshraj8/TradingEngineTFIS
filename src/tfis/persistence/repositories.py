@@ -47,6 +47,7 @@ KNOWN_EVENT_TYPES = frozenset(
         "BROKER_FILL_OBSERVED",
         "RUNTIME_CHECKPOINT_PERSISTED",
         "IDEMPOTENCY_RESERVED",
+        "RECONCILIATION_COMPLETED",
     }
 )
 
@@ -677,6 +678,159 @@ class PersistenceRepositories:
             ),
         )
         return checkpoint_id
+
+    def put_reconciliation_result(
+        self,
+        *,
+        reconciliation_result: object,
+        reconciliation_input_hash: str,
+        expected_projection_version: int | None,
+    ) -> str:
+        result_dict = reconciliation_result.to_dict()  # type: ignore[attr-defined]
+        reconciliation_id = str(result_dict["reconciliation_id"])
+        row = self.connection.execute(
+            "SELECT result_hash, input_hash FROM reconciliation_results WHERE reconciliation_id = ?",
+            (reconciliation_id,),
+        ).fetchone()
+        if row:
+            if row["result_hash"] == result_dict["result_hash"] and row["input_hash"] == reconciliation_input_hash:
+                return reconciliation_id
+            raise ArtifactConflictError(f"Reconciliation identity conflict: {reconciliation_id}")
+        self.connection.execute(
+            """
+            INSERT INTO reconciliation_results(
+                reconciliation_id, broker_account_id, trading_session_id, reconciliation_scope,
+                result_hash, input_hash, status, authority_gate, payload_json, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                reconciliation_id,
+                result_dict["broker_account_id"],
+                result_dict["trading_session_id"],
+                result_dict["scope"],
+                result_dict["result_hash"],
+                reconciliation_input_hash,
+                result_dict["account_status"],
+                result_dict["authority_gate"]["recommendation"],
+                canonical_json(result_dict),
+                _now(),
+            ),
+        )
+        for item in result_dict["items"]:
+            self.connection.execute(
+                "INSERT INTO reconciliation_items(item_id, reconciliation_id, item_type, classification, payload_json) VALUES (?, ?, ?, ?, ?)",
+                (
+                    f"{reconciliation_id}:{item['item_id']}",
+                    reconciliation_id,
+                    item["item_type"],
+                    item["classification"],
+                    canonical_json(item),
+                ),
+            )
+        for index, recommendation in enumerate(result_dict["repair_recommendations"]):
+            self.connection.execute(
+                """
+                INSERT INTO reconciliation_repair_recommendations(
+                    recommendation_id, reconciliation_id, item_id, recommendation_code, execution_not_permitted, payload_json
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    f"{reconciliation_id}:repair:{index}",
+                    reconciliation_id,
+                    recommendation["item_id"],
+                    recommendation["code"],
+                    1 if recommendation["execution_not_permitted"] else 0,
+                    canonical_json(recommendation),
+                ),
+            )
+        projection_id = f"{result_dict['broker_account_id']}|{result_dict['trading_session_id']}|{result_dict['scope']}"
+        self._upsert_reconciliation_projection(
+            projection_id=projection_id,
+            result_dict=result_dict,
+            expected_version=expected_projection_version,
+        )
+        self.append_event(
+            event_id=f"{reconciliation_id}:event",
+            event_type="RECONCILIATION_COMPLETED",
+            aggregate_type="reconciliation",
+            aggregate_id=projection_id,
+            trading_session_id=result_dict["trading_session_id"],
+            broker_account_id=result_dict["broker_account_id"],
+            effective_timestamp=datetime.fromisoformat(result_dict["as_of"]),
+            payload={"reconciliation_id": reconciliation_id, "result_hash": result_dict["result_hash"]},
+            idempotency_scope="reconciliation",
+            idempotency_key=reconciliation_id,
+        )
+        return reconciliation_id
+
+    def _upsert_reconciliation_projection(
+        self,
+        *,
+        projection_id: str,
+        result_dict: Mapping[str, Any],
+        expected_version: int | None,
+    ) -> int:
+        row = self.connection.execute(
+            "SELECT version FROM latest_reconciliation_projection WHERE projection_id = ?",
+            (projection_id,),
+        ).fetchone()
+        blocking = result_dict["authority_gate"]["blocking_reasons"]
+        if row is None:
+            if expected_version not in (None, 0):
+                raise OptimisticConcurrencyError("Reconciliation projection does not exist for expected version.")
+            version = 1
+            self.connection.execute(
+                """
+                INSERT INTO latest_reconciliation_projection(
+                    projection_id, broker_account_id, trading_session_id, reconciliation_scope,
+                    latest_result_id, latest_result_hash, status, blocking_classifications_json,
+                    snapshot_watermark, local_projection_version, broker_snapshot_hash, completed_timestamp, version
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    projection_id,
+                    result_dict["broker_account_id"],
+                    result_dict["trading_session_id"],
+                    result_dict["scope"],
+                    result_dict["reconciliation_id"],
+                    result_dict["result_hash"],
+                    result_dict["authority_gate"]["recommendation"],
+                    canonical_json(blocking),
+                    result_dict["as_of"],
+                    result_dict["local_state_version"],
+                    result_dict["broker_snapshot_hash"],
+                    _now(),
+                    version,
+                ),
+            )
+            return version
+        current_version = int(row["version"])
+        if expected_version != current_version:
+            raise OptimisticConcurrencyError("Stale reconciliation projection writer.")
+        version = current_version + 1
+        self.connection.execute(
+            """
+            UPDATE latest_reconciliation_projection
+            SET latest_result_id = ?, latest_result_hash = ?, status = ?, blocking_classifications_json = ?,
+                snapshot_watermark = ?, local_projection_version = ?, broker_snapshot_hash = ?,
+                completed_timestamp = ?, version = ?
+            WHERE projection_id = ? AND version = ?
+            """,
+            (
+                result_dict["reconciliation_id"],
+                result_dict["result_hash"],
+                result_dict["authority_gate"]["recommendation"],
+                canonical_json(blocking),
+                result_dict["as_of"],
+                result_dict["local_state_version"],
+                result_dict["broker_snapshot_hash"],
+                _now(),
+                version,
+                projection_id,
+                current_version,
+            ),
+        )
+        return version
 
     def put_local_schema_boundary_rows(self, *, broker_account_id: str, strategy_instance_id: str, source_artifact_id: str) -> None:
         self.put_execution_intent_reservation(

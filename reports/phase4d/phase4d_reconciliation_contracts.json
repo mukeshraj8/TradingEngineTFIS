@@ -1,0 +1,47 @@
+{
+  "authority": "NON-AUTHORITATIVE RECONCILIATION ONLY",
+  "matching_precedence": {
+    "fills": [
+      "broker_or_exchange_fill_id",
+      "broker_order_id",
+      "account",
+      "contract",
+      "side",
+      "quantity",
+      "timestamp"
+    ],
+    "orders": [
+      "broker_account",
+      "broker_order_id",
+      "exchange_order_id",
+      "client_order_id",
+      "correlation_id",
+      "contract_side_quantity_timing_supporting_only"
+    ],
+    "positions": [
+      "broker_account",
+      "normalized_contract",
+      "net_direction",
+      "product",
+      "carry_classification"
+    ]
+  },
+  "scopes": [
+    "STARTUP_ACCOUNT",
+    "PROCESS_RESTART",
+    "PRE_ENTRY_SAFETY",
+    "PERIODIC_INTRADAY",
+    "POST_ORDER_TIMEOUT",
+    "POST_RECONNECT",
+    "POST_PARTIAL_FILL",
+    "POST_CANCEL_REPLACE",
+    "CARRIED_POSITION_STARTUP",
+    "PRE_EOD",
+    "EOD_FINAL"
+  ],
+  "truth_categories": [
+    "LOCAL_EXPECTED_STATE",
+    "BROKER_OBSERVED_STATE",
+    "RECONCILED_STATE"
+  ]
+}

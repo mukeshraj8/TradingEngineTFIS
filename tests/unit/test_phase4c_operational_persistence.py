@@ -68,7 +68,7 @@ def test_clean_database_initialization_migration_idempotency_and_checksum(tmp_pa
     with db.connect() as connection:
         apply_migrations(connection)
         apply_migrations(connection)
-        assert validate_schema(connection) == 1
+        assert validate_schema(connection) == MIGRATIONS[-1].migration_id
         assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
         checksum = connection.execute("SELECT checksum FROM schema_migrations WHERE migration_id = 1").fetchone()[0]
         connection.execute("UPDATE schema_migrations SET checksum = 'bad' WHERE migration_id = 1")
