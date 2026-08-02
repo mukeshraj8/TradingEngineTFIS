@@ -1,0 +1,15 @@
+{
+  "schema_version": "s22.live_observation.gap_register.v1",
+  "gaps": [
+    {
+      "gap_id": "S22-LIVE-OBS-G001",
+      "classification": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+      "description": "Live S22 RELIANCE observation could not begin because the task was evaluated on Sunday, 2026-08-02, outside an actual NSE trading session.",
+      "financial_materiality": "BLOCKS_CAPTURE_ONLY",
+      "required_resolution": "Repeat the read-only observation on the next eligible NSE trading session with FYERS read-only authentication available.",
+      "authority_impact": "No broker, paper, or live authority granted."
+    }
+  ],
+  "unresolved_source_questions": [],
+  "implementation_defects_found": []
+}

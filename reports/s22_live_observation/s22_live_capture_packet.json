@@ -1,0 +1,25 @@
+{
+  "schema_version": "s22.live_observation.capture_packet.v1",
+  "status": "NOT_CAPTURED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "capture_attempted": false,
+  "reason": "NSE was not in a live trading session on Sunday, 2026-08-02.",
+  "required_capture_fields": {
+    "official_market_open_timestamp": "MISSING_CAPTURE",
+    "first_local_reliance_underlying_observation": "MISSING_CAPTURE",
+    "opening_bar_or_reference": "MISSING_CAPTURE",
+    "selected_option_opening_quote": "MISSING_CAPTURE",
+    "selected_option_oi": "MISSING_CAPTURE",
+    "orpt_underlying_observation": "MISSING_CAPTURE",
+    "orpt_selected_contract_observation": "MISSING_CAPTURE",
+    "rc_underlying_observation": "MISSING_CAPTURE",
+    "rc_selected_contract_observation": "MISSING_CAPTURE",
+    "quote_source_timestamps": "MISSING_CAPTURE",
+    "quote_freshness": "MISSING_CAPTURE",
+    "bid_ask_ltp": "MISSING_CAPTURE",
+    "intraday_selected_contract_observations": "MISSING_CAPTURE",
+    "eod_observation": "MISSING_CAPTURE"
+  },
+  "selected_contract_continuous_capture": "NOT_STARTED",
+  "external_order_authority": "NONE"
+}

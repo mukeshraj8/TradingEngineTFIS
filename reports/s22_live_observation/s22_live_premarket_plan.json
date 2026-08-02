@@ -1,0 +1,29 @@
+{
+  "schema_version": "s22.live_observation.premarket_plan.v1",
+  "status": "NOT_CREATED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "underlying": "RELIANCE",
+  "reason": "No actual NSE trading session was available on 2026-08-02, so no dated live-session PreMarketStrategyPlan was produced.",
+  "accepted_baseline_reference": "reports/s22_reliance/s22_reliance_premarket_plan.json",
+  "baseline_status": "CONDITIONAL_ENGINEERING_FIXTURE",
+  "captured_live_fields": {
+    "dated_lot_size": "NOT_CAPTURED_THIS_RUN",
+    "generic_monthly_status": "NOT_CAPTURED_THIS_RUN",
+    "completed_daily_history": "NOT_CAPTURED_THIS_RUN",
+    "near_and_next_expiries": "NOT_CAPTURED_THIS_RUN",
+    "option_chain_candidate_set": "NOT_CAPTURED_THIS_RUN",
+    "premium": "NOT_CAPTURED_THIS_RUN",
+    "oi": "NOT_CAPTURED_THIS_RUN",
+    "natural_branch": "NOT_EVALUATED_THIS_RUN",
+    "selected_contract": "NOT_EVALUATED_THIS_RUN",
+    "base_entry": "NOT_EVALUATED_THIS_RUN",
+    "target": "NOT_EVALUATED_THIS_RUN",
+    "original_sl_or_msl": "NOT_EVALUATED_THIS_RUN",
+    "orpt": "NOT_EVALUATED_THIS_RUN",
+    "rc": "NOT_EVALUATED_THIS_RUN"
+  },
+  "authority": {
+    "external_broker_order_authority": "NONE",
+    "live_money_authority": "NONE"
+  }
+}

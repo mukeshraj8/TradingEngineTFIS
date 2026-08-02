@@ -6,6 +6,17 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Sunday, August 2, 2026 at 14:20 IST, the S22 RELIANCE live-session
+  read-only observation gate was evaluated and blocked before any FYERS live
+  read because the date is Sunday and no NSE trading session is available.
+  Reports are under `reports/s22_live_observation/` with verdict
+  `S22_RELIANCE_LIVE_OBSERVATION_BLOCKED` and return code
+  `LIVE_SESSION_WINDOW_UNAVAILABLE`. No live PreMarketStrategyPlan, Opening
+  Market Context, ORPT/RC result, EffectiveExecutionPlan, internal-paper order,
+  PositionCycle, TradeFact, PnLFact, or dashboard projection was created from
+  live evidence. No fixture or deterministic supplement was relabelled as
+  captured. S22 formulas, enabled stock scope, and runtime behavior are
+  unchanged. External FYERS broker-order/live authority remains `NONE`.
 - as of Sunday, August 2, 2026, S22 RELIANCE Stage 1 now has a one-stock
   offline/internal-paper proof under `src/tfis/adapters/phase5e` and
   `reports/s22_reliance/`. The proof consumes the sanitized FYERS read-only

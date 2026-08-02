@@ -1,0 +1,10 @@
+{
+  "schema_version": "s22.live_observation.dashboard_projection.v1",
+  "status": "NOT_CREATED",
+  "projection_state": "BLOCKED_LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "underlying": "RELIANCE",
+  "selected_contract": "NOT_EVALUATED_THIS_RUN",
+  "branch": "NOT_EVALUATED_THIS_RUN",
+  "position_state": "NO_LIVE_OBSERVATION_POSITION",
+  "external_order_authority": "NONE"
+}

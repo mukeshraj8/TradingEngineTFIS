@@ -1,0 +1,27 @@
+{
+  "schema_version": "s22.live_observation.opening_context.v1",
+  "status": "NOT_CREATED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "opening_market_context": {
+    "official_exchange_open": "MISSING_CAPTURE",
+    "first_local_tick": "MISSING_CAPTURE",
+    "first_complete_quote": "MISSING_CAPTURE",
+    "opening_derived_reference": "MISSING_CAPTURE",
+    "orpt_configured_time": "09:24:59.400000",
+    "orpt_source_time": "MISSING_CAPTURE",
+    "rc_configured_time": "09:29:59.400000",
+    "rc_source_time": "MISSING_CAPTURE",
+    "quote_freshness": "MISSING_CAPTURE",
+    "missing_fields": [
+      "official_exchange_open",
+      "first_local_tick",
+      "first_complete_quote",
+      "opening_derived_reference",
+      "orpt_source_time",
+      "rc_source_time",
+      "quote_freshness"
+    ],
+    "source_quality": "NO_LIVE_SESSION_CAPTURE"
+  },
+  "fixture_values_promoted_to_captured": false
+}

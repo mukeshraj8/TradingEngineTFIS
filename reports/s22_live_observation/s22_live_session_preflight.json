@@ -1,0 +1,44 @@
+{
+  "schema_version": "s22.live_observation.preflight.v1",
+  "verdict": "S22_RELIANCE_LIVE_OBSERVATION_BLOCKED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "evaluated_at_local": "2026-08-02T14:20:00+05:30",
+  "timezone": "Asia/Calcutta",
+  "calendar_date": "2026-08-02",
+  "day_of_week": "Sunday",
+  "instrument": {
+    "strategy": "S22",
+    "underlying": "RELIANCE",
+    "stage": "Stage 1 one-stock observation"
+  },
+  "session_eligibility": {
+    "actual_nse_trading_date_verified": false,
+    "market_session_state": "CLOSED_WEEKEND",
+    "required_observation_window": "NSE live market session including open, ORPT, RC and optional EOD observations",
+    "required_time_zone": "Asia/Calcutta",
+    "eligible": false,
+    "reason": "The task was evaluated on Sunday, 2026-08-02. A Sunday is not an NSE cash/F&O trading session, so live market-open, ORPT, RC and EOD evidence cannot be captured."
+  },
+  "pre_capture_checks": {
+    "fyers_authentication_checked_this_run": false,
+    "fyers_read_health_checked_this_run": false,
+    "broker_diagnostics_checked_this_run": false,
+    "reason_not_checked": "The market-session eligibility gate failed before any live FYERS read operation was appropriate.",
+    "canonical_fyers_refresh_flow": "scripts/fyers_token_refresh.py --prepare",
+    "read_only_capture_utility": "scripts/capture_s22_reliance_fyers_snapshot.py",
+    "diagnostic_utility": "scripts/run_broker_diagnostics.py"
+  },
+  "authority": {
+    "fyers_order_write_status": "NOT_AUTHORIZED",
+    "external_broker_order_authority": "NONE",
+    "external_paper_authority": "NONE",
+    "live_money_authority": "NONE",
+    "internal_paper_result_created": false
+  },
+  "scope_guards": {
+    "s22_formulas_changed": false,
+    "second_stock_enabled": false,
+    "deterministic_supplements_labelled_captured": false,
+    "fyers_order_operations_added": false
+  }
+}

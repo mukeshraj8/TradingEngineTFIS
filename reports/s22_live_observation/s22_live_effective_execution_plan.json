@@ -1,0 +1,8 @@
+{
+  "schema_version": "s22.live_observation.effective_execution_plan.v1",
+  "status": "NOT_CREATED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "reason": "EffectiveExecutionPlan requires captured live PreMarketStrategyPlan and OpeningMarketContext evidence for this milestone.",
+  "execution_intent_validated": false,
+  "external_order_authority": "NONE"
+}

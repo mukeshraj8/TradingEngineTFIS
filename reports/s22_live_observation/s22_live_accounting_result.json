@@ -1,0 +1,9 @@
+{
+  "schema_version": "s22.live_observation.accounting_result.v1",
+  "status": "NOT_CREATED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "trade_fact_created": false,
+  "pnl_fact_created": false,
+  "reason": "No internal-paper fill was created from captured live evidence.",
+  "accounting_authority": "NONE_FOR_THIS_OBSERVATION"
+}

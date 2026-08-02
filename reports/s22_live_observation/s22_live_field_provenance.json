@@ -1,0 +1,21 @@
+{
+  "schema_version": "s22.live_observation.field_provenance.v1",
+  "status": "BLOCKED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "field_provenance": {
+    "live_market_session_state": "LOCAL_CALENDAR_GATE",
+    "fyers_authentication": "NOT_RUN_THIS_TASK",
+    "fyers_reference_data": "NOT_RUN_THIS_TASK",
+    "fyers_history": "NOT_RUN_THIS_TASK",
+    "fyers_quote": "NOT_RUN_THIS_TASK",
+    "fyers_option_chain": "NOT_RUN_THIS_TASK",
+    "opening_context": "MISSING_CAPTURE",
+    "orpt_context": "MISSING_CAPTURE",
+    "rc_context": "MISSING_CAPTURE",
+    "effective_execution_plan": "NOT_CREATED",
+    "internal_paper_result": "NOT_CREATED",
+    "accounting_result": "NOT_CREATED"
+  },
+  "baseline_fixture_fields_remain_labelled": "FIXTURE_OR_DETERMINISTIC_SUPPLEMENT_WHERE_APPLICABLE",
+  "secret_material_included": false
+}

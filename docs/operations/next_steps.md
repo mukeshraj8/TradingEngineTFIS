@@ -6,11 +6,21 @@ way.
 
 ## Immediate Next Priorities
 
-0.63. `TODO` Collect a live-session RELIANCE read-only snapshot if S22
+0.64. `TODO` Repeat the S22 RELIANCE live-session read-only observation on the
+   next eligible NSE trading session, preferably before market open. The next
+   attempt must run the FYERS read-only/authentication diagnostics only after
+   the session gate is eligible, persist the live PreMarketStrategyPlan before
+   opening evaluation, continuously capture the selected RELIANCE option
+   contract through ORPT and RC, and keep FYERS order authority `NONE`.
+
+0.63. `BLOCKED_SESSION_WINDOW_UNAVAILABLE` Attempt the live-session RELIANCE
+   read-only snapshot if S22
    reviewer acceptance requires captured opening, ORPT and RC timing evidence
    or selected-option historical references. Keep FYERS order authority
    `NONE`; use the capture only to replace deterministic supplements in the
-   existing one-stock proof.
+   existing one-stock proof. Result on Sunday, August 2, 2026 at 14:20 IST:
+   blocked before any FYERS live read because no NSE trading session was
+   available. Reports: `reports/s22_live_observation/`.
 
 0.62. `DONE` Implement the S22 RELIANCE one-stock offline/internal-paper proof
    from

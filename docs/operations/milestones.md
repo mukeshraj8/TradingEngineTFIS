@@ -2,6 +2,15 @@
 
 ## Current Snapshot
 
+- as of Sunday, August 2, 2026 at 14:20 IST, the S22 RELIANCE live-session
+  read-only observation milestone was stopped at Checkpoint 1 with
+  `LIVE_SESSION_WINDOW_UNAVAILABLE`. The task was evaluated on Sunday, outside
+  an actual NSE trading session, so no live market-open, selected-contract,
+  ORPT, RC, EOD, EffectiveExecutionPlan, internal-paper, accounting, or
+  dashboard evidence was produced. Reports are under
+  `reports/s22_live_observation/`. No deterministic supplement was promoted to
+  captured evidence, no second stock was enabled, no S22 formula changed, and
+  external FYERS broker-order/live authority remains `NONE`.
 - as of Sunday, August 2, 2026, S22 RELIANCE Stage 1 one-stock
   offline/internal-paper support was implemented under
   `src/tfis/adapters/phase5e` with focused tests and reports under

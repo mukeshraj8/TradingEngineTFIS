@@ -1,0 +1,19 @@
+{
+  "schema_version": "s22.live_observation.fixture_comparison.v1",
+  "status": "NOT_COMPARED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "accepted_fixture_reference": "tests/fixtures/s22_reliance/s22_reliance_fyers_snapshot_2026-08-02_sanitized.json",
+  "accepted_fixture_verdict": "S22_RELIANCE_CONDITIONAL",
+  "comparison": {
+    "premarket_plan": "FIXTURE_BASELINE_ONLY",
+    "selected_contract": "FIXTURE_BASELINE_ONLY",
+    "opening_context": "MISSING_LIVE_CAPTURE",
+    "orpt": "MISSING_LIVE_CAPTURE",
+    "rc": "MISSING_LIVE_CAPTURE",
+    "effective_execution_plan": "NOT_RUN_FROM_LIVE_CAPTURE",
+    "internal_paper": "NOT_RUN_FROM_LIVE_CAPTURE",
+    "accounting": "NOT_RUN_FROM_LIVE_CAPTURE"
+  },
+  "implementation_defect_found": false,
+  "deterministic_supplements_promoted_to_captured": false
+}

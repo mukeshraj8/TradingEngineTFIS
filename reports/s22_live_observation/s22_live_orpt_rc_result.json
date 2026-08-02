@@ -1,0 +1,22 @@
+{
+  "schema_version": "s22.live_observation.orpt_rc_result.v1",
+  "status": "NOT_EVALUATED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "accepted_policy_reference": {
+    "rule_id": "S22.ENTRY_ORPT_RC.001",
+    "source": "AB6 OS!B143:AA149"
+  },
+  "possible_outcomes": [
+    "NORMAL_RETAINED",
+    "ORPT_MISSED_RC_RECALCULATED",
+    "NO_TRADE_BY_RULE",
+    "BLOCKED_MISSING_ORPT",
+    "BLOCKED_MISSING_RC",
+    "BLOCKED_STALE_QUOTE",
+    "BLOCKED_CONTRACT_IDENTITY",
+    "BLOCKED_METADATA"
+  ],
+  "actual_outcome": "BLOCKED_LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "forced_scenario": false,
+  "external_order_authority": "NONE"
+}

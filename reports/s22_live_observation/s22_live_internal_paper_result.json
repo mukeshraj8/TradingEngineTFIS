@@ -1,0 +1,12 @@
+{
+  "schema_version": "s22.live_observation.internal_paper_result.v1",
+  "status": "NOT_CREATED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "internal_paper_client_order_created": false,
+  "deterministic_internal_paper_fill_created": false,
+  "position_cycle_created": false,
+  "protection_requirements_created": false,
+  "reason": "No captured live EffectiveExecutionPlan was available.",
+  "fyers_order_authority": "NONE",
+  "external_order_submitted": false
+}

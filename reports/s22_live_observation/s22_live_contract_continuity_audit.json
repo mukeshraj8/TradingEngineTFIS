@@ -1,0 +1,11 @@
+{
+  "schema_version": "s22.live_observation.contract_continuity_audit.v1",
+  "status": "NOT_EVALUATED",
+  "block_code": "LIVE_SESSION_WINDOW_UNAVAILABLE",
+  "accepted_baseline_selected_contract": "NSE:RELIANCE26AUG1260CE",
+  "live_session_selected_contract": "NOT_EVALUATED_THIS_RUN",
+  "continuous_selected_contract_capture_started": false,
+  "ce_pe_leakage_audit": "NOT_APPLICABLE_NO_LIVE_CAPTURE",
+  "contract_identity_block_detected": false,
+  "external_order_authority": "NONE"
+}
