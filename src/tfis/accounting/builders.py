@@ -30,7 +30,7 @@ class AccountingBuildError(RuntimeError):
     pass
 
 
-CALCULATION_VERSION = "phase4i.s23.short_option_accounting.v1"
+CALCULATION_VERSION = "tfis.short_option_accounting.v1"
 BREAKEVEN_TOLERANCE = Decimal("0.01")
 
 

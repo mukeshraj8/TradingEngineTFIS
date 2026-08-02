@@ -2170,17 +2170,20 @@
   ONE-INSTANCE INTERNAL-PAPER S23 ACTIVATION`; broker, live, broker-sandbox,
   external paper, external order mutation and external position mutation
   authority remain `NONE`.
-- Phase 5D S21 first branch implemented one source-verified
-  `BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL` vertical under
+- Phase 5D S21 complete strategy implemented all four source-verified
+  BANKNIFTY monthly option-selling branches under
   `src/tfis/adapters/phase5d`, reusing the existing generic Monthly Status,
   EffectiveExecutionPlan, ExecutionIntent, risk validation, internal-paper
-  order simulation, PositionCycle, accounting, TradeFact and PnLFact
-  capabilities. Reports under `reports/s21_implementation` include the
-  selected branch, policy composition, contract selection, premarket plan,
-  target/original-SL/RC/EOD/carry scenarios, accounting facts, complete trace,
-  S23 regression guard, platform reuse report and gap register. Runtime impact
-  is `OFFLINE INTERNAL-PAPER FIXTURE/REPORT ONLY`; broker/live/external paper
-  authority remains `NONE`.
+  order simulation, PositionCycle, lifecycle, accounting, TradeFact and
+  PnLFact capabilities. Reports under `reports/s21_complete` include complete
+  branch inventory, natural branch selection, branch-specific contract
+  selection, normal/ORPT/RC paths, Target, Original SL, revised SL,
+  EOD/carry/recovery, accounting facts, complete trace, S23 regression guard,
+  platform reuse audit, validation summary and gap register. Runtime impact is
+  `COMPLETE S21 INTERNAL-PAPER SUPPORT`; broker/live/external paper authority
+  remains `NONE`. The only generic change is a strategy-neutral short-option
+  accounting provenance/version label correction; business accounting values
+  remain unchanged.
 
 ## Next Recommended Priorities
 
@@ -2196,9 +2199,9 @@
   `data/strategies/S23/fyers_morning_supervised_decision` layout
 - introduce generic enabled-strategy execution through registry/config before
   enabling S21 or other strategies operationally
-- after S21 first-branch review, onboard the remaining S21 branches through
-  strategy policy/config only and keep S23 unchanged unless a platform reuse
-  defect is proven
+- after S21 complete-strategy acceptance, begin S22 source closure and
+  stock-universe audit; keep implementation gated until all financially
+  material S22 source questions are closed
 - run further real local FYERS market-data-only ingress sessions under the
   preflight runbook during market hours
 - broaden the broker-backed S23 ingress-only validation set across more normalized archive and replay sessions

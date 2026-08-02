@@ -96,11 +96,11 @@ class InstrumentDimensions:
     tick_size: Decimal
     currency: str
     quantity_unit: str = "PHASE4H_CONFIRMED_UNITS"
-    metadata_version: str = "phase4i.s23.option_selling.v1"
+    metadata_version: str = "tfis.option_selling.instrument.v1"
 
     def __post_init__(self) -> None:
         if self.product != "OPTION_SELLING":
-            raise ValueError("Phase 4I only supports S23 option-selling accounting.")
+            raise ValueError("Short-option accounting supports OPTION_SELLING instruments only.")
         if self.lot_size <= 0 or self.multiplier <= 0 or self.tick_size <= 0:
             raise ValueError("Instrument lot size, multiplier and tick size must be positive.")
 

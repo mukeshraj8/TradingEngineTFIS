@@ -3103,19 +3103,19 @@ Current notes:
   INTERNAL-PAPER S23 ACTIVATION`; broker, live, broker-sandbox, external
   paper, external order mutation and external position mutation authority
   remain `NONE`.
-- Phase 5D S21 first-branch milestone now proves one fully source-closed
-  `BULL_CALL` S21 BANKNIFTY monthly option-selling branch through the existing
-  offline/internal-paper platform under `src/tfis/adapters/phase5d`. The
-  milestone uses the generic MonthlyStatusEngine, S21 branch policy,
-  contract-selection policy evidence, EffectiveExecutionPlan,
-  ExecutionIntent validation, AccountCoordinator, deterministic internal-paper
-  fills, PositionCycle lifecycle, TradeFact/PnLFact accounting and projections.
-  Reports live under `reports/s21_implementation` and cover normal target,
-  original SL, ORPT/RC revised SL, Near-to-Next fallback, no-contract fail
-  closed, EOD exit, EOD equality carry-forward, next-day recovery, duplicate
-  replay, restart consistency, reconciliation block and S21/S23 isolation.
-  Runtime impact is `OFFLINE INTERNAL-PAPER FIXTURE/REPORT ONLY`; broker,
-  external paper, live, external order mutation and real position mutation
-  authority remain `NONE`. Generic runtime change count is zero. Known naming
-  limitation: the reused short-option accounting builder still carries an
-  S23-era calculation-version label.
+- Phase 5D S21 complete-strategy milestone now certifies all four source-closed
+  S21 BANKNIFTY monthly option-selling branches (`BULL_CALL`, `BULL_PUT`,
+  `BEAR_CALL`, `BEAR_PUT`) through the same generic offline/internal-paper
+  platform under `src/tfis/adapters/phase5d`. Natural branch resolution uses
+  generic BANKNIFTY Monthly Status plus S21 branch policy and contract evidence;
+  no Call/Put branch is manually forced after resolution. Reports live under
+  `reports/s21_complete` and cover branch inventory, natural resolution,
+  Near-to-Next contract selection, no-contract fail closed, normal target,
+  original SL, ORPT/RC revised SL, EOD exit, EOD equality carry-forward,
+  next-day recovery, duplicate replay, restart consistency, reconciliation
+  block, S21/S23 shared-platform isolation and branch-specific accounting.
+  Runtime impact is `COMPLETE S21 INTERNAL-PAPER SUPPORT`; broker, external
+  paper, live, external order mutation and real position mutation authority
+  remain `NONE`. The short-option accounting provenance label is now
+  strategy-neutral (`tfis.short_option_accounting.v1`) with P&L formula,
+  quantity, multiplier and charge behavior unchanged.

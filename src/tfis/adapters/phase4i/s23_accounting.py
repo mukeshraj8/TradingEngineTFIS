@@ -294,5 +294,5 @@ def _instrument_from_dict(data: dict[str, Any]) -> InstrumentDimensions:
         tick_size=Decimal(str(data["tick_size"])),
         currency=data["currency"],
         quantity_unit=data.get("quantity_unit", "PHASE4H_CONFIRMED_UNITS"),
-        metadata_version=data.get("metadata_version", "phase4i.s23.option_selling.v1"),
+        metadata_version=data.get("metadata_version", "tfis.option_selling.instrument.v1"),
     )

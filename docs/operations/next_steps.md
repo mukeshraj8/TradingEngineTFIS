@@ -1921,3 +1921,22 @@ Phase 5D S21 first-branch result:
   then implement the remaining three S21 branches by policy/config evidence
   only; do not change generic runtime unless a reusable platform defect is
   proven
+
+Phase 5D S21 complete-strategy result:
+
+- all four source-verified S21 BANKNIFTY monthly option-selling branches now
+  run through the existing generic offline/internal-paper platform:
+  `BULL_CALL`, `BULL_PUT`, `BEAR_CALL`, and `BEAR_PUT`
+- natural branch resolution is certified from generic Monthly Status, S21
+  branch mapping, and branch-specific market/contract evidence; the runner does
+  not accept manual Call/Put override after resolution
+- reports under `reports/s21_complete` document branch inventory, contract
+  selection, normal paths, ORPT/RC paths, Target, Original SL, revised SL,
+  EOD/carry, carried recovery, accounting, S23 regression guard, platform reuse
+  audit, validation summary and complete trace
+- the generic short-option accounting version label is corrected to
+  `tfis.short_option_accounting.v1`; this is a provenance correction only and
+  does not change P&L formula, quantity, multiplier, charge or projection
+  behavior
+- exact next recommendation is begin S22 source closure and stock-universe
+  audit; do not begin S22 implementation until source closure is accepted

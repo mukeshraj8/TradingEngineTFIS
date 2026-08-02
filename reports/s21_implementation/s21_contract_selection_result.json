@@ -6,6 +6,7 @@
           "exchange": "NSE",
           "expiry": "2024-01-25",
           "metadata": {
+            "branch_id": "BULL_CALL",
             "configured_lots": 1,
             "currency": "INR",
             "lot_size": 15,
@@ -33,6 +34,7 @@
           "exchange": "NSE",
           "expiry": "2024-02-29",
           "metadata": {
+            "branch_id": "BULL_CALL",
             "configured_lots": 1,
             "currency": "INR",
             "lot_size": 15,
@@ -58,7 +60,7 @@
     ],
     "decision": "NO_TRADE",
     "no_contract_reason": "NO_NEAR_OR_NEXT_CONTRACT_SATISFIED_PREMIUM_AND_OI",
-    "result_hash": "64903c4b4dac9e745bc45781aad27103f1bdefce1302ace875f0fc93dcd03fe6",
+    "result_hash": "1b0c46344f2c0ff0f481eab8f6e5b9254a7dc50fa8ff02f94f39aa129946c280",
     "scenario_id": "near_and_next_fail",
     "selected_contract": null,
     "selected_expiry_kind": null,
@@ -73,6 +75,7 @@
           "exchange": "NSE",
           "expiry": "2024-01-25",
           "metadata": {
+            "branch_id": "BULL_CALL",
             "configured_lots": 1,
             "currency": "INR",
             "lot_size": 15,
@@ -100,6 +103,7 @@
           "exchange": "NSE",
           "expiry": "2024-02-29",
           "metadata": {
+            "branch_id": "BULL_CALL",
             "configured_lots": 1,
             "currency": "INR",
             "lot_size": 15,
@@ -125,12 +129,13 @@
     ],
     "decision": "SELECTED",
     "no_contract_reason": null,
-    "result_hash": "d89aae9e2ef6985cb3739fdd6858188542862ddc044f7396ba0abff719c24d65",
+    "result_hash": "be6b7abefe0ddff51ea56db0d05b59bcfbfcd363401640125e9c14a7a2a0b6ee",
     "scenario_id": "near_fails_next_selected",
     "selected_contract": {
       "exchange": "NSE",
       "expiry": "2024-02-29",
       "metadata": {
+        "branch_id": "BULL_CALL",
         "configured_lots": 1,
         "currency": "INR",
         "lot_size": 15,
@@ -155,6 +160,7 @@
           "exchange": "NSE",
           "expiry": "2024-01-25",
           "metadata": {
+            "branch_id": "BULL_CALL",
             "configured_lots": 1,
             "currency": "INR",
             "lot_size": 15,
@@ -182,6 +188,7 @@
           "exchange": "NSE",
           "expiry": "2024-02-29",
           "metadata": {
+            "branch_id": "BULL_CALL",
             "configured_lots": 1,
             "currency": "INR",
             "lot_size": 15,
@@ -207,12 +214,13 @@
     ],
     "decision": "SELECTED",
     "no_contract_reason": null,
-    "result_hash": "cd441b6b4bcce82aefc0bc210247b68c9b0dbb3b86217eeefcf13f8e00a5019e",
+    "result_hash": "9b928f9e8dca744ef9325daca1e83f901a5008280b286ecc20a29bf72cc42962",
     "scenario_id": "normal_near_selected",
     "selected_contract": {
       "exchange": "NSE",
       "expiry": "2024-01-25",
       "metadata": {
+        "branch_id": "BULL_CALL",
         "configured_lots": 1,
         "currency": "INR",
         "lot_size": 15,
@@ -232,7 +240,8 @@
   },
   "policy": {
     "arbitrary_expression_evaluation": false,
-    "directional_traversal": "CALL_SELL_BULL_BRANCH_START_TO_END",
+    "branch": "BULL_CALL",
+    "directional_traversal": "START_TO_END_CALL_SELL_BULL",
     "expiry_order": [
       "NEAR",
       "NEXT"

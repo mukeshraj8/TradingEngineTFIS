@@ -4,11 +4,11 @@
       {
         "account": "INTERNAL_PAPER_ACCOUNT",
         "as_of_timestamp": "2024-01-23T15:31:00+05:30",
-        "calculation_version": "phase4i.s23.short_option_accounting.v1",
+        "calculation_version": "tfis.short_option_accounting.v1",
         "charges": "15.00",
         "currency": "INR",
-        "evidence_hash": "27764e4501bde13fcaac27e95fcccb94202c3d12e35233b0b80a0280b2c26514",
-        "fact_hash": "86f517937e92d0a66afd7582a5eb57ac5d0a4a6ec420bf3021a4ac9a4c4683d8",
+        "evidence_hash": "240c24e7111b97a9af65dfae5eee3c888701febc703f24b805fa5bf2279789aa",
+        "fact_hash": "40abc63f698d04715022c2f8234af860da57fe6b191b91ab5844bf1e67f14b57",
         "fact_type": "REALIZED_TRADE_PNL",
         "gross_pnl": "-6225.00",
         "instrument": {
@@ -29,17 +29,17 @@
         },
         "metadata_version": "s21.option_selling.banknifty.v1",
         "net_pnl": "-6240.00",
-        "pnl_fact_id": "pnl-fact:27764e4501bde13fcaac27e9",
+        "pnl_fact_id": "pnl-fact:240c24e7111b97a9af65dfae",
         "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
         "realized_unrealized": "REALIZED",
         "source_identities": {
-          "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+          "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
           "source_fill_ids": [
-            "internal-fill:827885a4557f48b1e433c5f0",
-            "internal-fill:4b7dccbba2df243f9572f73b"
+            "internal-fill:7a93184e0e0e704d4193a3e0",
+            "internal-fill:9493f4f66526851ee98de717"
           ],
           "supersession_reason": null,
-          "trade_fact_id": "trade-fact:35b547f88593601b012a7d3f"
+          "trade_fact_id": "trade-fact:4a032bbfb08339249a17aae3"
         },
         "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
         "supersedes_pnl_fact_id": null,
@@ -48,11 +48,11 @@
       {
         "account": "INTERNAL_PAPER_ACCOUNT",
         "as_of_timestamp": "2024-01-23T15:31:00+05:30",
-        "calculation_version": "phase4i.s23.short_option_accounting.v1",
+        "calculation_version": "tfis.short_option_accounting.v1",
         "charges": "15.00",
         "currency": "INR",
-        "evidence_hash": "7fac82cace806a511c93f983968a4cc20397d5afa190c1a5f72207fac02ed747",
-        "fact_hash": "e078a90502f955a2e565bacdd1b59ab46237f97b7a4c8feb3f94653fcd64e034",
+        "evidence_hash": "091689cc544cc888e7102680fdc23d34479f2d128aeb16ac9cef55803eab2422",
+        "fact_hash": "2d5f5fa2840aa132162565ff56ca0b2b995704a091662b8888cff46e2ce31f7b",
         "fact_type": "CHARGE_ESTIMATE",
         "gross_pnl": "0.00",
         "instrument": {
@@ -73,17 +73,17 @@
         },
         "metadata_version": "s21.option_selling.banknifty.v1",
         "net_pnl": "-15.00",
-        "pnl_fact_id": "pnl-fact:7fac82cace806a511c93f983",
+        "pnl_fact_id": "pnl-fact:091689cc544cc888e7102680",
         "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
         "realized_unrealized": "CHARGE",
         "source_identities": {
-          "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+          "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
           "source_fill_ids": [
-            "internal-fill:827885a4557f48b1e433c5f0",
-            "internal-fill:4b7dccbba2df243f9572f73b"
+            "internal-fill:7a93184e0e0e704d4193a3e0",
+            "internal-fill:9493f4f66526851ee98de717"
           ],
           "supersession_reason": null,
-          "trade_fact_id": "trade-fact:35b547f88593601b012a7d3f"
+          "trade_fact_id": "trade-fact:4a032bbfb08339249a17aae3"
         },
         "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
         "supersedes_pnl_fact_id": null,
@@ -115,15 +115,15 @@
           "win_rate": "0.00",
           "wins": 0
         },
-        "projection_hash": "1d4eca40197df7f039ebe6f25d9a88d3252bf35dc9221013711be0aa9b309d1e",
+        "projection_hash": "d249a3f370291aac5dd6b059387ed48d88ffb6055e3791704f2f0ee2e02c2c40",
         "projection_id": "accounting-projection:daily_portfolio:e44060c1310439c2",
         "projection_type": "DAILY_PORTFOLIO",
         "quality": "PROVISIONAL_ESTIMATED_CHARGES",
         "source_fact_ids": [
-          "pnl-fact:27764e4501bde13fcaac27e9",
-          "pnl-fact:7fac82cace806a511c93f983"
+          "pnl-fact:240c24e7111b97a9af65dfae",
+          "pnl-fact:091689cc544cc888e7102680"
         ],
-        "watermark": "4a7a4fcf7e98f66564f86b65b9cf592a401151539956cb4a5b7313833a04a40e"
+        "watermark": "4cacbcabf7e6477bdbaa30b461d804a6f592d5106467406c564ab6321fe93c8d"
       },
       {
         "dimensions": {
@@ -149,15 +149,15 @@
           "win_rate": "0.00",
           "wins": 0
         },
-        "projection_hash": "544fce89fee65ce273fc2c03f1615200ed666cb80552dd279221503ac38310d1",
+        "projection_hash": "8d4929216e361deb82415b45523bfcfdf0a4dccde22d0fdfd0b057e10c17a9e3",
         "projection_id": "accounting-projection:account:c5d38c734b526d37",
         "projection_type": "ACCOUNT",
         "quality": "PROVISIONAL_ESTIMATED_CHARGES",
         "source_fact_ids": [
-          "pnl-fact:27764e4501bde13fcaac27e9",
-          "pnl-fact:7fac82cace806a511c93f983"
+          "pnl-fact:240c24e7111b97a9af65dfae",
+          "pnl-fact:091689cc544cc888e7102680"
         ],
-        "watermark": "4a7a4fcf7e98f66564f86b65b9cf592a401151539956cb4a5b7313833a04a40e"
+        "watermark": "4cacbcabf7e6477bdbaa30b461d804a6f592d5106467406c564ab6321fe93c8d"
       },
       {
         "dimensions": {
@@ -183,15 +183,15 @@
           "win_rate": "0.00",
           "wins": 0
         },
-        "projection_hash": "015db551163325ed5412c6a174d2bdaefe3d6a979f6da807e76befc027628d41",
+        "projection_hash": "7048cc9b6189a100123caa4bd24b67cc992fef7cff9f7434d4858d049172d211",
         "projection_id": "accounting-projection:strategy:efa4eb5c2519686b",
         "projection_type": "STRATEGY",
         "quality": "PROVISIONAL_ESTIMATED_CHARGES",
         "source_fact_ids": [
-          "pnl-fact:27764e4501bde13fcaac27e9",
-          "pnl-fact:7fac82cace806a511c93f983"
+          "pnl-fact:240c24e7111b97a9af65dfae",
+          "pnl-fact:091689cc544cc888e7102680"
         ],
-        "watermark": "4a7a4fcf7e98f66564f86b65b9cf592a401151539956cb4a5b7313833a04a40e"
+        "watermark": "4cacbcabf7e6477bdbaa30b461d804a6f592d5106467406c564ab6321fe93c8d"
       },
       {
         "dimensions": {
@@ -217,15 +217,15 @@
           "win_rate": "0.00",
           "wins": 0
         },
-        "projection_hash": "e5a79aa5116a0d1fd85ad6d20ccb0b67e70f14054e5d0bca8c8d3d4bee88cfef",
+        "projection_hash": "611ad5f7b5890baa6e1c9e362efe4f86efac5ee2b24a3ec97036129e1619b69a",
         "projection_id": "accounting-projection:instrument:ee600d6f37a0131e",
         "projection_type": "INSTRUMENT",
         "quality": "PROVISIONAL_ESTIMATED_CHARGES",
         "source_fact_ids": [
-          "pnl-fact:27764e4501bde13fcaac27e9",
-          "pnl-fact:7fac82cace806a511c93f983"
+          "pnl-fact:240c24e7111b97a9af65dfae",
+          "pnl-fact:091689cc544cc888e7102680"
         ],
-        "watermark": "4a7a4fcf7e98f66564f86b65b9cf592a401151539956cb4a5b7313833a04a40e"
+        "watermark": "4cacbcabf7e6477bdbaa30b461d804a6f592d5106467406c564ab6321fe93c8d"
       },
       {
         "dimensions": {
@@ -234,13 +234,13 @@
         "metrics": {
           "EOD_EXIT": "-6255.00"
         },
-        "projection_hash": "42b3d6a45704878bbaa621e51ecc5cd79276e2c631611748ca9ffcd096c83d23",
+        "projection_hash": "d26032cdbae22286ebd46ff7949ed315fb3b5280585dc7deea57b8341cf51666",
         "projection_id": "accounting-projection:exit_reason:c5d2eaedfc11f327",
         "projection_type": "EXIT_REASON",
         "quality": "CONFIRMED_INTERNAL_PAPER",
         "source_fact_ids": [
-          "pnl-fact:27764e4501bde13fcaac27e9",
-          "pnl-fact:7fac82cace806a511c93f983"
+          "pnl-fact:240c24e7111b97a9af65dfae",
+          "pnl-fact:091689cc544cc888e7102680"
         ],
         "watermark": "c5d2eaedfc11f3275a7163c13bda13ab50b8690d6bd1e778a8cf5e75dd1a66eb"
       },
@@ -251,18 +251,18 @@
         "metrics": {
           "S21_ORPT_RC_ONLY": "-6255.00"
         },
-        "projection_hash": "87bdb5c70bc647f8708a50b22a56c77bba669329c3c5428619c430e01e763d38",
+        "projection_hash": "6298115e54c3455695070fd45b8f8f2dffd1f9907cc1ac7d9bf19ff3e28724c2",
         "projection_id": "accounting-projection:path:d53ee390f945f93c",
         "projection_type": "PATH",
         "quality": "CONFIRMED_INTERNAL_PAPER",
         "source_fact_ids": [
-          "pnl-fact:27764e4501bde13fcaac27e9",
-          "pnl-fact:7fac82cace806a511c93f983"
+          "pnl-fact:240c24e7111b97a9af65dfae",
+          "pnl-fact:091689cc544cc888e7102680"
         ],
         "watermark": "d53ee390f945f93c335cd5ef384495ee672cd08281dfa8473da0c761a5302ec8"
       }
     ],
-    "result_hash": "179046d50dca060f64368f418dde7a489bee5e1b5019fb0991e6151681ca05ef",
+    "result_hash": "52adf238444c1b956072eebdb58062006a9a50fba6d1c02ab1a6f91715271c5a",
     "trade_fact": {
       "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
       "configuration_hash": "s21-source-closure-config-v1",
@@ -309,7 +309,7 @@
         "remaining_quantity": 0,
         "requested_entry_quantity": 15
       },
-      "fact_hash": "1067fd0a25fa892e986e57c25e17b2101f15a14df97c957b2d3d9c1fa79cc125",
+      "fact_hash": "e8b67182a5745d9bc12710090e9502f816433ff0b8abb51424f6dcc99dbc2bc4",
       "final_trading_date": "2024-01-23",
       "instrument": {
         "contract": "BANKNIFTY_20240125_47000_CE",
@@ -359,32 +359,32 @@
         "net_realized_pnl": "-6240.00",
         "provisional_charges": "15.00"
       },
-      "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+      "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
       "provenance": {
         "correction_source": "NONE",
         "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
         "source_fill_ids": [
-          "internal-fill:827885a4557f48b1e433c5f0",
-          "internal-fill:4b7dccbba2df243f9572f73b"
+          "internal-fill:7a93184e0e0e704d4193a3e0",
+          "internal-fill:9493f4f66526851ee98de717"
         ],
         "source_hashes": {
           "position_event_ids": [
-            "internal-fill:827885a4557f48b1e433c5f0",
-            "internal-fill:4b7dccbba2df243f9572f73b"
+            "internal-fill:7a93184e0e0e704d4193a3e0",
+            "internal-fill:9493f4f66526851ee98de717"
           ],
-          "position_projection": "d04bd74ef6bf6d61a83003b82b40572a8a72cc497d765a2cd5c347c499e9f59d"
+          "position_projection": "9f91122f04735e0cd8e1a9ae34254ece702421ff40a16b4d723920a1c1a639f9"
         },
         "source_lifecycle_requirement_ids": [
-          "lifecycle-req:76bcf3f748eb6df6b381b071",
-          "lifecycle-req:47387812b352d2938e8c386c"
+          "lifecycle-req:a4aacea78b29989479ef95bf",
+          "lifecycle-req:70ac1aabe4e779a8389b7a81"
         ],
         "source_order_ids": [
-          "client-order:397612058981179e43ada889",
-          "client-order:b8e4fb3c5d97a70ad399afb4"
+          "client-order:59eb3111351068c68723e235",
+          "client-order:3e3680878fdb8ef0a56f3a99"
         ],
         "source_position_event_ids": [
-          "internal-fill:827885a4557f48b1e433c5f0",
-          "internal-fill:4b7dccbba2df243f9572f73b"
+          "internal-fill:7a93184e0e0e704d4193a3e0",
+          "internal-fill:9493f4f66526851ee98de717"
         ]
       },
       "rule_matrix_version": "s21_source_closure_accepted_v1",
@@ -394,9 +394,9 @@
       "strategy_instance": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
       "strategy_version": "1.0.0",
       "supersedes_trade_fact_id": null,
-      "trade_fact_id": "trade-fact:35b547f88593601b012a7d3f",
-      "trade_fact_version": "phase4i.s23.short_option_accounting.v1",
-      "trade_id": "trade:ipc:43aca3bf181eda4c27004eca",
+      "trade_fact_id": "trade-fact:4a032bbfb08339249a17aae3",
+      "trade_fact_version": "tfis.short_option_accounting.v1",
+      "trade_id": "trade:ipc:04ccc9e9f63fcf61ba09d23d",
       "trading_session_id": "NSE:2024-01-23"
     }
   },
@@ -412,8 +412,8 @@
     "block_reason": null,
     "derived_fields": [],
     "downstream_execution_permission": "OFFLINE_INTERNAL_PAPER_CANDIDATE_ONLY",
-    "execution_plan_hash": "7782e5de5cf2110a192941783f124f1445eb567fa5c6497c7cf1a72bea5445aa",
-    "execution_plan_id": "s21-effective:normal",
+    "execution_plan_hash": "df13685131da9959ffe3074d2ff4da92427095557142e03feb28f57cfc4fcdf2",
+    "execution_plan_id": "s21-effective:bull_call:normal",
     "failures": [],
     "final_eligibility": "TRADE",
     "gap_missed_entry_applicability": "NOT_APPLICABLE_TO_S21",
@@ -428,6 +428,7 @@
     "plan_revision": 1,
     "plan_status": "READY_OFFLINE",
     "policy_identities": {
+      "branch": "BULL_CALL",
       "configuration_hash": "s21-source-closure-config-v1",
       "contract_rule": "S21.CONTRACT_SELECTION.001",
       "entry_rule": "S21.BULL_CALL.STATIC.001",
@@ -452,6 +453,7 @@
       "exchange": "NSE",
       "expiry": "2024-01-25",
       "metadata": {
+        "branch_id": "BULL_CALL",
         "configured_lots": 1,
         "currency": "INR",
         "lot_size": 15,
@@ -466,7 +468,7 @@
     },
     "selected_expiry": "2024-01-25",
     "selected_strike": 47000.0,
-    "source_opening_context_hash": "6c01b91bdcc00de0a0b5b5af7937e4854d02c9f14386645c8430b46441ba3706",
+    "source_opening_context_hash": "5159307111fc0afecbc07cd7e5fa40ca96d59cdc6d4b7f4c23db532730955ccd",
     "source_opening_context_id": "s21-opening:normal",
     "source_premarket_plan_hash": "5d74f62a269f8f569a7a2165af0d4d047afd519c1646efa8640705071061e16a",
     "source_premarket_plan_id": "s21-premarket:first-branch",
@@ -478,9 +480,33 @@
         "mode": "OFFLINE_INTERNAL_PAPER_ONLY",
         "real_position_mutation_permitted": false
       },
+      "branch_spec": {
+        "base_entry": "925.00",
+        "branch_id": "BULL_CALL",
+        "carried_rule_id": "S21.CARRIED_CALL.FSL_TRP.001",
+        "entry_reference": "3DLL",
+        "monthly_statuses": [
+          "BULL",
+          "BULL_CF"
+        ],
+        "option_type": "CE",
+        "original_sl": "1337.50",
+        "revised_entry": "910.00",
+        "revised_reference": "09:29:59 HH + 7%",
+        "revised_sl": "1284.00",
+        "sl_reference": "OPT PRV 2DHH + 7%",
+        "source_rows": "AB6 OS!100:102",
+        "static_rule_id": "S21.BULL_CALL.STATIC.001",
+        "strike": "47000",
+        "strike_reference": "3DLL",
+        "target": "370.00",
+        "traversal_order": "START_TO_END_CALL_SELL_BULL",
+        "unique_code": "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL"
+      },
       "opening_context": {
+        "branch": "BULL_CALL",
         "fresh_entry_gap_missed_entry_applicability": "NOT_APPLICABLE_TO_S21_SOURCE_CLOSED_BRANCH",
-        "opening_context_hash": "6c01b91bdcc00de0a0b5b5af7937e4854d02c9f14386645c8430b46441ba3706",
+        "opening_context_hash": "5159307111fc0afecbc07cd7e5fa40ca96d59cdc6d4b7f4c23db532730955ccd",
         "opening_context_id": "s21-opening:normal",
         "orpt_high": "980.00",
         "orpt_low": "940.00",
@@ -519,20 +545,20 @@
     "authorized_time": "2024-01-23T09:19:59+05:30",
     "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
     "broker_submission_permitted": false,
-    "client_order_id": "client-order:397612058981179e43ada889",
-    "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
-    "idempotency_key": "client-order:397612058981179e43ada889e619c7ff73e9de9d8cf798525d0fb0b64609254a",
+    "client_order_id": "client-order:59eb3111351068c68723e235",
+    "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
+    "idempotency_key": "client-order:59eb3111351068c68723e23564edcf007a331fac158b1f72f6cbc6008fd20ef7",
     "limit_price": "925.0",
     "live_submission_permitted": false,
     "normalized_contract": "BANKNIFTY_20240125_47000_CE",
-    "order_hash": "9b3fead43320a3a41a908a5c1af4708ab51911e5a313b2849248f1d90d0f5d13",
+    "order_hash": "714d9b709638a6ca21e764f6160a24f3d68301fe42fe81b4ea69be2ea670d0db",
     "order_purpose": "ENTRY",
     "order_type": "LIMIT",
     "position_cycle_id": null,
     "protection_generation": null,
     "quantity": 15,
     "side": "SELL",
-    "source_intent_hash": "dcb53e889709642073fe985096b5a673dbde1bfcb67245f2aff0afa57b406b7d",
+    "source_intent_hash": "a7aca6ef7c41fd2acab00ddfecc0a80e5b101c1e34f373b43fc998c767f3dbd9",
     "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
     "time_in_force": "DAY",
     "trading_session_id": "NSE:2024-01-23",
@@ -576,8 +602,8 @@
         "S21.CONTRACT_SELECTION.001"
       ]
     },
-    "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
-    "idempotency_key": "phase4e:5ab49c4409a67208427946d07dfbb9de55f8b321f802a55308b2464a6304c925",
+    "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
+    "idempotency_key": "phase4e:02d021812f6fa53d4db501e3817c98114f1b7697f330323712708d01a72fb467",
     "instrument": {
       "contract": "BANKNIFTY_20240125_47000_CE",
       "currency": "INR",
@@ -592,15 +618,15 @@
       "tick_size": "0.05",
       "underlying": "BANKNIFTY"
     },
-    "intent_hash": "dcb53e889709642073fe985096b5a673dbde1bfcb67245f2aff0afa57b406b7d",
+    "intent_hash": "a7aca6ef7c41fd2acab00ddfecc0a80e5b101c1e34f373b43fc998c767f3dbd9",
     "live_submission_permitted": false,
     "order_creation_permitted": false,
     "paper_submission_permitted": false,
     "position_cycle_id": null,
     "position_mutation_permitted": false,
     "schema_version": "phase4e.execution_intent.v1",
-    "source_artifact_hash": "7782e5de5cf2110a192941783f124f1445eb567fa5c6497c7cf1a72bea5445aa",
-    "source_artifact_id": "s21-effective:normal",
+    "source_artifact_hash": "df13685131da9959ffe3074d2ff4da92427095557142e03feb28f57cfc4fcdf2",
+    "source_artifact_id": "s21-effective:bull_call:normal",
     "source_artifact_type": "EffectiveExecutionPlan",
     "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
     "strategy_family_id": "OPTION_SELLING",
@@ -630,20 +656,20 @@
       "authorized_time": "2024-01-23T09:19:59+05:30",
       "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
       "broker_submission_permitted": false,
-      "client_order_id": "client-order:397612058981179e43ada889",
-      "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
-      "idempotency_key": "client-order:397612058981179e43ada889e619c7ff73e9de9d8cf798525d0fb0b64609254a",
+      "client_order_id": "client-order:59eb3111351068c68723e235",
+      "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
+      "idempotency_key": "client-order:59eb3111351068c68723e23564edcf007a331fac158b1f72f6cbc6008fd20ef7",
       "limit_price": "925.0",
       "live_submission_permitted": false,
       "normalized_contract": "BANKNIFTY_20240125_47000_CE",
-      "order_hash": "9b3fead43320a3a41a908a5c1af4708ab51911e5a313b2849248f1d90d0f5d13",
+      "order_hash": "714d9b709638a6ca21e764f6160a24f3d68301fe42fe81b4ea69be2ea670d0db",
       "order_purpose": "ENTRY",
       "order_type": "LIMIT",
       "position_cycle_id": null,
       "protection_generation": null,
       "quantity": 15,
       "side": "SELL",
-      "source_intent_hash": "dcb53e889709642073fe985096b5a673dbde1bfcb67245f2aff0afa57b406b7d",
+      "source_intent_hash": "a7aca6ef7c41fd2acab00ddfecc0a80e5b101c1e34f373b43fc998c767f3dbd9",
       "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
       "time_in_force": "DAY",
       "trading_session_id": "NSE:2024-01-23",
@@ -653,10 +679,10 @@
       {
         "authority_source": "INTERNAL_PAPER_SIMULATION",
         "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
-        "client_order_id": "client-order:397612058981179e43ada889",
+        "client_order_id": "client-order:59eb3111351068c68723e235",
         "cumulative_filled_quantity": 0,
-        "event_hash": "a14dbf3f5db18eaea72b4c400c9302a74fe68dc49e152414632102bdeda3af31",
-        "event_id": "event:a91e12528c16da66ce349327",
+        "event_hash": "efcbb26abef4d9541a61030cabf40157c3670f05f564ab2d7b119e48163f0819",
+        "event_id": "event:5f89e32dca2227284e231349",
         "event_timestamp": "2024-01-23T09:30:00+05:30",
         "event_type": "INTERNAL_SUBMISSION_ACCEPTED",
         "fill_price": null,
@@ -675,10 +701,10 @@
       {
         "authority_source": "INTERNAL_PAPER_SIMULATION",
         "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
-        "client_order_id": "client-order:397612058981179e43ada889",
+        "client_order_id": "client-order:59eb3111351068c68723e235",
         "cumulative_filled_quantity": 15,
-        "event_hash": "d6d07ae46b0b6dacbb1dcbf0efeb765c38bf9060d3fe08b45af1236d124b32fb",
-        "event_id": "event:bfe23ce5a7cbfb1cb0d5e0d6",
+        "event_hash": "bc368186c1a0d66732f544abe8e4d5efe792c8ee946652ed6ba679b94ffb2948",
+        "event_id": "event:d9a8a2ee9e4d755268a65b08",
         "event_timestamp": "2024-01-23T09:30:00+05:30",
         "event_type": "INTERNAL_FULL_FILL",
         "fill_price": "925.0",
@@ -698,13 +724,13 @@
     "fills": [
       {
         "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
-        "client_order_id": "client-order:397612058981179e43ada889",
+        "client_order_id": "client-order:59eb3111351068c68723e235",
         "contract": "BANKNIFTY_20240125_47000_CE",
         "fill_classification": "INTERNAL_PAPER_SIMULATED_FILL",
-        "fill_hash": "1783482285ff2565304ef665e3d79fe228058e9783d5db3247e1e6bdd2c339f8",
+        "fill_hash": "05440b89e351dc63171f5d0879ef42496766d05f4b9151668846834762839512",
         "fill_price": "925.0",
         "fill_quantity": 15,
-        "internal_fill_id": "internal-fill:827885a4557f48b1e433c5f0",
+        "internal_fill_id": "internal-fill:7a93184e0e0e704d4193a3e0",
         "position_cycle_id": null,
         "provenance": {
           "adapter": "DeterministicInternalPaperAdapter",
@@ -721,28 +747,28 @@
     "position_update_candidates": [
       {
         "authority_mode": "INTERNAL_PAPER_ONLY",
-        "candidate_hash": "86b38f016c507bb83bf7bac8f3456970a02136931fb4c2be03f920deb644ff43",
-        "candidate_id": "pc-update-candidate:93bb09775eed7eda4f785779",
+        "candidate_hash": "cc30237657eb8fd7e67f0808402c78484d822aa3a292bb009bb82bce8c63b765",
+        "candidate_id": "pc-update-candidate:cbb23543502b056a16027448",
         "fill_price": "925.0",
         "position_cycle_id": null,
         "quantity_delta": 15,
-        "source_fill_id": "internal-fill:827885a4557f48b1e433c5f0",
+        "source_fill_id": "internal-fill:7a93184e0e0e704d4193a3e0",
         "suggested_state_impact": "INTERNAL_PAPER_FILL_OBSERVED_NO_POSITION_MUTATION",
         "update_permitted": false
       }
     ],
-    "result_hash": "3f62df1834e206dce6f472b9975c11004db3dc1a1106eb74573f9c2838bf9a67"
+    "result_hash": "547f437049166fb1378512053b5e4c38f41ab443993dc477fb77c9755ba5abe7"
   },
   "entry_position_transition": {
     "consistency_status": "MATCHED",
     "event": {
-      "event_hash": "441ceb2b99d5ea7ee90727c495bf71491cc931661285c3421e466c9486dcbf3b",
-      "event_id": "position-event:d646e4d5f451fc8f8548d18f",
+      "event_hash": "5ef12a0dd5b7a1e6215286ad76414709681efefe7306f327a61b0fbc4eef31d1",
+      "event_id": "position-event:3446ff1ad4bb5db3e9bf8bdf",
       "event_sequence": 2,
       "event_timestamp": "2024-01-23T09:30:00+05:30",
       "event_type": "ENTRY_FULL_FILL_APPLIED",
       "new_state": "OPEN_UNPROTECTED",
-      "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+      "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
       "price_evidence": {
         "fill_price": "925.0"
       },
@@ -754,8 +780,8 @@
         "S21.CONTRACT_SELECTION.001",
         "S21.FRESH_ENTRY_ORPT_RC.001"
       ],
-      "source_client_order_id": "client-order:397612058981179e43ada889",
-      "source_fill_id": "internal-fill:827885a4557f48b1e433c5f0",
+      "source_client_order_id": "client-order:59eb3111351068c68723e235",
+      "source_fill_id": "internal-fill:7a93184e0e0e704d4193a3e0",
       "source_requirement_id": null
     },
     "projection": {
@@ -770,7 +796,7 @@
       "confirmed_entry_quantity": 15,
       "currency": "INR",
       "entry_fill_ids": [
-        "internal-fill:827885a4557f48b1e433c5f0"
+        "internal-fill:7a93184e0e0e704d4193a3e0"
       ],
       "exit_fill_ids": [],
       "filled_exit_order_id": null,
@@ -783,11 +809,11 @@
         "live_position": false,
         "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
         "normalized_contract": "BANKNIFTY_20240125_47000_CE",
-        "originating_entry_execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
-        "originating_execution_plan_id": "s21-effective:normal",
+        "originating_entry_execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
+        "originating_execution_plan_id": "s21-effective:bull_call:normal",
         "originating_trading_date": "2024-01-23",
-        "position_cycle_hash": "68156d316439b239a5db547f17eeb07ce6d673cc5c84356cca7f65114b9cfd06",
-        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "position_cycle_hash": "e76e0525630b3b6c8d430ebe8fc427eacb2685444c4402d190b621c3593c17ec",
+        "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
         "side": "SELL",
         "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
         "strategy_family_id": "OPTION_SELLING",
@@ -800,7 +826,7 @@
       "multiplier": "1",
       "next_trading_session_id": null,
       "originating_trading_date": "2024-01-23",
-      "projection_hash": "199e8b92c0e017e8c62f4fda6d3fe53f8ca1811b5f37f3ad58e42f334f08d8c1",
+      "projection_hash": "394c681c3c58eb43d1c64497aa03dd2d26a925042b2895cf8ef36bda9f7ff9f4",
       "projection_version": 2,
       "protection_generation": 0,
       "realized_quantity": 0,
@@ -811,16 +837,16 @@
     "requirements": [
       {
         "created_at": "2024-01-23T09:30:00+05:30",
-        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
         "price": "370.00",
         "protection_generation": 1,
         "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
         "quantity": 15,
-        "requirement_hash": "a9ef12184eb7f6398eb56e6e785dc10a64227f523b60416b80aab589b8f88f5d",
-        "requirement_id": "lifecycle-req:76bcf3f748eb6df6b381b071",
+        "requirement_hash": "083dc86f28be053ec3c4e0421597623a403964c6c525f79f004596d58432a7e1",
+        "requirement_id": "lifecycle-req:a4aacea78b29989479ef95bf",
         "requirement_type": "TARGET_EXIT_REQUIRED",
         "side": "BUY",
-        "source_artifact_hash": "1783482285ff2565304ef665e3d79fe228058e9783d5db3247e1e6bdd2c339f8",
+        "source_artifact_hash": "05440b89e351dc63171f5d0879ef42496766d05f4b9151668846834762839512",
         "source_artifact_id": "eod_exit",
         "source_rule_ids": [
           "S21.BULL_CALL.STATIC.001",
@@ -831,16 +857,16 @@
       },
       {
         "created_at": "2024-01-23T09:30:00+05:30",
-        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
         "price": "1337.50",
         "protection_generation": 1,
         "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
         "quantity": 15,
-        "requirement_hash": "ca93dd356fdcb3083ce1d995b06d2e83a583e35483553a89a06298634d509a3c",
-        "requirement_id": "lifecycle-req:47387812b352d2938e8c386c",
+        "requirement_hash": "51a3e97aefe06a01de79b91503f62114bf29039e185b907cdea45d6c43fb77f8",
+        "requirement_id": "lifecycle-req:70ac1aabe4e779a8389b7a81",
         "requirement_type": "NORMAL_SL_PLACEMENT_REQUIRED",
         "side": "BUY",
-        "source_artifact_hash": "1783482285ff2565304ef665e3d79fe228058e9783d5db3247e1e6bdd2c339f8",
+        "source_artifact_hash": "05440b89e351dc63171f5d0879ef42496766d05f4b9151668846834762839512",
         "source_artifact_id": "eod_exit",
         "source_rule_ids": [
           "S21.BULL_CALL.STATIC.001",
@@ -850,8 +876,8 @@
         "status": "REQUIRED"
       }
     ],
-    "transition_hash": "7455cac42c76c79a9bedf098ca5fd10079f7336c9b79e0729032e39a8c6cb746",
-    "transition_id": "position-transition:9afbfb07a4af4101051cdb11"
+    "transition_hash": "2a0e64653a0a744b35764fbd471bdf8c9df042990555bc2682dcea187d68ed8a",
+    "transition_id": "position-transition:eba4025e5aa9d81864428b87"
   },
   "entry_validation": {
     "authority_mode": "VALIDATED_NOT_SUBMITTABLE",
@@ -868,7 +894,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -897,7 +923,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -918,7 +944,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -941,7 +967,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -965,7 +991,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -986,7 +1012,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -1011,7 +1037,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1032,7 +1058,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1053,7 +1079,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1074,7 +1100,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1095,7 +1121,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -1122,7 +1148,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1143,7 +1169,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -1168,7 +1194,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1189,7 +1215,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -1214,7 +1240,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1235,7 +1261,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1256,7 +1282,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1277,7 +1303,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1298,7 +1324,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1319,7 +1345,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1340,7 +1366,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1361,7 +1387,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1382,7 +1408,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -1405,7 +1431,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1426,7 +1452,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1447,7 +1473,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1468,7 +1494,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -1493,7 +1519,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1514,7 +1540,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1535,7 +1561,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1556,7 +1582,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1577,7 +1603,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {
@@ -1600,7 +1626,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1621,7 +1647,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1642,7 +1668,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1663,7 +1689,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1684,7 +1710,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
           "purpose": "ENTRY"
         },
         "observed_value": {},
@@ -1696,14 +1722,14 @@
       }
     ],
     "decision": "VALIDATED_NOT_SUBMITTABLE",
-    "execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+    "execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
     "failures": [],
-    "intent_hash": "dcb53e889709642073fe985096b5a673dbde1bfcb67245f2aff0afa57b406b7d",
+    "intent_hash": "a7aca6ef7c41fd2acab00ddfecc0a80e5b101c1e34f373b43fc998c767f3dbd9",
     "live_submission_permitted": false,
     "order_creation_permitted": false,
     "paper_submission_permitted": false,
     "position_mutation_permitted": false,
-    "result_hash": "e0d5257d0523a540f94294cc15b88815a5e8a842aecda04df5db12322d6a88fe",
+    "result_hash": "296bfbb99f34fae41fb46fbdc5b1d17835bce171bf90072d0ac1b29c7724862c",
     "validation_id": "validation:s21:eod_exit:entry",
     "warnings": []
   },
@@ -1713,20 +1739,20 @@
     "authorized_time": "2024-01-23T15:00:00+05:30",
     "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
     "broker_submission_permitted": false,
-    "client_order_id": "client-order:b8e4fb3c5d97a70ad399afb4",
-    "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
-    "idempotency_key": "client-order:b8e4fb3c5d97a70ad399afb4239c0058ffc771716874ae1c89437b524d91f62c",
+    "client_order_id": "client-order:3e3680878fdb8ef0a56f3a99",
+    "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
+    "idempotency_key": "client-order:3e3680878fdb8ef0a56f3a9953d6c55055de8dd86f6c2ec1c60bec7051c10f8b",
     "limit_price": "1340.00",
     "live_submission_permitted": false,
     "normalized_contract": "BANKNIFTY_20240125_47000_CE",
-    "order_hash": "61e7708bc863c4542c95c32e0f920d06307115c5010c4ee7ea82c7afc388b2b6",
+    "order_hash": "137e733614f7179b8bf79b7d256f55b4bfc58543dd560c7f5bdd6bd322d431e7",
     "order_purpose": "EOD_EXIT",
     "order_type": "LIMIT",
-    "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+    "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
     "protection_generation": 1,
     "quantity": 15,
     "side": "BUY",
-    "source_intent_hash": "21216211aaf3f5dd0653c3704340dd3108d0130302f80026dfbce2b32afaabff",
+    "source_intent_hash": "693edb3140a09336327f97dbbec860b9ec29762aac7780c5162c863e5c69891e",
     "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
     "time_in_force": "DAY",
     "trading_session_id": "NSE:2024-01-23",
@@ -1767,8 +1793,8 @@
         "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
       ]
     },
-    "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
-    "idempotency_key": "phase4e:3ff7e43d46dcb543db34ae2c12c7fc6ae72a55af2b45e0746e9205083595bf27",
+    "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
+    "idempotency_key": "phase4e:6f12fb71aa24dfbe3e3a7de34d41432610b70eef9b5eca1f9bfe72694afe8338",
     "instrument": {
       "contract": "BANKNIFTY_20240125_47000_CE",
       "currency": "INR",
@@ -1783,14 +1809,14 @@
       "tick_size": "0.05",
       "underlying": "BANKNIFTY"
     },
-    "intent_hash": "21216211aaf3f5dd0653c3704340dd3108d0130302f80026dfbce2b32afaabff",
+    "intent_hash": "693edb3140a09336327f97dbbec860b9ec29762aac7780c5162c863e5c69891e",
     "live_submission_permitted": false,
     "order_creation_permitted": false,
     "paper_submission_permitted": false,
-    "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+    "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
     "position_mutation_permitted": false,
     "schema_version": "phase4e.execution_intent.v1",
-    "source_artifact_hash": "7455cac42c76c79a9bedf098ca5fd10079f7336c9b79e0729032e39a8c6cb746",
+    "source_artifact_hash": "2a0e64653a0a744b35764fbd471bdf8c9df042990555bc2682dcea187d68ed8a",
     "source_artifact_id": "s21-lifecycle:eod_exit",
     "source_artifact_type": "S21LifecycleRequirement",
     "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
@@ -1821,20 +1847,20 @@
       "authorized_time": "2024-01-23T15:00:00+05:30",
       "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
       "broker_submission_permitted": false,
-      "client_order_id": "client-order:b8e4fb3c5d97a70ad399afb4",
-      "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
-      "idempotency_key": "client-order:b8e4fb3c5d97a70ad399afb4239c0058ffc771716874ae1c89437b524d91f62c",
+      "client_order_id": "client-order:3e3680878fdb8ef0a56f3a99",
+      "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
+      "idempotency_key": "client-order:3e3680878fdb8ef0a56f3a9953d6c55055de8dd86f6c2ec1c60bec7051c10f8b",
       "limit_price": "1340.00",
       "live_submission_permitted": false,
       "normalized_contract": "BANKNIFTY_20240125_47000_CE",
-      "order_hash": "61e7708bc863c4542c95c32e0f920d06307115c5010c4ee7ea82c7afc388b2b6",
+      "order_hash": "137e733614f7179b8bf79b7d256f55b4bfc58543dd560c7f5bdd6bd322d431e7",
       "order_purpose": "EOD_EXIT",
       "order_type": "LIMIT",
-      "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+      "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
       "protection_generation": 1,
       "quantity": 15,
       "side": "BUY",
-      "source_intent_hash": "21216211aaf3f5dd0653c3704340dd3108d0130302f80026dfbce2b32afaabff",
+      "source_intent_hash": "693edb3140a09336327f97dbbec860b9ec29762aac7780c5162c863e5c69891e",
       "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
       "time_in_force": "DAY",
       "trading_session_id": "NSE:2024-01-23",
@@ -1844,10 +1870,10 @@
       {
         "authority_source": "INTERNAL_PAPER_SIMULATION",
         "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
-        "client_order_id": "client-order:b8e4fb3c5d97a70ad399afb4",
+        "client_order_id": "client-order:3e3680878fdb8ef0a56f3a99",
         "cumulative_filled_quantity": 0,
-        "event_hash": "279748ef7ff022ed83633aea73c63932267187bed58a0746abff03f6d71510ef",
-        "event_id": "event:b143e5cdf80d89f944514f74",
+        "event_hash": "211cb9b1306a135811533934386450c1f671975abbadd87ca796cb59a415b7f6",
+        "event_id": "event:53ca97a7d642a3d3d439dcdd",
         "event_timestamp": "2024-01-23T15:00:00+05:30",
         "event_type": "INTERNAL_SUBMISSION_ACCEPTED",
         "fill_price": null,
@@ -1866,10 +1892,10 @@
       {
         "authority_source": "INTERNAL_PAPER_SIMULATION",
         "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
-        "client_order_id": "client-order:b8e4fb3c5d97a70ad399afb4",
+        "client_order_id": "client-order:3e3680878fdb8ef0a56f3a99",
         "cumulative_filled_quantity": 15,
-        "event_hash": "c19acfe877653ebf8aea59f3bd3ee730be393cc500eb7b9fcb486f50bb8c67ec",
-        "event_id": "event:8b2b02b82dc2170344cd01c8",
+        "event_hash": "26bfb76c25cd8a391c188ec3fc8424d668db8f9f21658b848699540f48f53fa0",
+        "event_id": "event:d6030b3e7c5f2445e03e5c4c",
         "event_timestamp": "2024-01-23T15:00:00+05:30",
         "event_type": "INTERNAL_FULL_FILL",
         "fill_price": "1340.00",
@@ -1889,14 +1915,14 @@
     "fills": [
       {
         "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
-        "client_order_id": "client-order:b8e4fb3c5d97a70ad399afb4",
+        "client_order_id": "client-order:3e3680878fdb8ef0a56f3a99",
         "contract": "BANKNIFTY_20240125_47000_CE",
         "fill_classification": "INTERNAL_PAPER_SIMULATED_FILL",
-        "fill_hash": "1748c8f87d4e751288fcb930094b48a818727eac1306390cb80d8f1a57286435",
+        "fill_hash": "0de71ce7c6991547f6831335bcccc69cfa65cf97ff5b2162b30e9c78bb842118",
         "fill_price": "1340.00",
         "fill_quantity": 15,
-        "internal_fill_id": "internal-fill:4b7dccbba2df243f9572f73b",
-        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "internal_fill_id": "internal-fill:9493f4f66526851ee98de717",
+        "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
         "provenance": {
           "adapter": "DeterministicInternalPaperAdapter",
           "scenario_hash": "e95159a857f5854e4d66dede7e1def4dcf33d0d512f074dcf50c45db9a346a5d"
@@ -1912,28 +1938,28 @@
     "position_update_candidates": [
       {
         "authority_mode": "INTERNAL_PAPER_ONLY",
-        "candidate_hash": "0d4fd8117089020368cc3d0bec109c097c687e305952c273f5ad318de8d02a78",
-        "candidate_id": "pc-update-candidate:d91f1749aa1cd3a0efed1663",
+        "candidate_hash": "376d39a88c5ee4b7a2548e0bed7fa564bb6b27adbd7ec4222fc156292c414ef5",
+        "candidate_id": "pc-update-candidate:1c5aca132bf0045ee926d1ae",
         "fill_price": "1340.00",
-        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
         "quantity_delta": 15,
-        "source_fill_id": "internal-fill:4b7dccbba2df243f9572f73b",
+        "source_fill_id": "internal-fill:9493f4f66526851ee98de717",
         "suggested_state_impact": "INTERNAL_PAPER_FILL_OBSERVED_NO_POSITION_MUTATION",
         "update_permitted": false
       }
     ],
-    "result_hash": "06b4e7b58a446354a240f9838777361096ce6977ba4396859746543866b5b80c"
+    "result_hash": "fcae01fef423980b00b5481c30b06a3b43a34f3202a62dda571ff68b44fd4804"
   },
   "exit_position_transition": {
     "consistency_status": "MATCHED",
     "event": {
-      "event_hash": "1effe514e0266973017357c5bd080a856429a2f78f665349852c3c0c624bad48",
-      "event_id": "position-event:6a8c9794f5e8d4ae1c07310f",
+      "event_hash": "324f7ff4d6415040f0b7faf94293ffc604c2bf9a0c92a337431de9466f09a574",
+      "event_id": "position-event:ffdaca6b8333f25fd6c970ce",
       "event_sequence": 3,
       "event_timestamp": "2024-01-23T15:00:00+05:30",
       "event_type": "EOD_EXIT_APPLIED",
       "new_state": "CLOSED",
-      "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+      "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
       "price_evidence": {
         "fill_price": "1340.00",
         "purpose": "EOD_EXIT"
@@ -1944,8 +1970,8 @@
       "rule_ids": [
         "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
       ],
-      "source_client_order_id": "client-order:b8e4fb3c5d97a70ad399afb4",
-      "source_fill_id": "internal-fill:4b7dccbba2df243f9572f73b",
+      "source_client_order_id": "client-order:3e3680878fdb8ef0a56f3a99",
+      "source_fill_id": "internal-fill:9493f4f66526851ee98de717",
       "source_requirement_id": null
     },
     "projection": {
@@ -1960,12 +1986,12 @@
       "confirmed_entry_quantity": 15,
       "currency": "INR",
       "entry_fill_ids": [
-        "internal-fill:827885a4557f48b1e433c5f0"
+        "internal-fill:7a93184e0e0e704d4193a3e0"
       ],
       "exit_fill_ids": [
-        "internal-fill:4b7dccbba2df243f9572f73b"
+        "internal-fill:9493f4f66526851ee98de717"
       ],
-      "filled_exit_order_id": "client-order:b8e4fb3c5d97a70ad399afb4",
+      "filled_exit_order_id": "client-order:3e3680878fdb8ef0a56f3a99",
       "identity": {
         "authority_classification": "INTERNAL_PAPER_ONLY",
         "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
@@ -1975,11 +2001,11 @@
         "live_position": false,
         "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
         "normalized_contract": "BANKNIFTY_20240125_47000_CE",
-        "originating_entry_execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
-        "originating_execution_plan_id": "s21-effective:normal",
+        "originating_entry_execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
+        "originating_execution_plan_id": "s21-effective:bull_call:normal",
         "originating_trading_date": "2024-01-23",
-        "position_cycle_hash": "68156d316439b239a5db547f17eeb07ce6d673cc5c84356cca7f65114b9cfd06",
-        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "position_cycle_hash": "e76e0525630b3b6c8d430ebe8fc427eacb2685444c4402d190b621c3593c17ec",
+        "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
         "side": "SELL",
         "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
         "strategy_family_id": "OPTION_SELLING",
@@ -1992,7 +2018,7 @@
       "multiplier": "1",
       "next_trading_session_id": null,
       "originating_trading_date": "2024-01-23",
-      "projection_hash": "d04bd74ef6bf6d61a83003b82b40572a8a72cc497d765a2cd5c347c499e9f59d",
+      "projection_hash": "9f91122f04735e0cd8e1a9ae34254ece702421ff40a16b4d723920a1c1a639f9",
       "projection_version": 3,
       "protection_generation": 0,
       "realized_quantity": 15,
@@ -2001,8 +2027,8 @@
       "terminal_status": "CLOSED_BY_CONFIRMED_EXIT_FILL"
     },
     "requirements": [],
-    "transition_hash": "82289e11802539e72d919cc2e0f8ebe0c0f06ceeaadad390a0cf75be61b772e1",
-    "transition_id": "position-transition:995c99dc2b6c9b77ee83e471"
+    "transition_hash": "79a62c5a68c90de4b2082dba8cb59397fd465bb9bd39cf387b112a1e205be750",
+    "transition_id": "position-transition:e91ae280365f0cb7a049569a"
   },
   "exit_validation": {
     "authority_mode": "VALIDATED_NOT_SUBMITTABLE",
@@ -2019,7 +2045,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2048,7 +2074,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2069,7 +2095,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2092,7 +2118,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2116,7 +2142,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2137,7 +2163,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2162,7 +2188,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2183,7 +2209,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2204,7 +2230,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2225,7 +2251,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2246,7 +2272,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2273,7 +2299,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2294,7 +2320,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2319,7 +2345,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2340,7 +2366,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2365,7 +2391,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2386,7 +2412,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2407,7 +2433,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2428,7 +2454,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2449,7 +2475,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2470,7 +2496,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2491,7 +2517,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2512,7 +2538,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2533,7 +2559,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2556,7 +2582,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2577,7 +2603,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2598,7 +2624,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2619,7 +2645,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2644,7 +2670,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2665,7 +2691,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2686,7 +2712,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2707,7 +2733,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2728,7 +2754,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {
@@ -2751,7 +2777,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2772,7 +2798,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2793,7 +2819,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2814,7 +2840,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2835,7 +2861,7 @@
           "source": "phase4e.validator"
         },
         "input": {
-          "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+          "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
           "purpose": "EOD_EXIT"
         },
         "observed_value": {},
@@ -2847,17 +2873,17 @@
       }
     ],
     "decision": "VALIDATED_NOT_SUBMITTABLE",
-    "execution_intent_id": "exec-intent:c70ac05f8b84025510b38d03",
+    "execution_intent_id": "exec-intent:fa90c006b838e068db430d2b",
     "failures": [],
-    "intent_hash": "21216211aaf3f5dd0653c3704340dd3108d0130302f80026dfbce2b32afaabff",
+    "intent_hash": "693edb3140a09336327f97dbbec860b9ec29762aac7780c5162c863e5c69891e",
     "live_submission_permitted": false,
     "order_creation_permitted": false,
     "paper_submission_permitted": false,
     "position_mutation_permitted": false,
-    "result_hash": "3a14eea60bf65498099eef09a653d4cb514c6404181f21b83b485b77d0e1a8f5",
+    "result_hash": "a0a56c73583534f524422bc09985b4a5b1d1e2976e6250ef02ed7a377b02d315",
     "validation_id": "validation:s21:eod_exit:exit",
     "warnings": []
   },
   "scenario": "eod_exit",
-  "scenario_hash": "f9143fe3f640365ea11d0f897a9e318af9f81b948ed6312e231ee51117cce050"
+  "scenario_hash": "93b4ecb0a039e195cc24ee24f51ecae442d05552dae0239108814fb955cc508c"
 }

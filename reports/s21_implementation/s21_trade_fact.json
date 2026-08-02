@@ -44,7 +44,7 @@
     "remaining_quantity": 0,
     "requested_entry_quantity": 15
   },
-  "fact_hash": "e1263c6787962257a4e9e526bd6ed886a75f9ce9502585ac7157aee52827665d",
+  "fact_hash": "96ea8fe9de75d8acf3436bbaa441fcae91fecac20ccbe064fad80a37d800b6b1",
   "final_trading_date": "2024-01-23",
   "instrument": {
     "contract": "BANKNIFTY_20240125_47000_CE",
@@ -94,32 +94,32 @@
     "net_realized_pnl": "8310.00",
     "provisional_charges": "15.00"
   },
-  "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+  "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
   "provenance": {
     "correction_source": "NONE",
     "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
     "source_fill_ids": [
-      "internal-fill:e32c40fb1fd987c89ef4cc23",
-      "internal-fill:b1bd07c93329702dfada1068"
+      "internal-fill:c23f40941a326f97a1de1a9e",
+      "internal-fill:e400753d935d4343f860d502"
     ],
     "source_hashes": {
       "position_event_ids": [
-        "internal-fill:e32c40fb1fd987c89ef4cc23",
-        "internal-fill:b1bd07c93329702dfada1068"
+        "internal-fill:c23f40941a326f97a1de1a9e",
+        "internal-fill:e400753d935d4343f860d502"
       ],
-      "position_projection": "d35bd6e20005184d43f998193c4c00021ca7105f54580bc45b594b09b863a5bd"
+      "position_projection": "8ea32a880584c70744543fd7a3e998e28670c38cdaa2c4f30c1e75f400731263"
     },
     "source_lifecycle_requirement_ids": [
-      "lifecycle-req:245733a184a843c66ea4ef28",
-      "lifecycle-req:e9f05ef98dee5b261ee54435"
+      "lifecycle-req:641f93f0b11e71fcd6351001",
+      "lifecycle-req:f740de8edeb30619f820a12e"
     ],
     "source_order_ids": [
-      "client-order:397612058981179e43ada889",
-      "client-order:a26da3399728282eb9aa2a36"
+      "client-order:59eb3111351068c68723e235",
+      "client-order:4133953917015e5796af0bb0"
     ],
     "source_position_event_ids": [
-      "internal-fill:e32c40fb1fd987c89ef4cc23",
-      "internal-fill:b1bd07c93329702dfada1068"
+      "internal-fill:c23f40941a326f97a1de1a9e",
+      "internal-fill:e400753d935d4343f860d502"
     ]
   },
   "rule_matrix_version": "s21_source_closure_accepted_v1",
@@ -129,8 +129,8 @@
   "strategy_instance": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
   "strategy_version": "1.0.0",
   "supersedes_trade_fact_id": null,
-  "trade_fact_id": "trade-fact:a6f8f2bd91de9f14e84982b7",
-  "trade_fact_version": "phase4i.s23.short_option_accounting.v1",
-  "trade_id": "trade:ipc:43aca3bf181eda4c27004eca",
+  "trade_fact_id": "trade-fact:8ff6c53325d9a0c2b8b8ca1f",
+  "trade_fact_version": "tfis.short_option_accounting.v1",
+  "trade_id": "trade:ipc:04ccc9e9f63fcf61ba09d23d",
   "trading_session_id": "NSE:2024-01-23"
 }

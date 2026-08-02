@@ -5,6 +5,7 @@
         "exchange": "NSE",
         "expiry": "2024-01-25",
         "metadata": {
+          "branch_id": "BULL_CALL",
           "configured_lots": 1,
           "currency": "INR",
           "lot_size": 15,
@@ -32,6 +33,7 @@
         "exchange": "NSE",
         "expiry": "2024-02-29",
         "metadata": {
+          "branch_id": "BULL_CALL",
           "configured_lots": 1,
           "currency": "INR",
           "lot_size": 15,
@@ -57,7 +59,7 @@
   ],
   "decision": "NO_TRADE",
   "no_contract_reason": "NO_NEAR_OR_NEXT_CONTRACT_SATISFIED_PREMIUM_AND_OI",
-  "result_hash": "64903c4b4dac9e745bc45781aad27103f1bdefce1302ace875f0fc93dcd03fe6",
+  "result_hash": "1b0c46344f2c0ff0f481eab8f6e5b9254a7dc50fa8ff02f94f39aa129946c280",
   "scenario_id": "near_and_next_fail",
   "selected_contract": null,
   "selected_expiry_kind": null,

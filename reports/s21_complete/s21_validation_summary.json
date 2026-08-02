@@ -1,0 +1,119 @@
+{
+  "business_hashes_regenerated_after_accounting_metadata_correction": true,
+  "commands": [
+    {
+      "command": "python -m py_compile changed Python files",
+      "outcome": "PASS"
+    },
+    {
+      "command": "pytest tests/integration/test_s21_first_branch_end_to_end.py tests/integration/test_s21_complete_strategy.py",
+      "outcome": "PASS",
+      "passed": 5
+    },
+    {
+      "command": "pytest tests/unit/test_s21_all_branches.py tests/architecture/test_s21_first_branch_reuse_boundary.py",
+      "outcome": "PASS",
+      "passed": 18
+    },
+    {
+      "command": "pytest tests/unit/test_phase4i_accounting.py tests/integration/test_s21_complete_strategy.py",
+      "outcome": "PASS",
+      "passed": 15
+    },
+    {
+      "command": "pytest tests/integration/test_phase5b_s23_put_four_branch.py tests/integration/test_phase5c_complete_s23_observation.py",
+      "outcome": "PASS",
+      "passed": 23
+    },
+    {
+      "command": "pytest tests/integration/test_phase5a_pre_s23_end_to_end.py",
+      "outcome": "PASS",
+      "passed": 12
+    },
+    {
+      "command": "pytest tests/integration/test_phase5a_controlled_internal_paper.py",
+      "outcome": "PASS",
+      "passed": 13
+    },
+    {
+      "command": "pytest tests/unit/test_phase4i_accounting.py",
+      "outcome": "PASS",
+      "passed": 12
+    },
+    {
+      "command": "pytest tests/unit/test_phase4h_internal_position_cycle.py tests/unit/test_phase4f_internal_paper.py",
+      "outcome": "PASS",
+      "passed": 32
+    },
+    {
+      "command": "pytest tests/unit/test_phase4e_execution_intent.py tests/unit/test_phase4d_reconciliation.py tests/unit/test_phase4c_operational_persistence.py",
+      "outcome": "PASS",
+      "passed": 62
+    },
+    {
+      "command": "pytest tests/unit/test_phase4b_broker_read_boundary.py tests/unit/test_phase4a_s23_captured_replay_shadow.py tests/unit/test_phase3d_m15_runtime_coordination.py tests/unit/test_trade_lifecycle.py tests/unit/test_trade_lifecycle_eod.py tests/unit/test_trade_lifecycle_metrics.py",
+      "outcome": "PASS",
+      "passed": 67
+    },
+    {
+      "command": "pytest tests/architecture",
+      "outcome": "PASS",
+      "passed": 59
+    },
+    {
+      "command": "JSON parse validation for reports/s21_complete and reports/s21_implementation",
+      "outcome": "PASS",
+      "validated_files": 32
+    },
+    {
+      "command": "SQLite PRAGMA integrity_check for tmp milestone databases",
+      "outcome": "PASS",
+      "validated_databases": [
+        "tmp/phase4c/phase4c.sqlite",
+        "tmp/phase4d/phase4d.sqlite",
+        "tmp/phase4e/phase4e.sqlite",
+        "tmp/phase4f/phase4f.sqlite"
+      ]
+    },
+    {
+      "command": "python scripts/validate_strategy_configs.py",
+      "outcome": "PASS"
+    },
+    {
+      "command": "python scripts/validate_project.py",
+      "outcome": "PASS"
+    },
+    {
+      "command": "git diff --check",
+      "outcome": "PASS_WITH_LINE_ENDING_WARNINGS"
+    },
+    {
+      "command": "pytest tests",
+      "outcome": "TIMEOUT_WITH_EXISTING_BROAD_SUITE_FAILURES",
+      "collected": 1540
+    },
+    {
+      "command": "pytest tests/unit",
+      "outcome": "TIMEOUT_WITH_EXISTING_BROAD_SUITE_FAILURES",
+      "collected": 1393
+    }
+  ],
+  "conditional_failures": [
+    {
+      "classification": "PRE_EXISTING_UNRELATED_TO_S21_COMPLETE_OR_ACCOUNTING_PROVENANCE",
+      "details": "tests/unit/test_fyers_adapter.py has 1 failure: FYERS option-chain timestamp expected as int but adapter emits string."
+    },
+    {
+      "classification": "PRE_EXISTING_UNRELATED_TO_S21_COMPLETE_OR_ACCOUNTING_PROVENANCE",
+      "details": "Older historical backtest/monthly-status integration tests fail on expected evaluation counts, selected contract availability, strike outputs, and monthly status branch-flow expectations. The S21 complete adapter and generic accounting provenance files do not modify those code paths."
+    },
+    {
+      "classification": "PRE_EXISTING_UNRELATED_TO_S21_COMPLETE_OR_ACCOUNTING_PROVENANCE",
+      "details": "tests/integration/test_run_s23_fyers_paper_ingress_cli.py has 1 markdown wording expectation failure unrelated to S21 or accounting."
+    }
+  ],
+  "required_validation_strategy": "split_batches_to_avoid_timeouts",
+  "schema_version": "s21.validation_summary.complete_strategy.v1",
+  "status": "S21_COMPLETE_VALIDATION_CONDITIONAL",
+  "validation_hash": "d557f0b58860a636f2988c50973d30a46f5cb9a1f3b7611078c0c376ed9f28bd"
+}

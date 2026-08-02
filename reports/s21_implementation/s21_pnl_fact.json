@@ -1,11 +1,11 @@
 {
   "account": "INTERNAL_PAPER_ACCOUNT",
   "as_of_timestamp": "2024-01-23T15:31:00+05:30",
-  "calculation_version": "phase4i.s23.short_option_accounting.v1",
+  "calculation_version": "tfis.short_option_accounting.v1",
   "charges": "15.00",
   "currency": "INR",
-  "evidence_hash": "2b1f9dd743d65b85e387e6afb2b490318192676283b31a98e78c5de3bf611fd4",
-  "fact_hash": "7e9ebe8c5953c1f85f1c724f0cfee3029d701c43b4c3162f7cff730222167ee2",
+  "evidence_hash": "1b1d7fe64d7e252b777f1bf26d3bf58d84ff1407015ed5f29ee9a13d10e7a49e",
+  "fact_hash": "8a54e8f3861e0998e54b4306e0d0df79591f518a34b182ad0f22e2d8507682d4",
   "fact_type": "REALIZED_TRADE_PNL",
   "gross_pnl": "8325.00",
   "instrument": {
@@ -26,17 +26,17 @@
   },
   "metadata_version": "s21.option_selling.banknifty.v1",
   "net_pnl": "8310.00",
-  "pnl_fact_id": "pnl-fact:2b1f9dd743d65b85e387e6af",
+  "pnl_fact_id": "pnl-fact:1b1d7fe64d7e252b777f1bf2",
   "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
   "realized_unrealized": "REALIZED",
   "source_identities": {
-    "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+    "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
     "source_fill_ids": [
-      "internal-fill:e32c40fb1fd987c89ef4cc23",
-      "internal-fill:b1bd07c93329702dfada1068"
+      "internal-fill:c23f40941a326f97a1de1a9e",
+      "internal-fill:e400753d935d4343f860d502"
     ],
     "supersession_reason": null,
-    "trade_fact_id": "trade-fact:a6f8f2bd91de9f14e84982b7"
+    "trade_fact_id": "trade-fact:8ff6c53325d9a0c2b8b8ca1f"
   },
   "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
   "supersedes_pnl_fact_id": null,

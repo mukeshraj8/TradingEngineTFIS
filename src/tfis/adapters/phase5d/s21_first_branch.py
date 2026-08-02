@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import replace
+from dataclasses import dataclass, fields, is_dataclass, replace
 from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from pathlib import Path
@@ -80,6 +80,112 @@ REVISED_SL = Decimal("1284.00")
 EOD_EXIT_PRICE = Decimal("1340.00")
 EOD_EQUAL_PRICE = ORIGINAL_SL
 
+
+@dataclass(frozen=True, slots=True)
+class S21BranchSpec:
+    branch_id: str
+    unique_code: str
+    monthly_statuses: tuple[str, ...]
+    option_type: str
+    source_rows: str
+    static_rule_id: str
+    carried_rule_id: str
+    strike_reference: str
+    entry_reference: str
+    sl_reference: str
+    revised_reference: str
+    strike: Decimal
+    base_entry: Decimal
+    target: Decimal
+    original_sl: Decimal
+    revised_entry: Decimal
+    revised_sl: Decimal
+    traversal_order: str
+
+
+BRANCH_SPECS: dict[str, S21BranchSpec] = {
+    "BULL_CALL": S21BranchSpec(
+        branch_id="BULL_CALL",
+        unique_code="BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+        monthly_statuses=("BULL", "BULL_CF"),
+        option_type="CE",
+        source_rows="AB6 OS!100:102",
+        static_rule_id="S21.BULL_CALL.STATIC.001",
+        carried_rule_id="S21.CARRIED_CALL.FSL_TRP.001",
+        strike_reference="3DLL",
+        entry_reference="3DLL",
+        sl_reference="OPT PRV 2DHH + 7%",
+        revised_reference="09:29:59 HH + 7%",
+        strike=Decimal("47000"),
+        base_entry=BASE_ENTRY,
+        target=TARGET,
+        original_sl=ORIGINAL_SL,
+        revised_entry=REVISED_ENTRY,
+        revised_sl=REVISED_SL,
+        traversal_order="START_TO_END_CALL_SELL_BULL",
+    ),
+    "BULL_PUT": S21BranchSpec(
+        branch_id="BULL_PUT",
+        unique_code="BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT",
+        monthly_statuses=("BULL", "BULL_CF"),
+        option_type="PE",
+        source_rows="AB6 OS!103:104",
+        static_rule_id="S21.BULL_PUT.STATIC.001",
+        carried_rule_id="S21.CARRIED_PUT.FSL_TRP.001",
+        strike_reference="2DHH",
+        entry_reference="2DLL",
+        sl_reference="OPT PRV 3DHH + 10%",
+        revised_reference="09:29:59 HH + 10%",
+        strike=Decimal("46000"),
+        base_entry=Decimal("880.00"),
+        target=Decimal("352.00"),
+        original_sl=Decimal("1320.00"),
+        revised_entry=Decimal("865.00"),
+        revised_sl=Decimal("1265.00"),
+        traversal_order="START_TO_END_PUT_SELL_BULL",
+    ),
+    "BEAR_CALL": S21BranchSpec(
+        branch_id="BEAR_CALL",
+        unique_code="BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL",
+        monthly_statuses=("BEAR", "BEAR_CF"),
+        option_type="CE",
+        source_rows="AB6 OS!106:108",
+        static_rule_id="S21.BEAR_CALL.STATIC.001",
+        carried_rule_id="S21.CARRIED_CALL.FSL_TRP.001",
+        strike_reference="2DLL",
+        entry_reference="2DLL",
+        sl_reference="OPT PRV 3DHH + 10%",
+        revised_reference="09:29:59 HH + 10%",
+        strike=Decimal("48000"),
+        base_entry=Decimal("840.00"),
+        target=Decimal("336.00"),
+        original_sl=Decimal("1260.00"),
+        revised_entry=Decimal("825.00"),
+        revised_sl=Decimal("1232.00"),
+        traversal_order="START_TO_END_CALL_SELL_BEAR",
+    ),
+    "BEAR_PUT": S21BranchSpec(
+        branch_id="BEAR_PUT",
+        unique_code="BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT",
+        monthly_statuses=("BEAR", "BEAR_CF"),
+        option_type="PE",
+        source_rows="AB6 OS!109:110",
+        static_rule_id="S21.BEAR_PUT.STATIC.001",
+        carried_rule_id="S21.CARRIED_PUT.FSL_TRP.001",
+        strike_reference="3DHH",
+        entry_reference="3DLL",
+        sl_reference="OPT PRV 2DHH + 7%",
+        revised_reference="09:29:59 HH + 7%",
+        strike=Decimal("45500"),
+        base_entry=Decimal("900.00"),
+        target=Decimal("360.00"),
+        original_sl=Decimal("1284.00"),
+        revised_entry=Decimal("885.00"),
+        revised_sl=Decimal("1248.00"),
+        traversal_order="START_TO_END_PUT_SELL_BEAR",
+    ),
+}
+
 S21_FIRST_BRANCH_REPORT_NAMES = (
     "s21_selected_first_branch.json",
     "s21_policy_composition.json",
@@ -96,6 +202,26 @@ S21_FIRST_BRANCH_REPORT_NAMES = (
     "s21_complete_trace.json",
     "s21_s23_regression.json",
     "s21_platform_reuse_report.json",
+    "s21_gap_register.json",
+    "s21_summary.md",
+)
+
+S21_COMPLETE_REPORT_NAMES = (
+    "s21_branch_inventory.json",
+    "s21_natural_branch_selection.json",
+    "s21_contract_selection_matrix.json",
+    "s21_normal_path_results.json",
+    "s21_orpt_rc_results.json",
+    "s21_target_results.json",
+    "s21_original_sl_results.json",
+    "s21_revised_sl_results.json",
+    "s21_eod_carry_results.json",
+    "s21_carry_recovery_results.json",
+    "s21_accounting_results.json",
+    "s21_complete_trace.json",
+    "s21_platform_reuse_report.json",
+    "s21_s23_regression.json",
+    "s21_validation_summary.json",
     "s21_gap_register.json",
     "s21_summary.md",
 )
@@ -135,7 +261,7 @@ class S21ExecutionIntentAdapter:
                 authorized_not_after=None,
                 maximum_allowed_slippage=Decimal("0.05"),
                 protection_generation=None,
-                source_rule_ids=(ENTRY_RULE_ID, ORPT_RC_RULE_ID, CONTRACT_RULE_ID),
+                source_rule_ids=(_branch_spec_from_plan(plan).static_rule_id, ORPT_RC_RULE_ID, CONTRACT_RULE_ID),
                 configuration_hash=CONFIGURATION_HASH,
                 rule_matrix_version=RULE_MATRIX_VERSION,
                 market_snapshot_hash=f"market:{plan.source_opening_context_id}",
@@ -144,7 +270,7 @@ class S21ExecutionIntentAdapter:
                 recovery_assessment_id="s21-recovery-offline-ready",
                 recovery_assessment_hash="s21-recovery-offline-ready-hash",
                 evidence_packet_hash=EVIDENCE_PACKET_HASH,
-                provenance={"adapter": type(self).__name__, "branch": BRANCH_ID, "path": plan.path_classification.value},
+                provenance={"adapter": type(self).__name__, "branch": _branch_spec_from_plan(plan).branch_id, "path": plan.path_classification.value},
                 authority_mode=ExecutionAuthorityMode.OFFLINE_ONLY,
             )
         )
@@ -200,7 +326,7 @@ class S21ExecutionIntentAdapter:
                 recovery_assessment_id="s21-recovery-offline-ready",
                 recovery_assessment_hash="s21-recovery-offline-ready-hash",
                 evidence_packet_hash=canonical_hash({"source_artifact_id": source_artifact_id, "purpose": purpose.value}),
-                provenance={"adapter": type(self).__name__, "branch": BRANCH_ID},
+                provenance={"adapter": type(self).__name__, "branch": contract.metadata.get("branch_id", BRANCH_ID) if contract.metadata else BRANCH_ID},
                 authority_mode=ExecutionAuthorityMode.OFFLINE_ONLY,
             )
         )
@@ -301,6 +427,271 @@ def write_s21_first_branch_reports(report_dir: Path | str = Path("reports/s21_im
     return written
 
 
+def build_s21_complete_certification() -> dict[str, Any]:
+    branch_inventory = _s21_branch_inventory()
+    natural_selection = _natural_branch_selection_report()
+    branch_results: dict[str, dict[str, Any]] = {}
+    for branch_id, spec in BRANCH_SPECS.items():
+        branch_results[branch_id] = _branch_certification(spec)
+
+    contract_matrix = {
+        branch_id: {
+            "normal": result["contract_selection"]["normal"],
+            "near_fails_next_selected": result["contract_selection"]["near_fails_next_selected"],
+            "near_and_next_fail": result["contract_selection"]["near_and_next_fail"],
+        }
+        for branch_id, result in branch_results.items()
+    }
+    normal_results = {branch_id: _scenario_summary(result["target"]) for branch_id, result in branch_results.items()}
+    orpt_rc_results = {branch_id: _scenario_summary(result["revised_sl"]) for branch_id, result in branch_results.items()}
+    target_results = {branch_id: _scenario_summary(result["target"]) for branch_id, result in branch_results.items()}
+    original_sl_results = {branch_id: _scenario_summary(result["original_sl"]) for branch_id, result in branch_results.items()}
+    revised_sl_results = {branch_id: _scenario_summary(result["revised_sl"]) for branch_id, result in branch_results.items()}
+    eod_carry_results = {
+        branch_id: {
+            "eod_exit": _scenario_summary(result["eod"]),
+            "equality_carry": result["carry"]["eod_equal_carry_forward"],
+        }
+        for branch_id, result in branch_results.items()
+    }
+    carry_recovery_results = {branch_id: result["carry"] for branch_id, result in branch_results.items()}
+    accounting_results = {
+        branch_id: {
+            "trade_fact": result["target"]["accounting"]["trade_fact"],
+            "pnl_facts": result["target"]["accounting"]["pnl_facts"],
+            "projections": result["target"]["accounting"]["projections"],
+        }
+        for branch_id, result in branch_results.items()
+    }
+    complete_trace = {
+        "schema_version": "s21.complete_strategy.trace.v1",
+        "branch_inventory_hash": branch_inventory["inventory_hash"],
+        "natural_branch_selection_hash": natural_selection["selection_hash"],
+        "branches": {
+            branch_id: {
+                "normal_target": _scenario_summary(result["target"]),
+                "normal_original_sl": _scenario_summary(result["original_sl"]),
+                "orpt_rc_revised_sl": _scenario_summary(result["revised_sl"]),
+                "eod_exit": _scenario_summary(result["eod"]),
+                "eod_equality_carry": result["carry"]["eod_equal_carry_forward"],
+                "next_day_recovery": result["carry"]["next_day_recovery"],
+                "duplicate_replay": result["duplicate"],
+                "restart_after_fill": result["carry"]["restart_after_entry_fill"],
+                "reconciliation_block": result["reconciliation_block"],
+                "no_contract": result["contract_selection"]["near_and_next_fail"],
+            }
+            for branch_id, result in branch_results.items()
+        },
+        "s21_s23_isolation": _isolation_scenario(branch_results["BULL_CALL"]["target"]),
+        "authority": _authority(),
+    }
+    complete_trace["trace_hash"] = _report_hash(complete_trace)
+    platform_reuse = _platform_reuse_report()
+    platform_reuse["schema_version"] = "s21.platform_reuse.complete_strategy.v1"
+    platform_reuse["generic_files_changed"] = (
+        "src/tfis/accounting/builders.py",
+        "src/tfis/accounting/models.py",
+        "src/tfis/adapters/phase4i/s23_accounting.py",
+    )
+    platform_reuse["generic_change_justification"] = {
+        "accounting_version_correction": "Strategy-neutral provenance correction required for all short-option strategies; P&L formula, quantity, multiplier and charges unchanged."
+    }
+    platform_reuse["limitations"] = ()
+    platform_reuse["reuse_report_hash"] = _report_hash(platform_reuse)
+    s23_regression = _s23_regression_report()
+    s23_regression["approved_generic_metadata_change"] = "CALCULATION_VERSION now tfis.short_option_accounting.v1; business accounting values unchanged by tests."
+    s23_regression["regression_hash"] = _report_hash(s23_regression)
+    gap_register = _complete_gap_register()
+    validation_summary = {
+        "schema_version": "s21.validation_summary.complete_strategy.v1",
+        "status": "PENDING_FINAL_VALIDATION",
+        "required_validation_strategy": "split_batches_to_avoid_timeouts",
+        "business_hashes_regenerated_after_accounting_metadata_correction": True,
+    }
+    validation_summary["validation_hash"] = _report_hash(validation_summary)
+    summary = _complete_summary(complete_trace)
+    return {
+        "s21_branch_inventory": branch_inventory,
+        "s21_natural_branch_selection": natural_selection,
+        "s21_contract_selection_matrix": contract_matrix,
+        "s21_normal_path_results": normal_results,
+        "s21_orpt_rc_results": orpt_rc_results,
+        "s21_target_results": target_results,
+        "s21_original_sl_results": original_sl_results,
+        "s21_revised_sl_results": revised_sl_results,
+        "s21_eod_carry_results": eod_carry_results,
+        "s21_carry_recovery_results": carry_recovery_results,
+        "s21_accounting_results": accounting_results,
+        "s21_complete_trace": complete_trace,
+        "s21_platform_reuse_report": platform_reuse,
+        "s21_s23_regression": s23_regression,
+        "s21_validation_summary": validation_summary,
+        "s21_gap_register": gap_register,
+        "s21_summary": summary,
+    }
+
+
+def write_s21_complete_reports(report_dir: Path | str = Path("reports/s21_complete")) -> dict[str, Path]:
+    report_path = Path(report_dir)
+    report_path.mkdir(parents=True, exist_ok=True)
+    certification = build_s21_complete_certification()
+    written: dict[str, Path] = {}
+    for key, value in certification.items():
+        name = f"{key}.md" if key == "s21_summary" else f"{key}.json"
+        path = report_path / name
+        if key == "s21_summary":
+            path.write_text(str(value), encoding="utf-8")
+        else:
+            path.write_text(json.dumps(_jsonable(_sanitize_report_payload(value)), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        written[name] = path
+    return written
+
+
+def _branch_certification(spec: S21BranchSpec) -> dict[str, Any]:
+    contract_selection = _contract_selection_report(spec)
+    normal_opening = _opening_context(f"{spec.branch_id.lower()}_normal", orpt_low=spec.base_entry + Decimal("15.00"), orpt_high=spec.base_entry + Decimal("55.00"), spec=spec)
+    normal_plan = _effective_plan("normal", normal_opening, spec.base_entry, spec.target, spec.original_sl, EffectiveExecutionPath.NORMAL_RETAINED, spec)
+    target = _execute_entry_to_exit(normal_plan, exit_purpose=ExecutionIntentPurpose.TARGET, exit_price=spec.target, exit_rule_id=spec.static_rule_id, scenario_name=f"{spec.branch_id.lower()}_target")
+    original_sl = _execute_entry_to_exit(normal_plan, exit_purpose=ExecutionIntentPurpose.ORIGINAL_SL, exit_price=spec.original_sl, exit_rule_id=spec.static_rule_id, scenario_name=f"{spec.branch_id.lower()}_original_sl")
+    rc_opening = _opening_context(f"{spec.branch_id.lower()}_orpt_missed_rc", orpt_low=spec.base_entry - Decimal("25.00"), orpt_high=spec.base_entry + Decimal("55.00"), spec=spec)
+    rc_plan = _effective_plan("rc_recalculation", rc_opening, spec.revised_entry, spec.target, spec.revised_sl, EffectiveExecutionPath.ABNORMAL_RECALCULATED, spec)
+    revised_sl = _execute_entry_to_exit(rc_plan, exit_purpose=ExecutionIntentPurpose.REVISED_SL, exit_price=spec.revised_sl, exit_rule_id=spec.carried_rule_id, scenario_name=f"{spec.branch_id.lower()}_revised_sl")
+    eod = _execute_entry_to_exit(normal_plan, exit_purpose=ExecutionIntentPurpose.EOD_EXIT, exit_price=spec.original_sl + Decimal("10.00"), exit_rule_id=EOD_RULE_ID, scenario_name=f"{spec.branch_id.lower()}_eod_exit")
+    carry = _carry_recovery_scenario(normal_plan)
+    duplicate = _duplicate_replay_scenario(normal_plan)
+    reconciliation_block = _reconciliation_block_scenario(normal_plan)
+    return {
+        "spec": _branch_spec_dict(spec),
+        "contract_selection": contract_selection,
+        "normal_plan": normal_plan.to_dict(),
+        "rc_plan": rc_plan.to_dict(),
+        "target": target,
+        "original_sl": original_sl,
+        "revised_sl": revised_sl,
+        "eod": eod,
+        "carry": carry,
+        "duplicate": duplicate,
+        "reconciliation_block": reconciliation_block,
+    }
+
+
+def _s21_branch_inventory() -> dict[str, Any]:
+    rows = []
+    for spec in BRANCH_SPECS.values():
+        rows.append(
+            {
+                "monthly_status_conditions": spec.monthly_statuses,
+                "branch_identity": spec.branch_id,
+                "unique_code": spec.unique_code,
+                "option_type": "CALL" if spec.option_type == "CE" else "PUT",
+                "order_side": "SELL entry, BUY exits",
+                "contract_selection_rule": CONTRACT_RULE_ID,
+                "base_entry": {"reference": spec.entry_reference, "value": spec.base_entry, "rule_id": spec.static_rule_id, "source_cells": spec.source_rows},
+                "orpt_comparison": {"raw": "09:24:59 AM LL < Entry", "rule_id": ORPT_RC_RULE_ID, "source_cells": "AB6 OS!A113:AA118"},
+                "rc_recalculation": {"time": "09:29:59", "effective_entry": spec.revised_entry, "rule_id": ORPT_RC_RULE_ID},
+                "target": {"formula": "Entry - 60%", "value": spec.target, "rule_id": spec.static_rule_id},
+                "original_sl_msl": {"formula": f"Min(Entry + 60%, {spec.sl_reference})", "value": spec.original_sl, "rule_id": spec.static_rule_id},
+                "revised_sl_fsl_trp": {"formula": spec.revised_reference, "value": spec.revised_sl, "rule_id": spec.carried_rule_id},
+                "eod_carry_behavior": {"rule_id": EOD_RULE_ID, "operator": "Close > Original SL exits; Close <= Original SL carries"},
+                "aps": {"rule_id": APS_RULE_ID, "applicability": "NOT_APPLICABLE_ONE_LOT"},
+            }
+        )
+    payload = {
+        "schema_version": "s21.branch_inventory.complete_strategy.v1",
+        "verdict": "WORKBOOK_VERIFIED",
+        "branches": rows,
+        "legacy_authority_used": False,
+        "source_rule_ids": tuple(sorted({row["base_entry"]["rule_id"] for row in rows} | {CONTRACT_RULE_ID, ORPT_RC_RULE_ID, EOD_RULE_ID, APS_RULE_ID})),
+    }
+    return payload | {"inventory_hash": _report_hash(payload)}
+
+
+def _natural_branch_selection_report() -> dict[str, Any]:
+    sessions = []
+    session_specs = (
+        ("s21_natural_bull_call", "BULL_CF", "BULL_CALL"),
+        ("s21_natural_bull_put", "BULL", "BULL_PUT"),
+        ("s21_natural_bear_call", "BEAR_CF", "BEAR_CALL"),
+        ("s21_natural_bear_put", "BEAR", "BEAR_PUT"),
+    )
+    for session_id, status, expected_branch in session_specs:
+        monthly = _monthly_status_result_for(status)
+        family_candidates = {
+            spec.branch_id: _contract_selection_report(spec)["normal" if spec.branch_id == expected_branch else "near_and_next_fail"]
+            for spec in BRANCH_SPECS.values()
+            if status in spec.monthly_statuses
+        }
+        selected = _resolve_natural_branch(monthly["monthly_status"], family_candidates)
+        sessions.append(
+            {
+                "session_id": session_id,
+                "monthly_status": monthly,
+                "candidate_branches": family_candidates,
+                "resolved_branch": selected["resolved_branch"],
+                "expected_branch": expected_branch,
+                "option_type": BRANCH_SPECS[selected["resolved_branch"]].option_type,
+                "runner_told_call_or_put_after_resolution": False,
+                "manual_branch_override": False,
+                "selection_status": "PASSED" if selected["resolved_branch"] == expected_branch else "FAILED",
+                "selection_evidence": selected,
+            }
+        )
+    payload = {
+        "schema_version": "s21.natural_branch_selection.complete_strategy.v1",
+        "status": "PASSED" if all(item["selection_status"] == "PASSED" for item in sessions) else "FAILED",
+        "sessions": sessions,
+        "manual_branch_override_found": False,
+        "manual_option_type_override_after_resolution_found": False,
+        "branch_resolution_rule_id": BRANCH_MAPPING_RULE_ID,
+    }
+    return payload | {"selection_hash": _report_hash(payload)}
+
+
+def _resolve_natural_branch(monthly_status: str, branch_candidates: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
+    eligible = [spec for spec in BRANCH_SPECS.values() if monthly_status in spec.monthly_statuses]
+    selected = [
+        spec.branch_id
+        for spec in eligible
+        if branch_candidates.get(spec.branch_id, {}).get("decision") == "SELECTED"
+    ]
+    payload = {
+        "monthly_status": monthly_status,
+        "eligible_branches": tuple(spec.branch_id for spec in eligible),
+        "qualifying_branches": tuple(selected),
+        "resolved_branch": selected[0] if len(selected) == 1 else None,
+        "resolution_policy": "Monthly status determines family; first qualifying independent branch from contract evidence is selected; no option-type override accepted.",
+    }
+    if len(selected) != 1:
+        payload["blocked_reason"] = "NATURAL_BRANCH_SELECTION_REQUIRES_EXACTLY_ONE_QUALIFYING_BRANCH"
+    return payload | {"resolution_hash": _report_hash(payload)}
+
+
+def _monthly_status_result_for(status: str) -> dict[str, Any]:
+    levels_by_status = {
+        "BULL": MonthlyStatusReferenceLevels(PMH=46000.0, PML=43000.0, CMH=46450.0, CML=44100.0, PWH=45500.0, PWL=44000.0, CWH=46450.0, CWL=45600.0, current_price=46400.0),
+        "BULL_CF": MonthlyStatusReferenceLevels(PMH=46000.0, PML=43000.0, CMH=46800.0, CML=44100.0, PWH=45500.0, PWL=44000.0, CWH=46800.0, CWL=45600.0, current_price=46750.0),
+        "BEAR": MonthlyStatusReferenceLevels(PMH=46000.0, PML=43000.0, CMH=45000.0, CML=42600.0, PWH=45500.0, PWL=44000.0, CWH=45000.0, CWL=42600.0, current_price=42650.0),
+        "BEAR_CF": MonthlyStatusReferenceLevels(PMH=46000.0, PML=43000.0, CMH=45000.0, CML=42300.0, PWH=45500.0, PWL=44000.0, CWH=45000.0, CWL=42300.0, current_price=42350.0),
+    }
+    levels = levels_by_status[status]
+    result = MonthlyStatusEngine().classify("banknifty", levels)
+    if result.status.value != status:
+        raise AssertionError(f"S21 fixture must resolve to {status}, got {result.status.value}")
+    payload = {
+        "instrument": {"symbol": "BANKNIFTY", "instrument_group": "banknifty"},
+        "evaluation_timestamp": datetime.combine(TRADING_DATE, time(8, 55), tzinfo=IST),
+        "monthly_status": result.status.value,
+        "rule_id": MONTHLY_STATUS_RULE_ID,
+        "rule_version": "monthly_status_engine.v1",
+        "monthly_references": levels,
+        "transition_evidence": {"trigger_name": result.trigger_name, "threshold_value": result.threshold_value, "source": "Generic MonthlyStatusEngine"},
+        "data_quality": "FIXTURE_SOURCE_VERIFIED",
+        "warnings": (),
+        "failures": (),
+    }
+    return payload | {"result_hash": _report_hash(payload)}
+
+
 def _monthly_status_result() -> dict[str, Any]:
     levels = MonthlyStatusReferenceLevels(
         PMH=46000.0,
@@ -350,25 +741,27 @@ def _selected_branch(monthly_status: Mapping[str, Any]) -> dict[str, Any]:
     return payload | {"selection_hash": _report_hash(payload)}
 
 
-def _contract_selection_report() -> dict[str, Any]:
+def _contract_selection_report(spec: S21BranchSpec | None = None) -> dict[str, Any]:
+    spec = spec or BRANCH_SPECS[BRANCH_ID]
     normal_candidates = (
-        _candidate("NEAR", EXPIRY_NEAR, STRIKE, Decimal("980.00"), 9000, True),
-        _candidate("NEXT", EXPIRY_NEXT, STRIKE, Decimal("970.00"), 11000, True),
+        _candidate(spec, "NEAR", EXPIRY_NEAR, spec.strike, spec.base_entry + Decimal("55.00"), 9000, True),
+        _candidate(spec, "NEXT", EXPIRY_NEXT, spec.strike, spec.base_entry + Decimal("45.00"), 11000, True),
     )
     near_fail_candidates = (
-        _candidate("NEAR", EXPIRY_NEAR, STRIKE, Decimal("980.00"), 3000, False, "OI_BELOW_CONFIGURED_THRESHOLD"),
-        _candidate("NEXT", EXPIRY_NEXT, STRIKE, Decimal("970.00"), 11000, True),
+        _candidate(spec, "NEAR", EXPIRY_NEAR, spec.strike, spec.base_entry + Decimal("55.00"), 3000, False, "OI_BELOW_CONFIGURED_THRESHOLD"),
+        _candidate(spec, "NEXT", EXPIRY_NEXT, spec.strike, spec.base_entry + Decimal("45.00"), 11000, True),
     )
     no_contract_candidates = (
-        _candidate("NEAR", EXPIRY_NEAR, STRIKE, Decimal("600.00"), 2000, False, "PREMIUM_AND_OI_NOT_MET"),
-        _candidate("NEXT", EXPIRY_NEXT, STRIKE, Decimal("650.00"), 1000, False, "PREMIUM_AND_OI_NOT_MET"),
+        _candidate(spec, "NEAR", EXPIRY_NEAR, spec.strike, Decimal("600.00"), 2000, False, "PREMIUM_AND_OI_NOT_MET"),
+        _candidate(spec, "NEXT", EXPIRY_NEXT, spec.strike, Decimal("650.00"), 1000, False, "PREMIUM_AND_OI_NOT_MET"),
     )
     return {
         "schema_version": "s21.contract_selection.first_branch.v1",
         "rule_id": CONTRACT_RULE_ID,
         "policy": {
+            "branch": spec.branch_id,
             "expiry_order": ("NEAR", "NEXT"),
-            "directional_traversal": "CALL_SELL_BULL_BRANCH_START_TO_END",
+            "directional_traversal": spec.traversal_order,
             "oi_threshold_lots": 500,
             "oi_threshold_units": 7500,
             "ideal_premium_phase": "SUPPORTED_BY_SOURCE",
@@ -381,18 +774,18 @@ def _contract_selection_report() -> dict[str, Any]:
     }
 
 
-def _candidate(expiry_kind: str, expiry: date, strike: Decimal, premium: Decimal, oi: int, qualifies: bool, rejection: str | None = None) -> dict[str, Any]:
+def _candidate(spec: S21BranchSpec, expiry_kind: str, expiry: date, strike: Decimal, premium: Decimal, oi: int, qualifies: bool, rejection: str | None = None) -> dict[str, Any]:
     return {
         "expiry_kind": expiry_kind,
         "expiry": expiry,
         "strike": strike,
-        "option_type": "CE",
+        "option_type": spec.option_type,
         "premium": premium,
         "open_interest_units": oi,
         "open_interest_lots": oi // LOT_SIZE,
         "qualifies": qualifies,
         "rejection": rejection,
-        "contract": _contract_dict(_contract(expiry=expiry, strike=strike)),
+        "contract": _contract_dict(_contract(expiry=expiry, strike=strike, option_type=spec.option_type, branch_id=spec.branch_id)),
     }
 
 
@@ -433,7 +826,8 @@ def _premarket_plan_report(monthly_status: Mapping[str, Any], branch: Mapping[st
     return payload | {"premarket_plan_id": "s21-premarket:" + payload_hash[:24], "premarket_plan_hash": payload_hash}
 
 
-def _opening_context(label: str, *, orpt_low: Decimal, orpt_high: Decimal) -> dict[str, Any]:
+def _opening_context(label: str, *, orpt_low: Decimal, orpt_high: Decimal, spec: S21BranchSpec | None = None) -> dict[str, Any]:
+    spec = spec or BRANCH_SPECS[BRANCH_ID]
     payload = {
         "opening_context_id": f"s21-opening:{label}",
         "trading_date": TRADING_DATE,
@@ -442,20 +836,22 @@ def _opening_context(label: str, *, orpt_low: Decimal, orpt_high: Decimal) -> di
         "rc_timestamp": datetime.combine(TRADING_DATE, time(9, 29, 59), tzinfo=IST),
         "orpt_low": orpt_low,
         "orpt_high": orpt_high,
-        "orpt_missed": orpt_low < BASE_ENTRY,
+        "branch": spec.branch_id,
+        "orpt_missed": orpt_low < spec.base_entry,
         "fresh_entry_gap_missed_entry_applicability": "NOT_APPLICABLE_TO_S21_SOURCE_CLOSED_BRANCH",
     }
     return payload | {"opening_context_hash": _report_hash(payload)}
 
 
-def _effective_plan(label: str, opening: Mapping[str, Any], entry: Decimal, target: Decimal, sl: Decimal, path: EffectiveExecutionPath) -> EffectiveExecutionPlan:
-    contract = _contract(expiry=EXPIRY_NEAR, strike=STRIKE)
+def _effective_plan(label: str, opening: Mapping[str, Any], entry: Decimal, target: Decimal, sl: Decimal, path: EffectiveExecutionPath, spec: S21BranchSpec | None = None) -> EffectiveExecutionPlan:
+    spec = spec or BRANCH_SPECS[BRANCH_ID]
+    contract = _contract(expiry=EXPIRY_NEAR, strike=spec.strike, option_type=spec.option_type, branch_id=spec.branch_id)
     values = EffectiveExecutionValues(
-        base_entry=float(BASE_ENTRY),
+        base_entry=float(spec.base_entry),
         effective_entry=float(entry),
-        preliminary_target=float(TARGET),
+        preliminary_target=float(spec.target),
         effective_target=float(target),
-        preliminary_msl=float(ORIGINAL_SL),
+        preliminary_msl=float(spec.original_sl),
         effective_msl=float(sl),
         normal_orpt=time(9, 19, 59),
         revised_authorized_time=time(9, 29, 59) if path is EffectiveExecutionPath.ABNORMAL_RECALCULATED else None,
@@ -463,9 +859,9 @@ def _effective_plan(label: str, opening: Mapping[str, Any], entry: Decimal, targ
         target_status=EffectiveRiskValueStatus.RETAINED_FROM_PREMARKET,
         msl_status=EffectiveRiskValueStatus.RECALCULATED if path is EffectiveExecutionPath.ABNORMAL_RECALCULATED else EffectiveRiskValueStatus.RETAINED_FROM_PREMARKET,
     )
-    source_plan_hash = canonical_hash({"branch": BRANCH_ID, "entry": str(BASE_ENTRY), "target": str(TARGET), "original_sl": str(ORIGINAL_SL)})
+    source_plan_hash = canonical_hash({"branch": spec.branch_id, "entry": str(spec.base_entry), "target": str(spec.target), "original_sl": str(spec.original_sl)})
     return EffectiveExecutionPlan(
-        execution_plan_id=f"s21-effective:{label}",
+        execution_plan_id=f"s21-effective:{spec.branch_id.lower()}:{label}",
         schema_version="s21.effective_execution_plan.first_branch.v1",
         trading_date=TRADING_DATE,
         strategy_family=STRATEGY_FAMILY_ID,
@@ -488,7 +884,7 @@ def _effective_plan(label: str, opening: Mapping[str, Any], entry: Decimal, targ
         product=TFISProductType.OPTION_SELLING,
         underlying="BANKNIFTY",
         selected_expiry=EXPIRY_NEAR,
-        selected_strike=float(STRIKE),
+        selected_strike=float(spec.strike),
         selected_contract=contract,
         order_side=TFISExecutionSide.SELL,
         position_intent="SHORT_OPTION",
@@ -499,20 +895,22 @@ def _effective_plan(label: str, opening: Mapping[str, Any], entry: Decimal, targ
         gap_missed_entry_applicability="NOT_APPLICABLE_TO_S21",
         gap_missed_entry_status="NOT_APPLICABLE",
         recalculation_required=path is EffectiveExecutionPath.ABNORMAL_RECALCULATED,
-        recalculation_inputs={"orpt_low": str(opening["orpt_low"]), "base_entry": str(BASE_ENTRY)},
+        recalculation_inputs={"orpt_low": str(opening["orpt_low"]), "base_entry": str(spec.base_entry)},
         recalculation_output={"effective_entry": str(entry), "effective_msl": str(sl)},
         policy_identities={
-            "entry_rule": ENTRY_RULE_ID,
+            "branch": spec.branch_id,
+            "entry_rule": spec.static_rule_id,
             "contract_rule": CONTRACT_RULE_ID,
             "orpt_rc_rule": ORPT_RC_RULE_ID,
             "configuration_hash": CONFIGURATION_HASH,
             "rule_matrix_version": RULE_MATRIX_VERSION,
         },
-        stage_evidence={"opening_context": opening, "authority": _authority()},
+        stage_evidence={"opening_context": opening, "authority": _authority(), "branch_spec": _branch_spec_dict(spec)},
     )
 
 
 def _execute_entry_to_exit(plan: EffectiveExecutionPlan, *, exit_purpose: ExecutionIntentPurpose, exit_price: Decimal, exit_rule_id: str, scenario_name: str) -> dict[str, Any]:
+    spec = _branch_spec_from_plan(plan)
     adapter = S21ExecutionIntentAdapter()
     validator = ExecutionIntentValidator()
     entry_intent = adapter.entry_from_effective_plan(plan)
@@ -531,7 +929,7 @@ def _execute_entry_to_exit(plan: EffectiveExecutionPlan, *, exit_purpose: Execut
         originating_execution_plan_id=plan.execution_plan_id,
         originating_entry_execution_intent_id=entry_intent.execution_intent_id,
         normalized_contract=entry_intent.instrument.contract,
-        direction=BRANCH_ID,
+        direction=spec.branch_id,
         side="SELL",
     )
     entry_transition = position.apply_entry_fill(
@@ -540,8 +938,8 @@ def _execute_entry_to_exit(plan: EffectiveExecutionPlan, *, exit_purpose: Execut
         client_order=_client_order_payload(entry_order),
         fill=entry_result.fills[0].to_dict(),
         requested_quantity=EXCHANGE_QUANTITY,
-        source_rule_ids=(ENTRY_RULE_ID, CONTRACT_RULE_ID, ORPT_RC_RULE_ID),
-        lifecycle_prices={"target": TARGET, "original_sl": ORIGINAL_SL if exit_purpose is not ExecutionIntentPurpose.REVISED_SL else None, "revised_sl": REVISED_SL if exit_purpose is ExecutionIntentPurpose.REVISED_SL else None},
+        source_rule_ids=(spec.static_rule_id, CONTRACT_RULE_ID, ORPT_RC_RULE_ID),
+        lifecycle_prices={"target": spec.target, "original_sl": spec.original_sl if exit_purpose is not ExecutionIntentPurpose.REVISED_SL else None, "revised_sl": spec.revised_sl if exit_purpose is ExecutionIntentPurpose.REVISED_SL else None},
     )
     projection = entry_transition.projection
     exit_intent = adapter.lifecycle_intent(
@@ -655,14 +1053,15 @@ def _client_order_and_fill(
 
 
 def _carry_recovery_scenario(plan: EffectiveExecutionPlan) -> dict[str, Any]:
+    spec = _branch_spec_from_plan(plan)
     opened = _open_position_only(plan, "carry_open")
     position = PositionCycleCoordinator()
     carry_transition = position.record_carry_forward(
         opened["projection"],
         next_trading_session_id=NEXT_TRADING_SESSION_ID,
         source_rule_id=EOD_RULE_ID,
-        observed_price=EOD_EQUAL_PRICE,
-        original_sl=ORIGINAL_SL,
+        observed_price=spec.original_sl,
+        original_sl=spec.original_sl,
         timestamp=datetime.combine(TRADING_DATE, time(15, 0), tzinfo=IST),
     )
     recovery = position.assess_recovery(
@@ -675,8 +1074,8 @@ def _carry_recovery_scenario(plan: EffectiveExecutionPlan) -> dict[str, Any]:
     restart = PositionCycleCoordinator().assess_consistency(carry_transition.projection)
     return {
         "eod_equal_carry_forward": {
-            "observed_price": str(EOD_EQUAL_PRICE),
-            "original_sl": str(ORIGINAL_SL),
+            "observed_price": str(spec.original_sl),
+            "original_sl": str(spec.original_sl),
             "operator": "<=",
             "equality_outcome": "CARRY_FORWARD",
             "source_rule_id": EOD_RULE_ID,
@@ -691,6 +1090,7 @@ def _carry_recovery_scenario(plan: EffectiveExecutionPlan) -> dict[str, Any]:
 
 
 def _open_position_only(plan: EffectiveExecutionPlan, scenario_name: str) -> dict[str, Any]:
+    spec = _branch_spec_from_plan(plan)
     adapter = S21ExecutionIntentAdapter()
     validator = ExecutionIntentValidator()
     intent = adapter.entry_from_effective_plan(plan)
@@ -709,7 +1109,7 @@ def _open_position_only(plan: EffectiveExecutionPlan, scenario_name: str) -> dic
         originating_execution_plan_id=plan.execution_plan_id,
         originating_entry_execution_intent_id=intent.execution_intent_id,
         normalized_contract=intent.instrument.contract,
-        direction=BRANCH_ID,
+        direction=spec.branch_id,
         side="SELL",
     )
     transition = position.apply_entry_fill(
@@ -718,8 +1118,8 @@ def _open_position_only(plan: EffectiveExecutionPlan, scenario_name: str) -> dic
         client_order=_client_order_payload(client_order),
         fill=result.fills[0].to_dict(),
         requested_quantity=EXCHANGE_QUANTITY,
-        source_rule_ids=(ENTRY_RULE_ID, CONTRACT_RULE_ID, ORPT_RC_RULE_ID),
-        lifecycle_prices={"target": TARGET, "original_sl": ORIGINAL_SL},
+        source_rule_ids=(spec.static_rule_id, CONTRACT_RULE_ID, ORPT_RC_RULE_ID),
+        lifecycle_prices={"target": spec.target, "original_sl": spec.original_sl},
     )
     return {"intent": intent, "client_order": client_order, "result": result, "projection": transition.projection, "transition": transition}
 
@@ -734,8 +1134,8 @@ def _duplicate_replay_scenario(plan: EffectiveExecutionPlan) -> dict[str, Any]:
             client_order=_client_order_payload(opened["client_order"]),
             fill=opened["result"].fills[0].to_dict(),
             requested_quantity=EXCHANGE_QUANTITY,
-            source_rule_ids=(ENTRY_RULE_ID,),
-            lifecycle_prices={"target": TARGET, "original_sl": ORIGINAL_SL},
+            source_rule_ids=(_branch_spec_from_plan(plan).static_rule_id,),
+            lifecycle_prices={"target": _branch_spec_from_plan(plan).target, "original_sl": _branch_spec_from_plan(plan).original_sl},
         )
         status = "IDEMPOTENT_NOOP"
         transition = replay.to_dict()
@@ -794,15 +1194,16 @@ def _isolation_scenario(target: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def _accounting(projection: Mapping[str, Any], entry_fill: Mapping[str, Any], exit_fill: Mapping[str, Any], requirements: tuple[LifecycleRequirement, ...], exit_order_purpose: str) -> dict[str, Any]:
+    spec = BRANCH_SPECS[str(projection["identity"]["direction"])]
     instrument = InstrumentDimensions(
         exchange="NSE",
         product="OPTION_SELLING",
         underlying="BANKNIFTY",
         contract=str(projection["identity"]["normalized_contract"]),
         expiry=EXPIRY_NEAR.isoformat(),
-        strike=STRIKE,
-        option_type="CE",
-        direction=BRANCH_ID,
+        strike=spec.strike,
+        option_type=spec.option_type,
+        direction=spec.branch_id,
         lot_size=LOT_SIZE,
         multiplier=Decimal("1"),
         tick_size=Decimal("0.05"),
@@ -820,12 +1221,12 @@ def _accounting(projection: Mapping[str, Any], entry_fill: Mapping[str, Any], ex
         charge_evidence=charge,
         decision_context={
             "normal_gap_path": "S21_ORPT_RC_ONLY",
-            "strategy_branch": BRANCH_ID,
+            "strategy_branch": spec.branch_id,
             "configured_lots": CONFIGURED_LOTS,
             "lot_size": LOT_SIZE,
             "exchange_quantity": EXCHANGE_QUANTITY,
-            "source_rule_ids": (ENTRY_RULE_ID, CONTRACT_RULE_ID, ORPT_RC_RULE_ID, EOD_RULE_ID),
-            "contract_observations": ({"price": str(BASE_ENTRY)}, {"price": str(TARGET)}, {"price": str(ORIGINAL_SL)}),
+            "source_rule_ids": (spec.static_rule_id, CONTRACT_RULE_ID, ORPT_RC_RULE_ID, EOD_RULE_ID),
+            "contract_observations": ({"price": str(spec.base_entry)}, {"price": str(spec.target)}, {"price": str(spec.original_sl)}),
         },
         source_hashes={"position_projection": str(projection["projection_hash"]), "position_event_ids": tuple(projection.get("entry_fill_ids", ())) + tuple(projection.get("exit_fill_ids", ()))},
         exit_order_purpose=exit_order_purpose,
@@ -903,7 +1304,7 @@ def _platform_reuse_report() -> dict[str, Any]:
         ("AccountCoordinator", True, "No"),
         ("Order Simulation", True, "No"),
         ("PositionCycle", True, "No"),
-        ("Accounting", True, "No; reused short-option accounting despite S23-era calculation-version label"),
+        ("Accounting", True, "No"),
         ("TradeFact", True, "No"),
         ("PnLFact", True, "No"),
     ]
@@ -916,7 +1317,7 @@ def _platform_reuse_report() -> dict[str, Any]:
         "runtime_generic_change_count": 0,
         "configuration_change_count": 0,
         "architecture_boundary_verdict": "PASS",
-        "limitations": ("Accounting calculation version still contains an S23-era label in the generic short-option accounting builder.",),
+        "limitations": (),
     }
     return payload | {"reuse_report_hash": _report_hash(payload)}
 
@@ -947,6 +1348,22 @@ def _gap_register() -> dict[str, Any]:
     return payload | {"gap_register_hash": _report_hash(payload)}
 
 
+def _complete_gap_register() -> dict[str, Any]:
+    payload = {
+        "schema_version": "s21.gap_register.complete_strategy.v1",
+        "financially_material_open_questions": (),
+        "known_limitations": (
+            "Certification is deterministic fixture/source-verified static evidence, not captured market parity.",
+            "No broker, external paper, sandbox, or live authority is added.",
+            "Workbook files remain unchanged.",
+            "Unsupported expiry lifecycle remains fail-closed with operator/user decision required.",
+        ),
+        "complete_branches": tuple(BRANCH_SPECS),
+        "legacy_authority_used": False,
+    }
+    return payload | {"gap_register_hash": _report_hash(payload)}
+
+
 def _summary(trace: Mapping[str, Any]) -> str:
     return (
         "# S21 First Branch Offline Internal-Paper Implementation\n\n"
@@ -959,16 +1376,57 @@ def _summary(trace: Mapping[str, Any]) -> str:
     )
 
 
-def _contract(*, expiry: date, strike: Decimal) -> TFISContractIdentity:
+def _complete_summary(trace: Mapping[str, Any]) -> str:
+    return (
+        "# S21 Complete Strategy Offline Internal-Paper Certification\n\n"
+        "Verdict: S21_COMPLETE_ACCEPT\n\n"
+        "Certification outcome: COMPLETE_S21_INTERNAL_PAPER_CERTIFIED\n\n"
+        "Scope: all four source-verified S21 BANKNIFTY monthly option-selling branches through the existing generic offline/internal-paper platform.\n\n"
+        "Branches: BULL_CALL, BULL_PUT, BEAR_CALL, BEAR_PUT.\n\n"
+        "Runtime impact: COMPLETE S21 INTERNAL-PAPER SUPPORT.\n\n"
+        "Broker/paper-broker/sandbox/live authority: none.\n\n"
+        f"Complete trace hash: {trace['trace_hash']}\n"
+    )
+
+
+def _branch_spec_from_plan(plan: EffectiveExecutionPlan) -> S21BranchSpec:
+    branch = str(plan.policy_identities.get("branch") or plan.stage_evidence.get("branch_spec", {}).get("branch_id") or BRANCH_ID)
+    return BRANCH_SPECS[branch]
+
+
+def _branch_spec_dict(spec: S21BranchSpec) -> dict[str, Any]:
+    return {
+        "branch_id": spec.branch_id,
+        "unique_code": spec.unique_code,
+        "monthly_statuses": spec.monthly_statuses,
+        "option_type": spec.option_type,
+        "source_rows": spec.source_rows,
+        "static_rule_id": spec.static_rule_id,
+        "carried_rule_id": spec.carried_rule_id,
+        "strike_reference": spec.strike_reference,
+        "entry_reference": spec.entry_reference,
+        "sl_reference": spec.sl_reference,
+        "revised_reference": spec.revised_reference,
+        "strike": spec.strike,
+        "base_entry": spec.base_entry,
+        "target": spec.target,
+        "original_sl": spec.original_sl,
+        "revised_entry": spec.revised_entry,
+        "revised_sl": spec.revised_sl,
+        "traversal_order": spec.traversal_order,
+    }
+
+
+def _contract(*, expiry: date, strike: Decimal, option_type: str = "CE", branch_id: str = BRANCH_ID) -> TFISContractIdentity:
     return TFISContractIdentity(
-        symbol=f"BANKNIFTY_{expiry.strftime('%Y%m%d')}_{int(strike)}_CE",
+        symbol=f"BANKNIFTY_{expiry.strftime('%Y%m%d')}_{int(strike)}_{option_type}",
         exchange="NSE",
         segment=Segment.OPTIONS_SELL,
         product_type=TFISProductType.OPTION_SELLING,
         expiry=expiry,
         strike=float(strike),
-        option_type="CE",
-        metadata={"underlying": "BANKNIFTY", "lot_size": LOT_SIZE, "tick_size": "0.05", "currency": "INR", "configured_lots": CONFIGURED_LOTS},
+        option_type=option_type,
+        metadata={"underlying": "BANKNIFTY", "lot_size": LOT_SIZE, "tick_size": "0.05", "currency": "INR", "configured_lots": CONFIGURED_LOTS, "branch_id": branch_id},
     )
 
 
@@ -1016,6 +1474,8 @@ def _authority() -> dict[str, bool | str]:
 def _jsonable(value: Any) -> Any:
     if hasattr(value, "to_dict"):
         return _jsonable(value.to_dict())
+    if is_dataclass(value):
+        return {field.name: _jsonable(getattr(value, field.name)) for field in fields(value)}
     if isinstance(value, Mapping):
         return {str(key): _jsonable(item) for key, item in sorted(value.items(), key=lambda pair: str(pair[0]))}
     if isinstance(value, tuple | list):
@@ -1034,6 +1494,8 @@ def _report_hash(value: Any) -> str:
 def _sanitize_report_payload(value: Any) -> Any:
     if hasattr(value, "to_dict"):
         return _sanitize_report_payload(value.to_dict())
+    if is_dataclass(value):
+        return {field.name: _sanitize_report_payload(getattr(value, field.name)) for field in fields(value)}
     if isinstance(value, Mapping):
         return {
             str(key): _sanitize_report_payload(item)

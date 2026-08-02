@@ -1,0 +1,58 @@
+{
+  "BEAR_CALL": {
+    "entry_order_state": "FILLED_INTERNAL",
+    "entry_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "exit_order_state": "FILLED_INTERNAL",
+    "exit_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "pnl_fact_ids": [
+      "pnl-fact:99246f8cdd0634c7b0ded8ba",
+      "pnl-fact:101fd92c89d01973e4f30486"
+    ],
+    "remaining_quantity": 0,
+    "scenario_hash": "69080d047a353dc3f68279653b77c282a059cc5f9424209c8cf5c9f43e0b6808",
+    "terminal_position_state": "CLOSED",
+    "trade_fact_id": "trade-fact:c613c0fa0e5a98158c88ce10"
+  },
+  "BEAR_PUT": {
+    "entry_order_state": "FILLED_INTERNAL",
+    "entry_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "exit_order_state": "FILLED_INTERNAL",
+    "exit_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "pnl_fact_ids": [
+      "pnl-fact:075a372abc05131540271941",
+      "pnl-fact:16353eac457b9cf5d7b3f0bc"
+    ],
+    "remaining_quantity": 0,
+    "scenario_hash": "8e81dc0c9802e00cd64d512d3943d75404f0b938db97ba13165db69565f0faab",
+    "terminal_position_state": "CLOSED",
+    "trade_fact_id": "trade-fact:5e97603a5fe7da508b1e98bf"
+  },
+  "BULL_CALL": {
+    "entry_order_state": "FILLED_INTERNAL",
+    "entry_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "exit_order_state": "FILLED_INTERNAL",
+    "exit_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "pnl_fact_ids": [
+      "pnl-fact:4ea98c4347193f7a60530ef3",
+      "pnl-fact:fe9acfc6bfbf8357de410494"
+    ],
+    "remaining_quantity": 0,
+    "scenario_hash": "66b47479cf447bf024d4b3a833e8b413b12662214785f3d004c05a393c1ef206",
+    "terminal_position_state": "CLOSED",
+    "trade_fact_id": "trade-fact:e39397dd5eedfd63448c55c8"
+  },
+  "BULL_PUT": {
+    "entry_order_state": "FILLED_INTERNAL",
+    "entry_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "exit_order_state": "FILLED_INTERNAL",
+    "exit_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "pnl_fact_ids": [
+      "pnl-fact:8c5a6b972b7d558aec64619b",
+      "pnl-fact:fa5a8f1e3e53ebde3bf8d4a0"
+    ],
+    "remaining_quantity": 0,
+    "scenario_hash": "6ba209dfc2bb572b8a388cd9875638f7e3b90225db4b80ed01b431626a09f370",
+    "terminal_position_state": "CLOSED",
+    "trade_fact_id": "trade-fact:3400f891cb76729560dae3f2"
+  }
+}

@@ -23,7 +23,7 @@
       "confirmed_entry_quantity": 15,
       "currency": "INR",
       "entry_fill_ids": [
-        "internal-fill:7d35044e99614f753bb88415"
+        "internal-fill:7d4fa2e9f491f9251b3d46df"
       ],
       "exit_fill_ids": [],
       "filled_exit_order_id": null,
@@ -36,11 +36,11 @@
         "live_position": false,
         "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
         "normalized_contract": "BANKNIFTY_20240125_47000_CE",
-        "originating_entry_execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
-        "originating_execution_plan_id": "s21-effective:normal",
+        "originating_entry_execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
+        "originating_execution_plan_id": "s21-effective:bull_call:normal",
         "originating_trading_date": "2024-01-23",
-        "position_cycle_hash": "68156d316439b239a5db547f17eeb07ce6d673cc5c84356cca7f65114b9cfd06",
-        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "position_cycle_hash": "e76e0525630b3b6c8d430ebe8fc427eacb2685444c4402d190b621c3593c17ec",
+        "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
         "side": "SELL",
         "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
         "strategy_family_id": "OPTION_SELLING",
@@ -53,7 +53,7 @@
       "multiplier": "1",
       "next_trading_session_id": "NSE:2024-01-24",
       "originating_trading_date": "2024-01-23",
-      "projection_hash": "d8d9fca13b5da5139300d0fd80460d2c392335af90ef626be78c0531dcbff7cd",
+      "projection_hash": "dca9516fea615ef8ebfb1182221191c6db29802c804f574e7d1885a165d4e4a4",
       "projection_version": 3,
       "protection_generation": 0,
       "realized_quantity": 0,
@@ -65,13 +65,13 @@
     "transition": {
       "consistency_status": "MATCHED",
       "event": {
-        "event_hash": "56d4ab0d87611b34330046e430e7ca0eaa8fdc1a4ca04a9a413a41492ffad6fb",
-        "event_id": "position-event:a185f664684fa02933ee0ffb",
+        "event_hash": "70df21529d285021084eae8d0f87fd53b77b98305280273c5d2421b6e07af1f4",
+        "event_id": "position-event:14a4349ce19fa4ca9b1ec170",
         "event_sequence": 3,
         "event_timestamp": "2024-01-23T15:00:00+05:30",
         "event_type": "CARRY_FORWARD_RECORDED",
         "new_state": "CARRIED_FORWARD",
-        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
         "price_evidence": {
           "equality_behavior": "CARRY_FORWARD",
           "observed_price": "1337.50",
@@ -99,7 +99,7 @@
         "confirmed_entry_quantity": 15,
         "currency": "INR",
         "entry_fill_ids": [
-          "internal-fill:7d35044e99614f753bb88415"
+          "internal-fill:7d4fa2e9f491f9251b3d46df"
         ],
         "exit_fill_ids": [],
         "filled_exit_order_id": null,
@@ -112,11 +112,11 @@
           "live_position": false,
           "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
           "normalized_contract": "BANKNIFTY_20240125_47000_CE",
-          "originating_entry_execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
-          "originating_execution_plan_id": "s21-effective:normal",
+          "originating_entry_execution_intent_id": "exec-intent:13ea54c4f2464da225d0903b",
+          "originating_execution_plan_id": "s21-effective:bull_call:normal",
           "originating_trading_date": "2024-01-23",
-          "position_cycle_hash": "68156d316439b239a5db547f17eeb07ce6d673cc5c84356cca7f65114b9cfd06",
-          "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+          "position_cycle_hash": "e76e0525630b3b6c8d430ebe8fc427eacb2685444c4402d190b621c3593c17ec",
+          "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
           "side": "SELL",
           "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
           "strategy_family_id": "OPTION_SELLING",
@@ -129,7 +129,7 @@
         "multiplier": "1",
         "next_trading_session_id": "NSE:2024-01-24",
         "originating_trading_date": "2024-01-23",
-        "projection_hash": "d8d9fca13b5da5139300d0fd80460d2c392335af90ef626be78c0531dcbff7cd",
+        "projection_hash": "dca9516fea615ef8ebfb1182221191c6db29802c804f574e7d1885a165d4e4a4",
         "projection_version": 3,
         "protection_generation": 0,
         "realized_quantity": 0,
@@ -138,22 +138,22 @@
         "terminal_status": null
       },
       "requirements": [],
-      "transition_hash": "d1b2cb1b75f6d6649db8d75355ad49f1e3c34be8973da2208261b1471072db4e",
-      "transition_id": "position-transition:b3a7f76e80f33fdaee86e055"
+      "transition_hash": "b169ef2a4c176e648fbf66f025500621182f1cecfaa459e5540f4e48204024ee",
+      "transition_id": "position-transition:19fd59fdb38b51fae37b970a"
     }
   },
   "next_day_recovery": {
-    "assessment_id": "carried-recovery:aeddf135c4ff010f7429d18a",
+    "assessment_id": "carried-recovery:5ac62e1d4ed74001cbea85a0",
     "findings": [],
-    "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
-    "recovery_hash": "23c99654ae6aefeb1d54de5ecd2794a931bb1624fc7a75c39a3e053af9d2ba44",
+    "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
+    "recovery_hash": "82c6a465731d7e36ea38c2b04991e6a3e7545efd15073813c1e4caa6a1bbece7",
     "status": "CARRIED_POSITION_RECOVERABLE"
   },
   "restart_after_entry_fill": {
-    "assessment_id": "position-consistency:aeddf135c4ff010f7429d18a",
+    "assessment_id": "position-consistency:5ac62e1d4ed74001cbea85a0",
     "findings": [],
-    "projection_hash": "d8d9fca13b5da5139300d0fd80460d2c392335af90ef626be78c0531dcbff7cd",
+    "projection_hash": "dca9516fea615ef8ebfb1182221191c6db29802c804f574e7d1885a165d4e4a4",
     "status": "MATCHED"
   },
-  "result_hash": "5e1786a4e5bef2b43e1f7535487a613a229d16aa07ee542b34860332a7825bbf"
+  "result_hash": "574ce2a22354bc203f5caca190eb3d683f9df487952bc4265d00351d8ad11a9c"
 }

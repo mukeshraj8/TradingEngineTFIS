@@ -1,0 +1,18 @@
+{
+  "complete_branches": [
+    "BULL_CALL",
+    "BULL_PUT",
+    "BEAR_CALL",
+    "BEAR_PUT"
+  ],
+  "financially_material_open_questions": [],
+  "gap_register_hash": "119a275e2ad474a70ed47fcedda9fbefc995b00af4526ee1201dc668498b7eef",
+  "known_limitations": [
+    "Certification is deterministic fixture/source-verified static evidence, not captured market parity.",
+    "No broker, external paper, sandbox, or live authority is added.",
+    "Workbook files remain unchanged.",
+    "Unsupported expiry lifecycle remains fail-closed with operator/user decision required."
+  ],
+  "legacy_authority_used": false,
+  "schema_version": "s21.gap_register.complete_strategy.v1"
+}

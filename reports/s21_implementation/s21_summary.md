@@ -10,4 +10,4 @@ Runtime impact: offline fixture/report generation only.
 
 Broker/paper/live authority: none. No broker SDK calls, external paper orders, live orders, or real position mutations are introduced.
 
-Complete trace hash: 9810555d5310e9e29a18fc3ab42e0d7021721b1c4292fcd499ce72213eb1cc12
+Complete trace hash: fa8e3732ccca992ae66ba7195863345d2a7a348dceef3b9922fcbbd880b1440c

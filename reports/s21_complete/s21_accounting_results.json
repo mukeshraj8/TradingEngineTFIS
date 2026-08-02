@@ -1,0 +1,1602 @@
+{
+  "BEAR_CALL": {
+    "pnl_facts": [
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "99246f8cdd0634c7b0ded8ba5ea4f6940683e727de464343564af9f54b763655",
+        "fact_hash": "6f8d6634f249d0fd71ad5471a12e367836dd49885692fd5e3703ee29578443a7",
+        "fact_type": "REALIZED_TRADE_PNL",
+        "gross_pnl": "7560.00",
+        "instrument": {
+          "contract": "BANKNIFTY_20240125_48000_CE",
+          "currency": "INR",
+          "direction": "BEAR_CALL",
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "lot_size": 15,
+          "metadata_version": "s21.option_selling.banknifty.v1",
+          "multiplier": "1",
+          "option_type": "CE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "48000",
+          "tick_size": "0.05",
+          "underlying": "BANKNIFTY"
+        },
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "net_pnl": "7545.00",
+        "pnl_fact_id": "pnl-fact:99246f8cdd0634c7b0ded8ba",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "REALIZED",
+        "source_identities": {
+          "position_cycle_id": "ipc:ab3933903f4479dd22bec44b",
+          "source_fill_ids": [
+            "internal-fill:c7dfedc9a4959e51fb3ea089",
+            "internal-fill:ea0763250509b26dc16a8b91"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:c613c0fa0e5a98158c88ce10"
+        },
+        "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2024-01-23"
+      },
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "101fd92c89d01973e4f304865cba6a5f1e56e13a3e738276a6b32f3f423b289c",
+        "fact_hash": "acc86d785a10b5a1d21c95ea5fa7bcd8773c5b72bc92b880716324e5fa80fb11",
+        "fact_type": "CHARGE_ESTIMATE",
+        "gross_pnl": "0.00",
+        "instrument": {
+          "contract": "BANKNIFTY_20240125_48000_CE",
+          "currency": "INR",
+          "direction": "BEAR_CALL",
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "lot_size": 15,
+          "metadata_version": "s21.option_selling.banknifty.v1",
+          "multiplier": "1",
+          "option_type": "CE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "48000",
+          "tick_size": "0.05",
+          "underlying": "BANKNIFTY"
+        },
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "net_pnl": "-15.00",
+        "pnl_fact_id": "pnl-fact:101fd92c89d01973e4f30486",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "CHARGE",
+        "source_identities": {
+          "position_cycle_id": "ipc:ab3933903f4479dd22bec44b",
+          "source_fill_ids": [
+            "internal-fill:c7dfedc9a4959e51fb3ea089",
+            "internal-fill:ea0763250509b26dc16a8b91"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:c613c0fa0e5a98158c88ce10"
+        },
+        "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2024-01-23"
+      }
+    ],
+    "projections": [
+      {
+        "dimensions": {
+          "trading_date": "2024-01-23"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "7545.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "7545.00",
+          "gross_pnl": "7560.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "7530.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "7545.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "42d15d14d8309bf3883728fb544a3f897812445802d2cad858e835e31dcb705d",
+        "projection_id": "accounting-projection:daily_portfolio:8525f611c244fcd6",
+        "projection_type": "DAILY_PORTFOLIO",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:99246f8cdd0634c7b0ded8ba",
+          "pnl-fact:101fd92c89d01973e4f30486"
+        ],
+        "watermark": "d4a73cc54a2d682c91e2dd813ef111634b9fb0326a819be86004169d053abc79"
+      },
+      {
+        "dimensions": {
+          "account": "INTERNAL_PAPER_ACCOUNT"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "7545.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "7545.00",
+          "gross_pnl": "7560.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "7530.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "7545.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "080baefcbdd9b8e2892971a3dbd156cdbe7d6a60a9f66a4f220d93c19cc2711b",
+        "projection_id": "accounting-projection:account:5b4d4c5c1587a8f1",
+        "projection_type": "ACCOUNT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:99246f8cdd0634c7b0ded8ba",
+          "pnl-fact:101fd92c89d01973e4f30486"
+        ],
+        "watermark": "d4a73cc54a2d682c91e2dd813ef111634b9fb0326a819be86004169d053abc79"
+      },
+      {
+        "dimensions": {
+          "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "7545.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "7545.00",
+          "gross_pnl": "7560.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "7530.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "7545.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "3803f460f5d12fcd594fe1d3e83ccd6fa8647f3ba15ea657503b6fc5629f50ac",
+        "projection_id": "accounting-projection:strategy:5ea64c601e13b00e",
+        "projection_type": "STRATEGY",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:99246f8cdd0634c7b0ded8ba",
+          "pnl-fact:101fd92c89d01973e4f30486"
+        ],
+        "watermark": "d4a73cc54a2d682c91e2dd813ef111634b9fb0326a819be86004169d053abc79"
+      },
+      {
+        "dimensions": {
+          "contract": "BANKNIFTY_20240125_48000_CE"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "7545.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "7545.00",
+          "gross_pnl": "7560.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "7530.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "7545.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "807f11ea958a66a9b1093253d01ccd7f2e7c7f324f321126ff5acfbd90bc8211",
+        "projection_id": "accounting-projection:instrument:5e635cd60e1a651f",
+        "projection_type": "INSTRUMENT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:99246f8cdd0634c7b0ded8ba",
+          "pnl-fact:101fd92c89d01973e4f30486"
+        ],
+        "watermark": "d4a73cc54a2d682c91e2dd813ef111634b9fb0326a819be86004169d053abc79"
+      },
+      {
+        "dimensions": {
+          "dimension": "final_exit_reason"
+        },
+        "metrics": {
+          "TARGET": "7530.00"
+        },
+        "projection_hash": "bf854f4e5663d0da5453c5452e0c2394f865af885d69bb8c8f94940ce016b5a6",
+        "projection_id": "accounting-projection:exit_reason:58e784dd90cc1b1c",
+        "projection_type": "EXIT_REASON",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:99246f8cdd0634c7b0ded8ba",
+          "pnl-fact:101fd92c89d01973e4f30486"
+        ],
+        "watermark": "58e784dd90cc1b1cb3029471512913d2be27d7a89fee3050b427408646012f45"
+      },
+      {
+        "dimensions": {
+          "dimension": "normal_gap_path"
+        },
+        "metrics": {
+          "S21_ORPT_RC_ONLY": "7530.00"
+        },
+        "projection_hash": "d83961a0ad07987344ca2534b7c2867b4eae326d043c9965f2bccd02bbbebc0b",
+        "projection_id": "accounting-projection:path:de4630ae3e661d3d",
+        "projection_type": "PATH",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:99246f8cdd0634c7b0ded8ba",
+          "pnl-fact:101fd92c89d01973e4f30486"
+        ],
+        "watermark": "de4630ae3e661d3da5a2cba22edd57e723c3da2cb4060dd3f8d67dc621130750"
+      }
+    ],
+    "trade_fact": {
+      "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+      "configuration_hash": "s21-source-closure-config-v1",
+      "decision_context": {
+        "acknowledgements_affect_pnl": false,
+        "configured_lots": 1,
+        "contract_observations": [
+          {
+            "price": "840.00"
+          },
+          {
+            "price": "336.00"
+          },
+          {
+            "price": "1260.00"
+          }
+        ],
+        "exchange_quantity": 15,
+        "lot_size": 15,
+        "normal_gap_path": "S21_ORPT_RC_ONLY",
+        "planned_prices_are_not_pnl_inputs": true,
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "source_rule_ids": [
+          "S21.BEAR_CALL.STATIC.001",
+          "S21.CONTRACT_SELECTION.001",
+          "S21.FRESH_ENTRY_ORPT_RC.001",
+          "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+        ],
+        "strategy_branch": "BEAR_CALL"
+      },
+      "execution": {
+        "average_entry": "840.0",
+        "average_exit": "336.00",
+        "confirmed_entry_quantity": 15,
+        "confirmed_exit_quantity": 15,
+        "entry_fill_count": 1,
+        "exit_fill_count": 1,
+        "final_exit_timestamp": "2024-01-23T09:31:00+05:30",
+        "first_entry_timestamp": "2024-01-23T09:30:00+05:30",
+        "first_exit_timestamp": "2024-01-23T09:31:00+05:30",
+        "last_entry_timestamp": "2024-01-23T09:30:00+05:30",
+        "partial_exit": false,
+        "partial_fill": false,
+        "remaining_quantity": 0,
+        "requested_entry_quantity": 15
+      },
+      "fact_hash": "caf8e2f04c71f1f40c770d012a13abb2d4026e01dfb4e3e496be77417343f8ef",
+      "final_trading_date": "2024-01-23",
+      "instrument": {
+        "contract": "BANKNIFTY_20240125_48000_CE",
+        "currency": "INR",
+        "direction": "BEAR_CALL",
+        "exchange": "NSE",
+        "expiry": "2024-01-25",
+        "lot_size": 15,
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "multiplier": "1",
+        "option_type": "CE",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": "48000",
+        "tick_size": "0.05",
+        "underlying": "BANKNIFTY"
+      },
+      "lifecycle": {
+        "carry_forward_count": 0,
+        "eod_exit": false,
+        "final_exit_reason": "TARGET",
+        "original_sl_hit": false,
+        "original_sl_linked": true,
+        "revised_sl_hit": false,
+        "revised_sl_linked": false,
+        "target_hit": true,
+        "target_linked": true,
+        "terminal_state": "CLOSED",
+        "win_loss": "WIN"
+      },
+      "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+      "originating_trading_date": "2024-01-23",
+      "performance_inputs": {
+        "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "capital_or_margin_estimate": null,
+        "current_unrealized_pnl": "0.00",
+        "duration_seconds": 60,
+        "gross_realized_pnl": "7560.00",
+        "mark_quality": "EXECUTABLE_SIDE",
+        "mfe_mae": {
+          "evidence_hash": "551d0385bb119392e876e79115953181051679e888e8e2e85ca46be75799fefe",
+          "mae": "420.00",
+          "mfe": "504.00",
+          "observation_count": 3,
+          "quality": "COMPLETE"
+        },
+        "net_realized_pnl": "7545.00",
+        "provisional_charges": "15.00"
+      },
+      "position_cycle_id": "ipc:ab3933903f4479dd22bec44b",
+      "provenance": {
+        "correction_source": "NONE",
+        "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+        "source_fill_ids": [
+          "internal-fill:c7dfedc9a4959e51fb3ea089",
+          "internal-fill:ea0763250509b26dc16a8b91"
+        ],
+        "source_hashes": {
+          "position_event_ids": [
+            "internal-fill:c7dfedc9a4959e51fb3ea089",
+            "internal-fill:ea0763250509b26dc16a8b91"
+          ],
+          "position_projection": "fac1c36ffde6e41c1d5cbeb9e5415d1680e3a33f5e7d8b815366c066f8bd0938"
+        },
+        "source_lifecycle_requirement_ids": [
+          "lifecycle-req:f4fb880b7c27097744ec6544",
+          "lifecycle-req:94be8ffebb47d22ae303559e"
+        ],
+        "source_order_ids": [
+          "client-order:02b352b416e8364a715ac507",
+          "client-order:b38ea62a4396404553d2fea2"
+        ],
+        "source_position_event_ids": [
+          "internal-fill:c7dfedc9a4959e51fb3ea089",
+          "internal-fill:ea0763250509b26dc16a8b91"
+        ]
+      },
+      "rule_matrix_version": "s21_source_closure_accepted_v1",
+      "state": "CLOSED_PROVISIONAL",
+      "strategy_definition": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "strategy_family": "OPTION_SELLING",
+      "strategy_instance": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "supersedes_trade_fact_id": null,
+      "trade_fact_id": "trade-fact:c613c0fa0e5a98158c88ce10",
+      "trade_fact_version": "tfis.short_option_accounting.v1",
+      "trade_id": "trade:ipc:ab3933903f4479dd22bec44b",
+      "trading_session_id": "NSE:2024-01-23"
+    }
+  },
+  "BEAR_PUT": {
+    "pnl_facts": [
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "075a372abc0513154027194117a08aa3ebda12012c053657bd19a31f30db0a2c",
+        "fact_hash": "206cfa6493dddece60bd561830272c653f0948703a7bb3ac0ec77e7e16895ac4",
+        "fact_type": "REALIZED_TRADE_PNL",
+        "gross_pnl": "8100.00",
+        "instrument": {
+          "contract": "BANKNIFTY_20240125_45500_PE",
+          "currency": "INR",
+          "direction": "BEAR_PUT",
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "lot_size": 15,
+          "metadata_version": "s21.option_selling.banknifty.v1",
+          "multiplier": "1",
+          "option_type": "PE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "45500",
+          "tick_size": "0.05",
+          "underlying": "BANKNIFTY"
+        },
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "net_pnl": "8085.00",
+        "pnl_fact_id": "pnl-fact:075a372abc05131540271941",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "REALIZED",
+        "source_identities": {
+          "position_cycle_id": "ipc:6601f4f965be57f3aacfec18",
+          "source_fill_ids": [
+            "internal-fill:61031805f03050730867912f",
+            "internal-fill:b47062e9d7b482169dbcc828"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:5e97603a5fe7da508b1e98bf"
+        },
+        "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2024-01-23"
+      },
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "16353eac457b9cf5d7b3f0bcb30b9ef41e8abc5b16624c10f9fa74a0dceed603",
+        "fact_hash": "3b7d5d26fcb08fdd3f313ec49374dc5cfd9b97e29fb709c426fd56600a7a9c87",
+        "fact_type": "CHARGE_ESTIMATE",
+        "gross_pnl": "0.00",
+        "instrument": {
+          "contract": "BANKNIFTY_20240125_45500_PE",
+          "currency": "INR",
+          "direction": "BEAR_PUT",
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "lot_size": 15,
+          "metadata_version": "s21.option_selling.banknifty.v1",
+          "multiplier": "1",
+          "option_type": "PE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "45500",
+          "tick_size": "0.05",
+          "underlying": "BANKNIFTY"
+        },
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "net_pnl": "-15.00",
+        "pnl_fact_id": "pnl-fact:16353eac457b9cf5d7b3f0bc",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "CHARGE",
+        "source_identities": {
+          "position_cycle_id": "ipc:6601f4f965be57f3aacfec18",
+          "source_fill_ids": [
+            "internal-fill:61031805f03050730867912f",
+            "internal-fill:b47062e9d7b482169dbcc828"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:5e97603a5fe7da508b1e98bf"
+        },
+        "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2024-01-23"
+      }
+    ],
+    "projections": [
+      {
+        "dimensions": {
+          "trading_date": "2024-01-23"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "8085.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "8085.00",
+          "gross_pnl": "8100.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "8070.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "8085.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "b2e3316d58352bb55e6da37d88b949691af7dea131dc2dc4fbe0761270df0e20",
+        "projection_id": "accounting-projection:daily_portfolio:f984afb3d936708a",
+        "projection_type": "DAILY_PORTFOLIO",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:075a372abc05131540271941",
+          "pnl-fact:16353eac457b9cf5d7b3f0bc"
+        ],
+        "watermark": "d85b3374068c2001c4d8325458cfa0c1d994eec8f9f23b7fb23a1d040e0145b7"
+      },
+      {
+        "dimensions": {
+          "account": "INTERNAL_PAPER_ACCOUNT"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "8085.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "8085.00",
+          "gross_pnl": "8100.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "8070.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "8085.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "82d7586a07683d62b94fca3dba9d3a9a403954c86b663792314da344a0c41120",
+        "projection_id": "accounting-projection:account:7bf94e759d887dd1",
+        "projection_type": "ACCOUNT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:075a372abc05131540271941",
+          "pnl-fact:16353eac457b9cf5d7b3f0bc"
+        ],
+        "watermark": "d85b3374068c2001c4d8325458cfa0c1d994eec8f9f23b7fb23a1d040e0145b7"
+      },
+      {
+        "dimensions": {
+          "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "8085.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "8085.00",
+          "gross_pnl": "8100.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "8070.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "8085.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "8b80191915022f55c192eaf7e7d7c4e9a6a6b7d5a2b84f8290ee8981bc62c182",
+        "projection_id": "accounting-projection:strategy:1db474ea844c1025",
+        "projection_type": "STRATEGY",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:075a372abc05131540271941",
+          "pnl-fact:16353eac457b9cf5d7b3f0bc"
+        ],
+        "watermark": "d85b3374068c2001c4d8325458cfa0c1d994eec8f9f23b7fb23a1d040e0145b7"
+      },
+      {
+        "dimensions": {
+          "contract": "BANKNIFTY_20240125_45500_PE"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "8085.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "8085.00",
+          "gross_pnl": "8100.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "8070.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "8085.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "19c2f13bfb4e9d79d5529ad33ad1b4fd131e6d3c26a2381d59af536620e9385e",
+        "projection_id": "accounting-projection:instrument:0ad6102581be9523",
+        "projection_type": "INSTRUMENT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:075a372abc05131540271941",
+          "pnl-fact:16353eac457b9cf5d7b3f0bc"
+        ],
+        "watermark": "d85b3374068c2001c4d8325458cfa0c1d994eec8f9f23b7fb23a1d040e0145b7"
+      },
+      {
+        "dimensions": {
+          "dimension": "final_exit_reason"
+        },
+        "metrics": {
+          "TARGET": "8070.00"
+        },
+        "projection_hash": "96c283b62de4dc4f892aa9eaa12d6266832265c217a0d69d382edf3d9051191f",
+        "projection_id": "accounting-projection:exit_reason:e300ed0e48aa9e3f",
+        "projection_type": "EXIT_REASON",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:075a372abc05131540271941",
+          "pnl-fact:16353eac457b9cf5d7b3f0bc"
+        ],
+        "watermark": "e300ed0e48aa9e3f92d69ee786c5465a1a096689d91ee2d50a3972d685343d82"
+      },
+      {
+        "dimensions": {
+          "dimension": "normal_gap_path"
+        },
+        "metrics": {
+          "S21_ORPT_RC_ONLY": "8070.00"
+        },
+        "projection_hash": "f5de5adb8c5742f76c5c87bcafe8aed252172aefa4ba72a58c61e12d58036513",
+        "projection_id": "accounting-projection:path:14dddb1de1364914",
+        "projection_type": "PATH",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:075a372abc05131540271941",
+          "pnl-fact:16353eac457b9cf5d7b3f0bc"
+        ],
+        "watermark": "14dddb1de13649144cc29b7a13af835c3af93ba4754b143c80bb0eb8beaa4ecb"
+      }
+    ],
+    "trade_fact": {
+      "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+      "configuration_hash": "s21-source-closure-config-v1",
+      "decision_context": {
+        "acknowledgements_affect_pnl": false,
+        "configured_lots": 1,
+        "contract_observations": [
+          {
+            "price": "900.00"
+          },
+          {
+            "price": "360.00"
+          },
+          {
+            "price": "1284.00"
+          }
+        ],
+        "exchange_quantity": 15,
+        "lot_size": 15,
+        "normal_gap_path": "S21_ORPT_RC_ONLY",
+        "planned_prices_are_not_pnl_inputs": true,
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "source_rule_ids": [
+          "S21.BEAR_PUT.STATIC.001",
+          "S21.CONTRACT_SELECTION.001",
+          "S21.FRESH_ENTRY_ORPT_RC.001",
+          "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+        ],
+        "strategy_branch": "BEAR_PUT"
+      },
+      "execution": {
+        "average_entry": "900.0",
+        "average_exit": "360.00",
+        "confirmed_entry_quantity": 15,
+        "confirmed_exit_quantity": 15,
+        "entry_fill_count": 1,
+        "exit_fill_count": 1,
+        "final_exit_timestamp": "2024-01-23T09:31:00+05:30",
+        "first_entry_timestamp": "2024-01-23T09:30:00+05:30",
+        "first_exit_timestamp": "2024-01-23T09:31:00+05:30",
+        "last_entry_timestamp": "2024-01-23T09:30:00+05:30",
+        "partial_exit": false,
+        "partial_fill": false,
+        "remaining_quantity": 0,
+        "requested_entry_quantity": 15
+      },
+      "fact_hash": "a7dcdde5ccd2dbddac6d6264949250ac3c1b32d07d45805f23a50e2cbc153d4f",
+      "final_trading_date": "2024-01-23",
+      "instrument": {
+        "contract": "BANKNIFTY_20240125_45500_PE",
+        "currency": "INR",
+        "direction": "BEAR_PUT",
+        "exchange": "NSE",
+        "expiry": "2024-01-25",
+        "lot_size": 15,
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "multiplier": "1",
+        "option_type": "PE",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": "45500",
+        "tick_size": "0.05",
+        "underlying": "BANKNIFTY"
+      },
+      "lifecycle": {
+        "carry_forward_count": 0,
+        "eod_exit": false,
+        "final_exit_reason": "TARGET",
+        "original_sl_hit": false,
+        "original_sl_linked": true,
+        "revised_sl_hit": false,
+        "revised_sl_linked": false,
+        "target_hit": true,
+        "target_linked": true,
+        "terminal_state": "CLOSED",
+        "win_loss": "WIN"
+      },
+      "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+      "originating_trading_date": "2024-01-23",
+      "performance_inputs": {
+        "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "capital_or_margin_estimate": null,
+        "current_unrealized_pnl": "0.00",
+        "duration_seconds": 60,
+        "gross_realized_pnl": "8100.00",
+        "mark_quality": "EXECUTABLE_SIDE",
+        "mfe_mae": {
+          "evidence_hash": "668ec620d3b3c9e95a332b64404f20b6d35ffc92c87ea7d22e4969830f9983f0",
+          "mae": "384.00",
+          "mfe": "540.00",
+          "observation_count": 3,
+          "quality": "COMPLETE"
+        },
+        "net_realized_pnl": "8085.00",
+        "provisional_charges": "15.00"
+      },
+      "position_cycle_id": "ipc:6601f4f965be57f3aacfec18",
+      "provenance": {
+        "correction_source": "NONE",
+        "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+        "source_fill_ids": [
+          "internal-fill:61031805f03050730867912f",
+          "internal-fill:b47062e9d7b482169dbcc828"
+        ],
+        "source_hashes": {
+          "position_event_ids": [
+            "internal-fill:61031805f03050730867912f",
+            "internal-fill:b47062e9d7b482169dbcc828"
+          ],
+          "position_projection": "a57ca035fcf1e5d9adb1373ace97cd4c734e2b66106bfecdd169005c204d802c"
+        },
+        "source_lifecycle_requirement_ids": [
+          "lifecycle-req:05f4c04cea9f17b2bb98721f",
+          "lifecycle-req:b141eeff21c224f0998d3d69"
+        ],
+        "source_order_ids": [
+          "client-order:a69f2db6a1b77a4f4634fc33",
+          "client-order:f1d0ad1f3c486d177578d43f"
+        ],
+        "source_position_event_ids": [
+          "internal-fill:61031805f03050730867912f",
+          "internal-fill:b47062e9d7b482169dbcc828"
+        ]
+      },
+      "rule_matrix_version": "s21_source_closure_accepted_v1",
+      "state": "CLOSED_PROVISIONAL",
+      "strategy_definition": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "strategy_family": "OPTION_SELLING",
+      "strategy_instance": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "supersedes_trade_fact_id": null,
+      "trade_fact_id": "trade-fact:5e97603a5fe7da508b1e98bf",
+      "trade_fact_version": "tfis.short_option_accounting.v1",
+      "trade_id": "trade:ipc:6601f4f965be57f3aacfec18",
+      "trading_session_id": "NSE:2024-01-23"
+    }
+  },
+  "BULL_CALL": {
+    "pnl_facts": [
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "4ea98c4347193f7a60530ef3af359f23eccb2fd3fd21d65cb26374c5371003d3",
+        "fact_hash": "8025e43d3611ed25a3fc699fa062d4779e1b0c5d509312d8ee9f2aec83aa3bbe",
+        "fact_type": "REALIZED_TRADE_PNL",
+        "gross_pnl": "8325.00",
+        "instrument": {
+          "contract": "BANKNIFTY_20240125_47000_CE",
+          "currency": "INR",
+          "direction": "BULL_CALL",
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "lot_size": 15,
+          "metadata_version": "s21.option_selling.banknifty.v1",
+          "multiplier": "1",
+          "option_type": "CE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "47000",
+          "tick_size": "0.05",
+          "underlying": "BANKNIFTY"
+        },
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "net_pnl": "8310.00",
+        "pnl_fact_id": "pnl-fact:4ea98c4347193f7a60530ef3",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "REALIZED",
+        "source_identities": {
+          "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
+          "source_fill_ids": [
+            "internal-fill:6db10c160ba6255cc4407e27",
+            "internal-fill:cc35b536adb7cea6f8c1ce43"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:e39397dd5eedfd63448c55c8"
+        },
+        "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2024-01-23"
+      },
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "fe9acfc6bfbf8357de4104945ad8b80de9c7f76e3f818cf94c9eb1d8b2458141",
+        "fact_hash": "2ce6e55ef206be189bffaaf5388488c3cdf43b55b2115b5aef07458ebe661775",
+        "fact_type": "CHARGE_ESTIMATE",
+        "gross_pnl": "0.00",
+        "instrument": {
+          "contract": "BANKNIFTY_20240125_47000_CE",
+          "currency": "INR",
+          "direction": "BULL_CALL",
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "lot_size": 15,
+          "metadata_version": "s21.option_selling.banknifty.v1",
+          "multiplier": "1",
+          "option_type": "CE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "47000",
+          "tick_size": "0.05",
+          "underlying": "BANKNIFTY"
+        },
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "net_pnl": "-15.00",
+        "pnl_fact_id": "pnl-fact:fe9acfc6bfbf8357de410494",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "CHARGE",
+        "source_identities": {
+          "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
+          "source_fill_ids": [
+            "internal-fill:6db10c160ba6255cc4407e27",
+            "internal-fill:cc35b536adb7cea6f8c1ce43"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:e39397dd5eedfd63448c55c8"
+        },
+        "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2024-01-23"
+      }
+    ],
+    "projections": [
+      {
+        "dimensions": {
+          "trading_date": "2024-01-23"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "8310.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "8310.00",
+          "gross_pnl": "8325.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "8295.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "8310.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "68650eac4dc62f2309bc7e6c52e54ea4228307d2ec31b493d2fddc4766c34eea",
+        "projection_id": "accounting-projection:daily_portfolio:6cca0374833ec5ae",
+        "projection_type": "DAILY_PORTFOLIO",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:4ea98c4347193f7a60530ef3",
+          "pnl-fact:fe9acfc6bfbf8357de410494"
+        ],
+        "watermark": "5b37c0d265b79962ce84183ed207e0d5d5f02d8c00e7ea2ce0d92479741320e4"
+      },
+      {
+        "dimensions": {
+          "account": "INTERNAL_PAPER_ACCOUNT"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "8310.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "8310.00",
+          "gross_pnl": "8325.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "8295.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "8310.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "85ee442b144e43962bbc6398fe667f12ce72d134d608381c6195a1d7638f3f61",
+        "projection_id": "accounting-projection:account:6449b25c477daab2",
+        "projection_type": "ACCOUNT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:4ea98c4347193f7a60530ef3",
+          "pnl-fact:fe9acfc6bfbf8357de410494"
+        ],
+        "watermark": "5b37c0d265b79962ce84183ed207e0d5d5f02d8c00e7ea2ce0d92479741320e4"
+      },
+      {
+        "dimensions": {
+          "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "8310.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "8310.00",
+          "gross_pnl": "8325.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "8295.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "8310.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "a3d41f7585406338b66b632c14ca1d789e67fc35aecc95e666b19855055d9088",
+        "projection_id": "accounting-projection:strategy:88a23d49941f89d3",
+        "projection_type": "STRATEGY",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:4ea98c4347193f7a60530ef3",
+          "pnl-fact:fe9acfc6bfbf8357de410494"
+        ],
+        "watermark": "5b37c0d265b79962ce84183ed207e0d5d5f02d8c00e7ea2ce0d92479741320e4"
+      },
+      {
+        "dimensions": {
+          "contract": "BANKNIFTY_20240125_47000_CE"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "8310.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "8310.00",
+          "gross_pnl": "8325.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "8295.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "8310.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "4aa8e46669f207d97267fd055c862ba4b0744cb044f10d1ab45beecfd954d192",
+        "projection_id": "accounting-projection:instrument:a0fe9838aacbf93d",
+        "projection_type": "INSTRUMENT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:4ea98c4347193f7a60530ef3",
+          "pnl-fact:fe9acfc6bfbf8357de410494"
+        ],
+        "watermark": "5b37c0d265b79962ce84183ed207e0d5d5f02d8c00e7ea2ce0d92479741320e4"
+      },
+      {
+        "dimensions": {
+          "dimension": "final_exit_reason"
+        },
+        "metrics": {
+          "TARGET": "8295.00"
+        },
+        "projection_hash": "33d23fa8214a9f878d4ab4532a08f353f14cda2760dccf1c4f2ad3b4d01e0c0d",
+        "projection_id": "accounting-projection:exit_reason:d88f57483a78500b",
+        "projection_type": "EXIT_REASON",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:4ea98c4347193f7a60530ef3",
+          "pnl-fact:fe9acfc6bfbf8357de410494"
+        ],
+        "watermark": "d88f57483a78500b801c6192596df5a6edfba925ee79ec32d46247afff84e79e"
+      },
+      {
+        "dimensions": {
+          "dimension": "normal_gap_path"
+        },
+        "metrics": {
+          "S21_ORPT_RC_ONLY": "8295.00"
+        },
+        "projection_hash": "40ed81ca49335234ae2469079fa96f5a7dd7efa8dd150a1942c88cab97b7ba5b",
+        "projection_id": "accounting-projection:path:7ab832d004eee42b",
+        "projection_type": "PATH",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:4ea98c4347193f7a60530ef3",
+          "pnl-fact:fe9acfc6bfbf8357de410494"
+        ],
+        "watermark": "7ab832d004eee42b5a40e63b6bc030427e9ea908212121fa514dfba8b5db4632"
+      }
+    ],
+    "trade_fact": {
+      "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+      "configuration_hash": "s21-source-closure-config-v1",
+      "decision_context": {
+        "acknowledgements_affect_pnl": false,
+        "configured_lots": 1,
+        "contract_observations": [
+          {
+            "price": "925.00"
+          },
+          {
+            "price": "370.00"
+          },
+          {
+            "price": "1337.50"
+          }
+        ],
+        "exchange_quantity": 15,
+        "lot_size": 15,
+        "normal_gap_path": "S21_ORPT_RC_ONLY",
+        "planned_prices_are_not_pnl_inputs": true,
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "source_rule_ids": [
+          "S21.BULL_CALL.STATIC.001",
+          "S21.CONTRACT_SELECTION.001",
+          "S21.FRESH_ENTRY_ORPT_RC.001",
+          "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+        ],
+        "strategy_branch": "BULL_CALL"
+      },
+      "execution": {
+        "average_entry": "925.0",
+        "average_exit": "370.00",
+        "confirmed_entry_quantity": 15,
+        "confirmed_exit_quantity": 15,
+        "entry_fill_count": 1,
+        "exit_fill_count": 1,
+        "final_exit_timestamp": "2024-01-23T09:31:00+05:30",
+        "first_entry_timestamp": "2024-01-23T09:30:00+05:30",
+        "first_exit_timestamp": "2024-01-23T09:31:00+05:30",
+        "last_entry_timestamp": "2024-01-23T09:30:00+05:30",
+        "partial_exit": false,
+        "partial_fill": false,
+        "remaining_quantity": 0,
+        "requested_entry_quantity": 15
+      },
+      "fact_hash": "b9fad52f632e35323da1ceda3d6495abbec03802eeb3582fbc9ace5672a13500",
+      "final_trading_date": "2024-01-23",
+      "instrument": {
+        "contract": "BANKNIFTY_20240125_47000_CE",
+        "currency": "INR",
+        "direction": "BULL_CALL",
+        "exchange": "NSE",
+        "expiry": "2024-01-25",
+        "lot_size": 15,
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "multiplier": "1",
+        "option_type": "CE",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": "47000",
+        "tick_size": "0.05",
+        "underlying": "BANKNIFTY"
+      },
+      "lifecycle": {
+        "carry_forward_count": 0,
+        "eod_exit": false,
+        "final_exit_reason": "TARGET",
+        "original_sl_hit": false,
+        "original_sl_linked": true,
+        "revised_sl_hit": false,
+        "revised_sl_linked": false,
+        "target_hit": true,
+        "target_linked": true,
+        "terminal_state": "CLOSED",
+        "win_loss": "WIN"
+      },
+      "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+      "originating_trading_date": "2024-01-23",
+      "performance_inputs": {
+        "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "capital_or_margin_estimate": null,
+        "current_unrealized_pnl": "0.00",
+        "duration_seconds": 60,
+        "gross_realized_pnl": "8325.00",
+        "mark_quality": "EXECUTABLE_SIDE",
+        "mfe_mae": {
+          "evidence_hash": "1ce606539e4781d580bc31007c6c5f2fa690683b6057a08d81e4077d3f656de7",
+          "mae": "412.50",
+          "mfe": "555.00",
+          "observation_count": 3,
+          "quality": "COMPLETE"
+        },
+        "net_realized_pnl": "8310.00",
+        "provisional_charges": "15.00"
+      },
+      "position_cycle_id": "ipc:04ccc9e9f63fcf61ba09d23d",
+      "provenance": {
+        "correction_source": "NONE",
+        "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+        "source_fill_ids": [
+          "internal-fill:6db10c160ba6255cc4407e27",
+          "internal-fill:cc35b536adb7cea6f8c1ce43"
+        ],
+        "source_hashes": {
+          "position_event_ids": [
+            "internal-fill:6db10c160ba6255cc4407e27",
+            "internal-fill:cc35b536adb7cea6f8c1ce43"
+          ],
+          "position_projection": "ab5b5ed78c36009b8b53712952312717d54387929adf4edcf0e99898a8561d4b"
+        },
+        "source_lifecycle_requirement_ids": [
+          "lifecycle-req:970d59dfb3895f0ecf303548",
+          "lifecycle-req:8389b82ae1b0714691bcbbc5"
+        ],
+        "source_order_ids": [
+          "client-order:234c1ff5760715be51391ac3",
+          "client-order:18419d7de933b363d3806d8e"
+        ],
+        "source_position_event_ids": [
+          "internal-fill:6db10c160ba6255cc4407e27",
+          "internal-fill:cc35b536adb7cea6f8c1ce43"
+        ]
+      },
+      "rule_matrix_version": "s21_source_closure_accepted_v1",
+      "state": "CLOSED_PROVISIONAL",
+      "strategy_definition": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "strategy_family": "OPTION_SELLING",
+      "strategy_instance": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "supersedes_trade_fact_id": null,
+      "trade_fact_id": "trade-fact:e39397dd5eedfd63448c55c8",
+      "trade_fact_version": "tfis.short_option_accounting.v1",
+      "trade_id": "trade:ipc:04ccc9e9f63fcf61ba09d23d",
+      "trading_session_id": "NSE:2024-01-23"
+    }
+  },
+  "BULL_PUT": {
+    "pnl_facts": [
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "8c5a6b972b7d558aec64619ba18b4f7e17b4636d707ae158845fd4ad13551b9f",
+        "fact_hash": "7c2839f8f7fc1cc64263920888666cda0740dd8427ea5ace202ff2ec376b81a9",
+        "fact_type": "REALIZED_TRADE_PNL",
+        "gross_pnl": "7920.00",
+        "instrument": {
+          "contract": "BANKNIFTY_20240125_46000_PE",
+          "currency": "INR",
+          "direction": "BULL_PUT",
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "lot_size": 15,
+          "metadata_version": "s21.option_selling.banknifty.v1",
+          "multiplier": "1",
+          "option_type": "PE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "46000",
+          "tick_size": "0.05",
+          "underlying": "BANKNIFTY"
+        },
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "net_pnl": "7905.00",
+        "pnl_fact_id": "pnl-fact:8c5a6b972b7d558aec64619b",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "REALIZED",
+        "source_identities": {
+          "position_cycle_id": "ipc:f43fbc8348607fa30b9d4d86",
+          "source_fill_ids": [
+            "internal-fill:ee0964a3d57f032efe5291a0",
+            "internal-fill:795c268c138d2f24201ac9a5"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:3400f891cb76729560dae3f2"
+        },
+        "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2024-01-23"
+      },
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "fa5a8f1e3e53ebde3bf8d4a0cb1b1c93d3c5c02ec4a45a992955b15321cf65b8",
+        "fact_hash": "53142a8ee650ad0bec0e85207716050167a888eccba01ead90cbaeebd3ef6ca3",
+        "fact_type": "CHARGE_ESTIMATE",
+        "gross_pnl": "0.00",
+        "instrument": {
+          "contract": "BANKNIFTY_20240125_46000_PE",
+          "currency": "INR",
+          "direction": "BULL_PUT",
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "lot_size": 15,
+          "metadata_version": "s21.option_selling.banknifty.v1",
+          "multiplier": "1",
+          "option_type": "PE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "46000",
+          "tick_size": "0.05",
+          "underlying": "BANKNIFTY"
+        },
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "net_pnl": "-15.00",
+        "pnl_fact_id": "pnl-fact:fa5a8f1e3e53ebde3bf8d4a0",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "CHARGE",
+        "source_identities": {
+          "position_cycle_id": "ipc:f43fbc8348607fa30b9d4d86",
+          "source_fill_ids": [
+            "internal-fill:ee0964a3d57f032efe5291a0",
+            "internal-fill:795c268c138d2f24201ac9a5"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:3400f891cb76729560dae3f2"
+        },
+        "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2024-01-23"
+      }
+    ],
+    "projections": [
+      {
+        "dimensions": {
+          "trading_date": "2024-01-23"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "7905.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "7905.00",
+          "gross_pnl": "7920.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "7890.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "7905.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "58fe6167ae0be8de26254e2c66230b1eb869a483aeee623b081b26e03ba00417",
+        "projection_id": "accounting-projection:daily_portfolio:de414dd59fb35a57",
+        "projection_type": "DAILY_PORTFOLIO",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:8c5a6b972b7d558aec64619b",
+          "pnl-fact:fa5a8f1e3e53ebde3bf8d4a0"
+        ],
+        "watermark": "2b900ad7b1e3002324bfc20f0097791fd3388e6d19b779b84805428c916c8494"
+      },
+      {
+        "dimensions": {
+          "account": "INTERNAL_PAPER_ACCOUNT"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "7905.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "7905.00",
+          "gross_pnl": "7920.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "7890.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "7905.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "68a5874eed1bc635c71e1188bae1db70247d3cc3c28e464a9d72a9e14e240f73",
+        "projection_id": "accounting-projection:account:6dc23111bbb33fb0",
+        "projection_type": "ACCOUNT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:8c5a6b972b7d558aec64619b",
+          "pnl-fact:fa5a8f1e3e53ebde3bf8d4a0"
+        ],
+        "watermark": "2b900ad7b1e3002324bfc20f0097791fd3388e6d19b779b84805428c916c8494"
+      },
+      {
+        "dimensions": {
+          "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "7905.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "7905.00",
+          "gross_pnl": "7920.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "7890.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "7905.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "7c9e8fc34d478e8670548fddd67c54f997f8141e1e40ca2da0a17a1f1a40f2a8",
+        "projection_id": "accounting-projection:strategy:04b65f6cf7312cc6",
+        "projection_type": "STRATEGY",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:8c5a6b972b7d558aec64619b",
+          "pnl-fact:fa5a8f1e3e53ebde3bf8d4a0"
+        ],
+        "watermark": "2b900ad7b1e3002324bfc20f0097791fd3388e6d19b779b84805428c916c8494"
+      },
+      {
+        "dimensions": {
+          "contract": "BANKNIFTY_20240125_46000_PE"
+        },
+        "metrics": {
+          "average_loser": "0.00",
+          "average_winner": "7905.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "0.00",
+          "expectancy": "7905.00",
+          "gross_pnl": "7920.00",
+          "losses": 0,
+          "maximum_closed_equity_drawdown": "0.00",
+          "net_pnl": "7890.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": null,
+          "realized_pnl": "7905.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "1.00",
+          "wins": 1
+        },
+        "projection_hash": "2d358ae837d534d09c2421934694d114912fe80e46062e71deb2492cd7627be8",
+        "projection_id": "accounting-projection:instrument:524e08d82267d6ca",
+        "projection_type": "INSTRUMENT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:8c5a6b972b7d558aec64619b",
+          "pnl-fact:fa5a8f1e3e53ebde3bf8d4a0"
+        ],
+        "watermark": "2b900ad7b1e3002324bfc20f0097791fd3388e6d19b779b84805428c916c8494"
+      },
+      {
+        "dimensions": {
+          "dimension": "final_exit_reason"
+        },
+        "metrics": {
+          "TARGET": "7890.00"
+        },
+        "projection_hash": "df92d264457f19a8602ab04af20faaaf1bce15bf12c9c911cfc08de9f0699079",
+        "projection_id": "accounting-projection:exit_reason:8cc7ad2cf87f1fd5",
+        "projection_type": "EXIT_REASON",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:8c5a6b972b7d558aec64619b",
+          "pnl-fact:fa5a8f1e3e53ebde3bf8d4a0"
+        ],
+        "watermark": "8cc7ad2cf87f1fd52d16713454a5116307b3eb5cabd5da392d88d0558523627f"
+      },
+      {
+        "dimensions": {
+          "dimension": "normal_gap_path"
+        },
+        "metrics": {
+          "S21_ORPT_RC_ONLY": "7890.00"
+        },
+        "projection_hash": "8b1521b6a39569bb773ca1bab40b69bd41266f0ae70a6af1e2740faa589711ec",
+        "projection_id": "accounting-projection:path:d765f4e44f3f8b25",
+        "projection_type": "PATH",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:8c5a6b972b7d558aec64619b",
+          "pnl-fact:fa5a8f1e3e53ebde3bf8d4a0"
+        ],
+        "watermark": "d765f4e44f3f8b25df98196d0335cd39b84d74f6cb9231abf7d9b13177337cf6"
+      }
+    ],
+    "trade_fact": {
+      "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+      "configuration_hash": "s21-source-closure-config-v1",
+      "decision_context": {
+        "acknowledgements_affect_pnl": false,
+        "configured_lots": 1,
+        "contract_observations": [
+          {
+            "price": "880.00"
+          },
+          {
+            "price": "352.00"
+          },
+          {
+            "price": "1320.00"
+          }
+        ],
+        "exchange_quantity": 15,
+        "lot_size": 15,
+        "normal_gap_path": "S21_ORPT_RC_ONLY",
+        "planned_prices_are_not_pnl_inputs": true,
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "source_rule_ids": [
+          "S21.BULL_PUT.STATIC.001",
+          "S21.CONTRACT_SELECTION.001",
+          "S21.FRESH_ENTRY_ORPT_RC.001",
+          "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+        ],
+        "strategy_branch": "BULL_PUT"
+      },
+      "execution": {
+        "average_entry": "880.0",
+        "average_exit": "352.00",
+        "confirmed_entry_quantity": 15,
+        "confirmed_exit_quantity": 15,
+        "entry_fill_count": 1,
+        "exit_fill_count": 1,
+        "final_exit_timestamp": "2024-01-23T09:31:00+05:30",
+        "first_entry_timestamp": "2024-01-23T09:30:00+05:30",
+        "first_exit_timestamp": "2024-01-23T09:31:00+05:30",
+        "last_entry_timestamp": "2024-01-23T09:30:00+05:30",
+        "partial_exit": false,
+        "partial_fill": false,
+        "remaining_quantity": 0,
+        "requested_entry_quantity": 15
+      },
+      "fact_hash": "999be4bd31556f9882db00651f5c1b3ccb7e6d791592d9d29b65c2a5a9539984",
+      "final_trading_date": "2024-01-23",
+      "instrument": {
+        "contract": "BANKNIFTY_20240125_46000_PE",
+        "currency": "INR",
+        "direction": "BULL_PUT",
+        "exchange": "NSE",
+        "expiry": "2024-01-25",
+        "lot_size": 15,
+        "metadata_version": "s21.option_selling.banknifty.v1",
+        "multiplier": "1",
+        "option_type": "PE",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": "46000",
+        "tick_size": "0.05",
+        "underlying": "BANKNIFTY"
+      },
+      "lifecycle": {
+        "carry_forward_count": 0,
+        "eod_exit": false,
+        "final_exit_reason": "TARGET",
+        "original_sl_hit": false,
+        "original_sl_linked": true,
+        "revised_sl_hit": false,
+        "revised_sl_linked": false,
+        "target_hit": true,
+        "target_linked": true,
+        "terminal_state": "CLOSED",
+        "win_loss": "WIN"
+      },
+      "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+      "originating_trading_date": "2024-01-23",
+      "performance_inputs": {
+        "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "capital_or_margin_estimate": null,
+        "current_unrealized_pnl": "0.00",
+        "duration_seconds": 60,
+        "gross_realized_pnl": "7920.00",
+        "mark_quality": "EXECUTABLE_SIDE",
+        "mfe_mae": {
+          "evidence_hash": "63ac0354062b130f2b4f7fb1a4b08034fdb2adafcf16b0f0553558caf464ff71",
+          "mae": "440.00",
+          "mfe": "528.00",
+          "observation_count": 3,
+          "quality": "COMPLETE"
+        },
+        "net_realized_pnl": "7905.00",
+        "provisional_charges": "15.00"
+      },
+      "position_cycle_id": "ipc:f43fbc8348607fa30b9d4d86",
+      "provenance": {
+        "correction_source": "NONE",
+        "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+        "source_fill_ids": [
+          "internal-fill:ee0964a3d57f032efe5291a0",
+          "internal-fill:795c268c138d2f24201ac9a5"
+        ],
+        "source_hashes": {
+          "position_event_ids": [
+            "internal-fill:ee0964a3d57f032efe5291a0",
+            "internal-fill:795c268c138d2f24201ac9a5"
+          ],
+          "position_projection": "ea96b67a772589d40df20a354df6b191ffe7c5f410ce8eaf163316e0bacb049f"
+        },
+        "source_lifecycle_requirement_ids": [
+          "lifecycle-req:6e7bd55cbd39ac19ae63c309",
+          "lifecycle-req:b627a64c2294cb69b56868b2"
+        ],
+        "source_order_ids": [
+          "client-order:ca1857e26d57044ac9ff0026",
+          "client-order:1fc955490cae04422db080cf"
+        ],
+        "source_position_event_ids": [
+          "internal-fill:ee0964a3d57f032efe5291a0",
+          "internal-fill:795c268c138d2f24201ac9a5"
+        ]
+      },
+      "rule_matrix_version": "s21_source_closure_accepted_v1",
+      "state": "CLOSED_PROVISIONAL",
+      "strategy_definition": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "strategy_family": "OPTION_SELLING",
+      "strategy_instance": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "supersedes_trade_fact_id": null,
+      "trade_fact_id": "trade-fact:3400f891cb76729560dae3f2",
+      "trade_fact_version": "tfis.short_option_accounting.v1",
+      "trade_id": "trade:ipc:f43fbc8348607fa30b9d4d86",
+      "trading_session_id": "NSE:2024-01-23"
+    }
+  }
+}
