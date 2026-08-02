@@ -1,0 +1,37 @@
+{
+  "as_of": "2026-08-02",
+  "canonical_secret_locations_ignored_by_git": {
+    ".env": true,
+    "data/": true,
+    "data/token_store.json": true,
+    "logs/": true
+  },
+  "generated_diagnostic_file": "reports/fyers_auth/fyers_session_diagnostic.json",
+  "known_note": "Existing canonical script prints non-token profile confirmation to console during real refresh; new reports and fixtures redact profile identity fields.",
+  "redacted_fragments": [
+    "access_token",
+    "refresh_token",
+    "authorization",
+    "auth_code",
+    "display_name",
+    "email",
+    "fy_id",
+    "mobile",
+    "name",
+    "pan",
+    "client_secret",
+    "app_secret",
+    "bearer",
+    "cookie",
+    "pin",
+    "pin_change_date",
+    "password",
+    "pwd",
+    "totp",
+    "otp",
+    "session_token"
+  ],
+  "sanitized_fixture": "tests\\fixtures\\s22_reliance\\s22_reliance_fyers_snapshot_2026-08-02_sanitized.json",
+  "schema_version": "fyers.redaction_audit.v1",
+  "verdict": "PASS"
+}

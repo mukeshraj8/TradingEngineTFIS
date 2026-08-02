@@ -1,0 +1,32 @@
+{
+  "authority_policy": "AUTHENTICATED is prerequisite for read-only capture only and never grants order authority.",
+  "broker_neutral_contracts": [
+    "BrokerCredentialReference",
+    "BrokerAuthenticationRequest",
+    "BrokerSessionIdentity",
+    "BrokerAuthenticationResult",
+    "BrokerAuthenticationFailure",
+    "ValidatedBrokerSession",
+    "BrokerSessionStatus",
+    "BrokerDiagnosticSnapshot"
+  ],
+  "deterministic_hash_policy": "diagnostic hashes exclude observed_at and redact sensitive fields before hashing.",
+  "failure_vocabulary": [
+    "CREDENTIAL_SOURCE_MISSING",
+    "APP_CONFIGURATION_MISSING",
+    "INTERACTIVE_LOGIN_REQUIRED",
+    "TOKEN_MISSING",
+    "TOKEN_EXPIRED",
+    "TOKEN_REJECTED",
+    "TOKEN_SCHEMA_INVALID",
+    "ACCOUNT_SCOPE_MISMATCH",
+    "SESSION_VALIDATION_FAILED",
+    "NETWORK_UNAVAILABLE",
+    "RATE_LIMITED",
+    "BROKER_UNAVAILABLE",
+    "MALFORMED_RESPONSE",
+    "AUTHENTICATED"
+  ],
+  "schema_version": "fyers.auth_contract.v1",
+  "secret_policy": "Raw access tokens and profile identity fields are redacted before reports, hashes, fixtures or diagnostic snapshots."
+}

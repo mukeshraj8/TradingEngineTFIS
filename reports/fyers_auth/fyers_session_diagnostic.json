@@ -1,0 +1,110 @@
+{
+  "account_read_status": "NOT_CHECKED",
+  "account_ref": "s22-reliance-read-only",
+  "authentication_status": "AUTHENTICATED",
+  "blocking_reasons": [],
+  "broker": "fyers",
+  "configuration_status": "READY",
+  "credential_status": "PRESENT",
+  "degraded_reasons": [],
+  "diagnostic_hash": "6b873da8a9c625f9d44136222337a7c8587df624d65bfc4e12bfd5763f297dc9",
+  "environment": "local",
+  "evidence": {
+    "authentication": {
+      "broker": "fyers",
+      "credential_reference": {
+        "ignored_by_git": true,
+        "path": "D:\\TradingEngineTFISRefactored\\data\\token_store.json",
+        "schema": "json.access_token + optional refreshed_at",
+        "source_type": "LOCAL_TOKEN_STORE"
+      },
+      "diagnostic_hash": "6b472cc81dd28b0e0f5b851bc560755509b285e8a126abe56908ec210cdcabaa",
+      "environment": "local",
+      "failure": null,
+      "logical_account_ref": "s22-reliance-read-only",
+      "observed_at": "2026-08-02T12:50:11.693170",
+      "refreshed": false,
+      "session": {
+        "client": "REDACTED_SESSION_HANDLE",
+        "identity": {
+          "app_id_prefix": "REDACTED",
+          "authenticated_at": "2026-08-02T12:50:11.693170",
+          "broker": "fyers",
+          "client_id_fingerprint": "1811d968d970",
+          "credential_reference": {
+            "ignored_by_git": true,
+            "path": "D:\\TradingEngineTFISRefactored\\data\\token_store.json",
+            "schema": "json.access_token + optional refreshed_at",
+            "source_type": "LOCAL_TOKEN_STORE"
+          },
+          "environment": "local",
+          "expires_at": null,
+          "identity_hash": "eb34949fc53a55b3f396fecdbad68baaa336f27af731bdff6b89703ca4dbe66f",
+          "logical_account_ref": "s22-reliance-read-only"
+        },
+        "validation_payload": {
+          "code": 200,
+          "data": {
+            "PAN": "REDACTED",
+            "ddpi_enabled": true,
+            "display_name": "REDACTED",
+            "email_id": "REDACTED",
+            "fy_id": "REDACTED",
+            "image": null,
+            "mobile_number": "REDACTED",
+            "mtf_enabled": false,
+            "name": "REDACTED",
+            "pin_change_date": "REDACTED",
+            "pwd_change_date": "REDACTED",
+            "pwd_to_expire": "REDACTED",
+            "totp": "REDACTED"
+          },
+          "message": "",
+          "s": "ok"
+        }
+      },
+      "session_identity": {
+        "app_id_prefix": "REDACTED",
+        "authenticated_at": "2026-08-02T12:50:11.693170",
+        "broker": "fyers",
+        "client_id_fingerprint": "1811d968d970",
+        "credential_reference": {
+          "ignored_by_git": true,
+          "path": "D:\\TradingEngineTFISRefactored\\data\\token_store.json",
+          "schema": "json.access_token + optional refreshed_at",
+          "source_type": "LOCAL_TOKEN_STORE"
+        },
+        "environment": "local",
+        "expires_at": null,
+        "identity_hash": "eb34949fc53a55b3f396fecdbad68baaa336f27af731bdff6b89703ca4dbe66f",
+        "logical_account_ref": "s22-reliance-read-only"
+      },
+      "status": "AUTHENTICATED"
+    },
+    "historical_data": {
+      "status": "SUCCESS",
+      "warnings": []
+    },
+    "option_chain": {
+      "status": "SUCCESS",
+      "warnings": []
+    },
+    "quote": {
+      "status": "SUCCESS",
+      "warnings": []
+    },
+    "reference_data": {
+      "status": "SUCCESS",
+      "warnings": []
+    }
+  },
+  "historical_data_status": "READABLE",
+  "observed_at": "2026-08-02T12:50:11.693170",
+  "operator_action": "NONE",
+  "option_chain_status": "READABLE",
+  "order_write_status": "NOT_AUTHORIZED",
+  "quote_status": "READABLE",
+  "reference_data_status": "READABLE",
+  "session_expiry_status": "NOT_CHECKED",
+  "websocket_status": "NOT_CHECKED"
+}

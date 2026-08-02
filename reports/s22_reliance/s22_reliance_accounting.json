@@ -1,0 +1,7 @@
+{
+  "as_of": "2026-08-02",
+  "external_order_authority": "NONE",
+  "reason": "No S22 RELIANCE internal-paper fill, PositionCycle, TradeFact, or PnLFact was created in this auth/capture milestone.",
+  "schema_version": "s22.reliance.accounting.v2",
+  "verdict": "NOT_CREATED_IMPLEMENTATION_DEFERRED"
+}

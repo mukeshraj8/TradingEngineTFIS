@@ -6,6 +6,21 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Sunday, August 2, 2026, reusable FYERS authentication and read-only
+  broker diagnostics are implemented. The canonical existing flow remains
+  `scripts/fyers_token_refresh.py --prepare` backed by
+  `src/tfis/brokers/fyers_token.py` and `data/token_store.json`; no competing
+  token generator was added. New broker-platform boundaries live under
+  `src/tfis/broker/authentication/` and `src/tfis/broker/diagnostics/`, with
+  `scripts/run_broker_diagnostics.py` producing sanitized diagnostics that
+  distinguish configuration, credentials, authentication, read health and
+  order-write authority. FYERS order authority remains `NONE` /
+  `NOT_AUTHORIZED`. The S22 RELIANCE read-only capture completed after fixing
+  FYERS headerless symbol-master parsing, option-chain expiry/strike
+  normalization, and bounded completed-history requests. Sanitized fixture:
+  `tests/fixtures/s22_reliance/s22_reliance_fyers_snapshot_2026-08-02_sanitized.json`.
+  S22 RELIANCE metadata gate is now passed, but S22 implementation was not
+  started in this authentication/capture milestone.
 - as of Sunday, August 2, 2026, the S22 RELIANCE Stage 1 implementation gate
   was evaluated under `reports/s22_reliance/`. `StrategyInstanceDefinition` is
   sufficient for modeling one S22 RELIANCE/account/session instance; no

@@ -1,51 +1,45 @@
 {
-  "schema_version": "s22.implementation_readiness.v3",
-  "strategy_code": "S22",
-  "unique_code": "STOCKS_OP_SELL_MT_DIFF_2D_4D",
-  "verdict": "S22_SOURCE_AND_UNIVERSE_CONDITIONAL",
-  "implementation_readiness": "READY_FOR_METADATA_GATED_ONE_STOCK_PROOF",
-  "source_closure": {
-    "identity": "VERIFIED",
-    "branch_matrix": "VERIFIED",
-    "contract_selection_rules": "VERIFIED",
-    "entry_orpt_rc": "VERIFIED",
-    "target_sl_fsl_trp": "VERIFIED",
-    "eod_carry_recovery": "VERIFIED",
-    "quantity_accounting": "VERIFIED_WITH_METADATA_ARCHITECTURE_READY"
-  },
-  "universe_closure": {
-    "strategy_supported_universe": "READY_WORKBOOK_EVIDENCE",
-    "exchange_eligible_universe": "READY_VERSIONED_INSTRUMENT_MASTER_RULE_RECORDED",
-    "operator_enabled_subset": "STAGE1_RELIANCE_SELECTED_PENDING_METADATA_VALIDATION",
-    "instrument_metadata": "READY_VERSIONED_INSTRUMENT_MASTER_RULE_RECORDED"
-  },
-  "stage1_operator_enabled_stock": {
-    "symbol": "RELIANCE",
-    "question_id": "S22-Q002",
-    "classification": "USER_CLARIFIED_OPERATOR_SELECTION",
-    "scope": "one instrument-bound S22 strategy instance, one internal-paper account",
-    "substitute_allowed_if_metadata_incomplete": false
-  },
-  "metadata_gate": {
-    "required_before_implementation": true,
-    "fail_closed_result": "BLOCKED_METADATA",
-    "required_fields": [
-      "F&O eligibility for the test trading date",
-      "lot size and effective date",
-      "strike interval and tick size",
-      "monthly option expiry availability",
-      "broker and market-data identifiers",
-      "usable option-chain, premium and OI evidence"
-    ]
-  },
-  "runtime_config_impact": "NONE",
   "broker_paper_live_authority": "NONE",
-  "implementation_started": false,
   "closed_questions": [
     "S22-Q001 current F&O universe architecture",
     "S22-Q002 Stage 1 operator-enabled stock selection",
     "S22-Q003 instrument metadata master architecture"
   ],
+  "implementation_readiness": "READY_FOR_S22_RELIANCE_ONE_STOCK_IMPLEMENTATION",
+  "implementation_started": false,
+  "metadata_gate": {
+    "required_before_implementation": true,
+    "result": "PASSED",
+    "sanitized_fixture": "tests\\fixtures\\s22_reliance\\s22_reliance_fyers_snapshot_2026-08-02_sanitized.json",
+    "snapshot_id": "s22-reliance-fyers-20260802T124359+0530"
+  },
   "remaining_blockers": [],
-  "required_next_step": "Run RELIANCE dated instrument-master and metadata validation before the S22 one-stock end-to-end proof."
+  "required_next_step": "Begin S22 RELIANCE one-stock implementation from the sanitized fixture and captured metadata, with FYERS remaining read-only only.",
+  "runtime_config_impact": "NONE",
+  "schema_version": "s22.implementation_readiness.v4",
+  "source_closure": {
+    "branch_matrix": "VERIFIED",
+    "contract_selection_rules": "VERIFIED",
+    "entry_orpt_rc": "VERIFIED",
+    "eod_carry_recovery": "VERIFIED",
+    "identity": "VERIFIED",
+    "quantity_accounting": "VERIFIED_WITH_DATED_METADATA",
+    "target_sl_fsl_trp": "VERIFIED"
+  },
+  "stage1_operator_enabled_stock": {
+    "classification": "USER_CLARIFIED_OPERATOR_SELECTION",
+    "question_id": "S22-Q002",
+    "scope": "one instrument-bound S22 strategy instance, one internal-paper account",
+    "substitute_allowed_if_metadata_incomplete": false,
+    "symbol": "RELIANCE"
+  },
+  "strategy_code": "S22",
+  "unique_code": "STOCKS_OP_SELL_MT_DIFF_2D_4D",
+  "universe_closure": {
+    "exchange_eligible_universe": "READY_DATED_FYERS_SYMBOL_MASTER_CAPTURED",
+    "instrument_metadata": "READY_DATED_FYERS_SYMBOL_MASTER_CAPTURED",
+    "operator_enabled_subset": "STAGE1_RELIANCE_SELECTED",
+    "strategy_supported_universe": "READY_WORKBOOK_EVIDENCE"
+  },
+  "verdict": "S22_SOURCE_AND_METADATA_READY"
 }

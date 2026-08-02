@@ -6,29 +6,23 @@ way.
 
 ## Immediate Next Priorities
 
-0.60. `BLOCKED_METADATA` Provide or add a dated versioned RELIANCE
-   instrument-master snapshot before retrying the S22 Stage 1 one-stock proof.
-   The StrategyInstance sufficiency audit passed under
-   `reports/s22_reliance/s22_strategy_instance_sufficiency_audit.json`, so no
-   new instrument-bound strategy abstraction is required now. The retry remains
-   blocked until RELIANCE metadata confirms current F&O eligibility, lot
-   size/effective date, strike interval/tick size, monthly option expiry
-   availability, broker/data identifiers, and usable option-chain, premium, and
-   OI evidence. Do not substitute another stock automatically.
+0.62. `READY_FOR_S22_RELIANCE_ONE_STOCK_IMPLEMENTATION` Begin the S22 RELIANCE
+   one-stock internal-paper implementation from
+   `tests/fixtures/s22_reliance/s22_reliance_fyers_snapshot_2026-08-02_sanitized.json`.
+   Use the captured FYERS read-only metadata and market evidence only as
+   reference/market input. Do not add FYERS broker order authority. Required
+   path: generic Monthly Status, S22 branch policy, 2D/4D references,
+   contract selection, PreMarketStrategyPlan, OpeningMarketContext, ORPT/RC,
+   EffectiveExecutionPlan, ExecutionIntent, internal-paper order/fill,
+   PositionCycle, lifecycle, accounting and dashboard projection.
 
-0.59. `READY_FOR_METADATA_GATED_PROOF` Validate RELIANCE metadata, then begin
-   the S22 one-stock end-to-end proof. Workbook rules for S22 are traced under
-   `reports/s22_source_closure/`, and the multi-stock universe/instance model
-   is defined under `reports/s22_universe/`. `S22-Q001` current F&O universe
-   architecture and `S22-Q003` instrument metadata architecture are closed by
-   user clarification: use a dated versioned instrument-master snapshot for
-   current exchange eligibility and trading-date metadata. `S22-Q002` is
-   closed by user selection of `RELIANCE` as the only Stage 1 S22
-   internal-paper stock. Before implementation, validate RELIANCE F&O
-   eligibility, lot size/effective date, strike interval/tick size, monthly
-   option expiry availability, broker/data identifiers, and usable
-   option-chain/premium/OI evidence. If incomplete, return `BLOCKED_METADATA`
-   with exact missing fields and do not select a substitute automatically.
+0.61. `DONE` FYERS authentication and S22 RELIANCE read-only capture. The
+   canonical command is
+   `.venv/Scripts/python.exe scripts/fyers_token_refresh.py --prepare`.
+   Broker diagnostics are available through
+   `.venv/Scripts/python.exe scripts/run_broker_diagnostics.py --broker fyers`.
+   The dated RELIANCE capture completed and the metadata gate passed. External
+   broker-order authority remains `NONE`.
 
 0.58. `DONE` Close the S21 source-question register. Decision artifacts:
    `reports/s21_source_closure/s21_user_decision_pack.md` and

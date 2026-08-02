@@ -1,0 +1,52 @@
+{
+  "as_of": "2026-08-02",
+  "authentication": "CANONICAL_FLOW_REUSED",
+  "authority": "FYERS_READ_ONLY_DATA_ACQUISITION",
+  "capabilities": [
+    {
+      "capability": "authentication",
+      "classification": "REUSE_CANONICAL_FLOW",
+      "evidence": "scripts/fyers_token_refresh.py; src/tfis/brokers/fyers_token.py"
+    },
+    {
+      "capability": "broker diagnostics",
+      "classification": "IMPLEMENTED_READ_ONLY",
+      "evidence": "scripts/run_broker_diagnostics.py; src/tfis/broker/diagnostics/fyers.py"
+    },
+    {
+      "capability": "symbol master",
+      "classification": "IMPLEMENTED_READ_ONLY",
+      "evidence": "headered and FYERS headerless parser"
+    },
+    {
+      "capability": "historical data",
+      "classification": "IMPLEMENTED_READ_ONLY",
+      "evidence": "captured completed daily candles"
+    },
+    {
+      "capability": "option chain",
+      "classification": "IMPLEMENTED_READ_ONLY",
+      "evidence": "captured near/next monthly chain contracts with premium/OI evidence"
+    },
+    {
+      "capability": "order writes",
+      "classification": "NOT_AUTHORIZED",
+      "evidence": "architecture boundary tests"
+    }
+  ],
+  "capture": "CAPTURE_COMPLETE",
+  "diagnostics": "READ_ONLY_HEALTHY",
+  "external_order_authority": "NONE",
+  "implementation_boundary": {
+    "generic_core_imports_fyers_sdk": false,
+    "new_auth_package": "src/tfis/broker/authentication/",
+    "new_diagnostic_package": "src/tfis/broker/diagnostics/",
+    "order_write_surface": false,
+    "read_only_package": "src/tfis/fyers_read_only/",
+    "unit_tests_call_network": false,
+    "unit_tests_require_credentials": false
+  },
+  "sanitized_fixture": "tests\\fixtures\\s22_reliance\\s22_reliance_fyers_snapshot_2026-08-02_sanitized.json",
+  "schema_version": "s22.fyers.capability_audit.v2",
+  "verdict": "S22_FYERS_READ_ONLY_CAPTURE_READY"
+}

@@ -1,0 +1,9 @@
+{
+  "as_of": "2026-08-02",
+  "external_order_authority": "NONE",
+  "reason": "Dated RELIANCE metadata, monthly expiry, premium and OI evidence are now available in the sanitized FYERS read-only fixture. Contract selection has not been run in this authentication/capture milestone.",
+  "schema_version": "s22.reliance.contract_selection.v2",
+  "snapshot_id": "s22-reliance-fyers-20260802T124359+0530",
+  "source_fixture": "tests/fixtures/s22_reliance/s22_reliance_fyers_snapshot_2026-08-02_sanitized.json",
+  "verdict": "READY_NOT_EVALUATED"
+}

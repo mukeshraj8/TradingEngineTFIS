@@ -1,0 +1,43 @@
+{
+  "schema_version": "s22.fyers.read_contract.v1",
+  "as_of": "2026-08-02",
+  "authority": "FYERS_READ_ONLY_DATA_ACQUISITION",
+  "external_order_authority": "NONE",
+  "adapter": "tfis.fyers_read_only.FyersReadOnlyAdapter",
+  "allowed_operations": [
+    "validate_session",
+    "fetch_symbol_master",
+    "fetch_historical_candles",
+    "fetch_quotes",
+    "fetch_market_depth",
+    "fetch_option_chain",
+    "resolve_contracts",
+    "retrieve_source_health"
+  ],
+  "prohibited_operations": [
+    "place_order",
+    "modify_order",
+    "cancel_order",
+    "exit_position",
+    "convert_position",
+    "transfer_funds",
+    "external financial action"
+  ],
+  "failure_modes": [
+    "AUTHENTICATION_REQUIRED",
+    "TOKEN_EXPIRED",
+    "RATE_LIMITED",
+    "TIMEOUT",
+    "MALFORMED",
+    "UNAVAILABLE"
+  ],
+  "redaction": {
+    "credentials_redacted": true,
+    "instrument_tokens_preserved": true,
+    "account_identity_persisted": false
+  },
+  "filesystem_writes": {
+    "low_level_adapter": false,
+    "opt_in_capture_script": "writes immutable dated snapshot artifacts only when --capture-read-only is supplied"
+  }
+}

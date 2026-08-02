@@ -1,0 +1,20 @@
+{
+  "as_of": "2026-08-02",
+  "canonical_command": ".\\.venv\\Scripts\\python.exe scripts\\fyers_token_refresh.py --prepare",
+  "escalated_operator_equivalent_run": {
+    "exit_code": 0,
+    "profile_identity_persisted_in_reports": false,
+    "result": "TOKEN_REFRESHED_AND_PROFILE_VALIDATED",
+    "token_printed": false,
+    "token_store": "data/token_store.json"
+  },
+  "logs_location": "logs/token_refresh/ (git ignored)",
+  "order_authority": "NONE",
+  "sandbox_run": {
+    "classification": "NETWORK_UNAVAILABLE",
+    "evidence": "WinError 10013 outbound HTTPS blocked before Step 1 could reach FYERS",
+    "exit_code": 1,
+    "result": "NETWORK_BLOCKED_BY_SANDBOX"
+  },
+  "schema_version": "fyers.refresh_execution_summary.v1"
+}

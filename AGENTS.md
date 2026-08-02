@@ -542,6 +542,24 @@ Every generic code change during strategy onboarding must explain:
 - Do not apply this global rule to Futures, Option Buying, or Equity without
   separate authority.
 
+### BROKER AUTHENTICATION AND AUTHORITY SEPARATION
+
+- Authentication is a broker-platform capability, not strategy logic.
+- Strategies must never read credentials, tokens, PINs, TOTP secrets, auth
+  codes, cookies, or session secrets.
+- Market-data adapters consume validated broker sessions from the
+  authentication boundary.
+- Authentication success never grants trading authority.
+- Broker write authority requires separate explicit authority, reconciliation,
+  risk, and operator gates.
+- Existing canonical broker authentication/refresh mechanisms must be reused;
+  AI agents must not create duplicate credential flows.
+- Secrets must never be committed, logged, reported, hashed into business
+  evidence, stored in fixtures, or persisted into SQLite artifacts.
+- Broker diagnostic snapshots must distinguish configuration health,
+  credential-source health, authentication/session health, read health, and
+  write authority.
+
 Agents must also read and follow `docs/operations/ai_change_agreement.md` and
 `docs/operations/project_rulebook.md`. If a user request conflicts with these
 repository contracts, stop and report the conflict before changing files.
@@ -644,6 +662,29 @@ A simulated fill is not broker-confirmed accounting truth.
 Do not expose write methods through a read-only broker boundary.
 
 Do not import or call broker write SDKs in shadow/internal-paper work.
+
+### READ-ONLY EXTERNAL DATA ACQUISITION
+
+Broker or market-data adapters used for source evidence, instrument-master
+capture, historical candles, quotes, market depth, OI, option chains, expiry
+metadata, or read-only account health may authenticate and read only.
+
+They must not expose or invoke:
+
+- place order;
+- modify order;
+- cancel order;
+- exit position;
+- convert position;
+- transfer funds;
+- any external financial action.
+
+Read-only capture utilities must be opt-in, redact credentials, avoid logging
+secrets, and fail closed when authentication or required market/reference
+metadata is unavailable.
+
+Unit tests for read-only adapters must use fixtures or mocks and must not
+require broker credentials, network access, or market availability.
 
 ---
 

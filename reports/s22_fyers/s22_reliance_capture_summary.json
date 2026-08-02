@@ -1,0 +1,27 @@
+{
+  "as_of": "2026-08-02",
+  "authority": "FYERS_READ_ONLY_DATA_ACQUISITION",
+  "capture_attempted": true,
+  "capture_reached_network": true,
+  "evidence_summary": {
+    "available_oi_contract_count": 122,
+    "completed_daily_candles": 123,
+    "equity_record_count": 1,
+    "future_record_count": 3,
+    "near_monthly_expiry": "2026-08-25",
+    "next_monthly_expiry": "2026-09-29",
+    "option_chain_count": 2,
+    "option_contract_count": 400,
+    "option_record_count": 502,
+    "reliance_record_count": 506
+  },
+  "external_order_authority": "NONE",
+  "implementation_continues": false,
+  "implementation_status": "METADATA_GATE_PASSED_S22_IMPLEMENTATION_NOT_STARTED_IN_AUTH_MILESTONE",
+  "required_gaps": [],
+  "sanitized_fixture": "tests\\fixtures\\s22_reliance\\s22_reliance_fyers_snapshot_2026-08-02_sanitized.json",
+  "schema_version": "s22.reliance.capture_summary.v2",
+  "snapshot_id": "s22-reliance-fyers-20260802T124359+0530",
+  "snapshot_path": "data\\strategies\\S22\\fyers_read_only_snapshots\\2026-08-02\\s22-reliance-fyers-20260802T124359+0530\\snapshot.json",
+  "verdict": "CAPTURE_COMPLETE"
+}

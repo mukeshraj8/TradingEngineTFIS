@@ -1,0 +1,128 @@
+{
+  "as_of": "2026-08-02",
+  "canonical_existing_flow": "scripts/fyers_token_refresh.py -> src/tfis/brokers/fyers_token.py",
+  "components": [
+    {
+      "classification": "AUTHORITATIVE_EXISTING_FLOW",
+      "credentials_handled": [
+        "FYERS_APP_ID",
+        "FYERS_APP_SECRET",
+        "FYERS_CLIENT_ID",
+        "FYERS_PIN",
+        "FYERS_TOTP_SECRET",
+        "FYERS_REDIRECT_URI",
+        "access_token"
+      ],
+      "current_consumers": [
+        "scripts/pre_live_readiness.py",
+        "scripts/run_s23_fyers_connection_test.py",
+        "src/tfis/broker/authentication/fyers.py"
+      ],
+      "input_source": ".env plus data/token_store.json",
+      "operator_interaction": "TOTP/PIN driven by configured local secrets; browser/manual auth only if FYERS changes flow",
+      "output_location": "data/token_store.json and logs/token_refresh/",
+      "path": "scripts/fyers_token_refresh.py",
+      "purpose": "operator-facing canonical FYERS token prepare/refresh wrapper",
+      "refresh_behavior": "OTP/TOTP/PIN/auth_code/token exchange when prepare cannot reuse existing token",
+      "repository": "active and reference",
+      "reusable_logic": "src/tfis/brokers/fyers_token.py",
+      "secrets_can_appear_in_logs": false,
+      "token_format": "JSON access_token + refreshed_at",
+      "token_validation_behavior": "GET /user/profile",
+      "unsafe_behavior": "prints app/client/profile metadata in command output; reports must not preserve full identity"
+    },
+    {
+      "classification": "REUSE_UNCHANGED",
+      "credentials_handled": [
+        "access_token",
+        "auth_code",
+        "app_secret",
+        "client id",
+        "PIN",
+        "TOTP secret"
+      ],
+      "current_consumers": [
+        "FyersAuthenticationAdapter"
+      ],
+      "input_source": ".env and data/token_store.json",
+      "operator_interaction": "none in tests; real run uses configured credentials",
+      "output_location": "process env FYERS_APP_ID/FYERS_ACCESS_TOKEN/FYERS_CLIENT_ID plus token store",
+      "path": "src/tfis/brokers/fyers_token.py",
+      "purpose": "canonical reusable token paths, refresh, validation, environment preparation",
+      "refresh_behavior": "locked refresh with retry",
+      "repository": "active and reference",
+      "reusable_logic": "prepare_fyers_env_from_tfis",
+      "secrets_can_appear_in_logs": false,
+      "token_format": "JSON access_token + refreshed_at",
+      "token_validation_behavior": "FYERS profile check",
+      "unsafe_behavior": "profile name may be printed by existing script; not persisted by new reports"
+    },
+    {
+      "classification": "LEGACY_READ_ONLY_REFERENCE",
+      "credentials_handled": [
+        "access_token via environment only"
+      ],
+      "current_consumers": [
+        "operator smoke tests"
+      ],
+      "input_source": "canonical FYERS token prep",
+      "operator_interaction": "none beyond canonical auth",
+      "output_location": "tmp/artifacts",
+      "path": "scripts/run_s23_fyers_connection_test.py",
+      "purpose": "legacy S23 read-only/prelude connection test using canonical auth",
+      "refresh_behavior": "optional skip-refresh flag",
+      "repository": "active and reference",
+      "reusable_logic": "read-only reference consumer",
+      "secrets_can_appear_in_logs": false,
+      "token_format": "canonical token store",
+      "token_validation_behavior": "prepare_fyers_env_from_tfis",
+      "unsafe_behavior": "S23-specific; not reused for S22 auth boundary"
+    },
+    {
+      "classification": "REFACTOR_INTO_REUSABLE_SERVICE",
+      "credentials_handled": [
+        "access_token in memory only"
+      ],
+      "current_consumers": [
+        "scripts/run_broker_diagnostics.py",
+        "scripts/capture_s22_reliance_fyers_snapshot.py"
+      ],
+      "input_source": "canonical token paths/functions",
+      "operator_interaction": "operator action returned as diagnostic text",
+      "output_location": "ValidatedBrokerSession object only",
+      "path": "src/tfis/broker/authentication/fyers.py",
+      "purpose": "FYERS adapter around canonical token flow",
+      "refresh_behavior": "delegates to canonical prepare when allow_refresh=True",
+      "repository": "active",
+      "reusable_logic": "broker-platform auth boundary",
+      "secrets_can_appear_in_logs": false,
+      "token_format": "canonical token store",
+      "token_validation_behavior": "profile check through harmless read-only request",
+      "unsafe_behavior": "none identified after redaction fix"
+    },
+    {
+      "classification": "REFACTOR_INTO_REUSABLE_SERVICE",
+      "credentials_handled": [],
+      "current_consumers": [
+        "scripts/run_broker_diagnostics.py"
+      ],
+      "input_source": "ValidatedBrokerSession and optional read probes",
+      "operator_interaction": "reports required action",
+      "output_location": "sanitized BrokerDiagnosticSnapshot",
+      "path": "src/tfis/broker/diagnostics/fyers.py",
+      "purpose": "read-only auth/read-health diagnostic",
+      "refresh_behavior": "optional allow-refresh delegated to auth adapter",
+      "repository": "active",
+      "reusable_logic": "broker diagnostic boundary",
+      "secrets_can_appear_in_logs": false,
+      "token_format": "none",
+      "token_validation_behavior": "consumes auth result",
+      "unsafe_behavior": "none identified"
+    }
+  ],
+  "repositories_inspected": [
+    "D:/TradingEngineTFISRefactored",
+    "D:/TradingEngineTFIS"
+  ],
+  "schema_version": "fyers.auth_inventory.v1"
+}

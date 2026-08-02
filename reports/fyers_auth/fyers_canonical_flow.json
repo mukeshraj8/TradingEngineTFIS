@@ -1,0 +1,13 @@
+{
+  "canonical_command": ".\\.venv\\Scripts\\python.exe scripts\\fyers_token_refresh.py --prepare",
+  "canonical_operator_script": "scripts/fyers_token_refresh.py",
+  "canonical_schema": "{\"access_token\": \"<secret>\", \"refreshed_at\": \"<iso timestamp>\"}",
+  "canonical_token_provider": "src/tfis/brokers/fyers_token.py::prepare_fyers_env_from_tfis",
+  "canonical_token_store": "data/token_store.json",
+  "canonical_validation_request": "FYERS get_profile read-only request",
+  "competing_token_flow_introduced": false,
+  "expiry_classification": "Existing token is validated through profile check; invalid/expired profile response maps to TOKEN_REJECTED or TOKEN_EXPIRED. No explicit expiry timestamp exists in token store.",
+  "operator_action_when_interactive": "Run canonical command in local operator shell; do not send secrets in chat.",
+  "schema_version": "fyers.canonical_flow.v1",
+  "verdict": "CANONICAL_FLOW_SELECTED"
+}

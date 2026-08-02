@@ -1,0 +1,18 @@
+{
+  "schema_version": "s22.reliance.history_summary.v1",
+  "as_of": "2026-08-02",
+  "verdict": "BLOCKED_MARKET_EVIDENCE",
+  "capture_source": "NOT_CAPTURED",
+  "instrument": "RELIANCE",
+  "required_history": [
+    "monthly history for generic Monthly Status",
+    "completed daily candles for 2DHH, 2DLL, 4DHH and 4DLL"
+  ],
+  "missing_required_fields": [
+    "normalized completed candles",
+    "raw response hash",
+    "normalized candle hash",
+    "corporate-action adjustment caveat",
+    "duplicate/missing-session audit"
+  ]
+}

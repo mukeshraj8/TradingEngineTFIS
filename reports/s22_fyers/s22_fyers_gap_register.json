@@ -1,0 +1,31 @@
+{
+  "schema_version": "s22.fyers.gap_register.v1",
+  "as_of": "2026-08-02",
+  "verdict": "S22_RELIANCE_BLOCKED",
+  "gaps": [
+    {
+      "id": "S22-FYERS-G001",
+      "status": "OPEN",
+      "classification": "FYERS_AUTHENTICATION_REQUIRED_FOR_CAPTURE",
+      "description": "Operator-authenticated FYERS read-only capture has not yet been completed."
+    },
+    {
+      "id": "S22-FYERS-G002",
+      "status": "OPEN",
+      "classification": "BLOCKED_METADATA",
+      "description": "Dated RELIANCE symbol-master metadata has not yet been captured."
+    },
+    {
+      "id": "S22-FYERS-G003",
+      "status": "OPEN",
+      "classification": "BLOCKED_MARKET_EVIDENCE",
+      "description": "RELIANCE history, Monthly Status inputs, option-chain premium and OI evidence are not yet captured."
+    },
+    {
+      "id": "S22-FYERS-G004",
+      "status": "OPEN",
+      "classification": "IMPLEMENTATION_BLOCKED",
+      "description": "S22 RELIANCE contract selection, pre-market plan and internal-paper flow must not be implemented until captured evidence passes validation."
+    }
+  ]
+}

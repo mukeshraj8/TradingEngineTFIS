@@ -1,0 +1,14 @@
+{
+  "schema_version": "s22.reliance.field_provenance.v1",
+  "as_of": "2026-08-02",
+  "verdict": "BLOCKED_METADATA",
+  "field_provenance": {
+    "strategy_rules": "reports/s22_source_closure/",
+    "operator_enabled_stock": "USER_CLARIFIED: RELIANCE",
+    "current_instrument_metadata": "PENDING_FYERS_READ_ONLY_CAPTURE",
+    "monthly_status_inputs": "PENDING_FYERS_READ_ONLY_CAPTURE",
+    "2d_4d_references": "PENDING_FYERS_READ_ONLY_CAPTURE",
+    "option_chain_premium_oi": "PENDING_FYERS_READ_ONLY_CAPTURE",
+    "contract_selection_output": "NOT_EVALUATED"
+  }
+}

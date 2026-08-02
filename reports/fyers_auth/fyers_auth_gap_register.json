@@ -1,0 +1,17 @@
+{
+  "as_of": "2026-08-02",
+  "closed_gaps": [
+    "Canonical token flow selected and reused.",
+    "Broker-neutral auth/session models added.",
+    "FYERS auth adapter added.",
+    "Read-only broker diagnostics added.",
+    "RELIANCE read-only snapshot captured successfully."
+  ],
+  "open_auth_gaps": [],
+  "open_readiness_gaps": [
+    "S22 strategy implementation has not been started in this auth/capture milestone.",
+    "Multi-stock fan-out remains blocked until RELIANCE internal-paper certification is accepted."
+  ],
+  "order_authority": "NONE",
+  "schema_version": "fyers.auth_gap_register.v1"
+}

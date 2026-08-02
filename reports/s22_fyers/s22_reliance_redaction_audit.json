@@ -1,0 +1,30 @@
+{
+  "schema_version": "s22.reliance.redaction_audit.v1",
+  "as_of": "2026-08-02",
+  "verdict": "REDACTION_RULES_READY_NO_CAPTURED_SECRET_DATA",
+  "credentials_committed": false,
+  "fixtures_contain_credentials": false,
+  "reports_contain_credentials": false,
+  "redacted_keys": [
+    "access_token",
+    "refresh_token",
+    "authorization",
+    "auth_code",
+    "client_secret",
+    "app_secret",
+    "cookie",
+    "password",
+    "pin",
+    "totp"
+  ],
+  "preserved_non_secret_metadata": [
+    "instrument_token",
+    "source_symbol",
+    "exchange",
+    "segment",
+    "expiry",
+    "strike",
+    "lot_size",
+    "tick_size"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "s22.reliance.option_chain_summary.v1",
+  "as_of": "2026-08-02",
+  "verdict": "BLOCKED_MARKET_EVIDENCE",
+  "capture_source": "NOT_CAPTURED",
+  "instrument": "RELIANCE",
+  "required_evidence": [
+    "Near monthly expiry option chain",
+    "Next monthly expiry option chain",
+    "CE/PE contract identity",
+    "strike",
+    "premium",
+    "bid",
+    "ask",
+    "OI with quality",
+    "lot size",
+    "tick size"
+  ],
+  "missing_required_fields": [
+    "near monthly option-chain response",
+    "next monthly option-chain response",
+    "premium and OI evidence",
+    "OI unit semantics"
+  ]
+}

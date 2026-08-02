@@ -1,0 +1,9 @@
+{
+  "as_of": "2026-08-02",
+  "external_order_authority": "NONE",
+  "reason": "No S22 RELIANCE internal-paper lifecycle/accounting projection exists yet.",
+  "schema_version": "s22.reliance.dashboard_projection.v2",
+  "strategy": "S22",
+  "underlying": "RELIANCE",
+  "verdict": "NOT_CREATED_IMPLEMENTATION_DEFERRED"
+}

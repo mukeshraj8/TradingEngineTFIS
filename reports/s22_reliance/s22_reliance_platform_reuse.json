@@ -1,0 +1,90 @@
+{
+  "as_of": "2026-08-02",
+  "capability_reuse_gate": [
+    {
+      "capability": "Monthly Status",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Market Structure",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Contract Selection",
+      "change_required": "S22 policy only",
+      "reuse": true
+    },
+    {
+      "capability": "Gap/Missed Entry",
+      "change_required": "S22 policy only",
+      "reuse": true
+    },
+    {
+      "capability": "Entry Engine",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Runtime",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Persistence",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Reconciliation",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "ExecutionIntent",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "AccountCoordinator",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Order Simulation",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "PositionCycle",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Accounting",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "TradeFact",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "PnLFact",
+      "change_required": "No",
+      "reuse": true
+    }
+  ],
+  "external_order_authority": "NONE",
+  "generic_files_changed": [
+    "src/tfis/broker/authentication/*",
+    "src/tfis/broker/diagnostics/*",
+    "src/tfis/fyers_read_only/adapter.py",
+    "src/tfis/fyers_read_only/models.py"
+  ],
+  "s22_strategy_files_changed": [],
+  "schema_version": "s22.reliance.platform_reuse.v2",
+  "verdict": "AUTH_CAPTURE_REUSES_PLATFORM_IMPLEMENTATION_PENDING"
+}

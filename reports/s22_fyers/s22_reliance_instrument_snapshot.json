@@ -1,0 +1,17 @@
+{
+  "schema_version": "s22.reliance.instrument_snapshot.v1",
+  "as_of": "2026-08-02",
+  "verdict": "BLOCKED_METADATA",
+  "capture_source": "NOT_CAPTURED",
+  "instrument": "RELIANCE",
+  "missing_required_fields": [
+    "dated NSE cash symbol-master record",
+    "dated NSEFO option symbol-master records",
+    "current F&O eligibility",
+    "lot size and effective date",
+    "strike interval",
+    "tick size",
+    "broker and market-data identifiers",
+    "active monthly option contracts"
+  ]
+}
