@@ -1,0 +1,136 @@
+{
+  "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+  "configuration_hash": "s21-source-closure-config-v1",
+  "decision_context": {
+    "acknowledgements_affect_pnl": false,
+    "configured_lots": 1,
+    "contract_observations": [
+      {
+        "price": "925.00"
+      },
+      {
+        "price": "370.00"
+      },
+      {
+        "price": "1337.50"
+      }
+    ],
+    "exchange_quantity": 15,
+    "lot_size": 15,
+    "normal_gap_path": "S21_ORPT_RC_ONLY",
+    "planned_prices_are_not_pnl_inputs": true,
+    "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+    "source_rule_ids": [
+      "S21.BULL_CALL.STATIC.001",
+      "S21.CONTRACT_SELECTION.001",
+      "S21.FRESH_ENTRY_ORPT_RC.001",
+      "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+    ],
+    "strategy_branch": "BULL_CALL"
+  },
+  "execution": {
+    "average_entry": "925.0",
+    "average_exit": "370.00",
+    "confirmed_entry_quantity": 15,
+    "confirmed_exit_quantity": 15,
+    "entry_fill_count": 1,
+    "exit_fill_count": 1,
+    "final_exit_timestamp": "2024-01-23T09:31:00+05:30",
+    "first_entry_timestamp": "2024-01-23T09:30:00+05:30",
+    "first_exit_timestamp": "2024-01-23T09:31:00+05:30",
+    "last_entry_timestamp": "2024-01-23T09:30:00+05:30",
+    "partial_exit": false,
+    "partial_fill": false,
+    "remaining_quantity": 0,
+    "requested_entry_quantity": 15
+  },
+  "fact_hash": "e1263c6787962257a4e9e526bd6ed886a75f9ce9502585ac7157aee52827665d",
+  "final_trading_date": "2024-01-23",
+  "instrument": {
+    "contract": "BANKNIFTY_20240125_47000_CE",
+    "currency": "INR",
+    "direction": "BULL_CALL",
+    "exchange": "NSE",
+    "expiry": "2024-01-25",
+    "lot_size": 15,
+    "metadata_version": "s21.option_selling.banknifty.v1",
+    "multiplier": "1",
+    "option_type": "CE",
+    "product": "OPTION_SELLING",
+    "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+    "strike": "47000",
+    "tick_size": "0.05",
+    "underlying": "BANKNIFTY"
+  },
+  "lifecycle": {
+    "carry_forward_count": 0,
+    "eod_exit": false,
+    "final_exit_reason": "TARGET",
+    "original_sl_hit": false,
+    "original_sl_linked": true,
+    "revised_sl_hit": false,
+    "revised_sl_linked": false,
+    "target_hit": true,
+    "target_linked": true,
+    "terminal_state": "CLOSED",
+    "win_loss": "WIN"
+  },
+  "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+  "originating_trading_date": "2024-01-23",
+  "performance_inputs": {
+    "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+    "capital_or_margin_estimate": null,
+    "current_unrealized_pnl": "0.00",
+    "duration_seconds": 60,
+    "gross_realized_pnl": "8325.00",
+    "mark_quality": "EXECUTABLE_SIDE",
+    "mfe_mae": {
+      "evidence_hash": "1ce606539e4781d580bc31007c6c5f2fa690683b6057a08d81e4077d3f656de7",
+      "mae": "412.50",
+      "mfe": "555.00",
+      "observation_count": 3,
+      "quality": "COMPLETE"
+    },
+    "net_realized_pnl": "8310.00",
+    "provisional_charges": "15.00"
+  },
+  "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+  "provenance": {
+    "correction_source": "NONE",
+    "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+    "source_fill_ids": [
+      "internal-fill:e32c40fb1fd987c89ef4cc23",
+      "internal-fill:b1bd07c93329702dfada1068"
+    ],
+    "source_hashes": {
+      "position_event_ids": [
+        "internal-fill:e32c40fb1fd987c89ef4cc23",
+        "internal-fill:b1bd07c93329702dfada1068"
+      ],
+      "position_projection": "d35bd6e20005184d43f998193c4c00021ca7105f54580bc45b594b09b863a5bd"
+    },
+    "source_lifecycle_requirement_ids": [
+      "lifecycle-req:245733a184a843c66ea4ef28",
+      "lifecycle-req:e9f05ef98dee5b261ee54435"
+    ],
+    "source_order_ids": [
+      "client-order:397612058981179e43ada889",
+      "client-order:a26da3399728282eb9aa2a36"
+    ],
+    "source_position_event_ids": [
+      "internal-fill:e32c40fb1fd987c89ef4cc23",
+      "internal-fill:b1bd07c93329702dfada1068"
+    ]
+  },
+  "rule_matrix_version": "s21_source_closure_accepted_v1",
+  "state": "CLOSED_PROVISIONAL",
+  "strategy_definition": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+  "strategy_family": "OPTION_SELLING",
+  "strategy_instance": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+  "strategy_version": "1.0.0",
+  "supersedes_trade_fact_id": null,
+  "trade_fact_id": "trade-fact:a6f8f2bd91de9f14e84982b7",
+  "trade_fact_version": "phase4i.s23.short_option_accounting.v1",
+  "trade_id": "trade:ipc:43aca3bf181eda4c27004eca",
+  "trading_session_id": "NSE:2024-01-23"
+}

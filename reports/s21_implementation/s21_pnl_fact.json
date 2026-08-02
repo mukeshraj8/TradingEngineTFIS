@@ -1,0 +1,44 @@
+{
+  "account": "INTERNAL_PAPER_ACCOUNT",
+  "as_of_timestamp": "2024-01-23T15:31:00+05:30",
+  "calculation_version": "phase4i.s23.short_option_accounting.v1",
+  "charges": "15.00",
+  "currency": "INR",
+  "evidence_hash": "2b1f9dd743d65b85e387e6afb2b490318192676283b31a98e78c5de3bf611fd4",
+  "fact_hash": "7e9ebe8c5953c1f85f1c724f0cfee3029d701c43b4c3162f7cff730222167ee2",
+  "fact_type": "REALIZED_TRADE_PNL",
+  "gross_pnl": "8325.00",
+  "instrument": {
+    "contract": "BANKNIFTY_20240125_47000_CE",
+    "currency": "INR",
+    "direction": "BULL_CALL",
+    "exchange": "NSE",
+    "expiry": "2024-01-25",
+    "lot_size": 15,
+    "metadata_version": "s21.option_selling.banknifty.v1",
+    "multiplier": "1",
+    "option_type": "CE",
+    "product": "OPTION_SELLING",
+    "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+    "strike": "47000",
+    "tick_size": "0.05",
+    "underlying": "BANKNIFTY"
+  },
+  "metadata_version": "s21.option_selling.banknifty.v1",
+  "net_pnl": "8310.00",
+  "pnl_fact_id": "pnl-fact:2b1f9dd743d65b85e387e6af",
+  "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+  "realized_unrealized": "REALIZED",
+  "source_identities": {
+    "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+    "source_fill_ids": [
+      "internal-fill:e32c40fb1fd987c89ef4cc23",
+      "internal-fill:b1bd07c93329702dfada1068"
+    ],
+    "supersession_reason": null,
+    "trade_fact_id": "trade-fact:a6f8f2bd91de9f14e84982b7"
+  },
+  "strategy": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+  "supersedes_pnl_fact_id": null,
+  "trading_date": "2024-01-23"
+}

@@ -1904,3 +1904,20 @@ Phase 5A Milestone 1 result:
 - exact next recommendation is repeated internal-paper observation across
   multiple captured sessions; do not recommend or enable external live
   authority from Phase 5A
+
+Phase 5D S21 first-branch result:
+
+- one source-closed S21 `BULL_CALL` BANKNIFTY monthly option-selling branch now
+  runs through the existing generic offline/internal-paper platform without
+  generic runtime changes
+- reports under `reports/s21_implementation` document branch selection,
+  policy composition, contract selection, premarket plan, normal Target,
+  Original SL, ORPT/RC revised SL, no-contract, EOD, carry/recovery,
+  accounting facts, complete trace, S23 regression guard, reuse gate and
+  remaining gap register
+- S21 quantity is represented as 1 configured lot and 15 exchange units using
+  workbook-era BANKNIFTY metadata; APS remains not applicable for S21
+- exact next recommendation is S21 reviewer acceptance of the first branch,
+  then implement the remaining three S21 branches by policy/config evidence
+  only; do not change generic runtime unless a reusable platform defect is
+  proven

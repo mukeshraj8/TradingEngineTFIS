@@ -1,0 +1,159 @@
+{
+  "authority": {
+    "broker_submission_permitted": false,
+    "external_paper_submission_permitted": false,
+    "live_submission_permitted": false,
+    "mode": "OFFLINE_INTERNAL_PAPER_ONLY",
+    "real_position_mutation_permitted": false
+  },
+  "eod_equal_carry_forward": {
+    "equality_outcome": "CARRY_FORWARD",
+    "observed_price": "1337.50",
+    "operator": "<=",
+    "original_sl": "1337.50",
+    "projection": {
+      "active_order_references": [],
+      "active_original_sl": null,
+      "active_revised_sl": null,
+      "active_target": null,
+      "average_entry_price": "925.0",
+      "average_exit_price": null,
+      "cancelled_protections": [],
+      "carry_forward_status": "EOD_EQUAL_OR_BELOW_ORIGINAL_SL_CARRY_FORWARD",
+      "confirmed_entry_quantity": 15,
+      "currency": "INR",
+      "entry_fill_ids": [
+        "internal-fill:7d35044e99614f753bb88415"
+      ],
+      "exit_fill_ids": [],
+      "filled_exit_order_id": null,
+      "identity": {
+        "authority_classification": "INTERNAL_PAPER_ONLY",
+        "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
+        "broker_reconciliation_authority": false,
+        "direction": "BULL_CALL",
+        "external_broker_position": false,
+        "live_position": false,
+        "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+        "normalized_contract": "BANKNIFTY_20240125_47000_CE",
+        "originating_entry_execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+        "originating_execution_plan_id": "s21-effective:normal",
+        "originating_trading_date": "2024-01-23",
+        "position_cycle_hash": "68156d316439b239a5db547f17eeb07ce6d673cc5c84356cca7f65114b9cfd06",
+        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "side": "SELL",
+        "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+        "strategy_family_id": "OPTION_SELLING",
+        "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+        "strategy_version": "1.0.0",
+        "trading_session_id": "NSE:2024-01-23"
+      },
+      "lifecycle_state": "CARRIED_FORWARD",
+      "lot_size": 15,
+      "multiplier": "1",
+      "next_trading_session_id": "NSE:2024-01-24",
+      "originating_trading_date": "2024-01-23",
+      "projection_hash": "d8d9fca13b5da5139300d0fd80460d2c392335af90ef626be78c0531dcbff7cd",
+      "projection_version": 3,
+      "protection_generation": 0,
+      "realized_quantity": 0,
+      "remaining_quantity": 15,
+      "superseded_protections": [],
+      "terminal_status": null
+    },
+    "source_rule_id": "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001",
+    "transition": {
+      "consistency_status": "MATCHED",
+      "event": {
+        "event_hash": "56d4ab0d87611b34330046e430e7ca0eaa8fdc1a4ca04a9a413a41492ffad6fb",
+        "event_id": "position-event:a185f664684fa02933ee0ffb",
+        "event_sequence": 3,
+        "event_timestamp": "2024-01-23T15:00:00+05:30",
+        "event_type": "CARRY_FORWARD_RECORDED",
+        "new_state": "CARRIED_FORWARD",
+        "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+        "price_evidence": {
+          "equality_behavior": "CARRY_FORWARD",
+          "observed_price": "1337.50",
+          "original_sl": "1337.50"
+        },
+        "prior_state": "OPEN_UNPROTECTED",
+        "quantity_after": 15,
+        "quantity_before": 15,
+        "rule_ids": [
+          "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+        ],
+        "source_client_order_id": null,
+        "source_fill_id": null,
+        "source_requirement_id": null
+      },
+      "projection": {
+        "active_order_references": [],
+        "active_original_sl": null,
+        "active_revised_sl": null,
+        "active_target": null,
+        "average_entry_price": "925.0",
+        "average_exit_price": null,
+        "cancelled_protections": [],
+        "carry_forward_status": "EOD_EQUAL_OR_BELOW_ORIGINAL_SL_CARRY_FORWARD",
+        "confirmed_entry_quantity": 15,
+        "currency": "INR",
+        "entry_fill_ids": [
+          "internal-fill:7d35044e99614f753bb88415"
+        ],
+        "exit_fill_ids": [],
+        "filled_exit_order_id": null,
+        "identity": {
+          "authority_classification": "INTERNAL_PAPER_ONLY",
+          "broker_account_id": "S21_ACCOUNT_A_INTERNAL_PAPER",
+          "broker_reconciliation_authority": false,
+          "direction": "BULL_CALL",
+          "external_broker_position": false,
+          "live_position": false,
+          "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+          "normalized_contract": "BANKNIFTY_20240125_47000_CE",
+          "originating_entry_execution_intent_id": "exec-intent:f12205a28b80f513a2b517d9",
+          "originating_execution_plan_id": "s21-effective:normal",
+          "originating_trading_date": "2024-01-23",
+          "position_cycle_hash": "68156d316439b239a5db547f17eeb07ce6d673cc5c84356cca7f65114b9cfd06",
+          "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+          "side": "SELL",
+          "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+          "strategy_family_id": "OPTION_SELLING",
+          "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+          "strategy_version": "1.0.0",
+          "trading_session_id": "NSE:2024-01-23"
+        },
+        "lifecycle_state": "CARRIED_FORWARD",
+        "lot_size": 15,
+        "multiplier": "1",
+        "next_trading_session_id": "NSE:2024-01-24",
+        "originating_trading_date": "2024-01-23",
+        "projection_hash": "d8d9fca13b5da5139300d0fd80460d2c392335af90ef626be78c0531dcbff7cd",
+        "projection_version": 3,
+        "protection_generation": 0,
+        "realized_quantity": 0,
+        "remaining_quantity": 15,
+        "superseded_protections": [],
+        "terminal_status": null
+      },
+      "requirements": [],
+      "transition_hash": "d1b2cb1b75f6d6649db8d75355ad49f1e3c34be8973da2208261b1471072db4e",
+      "transition_id": "position-transition:b3a7f76e80f33fdaee86e055"
+    }
+  },
+  "next_day_recovery": {
+    "assessment_id": "carried-recovery:aeddf135c4ff010f7429d18a",
+    "findings": [],
+    "position_cycle_id": "ipc:43aca3bf181eda4c27004eca",
+    "recovery_hash": "23c99654ae6aefeb1d54de5ecd2794a931bb1624fc7a75c39a3e053af9d2ba44",
+    "status": "CARRIED_POSITION_RECOVERABLE"
+  },
+  "restart_after_entry_fill": {
+    "assessment_id": "position-consistency:aeddf135c4ff010f7429d18a",
+    "findings": [],
+    "projection_hash": "d8d9fca13b5da5139300d0fd80460d2c392335af90ef626be78c0531dcbff7cd",
+    "status": "MATCHED"
+  },
+  "result_hash": "5e1786a4e5bef2b43e1f7535487a613a229d16aa07ee542b34860332a7825bbf"
+}

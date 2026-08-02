@@ -3103,3 +3103,19 @@ Current notes:
   INTERNAL-PAPER S23 ACTIVATION`; broker, live, broker-sandbox, external
   paper, external order mutation and external position mutation authority
   remain `NONE`.
+- Phase 5D S21 first-branch milestone now proves one fully source-closed
+  `BULL_CALL` S21 BANKNIFTY monthly option-selling branch through the existing
+  offline/internal-paper platform under `src/tfis/adapters/phase5d`. The
+  milestone uses the generic MonthlyStatusEngine, S21 branch policy,
+  contract-selection policy evidence, EffectiveExecutionPlan,
+  ExecutionIntent validation, AccountCoordinator, deterministic internal-paper
+  fills, PositionCycle lifecycle, TradeFact/PnLFact accounting and projections.
+  Reports live under `reports/s21_implementation` and cover normal target,
+  original SL, ORPT/RC revised SL, Near-to-Next fallback, no-contract fail
+  closed, EOD exit, EOD equality carry-forward, next-day recovery, duplicate
+  replay, restart consistency, reconciliation block and S21/S23 isolation.
+  Runtime impact is `OFFLINE INTERNAL-PAPER FIXTURE/REPORT ONLY`; broker,
+  external paper, live, external order mutation and real position mutation
+  authority remain `NONE`. Generic runtime change count is zero. Known naming
+  limitation: the reused short-option accounting builder still carries an
+  S23-era calculation-version label.
