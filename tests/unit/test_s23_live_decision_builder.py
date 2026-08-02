@@ -483,6 +483,27 @@ def test_live_decision_recalculates_bear_put_when_orpt_entry_is_missed() -> None
     assert result.summary.selected_contract_symbol == "NIFTY_20260604_23750_PE"
 
 
+def test_live_decision_put_missed_entry_uses_orpt_option_low_not_high() -> None:
+    collected_inputs = replace(
+        _collected_inputs(),
+        selected_contract_bars=(
+            _selected_contract_bar(day=28, minute=24, low=180.0, high=260.0, close=240.0),
+            _selected_contract_bar(day=28, minute=29, low=175.0, high=205.0, close=180.0),
+        ),
+    )
+
+    result = S23PaperLiveDecisionBuilder().build(
+        strategy_rule=_strategy_rule(),
+        reference_packet=_reference_packet(),
+        collected_inputs=collected_inputs,
+    )
+
+    assert result.explanation["orpt_rc_timing"]["status"] == "ENTRY_MISSED_RECALCULATED"
+    assert result.explanation["orpt_rc_timing"]["missed_rule"] == "PUT missed-entry test: ORPT option low < base entry."
+    assert result.explanation["orpt_rc_timing"]["orpt_option_low"] == 180.0
+    assert result.explanation["orpt_rc_timing"]["orpt_option_high"] == 260.0
+
+
 def test_live_decision_missed_entry_uses_configured_target_and_sl_percentages() -> None:
     collected_inputs = replace(
         _collected_inputs(),

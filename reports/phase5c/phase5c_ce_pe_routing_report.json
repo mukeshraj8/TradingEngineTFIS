@@ -1,0 +1,80 @@
+{
+  "ce_observations_can_satisfy_pe": false,
+  "contract_identity_structured_not_display_name": true,
+  "old_call_state_leaks_into_put": false,
+  "old_put_state_leaks_into_call": false,
+  "pe_observations_can_satisfy_ce": false,
+  "sessions": [
+    {
+      "branch": "BULL_CALL",
+      "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+      "option_type": "CALL",
+      "session_id": "phase5c_bull_call_normal_target"
+    },
+    {
+      "branch": "BEAR_CALL",
+      "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+      "option_type": "CALL",
+      "session_id": "phase5c_bear_call_normal_original_sl"
+    },
+    {
+      "branch": "BULL_PUT",
+      "contract": "NIFTY_BULL_PUT_PE_71228a56",
+      "option_type": "PUT",
+      "session_id": "phase5c_bull_put_normal_target"
+    },
+    {
+      "branch": "BEAR_PUT",
+      "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+      "option_type": "PUT",
+      "session_id": "phase5c_bear_put_normal_original_sl"
+    },
+    {
+      "branch": "BULL_CALL",
+      "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+      "option_type": "CALL",
+      "session_id": "phase5c_bull_call_gap_revised_sl"
+    },
+    {
+      "branch": "BEAR_PUT",
+      "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+      "option_type": "PUT",
+      "session_id": "phase5c_bear_put_gap_revised_sl"
+    },
+    {
+      "branch": "BULL_PUT",
+      "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+      "option_type": "PUT",
+      "session_id": "phase5c_no_trade_by_rule"
+    },
+    {
+      "branch": "BULL_CALL",
+      "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+      "option_type": "CALL",
+      "session_id": "phase5c_missing_orpt_block"
+    },
+    {
+      "branch": "BULL_CALL",
+      "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+      "option_type": "CALL",
+      "session_id": "phase5c_bull_call_carry_recovery"
+    },
+    {
+      "branch": "BULL_PUT",
+      "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+      "option_type": "PUT",
+      "session_id": "phase5c_bull_put_carry_recovery"
+    },
+    {
+      "branch": "BEAR_CALL",
+      "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+      "option_type": "CALL",
+      "session_id": "phase5c_duplicate_out_of_order_bear_call"
+    }
+  ],
+  "stale_prior_session_contract_blocks": true,
+  "status": "PASSED",
+  "wrong_expiry_blocks": true,
+  "wrong_option_type_blocks": true,
+  "wrong_strike_blocks": true
+}

@@ -320,8 +320,8 @@ class S23PaperLiveDecisionBuilder:
             entry_missed = (orpt_option_bar.low or 0.0) < entry_price
             missed_rule = "CALL missed-entry test: ORPT option low < base entry."
         else:
-            entry_missed = (orpt_option_bar.high or 0.0) < entry_price
-            missed_rule = "PUT missed-entry test: ORPT option high < base entry."
+            entry_missed = (orpt_option_bar.low or 0.0) < entry_price
+            missed_rule = "PUT missed-entry test: ORPT option low < base entry."
         if not entry_missed:
             return {
                 "status": "BASE_ENTRY_VALID",

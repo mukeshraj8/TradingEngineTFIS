@@ -1,0 +1,98 @@
+[
+  {
+    "accepted_output": "reports/phase5a/phase5a_bull_target_session.json",
+    "branch": "BULL_CALL",
+    "case": "Call normal",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "NORMAL",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5a/phase5a_gap_revised_sl_session.json",
+    "branch": "BULL_CALL",
+    "case": "Call gap",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "GAP_RC",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5b/phase5b_bull_put_normal_result.json",
+    "branch": "BULL_PUT",
+    "case": "Put normal",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "NORMAL",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5b/phase5b_bear_put_gap_result.json",
+    "branch": "BEAR_PUT",
+    "case": "Put gap",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "GAP_RC",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5a/phase5a_bull_target_session.json",
+    "branch": "BULL_CALL",
+    "case": "Call Target",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "EXIT",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5a/phase5a_bear_sl_session.json",
+    "branch": "BEAR_CALL",
+    "case": "Call Original SL",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "EXIT",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5a/phase5a_gap_revised_sl_session.json",
+    "branch": "BULL_CALL",
+    "case": "Call revised SL",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "EXIT",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5b/phase5b_put_target_result.json",
+    "branch": "BULL_PUT",
+    "case": "Put Target",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "EXIT",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5b/phase5b_put_original_sl_result.json",
+    "branch": "BEAR_PUT",
+    "case": "Put Original SL",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "EXIT",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5b/phase5b_put_revised_sl_result.json",
+    "branch": "BULL_PUT",
+    "case": "Put revised SL",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "EXIT",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5a/phase5a_carry_recovery_session.json",
+    "branch": "BULL_CALL",
+    "case": "Call EOD/carry",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "CARRY",
+    "unexplained_difference": false
+  },
+  {
+    "accepted_output": "reports/phase5b/phase5b_put_carry_recovery_result.json",
+    "branch": "BULL_PUT",
+    "case": "Put EOD/carry",
+    "comparison": "MATCHES_ACCEPTED_OUTPUT_WHEN_INPUTS_UNCHANGED",
+    "path": "CARRY",
+    "unexplained_difference": false
+  }
+]

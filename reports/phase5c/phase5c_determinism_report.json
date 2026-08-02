@@ -1,0 +1,106 @@
+{
+  "all_identical": true,
+  "run_count_per_session": 3,
+  "sessions": [
+    {
+      "hashes": [
+        "7d531f07a88b5865246f02566aeb00f68d59ac3526a20adcf56e3b6177311762",
+        "7d531f07a88b5865246f02566aeb00f68d59ac3526a20adcf56e3b6177311762",
+        "7d531f07a88b5865246f02566aeb00f68d59ac3526a20adcf56e3b6177311762"
+      ],
+      "identical": true,
+      "session_id": "phase5c_bull_call_normal_target"
+    },
+    {
+      "hashes": [
+        "82daa44b26b27ba4b71f18af8e2c7af7135b4ae30cc636f062843c3a4db120c2",
+        "82daa44b26b27ba4b71f18af8e2c7af7135b4ae30cc636f062843c3a4db120c2",
+        "82daa44b26b27ba4b71f18af8e2c7af7135b4ae30cc636f062843c3a4db120c2"
+      ],
+      "identical": true,
+      "session_id": "phase5c_bear_call_normal_original_sl"
+    },
+    {
+      "hashes": [
+        "06df096e9e3178b6231fe8903ec908a0ccb8a34b514fe7e98260c07d9e89fc72",
+        "06df096e9e3178b6231fe8903ec908a0ccb8a34b514fe7e98260c07d9e89fc72",
+        "06df096e9e3178b6231fe8903ec908a0ccb8a34b514fe7e98260c07d9e89fc72"
+      ],
+      "identical": true,
+      "session_id": "phase5c_bull_put_normal_target"
+    },
+    {
+      "hashes": [
+        "bb6b2b5dae7e8939af926f560c2fb59d772a0756ec12d6f8cc1d6ae4ad68d7e3",
+        "bb6b2b5dae7e8939af926f560c2fb59d772a0756ec12d6f8cc1d6ae4ad68d7e3",
+        "bb6b2b5dae7e8939af926f560c2fb59d772a0756ec12d6f8cc1d6ae4ad68d7e3"
+      ],
+      "identical": true,
+      "session_id": "phase5c_bear_put_normal_original_sl"
+    },
+    {
+      "hashes": [
+        "d53a9d1dc876339172fdda73a12a2bf8162010a93f5f4835d5c89ec1964d1ce1",
+        "d53a9d1dc876339172fdda73a12a2bf8162010a93f5f4835d5c89ec1964d1ce1",
+        "d53a9d1dc876339172fdda73a12a2bf8162010a93f5f4835d5c89ec1964d1ce1"
+      ],
+      "identical": true,
+      "session_id": "phase5c_bull_call_gap_revised_sl"
+    },
+    {
+      "hashes": [
+        "0dc3a64499a233f3f14f44c32d68ce84036afbfa41ebbc2213c18199f2753ba6",
+        "0dc3a64499a233f3f14f44c32d68ce84036afbfa41ebbc2213c18199f2753ba6",
+        "0dc3a64499a233f3f14f44c32d68ce84036afbfa41ebbc2213c18199f2753ba6"
+      ],
+      "identical": true,
+      "session_id": "phase5c_bear_put_gap_revised_sl"
+    },
+    {
+      "hashes": [
+        "780c21b8b7335d066c27dfba05df61e0cf039d8bcddea9ab0ad963987d6f174e",
+        "780c21b8b7335d066c27dfba05df61e0cf039d8bcddea9ab0ad963987d6f174e",
+        "780c21b8b7335d066c27dfba05df61e0cf039d8bcddea9ab0ad963987d6f174e"
+      ],
+      "identical": true,
+      "session_id": "phase5c_no_trade_by_rule"
+    },
+    {
+      "hashes": [
+        "dc16f5906994b92ae70b5c5552c3f858db28e2d07727344703a0ed6fcaa900ff",
+        "dc16f5906994b92ae70b5c5552c3f858db28e2d07727344703a0ed6fcaa900ff",
+        "dc16f5906994b92ae70b5c5552c3f858db28e2d07727344703a0ed6fcaa900ff"
+      ],
+      "identical": true,
+      "session_id": "phase5c_missing_orpt_block"
+    },
+    {
+      "hashes": [
+        "7f7510569c607800fbbdbe38096c39414efc1c0c160c0da3e8e98775b5c8ac3d",
+        "7f7510569c607800fbbdbe38096c39414efc1c0c160c0da3e8e98775b5c8ac3d",
+        "7f7510569c607800fbbdbe38096c39414efc1c0c160c0da3e8e98775b5c8ac3d"
+      ],
+      "identical": true,
+      "session_id": "phase5c_bull_call_carry_recovery"
+    },
+    {
+      "hashes": [
+        "4018ace7b8391526edeb58bd30401fdd43f145801372f16b6b1d363bc946a298",
+        "4018ace7b8391526edeb58bd30401fdd43f145801372f16b6b1d363bc946a298",
+        "4018ace7b8391526edeb58bd30401fdd43f145801372f16b6b1d363bc946a298"
+      ],
+      "identical": true,
+      "session_id": "phase5c_bull_put_carry_recovery"
+    },
+    {
+      "hashes": [
+        "396d6c73cd11b16b559661e993764a858df7535e28b4b830d53261ccc7d85393",
+        "396d6c73cd11b16b559661e993764a858df7535e28b4b830d53261ccc7d85393",
+        "396d6c73cd11b16b559661e993764a858df7535e28b4b830d53261ccc7d85393"
+      ],
+      "identical": true,
+      "session_id": "phase5c_duplicate_out_of_order_bear_call"
+    }
+  ],
+  "status": "PASSED"
+}

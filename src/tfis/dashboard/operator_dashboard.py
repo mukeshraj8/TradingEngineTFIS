@@ -4395,8 +4395,8 @@ class TfisOperatorDashboardBuilder:
             )
         else:
             comparison = (
-                f"PUT sell miss test is ORPT option high < base entry. "
-                f"ORPT high was {self._fmt_number(audit.get('orpt_option_high'))}; base entry was {base_entry}."
+                f"PUT sell miss test is ORPT option low < base entry. "
+                f"ORPT low was {self._fmt_number(audit.get('orpt_option_low'))}; base entry was {base_entry}."
             )
         if status == "BASE_ENTRY_VALID":
             return (

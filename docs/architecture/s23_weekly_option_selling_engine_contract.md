@@ -160,9 +160,9 @@ reference candles.
 | Monthly Group | Side | Missed-entry test at ORPT | RC strike / premium reference | RC entry reference | RC SL reference |
 |---|---|---|---|---|---|
 | Bullish | CE | ORPT option low `<` base CE entry | `MIN(PRV_3DLL, RC spot low)` | `MIN(OPT_PRV_3DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.07)` |
-| Bullish | PE | ORPT option high `<` base PE entry | strike uses `MAX(PRV_2DHH, RC spot high)`; premium uses `MIN(PRV_2DHH, RC spot low)` | `MIN(OPT_PRV_2DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.10)` |
+| Bullish | PE | ORPT option low `<` base PE entry | strike uses `MAX(PRV_2DHH, RC spot high)`; premium uses `MIN(PRV_2DHH, RC spot low)` | `MIN(OPT_PRV_2DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.10)` |
 | Bearish | CE | ORPT option low `<` base CE entry | `MIN(PRV_2DLL, RC spot low)` | `MIN(OPT_PRV_2DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.10)` |
-| Bearish | PE | ORPT option high `<` base PE entry | strike uses `MAX(PRV_3DHH, RC spot high)`; premium uses `MIN(PRV_3DHH, RC spot low)` | `MIN(OPT_PRV_3DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.07)` |
+| Bearish | PE | ORPT option low `<` base PE entry | strike uses `MAX(PRV_3DHH, RC spot high)`; premium uses `MIN(PRV_3DHH, RC spot low)` | `MIN(OPT_PRV_3DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.07)` |
 
 For recalculated CE legs:
 

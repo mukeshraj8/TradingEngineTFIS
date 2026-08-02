@@ -1,0 +1,19 @@
+{
+  "allowed_reuse": [
+    "accepted source-backed rule evidence",
+    "accepted controlled internal-paper runtime",
+    "accepted accounting and projection builders",
+    "fixture inputs where captured data cannot support branch coverage"
+  ],
+  "branch_override": false,
+  "contract_selection_bypassed": false,
+  "entry_gap_lifecycle_bypassed": false,
+  "limitation": "Some accepted Phase 5A/5B builders still use deterministic fixtures; this is reported as fixture-backed observation, not captured parity.",
+  "manual_call_put_flags": false,
+  "observation_runner_sets_final_branch_from_report_metadata": false,
+  "option_type_override_after_resolution": false,
+  "precomputed_pnl_injected": false,
+  "precomputed_positioncycle_injected": false,
+  "precomputed_tradefact_injected": false,
+  "status": "PASSED_WITH_FIXTURE_LIMITATION"
+}

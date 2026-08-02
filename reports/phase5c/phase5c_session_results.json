@@ -1,0 +1,2270 @@
+[
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BULL_CALL",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "TARGET",
+      "exit_side": "BUY",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": 95.0,
+      "option_type": "CALL",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "WIN"
+    },
+    "business_hash": "7d531f07a88b5865246f02566aeb00f68d59ac3526a20adcf56e3b6177311762",
+    "carried": false,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BULLISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_COMPLETED",
+    "path_kind": "NORMAL",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BULL_CALL",
+    "selected_contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+    "selected_option_type": "CALL",
+    "session_id": "phase5c_bull_call_normal_target",
+    "source_path": "reports/phase5a/phase5a_bull_target_session.json",
+    "stages": [
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "21d520dc7dd86776c9b22d3d4830fde1b5f7370a446df82983eb62966d25e219",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "226e9823b61e48e94cc0287905ed0bf91fd71c4cc646443a9abb8e89b3f7a33c",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "6bd30c27517b781b5c26928fbc4fc6df6027d5ed0544a60209b1e757446bc078",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "c78909b6e53abeb5d76e69e31551d83f64edb86ba0bd9ea2c7a22b81c1bb7bf8",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "ea9a7144062f9bf2fb3e375cd917c873e5274805799d8661b7b18a53ee552d0e",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "4e33bb21184b71a47ee4b05609cfba0858d1be6e965490f6b7c6dfecb11dc95d",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "c6081a9efd2da7cb7c96a67f2da4e675de89d78fd572f66da0c997e71a1b841e",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "aa9a06c2043d069e3282886c7625019c2b3965facedf175685fd054b07967f97",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "c5ffa513240c52d2199569d27c16632670b07f5bcd3b61e6c2659dfb17da1829",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "d0b4c19ce4d9667d0ead69285de12597a5bd72e26c67a4590044a05c7944dd21",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "73a7d1713171d9ffccade495f27128268e864f94708c87ae41d34cf7abb3e580",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "0f72cb21c65d3bf27a2e79329c4949272ffe7fa9ea464c80fe56c5cfd36b407c",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "42751f4ad38e032e763fc52c7e2e3079aa638c3ed862680cc39643c76a305381",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "2c010777678a8a7a1da62e6209145a7a83e47d02a2a1abf1b2f798b6bc4c7b9a",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "a511ebc5fd3ad5b9a4b70e6d2da339b536679e1732785425e651c0705cb4977e",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "d8a1094268811443faafe89f2c990694c45f467022d599566cb358bba1bcafa7",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_a64b8c14",
+        "hash": "2894676f065e9c03a3942a3582c8094307f6eaa47ec266e118046ec7731ec5e9",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "622d31ecc7c9f47677934ad78a20b009921f274091a26bb9380d9dc228e8391b",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_bull_call_normal_target"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "7d531f07a88b5865246f02566aeb00f68d59ac3526a20adcf56e3b6177311762",
+      "7d531f07a88b5865246f02566aeb00f68d59ac3526a20adcf56e3b6177311762",
+      "7d531f07a88b5865246f02566aeb00f68d59ac3526a20adcf56e3b6177311762"
+    ],
+    "trading_date": "2026-06-05"
+  },
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BEAR_CALL",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "ORIGINAL_SL",
+      "exit_side": "BUY",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": -120.0,
+      "option_type": "CALL",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "LOSS"
+    },
+    "business_hash": "82daa44b26b27ba4b71f18af8e2c7af7135b4ae30cc636f062843c3a4db120c2",
+    "carried": false,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BEARISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_COMPLETED",
+    "path_kind": "NORMAL",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BEAR_CALL",
+    "selected_contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+    "selected_option_type": "CALL",
+    "session_id": "phase5c_bear_call_normal_original_sl",
+    "source_path": "reports/phase5a/phase5a_bear_sl_session.json",
+    "stages": [
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "57b7b90b5196c5a280a94b8eb8ece52a902e977c84367a7595cadd2e4e5bbf26",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "ed8fb93521792c605275497e3adb91586b9fd236cf94d9bdf18e76e19aae03ce",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "932005ca5780f53229b777d16630e08deab0d73fb0f45779ecf8ec665ffd0314",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "86a10969ce21b7648613b19aa536cbfb2c9c5cd47eee7bbc417fc942fdef1e67",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "82e95d48ee3744a005d17e905f77e8c86751e2e9be42fbab085691f57a8139d9",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "dc6c9c67117cd5f3ed829d92f25ede6d2541e8a1c80205eabae9d851b7f003f8",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "00ab8fe6c6d4d188a74da6210f58e4b60d0d3f65cd0ddb518fe4d4aeca5d64a6",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "fa19acb7152ab0e661b5b79bf95ea0e4481278f6c6a57f417428a1b9ea8a19df",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "8554acb6a9e51f0ebf8f10b8717b3188904fc7e0472fa41864d4cde885dde50c",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "ca45ef546567cf0f39af03232eb5b3edd66609f5af6aad6c3a718ab1e88a1792",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "71ddbbe4ff4ade23e728c93b116b690032d574c87ca837453e5d52abae6e2af8",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "832cfef6c305ee4f2a7bd893dde9206acdbffa5c29442bdb69feeb725a61eeee",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "a96c0221879346061571c972c64d2b77ef8fa930f6ec7591d1866d85e871e0e5",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "0068880caa468afeeaf7880eec2eb3f3f8499f47cd85b3d34ddbafd68c450626",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "7d5f158a74a8571fe7f9d81e945f3532f0aab91998926097163dbe553f226bb0",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "9ab51377e86ef6cb25c3d2d618caa9bad332e05eec46e74ab545d46ae0ac8e97",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_ffb05992",
+        "hash": "d9a024e8620dc64de879106c616606674d6762cec86bb797a2f03e9989d93d23",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "310121d78048f55e8acd07617848186d9d60cef3875e3b7d37632149bc4dd70a",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_bear_call_normal_original_sl"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "82daa44b26b27ba4b71f18af8e2c7af7135b4ae30cc636f062843c3a4db120c2",
+      "82daa44b26b27ba4b71f18af8e2c7af7135b4ae30cc636f062843c3a4db120c2",
+      "82daa44b26b27ba4b71f18af8e2c7af7135b4ae30cc636f062843c3a4db120c2"
+    ],
+    "trading_date": "2026-06-05"
+  },
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BULL_PUT",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "TARGET",
+      "exit_side": "BUY",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": 95.0,
+      "option_type": "PUT",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "WIN"
+    },
+    "business_hash": "06df096e9e3178b6231fe8903ec908a0ccb8a34b514fe7e98260c07d9e89fc72",
+    "carried": false,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BULLISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_COMPLETED",
+    "path_kind": "NORMAL",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BULL_PUT",
+    "selected_contract": "NIFTY_BULL_PUT_PE_71228a56",
+    "selected_option_type": "PUT",
+    "session_id": "phase5c_bull_put_normal_target",
+    "source_path": "reports/phase5b/phase5b_bull_put_normal_result.json",
+    "stages": [
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "fcfee04805132451b01da62d1b3b64cbead8f862676b796251b1084933a53edd",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "5aa65b31e5d8d72c4ee587bd343a886a13b4894cecdf8c22afa72b69694efae1",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "9e97799b3a538104f0eb913c7d382981d76ff5129fad6c86cdbd0d856dfd7e91",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "3cf32aeda9cd2bbf0b2b4dbdb7736cb0e415fc8eeac60b68c823033d9d3115c8",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "e747880dba3d13a4682e463949a7657eb7416ad8cc3518f5d918da8b052a5663",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "c46b0161d477aba8ddc9a6a77a6ce19c871f64d58f4f4976011ddb17031d9279",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "2376fbba0c71c0098f157ebafb78a23a7c8f012f70973f72841f8ead1d4bdbaf",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "4f7fffb49c1d920022370a42f688fda1be0d9644f868d335c86a445cd155fc7b",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "f2b590f936283ab82e8c64edc971d7ffcecca0569f8807013b36d80fc44724fa",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "60bda1506adc6128369c9a12906a127c71edaa75ba70e87b23c9e9ab92b6cedd",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "41becc584f165b35f1c79bf0fc88520fc7885606a9fbf8ad018eacf11b966dcd",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "3fa18a07219e4a0bdad0174ee44b1ed5d7a51630e91e9eda0ca098b91ad660fc",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "b9f88b7f1e5934f568cdf83e2e17cd692bbda90c320e52477a9469ff97d881cd",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "4d8f10b8c43207d46a3f1c9b8398c49c254304c025f22e4db7a89d60fd49bebc",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "51d39dd4482e05cdf2d1d0369dff27db4dc9817cf98436b7577f9ad98b3fda8c",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "da305aff584d50ea7395d739f3815dbb9cb86bdf3c8422374873a1d1afc458e7",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_71228a56",
+        "hash": "c3e76605ae2062c528f42181be5333daf5f392f3777de20d7e6446d54ec68f1d",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "e65186386d01cdf9fac66f11990c61f86fcc1edebbb4a764635531183c15fc8d",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_bull_put_normal_target"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "06df096e9e3178b6231fe8903ec908a0ccb8a34b514fe7e98260c07d9e89fc72",
+      "06df096e9e3178b6231fe8903ec908a0ccb8a34b514fe7e98260c07d9e89fc72",
+      "06df096e9e3178b6231fe8903ec908a0ccb8a34b514fe7e98260c07d9e89fc72"
+    ],
+    "trading_date": "2026-06-05"
+  },
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BEAR_PUT",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "ORIGINAL_SL",
+      "exit_side": "BUY",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": -120.0,
+      "option_type": "PUT",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "LOSS"
+    },
+    "business_hash": "bb6b2b5dae7e8939af926f560c2fb59d772a0756ec12d6f8cc1d6ae4ad68d7e3",
+    "carried": false,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BEARISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_COMPLETED",
+    "path_kind": "NORMAL",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BEAR_PUT",
+    "selected_contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+    "selected_option_type": "PUT",
+    "session_id": "phase5c_bear_put_normal_original_sl",
+    "source_path": "reports/phase5b/phase5b_bear_put_normal_result.json",
+    "stages": [
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "90016b2f83eb280b2b673dad0c0e864d0e297ce612c341354808e273ae8736db",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "e7407f602eeb75548ddbc47848a9d9defbfe9d8ed9506429b3fca17cab0db8f2",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "07529b5725a1805a73256c027daad2e72f6f16664ff21eaf93dc7c57f9823aeb",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "8c4f3d2d52172a41821ded615228605ff483af0e7bcf5fa69a4c1470fa0ee952",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "b508b3b7ec525dac6d41d36948f944d7fadf0f3ea9316dd812a5cfc7ad5c3a50",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "f7e91e8e4a392c6568d7449bb9ed89485ce05bf8d4ee577a16cc77e719612768",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "ce55a57d72dc11c5f62ad653d730a0a3a40dd748dca08d541045ab8de8565db6",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "803fcd54efa7a0aa4fa781f145e0a655462eba1abad21bf9527e7b707e58dabe",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "48228cd27b1917709cc0100e3aef1f86a258c539eca97658390d53c7a3279c65",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "21577e8d80fb0ab85ae0db38c28f1a2594b1f4bf48d59f94afe3d6edd12fecfd",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "b4babb05daf118938ab7f6c9ae89f1b4250f20b3921456a891d4f0f7614eded9",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "7cedc9de42f1706d78df4aa98f1606e745fd0b168ee81b7473c5ac7989f8d453",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "d5693990018cb5f5c578479bcd8b2e1dcf674f6ec686de03ecfc6083fd740005",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "333203d53ca3b2b66ce9ec0da2122443f236c6c6d23e027a23e2aa94b52c9f68",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "4bea6743d678d8494a72b64085317fee8385d78b62c8cbb725a0008669e9ac4b",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "8403f9c8192c5a3a26523d0e58a680e297c155fddfe8c8358b1bf319fa240048",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_e91efb98",
+        "hash": "510eecec57b156efb076a5f0fad8f50a2be3461b1ed75d97320e2930a0609f32",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "2631b4c3068ebb2dcc8716afd6a5dcf79f27fd99143068c1fbac982f7749414f",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_bear_put_normal_original_sl"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "bb6b2b5dae7e8939af926f560c2fb59d772a0756ec12d6f8cc1d6ae4ad68d7e3",
+      "bb6b2b5dae7e8939af926f560c2fb59d772a0756ec12d6f8cc1d6ae4ad68d7e3",
+      "bb6b2b5dae7e8939af926f560c2fb59d772a0756ec12d6f8cc1d6ae4ad68d7e3"
+    ],
+    "trading_date": "2026-06-05"
+  },
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BULL_CALL",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "REVISED_SL",
+      "exit_side": "BUY",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": 95.0,
+      "option_type": "CALL",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "WIN"
+    },
+    "business_hash": "d53a9d1dc876339172fdda73a12a2bf8162010a93f5f4835d5c89ec1964d1ce1",
+    "carried": false,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BULLISH_CONFIRMED",
+    "normal_gap_path": "GAP_RC",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_COMPLETED",
+    "path_kind": "GAP_RC",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BULL_CALL",
+    "selected_contract": "NIFTY_BULL_CALL_CE_ffd81654",
+    "selected_option_type": "CALL",
+    "session_id": "phase5c_bull_call_gap_revised_sl",
+    "source_path": "reports/phase5a/phase5a_gap_revised_sl_session.json",
+    "stages": [
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "bc94169df2844ba0b085a439c395462a193ce2dc0237a9b264520e926cb49979",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "cf323b52df04c9a1253a9487f1f7b99655ad31a55712d777217c718476d904ce",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "7e2b8f5e4c9203c6b336bd000e10429c7db4ff2c8173f5418423bb95261fe747",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "ed053a96f99a559a9fe51a85777665ede5f14de47be8a95ec07cec0f9805e724",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "a0345d0583119bb6e8136a248d4812abfa08dbbf730229b5a29406f14dbb5306",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "7f5c442a3ac5fdb40cf36e0e590059e4ab1c2185de641b1e948e2f859c2e459d",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "5194d65b6748dedb7ab02b9cabe8b6143c566af0a3b9161b1d15eaa24c248b4c",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "cfb9f675ae1370d2bd5c976fb6e7c15e31a11ad7ec4853ce98f00c8d9ea7f6e6",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "62d270cadc102e3996fa5bdf1462bacdb72c0239cc549dd683e22945648d4873",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "06880bd440bac6eb591025fd898a803f37b24bffe1eebbaca315e58b66a360c4",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "df72281ed57d0af5a9dd45a0c5dd1aa6f32e5f75bffb2f18e8e3f62c81d6a749",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "e5e2ea801f8d5ae7b5f12b0ef26df7b8aea20c1341314eea4cd0f5f40a96bf78",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "18e43643cb81997b35db6efb6baf3b7dec755c87db5d127649d6f7da6b9ad42e",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "f7c52b884f32c852e67ac0b0a857753c49802863a864df42a857e995d9b5bb0b",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "6dcc34d36d51c553b33b297218dbd46bcd4a5d01244fe753c8ee4ca24efbf10b",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "adb1b11b72324017f0df6281af7a0d07677e15f025ee63934e0be8e2b5697390",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_ffd81654",
+        "hash": "b7a870ecd31c8ac930316494dbcda608dc7f561218d14c71b196db36a6a5e576",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "f1e9b5782b5cff10e217eac60cdfaebf9768e98908561ffecebff0086be5662d",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_bull_call_gap_revised_sl"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "d53a9d1dc876339172fdda73a12a2bf8162010a93f5f4835d5c89ec1964d1ce1",
+      "d53a9d1dc876339172fdda73a12a2bf8162010a93f5f4835d5c89ec1964d1ce1",
+      "d53a9d1dc876339172fdda73a12a2bf8162010a93f5f4835d5c89ec1964d1ce1"
+    ],
+    "trading_date": "2026-06-05"
+  },
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BEAR_PUT",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "REVISED_SL",
+      "exit_side": "BUY",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": 95.0,
+      "option_type": "PUT",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "WIN"
+    },
+    "business_hash": "0dc3a64499a233f3f14f44c32d68ce84036afbfa41ebbc2213c18199f2753ba6",
+    "carried": false,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BEARISH_CONFIRMED",
+    "normal_gap_path": "GAP_RC",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_COMPLETED",
+    "path_kind": "GAP_RC",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BEAR_PUT",
+    "selected_contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+    "selected_option_type": "PUT",
+    "session_id": "phase5c_bear_put_gap_revised_sl",
+    "source_path": "reports/phase5b/phase5b_bear_put_gap_result.json",
+    "stages": [
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "a302c0bf9b1e69950f2d6f71c0d9472a94a4926e1be69f2b27a60c8caa2e2351",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "36e32a5bb0aa71a3eca89aa7fd383ccedc3d2035ecd5a61f5135d5eb6a3f5d41",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "fd5f9feb9d8c0750be45067ac4a9bc30ab65ff58471010b189f119179019f230",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "4a9598924fc9deb776a90a7fae8a31cc77fd0abf828e9cf78910f4cd2b78a99d",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "497d3ffa464e52f9e3bc09de8926aefb97d62e9e118247946a62791d9f59de59",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "ff959aefcde5d8624c0dbc343e020ae3707c1b40b8a17eaba785b3c37915ae37",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "bc1448e48f45444d72dd28ba983df35a33deb7216c756b5684a65afcf46d9d8d",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "7f9b8dc089d4e0afcae7c7b70e3332c6bd6632b5513193e4c5dad9940209b82d",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "b58d8951e5ebfd70c28639435308ba480017d1d55d29b11de19237ed87cb39d0",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "9e71ed3e922b09600b84058bb60bf9246d0340e5d3544ac99c63510118050f34",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "ba74e3925d65702ba454df7a85eab4dc33a5505ad7ae38eb373164bddaafb870",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "8ab321648991fd0e8b7444abe4033b956ad531e8d38c274cd8c49dbe4752e8fe",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "c116fafe58fbdaff8b057fe6436a1216589df9fdbdeef800978c1056f44e706d",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "2c1bf2e858714b85b594fba9be3033b6c47974ef15455424495417aa85048f35",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "1bae66c7bc9e2929c624ab020436c0a1cbdd0721fd67a22883386924a911f308",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "275947993910102f4bee0c77d690a066b34b0f0b536f886fd101650ad64824dc",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_PUT",
+        "contract": "NIFTY_BEAR_PUT_PE_5233e7b0",
+        "hash": "aa40368724016aa7c42d0c296f4e9575f50164a09ed55a9a0e42e4499365aa53",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "ad6d4263460986406ced16ea778ed9b860a4a85898019081cb2e26f621ee53f5",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_bear_put_gap_revised_sl"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "0dc3a64499a233f3f14f44c32d68ce84036afbfa41ebbc2213c18199f2753ba6",
+      "0dc3a64499a233f3f14f44c32d68ce84036afbfa41ebbc2213c18199f2753ba6",
+      "0dc3a64499a233f3f14f44c32d68ce84036afbfa41ebbc2213c18199f2753ba6"
+    ],
+    "trading_date": "2026-06-05"
+  },
+  {
+    "accounting": {
+      "accounting_generated": false,
+      "net_pnl": 0,
+      "win_loss": "NOT_APPLICABLE"
+    },
+    "business_hash": "780c21b8b7335d066c27dfba05df61e0cf039d8bcddea9ab0ad963987d6f174e",
+    "carried": false,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 0,
+      "decision": 1,
+      "execution_intent": 0,
+      "fill": 0,
+      "pnl_fact": 0,
+      "position_cycle": 0,
+      "trade_fact": 0
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BULLISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "AVAILABLE",
+    "outcome": "NO_TRADE_BY_RULE",
+    "path_kind": "NO_TRADE",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BULL_PUT",
+    "selected_contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+    "selected_option_type": "PUT",
+    "session_id": "phase5c_no_trade_by_rule",
+    "source_path": "reports/phase5b/phase5b_bull_put_premarket.json",
+    "stages": [
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "34fbbeb0af82901035a615d1d995d290c6de114a2f85be3d8655471c85684679",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "91c1696a3de2eb58a106f1e322e2ad3260547190150f95616aba458b9ad5fb66",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "6a9ce06bfd6a1c42b7cfe7e4e960ee96b2dca5ef4d510fb94355cf4ee0dead79",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "173e08d58528f99c9b58a70ca6029901fd8851fb52df10c5a456cf51b5f37269",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "d7f76f581765a11ffcaac99691c95a6e1b10ceb3a799d4a6725eb0e56f0279a8",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "3b3f1270e181eab68e25a6c5099a3b54d1659472907445e8db79e281ce7a3c8f",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "acb0117f3e52a040f2b3b13b3189d11def4dca55737b04f34dc840aaa1e403bc",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "6bb89f80eb697d05787e79851b74ec245cf7260b8321f37e313a051d7376486f",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "a2767b74fddcd716f17067e744b551c0445d73892ebbd4c51486cd4e82706744",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "ecfbf69f3f383edb28ca3310eed94566cc576612a8ae7328234449684b06cc6f",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "108f3e6f9173b2f749ef35b908c0e87146203ea371bc45e6e2ebe24352b722d1",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "NOT_APPLICABLE"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "489d3fe11901baaaea7eef82ebc0679093bec6bcc4173584d4d05c2b3059e079",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "NOT_APPLICABLE"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "47e1c10d6f698d60289b82eb2c9bb22bf459307222ff5bd4ac033de7535091fc",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "NOT_APPLICABLE"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "48795f2927b8ec098a86cd45621e8169037ee569d63a2adfa88d40114ea01c6b",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "NOT_APPLICABLE"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "38b56213dca4913cfe168f50eca9598f5be759fa700c4f35324a2adda5be6722",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "NOT_APPLICABLE"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "79ba0e3d8a409d5f69b01956fe873fc652ebbcf424b32bac9ecd8a8b2734df96",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "NOT_APPLICABLE"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_3d5c3f87",
+        "hash": "e2cc231d1be5da1065c2781af9a35416914c612e91e23903827c9dd36094cbe9",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "c3115e151520c44adc781a37ec5051052f56117994ab0b2b7995f0039a3ce676",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_no_trade_by_rule"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "780c21b8b7335d066c27dfba05df61e0cf039d8bcddea9ab0ad963987d6f174e",
+      "780c21b8b7335d066c27dfba05df61e0cf039d8bcddea9ab0ad963987d6f174e",
+      "780c21b8b7335d066c27dfba05df61e0cf039d8bcddea9ab0ad963987d6f174e"
+    ],
+    "trading_date": "2026-06-05"
+  },
+  {
+    "accounting": {
+      "accounting_generated": false,
+      "net_pnl": 0,
+      "win_loss": "NOT_APPLICABLE"
+    },
+    "business_hash": "dc16f5906994b92ae70b5c5552c3f858db28e2d07727344703a0ed6fcaa900ff",
+    "carried": false,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "PARTIAL_CAPTURE",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 0,
+      "decision": 1,
+      "execution_intent": 0,
+      "fill": 0,
+      "pnl_fact": 0,
+      "position_cycle": 0,
+      "trade_fact": 0
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BULLISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "MISSING",
+    "outcome": "BLOCKED_MISSING_ORPT",
+    "path_kind": "INSUFFICIENT_EVIDENCE",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BULL_CALL",
+    "selected_contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+    "selected_option_type": "CALL",
+    "session_id": "phase5c_missing_orpt_block",
+    "source_path": "reports/phase3d/milestone7_s23_real_capture_packet.json",
+    "stages": [
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "522827bbbb16cdc77af896311113331eb63ec07feb0f25d69d82206445ea3ea9",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "2bbad13f7bb6af09e0dd7ca8abdf85b32283247775337ea5c37f81be6f31b6d2",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "7888a872c72c7a199eb18282871c908d3f9eb913378597948e3b2cff72ab07e1",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "ebe7acd39a0d54581981552a6377beb6c76d4a33d240ae41eb3077d973959532",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "f3392c571ee6b47ab67838f3f0a71bd434af8d86721ebe7b6591203c36c36362",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "cc362a06f9c9bcda7ca8aee1832672a797dd66119e8170f2bc16eb85f606dbdb",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "3f4a394b3324039727930747a328178b1f93beeca890c8d18722c09ecfd99d9e",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "beb909c56d824e563db405c0d897112002cf7b44376ef75ec21e9621fea7a3b2",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "2df98b2e305e53d0bb00857ae51fed4692fac1d67a4fe1febfd37c8a2b837564",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "793e973f2884021599c7e13bfbc4fe5bfb02053169501da4e9c01e7b5a8e36b2",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "a04e2bfbb418b140c2afc2b91a72cb978cc1c567645d660560eee01a4cc680e7",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "ce1d4c035987a60ed1b866e40376df8567a365ca23c5bc5b71992021c6723115",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "fbbffd1e5e4625e1462c38560e449d6e4eeb4320959027cf8bfe400f7e1e552e",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "db9b777de913b452f99c777d41be44e129be621e9bc52e9beb0a8d01406722cc",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "3eb2bd9d1bf3684b2efe5591d1e00d9196baa9bf94ccfbd955e3fa9520c92125",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "27fa549b0505c02986927def1870a2260d7821a4e608a7d94d338a3cf82a53c9",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "BLOCKED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_d06b63d2",
+        "hash": "fdc8c378a186c3fb23621ad7e22f177ebfac5fdee73cfe1c7fa644d7fd939a60",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "0317ce376b73b27ee5f68773f7d158c7addfbd95f94a3cc769385ce6d59d56d3",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": false,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_missing_orpt_block"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "dc16f5906994b92ae70b5c5552c3f858db28e2d07727344703a0ed6fcaa900ff",
+      "dc16f5906994b92ae70b5c5552c3f858db28e2d07727344703a0ed6fcaa900ff",
+      "dc16f5906994b92ae70b5c5552c3f858db28e2d07727344703a0ed6fcaa900ff"
+    ],
+    "trading_date": "2026-06-05"
+  },
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BULL_CALL",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "CARRIED_FORWARD",
+      "exit_side": "OPEN",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": 0.0,
+      "option_type": "CALL",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "WIN"
+    },
+    "business_hash": "7f7510569c607800fbbdbe38096c39414efc1c0c160c0da3e8e98775b5c8ac3d",
+    "carried": true,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BULLISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_OPEN_CARRIED",
+    "path_kind": "CARRY",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BULL_CALL",
+    "selected_contract": "NIFTY_BULL_CALL_CE_95f340a3",
+    "selected_option_type": "CALL",
+    "session_id": "phase5c_bull_call_carry_recovery",
+    "source_path": "reports/phase5a/phase5a_carry_recovery_session.json",
+    "stages": [
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "bc13ef9527bda0fc0308d84c81c15c1f97198dd189c71d21cf1e945891cfbd4f",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "905a88ac1204246e9455fb09b743024258702de5a9c5a523089bfd4f9ba99e4e",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "9b5247bab20a2f741974d5ac20e98f62c4cc3461cc492229c3c5a61370633fab",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "e56aee1e4b3a9e936d04219c2806b4eecdcb123b599da97fa912938a4e13e772",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "137ec2dd80776aa49b66742c58b5d18c66678697e50aac77210788750233bab6",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "c898dda7024c1e646ddd59a10aa0892a8c00d714b02643dd73f6f9e44cc5b84b",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "cca7d5125c2ee27e553b44d627fea865ff72b14baa6602f847f6bf20172e1977",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "9239336c311b5dbde981037359609a3697acb1313b33f8a66e7fc7b874097e33",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "9e6fa78fe58fc1df7dae9488951e981f52ca40c3114dec8af09202414d4cef4a",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "2b9c160746b7d776f36f19d479121a4f2642bc1e02206b76627e02cd86f08c87",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "85d75ecd390b09fcd58985de49508fbfbdd8f6317e3628f884cdacfd042af8a2",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "bf082e33cab6eca4f6e9f6a3fcf15e1688846a46e3e9615810e12f756de34bac",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "7e717945d19479b194b7267ed6612b2cd3a7f424edb33040a9de26c942319330",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "c9bd20e7eb55f889c4ac2fa456a9089dc0e5034b2fdb60da6319729dd2eefedf",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "c5959151f7aa5dae082909ece7bd61de9ee719d218d87784a7ddf2a1f329e196",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "f62a1941b5b6d1b2c265e8a6e501fa6bb7e20f4de83a5d7a3b9cca0dc8340e5d",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_CALL",
+        "contract": "NIFTY_BULL_CALL_CE_95f340a3",
+        "hash": "c4000440e56c109d6a26ff55b613b2bb62b9d1b6b149a6a09057d4afdd8bf17d",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "41d88c63e8d1e632a5d16236bee7607817640fbe355870e78ecfd549786bd3f1",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-06:phase5c_bull_call_carry_recovery"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "7f7510569c607800fbbdbe38096c39414efc1c0c160c0da3e8e98775b5c8ac3d",
+      "7f7510569c607800fbbdbe38096c39414efc1c0c160c0da3e8e98775b5c8ac3d",
+      "7f7510569c607800fbbdbe38096c39414efc1c0c160c0da3e8e98775b5c8ac3d"
+    ],
+    "trading_date": "2026-06-06"
+  },
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BULL_PUT",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "CARRIED_FORWARD",
+      "exit_side": "OPEN",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": 0.0,
+      "option_type": "PUT",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "WIN"
+    },
+    "business_hash": "4018ace7b8391526edeb58bd30401fdd43f145801372f16b6b1d363bc946a298",
+    "carried": true,
+    "duplicate_mode": "NONE",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BULLISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_OPEN_CARRIED",
+    "path_kind": "CARRY",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BULL_PUT",
+    "selected_contract": "NIFTY_BULL_PUT_PE_58a5b446",
+    "selected_option_type": "PUT",
+    "session_id": "phase5c_bull_put_carry_recovery",
+    "source_path": "reports/phase5b/phase5b_put_carry_recovery_result.json",
+    "stages": [
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "86cd997289b71d750a4ff46b10b96c5cd231bea3075172cfbabf3e130ff4a836",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "aeeb77d5e9f4c7e058b48b0f9b421229cebf3e238847d305ea664a5b9ff61875",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "1d9782c77cde1ad84baea935818b0f9140f9f3d30a4c474f88e4541f9be582f0",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "df333f678954d7a7ab1573fbb3744bd6830b3f0472582271485d43a3945147fd",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "924138f973ab3397a3faed4d29935585d727000b7fd87ed0d387925579f84e36",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "4fb90e377249855af410619b5b9aefddb5eec3ec8ff264693284c087460ffd51",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "933723434607e989bb47f07f9fa94ba36c1776edc115868d6ba3640c234e7ff9",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "a8808b0a12d07862a7a7df131da1501ee69966957b9411fe58fcb5dcfbf67bf1",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "df5e1a434c8f2e9f1485f935166784cc4fe5ad9c653216507899e161faa46049",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "f2656ebaa9d24cc6cd8aebbd0602d8ad6ace52fa34c7bec8a25309e04db5d5d6",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "965624de5778f0a273c2afc963f232976d3a645db3401a5f4c453731825f2fa1",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "785173c1f6ca3ecf282f2560c624fec0669935dff59b2466a462f865f03df849",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "32d002b1c98d548bbcfd966db074e57b4260cd57155c638abc8caf0fd3e79a5f",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "b36a420400a625bd3447e491a48df0c9399851708dc5c738db8ca2a2ff8b8a97",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "7cf978a9ee5b3749e8a70792ae0723e66e5adf71d7981b9f9144ea97a44be2ec",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "dd0909b8a1e6abd271e3e8f2be35659989b2892597d9460ffc23b788e4c88caa",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BULL_PUT",
+        "contract": "NIFTY_BULL_PUT_PE_58a5b446",
+        "hash": "a0eb69504a1f67ab95301a70106afe80e36c396f1aa9e78ae335405cdb8353a0",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "e796926f6bb53b449208bc3e4b451f3af3117720678db24ac45f8c85a3601321",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-06:phase5c_bull_put_carry_recovery"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "4018ace7b8391526edeb58bd30401fdd43f145801372f16b6b1d363bc946a298",
+      "4018ace7b8391526edeb58bd30401fdd43f145801372f16b6b1d363bc946a298",
+      "4018ace7b8391526edeb58bd30401fdd43f145801372f16b6b1d363bc946a298"
+    ],
+    "trading_date": "2026-06-06"
+  },
+  {
+    "accounting": {
+      "accounting_generated": true,
+      "branch": "BEAR_CALL",
+      "charge_quality": "PROVISIONAL_ESTIMATED_OR_CONFIRMED_INTERNAL_PAPER",
+      "entry_side": "SELL",
+      "exit_reason": "TRADE_COMPLETED",
+      "exit_side": "BUY",
+      "lot_size_policy": "PHASE4I_ACCEPTED_UNITS_NO_DOUBLE_MULTIPLICATION",
+      "multiplier": "1",
+      "net_pnl": 95.0,
+      "option_type": "CALL",
+      "projection_reconciled": true,
+      "unrealized_mark_policy": "ASK_BASED_WHEN_OPEN",
+      "win_loss": "WIN"
+    },
+    "business_hash": "396d6c73cd11b16b559661e993764a858df7535e28b4b830d53261ccc7d85393",
+    "carried": false,
+    "duplicate_mode": "IDENTICAL_REPLAY_IDEMPOTENT",
+    "evidence_quality": "FIXTURE_BACKED",
+    "external_authority": {
+      "broker_sandbox_submission": "NONE",
+      "external_broker_submission": "NONE",
+      "external_order_mutation": "NONE",
+      "external_position_mutation": "NONE",
+      "live_submission": "NONE"
+    },
+    "financial_action_counts": {
+      "client_order": 1,
+      "decision": 1,
+      "execution_intent": 1,
+      "fill": 1,
+      "pnl_fact": 1,
+      "position_cycle": 1,
+      "trade_fact": 1
+    },
+    "manual_branch_override": false,
+    "manual_option_type_override_after_resolution": false,
+    "monthly_status": "BEARISH_CONFIRMED",
+    "normal_gap_path": "NORMAL_OR_CARRY",
+    "orpt": "AVAILABLE",
+    "outcome": "TRADE_COMPLETED",
+    "path_kind": "DUPLICATE_REPLAY",
+    "rc": "AVAILABLE",
+    "resolved_branch": "BEAR_CALL",
+    "selected_contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+    "selected_option_type": "CALL",
+    "session_id": "phase5c_duplicate_out_of_order_bear_call",
+    "source_path": "reports/phase5a_pre/phase5a_pre_duplicate_replay_result.json",
+    "stages": [
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "be25f29e076df633e584eba561b749e41b015159d47ae2b51fb158a6c054adca",
+        "sequence": 1,
+        "stage": "startup",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "040d5a7f511d51b10444728f5b56dd0910ad3591430e369972de49e2284e6a0e",
+        "sequence": 2,
+        "stage": "recovery",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "8c5141cc54813aac4b2fb77568b931ef464fcef17a6a6ca5b652019197ec2ff1",
+        "sequence": 3,
+        "stage": "reconciliation",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "63782aa92aa00c699c7a4371eef0bff69a88569f7f05969b98c3f10b102fc4d9",
+        "sequence": 4,
+        "stage": "pre_market_plan",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "23e9422da9815ca053917bbe1c9de73383113579409d38f0b88ca68503734823",
+        "sequence": 5,
+        "stage": "natural_branch_resolution",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "c47bf05d2cfc9b90970135d19a11a70c630e5a6b65e135dd3aef6a45585e7436",
+        "sequence": 6,
+        "stage": "contract_selection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "42bf12e9cb35e1d1e8433d9dde667840a5a1acbf216fd5b1de5aca7a86cb489e",
+        "sequence": 7,
+        "stage": "opening_context",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "dcc58bd0d51aa8397251269f78ecef09f440f359593e594f0fcc189700e20fb8",
+        "sequence": 8,
+        "stage": "normal_gap_processing",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "26ef81203128bd15bf43c14d4839c9388efd8022547da4f4ab601a2bba7e5815",
+        "sequence": 9,
+        "stage": "orpt_rc",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "87e8f76d4b7d5aff534c1dbf463a6fbf426c4da7bb66064a7acec26c6b7811ee",
+        "sequence": 10,
+        "stage": "intent_risk",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "3ab100a0a124f2a1388c46bdf2f3526ea9d6bcb6b8bdf1336deea27412ed68b8",
+        "sequence": 11,
+        "stage": "internal_paper_order",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "8172715f36e09b7dd7d60ba902cfd979929cc8c44641887823c16e3596a034aa",
+        "sequence": 12,
+        "stage": "fill",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "4e7641012d381d825103f17bcd4d4626d8dc6d3ed1ff0dc04c3ced5e1e6d438a",
+        "sequence": 13,
+        "stage": "position_cycle",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "ac745bcc9a1c6ff7146844ce21b5e7c5c8bc5bf2f0e743ad71ce1f08f3d1543e",
+        "sequence": 14,
+        "stage": "protection",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "04ea322f22722acb951c5804f4f89f1788019101a853d5e75135952980372072",
+        "sequence": 15,
+        "stage": "exit_carry",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "2619739031c62e44368f8dc5d736959641f9f93bc397328c31903fd7b4c4767a",
+        "sequence": 16,
+        "stage": "accounting",
+        "status": "PASSED"
+      },
+      {
+        "branch": "BEAR_CALL",
+        "contract": "NIFTY_BEAR_CALL_CE_d9d91480",
+        "hash": "11f73d35a09df7fab1ef1171d1743577646b18b24cf78abab871bffb7a1ca377",
+        "sequence": 17,
+        "stage": "shutdown",
+        "status": "PASSED"
+      }
+    ],
+    "state_isolation": {
+      "identity_hash": "ea7c205c95410b294d8b063359dd573e371c068950c88949c0fc789ec492a3f0",
+      "new_branch_resolution": true,
+      "new_plan": true,
+      "no_prior_session_pnl_contamination": true,
+      "no_stale_accounting_watermark": true,
+      "no_stale_authority_grant": true,
+      "no_stale_orpt_rc": true,
+      "no_stale_position_cycle_unless_carried": true,
+      "no_stale_protection_generation": true,
+      "no_stale_selected_contract": true,
+      "trading_session_identity": "2026-06-05:phase5c_duplicate_out_of_order_bear_call"
+    },
+    "three_run_deterministic": true,
+    "three_run_hashes": [
+      "396d6c73cd11b16b559661e993764a858df7535e28b4b830d53261ccc7d85393",
+      "396d6c73cd11b16b559661e993764a858df7535e28b4b830d53261ccc7d85393",
+      "396d6c73cd11b16b559661e993764a858df7535e28b4b830d53261ccc7d85393"
+    ],
+    "trading_date": "2026-06-05"
+  }
+]
