@@ -1,7 +1,392 @@
 {
-  "as_of": "2026-08-02",
-  "external_order_authority": "NONE",
-  "reason": "No S22 RELIANCE internal-paper fill, PositionCycle, TradeFact, or PnLFact was created in this auth/capture milestone.",
-  "schema_version": "s22.reliance.accounting.v2",
-  "verdict": "NOT_CREATED_IMPLEMENTATION_DEFERRED"
+  "pnl_facts": [
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT",
+      "as_of_timestamp": "2026-08-03T15:31:00+05:30",
+      "calculation_version": "tfis.short_option_accounting.v1",
+      "charges": "15.00",
+      "currency": "INR",
+      "evidence_hash": "2bc3857d145fe4be97582716528865098721ef2833b801ec9d66e9fa5771fecb",
+      "fact_hash": "a9e7bd8355af99af1748274e5c0377534a1bb6951b24ceb7038d106538d03482",
+      "fact_type": "REALIZED_TRADE_PNL",
+      "gross_pnl": "17250.00",
+      "instrument": {
+        "contract": "NSE:RELIANCE26AUG1260CE",
+        "currency": "INR",
+        "direction": "BEAR_CALL",
+        "exchange": "NSE",
+        "expiry": "2026-08-25",
+        "lot_size": 500,
+        "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+        "multiplier": "1",
+        "option_type": "CE",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": "1260",
+        "tick_size": "0.05",
+        "underlying": "RELIANCE"
+      },
+      "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+      "net_pnl": "17235.00",
+      "pnl_fact_id": "pnl-fact:2bc3857d145fe4be97582716",
+      "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+      "realized_unrealized": "REALIZED",
+      "source_identities": {
+        "position_cycle_id": "ipc:0f194b8471765a49b4cbab6b",
+        "source_fill_ids": [
+          "internal-fill:be2e5096b39e3a5ce9be53bc",
+          "internal-fill:b36ac578887b5cfd884f260f"
+        ],
+        "supersession_reason": null,
+        "trade_fact_id": "trade-fact:b2f2d354acf2c8f971a0d825"
+      },
+      "strategy": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+      "supersedes_pnl_fact_id": null,
+      "trading_date": "2026-08-03"
+    },
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT",
+      "as_of_timestamp": "2026-08-03T15:31:00+05:30",
+      "calculation_version": "tfis.short_option_accounting.v1",
+      "charges": "15.00",
+      "currency": "INR",
+      "evidence_hash": "c46a91704e798868db927accc4158d6e0c5b43b96a03cee1a4e4e8de841f814d",
+      "fact_hash": "e59e819d5ca870fc006a61e79ca9fc7143a0f61daac1b66426f1b1db6f867450",
+      "fact_type": "CHARGE_ESTIMATE",
+      "gross_pnl": "0.00",
+      "instrument": {
+        "contract": "NSE:RELIANCE26AUG1260CE",
+        "currency": "INR",
+        "direction": "BEAR_CALL",
+        "exchange": "NSE",
+        "expiry": "2026-08-25",
+        "lot_size": 500,
+        "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+        "multiplier": "1",
+        "option_type": "CE",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": "1260",
+        "tick_size": "0.05",
+        "underlying": "RELIANCE"
+      },
+      "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+      "net_pnl": "-15.00",
+      "pnl_fact_id": "pnl-fact:c46a91704e798868db927acc",
+      "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+      "realized_unrealized": "CHARGE",
+      "source_identities": {
+        "position_cycle_id": "ipc:0f194b8471765a49b4cbab6b",
+        "source_fill_ids": [
+          "internal-fill:be2e5096b39e3a5ce9be53bc",
+          "internal-fill:b36ac578887b5cfd884f260f"
+        ],
+        "supersession_reason": null,
+        "trade_fact_id": "trade-fact:b2f2d354acf2c8f971a0d825"
+      },
+      "strategy": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+      "supersedes_pnl_fact_id": null,
+      "trading_date": "2026-08-03"
+    }
+  ],
+  "projections": [
+    {
+      "dimensions": {
+        "trading_date": "2026-08-03"
+      },
+      "metrics": {
+        "average_loser": "0.00",
+        "average_winner": "17235.00",
+        "breakeven": 0,
+        "closed_trades": 1,
+        "current_drawdown": "0.00",
+        "expectancy": "17235.00",
+        "gross_pnl": "17250.00",
+        "losses": 0,
+        "maximum_closed_equity_drawdown": "0.00",
+        "net_pnl": "17220.00",
+        "open_trades": 0,
+        "payoff_ratio": "0.00",
+        "profit_factor": null,
+        "realized_pnl": "17235.00",
+        "total_trades": 1,
+        "unrealized_pnl": "0.00",
+        "win_rate": "1.00",
+        "wins": 1
+      },
+      "projection_hash": "2d988f0517c67051524ac54bd15245a5f3dbd97aa45c99d47fafd83e6d37b435",
+      "projection_id": "accounting-projection:daily_portfolio:a9633140ca71e885",
+      "projection_type": "DAILY_PORTFOLIO",
+      "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "source_fact_ids": [
+        "pnl-fact:2bc3857d145fe4be97582716",
+        "pnl-fact:c46a91704e798868db927acc"
+      ],
+      "watermark": "b11bdac1f5d5b4ac1e72cc65efe3edac6c06f3d8066d790dd792e1d38a5dfef1"
+    },
+    {
+      "dimensions": {
+        "account": "INTERNAL_PAPER_ACCOUNT"
+      },
+      "metrics": {
+        "average_loser": "0.00",
+        "average_winner": "17235.00",
+        "breakeven": 0,
+        "closed_trades": 1,
+        "current_drawdown": "0.00",
+        "expectancy": "17235.00",
+        "gross_pnl": "17250.00",
+        "losses": 0,
+        "maximum_closed_equity_drawdown": "0.00",
+        "net_pnl": "17220.00",
+        "open_trades": 0,
+        "payoff_ratio": "0.00",
+        "profit_factor": null,
+        "realized_pnl": "17235.00",
+        "total_trades": 1,
+        "unrealized_pnl": "0.00",
+        "win_rate": "1.00",
+        "wins": 1
+      },
+      "projection_hash": "fd93fb207f05590a7642025b8bd39ced6903c33a4c51b82b1feff6ee5098a4c0",
+      "projection_id": "accounting-projection:account:80bc67be7824cbaa",
+      "projection_type": "ACCOUNT",
+      "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "source_fact_ids": [
+        "pnl-fact:2bc3857d145fe4be97582716",
+        "pnl-fact:c46a91704e798868db927acc"
+      ],
+      "watermark": "b11bdac1f5d5b4ac1e72cc65efe3edac6c06f3d8066d790dd792e1d38a5dfef1"
+    },
+    {
+      "dimensions": {
+        "strategy": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER"
+      },
+      "metrics": {
+        "average_loser": "0.00",
+        "average_winner": "17235.00",
+        "breakeven": 0,
+        "closed_trades": 1,
+        "current_drawdown": "0.00",
+        "expectancy": "17235.00",
+        "gross_pnl": "17250.00",
+        "losses": 0,
+        "maximum_closed_equity_drawdown": "0.00",
+        "net_pnl": "17220.00",
+        "open_trades": 0,
+        "payoff_ratio": "0.00",
+        "profit_factor": null,
+        "realized_pnl": "17235.00",
+        "total_trades": 1,
+        "unrealized_pnl": "0.00",
+        "win_rate": "1.00",
+        "wins": 1
+      },
+      "projection_hash": "06be318bce3204e3fafc06dfe01ad3ba389fb81b9ddc561fca4a63553995979c",
+      "projection_id": "accounting-projection:strategy:8e77f80451eddeda",
+      "projection_type": "STRATEGY",
+      "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "source_fact_ids": [
+        "pnl-fact:2bc3857d145fe4be97582716",
+        "pnl-fact:c46a91704e798868db927acc"
+      ],
+      "watermark": "b11bdac1f5d5b4ac1e72cc65efe3edac6c06f3d8066d790dd792e1d38a5dfef1"
+    },
+    {
+      "dimensions": {
+        "contract": "NSE:RELIANCE26AUG1260CE"
+      },
+      "metrics": {
+        "average_loser": "0.00",
+        "average_winner": "17235.00",
+        "breakeven": 0,
+        "closed_trades": 1,
+        "current_drawdown": "0.00",
+        "expectancy": "17235.00",
+        "gross_pnl": "17250.00",
+        "losses": 0,
+        "maximum_closed_equity_drawdown": "0.00",
+        "net_pnl": "17220.00",
+        "open_trades": 0,
+        "payoff_ratio": "0.00",
+        "profit_factor": null,
+        "realized_pnl": "17235.00",
+        "total_trades": 1,
+        "unrealized_pnl": "0.00",
+        "win_rate": "1.00",
+        "wins": 1
+      },
+      "projection_hash": "07d93aebe01fc7435d9d3b00e05a8ca9458ebf436182d67e11b276c56247de40",
+      "projection_id": "accounting-projection:instrument:27eba00016243884",
+      "projection_type": "INSTRUMENT",
+      "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "source_fact_ids": [
+        "pnl-fact:2bc3857d145fe4be97582716",
+        "pnl-fact:c46a91704e798868db927acc"
+      ],
+      "watermark": "b11bdac1f5d5b4ac1e72cc65efe3edac6c06f3d8066d790dd792e1d38a5dfef1"
+    },
+    {
+      "dimensions": {
+        "dimension": "final_exit_reason"
+      },
+      "metrics": {
+        "TARGET": "17220.00"
+      },
+      "projection_hash": "8eb29d078c9bfcbdc788f99383c0a8c7b349f221c368f927464e8692ffdc4a69",
+      "projection_id": "accounting-projection:exit_reason:2fc0b094fa8e80ac",
+      "projection_type": "EXIT_REASON",
+      "quality": "CONFIRMED_INTERNAL_PAPER",
+      "source_fact_ids": [
+        "pnl-fact:2bc3857d145fe4be97582716",
+        "pnl-fact:c46a91704e798868db927acc"
+      ],
+      "watermark": "2fc0b094fa8e80ac3415be727ca8f7617f0cc9aef2039c8b82a56599a5aa7c7c"
+    },
+    {
+      "dimensions": {
+        "dimension": "normal_gap_path"
+      },
+      "metrics": {
+        "S22_ORPT_RC_ONLY": "17220.00"
+      },
+      "projection_hash": "b606e056cb8708f5690157073628ac4098b37c52157b91dab2b8bed4feaad8dd",
+      "projection_id": "accounting-projection:path:81d741b39579924f",
+      "projection_type": "PATH",
+      "quality": "CONFIRMED_INTERNAL_PAPER",
+      "source_fact_ids": [
+        "pnl-fact:2bc3857d145fe4be97582716",
+        "pnl-fact:c46a91704e798868db927acc"
+      ],
+      "watermark": "81d741b39579924f39b7bf0ab4f193c45395f7b452180d1b2deece0557bc474b"
+    }
+  ],
+  "result_hash": "80812dbd504ad85a3f294fa7e4844e301f9f318c7974c8a82906dab77d008a40",
+  "trade_fact": {
+    "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+    "configuration_hash": "s22-source-closure-config-v1",
+    "decision_context": {
+      "acknowledgements_affect_pnl": false,
+      "configured_lots": 1,
+      "double_lot_multiplication": false,
+      "exchange_quantity": 500,
+      "lot_size": 500,
+      "normal_gap_path": "S22_ORPT_RC_ONLY",
+      "planned_prices_are_not_pnl_inputs": true,
+      "pnl_formula": "(entry_fill_price - exit_fill_price) * confirmed_exchange_quantity * multiplier",
+      "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+      "source_rule_ids": [
+        "S22.ENTRY_ORPT_RC.001",
+        "S22.CONTRACT_SELECTION.001",
+        "S22.TARGET_SL.001",
+        "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+      ],
+      "strategy_branch": "BEAR_CALL"
+    },
+    "execution": {
+      "average_entry": "57.5",
+      "average_exit": "23.00",
+      "confirmed_entry_quantity": 500,
+      "confirmed_exit_quantity": 500,
+      "entry_fill_count": 1,
+      "exit_fill_count": 1,
+      "final_exit_timestamp": "2026-08-03T09:31:00+05:30",
+      "first_entry_timestamp": "2026-08-03T09:30:00+05:30",
+      "first_exit_timestamp": "2026-08-03T09:31:00+05:30",
+      "last_entry_timestamp": "2026-08-03T09:30:00+05:30",
+      "partial_exit": false,
+      "partial_fill": false,
+      "remaining_quantity": 0,
+      "requested_entry_quantity": 500
+    },
+    "fact_hash": "7184a2b424e0c21e3fe46b502c8042aa03c23ee60cf54f0d302480b170ae1412",
+    "final_trading_date": "2026-08-03",
+    "instrument": {
+      "contract": "NSE:RELIANCE26AUG1260CE",
+      "currency": "INR",
+      "direction": "BEAR_CALL",
+      "exchange": "NSE",
+      "expiry": "2026-08-25",
+      "lot_size": 500,
+      "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+      "multiplier": "1",
+      "option_type": "CE",
+      "product": "OPTION_SELLING",
+      "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+      "strike": "1260",
+      "tick_size": "0.05",
+      "underlying": "RELIANCE"
+    },
+    "lifecycle": {
+      "carry_forward_count": 0,
+      "eod_exit": false,
+      "final_exit_reason": "TARGET",
+      "original_sl_hit": false,
+      "original_sl_linked": true,
+      "revised_sl_hit": false,
+      "revised_sl_linked": false,
+      "target_hit": true,
+      "target_linked": true,
+      "terminal_state": "CLOSED",
+      "win_loss": "WIN"
+    },
+    "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+    "originating_trading_date": "2026-08-03",
+    "performance_inputs": {
+      "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+      "capital_or_margin_estimate": null,
+      "current_unrealized_pnl": "0.00",
+      "duration_seconds": 60,
+      "gross_realized_pnl": "17250.00",
+      "mark_quality": "EXECUTABLE_SIDE",
+      "mfe_mae": {
+        "evidence_hash": "f9ed281daa66f8f0805e2ce53ae709dd9995ebfca942058bf0dc3a1de1ef1862",
+        "mae": null,
+        "mfe": null,
+        "observation_count": 0,
+        "quality": "UNAVAILABLE"
+      },
+      "net_realized_pnl": "17235.00",
+      "provisional_charges": "15.00"
+    },
+    "position_cycle_id": "ipc:0f194b8471765a49b4cbab6b",
+    "provenance": {
+      "correction_source": "NONE",
+      "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+      "source_fill_ids": [
+        "internal-fill:be2e5096b39e3a5ce9be53bc",
+        "internal-fill:b36ac578887b5cfd884f260f"
+      ],
+      "source_hashes": {
+        "position_event_ids": [
+          "internal-fill:be2e5096b39e3a5ce9be53bc",
+          "internal-fill:b36ac578887b5cfd884f260f"
+        ],
+        "position_projection": "3812bb0d7db4f5ad54278dec6dc1aadb6796507e08f568e29a9339d30e0ba4c8"
+      },
+      "source_lifecycle_requirement_ids": [
+        "lifecycle-req:230e86e0bba632f6d2df39ec",
+        "lifecycle-req:85d025590e265a546baaa313"
+      ],
+      "source_order_ids": [
+        "client-order:6de1f22b2fc13132b46f0780",
+        "client-order:9f822777e9a34a76f7031a06"
+      ],
+      "source_position_event_ids": [
+        "internal-fill:be2e5096b39e3a5ce9be53bc",
+        "internal-fill:b36ac578887b5cfd884f260f"
+      ]
+    },
+    "rule_matrix_version": "s22_source_closure_accepted_v1",
+    "state": "CLOSED_PROVISIONAL",
+    "strategy_definition": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+    "strategy_family": "OPTION_SELLING",
+    "strategy_instance": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+    "strategy_version": "1.0.0",
+    "supersedes_trade_fact_id": null,
+    "trade_fact_id": "trade-fact:b2f2d354acf2c8f971a0d825",
+    "trade_fact_version": "tfis.short_option_accounting.v1",
+    "trade_id": "trade:ipc:0f194b8471765a49b4cbab6b",
+    "trading_session_id": "NSE:2026-08-03"
+  }
 }

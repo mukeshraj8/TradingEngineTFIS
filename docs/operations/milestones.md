@@ -2,6 +2,24 @@
 
 ## Current Snapshot
 
+- as of Sunday, August 2, 2026, S22 RELIANCE Stage 1 one-stock
+  offline/internal-paper support was implemented under
+  `src/tfis/adapters/phase5e` with focused tests and reports under
+  `reports/s22_reliance/`. The milestone reuses the generic Monthly Status
+  lookback resolver, existing ExecutionIntent validation, AccountCoordinator,
+  deterministic internal-paper simulation, PositionCycle and short-option
+  accounting. RELIANCE metadata and lot size are validated from the FYERS
+  read-only fixture; Monthly Status resolves to `BEAR_CF`; completed
+  references are `2DHH=1309.7`, `2DLL=1275.3`, `4DHH=1309.7`, and
+  `4DLL=1265.9`; natural branch selection chooses `BEAR_CALL`; contract
+  selection chooses near-expiry `NSE:RELIANCE26AUG1260CE`. Target, Original
+  SL, revised SL, EOD exit, equality carry-forward, next-day recovery,
+  duplicate replay, reconciliation block, accounting and dashboard projection
+  are covered. Verdict: `S22_RELIANCE_CONDITIONAL` because real opening/ORPT/RC
+  and selected-option historical candles are absent from the Sunday fixture and
+  are deterministic supplements. Runtime impact:
+  `ONE-STOCK S22 INTERNAL-PAPER SUPPORT`. External broker-order/live authority:
+  `NONE`.
 - as of Sunday, August 2, 2026, FYERS authentication integration and read-only
   broker diagnostics were added as reusable broker-platform capabilities. The
   existing canonical flow `scripts/fyers_token_refresh.py --prepare` and

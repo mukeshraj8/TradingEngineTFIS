@@ -1,9 +1,468 @@
 {
-  "as_of": "2026-08-02",
-  "external_order_authority": "NONE",
-  "reason": "Metadata gate passed. PreMarketStrategyPlan creation is deferred to the next S22 implementation milestone.",
-  "schema_version": "s22.reliance.premarket_plan.v2",
-  "snapshot_id": "s22-reliance-fyers-20260802T124359+0530",
-  "source_fixture": "tests/fixtures/s22_reliance/s22_reliance_fyers_snapshot_2026-08-02_sanitized.json",
-  "verdict": "READY_NOT_CREATED"
+  "block_code": null,
+  "block_reason": null,
+  "business_hash": "d9c5148b4d6304416ddfa4741139da529d988a1a4b5983b60b7163aafa9e3c32",
+  "contract_resolution": {
+    "expiry_candidates": [
+      "2026-08-25",
+      "2026-09-29"
+    ],
+    "oi": 632500.0,
+    "oi_unit": "SOURCE_UNSPECIFIED",
+    "premium": 57.6,
+    "qualification_evidence": {
+      "branch_candidates": [
+        {
+          "branch_id": "BEAR_CALL",
+          "decision": "SELECTED",
+          "end_strike": "1240",
+          "expiry_attempts": [
+            {
+              "decision": "SELECTED",
+              "expiry": "2026-08-25",
+              "expiry_kind": "NEAR",
+              "qualification_phase": "IDEAL_PREMIUM",
+              "rejected_candidates": [
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "3.2",
+                  "oi": "6586500",
+                  "option_type": "CALL",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1400",
+                  "symbol": "NSE:RELIANCE26AUG1400CE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "4.85",
+                  "oi": "972000",
+                  "option_type": "CALL",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1380",
+                  "symbol": "NSE:RELIANCE26AUG1380CE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "7.7",
+                  "oi": "1114500",
+                  "option_type": "CALL",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1360",
+                  "symbol": "NSE:RELIANCE26AUG1360CE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "12.6",
+                  "oi": "2423000",
+                  "option_type": "CALL",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1340",
+                  "symbol": "NSE:RELIANCE26AUG1340CE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "19.9",
+                  "oi": "3449000",
+                  "option_type": "CALL",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1320",
+                  "symbol": "NSE:RELIANCE26AUG1320CE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "29.7",
+                  "oi": "8628500",
+                  "option_type": "CALL",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1300",
+                  "symbol": "NSE:RELIANCE26AUG1300CE"
+                }
+              ],
+              "selected_contract": {
+                "ask": "58.05",
+                "bid": "57.6",
+                "expiry": "2026-08-25",
+                "lot_size": 500,
+                "ltp": "57.6",
+                "oi": "632500",
+                "oi_quality": "AVAILABLE",
+                "oi_unit": "SOURCE_UNSPECIFIED",
+                "option_type": "CALL",
+                "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                "quote_timestamp": null,
+                "source_quality": "LIVE_READ_OR_FIXTURE",
+                "strike": "1260",
+                "symbol": "NSE:RELIANCE26AUG1260CE",
+                "tick_size": "0.05",
+                "underlying": "RELIANCE"
+              }
+            }
+          ],
+          "ideal_premium": "51.012",
+          "minimum_oi_exchange_units": "50000",
+          "minimum_premium": "38.259",
+          "option_type": "CALL",
+          "qualification_phase": "IDEAL_PREMIUM",
+          "selected_contract": {
+            "ask": "58.05",
+            "bid": "57.6",
+            "expiry": "2026-08-25",
+            "lot_size": 500,
+            "ltp": "57.6",
+            "oi": "632500",
+            "oi_quality": "AVAILABLE",
+            "oi_unit": "SOURCE_UNSPECIFIED",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "quote_timestamp": null,
+            "source_quality": "LIVE_READ_OR_FIXTURE",
+            "strike": "1260",
+            "symbol": "NSE:RELIANCE26AUG1260CE",
+            "tick_size": "0.05",
+            "underlying": "RELIANCE"
+          },
+          "selected_expiry_kind": "NEAR",
+          "source_cells": [
+            "AB6 OS!D137:M138",
+            "AB14!F45:BG45"
+          ],
+          "start_strike": "1400",
+          "strike_candidates": [
+            "1400",
+            "1380",
+            "1360",
+            "1340",
+            "1320",
+            "1300",
+            "1280",
+            "1260",
+            "1240"
+          ],
+          "workbook_row_id": "S22D"
+        },
+        {
+          "branch_id": "BEAR_PUT",
+          "decision": "SELECTED",
+          "end_strike": "1340",
+          "expiry_attempts": [
+            {
+              "decision": "SELECTED",
+              "expiry": "2026-08-25",
+              "expiry_kind": "NEAR",
+              "qualification_phase": "MINIMUM_PREMIUM",
+              "rejected_candidates": [
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "1.85",
+                  "oi": "860500",
+                  "option_type": "PUT",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1180",
+                  "symbol": "NSE:RELIANCE26AUG1180PE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "2.5",
+                  "oi": "3210500",
+                  "option_type": "PUT",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1200",
+                  "symbol": "NSE:RELIANCE26AUG1200PE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "3.8",
+                  "oi": "1546000",
+                  "option_type": "PUT",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1220",
+                  "symbol": "NSE:RELIANCE26AUG1220PE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "5.6",
+                  "oi": "893500",
+                  "option_type": "PUT",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1240",
+                  "symbol": "NSE:RELIANCE26AUG1240PE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "8.65",
+                  "oi": "1930500",
+                  "option_type": "PUT",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1260",
+                  "symbol": "NSE:RELIANCE26AUG1260PE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "13.4",
+                  "oi": "3297000",
+                  "option_type": "PUT",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1280",
+                  "symbol": "NSE:RELIANCE26AUG1280PE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "20.4",
+                  "oi": "5377500",
+                  "option_type": "PUT",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1300",
+                  "symbol": "NSE:RELIANCE26AUG1300PE"
+                },
+                {
+                  "expiry": "2026-08-25",
+                  "ltp": "30.25",
+                  "oi": "1009500",
+                  "option_type": "PUT",
+                  "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                  "reason": "PREMIUM_BELOW_MINIMUM",
+                  "strike": "1320",
+                  "symbol": "NSE:RELIANCE26AUG1320PE"
+                }
+              ],
+              "selected_contract": {
+                "ask": "42.9",
+                "bid": "42.25",
+                "expiry": "2026-08-25",
+                "lot_size": 500,
+                "ltp": "42.95",
+                "oi": "746500",
+                "oi_quality": "AVAILABLE",
+                "oi_unit": "SOURCE_UNSPECIFIED",
+                "option_type": "PUT",
+                "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+                "quote_timestamp": null,
+                "source_quality": "LIVE_READ_OR_FIXTURE",
+                "strike": "1340",
+                "symbol": "NSE:RELIANCE26AUG1340PE",
+                "tick_size": "0.05",
+                "underlying": "RELIANCE"
+              }
+            }
+          ],
+          "ideal_premium": "52.388",
+          "minimum_oi_exchange_units": "50000",
+          "minimum_premium": "39.291",
+          "option_type": "PUT",
+          "qualification_phase": "MINIMUM_PREMIUM",
+          "selected_contract": {
+            "ask": "42.9",
+            "bid": "42.25",
+            "expiry": "2026-08-25",
+            "lot_size": 500,
+            "ltp": "42.95",
+            "oi": "746500",
+            "oi_quality": "AVAILABLE",
+            "oi_unit": "SOURCE_UNSPECIFIED",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "quote_timestamp": null,
+            "source_quality": "LIVE_READ_OR_FIXTURE",
+            "strike": "1340",
+            "symbol": "NSE:RELIANCE26AUG1340PE",
+            "tick_size": "0.05",
+            "underlying": "RELIANCE"
+          },
+          "selected_expiry_kind": "NEAR",
+          "source_cells": [
+            "AB6 OS!F140:M141",
+            "AB14!G46:BG46"
+          ],
+          "start_strike": "1180",
+          "strike_candidates": [
+            "1180",
+            "1200",
+            "1220",
+            "1240",
+            "1260",
+            "1280",
+            "1300",
+            "1320",
+            "1340"
+          ],
+          "workbook_row_id": "S22E"
+        }
+      ],
+      "branch_resolution_method": "Monthly Status family plus strongest fully supported contract evidence; ideal premium outranks minimum premium, ties fail closed.",
+      "contract_selection_hash": "c71eea3a8943e51976612b8a4b593d46adfbc28101df059926bed978bbf5d150",
+      "decision": "SELECTED",
+      "evidence_quality": "FYERS_CAPTURED_OPTION_CHAIN_MARKET_CLOSED",
+      "monthly_status": "BEAR_CF",
+      "near_expiry_first": true,
+      "next_expiry_fallback_authorized": true,
+      "qualification_phase": "IDEAL_PREMIUM",
+      "schema_version": "s22.reliance.contract_selection.v1",
+      "selected_branch": "BEAR_CALL",
+      "selected_contract": {
+        "ask": "58.05",
+        "bid": "57.6",
+        "expiry": "2026-08-25",
+        "lot_size": 500,
+        "ltp": "57.6",
+        "oi": "632500",
+        "oi_quality": "AVAILABLE",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "option_type": "CALL",
+        "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+        "quote_timestamp": null,
+        "source_quality": "LIVE_READ_OR_FIXTURE",
+        "strike": "1260",
+        "symbol": "NSE:RELIANCE26AUG1260CE",
+        "tick_size": "0.05",
+        "underlying": "RELIANCE"
+      },
+      "source_cells": [
+        "AB6 OS!D137:M138",
+        "AB14!F45:BG45"
+      ],
+      "source_rule_id": "S22.CONTRACT_SELECTION.001"
+    },
+    "selected_contract": {
+      "exchange": "NSE",
+      "expiry": "2026-08-25",
+      "metadata": {
+        "branch_id": "BEAR_CALL",
+        "configured_lots": 1,
+        "currency": "INR",
+        "lot_size": 500,
+        "tick_size": "0.05",
+        "underlying": "RELIANCE"
+      },
+      "option_type": "CE",
+      "product_type": "OPTION_SELLING",
+      "segment": "OPTIONS_SELL",
+      "strike": 1260.0,
+      "symbol": "NSE:RELIANCE26AUG1260CE"
+    },
+    "selected_expiry": "2026-08-25",
+    "selected_strike": 1260.0,
+    "strike_candidates": [
+      1400.0,
+      1380.0,
+      1360.0,
+      1340.0,
+      1320.0,
+      1300.0,
+      1280.0,
+      1260.0,
+      1240.0
+    ]
+  },
+  "derived_fields": [],
+  "enabled": true,
+  "failures": [],
+  "field_provenance": {
+    "base_entry": "SYNTHETIC_SUPPLEMENT",
+    "contract_selection": "FYERS_CAPTURED",
+    "market_structure": "DERIVED_FROM_FYERS_HISTORY",
+    "metadata": "FYERS_METADATA",
+    "monthly_status": "DERIVED_FROM_FYERS_HISTORY",
+    "original_sl": "SYNTHETIC_SUPPLEMENT",
+    "target": "WORKBOOK_NORMALIZED"
+  },
+  "fresh_entry_eligible": true,
+  "missing_fields": [],
+  "monthly_status": "BEAR_CF",
+  "plan_hash": "d9c5148b4d6304416ddfa4741139da529d988a1a4b5983b60b7163aafa9e3c32",
+  "plan_id": "s22-reliance-premarket:2026-08-03",
+  "plan_status": "PREPARED",
+  "plan_version": "s22.reliance.premarket.v1",
+  "planned_values": {
+    "base_entry": 57.5,
+    "direction": null,
+    "lots": 1,
+    "normal_orpt": "09:24:59.400000",
+    "order_side": "SELL",
+    "policy_identities": {
+      "aps_rule": "GLOBAL.OPTION_SELLING.APS_NOT_APPLICABLE_ONE_LOT.001",
+      "branch_map_rule": "S22.MONTHLY_STATUS_CONSUMPTION.001",
+      "contract_rule": "S22.CONTRACT_SELECTION.001",
+      "entry_rule": "S22.ENTRY_ORPT_RC.001",
+      "monthly_status_rule": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+      "target_sl_rule": "S22.TARGET_SL.001"
+    },
+    "position_intent": "SHORT_OPTION",
+    "preliminary_msl": 92.0,
+    "preliminary_target": 23.0,
+    "quantity": 500,
+    "rc_time": "09:29:59.400000"
+  },
+  "product": "OPTION_SELLING",
+  "references": {
+    "as_of": "2026-08-02T12:43:59.105603+05:30",
+    "provenance": {
+      "option_chain": "FYERS_CAPTURED_MARKET_CLOSED",
+      "selected_option_history": "DETERMINISTIC_OPTION_REFERENCE_SUPPLEMENT",
+      "underlying_history": "DERIVED_FROM_FYERS_HISTORY"
+    },
+    "selected_contract": {
+      "ask": "58.05",
+      "bid": "57.6",
+      "expiry": "2026-08-25",
+      "lot_size": 500,
+      "ltp": "57.6",
+      "oi": "632500",
+      "oi_quality": "AVAILABLE",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "option_type": "CALL",
+      "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+      "quote_timestamp": null,
+      "source_quality": "LIVE_READ_OR_FIXTURE",
+      "strike": "1260",
+      "symbol": "NSE:RELIANCE26AUG1260CE",
+      "tick_size": "0.05",
+      "underlying": "RELIANCE"
+    },
+    "underlying": {
+      "2DHH": "1309.7",
+      "2DLL": "1275.3",
+      "4DHH": "1309.7",
+      "4DLL": "1265.9"
+    }
+  },
+  "resolved_branch": "BEAR_CALL",
+  "resolved_configuration_hash": "s22-source-closure-config-v1",
+  "stage_evidence": {
+    "base_entry_formula": "OPT:PRV:2DLL - 10%",
+    "fixture_snapshot_id": "s22-reliance-fyers-20260802T124359+0530",
+    "metadata_snapshot": "data\\strategies\\S22\\fyers_read_only_snapshots\\2026-08-02\\s22-reliance-fyers-20260802T124359+0530\\snapshot.json",
+    "original_sl_formula": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+    "selected_option_reference_supplement": {
+      "classification": "DETERMINISTIC_OPTION_REFERENCE_SUPPLEMENT",
+      "opt_prv_2dll": "63.8889",
+      "opt_prv_3dhh": "84.00",
+      "rc_hh": "84.00",
+      "rc_ll": "57.00",
+      "reason": "FYERS read-only fixture contains option-chain premium/OI but not selected-option historical candles."
+    },
+    "target_formula": "CE Entry - 60%"
+  },
+  "strategy_definition": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+  "strategy_family": "OPTION_SELLING",
+  "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+  "strategy_version": "1.0.0",
+  "supplemented_fields": [
+    "selected_option_previous_references",
+    "opening_orpt_rc_observations"
+  ],
+  "trading_date": "2026-08-03",
+  "underlying_instrument": "RELIANCE"
 }

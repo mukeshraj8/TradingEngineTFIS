@@ -1,11 +1,15 @@
-# S22 RELIANCE Capture Gate
+# S22 RELIANCE One-Stock Offline Internal-Paper Proof
 
-Verdict: `S22_RELIANCE_METADATA_GATE_PASSED_IMPLEMENTATION_PENDING`
+Verdict: S22_RELIANCE_CONDITIONAL
 
-The FYERS read-only authentication and diagnostic boundary is operational. A dated RELIANCE snapshot was captured and sanitized into `tests/fixtures/s22_reliance/s22_reliance_fyers_snapshot_2026-08-02_sanitized.json`.
+Selected branch: BEAR_CALL
 
-The metadata gate is now passed: RELIANCE option records, lot size/effective source date, tick size, monthly near/next expiries, broker/data identifiers, daily history, premium, and OI evidence are available.
+Scope: one source-authoritative S22 RELIANCE monthly stock-option-selling branch through the existing generic offline/internal-paper platform.
 
-S22 implementation did not start in this authentication/capture milestone. No PreMarketStrategyPlan, OpeningMarketContext, EffectiveExecutionPlan, ExecutionIntent, ClientOrder, PositionCycle, TradeFact, PnLFact, or dashboard projection was created.
+Conditional reason: the FYERS Sunday read-only fixture supplies metadata, underlying history, and option-chain premium/OI, but not selected-option historical candles or real opening/ORPT/RC observations. Those fields are deterministic supplements and are labelled as such.
 
-External broker-order authority: `NONE`.
+Runtime impact: ONE-STOCK S22 INTERNAL-PAPER SUPPORT.
+
+External broker-order/live authority: none.
+
+Complete trace hash: 771830b25c7345416a678738b7aad9ee85f424a03abb691ccfb773720622a977

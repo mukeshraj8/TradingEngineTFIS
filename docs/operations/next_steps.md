@@ -6,15 +6,25 @@ way.
 
 ## Immediate Next Priorities
 
-0.62. `READY_FOR_S22_RELIANCE_ONE_STOCK_IMPLEMENTATION` Begin the S22 RELIANCE
-   one-stock internal-paper implementation from
+0.63. `TODO` Collect a live-session RELIANCE read-only snapshot if S22
+   reviewer acceptance requires captured opening, ORPT and RC timing evidence
+   or selected-option historical references. Keep FYERS order authority
+   `NONE`; use the capture only to replace deterministic supplements in the
+   existing one-stock proof.
+
+0.62. `DONE` Implement the S22 RELIANCE one-stock offline/internal-paper proof
+   from
    `tests/fixtures/s22_reliance/s22_reliance_fyers_snapshot_2026-08-02_sanitized.json`.
-   Use the captured FYERS read-only metadata and market evidence only as
-   reference/market input. Do not add FYERS broker order authority. Required
-   path: generic Monthly Status, S22 branch policy, 2D/4D references,
-   contract selection, PreMarketStrategyPlan, OpeningMarketContext, ORPT/RC,
-   EffectiveExecutionPlan, ExecutionIntent, internal-paper order/fill,
-   PositionCycle, lifecycle, accounting and dashboard projection.
+   Result: metadata gate passed, generic Monthly Status resolved RELIANCE as
+   `BEAR_CF`, completed-session references were derived from FYERS history,
+   S22 naturally selected `BEAR_CALL`, near-expiry contract selection chose
+   `NSE:RELIANCE26AUG1260CE`, and the branch ran through
+   PreMarketStrategyPlan, EffectiveExecutionPlan, ExecutionIntent validation,
+   internal-paper order/fill, PositionCycle, lifecycle, accounting and
+   dashboard projection. Verdict: `S22_RELIANCE_CONDITIONAL` because opening,
+   ORPT/RC and selected-option historical references are deterministic
+   supplements, not captured live-session evidence. External FYERS broker
+   order authority remains `NONE`.
 
 0.61. `DONE` FYERS authentication and S22 RELIANCE read-only capture. The
    canonical command is

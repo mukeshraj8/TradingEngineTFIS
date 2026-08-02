@@ -1,0 +1,83 @@
+{
+  "borrowed_window_status": "BEAR_CF",
+  "checked_lookback_windows": 1,
+  "current_window_direct_status": "UNKNOWN",
+  "data_quality": "DERIVED_FROM_FYERS_HISTORY",
+  "evaluation_session": "2026-07-31",
+  "evaluation_timestamp": "2026-07-31T15:29:59+05:30",
+  "failures": [],
+  "instrument_identity": {
+    "exchange": "NSE",
+    "group": "stock",
+    "symbol": "RELIANCE"
+  },
+  "lookback_used": true,
+  "monthly_status": "BEAR_CF",
+  "reason": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+  "result_hash": "a11601378dbe87fee62265ad71b3a87cb50c205ac55beb27f99c453f6dcbde3f",
+  "schema_version": "s22.reliance.monthly_status.v1",
+  "source_monthly_references": {
+    "CMH": 1345.9,
+    "CML": 1249.8,
+    "CWH": 1309.7,
+    "CWL": 1265.9,
+    "PMH": 1344.9,
+    "PML": 1253.2,
+    "PWH": 1345.9,
+    "PWL": 1249.8,
+    "current_price": 1307.8
+  },
+  "source_rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+  "threshold_value": 1197.4326,
+  "transition_evidence": {
+    "notes": "Current month remained UNKNOWN, so TFIS borrowed the monthly status from lookback_1 (2026-06 / 2026-W27) where the historical context classified as BEAR_CF, then applied today's current-price transition rules.",
+    "trace": [
+      {
+        "CMH": 1345.9,
+        "CML": 1249.8,
+        "CWH": 1309.7,
+        "CWL": 1265.9,
+        "PMH": 1344.9,
+        "PML": 1253.2,
+        "PWH": 1345.9,
+        "PWL": 1249.8,
+        "context_month_label": "2026-07",
+        "context_week_label": "2026-W31",
+        "current_price": 1307.8,
+        "lookback_index": 0,
+        "normalized_status": null,
+        "notes": "Current month did not decisively breach the previous month's bullish or bearish monthly thresholds.",
+        "reference_timestamp": "2026-07-31T15:29:59+05:30",
+        "status": "UNKNOWN",
+        "threshold_value": null,
+        "trigger_name": "NO_MONTHLY_TRIGGER",
+        "used_for_resolution": false,
+        "window_label": "current"
+      },
+      {
+        "CMH": 1344.9,
+        "CML": 1253.2,
+        "CWH": 1313.7,
+        "CWL": 1290.0,
+        "PMH": 1473.4,
+        "PML": 1312.6,
+        "PWH": 1344.9,
+        "PWL": 1297.5,
+        "context_month_label": "2026-06",
+        "context_week_label": "2026-W27",
+        "current_price": 1293.9,
+        "lookback_index": 1,
+        "normalized_status": "BEAR_CF",
+        "notes": "Current month low breached the bearish confirmation threshold derived from PML minus a-percent and the second b-percent contraction.",
+        "reference_timestamp": "2026-06-30T15:29:59+05:30",
+        "status": "BEAR_CF",
+        "threshold_value": 1254.1892999999998,
+        "trigger_name": "BEAR_CF_B_THRESHOLD",
+        "used_for_resolution": true,
+        "window_label": "lookback_1"
+      }
+    ]
+  },
+  "trigger_name": "LOOKBACK::BEAR_CF_CONTINUES",
+  "warnings": []
+}

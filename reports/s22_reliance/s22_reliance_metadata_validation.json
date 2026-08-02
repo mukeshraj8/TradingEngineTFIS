@@ -1,98 +1,30 @@
 {
-  "blocked_outputs_not_created": [
-    "RELIANCE PreMarketStrategyPlan",
-    "OpeningMarketContext",
-    "EffectiveExecutionPlan",
-    "ExecutionIntent",
-    "ClientOrder",
-    "InternalPaperFill",
-    "PositionCycle",
-    "TradeFact",
-    "PnLFact"
+  "available_expiries": [
+    "2026-08-25",
+    "2026-09-29"
   ],
-  "broker_paper_live_authority": "NONE",
-  "decision": "S22 RELIANCE implementation may begin from the captured read-only snapshot; do not use FYERS order APIs.",
-  "external_authority": "NONE",
+  "configured_quantity_lots": 1,
+  "contract_multiplier": "1",
+  "currency": "INR",
+  "external_broker_order_authority": "NONE",
   "instrument": "RELIANCE",
-  "latest_update": {
-    "as_of": "2026-08-02",
-    "sanitized_fixture": "tests\\fixtures\\s22_reliance\\s22_reliance_fyers_snapshot_2026-08-02_sanitized.json",
-    "snapshot_id": "s22-reliance-fyers-20260802T124359+0530",
-    "snapshot_path": "data\\strategies\\S22\\fyers_read_only_snapshots\\2026-08-02\\s22-reliance-fyers-20260802T124359+0530\\snapshot.json",
-    "status": "FYERS_READ_ONLY_CAPTURE_COMPLETE"
-  },
-  "operator_selection": {
-    "classification": "USER_CLARIFIED_OPERATOR_SELECTION",
-    "question_id": "S22-Q002",
-    "substitute_allowed_if_metadata_incomplete": false,
-    "symbol": "RELIANCE"
-  },
-  "schema_version": "s22.reliance.metadata_validation.v2",
-  "stage": "STAGE1_ONE_STOCK_PROOF",
-  "strategy_code": "S22",
-  "substitute_stock_selected": false,
-  "validated_fields": [
-    {
-      "field": "F&O eligibility for the test trading date",
-      "status": "AVAILABLE_DATED_FYERS_SYMBOL_MASTER",
-      "value": "RELIANCE option records present"
-    },
-    {
-      "field": "lot size and effective date",
-      "status": "AVAILABLE_DATED_FYERS_SYMBOL_MASTER",
-      "value": "current FYERS option lot size 500; source_effective_date 2026-07-31 in source rows"
-    },
-    {
-      "field": "strike interval",
-      "status": "AVAILABLE_DATED_FYERS_SYMBOL_MASTER",
-      "value": "20.0 between adjacent captured strikes in chain/symbol master around active range"
-    },
-    {
-      "field": "tick size",
-      "status": "AVAILABLE_DATED_FYERS_SYMBOL_MASTER",
-      "value": "0.05 for options"
-    },
-    {
-      "field": "monthly option expiry availability",
-      "status": "AVAILABLE_DATED_FYERS_SYMBOL_MASTER",
-      "value": {
-        "all_expiries": [
-          "2026-08-25",
-          "2026-09-29",
-          "2026-10-27"
-        ],
-        "near_monthly_expiry": "2026-08-25",
-        "next_monthly_expiry": "2026-09-29",
-        "rule": "latest listed option expiry within each calendar month on or after as_of",
-        "underlying": "RELIANCE",
-        "warnings": []
-      }
-    },
-    {
-      "field": "option-chain availability",
-      "status": "AVAILABLE_FYERS_READ_ONLY_CAPTURE",
-      "value": 2
-    },
-    {
-      "field": "premium evidence",
-      "status": "AVAILABLE_FYERS_READ_ONLY_CAPTURE",
-      "value": "bid/ask/LTP captured in option-chain contracts"
-    },
-    {
-      "field": "OI evidence",
-      "status": "AVAILABLE_FYERS_READ_ONLY_CAPTURE",
-      "value": 122
-    },
-    {
-      "field": "broker identifiers",
-      "status": "AVAILABLE_DATED_FYERS_SYMBOL_MASTER",
-      "value": "instrument_token/source_symbol present"
-    },
-    {
-      "field": "market-data identifiers",
-      "status": "AVAILABLE_DATED_FYERS_SYMBOL_MASTER",
-      "value": "FYERS source_symbol/fyToken present"
-    }
+  "lot_size": 500,
+  "lot_sizes_observed": [
+    500
+  ],
+  "metadata_hash": "500e1c070c96c24cd2d72b5707bc5205828fb6519eb5df65e68563b480fdb6ec",
+  "metadata_source_hash_count": 502,
+  "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+  "near_expiry": "2026-08-25",
+  "next_expiry": "2026-09-29",
+  "option_chain_contract_count": 400,
+  "option_record_count": 502,
+  "quantity_exchange_units": 500,
+  "schema_version": "s22.reliance.metadata_validation.v3",
+  "source_effective_date": "2026-07-31",
+  "tick_size": "0.05",
+  "tick_sizes_observed": [
+    "0.05"
   ],
   "verdict": "METADATA_GATE_PASSED"
 }

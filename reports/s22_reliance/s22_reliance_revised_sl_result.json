@@ -1,0 +1,2873 @@
+{
+  "accounting": {
+    "pnl_facts": [
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2026-08-03T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "e6351936abc1f7f88d0856feec2248eab4db65dccd793440836ea4056c3e629a",
+        "fact_hash": "05ca1e1556b7699004655d32ef0c4c7652b947ceef1af3fa906645cf33da3191",
+        "fact_type": "REALIZED_TRADE_PNL",
+        "gross_pnl": "-17700.00",
+        "instrument": {
+          "contract": "NSE:RELIANCE26AUG1260CE",
+          "currency": "INR",
+          "direction": "BEAR_CALL",
+          "exchange": "NSE",
+          "expiry": "2026-08-25",
+          "lot_size": 500,
+          "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+          "multiplier": "1",
+          "option_type": "CE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "1260",
+          "tick_size": "0.05",
+          "underlying": "RELIANCE"
+        },
+        "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+        "net_pnl": "-17715.00",
+        "pnl_fact_id": "pnl-fact:e6351936abc1f7f88d0856fe",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "REALIZED",
+        "source_identities": {
+          "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+          "source_fill_ids": [
+            "internal-fill:be383a1405a3e10752d0b92f",
+            "internal-fill:1e91f04eba44a602f4b5d5c7"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:6c34f80112aa4d6525b08adc"
+        },
+        "strategy": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2026-08-03"
+      },
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2026-08-03T15:31:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "15.00",
+        "currency": "INR",
+        "evidence_hash": "e96da0f6d07fcaf5e09eff1001b15053a59c675910a53f631b1f02a8772f241a",
+        "fact_hash": "5435cd2dd697b375d47606d063e1d6941b46de39cbaabc1531628014b4674d1a",
+        "fact_type": "CHARGE_ESTIMATE",
+        "gross_pnl": "0.00",
+        "instrument": {
+          "contract": "NSE:RELIANCE26AUG1260CE",
+          "currency": "INR",
+          "direction": "BEAR_CALL",
+          "exchange": "NSE",
+          "expiry": "2026-08-25",
+          "lot_size": 500,
+          "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+          "multiplier": "1",
+          "option_type": "CE",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": "1260",
+          "tick_size": "0.05",
+          "underlying": "RELIANCE"
+        },
+        "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+        "net_pnl": "-15.00",
+        "pnl_fact_id": "pnl-fact:e96da0f6d07fcaf5e09eff10",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "CHARGE",
+        "source_identities": {
+          "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+          "source_fill_ids": [
+            "internal-fill:be383a1405a3e10752d0b92f",
+            "internal-fill:1e91f04eba44a602f4b5d5c7"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:6c34f80112aa4d6525b08adc"
+        },
+        "strategy": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2026-08-03"
+      }
+    ],
+    "projections": [
+      {
+        "dimensions": {
+          "trading_date": "2026-08-03"
+        },
+        "metrics": {
+          "average_loser": "17715.00",
+          "average_winner": "0.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "17715.00",
+          "expectancy": "-17715.00",
+          "gross_pnl": "-17700.00",
+          "losses": 1,
+          "maximum_closed_equity_drawdown": "17715.00",
+          "net_pnl": "-17730.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": "0.00",
+          "realized_pnl": "-17715.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "0.00",
+          "wins": 0
+        },
+        "projection_hash": "16ab9689afe92fcf90a5728f22517f60ccc21b5ac57846f57eba37e4a482f1a0",
+        "projection_id": "accounting-projection:daily_portfolio:6054243248961beb",
+        "projection_type": "DAILY_PORTFOLIO",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:e6351936abc1f7f88d0856fe",
+          "pnl-fact:e96da0f6d07fcaf5e09eff10"
+        ],
+        "watermark": "ded239a0ad677a7c300a99a60f4689d76f55732c87ab0739d9584493da5ab7ee"
+      },
+      {
+        "dimensions": {
+          "account": "INTERNAL_PAPER_ACCOUNT"
+        },
+        "metrics": {
+          "average_loser": "17715.00",
+          "average_winner": "0.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "17715.00",
+          "expectancy": "-17715.00",
+          "gross_pnl": "-17700.00",
+          "losses": 1,
+          "maximum_closed_equity_drawdown": "17715.00",
+          "net_pnl": "-17730.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": "0.00",
+          "realized_pnl": "-17715.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "0.00",
+          "wins": 0
+        },
+        "projection_hash": "4266e1d48f8e45d6e8dd6840c7fd4d095d1c2b15744ff2e71d80ca931067c7ae",
+        "projection_id": "accounting-projection:account:3d115116888589b6",
+        "projection_type": "ACCOUNT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:e6351936abc1f7f88d0856fe",
+          "pnl-fact:e96da0f6d07fcaf5e09eff10"
+        ],
+        "watermark": "ded239a0ad677a7c300a99a60f4689d76f55732c87ab0739d9584493da5ab7ee"
+      },
+      {
+        "dimensions": {
+          "strategy": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER"
+        },
+        "metrics": {
+          "average_loser": "17715.00",
+          "average_winner": "0.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "17715.00",
+          "expectancy": "-17715.00",
+          "gross_pnl": "-17700.00",
+          "losses": 1,
+          "maximum_closed_equity_drawdown": "17715.00",
+          "net_pnl": "-17730.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": "0.00",
+          "realized_pnl": "-17715.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "0.00",
+          "wins": 0
+        },
+        "projection_hash": "437ee9511a937e792995fb065d6cfb4cf33d011b48b29b8edd262302bd5594a8",
+        "projection_id": "accounting-projection:strategy:868dc11c66d34e0d",
+        "projection_type": "STRATEGY",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:e6351936abc1f7f88d0856fe",
+          "pnl-fact:e96da0f6d07fcaf5e09eff10"
+        ],
+        "watermark": "ded239a0ad677a7c300a99a60f4689d76f55732c87ab0739d9584493da5ab7ee"
+      },
+      {
+        "dimensions": {
+          "contract": "NSE:RELIANCE26AUG1260CE"
+        },
+        "metrics": {
+          "average_loser": "17715.00",
+          "average_winner": "0.00",
+          "breakeven": 0,
+          "closed_trades": 1,
+          "current_drawdown": "17715.00",
+          "expectancy": "-17715.00",
+          "gross_pnl": "-17700.00",
+          "losses": 1,
+          "maximum_closed_equity_drawdown": "17715.00",
+          "net_pnl": "-17730.00",
+          "open_trades": 0,
+          "payoff_ratio": "0.00",
+          "profit_factor": "0.00",
+          "realized_pnl": "-17715.00",
+          "total_trades": 1,
+          "unrealized_pnl": "0.00",
+          "win_rate": "0.00",
+          "wins": 0
+        },
+        "projection_hash": "af5933ee63c4ee5214eb3f759562662aad3ab4335e620c444156873e4191f1aa",
+        "projection_id": "accounting-projection:instrument:5c71dc2e4e4f63ea",
+        "projection_type": "INSTRUMENT",
+        "quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "source_fact_ids": [
+          "pnl-fact:e6351936abc1f7f88d0856fe",
+          "pnl-fact:e96da0f6d07fcaf5e09eff10"
+        ],
+        "watermark": "ded239a0ad677a7c300a99a60f4689d76f55732c87ab0739d9584493da5ab7ee"
+      },
+      {
+        "dimensions": {
+          "dimension": "final_exit_reason"
+        },
+        "metrics": {
+          "REVISED_SL": "-17730.00"
+        },
+        "projection_hash": "3f20fc1cdd0ea3b528bf2afb09e65964aa118db99b24be82e2bb27a0fafdd823",
+        "projection_id": "accounting-projection:exit_reason:dd2f513b11415d17",
+        "projection_type": "EXIT_REASON",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:e6351936abc1f7f88d0856fe",
+          "pnl-fact:e96da0f6d07fcaf5e09eff10"
+        ],
+        "watermark": "dd2f513b11415d17278132e573dc5e999509eb52a722ad4ec75fad1d9c5b3f9e"
+      },
+      {
+        "dimensions": {
+          "dimension": "normal_gap_path"
+        },
+        "metrics": {
+          "S22_ORPT_RC_ONLY": "-17730.00"
+        },
+        "projection_hash": "50301a308b8f30bbd400b28863ff278a02f5e14bf1e78871cf46e76f729a4bb6",
+        "projection_id": "accounting-projection:path:ab7d000e793e959a",
+        "projection_type": "PATH",
+        "quality": "CONFIRMED_INTERNAL_PAPER",
+        "source_fact_ids": [
+          "pnl-fact:e6351936abc1f7f88d0856fe",
+          "pnl-fact:e96da0f6d07fcaf5e09eff10"
+        ],
+        "watermark": "ab7d000e793e959a2db74d4fd0a334524773dcba1ad664422d011fef484abd1a"
+      }
+    ],
+    "result_hash": "a6919a791622bfda0a6e5761bd9ff21e17b860b93b639bcabd031f23e1c41fda",
+    "trade_fact": {
+      "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+      "configuration_hash": "s22-source-closure-config-v1",
+      "decision_context": {
+        "acknowledgements_affect_pnl": false,
+        "configured_lots": 1,
+        "double_lot_multiplication": false,
+        "exchange_quantity": 500,
+        "lot_size": 500,
+        "normal_gap_path": "S22_ORPT_RC_ONLY",
+        "planned_prices_are_not_pnl_inputs": true,
+        "pnl_formula": "(entry_fill_price - exit_fill_price) * confirmed_exchange_quantity * multiplier",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "source_rule_ids": [
+          "S22.ENTRY_ORPT_RC.001",
+          "S22.CONTRACT_SELECTION.001",
+          "S22.TARGET_SL.001",
+          "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+        ],
+        "strategy_branch": "BEAR_CALL"
+      },
+      "execution": {
+        "average_entry": "57.0",
+        "average_exit": "92.40",
+        "confirmed_entry_quantity": 500,
+        "confirmed_exit_quantity": 500,
+        "entry_fill_count": 1,
+        "exit_fill_count": 1,
+        "final_exit_timestamp": "2026-08-03T09:31:00+05:30",
+        "first_entry_timestamp": "2026-08-03T09:30:00+05:30",
+        "first_exit_timestamp": "2026-08-03T09:31:00+05:30",
+        "last_entry_timestamp": "2026-08-03T09:30:00+05:30",
+        "partial_exit": false,
+        "partial_fill": false,
+        "remaining_quantity": 0,
+        "requested_entry_quantity": 500
+      },
+      "fact_hash": "e723090fe0940695501e69eb137d9d094874416bf056fe2299efbdcd7cc15c73",
+      "final_trading_date": "2026-08-03",
+      "instrument": {
+        "contract": "NSE:RELIANCE26AUG1260CE",
+        "currency": "INR",
+        "direction": "BEAR_CALL",
+        "exchange": "NSE",
+        "expiry": "2026-08-25",
+        "lot_size": 500,
+        "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+        "multiplier": "1",
+        "option_type": "CE",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": "1260",
+        "tick_size": "0.05",
+        "underlying": "RELIANCE"
+      },
+      "lifecycle": {
+        "carry_forward_count": 0,
+        "eod_exit": false,
+        "final_exit_reason": "REVISED_SL",
+        "original_sl_hit": false,
+        "original_sl_linked": true,
+        "revised_sl_hit": true,
+        "revised_sl_linked": false,
+        "target_hit": false,
+        "target_linked": true,
+        "terminal_state": "CLOSED",
+        "win_loss": "LOSS"
+      },
+      "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+      "originating_trading_date": "2026-08-03",
+      "performance_inputs": {
+        "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "capital_or_margin_estimate": null,
+        "current_unrealized_pnl": "0.00",
+        "duration_seconds": 60,
+        "gross_realized_pnl": "-17700.00",
+        "mark_quality": "EXECUTABLE_SIDE",
+        "mfe_mae": {
+          "evidence_hash": "f9ed281daa66f8f0805e2ce53ae709dd9995ebfca942058bf0dc3a1de1ef1862",
+          "mae": null,
+          "mfe": null,
+          "observation_count": 0,
+          "quality": "UNAVAILABLE"
+        },
+        "net_realized_pnl": "-17715.00",
+        "provisional_charges": "15.00"
+      },
+      "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+      "provenance": {
+        "correction_source": "NONE",
+        "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+        "source_fill_ids": [
+          "internal-fill:be383a1405a3e10752d0b92f",
+          "internal-fill:1e91f04eba44a602f4b5d5c7"
+        ],
+        "source_hashes": {
+          "position_event_ids": [
+            "internal-fill:be383a1405a3e10752d0b92f",
+            "internal-fill:1e91f04eba44a602f4b5d5c7"
+          ],
+          "position_projection": "b6367d803909841bedbdbe7614fd21516d0d2015be8c664a55dc9a92dc471380"
+        },
+        "source_lifecycle_requirement_ids": [
+          "lifecycle-req:f8444bca7626e7b060dde481",
+          "lifecycle-req:ea21982af6204f9a24a63ee9"
+        ],
+        "source_order_ids": [
+          "client-order:e62e0565589f554b63304dca",
+          "client-order:096e4538cc845a7d0745ddb8"
+        ],
+        "source_position_event_ids": [
+          "internal-fill:be383a1405a3e10752d0b92f",
+          "internal-fill:1e91f04eba44a602f4b5d5c7"
+        ]
+      },
+      "rule_matrix_version": "s22_source_closure_accepted_v1",
+      "state": "CLOSED_PROVISIONAL",
+      "strategy_definition": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "strategy_family": "OPTION_SELLING",
+      "strategy_instance": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+      "strategy_version": "1.0.0",
+      "supersedes_trade_fact_id": null,
+      "trade_fact_id": "trade-fact:6c34f80112aa4d6525b08adc",
+      "trade_fact_version": "tfis.short_option_accounting.v1",
+      "trade_id": "trade:ipc:af33b48026160a0d3fd24678",
+      "trading_session_id": "NSE:2026-08-03"
+    }
+  },
+  "authority": {
+    "broker_submission_permitted": false,
+    "external_paper_submission_permitted": false,
+    "fyers_order_authority": "NONE",
+    "internal_paper_authority": "INTERNAL_PAPER_ONLY",
+    "live_submission_permitted": false,
+    "mode": "OFFLINE_INTERNAL_PAPER_ONLY",
+    "real_position_mutation_permitted": false
+  },
+  "effective_plan": {
+    "block_code": null,
+    "block_reason": null,
+    "derived_fields": [],
+    "downstream_execution_permission": "OFFLINE_INTERNAL_PAPER_CANDIDATE_ONLY",
+    "execution_plan_hash": "52995cbfccf95febe65360bca02023264196687251ceb395ba5848963b08a54a",
+    "execution_plan_id": "s22-reliance-effective:rc_recalculation",
+    "failures": [],
+    "final_eligibility": "TRADE",
+    "gap_missed_entry_applicability": "S22_ORPT_RC_ONLY",
+    "gap_missed_entry_status": "ENTRY_MISSED",
+    "lots": 1,
+    "missing_fields": [],
+    "offline_execution_candidate": true,
+    "opening_gap_classification": "NOT_USED_FOR_S22_AUTHORITY",
+    "order_side": "SELL",
+    "path_classification": "ABNORMAL_RECALCULATED",
+    "performance": {},
+    "plan_revision": 1,
+    "plan_status": "READY_OFFLINE",
+    "policy_identities": {
+      "branch": "BEAR_CALL",
+      "contract_rule": "S22.CONTRACT_SELECTION.001",
+      "entry_rule": "S22.ENTRY_ORPT_RC.001",
+      "rule_matrix_version": "s22_source_closure_accepted_v1",
+      "target_sl_rule": "S22.TARGET_SL.001"
+    },
+    "position_intent": "SHORT_OPTION",
+    "product": "OPTION_SELLING",
+    "quantity": 500,
+    "recalculation_inputs": {
+      "base_entry": "57.50",
+      "orpt_low": "56.00",
+      "rc_hh": "84.00"
+    },
+    "recalculation_output": {
+      "effective_entry": "57.00",
+      "effective_msl": "92.40"
+    },
+    "recalculation_required": true,
+    "retain_recalculate_block_reason": null,
+    "schema_version": "s22.reliance.effective_execution_plan.v1",
+    "selected_contract": {
+      "exchange": "NSE",
+      "expiry": "2026-08-25",
+      "metadata": {
+        "branch_id": "BEAR_CALL",
+        "configured_lots": 1,
+        "currency": "INR",
+        "lot_size": 500,
+        "tick_size": "0.05",
+        "underlying": "RELIANCE"
+      },
+      "option_type": "CE",
+      "product_type": "OPTION_SELLING",
+      "segment": "OPTIONS_SELL",
+      "strike": 1260.0,
+      "symbol": "NSE:RELIANCE26AUG1260CE"
+    },
+    "selected_expiry": "2026-08-25",
+    "selected_strike": 1260.0,
+    "source_opening_context_hash": "2ea29d0b78b8daa0765ddb64994708e21c56ec5c4f9cd9284da90c1ba8ea3151",
+    "source_opening_context_id": "s22-reliance-opening:orpt_missed_rc",
+    "source_premarket_plan_hash": "d9c5148b4d6304416ddfa4741139da529d988a1a4b5983b60b7163aafa9e3c32",
+    "source_premarket_plan_id": "s22-reliance-premarket:2026-08-03",
+    "stage_evidence": {
+      "authority": {
+        "broker_submission_permitted": false,
+        "external_paper_submission_permitted": false,
+        "fyers_order_authority": "NONE",
+        "internal_paper_authority": "INTERNAL_PAPER_ONLY",
+        "live_submission_permitted": false,
+        "mode": "OFFLINE_INTERNAL_PAPER_ONLY",
+        "real_position_mutation_permitted": false
+      },
+      "opening_context": {
+        "base_entry": "57.50",
+        "opening_context_hash": "2ea29d0b78b8daa0765ddb64994708e21c56ec5c4f9cd9284da90c1ba8ea3151",
+        "opening_context_id": "s22-reliance-opening:orpt_missed_rc",
+        "orpt_low": "56.00",
+        "orpt_missed": true,
+        "orpt_timestamp": "2026-08-03T09:24:59.400000+05:30",
+        "rc_high": "84.00",
+        "rc_timestamp": "2026-08-03T09:29:59.400000+05:30",
+        "rule": "09:24:59 AM LL < option sell entry",
+        "source": "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "source_rule_id": "S22.ENTRY_ORPT_RC.001",
+        "trading_date": "2026-08-03"
+      },
+      "selected_option_reference_supplement": {
+        "classification": "DETERMINISTIC_OPTION_REFERENCE_SUPPLEMENT",
+        "opt_prv_2dll": "63.8889",
+        "opt_prv_3dhh": "84.00",
+        "rc_hh": "84.00",
+        "rc_ll": "57.00",
+        "reason": "FYERS read-only fixture contains option-chain premium/OI but not selected-option historical candles."
+      }
+    },
+    "strategy_definition": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+    "strategy_family": "OPTION_SELLING",
+    "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+    "strategy_version": "1.0.0",
+    "supersedes_plan_id": "s22-reliance-premarket:2026-08-03",
+    "supplemented_fields": [
+      "opening_orpt_rc_observations",
+      "selected_option_previous_references"
+    ],
+    "trading_date": "2026-08-03",
+    "underlying": "RELIANCE",
+    "values": {
+      "base_entry": 57.5,
+      "effective_entry": 57.0,
+      "effective_msl": 92.4,
+      "effective_target": 23.0,
+      "msl_status": "RECALCULATED",
+      "normal_orpt": "09:24:59.400000",
+      "order_type": "LIMIT",
+      "preliminary_msl": 92.0,
+      "preliminary_target": 23.0,
+      "revised_authorized_time": "09:29:59.400000",
+      "target_status": "RETAINED_FROM_PREMARKET"
+    }
+  },
+  "entry_client_order": {
+    "account_coordinator_id": "acct-coord:a6fc25d9aeffbacfc2a9ba11",
+    "authority": "INTERNAL_PAPER_ONLY",
+    "authorized_time": "2026-08-03T09:29:59.400000+05:30",
+    "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+    "broker_submission_permitted": false,
+    "client_order_id": "client-order:e62e0565589f554b63304dca",
+    "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+    "idempotency_key": "client-order:e62e0565589f554b63304dca2801726f6cf14b1528f86ec0b637be55d640ab59",
+    "limit_price": "57.0",
+    "live_submission_permitted": false,
+    "normalized_contract": "NSE:RELIANCE26AUG1260CE",
+    "order_hash": "d72baa81da6ca09e3676f9de158e43d3472db4471c2bb94f1b86a50e071ddb7a",
+    "order_purpose": "ENTRY",
+    "order_type": "LIMIT",
+    "position_cycle_id": null,
+    "protection_generation": null,
+    "quantity": 500,
+    "side": "SELL",
+    "source_intent_hash": "d7a8e9cc98e7630ece3f1639b0eae5087a28fd105dad46e39fb0da7a1f8c8a4b",
+    "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+    "time_in_force": "DAY",
+    "trading_session_id": "NSE:2026-08-03",
+    "trigger_price": null
+  },
+  "entry_intent": {
+    "action": {
+      "authorized_not_after": null,
+      "authorized_not_before": "2026-08-03T09:29:59.400000+05:30",
+      "limit_price": "57.0",
+      "maximum_allowed_slippage": "0.05",
+      "order_type": "LIMIT",
+      "protection_generation": null,
+      "purpose": "ENTRY",
+      "quantity_unit": "UNITS",
+      "requested_quantity": 500,
+      "side": "SELL",
+      "time_in_force": "DAY",
+      "trigger_price": null
+    },
+    "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+    "broker_submission_permitted": false,
+    "evidence": {
+      "authority_mode": "OFFLINE_ONLY",
+      "configuration_hash": "s22-source-closure-config-v1",
+      "evidence_packet_hash": "s22-reliance-one-stock-offline-evidence-v1",
+      "market_snapshot_hash": "market:s22-reliance-opening:orpt_missed_rc",
+      "provenance": {
+        "adapter": "S22ExecutionIntentAdapter",
+        "branch": "BEAR_CALL",
+        "path": "ABNORMAL_RECALCULATED"
+      },
+      "reconciliation_result_hash": "s22-reconciliation-shadow-ready-hash",
+      "reconciliation_result_id": "s22-reconciliation-shadow-ready",
+      "recovery_assessment_hash": "s22-recovery-offline-ready-hash",
+      "recovery_assessment_id": "s22-recovery-offline-ready",
+      "rule_matrix_version": "s22_source_closure_accepted_v1",
+      "source_rule_ids": [
+        "S22.ENTRY_ORPT_RC.001",
+        "S22.CONTRACT_SELECTION.001",
+        "S22.TARGET_SL.001"
+      ]
+    },
+    "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+    "idempotency_key": "phase4e:7f1ff4484be936500af5f5eac7e6ee7b9ced2d112124300e8487d162daf7a0e7",
+    "instrument": {
+      "contract": "NSE:RELIANCE26AUG1260CE",
+      "currency": "INR",
+      "exchange": "NSE",
+      "expiry": "2026-08-25",
+      "lot_size": 500,
+      "multiplier": "1",
+      "option_type": "CE",
+      "product": "OPTION_SELLING",
+      "segment": "OPTIONS_SELL",
+      "strike": "1260.0",
+      "tick_size": "0.05",
+      "underlying": "RELIANCE"
+    },
+    "intent_hash": "d7a8e9cc98e7630ece3f1639b0eae5087a28fd105dad46e39fb0da7a1f8c8a4b",
+    "live_submission_permitted": false,
+    "order_creation_permitted": false,
+    "paper_submission_permitted": false,
+    "position_cycle_id": null,
+    "position_mutation_permitted": false,
+    "schema_version": "phase4e.execution_intent.v1",
+    "source_artifact_hash": "52995cbfccf95febe65360bca02023264196687251ceb395ba5848963b08a54a",
+    "source_artifact_id": "s22-reliance-effective:rc_recalculation",
+    "source_artifact_type": "EffectiveExecutionPlan",
+    "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+    "strategy_family_id": "OPTION_SELLING",
+    "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+    "strategy_version": "1.0.0",
+    "trading_date": "2026-08-03",
+    "trading_session_id": "NSE:2026-08-03"
+  },
+  "entry_internal_paper_result": {
+    "account_snapshot": {
+      "account_blocked": false,
+      "account_enabled": true,
+      "active_order_count": 0,
+      "active_order_reservation": "0",
+      "available_paper_margin": "5050000.00",
+      "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+      "margin_per_quantity": "100.00",
+      "max_active_order_count": 10,
+      "opening_paper_cash": "5000000.00",
+      "released_margin": "50000.00",
+      "reserved_margin": "0",
+      "simulated_charges": "0.00"
+    },
+    "client_order": {
+      "account_coordinator_id": "acct-coord:a6fc25d9aeffbacfc2a9ba11",
+      "authority": "INTERNAL_PAPER_ONLY",
+      "authorized_time": "2026-08-03T09:29:59.400000+05:30",
+      "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+      "broker_submission_permitted": false,
+      "client_order_id": "client-order:e62e0565589f554b63304dca",
+      "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+      "idempotency_key": "client-order:e62e0565589f554b63304dca2801726f6cf14b1528f86ec0b637be55d640ab59",
+      "limit_price": "57.0",
+      "live_submission_permitted": false,
+      "normalized_contract": "NSE:RELIANCE26AUG1260CE",
+      "order_hash": "d72baa81da6ca09e3676f9de158e43d3472db4471c2bb94f1b86a50e071ddb7a",
+      "order_purpose": "ENTRY",
+      "order_type": "LIMIT",
+      "position_cycle_id": null,
+      "protection_generation": null,
+      "quantity": 500,
+      "side": "SELL",
+      "source_intent_hash": "d7a8e9cc98e7630ece3f1639b0eae5087a28fd105dad46e39fb0da7a1f8c8a4b",
+      "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+      "time_in_force": "DAY",
+      "trading_session_id": "NSE:2026-08-03",
+      "trigger_price": null
+    },
+    "events": [
+      {
+        "authority_source": "INTERNAL_PAPER_SIMULATION",
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "client_order_id": "client-order:e62e0565589f554b63304dca",
+        "cumulative_filled_quantity": 0,
+        "event_hash": "11022cf9cd59f762c3efcf425b2d33be00d76168480282571976e33e211ee719",
+        "event_id": "event:92ac661ef077ce3b30cfd5db",
+        "event_timestamp": "2026-08-03T09:30:00+05:30",
+        "event_type": "INTERNAL_SUBMISSION_ACCEPTED",
+        "fill_price": null,
+        "new_state": "ACKNOWLEDGED_INTERNAL",
+        "previous_state": "READY_FOR_INTERNAL_PAPER",
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "bdb1d54e9de02765055a5a20506cef88368609f83b4cdca8a71d290e44cef8b1"
+        },
+        "quantity_delta": 0,
+        "reason": "Internal order acknowledged.",
+        "scenario_id": "rc_revised_sl",
+        "sequence": 2,
+        "simulated_exchange_timestamp": "2026-08-03T09:30:00+05:30"
+      },
+      {
+        "authority_source": "INTERNAL_PAPER_SIMULATION",
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "client_order_id": "client-order:e62e0565589f554b63304dca",
+        "cumulative_filled_quantity": 500,
+        "event_hash": "d7bc00279711afdb7f00a3ac7694eb0b9df151859cf1b85f075cf681632de087",
+        "event_id": "event:f4910cc1c717445b299ac6e3",
+        "event_timestamp": "2026-08-03T09:30:00+05:30",
+        "event_type": "INTERNAL_FULL_FILL",
+        "fill_price": "57.0",
+        "new_state": "FILLED_INTERNAL",
+        "previous_state": "ACKNOWLEDGED_INTERNAL",
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "bdb1d54e9de02765055a5a20506cef88368609f83b4cdca8a71d290e44cef8b1"
+        },
+        "quantity_delta": 500,
+        "reason": "Internal full fill.",
+        "scenario_id": "rc_revised_sl",
+        "sequence": 3,
+        "simulated_exchange_timestamp": "2026-08-03T09:30:00+05:30"
+      }
+    ],
+    "fills": [
+      {
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "client_order_id": "client-order:e62e0565589f554b63304dca",
+        "contract": "NSE:RELIANCE26AUG1260CE",
+        "fill_classification": "INTERNAL_PAPER_SIMULATED_FILL",
+        "fill_hash": "ccab58c48d6a042c20f341ff9eb47e9ebd6654ce0043c9be3d1e6d891f9852da",
+        "fill_price": "57.0",
+        "fill_quantity": 500,
+        "internal_fill_id": "internal-fill:be383a1405a3e10752d0b92f",
+        "position_cycle_id": null,
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "bdb1d54e9de02765055a5a20506cef88368609f83b4cdca8a71d290e44cef8b1"
+        },
+        "recorded_timestamp": "2026-08-03T09:30:00+05:30",
+        "scenario_id": "rc_revised_sl",
+        "side": "SELL",
+        "simulated_exchange_timestamp": "2026-08-03T09:30:00+05:30",
+        "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER"
+      }
+    ],
+    "final_state": "FILLED_INTERNAL",
+    "position_update_candidates": [
+      {
+        "authority_mode": "INTERNAL_PAPER_ONLY",
+        "candidate_hash": "ce065c9e1f1ed065599f31d639ba5cd5cf68ba0833467132b3fcb3e60e3b87c6",
+        "candidate_id": "pc-update-candidate:0c246eb4bcbfe5e0be889a6f",
+        "fill_price": "57.0",
+        "position_cycle_id": null,
+        "quantity_delta": 500,
+        "source_fill_id": "internal-fill:be383a1405a3e10752d0b92f",
+        "suggested_state_impact": "INTERNAL_PAPER_FILL_OBSERVED_NO_POSITION_MUTATION",
+        "update_permitted": false
+      }
+    ],
+    "result_hash": "7f826fd9a3f751b48c9f309e7b3ec91674956916696a521574a08f0efc370b44"
+  },
+  "entry_position_transition": {
+    "consistency_status": "MATCHED",
+    "event": {
+      "event_hash": "bb792ba56019e482f95811c02768276ac12a660c638141737c17f726aea2ac47",
+      "event_id": "position-event:71c4c2e28daa2cf2f2811e09",
+      "event_sequence": 2,
+      "event_timestamp": "2026-08-03T09:30:00+05:30",
+      "event_type": "ENTRY_FULL_FILL_APPLIED",
+      "new_state": "OPEN_UNPROTECTED",
+      "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+      "price_evidence": {
+        "fill_price": "57.0"
+      },
+      "prior_state": "PLANNED",
+      "quantity_after": 500,
+      "quantity_before": 0,
+      "rule_ids": [
+        "S22.ENTRY_ORPT_RC.001",
+        "S22.CONTRACT_SELECTION.001",
+        "S22.TARGET_SL.001"
+      ],
+      "source_client_order_id": "client-order:e62e0565589f554b63304dca",
+      "source_fill_id": "internal-fill:be383a1405a3e10752d0b92f",
+      "source_requirement_id": null
+    },
+    "projection": {
+      "active_order_references": [],
+      "active_original_sl": null,
+      "active_revised_sl": null,
+      "active_target": null,
+      "average_entry_price": "57.0",
+      "average_exit_price": null,
+      "cancelled_protections": [],
+      "carry_forward_status": null,
+      "confirmed_entry_quantity": 500,
+      "currency": "INR",
+      "entry_fill_ids": [
+        "internal-fill:be383a1405a3e10752d0b92f"
+      ],
+      "exit_fill_ids": [],
+      "filled_exit_order_id": null,
+      "identity": {
+        "authority_classification": "INTERNAL_PAPER_ONLY",
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "broker_reconciliation_authority": false,
+        "direction": "BEAR_CALL",
+        "external_broker_position": false,
+        "live_position": false,
+        "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+        "normalized_contract": "NSE:RELIANCE26AUG1260CE",
+        "originating_entry_execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+        "originating_execution_plan_id": "s22-reliance-effective:rc_recalculation",
+        "originating_trading_date": "2026-08-03",
+        "position_cycle_hash": "dd67ec175ce51a7cf757010beea24f4da86763aa8afe802afb572d70f17dc7bc",
+        "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+        "side": "SELL",
+        "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+        "strategy_family_id": "OPTION_SELLING",
+        "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+        "strategy_version": "1.0.0",
+        "trading_session_id": "NSE:2026-08-03"
+      },
+      "lifecycle_state": "OPEN_UNPROTECTED",
+      "lot_size": 500,
+      "multiplier": "1",
+      "next_trading_session_id": null,
+      "originating_trading_date": "2026-08-03",
+      "projection_hash": "2e19377fb89cdce2a3698f04326279eaa6711dfc23d28db9270e3e20f633e03f",
+      "projection_version": 2,
+      "protection_generation": 0,
+      "realized_quantity": 0,
+      "remaining_quantity": 500,
+      "superseded_protections": [],
+      "terminal_status": null
+    },
+    "requirements": [
+      {
+        "created_at": "2026-08-03T09:30:00+05:30",
+        "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+        "price": "23.00",
+        "protection_generation": 1,
+        "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+        "quantity": 500,
+        "requirement_hash": "ba404cb66647a83a21e2dd4c3ef041c513e28e9d4f0d8173f1c44691b0a8aef8",
+        "requirement_id": "lifecycle-req:f8444bca7626e7b060dde481",
+        "requirement_type": "TARGET_EXIT_REQUIRED",
+        "side": "BUY",
+        "source_artifact_hash": "ccab58c48d6a042c20f341ff9eb47e9ebd6654ce0043c9be3d1e6d891f9852da",
+        "source_artifact_id": "rc_revised_sl",
+        "source_rule_ids": [
+          "S22.ENTRY_ORPT_RC.001",
+          "S22.CONTRACT_SELECTION.001",
+          "S22.TARGET_SL.001"
+        ],
+        "status": "REQUIRED"
+      },
+      {
+        "created_at": "2026-08-03T09:30:00+05:30",
+        "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+        "price": "1",
+        "protection_generation": 1,
+        "protection_model": "APPLICATION_MANAGED_LINKED_PROTECTION",
+        "quantity": 500,
+        "requirement_hash": "95d78794aef7899a0b26332afd3b90c35ee741d710afbae5bbe8dd44517d5898",
+        "requirement_id": "lifecycle-req:ea21982af6204f9a24a63ee9",
+        "requirement_type": "NORMAL_SL_PLACEMENT_REQUIRED",
+        "side": "BUY",
+        "source_artifact_hash": "ccab58c48d6a042c20f341ff9eb47e9ebd6654ce0043c9be3d1e6d891f9852da",
+        "source_artifact_id": "rc_revised_sl",
+        "source_rule_ids": [
+          "S22.ENTRY_ORPT_RC.001",
+          "S22.CONTRACT_SELECTION.001",
+          "S22.TARGET_SL.001"
+        ],
+        "status": "REQUIRED"
+      }
+    ],
+    "transition_hash": "e3cfaabb230bef01edd5c066a703a2df0748546d5ef808dcae33335f681f57bc",
+    "transition_id": "position-transition:f765e2500210519f6d5622b0"
+  },
+  "entry_validation": {
+    "authority_mode": "VALIDATED_NOT_SUBMITTABLE",
+    "broker_submission_permitted": false,
+    "checks": [
+      {
+        "check_id": "AUTHORITY_MODE_OFFLINE_ONLY",
+        "evidence": {
+          "details": {
+            "reason": "Intent authority mode is limited to offline/shadow/non-submittable."
+          },
+          "evidence_hash": "55a9cf8c3d87f971497d7fe7d309e4c3a0833cf0c065ec55891e4e951fab290d",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:AUTHORITY_MODE_OFFLINE_ONLY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "authority_mode": "OFFLINE_ONLY"
+        },
+        "result": "PASS",
+        "scope": "SYSTEM_AUTHORITY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "allowed": [
+            "OFFLINE_ONLY",
+            "SHADOW_ONLY",
+            "VALIDATED_NOT_SUBMITTABLE"
+          ]
+        }
+      },
+      {
+        "check_id": "AUTHORITY_FLAGS_FALSE",
+        "evidence": {
+          "details": {
+            "reason": "No broker, paper, live, order, or position authority granted."
+          },
+          "evidence_hash": "1cecf22688d3a3eebb2430ff5151f8e47766fe34f1495a921db73d1c3af28dd1",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:AUTHORITY_FLAGS_FALSE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "SYSTEM_AUTHORITY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "RECOVERY_READY",
+        "evidence": {
+          "details": {
+            "reason": "Recovery status is acceptable for offline validation."
+          },
+          "evidence_hash": "08d42ff06cbf0739f4600d41f30ea8e8e4e3fa33c6fd931582179dcffac17587",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:RECOVERY_READY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "recovery_status": "RECOVERABLE_OFFLINE"
+        },
+        "result": "PASS",
+        "scope": "RECOVERY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "RECONCILIATION_GATE",
+        "evidence": {
+          "details": {
+            "reason": "Reconciliation gate permits offline validation for a fresh entry."
+          },
+          "evidence_hash": "3357aeaa08e43a89c77b3e599a201c565e50c5b1d16f66806cfb59dfe8411d3e",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:RECONCILIATION_GATE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "blocking_classifications": [],
+          "gate": "SHADOW_READY"
+        },
+        "result": "PASS",
+        "scope": "RECONCILIATION",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_ENABLED",
+        "evidence": {
+          "details": {
+            "reason": "Account must be enabled."
+          },
+          "evidence_hash": "d5098148365b8d6e2d33a11c625102262287130058aedad6db85bcbd793d7914",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_ENABLED",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_ENVIRONMENT",
+        "evidence": {
+          "details": {
+            "reason": "Account environment must match the strategy/account configuration."
+          },
+          "evidence_hash": "8d399c7b82be690b4b4d844a6da22e51fd0ec0e6e575e1f796d2efc0746e8567",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_ENVIRONMENT",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "environment": "shadow"
+        },
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "required_environment": "shadow"
+        }
+      },
+      {
+        "check_id": "ACCOUNT_SESSION_AVAILABLE",
+        "evidence": {
+          "details": {
+            "reason": "Account session evidence must be available."
+          },
+          "evidence_hash": "fd7b3fea5ebcb11355587779f573f7b2ca424e759490c00aa161ffdbffaad23c",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_SESSION_AVAILABLE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_FUNDS_EVIDENCE",
+        "evidence": {
+          "details": {
+            "reason": "Funds evidence must be available."
+          },
+          "evidence_hash": "200edb902fe14788ae0938765676e9322ce304db7411cf370d92dd02fcf721d1",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_FUNDS_EVIDENCE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_MARGIN_EVIDENCE",
+        "evidence": {
+          "details": {
+            "reason": "Margin evidence must be available."
+          },
+          "evidence_hash": "5666a9d452662acaea577d3aa1f4fbcb2e93ccb984bc05c2bd0b04c43facf4a1",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_MARGIN_EVIDENCE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_NOT_BLOCKED",
+        "evidence": {
+          "details": {
+            "reason": "Account block and kill switch must be inactive."
+          },
+          "evidence_hash": "a3de82bb8482fb5a8d5337973e3b0a4f98353c3419a839598c1b3af409ab18f7",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_NOT_BLOCKED",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_CAPACITY",
+        "evidence": {
+          "details": {
+            "reason": "Account active order/position limits must not be exceeded."
+          },
+          "evidence_hash": "0c3cc99a4c8011d3e87adac901ef720da90733dc2b00114af3381b93096e3c21",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_CAPACITY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "active_orders": 0,
+          "active_positions": 0
+        },
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "max_active_orders": 5,
+          "max_active_positions": 5
+        }
+      },
+      {
+        "check_id": "ACCOUNT_DAILY_LOSS_GATE",
+        "evidence": {
+          "details": {
+            "reason": "Account daily loss gate must not block validation."
+          },
+          "evidence_hash": "14d3bee54dd4d34b5364df76771a09eabedeeff36fbf4c4f7c4ef65f2e596bf2",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_DAILY_LOSS_GATE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "BROKER_READ_FRESHNESS",
+        "evidence": {
+          "details": {
+            "reason": "Broker-read evidence must be fresh enough."
+          },
+          "evidence_hash": "e7e3da4c4b70e4d713975a85adeedb548a7889bf5a6069bc202f864205cdffab",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:BROKER_READ_FRESHNESS",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "age_seconds": 10
+        },
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "max_age_seconds": 60
+        }
+      },
+      {
+        "check_id": "STRATEGY_ENABLED",
+        "evidence": {
+          "details": {
+            "reason": "Strategy instance must be enabled."
+          },
+          "evidence_hash": "2a4143a67be78051f931318f693cbfe8862c6c2d939eb39e910f4250a53aabb6",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:STRATEGY_ENABLED",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "STRATEGY_VERSION",
+        "evidence": {
+          "details": {
+            "reason": "Strategy version must match expected configuration."
+          },
+          "evidence_hash": "e0b3211a7ef6ad142ce3bd894c164a11cb30df143c2a0ce0664524f01396e096",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:STRATEGY_VERSION",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "actual": "1.0.0"
+        },
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "expected": "1.0.0"
+        }
+      },
+      {
+        "check_id": "STRATEGY_CONFIGURATION_HASH",
+        "evidence": {
+          "details": {
+            "reason": "Configuration hash must match source evidence."
+          },
+          "evidence_hash": "e82317c0d54f423ef238d55a3e9074de1f81942790160fb51989012ee45fa0be",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:STRATEGY_CONFIGURATION_HASH",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "RULE_MATRIX_VERSION",
+        "evidence": {
+          "details": {
+            "reason": "Rule matrix version must match expected configuration."
+          },
+          "evidence_hash": "6709d9d3a77e52af2c7963f0071adcd8683268d3d30c077885268dadc85d8033",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:RULE_MATRIX_VERSION",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_ASSIGNMENT",
+        "evidence": {
+          "details": {
+            "reason": "Strategy must be assigned to the target account."
+          },
+          "evidence_hash": "fefcfe15ac1c5f2f8719ce5815de824bc22384dbfb5317fd9e01f3085cbb830b",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ACCOUNT_ASSIGNMENT",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ALLOWED_PRODUCT",
+        "evidence": {
+          "details": {
+            "reason": "Product must be allowed for strategy."
+          },
+          "evidence_hash": "8f00766701b4849181f9037dce6962b149394dfa36266d29cb4d307fea8c4a19",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ALLOWED_PRODUCT",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ALLOWED_UNDERLYING",
+        "evidence": {
+          "details": {
+            "reason": "Underlying must be allowed for strategy."
+          },
+          "evidence_hash": "128ef926f77948ccd619c6a62a05ec44ab9bcd4eb4c0212ddfcb68e1eab76f0a",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ALLOWED_UNDERLYING",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ALLOWED_CONTRACT_TYPE",
+        "evidence": {
+          "details": {
+            "reason": "Contract type must be allowed for strategy."
+          },
+          "evidence_hash": "bf278711d6c10fca90a0651ade290c842eb5157721c5bb96c0ee4cdf41c4f89f",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:ALLOWED_CONTRACT_TYPE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "DUPLICATE_ENTRY_CYCLE",
+        "evidence": {
+          "details": {
+            "reason": "Only the configured number of active fresh-entry cycles is allowed."
+          },
+          "evidence_hash": "5e586dd5750008573c526e2447b3e38b42b365fc6bc0d1d7eb20b4051f6b9bec",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:DUPLICATE_ENTRY_CYCLE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "CONFIGURED_QUANTITY",
+        "evidence": {
+          "details": {
+            "reason": "Fresh-entry quantity must match configuration."
+          },
+          "evidence_hash": "b8233d146c59d1b26894675d3b3536fcff3e717a686f28dba0a0f33d793bfb03",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:CONFIGURED_QUANTITY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PORTFOLIO_CONTROLS",
+        "evidence": {
+          "details": {
+            "reason": "Portfolio controls permit offline validation for this purpose."
+          },
+          "evidence_hash": "9c01e03b66b4fdc8c1d2293abac8f1a570f60275dbe6dd8db4923e4960a4bd3d",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:PORTFOLIO_CONTROLS",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "kill_switch_action": null
+        },
+        "result": "PASS",
+        "scope": "PORTFOLIO",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PORTFOLIO_CAPACITY",
+        "evidence": {
+          "details": {
+            "reason": "Portfolio active order/position limits must not be exceeded."
+          },
+          "evidence_hash": "917a58169d50d491184db0745d8669dc26aa46bf7de3e89cb3eb0c85c2e3973a",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:PORTFOLIO_CAPACITY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PORTFOLIO",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "INSTRUMENT_SESSION_DATE",
+        "evidence": {
+          "details": {
+            "reason": "Intent trading date must match market-data context."
+          },
+          "evidence_hash": "7ed788e12d94a2b7ed4d6e8812b856d702d3d3ecd85dcef709f04d2f5aaab6e4",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:INSTRUMENT_SESSION_DATE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "INSTRUMENT_SESSION",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "INSTRUMENT_CONTRACT_MATCH",
+        "evidence": {
+          "details": {
+            "reason": "Intent contract must match market-data context."
+          },
+          "evidence_hash": "6ff02730620e5973df4bb066f747c9d361d79dedc0771610b78d99dbc3adf23f",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:INSTRUMENT_CONTRACT_MATCH",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "INSTRUMENT_SESSION",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "QUANTITY_VALID",
+        "evidence": {
+          "details": {
+            "reason": "Quantity is positive, integral, lot-aligned, and within limits."
+          },
+          "evidence_hash": "62a2c67c4669fc849302bf0e8a04fda6983c840af81c021cfa65e77755f7aa51",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:QUANTITY_VALID",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "quantity": 500
+        },
+        "result": "PASS",
+        "scope": "QUANTITY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "lot_size": 500
+        }
+      },
+      {
+        "check_id": "PRICE_DECIMAL_VALID",
+        "evidence": {
+          "details": {
+            "reason": "Prices are valid Decimals."
+          },
+          "evidence_hash": "7574bc6ecd67fd723ca51cd4d3adc819b054064dacd5431a4734cc13820453fb",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:PRICE_DECIMAL_VALID",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PRICE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PRICE_POSITIVE",
+        "evidence": {
+          "details": {
+            "reason": "Prices are positive where present."
+          },
+          "evidence_hash": "168e96d63cf274a511dad943bb78b61530a367e666fae51793a21527f3380bbe",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:PRICE_POSITIVE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PRICE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PRICE_TICK_SIZE",
+        "evidence": {
+          "details": {
+            "reason": "Prices align with tick size."
+          },
+          "evidence_hash": "333994dc1e400d8c87583b3704589de96421a086c7a22379ceca23b1de58565b",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:PRICE_TICK_SIZE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PRICE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PRICE_TRIGGER_RELATIONSHIP",
+        "evidence": {
+          "details": {
+            "reason": "Order type and price fields are coherent."
+          },
+          "evidence_hash": "6af0ba82a11483cd0f2fabe83919e5796b4ee844ebc97e20377a190f814fcb29",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:PRICE_TRIGGER_RELATIONSHIP",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PRICE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "TIMING_WINDOW",
+        "evidence": {
+          "details": {
+            "reason": "Intent timing is within the authorized window."
+          },
+          "evidence_hash": "4990d27d311d86b7ca4e2f0bfaccb6137772e2aa5b0012dd3391b9864269d081",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:TIMING_WINDOW",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {
+          "evaluated_at": "2026-08-03T09:29:59.400000+05:30"
+        },
+        "result": "PASS",
+        "scope": "TIMING",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "MARKET_DATA_QUALITY",
+        "evidence": {
+          "details": {
+            "reason": "Market-data quality must be sufficient for the intent."
+          },
+          "evidence_hash": "75fd591aa089dea7f07046329fc21bf2360cf9380110b1390dedeb02cf5b9398",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:MARKET_DATA_QUALITY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "MARKET_DATA",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "DUPLICATE_ACTION",
+        "evidence": {
+          "details": {
+            "reason": "No duplicate action conflict observed."
+          },
+          "evidence_hash": "9fbe5d7bc8d37ed4c46501fc9a501a8fa74202e4f2a7a2998a5a8244513f9fbb",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:DUPLICATE_ACTION",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "IDEMPOTENCY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "POSITION_PROTECTION_INVARIANTS",
+        "evidence": {
+          "details": {
+            "reason": "Position/protection invariant checks are not required for fresh entry."
+          },
+          "evidence_hash": "ee81f1f8ce99cf87b54d2ec0b1f0edbcb6180403afdaa097255e91fa6d6893d7",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:POSITION_PROTECTION_INVARIANTS",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "POSITION_PROTECTION",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "SOURCE_ARTIFACT_AVAILABLE",
+        "evidence": {
+          "details": {
+            "reason": "Source artifact is present."
+          },
+          "evidence_hash": "69c7fa9ba2f2337902985d1e92182c04d44fbaf73abd733cf84beece6fcd641c",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:SOURCE_ARTIFACT_AVAILABLE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "SOURCE_EVIDENCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "SOURCE_HASH_MATCH",
+        "evidence": {
+          "details": {
+            "reason": "Source artifact hash matches."
+          },
+          "evidence_hash": "bc74f4045426893b0700d1428b239cc3f664f208d20f75e2a318b373ea7f7347",
+          "evidence_id": "validation:s22:rc_revised_sl:entry:SOURCE_HASH_MATCH",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+          "purpose": "ENTRY"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "SOURCE_EVIDENCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      }
+    ],
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+    "failures": [],
+    "intent_hash": "d7a8e9cc98e7630ece3f1639b0eae5087a28fd105dad46e39fb0da7a1f8c8a4b",
+    "live_submission_permitted": false,
+    "order_creation_permitted": false,
+    "paper_submission_permitted": false,
+    "position_mutation_permitted": false,
+    "result_hash": "3031b82cd9f8bf77ddd7388e7bd35424048345d21765ee99d4ea3375c7dc60a1",
+    "validation_id": "validation:s22:rc_revised_sl:entry",
+    "warnings": []
+  },
+  "exit_client_order": {
+    "account_coordinator_id": "acct-coord:a6fc25d9aeffbacfc2a9ba11",
+    "authority": "INTERNAL_PAPER_ONLY",
+    "authorized_time": "2026-08-03T09:31:00+05:30",
+    "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+    "broker_submission_permitted": false,
+    "client_order_id": "client-order:096e4538cc845a7d0745ddb8",
+    "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+    "idempotency_key": "client-order:096e4538cc845a7d0745ddb8bc2c80ec2e3c49deeea63e137140cd8a1200cd9b",
+    "limit_price": null,
+    "live_submission_permitted": false,
+    "normalized_contract": "NSE:RELIANCE26AUG1260CE",
+    "order_hash": "86521412c86aaf376610f6cf6c74999308fbd565c0404217babb3a905399b684",
+    "order_purpose": "REVISED_SL",
+    "order_type": "SL",
+    "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+    "protection_generation": 2,
+    "quantity": 500,
+    "side": "BUY",
+    "source_intent_hash": "237a9b0d2e06f5021a216bc596ab1f5c117db5387c3bd043eb0e0717567ebe6c",
+    "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+    "time_in_force": "DAY",
+    "trading_session_id": "NSE:2026-08-03",
+    "trigger_price": "92.40"
+  },
+  "exit_intent": {
+    "action": {
+      "authorized_not_after": null,
+      "authorized_not_before": "2026-08-03T09:31:00+05:30",
+      "limit_price": null,
+      "maximum_allowed_slippage": "0.05",
+      "order_type": "SL",
+      "protection_generation": 2,
+      "purpose": "REVISED_SL",
+      "quantity_unit": "UNITS",
+      "requested_quantity": 500,
+      "side": "BUY",
+      "time_in_force": "DAY",
+      "trigger_price": "92.40"
+    },
+    "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+    "broker_submission_permitted": false,
+    "evidence": {
+      "authority_mode": "OFFLINE_ONLY",
+      "configuration_hash": "s22-source-closure-config-v1",
+      "evidence_packet_hash": "378c885d5e883a43d915656b4b043f00c660961a3cc8f5f756d20fe9aa11c5e0",
+      "market_snapshot_hash": "market:s22-lifecycle:rc_revised_sl",
+      "provenance": {
+        "adapter": "S22ExecutionIntentAdapter",
+        "branch": "BEAR_CALL"
+      },
+      "reconciliation_result_hash": "s22-reconciliation-shadow-ready-hash",
+      "reconciliation_result_id": "s22-reconciliation-shadow-ready",
+      "recovery_assessment_hash": "s22-recovery-offline-ready-hash",
+      "recovery_assessment_id": "s22-recovery-offline-ready",
+      "rule_matrix_version": "s22_source_closure_accepted_v1",
+      "source_rule_ids": [
+        "S22.CARRIED_LIFECYCLE.001"
+      ]
+    },
+    "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+    "idempotency_key": "phase4e:6287e338a1ee439a865705d382f1f1d6c68a7c2d5fc9acf2977a15f5173d7ff3",
+    "instrument": {
+      "contract": "NSE:RELIANCE26AUG1260CE",
+      "currency": "INR",
+      "exchange": "NSE",
+      "expiry": "2026-08-25",
+      "lot_size": 500,
+      "multiplier": "1",
+      "option_type": "CE",
+      "product": "OPTION_SELLING",
+      "segment": "OPTIONS_SELL",
+      "strike": "1260.0",
+      "tick_size": "0.05",
+      "underlying": "RELIANCE"
+    },
+    "intent_hash": "237a9b0d2e06f5021a216bc596ab1f5c117db5387c3bd043eb0e0717567ebe6c",
+    "live_submission_permitted": false,
+    "order_creation_permitted": false,
+    "paper_submission_permitted": false,
+    "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+    "position_mutation_permitted": false,
+    "schema_version": "phase4e.execution_intent.v1",
+    "source_artifact_hash": "e3cfaabb230bef01edd5c066a703a2df0748546d5ef808dcae33335f681f57bc",
+    "source_artifact_id": "s22-lifecycle:rc_revised_sl",
+    "source_artifact_type": "S22LifecycleRequirement",
+    "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+    "strategy_family_id": "OPTION_SELLING",
+    "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+    "strategy_version": "1.0.0",
+    "trading_date": "2026-08-03",
+    "trading_session_id": "NSE:2026-08-03"
+  },
+  "exit_internal_paper_result": {
+    "account_snapshot": {
+      "account_blocked": false,
+      "account_enabled": true,
+      "active_order_count": 0,
+      "active_order_reservation": "0",
+      "available_paper_margin": "5100000.00",
+      "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+      "margin_per_quantity": "100.00",
+      "max_active_order_count": 10,
+      "opening_paper_cash": "5000000.00",
+      "released_margin": "100000.00",
+      "reserved_margin": "0",
+      "simulated_charges": "0.00"
+    },
+    "client_order": {
+      "account_coordinator_id": "acct-coord:a6fc25d9aeffbacfc2a9ba11",
+      "authority": "INTERNAL_PAPER_ONLY",
+      "authorized_time": "2026-08-03T09:31:00+05:30",
+      "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+      "broker_submission_permitted": false,
+      "client_order_id": "client-order:096e4538cc845a7d0745ddb8",
+      "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+      "idempotency_key": "client-order:096e4538cc845a7d0745ddb8bc2c80ec2e3c49deeea63e137140cd8a1200cd9b",
+      "limit_price": null,
+      "live_submission_permitted": false,
+      "normalized_contract": "NSE:RELIANCE26AUG1260CE",
+      "order_hash": "86521412c86aaf376610f6cf6c74999308fbd565c0404217babb3a905399b684",
+      "order_purpose": "REVISED_SL",
+      "order_type": "SL",
+      "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+      "protection_generation": 2,
+      "quantity": 500,
+      "side": "BUY",
+      "source_intent_hash": "237a9b0d2e06f5021a216bc596ab1f5c117db5387c3bd043eb0e0717567ebe6c",
+      "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+      "time_in_force": "DAY",
+      "trading_session_id": "NSE:2026-08-03",
+      "trigger_price": "92.40"
+    },
+    "events": [
+      {
+        "authority_source": "INTERNAL_PAPER_SIMULATION",
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "client_order_id": "client-order:096e4538cc845a7d0745ddb8",
+        "cumulative_filled_quantity": 0,
+        "event_hash": "154a57c23594fb5db6dbe7e5020241f1a7c360d288250512ad87280c44c669e9",
+        "event_id": "event:5ae18ad04ba4fa3432642a85",
+        "event_timestamp": "2026-08-03T09:31:00+05:30",
+        "event_type": "INTERNAL_SUBMISSION_ACCEPTED",
+        "fill_price": null,
+        "new_state": "ACKNOWLEDGED_INTERNAL",
+        "previous_state": "READY_FOR_INTERNAL_PAPER",
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "b8705692f952081f0d55cb6a653162b56761e4d3480f164a5870a0fa1443d3f7"
+        },
+        "quantity_delta": 0,
+        "reason": "Internal order acknowledged.",
+        "scenario_id": "rc_revised_sl:exit",
+        "sequence": 2,
+        "simulated_exchange_timestamp": "2026-08-03T09:31:00+05:30"
+      },
+      {
+        "authority_source": "INTERNAL_PAPER_SIMULATION",
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "client_order_id": "client-order:096e4538cc845a7d0745ddb8",
+        "cumulative_filled_quantity": 500,
+        "event_hash": "67b67bff837ec1b2ba16e6bcf4157a1554b516d18197c4f52f50122b363bad6d",
+        "event_id": "event:2be90fd4bb26946142857a09",
+        "event_timestamp": "2026-08-03T09:31:00+05:30",
+        "event_type": "INTERNAL_FULL_FILL",
+        "fill_price": "92.40",
+        "new_state": "FILLED_INTERNAL",
+        "previous_state": "ACKNOWLEDGED_INTERNAL",
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "b8705692f952081f0d55cb6a653162b56761e4d3480f164a5870a0fa1443d3f7"
+        },
+        "quantity_delta": 500,
+        "reason": "Internal full fill.",
+        "scenario_id": "rc_revised_sl:exit",
+        "sequence": 3,
+        "simulated_exchange_timestamp": "2026-08-03T09:31:00+05:30"
+      }
+    ],
+    "fills": [
+      {
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "client_order_id": "client-order:096e4538cc845a7d0745ddb8",
+        "contract": "NSE:RELIANCE26AUG1260CE",
+        "fill_classification": "INTERNAL_PAPER_SIMULATED_FILL",
+        "fill_hash": "39225486825b86eef1ce8ecaf1f9d9efe7e1ed3769a936f2b11bc8b3130040ed",
+        "fill_price": "92.40",
+        "fill_quantity": 500,
+        "internal_fill_id": "internal-fill:1e91f04eba44a602f4b5d5c7",
+        "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+        "provenance": {
+          "adapter": "DeterministicInternalPaperAdapter",
+          "scenario_hash": "b8705692f952081f0d55cb6a653162b56761e4d3480f164a5870a0fa1443d3f7"
+        },
+        "recorded_timestamp": "2026-08-03T09:31:00+05:30",
+        "scenario_id": "rc_revised_sl:exit",
+        "side": "BUY",
+        "simulated_exchange_timestamp": "2026-08-03T09:31:00+05:30",
+        "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER"
+      }
+    ],
+    "final_state": "FILLED_INTERNAL",
+    "position_update_candidates": [
+      {
+        "authority_mode": "INTERNAL_PAPER_ONLY",
+        "candidate_hash": "ebe01b2d3e8f8a90f67aa216f4593f1a56a2bdb78a316b8735ffffffc5440d96",
+        "candidate_id": "pc-update-candidate:ebd42e3df31ec0c20d30c62e",
+        "fill_price": "92.40",
+        "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+        "quantity_delta": 500,
+        "source_fill_id": "internal-fill:1e91f04eba44a602f4b5d5c7",
+        "suggested_state_impact": "INTERNAL_PAPER_FILL_OBSERVED_NO_POSITION_MUTATION",
+        "update_permitted": false
+      }
+    ],
+    "result_hash": "14b33669ed7b9d855666c3b2e7bfb733ebc3cda029b01ddf1feb89468ac77b8c"
+  },
+  "exit_position_transition": {
+    "consistency_status": "MATCHED",
+    "event": {
+      "event_hash": "e1ec85f441823c97fc5a0099f2b3c3221c0570dbf7e99f6cf0cde09d32c2a71c",
+      "event_id": "position-event:4e5954b7d978ad20f3ac2920",
+      "event_sequence": 3,
+      "event_timestamp": "2026-08-03T09:31:00+05:30",
+      "event_type": "SL_EXIT_APPLIED",
+      "new_state": "CLOSED",
+      "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+      "price_evidence": {
+        "fill_price": "92.40",
+        "purpose": "REVISED_SL"
+      },
+      "prior_state": "OPEN_UNPROTECTED",
+      "quantity_after": 0,
+      "quantity_before": 500,
+      "rule_ids": [
+        "S22.CARRIED_LIFECYCLE.001"
+      ],
+      "source_client_order_id": "client-order:096e4538cc845a7d0745ddb8",
+      "source_fill_id": "internal-fill:1e91f04eba44a602f4b5d5c7",
+      "source_requirement_id": null
+    },
+    "projection": {
+      "active_order_references": [],
+      "active_original_sl": null,
+      "active_revised_sl": null,
+      "active_target": null,
+      "average_entry_price": "57.0",
+      "average_exit_price": "92.40",
+      "cancelled_protections": [],
+      "carry_forward_status": null,
+      "confirmed_entry_quantity": 500,
+      "currency": "INR",
+      "entry_fill_ids": [
+        "internal-fill:be383a1405a3e10752d0b92f"
+      ],
+      "exit_fill_ids": [
+        "internal-fill:1e91f04eba44a602f4b5d5c7"
+      ],
+      "filled_exit_order_id": "client-order:096e4538cc845a7d0745ddb8",
+      "identity": {
+        "authority_classification": "INTERNAL_PAPER_ONLY",
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "broker_reconciliation_authority": false,
+        "direction": "BEAR_CALL",
+        "external_broker_position": false,
+        "live_position": false,
+        "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+        "normalized_contract": "NSE:RELIANCE26AUG1260CE",
+        "originating_entry_execution_intent_id": "exec-intent:3b63d2488e8409b002980308",
+        "originating_execution_plan_id": "s22-reliance-effective:rc_recalculation",
+        "originating_trading_date": "2026-08-03",
+        "position_cycle_hash": "dd67ec175ce51a7cf757010beea24f4da86763aa8afe802afb572d70f17dc7bc",
+        "position_cycle_id": "ipc:af33b48026160a0d3fd24678",
+        "side": "SELL",
+        "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+        "strategy_family_id": "OPTION_SELLING",
+        "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+        "strategy_version": "1.0.0",
+        "trading_session_id": "NSE:2026-08-03"
+      },
+      "lifecycle_state": "CLOSED",
+      "lot_size": 500,
+      "multiplier": "1",
+      "next_trading_session_id": null,
+      "originating_trading_date": "2026-08-03",
+      "projection_hash": "b6367d803909841bedbdbe7614fd21516d0d2015be8c664a55dc9a92dc471380",
+      "projection_version": 3,
+      "protection_generation": 0,
+      "realized_quantity": 500,
+      "remaining_quantity": 0,
+      "superseded_protections": [],
+      "terminal_status": "CLOSED_BY_CONFIRMED_EXIT_FILL"
+    },
+    "requirements": [],
+    "transition_hash": "efab86d4727ecb9b12184a16dc8e40c9702c28cc3da6e40807a2ba045d14ef0e",
+    "transition_id": "position-transition:70fc375ce98736ceb106a787"
+  },
+  "exit_validation": {
+    "authority_mode": "VALIDATED_NOT_SUBMITTABLE",
+    "broker_submission_permitted": false,
+    "checks": [
+      {
+        "check_id": "AUTHORITY_MODE_OFFLINE_ONLY",
+        "evidence": {
+          "details": {
+            "reason": "Intent authority mode is limited to offline/shadow/non-submittable."
+          },
+          "evidence_hash": "55a9cf8c3d87f971497d7fe7d309e4c3a0833cf0c065ec55891e4e951fab290d",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:AUTHORITY_MODE_OFFLINE_ONLY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "authority_mode": "OFFLINE_ONLY"
+        },
+        "result": "PASS",
+        "scope": "SYSTEM_AUTHORITY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "allowed": [
+            "OFFLINE_ONLY",
+            "SHADOW_ONLY",
+            "VALIDATED_NOT_SUBMITTABLE"
+          ]
+        }
+      },
+      {
+        "check_id": "AUTHORITY_FLAGS_FALSE",
+        "evidence": {
+          "details": {
+            "reason": "No broker, paper, live, order, or position authority granted."
+          },
+          "evidence_hash": "1cecf22688d3a3eebb2430ff5151f8e47766fe34f1495a921db73d1c3af28dd1",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:AUTHORITY_FLAGS_FALSE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "SYSTEM_AUTHORITY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "RECOVERY_READY",
+        "evidence": {
+          "details": {
+            "reason": "Recovery status is acceptable for offline validation."
+          },
+          "evidence_hash": "08d42ff06cbf0739f4600d41f30ea8e8e4e3fa33c6fd931582179dcffac17587",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:RECOVERY_READY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "recovery_status": "RECOVERABLE_OFFLINE"
+        },
+        "result": "PASS",
+        "scope": "RECOVERY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "RECONCILIATION_GATE",
+        "evidence": {
+          "details": {
+            "reason": "Lifecycle protection may validate when position linkage and quantity are reconciled."
+          },
+          "evidence_hash": "8b8cdb932ffc3f8921adac11e91197e15d311ac594921ad105d2412e01a4b0a6",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:RECONCILIATION_GATE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "blocking_classifications": [],
+          "gate": "SHADOW_READY"
+        },
+        "result": "PASS",
+        "scope": "RECONCILIATION",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_ENABLED",
+        "evidence": {
+          "details": {
+            "reason": "Account must be enabled."
+          },
+          "evidence_hash": "d5098148365b8d6e2d33a11c625102262287130058aedad6db85bcbd793d7914",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_ENABLED",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_ENVIRONMENT",
+        "evidence": {
+          "details": {
+            "reason": "Account environment must match the strategy/account configuration."
+          },
+          "evidence_hash": "8d399c7b82be690b4b4d844a6da22e51fd0ec0e6e575e1f796d2efc0746e8567",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_ENVIRONMENT",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "environment": "shadow"
+        },
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "required_environment": "shadow"
+        }
+      },
+      {
+        "check_id": "ACCOUNT_SESSION_AVAILABLE",
+        "evidence": {
+          "details": {
+            "reason": "Account session evidence must be available."
+          },
+          "evidence_hash": "fd7b3fea5ebcb11355587779f573f7b2ca424e759490c00aa161ffdbffaad23c",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_SESSION_AVAILABLE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_FUNDS_EVIDENCE",
+        "evidence": {
+          "details": {
+            "reason": "Funds evidence must be available."
+          },
+          "evidence_hash": "200edb902fe14788ae0938765676e9322ce304db7411cf370d92dd02fcf721d1",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_FUNDS_EVIDENCE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_MARGIN_EVIDENCE",
+        "evidence": {
+          "details": {
+            "reason": "Margin evidence must be available."
+          },
+          "evidence_hash": "5666a9d452662acaea577d3aa1f4fbcb2e93ccb984bc05c2bd0b04c43facf4a1",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_MARGIN_EVIDENCE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_NOT_BLOCKED",
+        "evidence": {
+          "details": {
+            "reason": "Account block and kill switch must be inactive."
+          },
+          "evidence_hash": "a3de82bb8482fb5a8d5337973e3b0a4f98353c3419a839598c1b3af409ab18f7",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_NOT_BLOCKED",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_CAPACITY",
+        "evidence": {
+          "details": {
+            "reason": "Account active order/position limits must not be exceeded."
+          },
+          "evidence_hash": "c5991ab3286e91567396d6160dbcb05ec3ab62df8fbb0fadcd59f60bbab92a76",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_CAPACITY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "active_orders": 0,
+          "active_positions": 1
+        },
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "max_active_orders": 5,
+          "max_active_positions": 5
+        }
+      },
+      {
+        "check_id": "ACCOUNT_DAILY_LOSS_GATE",
+        "evidence": {
+          "details": {
+            "reason": "Account daily loss gate must not block validation."
+          },
+          "evidence_hash": "14d3bee54dd4d34b5364df76771a09eabedeeff36fbf4c4f7c4ef65f2e596bf2",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_DAILY_LOSS_GATE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "BROKER_READ_FRESHNESS",
+        "evidence": {
+          "details": {
+            "reason": "Broker-read evidence must be fresh enough."
+          },
+          "evidence_hash": "e7e3da4c4b70e4d713975a85adeedb548a7889bf5a6069bc202f864205cdffab",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:BROKER_READ_FRESHNESS",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "age_seconds": 10
+        },
+        "result": "PASS",
+        "scope": "ACCOUNT",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "max_age_seconds": 60
+        }
+      },
+      {
+        "check_id": "STRATEGY_ENABLED",
+        "evidence": {
+          "details": {
+            "reason": "Strategy instance must be enabled."
+          },
+          "evidence_hash": "2a4143a67be78051f931318f693cbfe8862c6c2d939eb39e910f4250a53aabb6",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:STRATEGY_ENABLED",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "STRATEGY_VERSION",
+        "evidence": {
+          "details": {
+            "reason": "Strategy version must match expected configuration."
+          },
+          "evidence_hash": "e0b3211a7ef6ad142ce3bd894c164a11cb30df143c2a0ce0664524f01396e096",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:STRATEGY_VERSION",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "actual": "1.0.0"
+        },
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "expected": "1.0.0"
+        }
+      },
+      {
+        "check_id": "STRATEGY_CONFIGURATION_HASH",
+        "evidence": {
+          "details": {
+            "reason": "Configuration hash must match source evidence."
+          },
+          "evidence_hash": "e82317c0d54f423ef238d55a3e9074de1f81942790160fb51989012ee45fa0be",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:STRATEGY_CONFIGURATION_HASH",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "RULE_MATRIX_VERSION",
+        "evidence": {
+          "details": {
+            "reason": "Rule matrix version must match expected configuration."
+          },
+          "evidence_hash": "6709d9d3a77e52af2c7963f0071adcd8683268d3d30c077885268dadc85d8033",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:RULE_MATRIX_VERSION",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ACCOUNT_ASSIGNMENT",
+        "evidence": {
+          "details": {
+            "reason": "Strategy must be assigned to the target account."
+          },
+          "evidence_hash": "fefcfe15ac1c5f2f8719ce5815de824bc22384dbfb5317fd9e01f3085cbb830b",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ACCOUNT_ASSIGNMENT",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ALLOWED_PRODUCT",
+        "evidence": {
+          "details": {
+            "reason": "Product must be allowed for strategy."
+          },
+          "evidence_hash": "8f00766701b4849181f9037dce6962b149394dfa36266d29cb4d307fea8c4a19",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ALLOWED_PRODUCT",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ALLOWED_UNDERLYING",
+        "evidence": {
+          "details": {
+            "reason": "Underlying must be allowed for strategy."
+          },
+          "evidence_hash": "128ef926f77948ccd619c6a62a05ec44ab9bcd4eb4c0212ddfcb68e1eab76f0a",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ALLOWED_UNDERLYING",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "ALLOWED_CONTRACT_TYPE",
+        "evidence": {
+          "details": {
+            "reason": "Contract type must be allowed for strategy."
+          },
+          "evidence_hash": "bf278711d6c10fca90a0651ade290c842eb5157721c5bb96c0ee4cdf41c4f89f",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:ALLOWED_CONTRACT_TYPE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "DUPLICATE_ENTRY_CYCLE",
+        "evidence": {
+          "details": {
+            "reason": "Only the configured number of active fresh-entry cycles is allowed."
+          },
+          "evidence_hash": "5e586dd5750008573c526e2447b3e38b42b365fc6bc0d1d7eb20b4051f6b9bec",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:DUPLICATE_ENTRY_CYCLE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "CONFIGURED_QUANTITY",
+        "evidence": {
+          "details": {
+            "reason": "Fresh-entry quantity must match configuration."
+          },
+          "evidence_hash": "b8233d146c59d1b26894675d3b3536fcff3e717a686f28dba0a0f33d793bfb03",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:CONFIGURED_QUANTITY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "STRATEGY_INSTANCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PORTFOLIO_CONTROLS",
+        "evidence": {
+          "details": {
+            "reason": "Portfolio controls permit offline validation for this purpose."
+          },
+          "evidence_hash": "9c01e03b66b4fdc8c1d2293abac8f1a570f60275dbe6dd8db4923e4960a4bd3d",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:PORTFOLIO_CONTROLS",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "kill_switch_action": null
+        },
+        "result": "PASS",
+        "scope": "PORTFOLIO",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PORTFOLIO_CAPACITY",
+        "evidence": {
+          "details": {
+            "reason": "Portfolio active order/position limits must not be exceeded."
+          },
+          "evidence_hash": "917a58169d50d491184db0745d8669dc26aa46bf7de3e89cb3eb0c85c2e3973a",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:PORTFOLIO_CAPACITY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PORTFOLIO",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "INSTRUMENT_SESSION_DATE",
+        "evidence": {
+          "details": {
+            "reason": "Intent trading date must match market-data context."
+          },
+          "evidence_hash": "7ed788e12d94a2b7ed4d6e8812b856d702d3d3ecd85dcef709f04d2f5aaab6e4",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:INSTRUMENT_SESSION_DATE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "INSTRUMENT_SESSION",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "INSTRUMENT_CONTRACT_MATCH",
+        "evidence": {
+          "details": {
+            "reason": "Intent contract must match market-data context."
+          },
+          "evidence_hash": "6ff02730620e5973df4bb066f747c9d361d79dedc0771610b78d99dbc3adf23f",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:INSTRUMENT_CONTRACT_MATCH",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "INSTRUMENT_SESSION",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "QUANTITY_VALID",
+        "evidence": {
+          "details": {
+            "reason": "Quantity is positive, integral, lot-aligned, and within limits."
+          },
+          "evidence_hash": "62a2c67c4669fc849302bf0e8a04fda6983c840af81c021cfa65e77755f7aa51",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:QUANTITY_VALID",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "quantity": 500
+        },
+        "result": "PASS",
+        "scope": "QUANTITY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {
+          "lot_size": 500
+        }
+      },
+      {
+        "check_id": "PRICE_DECIMAL_VALID",
+        "evidence": {
+          "details": {
+            "reason": "Prices are valid Decimals."
+          },
+          "evidence_hash": "7574bc6ecd67fd723ca51cd4d3adc819b054064dacd5431a4734cc13820453fb",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:PRICE_DECIMAL_VALID",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PRICE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PRICE_POSITIVE",
+        "evidence": {
+          "details": {
+            "reason": "Prices are positive where present."
+          },
+          "evidence_hash": "168e96d63cf274a511dad943bb78b61530a367e666fae51793a21527f3380bbe",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:PRICE_POSITIVE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PRICE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PRICE_TICK_SIZE",
+        "evidence": {
+          "details": {
+            "reason": "Prices align with tick size."
+          },
+          "evidence_hash": "333994dc1e400d8c87583b3704589de96421a086c7a22379ceca23b1de58565b",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:PRICE_TICK_SIZE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PRICE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "PRICE_TRIGGER_RELATIONSHIP",
+        "evidence": {
+          "details": {
+            "reason": "Order type and price fields are coherent."
+          },
+          "evidence_hash": "6af0ba82a11483cd0f2fabe83919e5796b4ee844ebc97e20377a190f814fcb29",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:PRICE_TRIGGER_RELATIONSHIP",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "PRICE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "TIMING_WINDOW",
+        "evidence": {
+          "details": {
+            "reason": "Intent timing is within the authorized window."
+          },
+          "evidence_hash": "36a43c19b94e985152e1a18603997845318888d4e9408d5e27ce17450b3fbb5a",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:TIMING_WINDOW",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {
+          "evaluated_at": "2026-08-03T09:31:00+05:30"
+        },
+        "result": "PASS",
+        "scope": "TIMING",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "MARKET_DATA_QUALITY",
+        "evidence": {
+          "details": {
+            "reason": "Market-data quality must be sufficient for the intent."
+          },
+          "evidence_hash": "75fd591aa089dea7f07046329fc21bf2360cf9380110b1390dedeb02cf5b9398",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:MARKET_DATA_QUALITY",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "MARKET_DATA",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "DUPLICATE_ACTION",
+        "evidence": {
+          "details": {
+            "reason": "No duplicate action conflict observed."
+          },
+          "evidence_hash": "9fbe5d7bc8d37ed4c46501fc9a501a8fa74202e4f2a7a2998a5a8244513f9fbb",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:DUPLICATE_ACTION",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "IDEMPOTENCY",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "POSITION_PROTECTION_INVARIANTS",
+        "evidence": {
+          "details": {
+            "reason": "Position/protection invariants permit offline validation."
+          },
+          "evidence_hash": "8965683f4b4cbf7137caf204ff5fe26b67961c160baf7839cac4477069950d5d",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:POSITION_PROTECTION_INVARIANTS",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "POSITION_PROTECTION",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "SOURCE_ARTIFACT_AVAILABLE",
+        "evidence": {
+          "details": {
+            "reason": "Source artifact is present."
+          },
+          "evidence_hash": "69c7fa9ba2f2337902985d1e92182c04d44fbaf73abd733cf84beece6fcd641c",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:SOURCE_ARTIFACT_AVAILABLE",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "SOURCE_EVIDENCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      },
+      {
+        "check_id": "SOURCE_HASH_MATCH",
+        "evidence": {
+          "details": {
+            "reason": "Source artifact hash matches."
+          },
+          "evidence_hash": "bc74f4045426893b0700d1428b239cc3f664f208d20f75e2a318b373ea7f7347",
+          "evidence_id": "validation:s22:rc_revised_sl:exit:SOURCE_HASH_MATCH",
+          "source": "phase4e.validator"
+        },
+        "input": {
+          "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+          "purpose": "REVISED_SL"
+        },
+        "observed_value": {},
+        "result": "PASS",
+        "scope": "SOURCE_EVIDENCE",
+        "severity": "INFO",
+        "source": "phase4e.validator",
+        "threshold_config": {}
+      }
+    ],
+    "decision": "VALIDATED_NOT_SUBMITTABLE",
+    "execution_intent_id": "exec-intent:f0c5b93474266163783136ee",
+    "failures": [],
+    "intent_hash": "237a9b0d2e06f5021a216bc596ab1f5c117db5387c3bd043eb0e0717567ebe6c",
+    "live_submission_permitted": false,
+    "order_creation_permitted": false,
+    "paper_submission_permitted": false,
+    "position_mutation_permitted": false,
+    "result_hash": "ec98a79156fdd60d7ee4f36016275b4542c06d839fde4882f935f9bc001b92f7",
+    "validation_id": "validation:s22:rc_revised_sl:exit",
+    "warnings": []
+  },
+  "scenario": "rc_revised_sl",
+  "scenario_hash": "fabd711357498e18e557c54638a1f96d9736a279e7a4cba26149a30b1e3d960e"
+}

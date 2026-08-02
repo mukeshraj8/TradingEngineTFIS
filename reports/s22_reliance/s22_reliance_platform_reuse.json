@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-08-02",
+  "architecture_boundary_verdict": "PASS",
   "capability_reuse_gate": [
     {
       "capability": "Monthly Status",
@@ -8,7 +8,7 @@
     },
     {
       "capability": "Market Structure",
-      "change_required": "No",
+      "change_required": "No generic change; S22 adapter uses completed-session reference calculation",
       "reuse": true
     },
     {
@@ -77,14 +77,13 @@
       "reuse": true
     }
   ],
-  "external_order_authority": "NONE",
-  "generic_files_changed": [
-    "src/tfis/broker/authentication/*",
-    "src/tfis/broker/diagnostics/*",
-    "src/tfis/fyers_read_only/adapter.py",
-    "src/tfis/fyers_read_only/models.py"
+  "configuration_change_count": 0,
+  "generic_code_branching_added": false,
+  "generic_files_changed": [],
+  "reuse_report_hash": "19c7f91617dbf1073e65d6087a340db28a644714e03fbaaabcb5fb1fa8a9d335",
+  "runtime_generic_change_count": 0,
+  "s22_specific_files_changed": [
+    "src/tfis/adapters/phase5e/s22_reliance.py"
   ],
-  "s22_strategy_files_changed": [],
-  "schema_version": "s22.reliance.platform_reuse.v2",
-  "verdict": "AUTH_CAPTURE_REUSES_PLATFORM_IMPLEMENTATION_PENDING"
+  "schema_version": "s22.reliance.platform_reuse.v1"
 }
