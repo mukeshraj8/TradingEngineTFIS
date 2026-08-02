@@ -1,0 +1,53 @@
+{
+  "verdict": "USER_CLARIFIED",
+  "stage": "aps_partial_exits",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "verified_source": [
+    {
+      "sheet": "AB2",
+      "cells": "K26",
+      "raw_text": "APS",
+      "meaning": "S21 declares APS target profile."
+    },
+    {
+      "sheet": "AB6 OS",
+      "cells": "C107",
+      "raw_text": "APS",
+      "meaning": "S21 option-selling rule table labels No. of TGT as APS."
+    },
+    {
+      "sheet": "AB15",
+      "cells": "S11",
+      "raw_text": "APS",
+      "meaning": "S21 final calculation row carries APS."
+    },
+    {
+      "sheet": "AB16",
+      "cells": "E79",
+      "raw_text": "APS",
+      "meaning": "S21 final decision row carries APS."
+    }
+  ],
+  "closure_question_id": "S21-Q003",
+  "classification": "USER_CLARIFIED",
+  "result": "APS_NOT_APPLICABLE",
+  "closure_authority": "Authoritative user APS clarification 2026-08-02",
+  "closed_rules": {
+    "option_selling_one_lot": "APS_NOT_APPLICABLE",
+    "partial_target_allocation": "NOT_APPLICABLE",
+    "quantity_splitting": "NOT_APPLICABLE",
+    "partial_position_cycle": "NOT_APPLICABLE",
+    "aps_specific_protection_adjustment": "NOT_APPLICABLE",
+    "s21_continues_with": [
+      "Target",
+      "Original SL/MSL",
+      "Revised SL/FSL/TRP",
+      "EOD",
+      "Carry-forward"
+    ]
+  },
+  "future_aps_boundary": "APS remains a reusable generic capability for strategies configured with more than one lot only when authoritative workbook rules define quantity allocation, Target allocation, and protection adjustment.",
+  "runtime_impact": "NONE",
+  "broker_paper_live_authority": "NONE"
+}

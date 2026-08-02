@@ -1,0 +1,29 @@
+{
+  "verdict": "USER_CLARIFIED",
+  "stage": "position_protection",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "workbook_sources": [
+    {
+      "sheet": "AB18",
+      "cells": "A37:U38",
+      "raw_text": "CALL SELL TARGET at 09:15:00 AM; CALL SELL STOPLOSS at 09:24:59 AM; BUY; NEW; Limit; quantity 15 on stop-loss row.",
+      "meaning": "Workbook prepares Call Sell target and stop-loss output rows."
+    },
+    {
+      "sheet": "AB18",
+      "cells": "A40:U41",
+      "raw_text": "PUT SELL TARGET at 09:15:00 AM; PUT SELL STOPLOSS at 09:24:59 AM; BUY; NEW; Limit; quantity 15 on stop-loss row.",
+      "meaning": "Workbook prepares Put Sell target and stop-loss output rows."
+    }
+  ],
+  "user_clarification": "Carried target protection from market open, target-first exit, no blind prior-day SL placement, adverse-gap revised SL requirement, and offline-only lifecycle requirements are user-authoritative carried-position semantics.",
+  "platform_not_strategy_source": [
+    "broker OCO versus application-managed protection",
+    "cancel/replace sequencing",
+    "old SL fill during replacement handling",
+    "partial-fill protection-generation mechanics",
+    "stale-order handling"
+  ],
+  "authority_boundary": "The workbook and user clarification define protection requirements only. They do not grant broker, paper, or live order mutation authority."
+}

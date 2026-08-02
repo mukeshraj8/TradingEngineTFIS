@@ -1,0 +1,1405 @@
+{
+  "workbook": "All in One - TFIS 26-12-2023.xlsx",
+  "mode": "cached",
+  "ranges": {
+    "AB16": [
+      {
+        "row": 74,
+        "cells": [
+          {
+            "cell": "A74",
+            "value": "6"
+          },
+          {
+            "cell": "B74",
+            "value": "S21A"
+          },
+          {
+            "cell": "C74",
+            "value": "6A"
+          },
+          {
+            "cell": "D74",
+            "value": "Strategy Code"
+          },
+          {
+            "cell": "E74",
+            "value": "S21"
+          },
+          {
+            "cell": "H74",
+            "value": "CALL SELL"
+          },
+          {
+            "cell": "I74",
+            "value": "BANKNIFTY 25-Jan-2024 CE 47000"
+          },
+          {
+            "cell": "J74",
+            "value": "Buffer"
+          },
+          {
+            "cell": "K74",
+            "value": "0.075"
+          },
+          {
+            "cell": "M74",
+            "value": "Final Strike"
+          },
+          {
+            "cell": "N74",
+            "value": "47000"
+          },
+          {
+            "cell": "P74",
+            "value": "0.6"
+          },
+          {
+            "cell": "Q74",
+            "value": "0"
+          },
+          {
+            "cell": "R74",
+            "value": "0"
+          },
+          {
+            "cell": "S74",
+            "value": "0"
+          },
+          {
+            "cell": "T74",
+            "value": "0"
+          },
+          {
+            "cell": "U74",
+            "value": "0"
+          },
+          {
+            "cell": "W74",
+            "value": "Yes | No"
+          },
+          {
+            "cell": "X74",
+            "value": "No"
+          },
+          {
+            "cell": "Y74",
+            "value": "Yes"
+          },
+          {
+            "cell": "Z74",
+            "value": "Yes"
+          },
+          {
+            "cell": "AD74",
+            "value": "Scrip Name"
+          },
+          {
+            "cell": "AE74",
+            "value": "BANKNIFTY 25-Jan-2024 CE 47000"
+          },
+          {
+            "cell": "AF74",
+            "value": "Final Strike"
+          },
+          {
+            "cell": "AG74",
+            "value": "47000"
+          },
+          {
+            "cell": "AI74",
+            "value": "Final Entry & Exit Data"
+          },
+          {
+            "cell": "AK74",
+            "value": "SPT : PRV : 3DLL"
+          },
+          {
+            "cell": "AL74",
+            "value": "46886.9"
+          },
+          {
+            "cell": "AN74",
+            "value": "+ | -"
+          },
+          {
+            "cell": "AO74",
+            "value": "+"
+          }
+        ]
+      },
+      {
+        "row": 75,
+        "cells": [
+          {
+            "cell": "A75",
+            "value": "6"
+          },
+          {
+            "cell": "B75",
+            "value": "S21B"
+          },
+          {
+            "cell": "C75",
+            "value": "6B"
+          },
+          {
+            "cell": "D75",
+            "value": "Symbol"
+          },
+          {
+            "cell": "E75",
+            "value": "BANKNIFTY"
+          },
+          {
+            "cell": "J75",
+            "value": "Lots"
+          },
+          {
+            "cell": "K75",
+            "value": "1"
+          },
+          {
+            "cell": "M75",
+            "value": "TGT Lots ( Qty )"
+          },
+          {
+            "cell": "N75",
+            "value": "0"
+          },
+          {
+            "cell": "P75",
+            "value": "0"
+          },
+          {
+            "cell": "Q75",
+            "value": "0"
+          },
+          {
+            "cell": "R75",
+            "value": "0"
+          },
+          {
+            "cell": "S75",
+            "value": "0"
+          },
+          {
+            "cell": "T75",
+            "value": "0"
+          },
+          {
+            "cell": "U75",
+            "value": "0"
+          },
+          {
+            "cell": "W75",
+            "value": "ORPT"
+          },
+          {
+            "cell": "Y75",
+            "value": "09:15:00 AM"
+          },
+          {
+            "cell": "Z75",
+            "value": "09:24:59 AM"
+          },
+          {
+            "cell": "AE75",
+            "value": "1100.00"
+          },
+          {
+            "cell": "AG75",
+            "value": "1955.85"
+          },
+          {
+            "cell": "AI75",
+            "value": "1100"
+          },
+          {
+            "cell": "AK75",
+            "value": "Start Strike"
+          },
+          {
+            "cell": "AL75",
+            "value": "49200"
+          },
+          {
+            "cell": "AN75",
+            "value": "Buffer"
+          },
+          {
+            "cell": "AO75",
+            "value": "0.05"
+          }
+        ]
+      },
+      {
+        "row": 76,
+        "cells": [
+          {
+            "cell": "A76",
+            "value": "6"
+          },
+          {
+            "cell": "B76",
+            "value": "S21C"
+          },
+          {
+            "cell": "C76",
+            "value": "6C"
+          },
+          {
+            "cell": "D76",
+            "value": "Segment"
+          },
+          {
+            "cell": "E76",
+            "value": "OPTIONS SELL"
+          },
+          {
+            "cell": "F76",
+            "value": "NSEFO"
+          },
+          {
+            "cell": "I76",
+            "value": "Lot Size"
+          },
+          {
+            "cell": "J76",
+            "value": "System Entry"
+          },
+          {
+            "cell": "K76",
+            "value": "990.00"
+          },
+          {
+            "cell": "M76",
+            "value": " TGT 1"
+          },
+          {
+            "cell": "N76",
+            "value": "396.00"
+          },
+          {
+            "cell": "P76",
+            "value": "396.00"
+          },
+          {
+            "cell": "Q76",
+            "value": "N.A."
+          },
+          {
+            "cell": "R76",
+            "value": "N.A."
+          },
+          {
+            "cell": "S76",
+            "value": "N.A."
+          },
+          {
+            "cell": "T76",
+            "value": "N.A."
+          },
+          {
+            "cell": "U76",
+            "value": "N.A."
+          },
+          {
+            "cell": "W76",
+            "value": "Order Type"
+          },
+          {
+            "cell": "Y76",
+            "value": "BUY"
+          },
+          {
+            "cell": "Z76",
+            "value": "BUY"
+          },
+          {
+            "cell": "AD76",
+            "value": "OPT : PRV : 3DLL"
+          },
+          {
+            "cell": "AE76",
+            "value": "1100"
+          },
+          {
+            "cell": "AF76",
+            "value": "OPT : PRV : 2DHH"
+          },
+          {
+            "cell": "AG76",
+            "value": "1955.85"
+          },
+          {
+            "cell": "AI76",
+            "value": "1955.85"
+          },
+          {
+            "cell": "AK76",
+            "value": "End Strike"
+          },
+          {
+            "cell": "AL76",
+            "value": "46700"
+          },
+          {
+            "cell": "AN76",
+            "value": "With Buffer"
+          },
+          {
+            "cell": "AO76",
+            "value": "49231.245"
+          },
+          {
+            "cell": "AP76",
+            "value": "46886.9"
+          }
+        ]
+      },
+      {
+        "row": 77,
+        "cells": [
+          {
+            "cell": "A77",
+            "value": "6"
+          },
+          {
+            "cell": "B77",
+            "value": "S21D"
+          },
+          {
+            "cell": "C77",
+            "value": "6D"
+          },
+          {
+            "cell": "D77",
+            "value": "Unique Code"
+          },
+          {
+            "cell": "E77",
+            "value": "BANKNIFTY_OP_SELL_MT_DIFF_2D_3D"
+          },
+          {
+            "cell": "I77",
+            "value": "15"
+          },
+          {
+            "cell": "J77",
+            "value": "Our Entry"
+          },
+          {
+            "cell": "K77",
+            "value": "990"
+          },
+          {
+            "cell": "M77",
+            "value": "SL AFTER ENTRY"
+          },
+          {
+            "cell": "N77",
+            "value": "1584.00"
+          },
+          {
+            "cell": "P77",
+            "value": "1584.00"
+          },
+          {
+            "cell": "Q77",
+            "value": "N.A."
+          },
+          {
+            "cell": "R77",
+            "value": "N.A."
+          },
+          {
+            "cell": "S77",
+            "value": "N.A."
+          },
+          {
+            "cell": "T77",
+            "value": "N.A."
+          },
+          {
+            "cell": "U77",
+            "value": "N.A."
+          },
+          {
+            "cell": "W77",
+            "value": "Lot ( Qty )"
+          },
+          {
+            "cell": "Y77",
+            "value": "0"
+          },
+          {
+            "cell": "Z77",
+            "value": "15"
+          },
+          {
+            "cell": "AD77",
+            "value": "09:24:59 AM LL"
+          },
+          {
+            "cell": "AF77",
+            "value": "09:24:59 AM HH"
+          },
+          {
+            "cell": "AI77",
+            "value": "MSL 1 & 2"
+          },
+          {
+            "cell": "AK77",
+            "value": "Ideal Premium"
+          },
+          {
+            "cell": "AL77",
+            "value": "937.75"
+          },
+          {
+            "cell": "AN77",
+            "value": "Round"
+          },
+          {
+            "cell": "AO77",
+            "value": "Round Down"
+          },
+          {
+            "cell": "AP77",
+            "value": "Round Down"
+          }
+        ]
+      },
+      {
+        "row": 78,
+        "cells": [
+          {
+            "cell": "A78",
+            "value": "6"
+          },
+          {
+            "cell": "B78",
+            "value": "S21E"
+          },
+          {
+            "cell": "C78",
+            "value": "6E"
+          },
+          {
+            "cell": "D78",
+            "value": "MS"
+          },
+          {
+            "cell": "E78",
+            "value": "Bull CF"
+          },
+          {
+            "cell": "I78",
+            "value": "Scrip Code"
+          },
+          {
+            "cell": "J78",
+            "value": "Status"
+          },
+          {
+            "cell": "K78",
+            "value": "NO TGT"
+          },
+          {
+            "cell": "M78",
+            "value": "SL Lots ( Qty )"
+          },
+          {
+            "cell": "N78",
+            "value": "1"
+          },
+          {
+            "cell": "P78",
+            "value": "1"
+          },
+          {
+            "cell": "Q78",
+            "value": "1"
+          },
+          {
+            "cell": "R78",
+            "value": "1"
+          },
+          {
+            "cell": "S78",
+            "value": "1"
+          },
+          {
+            "cell": "T78",
+            "value": "1"
+          },
+          {
+            "cell": "U78",
+            "value": "0"
+          },
+          {
+            "cell": "W78",
+            "value": "Price"
+          },
+          {
+            "cell": "Y78",
+            "value": "396.00"
+          },
+          {
+            "cell": "Z78",
+            "value": "1663.20"
+          },
+          {
+            "cell": "AD78",
+            "value": "09:29:59 AM LL"
+          },
+          {
+            "cell": "AF78",
+            "value": "09:29:59 AM HH"
+          },
+          {
+            "cell": "AI78",
+            "value": "1584"
+          },
+          {
+            "cell": "AK78",
+            "value": "Min Premium"
+          },
+          {
+            "cell": "AL78",
+            "value": "703.30"
+          },
+          {
+            "cell": "AN78",
+            "value": "Final Scrip Code"
+          },
+          {
+            "cell": "AO78",
+            "value": "55827"
+          },
+          {
+            "cell": "AP78",
+            "value": "-"
+          }
+        ]
+      },
+      {
+        "row": 79,
+        "cells": [
+          {
+            "cell": "A79",
+            "value": "6"
+          },
+          {
+            "cell": "B79",
+            "value": "S21F"
+          },
+          {
+            "cell": "C79",
+            "value": "6F"
+          },
+          {
+            "cell": "D79",
+            "value": "No of TGT"
+          },
+          {
+            "cell": "E79",
+            "value": "APS"
+          },
+          {
+            "cell": "I79",
+            "value": "55827"
+          },
+          {
+            "cell": "J79",
+            "value": "Strike Price"
+          },
+          {
+            "cell": "M79",
+            "value": "0"
+          },
+          {
+            "cell": "N79",
+            "value": "0.6"
+          },
+          {
+            "cell": "P79",
+            "value": "0.07"
+          },
+          {
+            "cell": "Q79",
+            "value": "0"
+          },
+          {
+            "cell": "R79",
+            "value": "0"
+          },
+          {
+            "cell": "S79",
+            "value": "0"
+          },
+          {
+            "cell": "T79",
+            "value": "0"
+          },
+          {
+            "cell": "U79",
+            "value": "0"
+          },
+          {
+            "cell": "W79",
+            "value": "Trigger Price"
+          },
+          {
+            "cell": "Y79",
+            "value": "0.00"
+          },
+          {
+            "cell": "Z79",
+            "value": "1584.00"
+          },
+          {
+            "cell": "AD79",
+            "value": "Current Day LL"
+          },
+          {
+            "cell": "AF79",
+            "value": "Current Day HH"
+          },
+          {
+            "cell": "AI79",
+            "value": "990"
+          },
+          {
+            "cell": "AK79",
+            "value": "Min OI"
+          },
+          {
+            "cell": "AL79",
+            "value": "7500"
+          },
+          {
+            "cell": "AP79",
+            "value": "1"
+          }
+        ]
+      },
+      {
+        "row": 80,
+        "cells": [
+          {
+            "cell": "A80",
+            "value": "6"
+          },
+          {
+            "cell": "B80",
+            "value": "S21G"
+          },
+          {
+            "cell": "C80",
+            "value": "6G"
+          },
+          {
+            "cell": "D80",
+            "value": "Exp For Long & Short"
+          },
+          {
+            "cell": "E80",
+            "value": "SAME"
+          },
+          {
+            "cell": "H80",
+            "value": " "
+          }
+        ]
+      },
+      {
+        "row": 81,
+        "cells": [
+          {
+            "cell": "A81",
+            "value": "6"
+          },
+          {
+            "cell": "B81",
+            "value": "S21H"
+          },
+          {
+            "cell": "C81",
+            "value": "6H"
+          },
+          {
+            "cell": "D81",
+            "value": "Exp Selection"
+          },
+          {
+            "cell": "E81",
+            "value": "L/CE : Exp : Near _ S/PE : Exp : Next"
+          },
+          {
+            "cell": "H81",
+            "value": "PUT SELL"
+          },
+          {
+            "cell": "I81",
+            "value": "BANKNIFTY 29-Feb-2024 PE 48000"
+          },
+          {
+            "cell": "J81",
+            "value": "Buffer"
+          },
+          {
+            "cell": "K81",
+            "value": "0.075"
+          },
+          {
+            "cell": "M81",
+            "value": "Final Strike"
+          },
+          {
+            "cell": "N81",
+            "value": "48000"
+          },
+          {
+            "cell": "P81",
+            "value": "0.6"
+          },
+          {
+            "cell": "Q81",
+            "value": "0"
+          },
+          {
+            "cell": "R81",
+            "value": "0"
+          },
+          {
+            "cell": "S81",
+            "value": "0"
+          },
+          {
+            "cell": "T81",
+            "value": "0"
+          },
+          {
+            "cell": "U81",
+            "value": "0"
+          },
+          {
+            "cell": "W81",
+            "value": "Yes | No"
+          },
+          {
+            "cell": "X81",
+            "value": "No"
+          },
+          {
+            "cell": "Y81",
+            "value": "Yes"
+          },
+          {
+            "cell": "Z81",
+            "value": "Yes"
+          },
+          {
+            "cell": "AD81",
+            "value": "Scrip Name"
+          },
+          {
+            "cell": "AE81",
+            "value": "BANKNIFTY 29-Feb-2024 PE 48000"
+          },
+          {
+            "cell": "AF81",
+            "value": "Final Strike"
+          },
+          {
+            "cell": "AG81",
+            "value": "48000"
+          },
+          {
+            "cell": "AI81",
+            "value": "0"
+          },
+          {
+            "cell": "AK81",
+            "value": "SPT : PRV : 2DHH"
+          },
+          {
+            "cell": "AL81",
+            "value": "48219.95"
+          },
+          {
+            "cell": "AN81",
+            "value": "+ | -"
+          },
+          {
+            "cell": "AO81",
+            "value": "-"
+          }
+        ]
+      },
+      {
+        "row": 82,
+        "cells": [
+          {
+            "cell": "A82",
+            "value": "6"
+          },
+          {
+            "cell": "B82",
+            "value": "S21I"
+          },
+          {
+            "cell": "C82",
+            "value": "6I"
+          },
+          {
+            "cell": "D82",
+            "value": "Error Message"
+          },
+          {
+            "cell": "J82",
+            "value": "Lots"
+          },
+          {
+            "cell": "K82",
+            "value": "1"
+          },
+          {
+            "cell": "M82",
+            "value": "TGT Lots ( Qty )"
+          },
+          {
+            "cell": "N82",
+            "value": "0"
+          },
+          {
+            "cell": "P82",
+            "value": "0"
+          },
+          {
+            "cell": "Q82",
+            "value": "0"
+          },
+          {
+            "cell": "R82",
+            "value": "0"
+          },
+          {
+            "cell": "S82",
+            "value": "0"
+          },
+          {
+            "cell": "T82",
+            "value": "0"
+          },
+          {
+            "cell": "U82",
+            "value": "0"
+          },
+          {
+            "cell": "W82",
+            "value": "Time"
+          },
+          {
+            "cell": "Y82",
+            "value": "09:15:00 AM"
+          },
+          {
+            "cell": "Z82",
+            "value": "09:24:59 AM"
+          },
+          {
+            "cell": "AE82",
+            "value": "809.50"
+          },
+          {
+            "cell": "AG82",
+            "value": "1300.00"
+          },
+          {
+            "cell": "AI82",
+            "value": "809.5"
+          },
+          {
+            "cell": "AK82",
+            "value": "Start Strike"
+          },
+          {
+            "cell": "AL82",
+            "value": "45900"
+          },
+          {
+            "cell": "AN82",
+            "value": "Buffer"
+          },
+          {
+            "cell": "AO82",
+            "value": "0.05"
+          }
+        ]
+      },
+      {
+        "row": 83,
+        "cells": [
+          {
+            "cell": "A83",
+            "value": "6"
+          },
+          {
+            "cell": "B83",
+            "value": "S21J"
+          },
+          {
+            "cell": "C83",
+            "value": "6J"
+          },
+          {
+            "cell": "D83",
+            "value": "Tick Price"
+          },
+          {
+            "cell": "E83",
+            "value": "0.05"
+          },
+          {
+            "cell": "F83",
+            "value": "2"
+          },
+          {
+            "cell": "G83",
+            "value": "0.00"
+          },
+          {
+            "cell": "I83",
+            "value": "Lot Size"
+          },
+          {
+            "cell": "J83",
+            "value": "System Entry"
+          },
+          {
+            "cell": "K83",
+            "value": "748.80"
+          },
+          {
+            "cell": "M83",
+            "value": " TGT 1"
+          },
+          {
+            "cell": "N83",
+            "value": "299.50"
+          },
+          {
+            "cell": "P83",
+            "value": "299.50"
+          },
+          {
+            "cell": "Q83",
+            "value": "N.A."
+          },
+          {
+            "cell": "R83",
+            "value": "N.A."
+          },
+          {
+            "cell": "S83",
+            "value": "N.A."
+          },
+          {
+            "cell": "T83",
+            "value": "N.A."
+          },
+          {
+            "cell": "U83",
+            "value": "N.A."
+          },
+          {
+            "cell": "W83",
+            "value": "Order Type"
+          },
+          {
+            "cell": "Y83",
+            "value": "BUY"
+          },
+          {
+            "cell": "Z83",
+            "value": "BUY"
+          },
+          {
+            "cell": "AD83",
+            "value": "OPT : PRV : 2DLL"
+          },
+          {
+            "cell": "AE83",
+            "value": "809.5"
+          },
+          {
+            "cell": "AF83",
+            "value": "OPT : PRV : 3DHH"
+          },
+          {
+            "cell": "AG83",
+            "value": "1300"
+          },
+          {
+            "cell": "AI83",
+            "value": "1300"
+          },
+          {
+            "cell": "AK83",
+            "value": "End Strike"
+          },
+          {
+            "cell": "AL83",
+            "value": "48400"
+          },
+          {
+            "cell": "AN83",
+            "value": "With Buffer"
+          },
+          {
+            "cell": "AO83",
+            "value": "45808.95249999999"
+          },
+          {
+            "cell": "AP83",
+            "value": "48219.95"
+          }
+        ]
+      },
+      {
+        "row": 84,
+        "cells": [
+          {
+            "cell": "A84",
+            "value": "6"
+          },
+          {
+            "cell": "B84",
+            "value": "S21K"
+          },
+          {
+            "cell": "C84",
+            "value": "6K"
+          },
+          {
+            "cell": "D84",
+            "value": "Strike Factor"
+          },
+          {
+            "cell": "E84",
+            "value": "100"
+          },
+          {
+            "cell": "I84",
+            "value": "15"
+          },
+          {
+            "cell": "J84",
+            "value": "Our Entry"
+          },
+          {
+            "cell": "K84",
+            "value": "748.8"
+          },
+          {
+            "cell": "M84",
+            "value": "SL AFTER ENTRY"
+          },
+          {
+            "cell": "N84",
+            "value": "1198.10"
+          },
+          {
+            "cell": "P84",
+            "value": "1198.10"
+          },
+          {
+            "cell": "Q84",
+            "value": "N.A."
+          },
+          {
+            "cell": "R84",
+            "value": "N.A."
+          },
+          {
+            "cell": "S84",
+            "value": "N.A."
+          },
+          {
+            "cell": "T84",
+            "value": "N.A."
+          },
+          {
+            "cell": "U84",
+            "value": "N.A."
+          },
+          {
+            "cell": "W84",
+            "value": "Lot ( Qty )"
+          },
+          {
+            "cell": "Y84",
+            "value": "0"
+          },
+          {
+            "cell": "Z84",
+            "value": "15"
+          },
+          {
+            "cell": "AD84",
+            "value": "09:24:59 AM LL"
+          },
+          {
+            "cell": "AF84",
+            "value": "09:24:59 AM HH"
+          },
+          {
+            "cell": "AI84",
+            "value": "MSL 1 & 2"
+          },
+          {
+            "cell": "AK84",
+            "value": "Ideal Premium"
+          },
+          {
+            "cell": "AL84",
+            "value": "964.4000000000001"
+          },
+          {
+            "cell": "AN84",
+            "value": "Round"
+          },
+          {
+            "cell": "AO84",
+            "value": "Round Up"
+          },
+          {
+            "cell": "AP84",
+            "value": "Round Up"
+          }
+        ]
+      },
+      {
+        "row": 85,
+        "cells": [
+          {
+            "cell": "A85",
+            "value": "6"
+          },
+          {
+            "cell": "B85",
+            "value": "S21L"
+          },
+          {
+            "cell": "C85",
+            "value": "6L"
+          },
+          {
+            "cell": "D85",
+            "value": "Account Name"
+          },
+          {
+            "cell": "E85",
+            "value": "ABC"
+          },
+          {
+            "cell": "I85",
+            "value": "Scrip Code"
+          },
+          {
+            "cell": "J85",
+            "value": "Status"
+          },
+          {
+            "cell": "K85",
+            "value": "NO TGT"
+          },
+          {
+            "cell": "M85",
+            "value": "SL Lots ( Qty )"
+          },
+          {
+            "cell": "N85",
+            "value": "1"
+          },
+          {
+            "cell": "P85",
+            "value": "1"
+          },
+          {
+            "cell": "Q85",
+            "value": "1"
+          },
+          {
+            "cell": "R85",
+            "value": "1"
+          },
+          {
+            "cell": "S85",
+            "value": "1"
+          },
+          {
+            "cell": "T85",
+            "value": "1"
+          },
+          {
+            "cell": "U85",
+            "value": "0"
+          },
+          {
+            "cell": "W85",
+            "value": "Price"
+          },
+          {
+            "cell": "Y85",
+            "value": "299.50"
+          },
+          {
+            "cell": "Z85",
+            "value": "1258.00"
+          },
+          {
+            "cell": "AD85",
+            "value": "09:29:59 AM LL"
+          },
+          {
+            "cell": "AF85",
+            "value": "09:29:59 AM HH"
+          },
+          {
+            "cell": "AI85",
+            "value": "1198.1000000000001"
+          },
+          {
+            "cell": "AK85",
+            "value": "Min Premium"
+          },
+          {
+            "cell": "AL85",
+            "value": "723.3000000000001"
+          },
+          {
+            "cell": "AN85",
+            "value": "Final Scrip Code"
+          },
+          {
+            "cell": "AO85",
+            "value": "72267"
+          },
+          {
+            "cell": "AP85",
+            "value": "+"
+          }
+        ]
+      },
+      {
+        "row": 86,
+        "cells": [
+          {
+            "cell": "A86",
+            "value": "6"
+          },
+          {
+            "cell": "B86",
+            "value": "S21M"
+          },
+          {
+            "cell": "C86",
+            "value": "6M"
+          },
+          {
+            "cell": "D86",
+            "value": "Customer ID"
+          },
+          {
+            "cell": "E86",
+            "value": "468476"
+          },
+          {
+            "cell": "F86",
+            "value": "468476"
+          },
+          {
+            "cell": "I86",
+            "value": "72267"
+          },
+          {
+            "cell": "J86",
+            "value": "Strike Price"
+          },
+          {
+            "cell": "M86",
+            "value": "0"
+          },
+          {
+            "cell": "N86",
+            "value": "0.6"
+          },
+          {
+            "cell": "P86",
+            "value": "0.1"
+          },
+          {
+            "cell": "Q86",
+            "value": "0"
+          },
+          {
+            "cell": "R86",
+            "value": "0"
+          },
+          {
+            "cell": "S86",
+            "value": "0"
+          },
+          {
+            "cell": "T86",
+            "value": "0"
+          },
+          {
+            "cell": "U86",
+            "value": "0"
+          },
+          {
+            "cell": "W86",
+            "value": "Trigger Price"
+          },
+          {
+            "cell": "Y86",
+            "value": "0.00"
+          },
+          {
+            "cell": "Z86",
+            "value": "1198.10"
+          },
+          {
+            "cell": "AD86",
+            "value": "Current Day LL"
+          },
+          {
+            "cell": "AF86",
+            "value": "Current Day HH"
+          },
+          {
+            "cell": "AI86",
+            "value": "748.8000000000001"
+          },
+          {
+            "cell": "AK86",
+            "value": "Min OI"
+          },
+          {
+            "cell": "AL86",
+            "value": "7500"
+          },
+          {
+            "cell": "AP86",
+            "value": "1"
+          }
+        ]
+      }
+    ]
+  }
+}

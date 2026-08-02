@@ -1,0 +1,1501 @@
+{
+  "workbook": "All in One - TFIS 26-12-2023.xlsx",
+  "mode": "formula",
+  "ranges": {
+    "AB16": [
+      {
+        "row": 74,
+        "cells": [
+          {
+            "cell": "A74",
+            "value": "=IF('AB13'!A11=\"\",\"\",'AB13'!A11)"
+          },
+          {
+            "cell": "B74",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$6),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$20),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$34),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$48))))))"
+          },
+          {
+            "cell": "C74",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$6),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$20),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$34),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$48))))))"
+          },
+          {
+            "cell": "D74",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$6,IF(E76=\"OPTIONS SELL\",'AB17'!$C$20,IF(E76=\"OPTIONS BUY\",'AB17'!$C$34,IF(E76=\"EQUITY\",'AB17'!$C$48)))))"
+          },
+          {
+            "cell": "E74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49370>"
+          },
+          {
+            "cell": "H74",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$G$6,IF(E76=\"OPTIONS SELL\",'AB17'!$G$20,IF(AND(OR(E78=\"BEAR\",E78=\"BEAR CF\"),E74=\"S27\"),\"\",IF(E76=\"OPTIONS BUY\",'AB17'!$G$34,IF(E76=\"EQUITY\",'AB17'!$G$48))))))"
+          },
+          {
+            "cell": "I74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49070>"
+          },
+          {
+            "cell": "J74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$6,IF(E76=\"OPTIONS SELL\",'AB17'!$I$20,IF(E76=\"OPTIONS BUY\",'AB17'!$I$34,IF(E76=\"EQUITY\",'AB17'!$I$48))))))"
+          },
+          {
+            "cell": "K74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49730>"
+          },
+          {
+            "cell": "M74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$L$6,IF(E76=\"OPTIONS SELL\",'AB17'!$L$20,IF(E76=\"OPTIONS BUY\",'AB17'!$L$34,IF(E76=\"EQUITY\",'AB17'!$L$48))))))"
+          },
+          {
+            "cell": "N74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",\"\",IF(E76=\"EQUITY\",\"\",IF(AND(E76=\"OPTIONS SELL\",K79>0),K79,IF(AND(E76=\"OPTIONS SELL\",K79=\"\"),AG74,IF(AND(E76=\"OPTIONS BUY\",K79>0),K79,IF(AND(E76=\"OPTIONS BUY\",K79=\"\"),AG74))))))))"
+          },
+          {
+            "cell": "P74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49190>"
+          },
+          {
+            "cell": "Q74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F492B0>"
+          },
+          {
+            "cell": "R74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F496D0>"
+          },
+          {
+            "cell": "S74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49910>"
+          },
+          {
+            "cell": "T74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49430>"
+          },
+          {
+            "cell": "U74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49250>"
+          },
+          {
+            "cell": "W74",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$6,IF(E76=\"OPTIONS SELL\",'AB17'!$V$20,IF(E76=\"OPTIONS BUY\",'AB17'!$V$34,IF(E76=\"EQUITY\",'AB17'!$V$48)))))"
+          },
+          {
+            "cell": "X74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"No\",IF(OR(K77>0,I74=\"No Strike Qualified\"),\"No\",\"Yes\")))"
+          },
+          {
+            "cell": "Y74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"No\",IF(ISNUMBER(SEARCH(\"TR PROFIT\",N76)),\"No\",IF(N76=\"\",\"No\",\"Yes\"))))"
+          },
+          {
+            "cell": "Z74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"No\",IF(N77=\"\",\"No\",IF(N77=\"N.A.\",\"No\",\"Yes\"))))"
+          },
+          {
+            "cell": "AB74",
+            "value": "=IF(AND(K77<>\"\",K78=\"\"),\"( Remove Long Our Entry or Update Long Target Status ) \",IF(AND(K77=\"\",K78<>\"\"),\"( Remove Long Target Status or Update Long Our Entry ) \",\"\"))"
+          },
+          {
+            "cell": "AD74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",'AB17'!$AB$6))"
+          },
+          {
+            "cell": "AE74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",I74))"
+          },
+          {
+            "cell": "AF74",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$AD$6,IF(E76=\"EQUITY\",'AB17'!$AD$48,IF(E76=\"OPTIONS SELL\",'AB17'!$AD$20,IF(E76=\"OPTIONS BUY\",'AB17'!$AD$34)))))))"
+          },
+          {
+            "cell": "AG74",
+            "value": "47000"
+          },
+          {
+            "cell": "AH74",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(AE78<>\"\",\"Gap Detected in Entry\",\"\")))"
+          },
+          {
+            "cell": "AI74",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$AG$6,IF(E76=\"EQUITY\",'AB17'!$AG$48,IF(E76=\"OPTIONS SELL\",'AB17'!$AG$20,IF(E76=\"OPTIONS BUY\",'AB17'!$AG$34)))))))"
+          },
+          {
+            "cell": "AK74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49490>"
+          },
+          {
+            "cell": "AL74",
+            "value": "46886.9"
+          },
+          {
+            "cell": "AN74",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AL$6,IF(E76=\"OPTIONS SELL\",'AB17'!$AL$20,IF(E76=\"OPTIONS BUY\",'AB17'!$AL$34))))))))"
+          },
+          {
+            "cell": "AO74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49130>"
+          },
+          {
+            "cell": "AP74",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F499D0>"
+          }
+        ]
+      },
+      {
+        "row": 75,
+        "cells": [
+          {
+            "cell": "A75",
+            "value": "=A74"
+          },
+          {
+            "cell": "B75",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$7),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$21),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$35),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$49))))))"
+          },
+          {
+            "cell": "C75",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$7),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$21),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$35),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$49))))))"
+          },
+          {
+            "cell": "D75",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$7,IF(E76=\"OPTIONS SELL\",'AB17'!$C$21,IF(E76=\"OPTIONS BUY\",'AB17'!$C$35,IF(E76=\"EQUITY\",'AB17'!$C$49)))))"
+          },
+          {
+            "cell": "E75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F650>"
+          },
+          {
+            "cell": "J75",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$7,IF(E76=\"OPTIONS SELL\",'AB17'!$I$21,IF(E76=\"OPTIONS BUY\",'AB17'!$I$35,IF(E76=\"EQUITY\",'AB17'!$I$49))))))"
+          },
+          {
+            "cell": "K75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473FA70>"
+          },
+          {
+            "cell": "M75",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$L$7,IF(E76=\"OPTIONS SELL\",'AB17'!$L$21,IF(E76=\"OPTIONS BUY\",'AB17'!$L$35,IF(E76=\"EQUITY\",'AB17'!$L$49))))))"
+          },
+          {
+            "cell": "N75",
+            "value": "=IF(K78=\"\",\"\",IF(H74=\"\",\"\",IF(K78=\"NO TGT\",P75,IF(K78=\"TGT 1\",Q75,IF(K78=\"TGT 2\",R75,IF(K78=\"TGT 3\",S75,IF(K78=\"TGT 4\",T75,IF(K78=\"TGT 5\",U75))))))))"
+          },
+          {
+            "cell": "P75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48EF0>"
+          },
+          {
+            "cell": "Q75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473FAD0>"
+          },
+          {
+            "cell": "R75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F8F0>"
+          },
+          {
+            "cell": "S75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F950>"
+          },
+          {
+            "cell": "T75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F5F0>"
+          },
+          {
+            "cell": "U75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473FB30>"
+          },
+          {
+            "cell": "W75",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$7,IF(E76=\"OPTIONS SELL\",'AB17'!$V$21,IF(E76=\"OPTIONS BUY\",'AB17'!$V$35,IF(E76=\"EQUITY\",'AB17'!$V$49))))))"
+          },
+          {
+            "cell": "X75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473EF90>"
+          },
+          {
+            "cell": "Y75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F710>"
+          },
+          {
+            "cell": "Z75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F770>"
+          },
+          {
+            "cell": "AD75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F7D0>"
+          },
+          {
+            "cell": "AE75",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(AND(E76=\"FUTURES\",AE78=\"\"),VLOOKUP(A74,'AB15'!A:CF,HLOOKUP(AD75,'AB15'!$AF$2:$AS$3,2,FALSE),FALSE),IF(AND(E76=\"OPTIONS BUY\",AE78=\"\"),AE76,IF(AND(E76=\"OPTIONS SELL\",AE78=\"\"),AE76,IF(AND(E76=\"EQUITY\",AE78=\"\"),AE76,\"\")))),G83))))"
+          },
+          {
+            "cell": "AF75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F830>"
+          },
+          {
+            "cell": "AG75",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(AND(E76=\"FUTURES\",AG78=\"\"),VLOOKUP(A74,'AB15'!A:AS,HLOOKUP(AF75,'AB15'!$AF$2:$AS$3,2,FALSE),FALSE),IF(AND(E76=\"OPTIONS BUY\",AG78=\"\"),AG76,IF(AND(E76=\"OPTIONS SELL\",AG78=\"\"),AG76,IF(AND(E76=\"EQUITY\",AG78=\"\"),AG76,\"\")))),G83))))"
+          },
+          {
+            "cell": "AI75",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",IF(AE79>0,MAX(AE75,AE79),IF(AE78>0,MAX(AE75,AE78),AE75)),IF(E76=\"OPTIONS SELL\",IF(AE79>0,MIN(AE76,AE79),IF(AE78>0,MIN(AE76,AE78),AE76)),IF(E76=\"OPTIONS BUY\",IF(AE79>0,MAX(AE76,AE79),IF(AE78>0,MAX(AE76,AE78),AE76)),IF(E76=\"EQUITY\",IF(AE79>0,MAX(AE76,AE79),IF(AE78>0,MAX(AE76,AE78),AE76))))))))"
+          },
+          {
+            "cell": "AK75",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$AI$7,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$21,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$35)))))))"
+          },
+          {
+            "cell": "AL75",
+            "value": "=IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),MROUND(AL74,E84),IF(AND(OR(E76=\"OPTIONS SELL\",E76=\"OPTIONS BUY\"),AO77=\"Round Down\"),FLOOR(AO76,E84),IF(AND(OR(E76=\"OPTIONS SELL\",E76=\"OPTIONS BUY\"),AO77=\"Round Up\"),CEILING(AO76,E84))))))))"
+          },
+          {
+            "cell": "AN75",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AL$7,IF(E76=\"OPTIONS SELL\",'AB17'!$AL$21,IF(E76=\"OPTIONS BUY\",'AB17'!$AL$35))))))))"
+          },
+          {
+            "cell": "AO75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F493D0>"
+          },
+          {
+            "cell": "AP75",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F491F0>"
+          }
+        ]
+      },
+      {
+        "row": 76,
+        "cells": [
+          {
+            "cell": "A76",
+            "value": "=A74"
+          },
+          {
+            "cell": "B76",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$8),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$22),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$36),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$50))))))"
+          },
+          {
+            "cell": "C76",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$8),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$22),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$36),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$50))))))"
+          },
+          {
+            "cell": "D76",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$8,IF(E76=\"OPTIONS SELL\",'AB17'!$C$22,IF(E76=\"OPTIONS BUY\",'AB17'!$C$36,IF(E76=\"EQUITY\",'AB17'!$C$50)))))"
+          },
+          {
+            "cell": "E76",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49730>"
+          },
+          {
+            "cell": "F76",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49190>"
+          },
+          {
+            "cell": "I76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$H$8,IF(E76=\"OPTIONS SELL\",'AB17'!$H$22,IF(E76=\"OPTIONS BUY\",'AB17'!$H$36,IF(E76=\"EQUITY\",'AB17'!$H$50))))))"
+          },
+          {
+            "cell": "J76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$8,IF(E76=\"OPTIONS SELL\",'AB17'!$I$22,IF(E76=\"OPTIONS BUY\",'AB17'!$I$36,IF(E76=\"EQUITY\",'AB17'!$I$50))))))"
+          },
+          {
+            "cell": "K76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(K77=\"\",IF(E76=\"FUTURES\",MROUND(AI75*(1+K74),E83),IF(E76=\"EQUITY\",MROUND(AI75*(1+K74),E83),IF(E76=\"OPTIONS BUY\",MROUND(AI75*(1+K74),E83),IF(E76=\"OPTIONS SELL\",MROUND(AI75*(1-K74),E83))))),K77),G83))))"
+          },
+          {
+            "cell": "M76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(K78=\"\",\"TGT\",IF(K78=\"NO TGT\",$P$1,IF(K78=\"TGT 1\",$Q$1,IF(K78=\"TGT 2\",$R$1,IF(K78=\"TGT 3\",$S$1,IF(K78=\"TGT 4\",$T$1,IF(K78=\"TGT 5\",$U$1)))))))))"
+          },
+          {
+            "cell": "N76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(K78=\"\",\"\",IF(K78=\"NO TGT\",P76,IF(K78=\"TGT 1\",Q76,IF(K78=\"TGT 2\",R76,IF(K78=\"TGT 3\",S76,IF(K78=\"TGT 4\",T76,IF(K78=\"TGT 5\",U76)))))))))"
+          },
+          {
+            "cell": "P76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,IF(OR(K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\",K78=\"TGT 5\"),\"N.A.\",TEXT(IF(E76=\"FUTURES\",IF(OR(K78=\"\",K78=\"NO TGT\"),MROUND(K76*(1+P74),E83)),IF(E76=\"EQUITY\",IF(OR(K78=\"\",K78=\"NO TGT\"),MROUND(K76*(1+P74),E83)),IF(E76=\"OPTIONS SELL\",IF(OR(K78=\"\",K78=\"NO TGT\"),MROUND(K76*(1-P74),E83)),IF(E74=\"S25\",MROUND(K76*(1+P74),E83),IF(E76=\"OPTIONS BUY\",IF(OR(K78=\"\",K78=\"NO TGT\"),MROUND(K76+(N74*P74),E83))))))),G83)))))"
+          },
+          {
+            "cell": "Q76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E79=\"APS\",\"N.A.\",IF(OR(K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\",K78=\"TGT 5\"),\"N.A.\",IF(E79=\"1 & APS\",Q74,IF(E76=\"FUTURES\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\"),MROUND(K76*(1+Q74),E83)),IF(E76=\"EQUITY\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\"),MROUND(K76*(1+Q74),E83)),IF(E76=\"OPTIONS SELL\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\"),MROUND(K76*(1-Q74),E83)),IF(E74=\"S25\",MROUND(K76*(1+Q74),E83),IF(E76=\"OPTIONS BUY\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\"),MROUND(K76+(N74*Q74),E83)))))))))),G83))))"
+          },
+          {
+            "cell": "R76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\"),\"N.A.\",IF(E79=\"2 & APS\",R74,IF(OR(K78=\"TGT 3\",K78=\"TGT 4\",K78=\"TGT 5\"),\"N.A.\",IF(E76=\"FUTURES\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\"),MROUND(K76*(1+R74),E83)),IF(E76=\"EQUITY\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\"),MROUND(K76*(1+R74),E83)),IF(E76=\"OPTIONS SELL\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\"),MROUND(K76*(1-R74),E83)),IF(E76=\"OPTIONS BUY\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\"),MROUND(K76+(N74*R74),E83))))))))),G83))))"
+          },
+          {
+            "cell": "S76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\"),\"N.A.\",IF(E79=\"3 & APS\",S74,IF(OR(K78=\"TGT 4\",K78=\"TGT 5\"),\"N.A.\",IF(E76=\"FUTURES\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\"),MROUND(K76*(1+S74),E83)),IF(E76=\"EQUITY\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\"),MROUND(K76*(1+S74),E83)),IF(E76=\"OPTIONS SELL\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\"),MROUND(K76*(1-S74),E83)),IF(E76=\"OPTIONS BUY\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\"),MROUND(K76+(N74*S74),E83))))))))),G83))))"
+          },
+          {
+            "cell": "T76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",E79=\"3 & APS\",K78=\"TGT 5\"),\"N.A.\",IF(E79=\"4 & APS\",T74,IF(E76=\"FUTURES\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\"),MROUND(K76*(1+T74),E83)),IF(E76=\"EQUITY\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\"),MROUND(K76*(1+T74),E83)),IF(E76=\"OPTIONS SELL\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\"),MROUND(K76*(1-T74),E83)),IF(E76=\"OPTIONS BUY\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\"),MROUND(K76+(N74*T74),E83)))))))),G83))))"
+          },
+          {
+            "cell": "U76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",E79=\"3 & APS\",E79=\"4 & APS\"),\"N.A.\",IF(OR(K78=\"\",K78=\"NO TGT\",K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\",K78=\"TGT 5\"),\"N.A.\",IF(E79=\"5 & APS\",U74))),G83))))"
+          },
+          {
+            "cell": "W76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$8,IF(E76=\"OPTIONS SELL\",'AB17'!$V$22,IF(E76=\"OPTIONS BUY\",'AB17'!$V$36,IF(E76=\"EQUITY\",'AB17'!$V$50))))))"
+          },
+          {
+            "cell": "X76",
+            "value": "=IF(H74=\"\",\"\",IF(H74=\"\",\"\",IF(AND(E76=\"FUTURES\",X74=\"Yes\"),\"BUY\",IF(AND(E76=\"EQUITY\",X74=\"Yes\"),\"BUY\",IF(AND(E76=\"OPTIONS BUY\",X74=\"Yes\"),\"BUY\",IF(AND(E76=\"OPTIONS SELL\",X74=\"Yes\"),\"SELL\",\"\"))))))"
+          },
+          {
+            "cell": "Y76",
+            "value": "=IF(H74=\"\",\"\",IF(H74=\"\",\"\",IF(AND(E76=\"FUTURES\",Y74=\"Yes\"),\"SELL\",IF(AND(E76=\"EQUITY\",Y74=\"Yes\"),\"SELL\",IF(AND(E76=\"OPTIONS BUY\",Y74=\"Yes\"),\"SELL\",IF(AND(E76=\"OPTIONS SELL\",Y74=\"Yes\"),\"BUY\",\"\"))))))"
+          },
+          {
+            "cell": "Z76",
+            "value": "=IF(H74=\"\",\"\",IF(H74=\"\",\"\",IF(AND(E76=\"FUTURES\",Z74=\"Yes\"),\"SELL\",IF(AND(E76=\"EQUITY\",Z74=\"Yes\"),\"SELL\",IF(AND(E76=\"OPTIONS BUY\",Z74=\"Yes\"),\"SELL\",IF(AND(E76=\"OPTIONS SELL\",Z74=\"Yes\"),\"BUY\",\"\"))))))"
+          },
+          {
+            "cell": "AD76",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F492B0>"
+          },
+          {
+            "cell": "AE76",
+            "value": "1100"
+          },
+          {
+            "cell": "AF76",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F496D0>"
+          },
+          {
+            "cell": "AG76",
+            "value": "1955.85"
+          },
+          {
+            "cell": "AI76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",IF(AG79>0,MIN(AG75,AG79),IF(AG78>0,MIN(AG75,AG78),AG75)),IF(E76=\"OPTIONS SELL\",IF(AG79>0,MAX(AG76,AG79),IF(AG78>0,MAX(AG76,AG78),AG76)),IF(E76=\"OPTIONS BUY\",IF(AG79>0,MIN(AG76,AG79),IF(AG78>0,MIN(AG76,AG78),AG76)),IF(E76=\"EQUITY\",IF(AG79>0,MIN(AG76,AG79),IF(AG78>0,MIN(AG76,AG78),AG76))))))))"
+          },
+          {
+            "cell": "AK76",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$AI$8,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$22,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$36)))))))"
+          },
+          {
+            "cell": "AL76",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"\",IF(E74=\"S27\",AL75-E84,IF(E74=\"S25\",AL75+(4*E84),IF(AND(E76=\"OPTIONS BUY\",AP77=\"Round Down\"),FLOOR(AP76,E84),IF(AND(E76=\"OPTIONS BUY\",AP77=\"Round Up\"),CEILING(AP76,E84),IF(E76=\"OPTIONS SELL\",IF(AND(AP77=\"Round Down\",AP78=\"-\"),FLOOR(AP76,E84)-(AP79*E84),IF(AND(AP77=\"Round Down\",AP78=\"+\"),FLOOR(AP76,E84)+(AP79*E84),IF(AND(AP77=\"Round Up\",AP78=\"-\"),CEILING(AP76,E84)-(AP79*E84),IF(AND(AP77=\"Round Up\",AP78=\"+\"),CEILING(AP76,E84)+(AP79*E84)))))))))))))))"
+          },
+          {
+            "cell": "AN76",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AL$8,IF(E76=\"OPTIONS SELL\",'AB17'!$AL$22,IF(E76=\"OPTIONS BUY\",'AB17'!$AL$36))))))))"
+          },
+          {
+            "cell": "AO76",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(OR(E76=\"OPTIONS SELL\",E76=\"OPTIONS BUY\"),IF(AO74=\"+\",AL74*(1+AO75),IF(AO74=\"-\",AL74*(1-AO75))))))))))"
+          },
+          {
+            "cell": "AP76",
+            "value": "=IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(OR(E76=\"OPTIONS SELL\",E76=\"OPTIONS BUY\"),IF(AP74=\"+\",AL74*(1+AP75),IF(AP74=\"-\",AL74*(1-AP75),IF(AP74=\"\",AL74)))))))))"
+          }
+        ]
+      },
+      {
+        "row": 77,
+        "cells": [
+          {
+            "cell": "A77",
+            "value": "=A74"
+          },
+          {
+            "cell": "B77",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$9),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$23),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$37),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$51))))))"
+          },
+          {
+            "cell": "C77",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$9),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$23),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$37),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$51))))))"
+          },
+          {
+            "cell": "D77",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$9,IF(E76=\"OPTIONS SELL\",'AB17'!$C$23,IF(E76=\"OPTIONS BUY\",'AB17'!$C$37,IF(E76=\"EQUITY\",'AB17'!$C$51)))))"
+          },
+          {
+            "cell": "E77",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48EF0>"
+          },
+          {
+            "cell": "I77",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F493D0>"
+          },
+          {
+            "cell": "J77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$9,IF(E76=\"OPTIONS SELL\",'AB17'!$I$23,IF(E76=\"OPTIONS BUY\",'AB17'!$I$37,IF(E76=\"EQUITY\",'AB17'!$I$51))))))"
+          },
+          {
+            "cell": "K77",
+            "value": "990"
+          },
+          {
+            "cell": "M77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(K78=\"\",\"SL\",IF(K78=\"NO TGT\",$P$2,IF(K78=\"TGT 1\",$Q$2,IF(K78=\"TGT 2\",$R$2,IF(K78=\"TGT 3\",$S$2,IF(K78=\"TGT 4\",$T$2,IF(K78=\"TGT 5\",$U$2)))))))))"
+          },
+          {
+            "cell": "N77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(K78=\"\",\"\",IF(K78=\"NO TGT\",P77,IF(K78=\"TGT 1\",Q77,IF(K78=\"TGT 2\",R77,IF(K78=\"TGT 3\",S77,IF(K78=\"TGT 4\",T77,IF(K78=\"TGT 5\",U77)))))))))"
+          },
+          {
+            "cell": "P77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(K78=\"TGT 1\",K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\",K78=\"TGT 5\"),\"N.A.\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\",E76=\"EQUITY\"),AG78>0),MROUND(AG78*(1-P79),E83),IF(AND(E76=\"OPTIONS BUY\",AI78=\"N.A.\"),\"N.A.\",IF(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\",E76=\"EQUITY\"),MROUND(MAX(AI78,AI76*(1-P79)),E83),IF(AND(E76=\"OPTIONS SELL\",AG78>0),MROUND(AG78*(1+P79),E83),IF(E76=\"OPTIONS SELL\",MROUND(MIN(AI78,AI76*(1+P79)),E83))))))),G83))))"
+          },
+          {
+            "cell": "Q77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(K78=\"TGT 2\",K78=\"TGT 3\",K78=\"TGT 4\",K78=\"TGT 5\",E79=\"APS\"),\"N.A.\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\",E76=\"EQUITY\"),AG78>0),MROUND(AG78*(1-Q79),E83),IF(AND(E76=\"OPTIONS BUY\",AI79=\"N.A.\"),\"N.A.\",IF(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\"),MROUND(MAX(AI79,AI76*(1-Q79)),E83),IF(AND(E76=\"OPTIONS SELL\",AG78>0),MROUND(AG78*(1+Q79),E83),IF(E76=\"OPTIONS SELL\",MROUND(MIN(AI79,AI76*(1+Q79)),E83),IF(E76=\"EQUITY\",MROUND(MAX(AI78,AI76*(1-Q79)),E83)))))))),G83))))"
+          },
+          {
+            "cell": "R77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(K78=\"TGT 3\",K78=\"TGT 4\",K78=\"TGT 5\",E79=\"APS\",E79=\"1 & APS\"),\"N.A.\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\",E76=\"EQUITY\"),AG78>0),MROUND(AG78*(1-R79),E83),IF(AND(E76=\"OPTIONS BUY\",AI79=\"N.A.\"),\"N.A.\",IF(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\"),MROUND(MAX(AI79,AI76*(1-R79)),E83),IF(AND(E76=\"OPTIONS SELL\",AG78>0),MROUND(AG78*(1+R79),E83),IF(E76=\"OPTIONS SELL\",MROUND(MIN(AI79,AI76*(1+R79)),E83),IF(E76=\"EQUITY\",MROUND(MAX(AI78,AI76*(1-R79)),E83)))))))),G83))))"
+          },
+          {
+            "cell": "S77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(K78=\"TGT 4\",K78=\"TGT 5\",E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\"),\"N.A.\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\",E76=\"EQUITY\"),AG78>0),MROUND(AG78*(1-S79),E83),IF(AND(E76=\"OPTIONS BUY\",AI79=\"N.A.\"),\"N.A.\",IF(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\"),MROUND(MAX(AI79,AI76*(1-S79)),E83),IF(AND(E76=\"OPTIONS SELL\",AG78>0),MROUND(AG78*(1+S79),E83),IF(E76=\"OPTIONS SELL\",MROUND(MIN(AI79,AI76*(1+S79)),E83),IF(E76=\"EQUITY\",MROUND(MAX(AI78,AI76*(1-S79)),E83)))))))),G83))))"
+          },
+          {
+            "cell": "T77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(K78=\"TGT 5\",E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",E79=\"3 & APS\"),\"N.A.\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\",E76=\"EQUITY\"),AG78>0),MROUND(AG78*(1-T79),E83),IF(AND(E76=\"OPTIONS BUY\",AI79=\"N.A.\"),\"N.A.\",IF(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\"),MROUND(MAX(AI79,AI76*(1-T79)),E83),IF(AND(E76=\"OPTIONS SELL\",AG78>0),MROUND(AG78*(1+T79),E83),IF(E76=\"OPTIONS SELL\",MROUND(MIN(AI79,AI76*(1+T79)),E83),IF(E76=\"EQUITY\",MROUND(MAX(AI78,AI76*(1-T79)),E83)))))))),G83))))"
+          },
+          {
+            "cell": "U77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",E79=\"3 & APS\",E79=\"4 & APS\"),\"N.A.\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\",E76=\"EQUITY\"),AG78>0),MROUND(AG78*(1-U79),E83),IF(AND(E76=\"OPTIONS BUY\",AI79=\"N.A.\"),\"N.A.\",IF(OR(E76=\"FUTURES\",E76=\"OPTIONS BUY\"),MROUND(MAX(AI78,AI76*(1-U79)),E83),IF(AND(E76=\"OPTIONS SELL\",AG78>0),MROUND(AG78*(1+U79),E83),IF(E76=\"OPTIONS SELL\",MROUND(MIN(AI79,AI76*(1+U79)),E83),IF(E76=\"EQUITY\",MROUND(MAX(AI79,AI76),E83)))))))),G83))))"
+          },
+          {
+            "cell": "W77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$9,IF(E76=\"OPTIONS SELL\",'AB17'!$V$23,IF(E76=\"OPTIONS BUY\",'AB17'!$V$37,IF(E76=\"EQUITY\",'AB17'!$V$51))))))"
+          },
+          {
+            "cell": "X77",
+            "value": "=IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(AND(E76=\"EQUITY\",X74=\"Yes\"),K75,IF(AND(X74=\"Yes\",E75=\"USDINR\"),K75,IF(X74=\"Yes\",K75*I77,\"\")))))"
+          },
+          {
+            "cell": "Y77",
+            "value": "=IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(AND(E76=\"EQUITY\",Y74=\"Yes\"),N75,IF(Y74=\"Yes\",N75*I77,\"\"))))"
+          },
+          {
+            "cell": "Z77",
+            "value": "=IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(AND(E76=\"EQUITY\",Z74=\"Yes\"),N75,IF(AND(Z74=\"Yes\",E75=\"USDINR\"),N78,IF(Z74=\"Yes\",N78*I77,\"\")))))"
+          },
+          {
+            "cell": "AD77",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F491F0>"
+          },
+          {
+            "cell": "AF77",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F494F0>"
+          },
+          {
+            "cell": "AH77",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(AG78<>\"\",\"Gap Detected in Stoploss\",\"\")))"
+          },
+          {
+            "cell": "AI77",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$AG$9,IF(E76=\"EQUITY\",'AB17'!$AG$51,IF(E76=\"OPTIONS SELL\",'AB17'!$AG$23,IF(E76=\"OPTIONS BUY\",'AB17'!$AG$37)))))))"
+          },
+          {
+            "cell": "AK77",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H74=\"\",\"\",IF(E74=\"S27\",\"Last Choice Strike\",IF(E74=\"S25\",\"\",IF(E76=\"FUTURES\",'AB17'!$AI$9,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$23,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$37)))))))))"
+          },
+          {
+            "cell": "AL77",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49310>"
+          },
+          {
+            "cell": "AN77",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AL$9,IF(E76=\"OPTIONS SELL\",'AB17'!$AL$23,IF(E76=\"OPTIONS BUY\",'AB17'!$AL$37))))))))"
+          },
+          {
+            "cell": "AO77",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49010>"
+          },
+          {
+            "cell": "AP77",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49910>"
+          }
+        ]
+      },
+      {
+        "row": 78,
+        "cells": [
+          {
+            "cell": "A78",
+            "value": "=A74"
+          },
+          {
+            "cell": "B78",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$10),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$24),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$38),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$52))))))"
+          },
+          {
+            "cell": "C78",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$10),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$24),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$38),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$52))))))"
+          },
+          {
+            "cell": "D78",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$10,IF(E76=\"OPTIONS SELL\",'AB17'!$C$24,IF(E76=\"OPTIONS BUY\",'AB17'!$C$38,IF(E76=\"EQUITY\",'AB17'!$C$52)))))"
+          },
+          {
+            "cell": "E78",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49250>"
+          },
+          {
+            "cell": "I78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$H$10,IF(E76=\"OPTIONS SELL\",'AB17'!$H$24,IF(E76=\"OPTIONS BUY\",'AB17'!$H$38,IF(E76=\"EQUITY\",'AB17'!$H$52))))))"
+          },
+          {
+            "cell": "J78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$10,IF(E76=\"OPTIONS SELL\",'AB17'!$I$24,IF(E76=\"OPTIONS BUY\",'AB17'!$I$38,IF(E76=\"EQUITY\",'AB17'!$I$52))))))"
+          },
+          {
+            "cell": "K78",
+            "value": "NO TGT"
+          },
+          {
+            "cell": "M78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$L$10,IF(E76=\"OPTIONS SELL\",'AB17'!$L$24,IF(E76=\"OPTIONS BUY\",'AB17'!$L$38,IF(E76=\"EQUITY\",'AB17'!$L$52))))))"
+          },
+          {
+            "cell": "N78",
+            "value": "=IF(K78=\"\",\"\",IF(H74=\"\",\"\",IF(K78=\"NO TGT\",P78,IF(K78=\"TGT 1\",Q78,IF(K78=\"TGT 2\",R78,IF(K78=\"TGT 3\",S78,IF(K78=\"TGT 4\",T78,IF(K78=\"TGT 5\",U78))))))))"
+          },
+          {
+            "cell": "P78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",K75))"
+          },
+          {
+            "cell": "Q78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",P78-P75))"
+          },
+          {
+            "cell": "R78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",Q78-Q75))"
+          },
+          {
+            "cell": "S78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",R78-R75))"
+          },
+          {
+            "cell": "T78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",S78-S75))"
+          },
+          {
+            "cell": "U78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",U75))"
+          },
+          {
+            "cell": "W78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$10,IF(E76=\"OPTIONS SELL\",'AB17'!$V$24,IF(E76=\"OPTIONS BUY\",'AB17'!$V$38,IF(E76=\"EQUITY\",'AB17'!$V$52))))))"
+          },
+          {
+            "cell": "X78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(AND(OR(E76=\"FUTURES\",E76=\"EQUITY\"),X74=\"Yes\"),0,IF(AND(AND(E76=\"OPTIONS SELL\",E75=\"USDINR\"),X74=\"Yes\"),X79-0.01,IF(AND(E76=\"OPTIONS SELL\",X74=\"Yes\"),MROUND(X79*(1-5%),E83),IF(AND(AND(E76=\"OPTIONS BUY\",E75=\"USDINR\"),X74=\"Yes\"),X79+0.01,IF(AND(E76=\"OPTIONS BUY\",X74=\"Yes\"),MROUND(X79*(1+5%),E83),\"\")))))),G83))))"
+          },
+          {
+            "cell": "Y78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(Y74=\"Yes\",N76,\"\")),G83))))"
+          },
+          {
+            "cell": "Z78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(Z79=\"N.A.\",\"N.A.\",IF(AND(OR(E76=\"FUTURES\",E76=\"EQUITY\"),Z74=\"Yes\"),0,IF(AND(AND(E76=\"OPTIONS SELL\",E75=\"USDINR\"),Z74=\"Yes\"),Z79+0.01,IF(AND(E76=\"OPTIONS SELL\",Z74=\"Yes\"),MROUND(Z79*(1+5%),E83),IF(AND(AND(E76=\"OPTIONS BUY\",E75=\"USDINR\"),Z74=\"Yes\"),Z79-0.01,IF(AND(E76=\"OPTIONS BUY\",Z74=\"Yes\"),MROUND(Z79*(1-5%),E83),\"\"))))))),G83))))"
+          },
+          {
+            "cell": "AD78",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49490>"
+          },
+          {
+            "cell": "AF78",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49130>"
+          },
+          {
+            "cell": "AI78",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",MROUND(K76*(1-N79),E83),IF(E76=\"OPTIONS SELL\",MROUND(K76*(1+N79),E83),IF(AND(E74=\"S25\",E76=\"OPTIONS BUY\"),MROUND(K76*(1-N79),E83),IF(AND(E74=\"S26\",E76=\"OPTIONS BUY\"),MROUND(K76-(N74*N79),E83),IF(IF(AND(E74=\"S27\",E76=\"OPTIONS BUY\"),K76-(N74*N79))<0,\"N.A.\",IF(AND(E74=\"S27\",E76=\"OPTIONS BUY\"),MROUND(K76-(N74*N79),E83),IF(E76=\"EQUITY\",MROUND(K76*(1-N79),E83))))))))))"
+          },
+          {
+            "cell": "AK78",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H74=\"\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AI$10,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$24,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$38))))))))"
+          },
+          {
+            "cell": "AL78",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F499D0>"
+          },
+          {
+            "cell": "AN78",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AO$10,IF(E76=\"OPTIONS SELL\",'AB17'!$AO$24,IF(E76=\"OPTIONS BUY\",'AB17'!$AO$38))))))))"
+          },
+          {
+            "cell": "AO78",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49730>"
+          },
+          {
+            "cell": "AP78",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48A10>"
+          }
+        ]
+      },
+      {
+        "row": 79,
+        "cells": [
+          {
+            "cell": "A79",
+            "value": "=A74"
+          },
+          {
+            "cell": "B79",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$11),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$25),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$39),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$53))))))"
+          },
+          {
+            "cell": "C79",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$11),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$25),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$39),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$53))))))"
+          },
+          {
+            "cell": "D79",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$11,IF(E76=\"OPTIONS SELL\",'AB17'!$C$25,IF(E76=\"OPTIONS BUY\",'AB17'!$C$39,IF(E76=\"EQUITY\",'AB17'!$C$53)))))"
+          },
+          {
+            "cell": "E79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48EF0>"
+          },
+          {
+            "cell": "I79",
+            "value": "55827"
+          },
+          {
+            "cell": "J79",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$11,IF(E76=\"OPTIONS SELL\",'AB17'!$I$25,IF(E76=\"OPTIONS BUY\",'AB17'!$I$39,IF(E76=\"EQUITY\",'AB17'!$I$53))))))"
+          },
+          {
+            "cell": "M79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F493D0>"
+          },
+          {
+            "cell": "N79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F491F0>"
+          },
+          {
+            "cell": "P79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F494F0>"
+          },
+          {
+            "cell": "Q79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49310>"
+          },
+          {
+            "cell": "R79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49010>"
+          },
+          {
+            "cell": "S79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49910>"
+          },
+          {
+            "cell": "T79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49070>"
+          },
+          {
+            "cell": "U79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49790>"
+          },
+          {
+            "cell": "W79",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$11,IF(E76=\"OPTIONS SELL\",'AB17'!$V$25,IF(E76=\"OPTIONS BUY\",'AB17'!$V$39,IF(E76=\"EQUITY\",'AB17'!$V$53))))))"
+          },
+          {
+            "cell": "X79",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(X74=\"Yes\",K76,\"\")),G83))))"
+          },
+          {
+            "cell": "Y79",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(Y74=\"Yes\",0,\"\")),G83))))"
+          },
+          {
+            "cell": "Z79",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(Z74=\"Yes\",N77,\"\")),G83))))"
+          },
+          {
+            "cell": "AD79",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",\"Current Day HH\",IF(E76=\"OPTIONS BUY\",\"Current Day HH\",IF(E76=\"OPTIONS SELL\",\"Current Day LL\",IF(E76=\"EQUITY\",\"Current Day HH\",))))))"
+          },
+          {
+            "cell": "AF79",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",\"Current Day LL\",IF(E76=\"OPTIONS BUY\",\"Current Day LL\",IF(E76=\"OPTIONS SELL\",\"Current Day HH\",IF(E76=\"EQUITY\",\"Current Day LL\",))))))"
+          },
+          {
+            "cell": "AI79",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"FUTURES\",MROUND(K76*(1-M79),E83),IF(E76=\"OPTIONS SELL\",MROUND(K76*(1+M79),E83),IF(AND(E74=\"S25\",E76=\"OPTIONS BUY\"),MROUND(K76*(1-M79),E83),IF(AND(E74=\"S26\",E76=\"OPTIONS BUY\"),MROUND(K76-(N74*M79),E83),IF(IF(AND(E74=\"S27\",E76=\"OPTIONS BUY\"),K76-(N74*N79))<0,\"N.A.\",IF(AND(E74=\"S27\",E76=\"OPTIONS BUY\"),MROUND(K76-(N74*N79),E83),IF(E76=\"EQUITY\",MROUND(K76*(1-M79),E83))))))))))"
+          },
+          {
+            "cell": "AK79",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$AI$11,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$25,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$39)))))))"
+          },
+          {
+            "cell": "AL79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F490D0>"
+          },
+          {
+            "cell": "AP79",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F650>"
+          }
+        ]
+      },
+      {
+        "row": 80,
+        "cells": [
+          {
+            "cell": "A80",
+            "value": "=A74"
+          },
+          {
+            "cell": "B80",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$12),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$26),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$40),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$54))))))"
+          },
+          {
+            "cell": "C80",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$12),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$26),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$40),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$54))))))"
+          },
+          {
+            "cell": "D80",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$12,IF(E76=\"OPTIONS SELL\",'AB17'!$C$26,IF(E76=\"OPTIONS BUY\",'AB17'!$C$40,IF(E76=\"EQUITY\",'AB17'!$C$54)))))"
+          },
+          {
+            "cell": "E80",
+            "value": "SAME"
+          },
+          {
+            "cell": "H80",
+            "value": "=IF(A74=\"\",\"\",IF(H74=\"\",\"\",CONCATENATE(AB74,\" \",AB81)))"
+          }
+        ]
+      },
+      {
+        "row": 81,
+        "cells": [
+          {
+            "cell": "A81",
+            "value": "=A74"
+          },
+          {
+            "cell": "B81",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$13),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$27),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$41),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$55))))))"
+          },
+          {
+            "cell": "C81",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$13),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$27),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$41),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$55))))))"
+          },
+          {
+            "cell": "D81",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$13,IF(E76=\"OPTIONS SELL\",'AB17'!$C$27,IF(E76=\"OPTIONS BUY\",'AB17'!$C$41,IF(E76=\"EQUITY\",'AB17'!$C$55)))))"
+          },
+          {
+            "cell": "E81",
+            "value": "L/CE : Exp : Near _ S/PE : Exp : Next"
+          },
+          {
+            "cell": "H81",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$G$13,IF(E76=\"OPTIONS SELL\",'AB17'!$G$27,IF(AND(OR(E78=\"BULL\",E78=\"BULL CF\"),E74=\"S27\"),\"\",IF(E76=\"OPTIONS BUY\",'AB17'!$G$41,IF(E76=\"EQUITY\",\"\"))))))"
+          },
+          {
+            "cell": "I81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F490D0>"
+          },
+          {
+            "cell": "J81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$13,IF(E76=\"OPTIONS SELL\",'AB17'!$I$27,IF(E76=\"OPTIONS BUY\",'AB17'!$I$41))))))"
+          },
+          {
+            "cell": "K81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F492B0>"
+          },
+          {
+            "cell": "M81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$L$13,IF(E76=\"OPTIONS SELL\",'AB17'!$L$27,IF(E76=\"OPTIONS BUY\",'AB17'!$L$41))))))"
+          },
+          {
+            "cell": "N81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"\",IF(AND(E76=\"OPTIONS SELL\",K86>0),K86,IF(AND(E76=\"OPTIONS SELL\",K86=\"\"),AG81,IF(AND(E76=\"OPTIONS BUY\",K86>0),K86,IF(AND(E76=\"OPTIONS BUY\",K86=\"\"),AG81))))))))"
+          },
+          {
+            "cell": "P81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F496D0>"
+          },
+          {
+            "cell": "Q81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49490>"
+          },
+          {
+            "cell": "R81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49130>"
+          },
+          {
+            "cell": "S81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F499D0>"
+          },
+          {
+            "cell": "T81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49730>"
+          },
+          {
+            "cell": "U81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48A10>"
+          },
+          {
+            "cell": "W81",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"EQUITY\",'AB17'!$V$55,IF(E76=\"FUTURES\",'AB17'!$V$13,IF(E76=\"OPTIONS SELL\",'AB17'!$V$27,IF(E76=\"OPTIONS BUY\",'AB17'!$V$41)))))"
+          },
+          {
+            "cell": "X81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"No\",IF(E76=\"EQUITY\",\"No\",IF(OR(K84>0,I81=\"No Strike Qualified\"),\"No\",\"Yes\"))))"
+          },
+          {
+            "cell": "Y81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"No\",IF(E76=\"EQUITY\",\"No\",IF(ISNUMBER(SEARCH(\"TR PROFIT\",N83)),\"No\",IF(N83=\"\",\"No\",\"Yes\")))))"
+          },
+          {
+            "cell": "Z81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"No\",IF(E76=\"EQUITY\",\"No\",IF(N84=\"\",\"No\",IF(N84=\"N.A.\",\"No\",\"Yes\")))))"
+          },
+          {
+            "cell": "AB81",
+            "value": "=IF(AND(K84<>\"\",K85=\"\"),\"( Remove Short Our Entry or Update Short Target Status) \",IF(AND(K84=\"\",K85<>\"\"),\"( Remove Short Target Status or Update Short Our Entry ) \",\"\"))"
+          },
+          {
+            "cell": "AD81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",'AB17'!$AB$13)))"
+          },
+          {
+            "cell": "AE81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",I81)))"
+          },
+          {
+            "cell": "AF81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$AD$13,IF(E76=\"OPTIONS SELL\",'AB17'!$AD$27,IF(E76=\"OPTIONS BUY\",'AB17'!$AD$41))))))"
+          },
+          {
+            "cell": "AG81",
+            "value": "48000"
+          },
+          {
+            "cell": "AH81",
+            "value": "=IF(A81=\"\",\"\",IF(H81=\"\",\"\",IF(AE85<>\"\",\"Gap Detected in Entry\",\"\")))"
+          },
+          {
+            "cell": "AI81",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$AG$13,IF(E76=\"EQUITY\",'AB17'!$AG$55,IF(E76=\"OPTIONS SELL\",'AB17'!$AG$26,IF(E76=\"OPTIONS BUY\",'AB17'!$AG$41)))))))"
+          },
+          {
+            "cell": "AK81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49190>"
+          },
+          {
+            "cell": "AL81",
+            "value": "48219.95"
+          },
+          {
+            "cell": "AN81",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AL$13,IF(E76=\"OPTIONS SELL\",'AB17'!$AL$27,IF(E76=\"OPTIONS BUY\",'AB17'!$AL$41)))))))"
+          },
+          {
+            "cell": "AO81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F650>"
+          },
+          {
+            "cell": "AP81",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473FA70>"
+          }
+        ]
+      },
+      {
+        "row": 82,
+        "cells": [
+          {
+            "cell": "A82",
+            "value": "=A74"
+          },
+          {
+            "cell": "B82",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$14),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$28),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$42),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$56))))))"
+          },
+          {
+            "cell": "C82",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$14),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$28),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$42),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$56))))))"
+          },
+          {
+            "cell": "D82",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$14,IF(E76=\"OPTIONS SELL\",'AB17'!$C$28,IF(E76=\"OPTIONS BUY\",'AB17'!$C$42,IF(E76=\"EQUITY\",'AB17'!$C$56)))))"
+          },
+          {
+            "cell": "J82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$14,IF(E76=\"OPTIONS SELL\",'AB17'!$I$28,IF(E76=\"OPTIONS BUY\",'AB17'!$I$42))))))"
+          },
+          {
+            "cell": "K82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49430>"
+          },
+          {
+            "cell": "M82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$L$14,IF(E76=\"OPTIONS SELL\",'AB17'!$L$28,IF(E76=\"OPTIONS BUY\",'AB17'!$L$42))))))"
+          },
+          {
+            "cell": "N82",
+            "value": "=IF(K85=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(K85=\"NO TGT\",P82,IF(K85=\"TGT 1\",Q82,IF(K85=\"TGT 2\",R82,IF(K85=\"TGT 3\",S82,IF(K85=\"TGT 4\",T82,IF(K85=\"TGT 5\",U82)))))))))"
+          },
+          {
+            "cell": "P82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473FAD0>"
+          },
+          {
+            "cell": "Q82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F8F0>"
+          },
+          {
+            "cell": "R82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F950>"
+          },
+          {
+            "cell": "S82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F5F0>"
+          },
+          {
+            "cell": "T82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473FB30>"
+          },
+          {
+            "cell": "U82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473EF90>"
+          },
+          {
+            "cell": "W82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$14,IF(E76=\"OPTIONS SELL\",'AB17'!$V$28,IF(E76=\"OPTIONS BUY\",'AB17'!$V$42))))))"
+          },
+          {
+            "cell": "X82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F710>"
+          },
+          {
+            "cell": "Y82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F770>"
+          },
+          {
+            "cell": "Z82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F7D0>"
+          },
+          {
+            "cell": "AD82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F830>"
+          },
+          {
+            "cell": "AE82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E76=\"EQUITY\",\"\",IF(AND(AND(E76=\"FUTURES\",AE85=\"\"),E80=\"SAME\"),VLOOKUP(A74,'AB15'!A:CF,HLOOKUP(AD82,'AB15'!$AF$2:$AS$3,2,FALSE),FALSE),IF(AND(AND(E76=\"FUTURES\",AE85=\"\"),E80=\"DIFF\"),VLOOKUP(A74,'AB15'!A:CF,HLOOKUP(AD82,'AB15'!$AY$2:$BL$3,2,FALSE),FALSE),IF(AND(E76=\"OPTIONS BUY\",AE85=\"\"),AE83,IF(AND(E76=\"OPTIONS SELL\",AE85=\"\"),AE83,\"\"))))),G83))))"
+          },
+          {
+            "cell": "AF82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F890>"
+          },
+          {
+            "cell": "AG82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E76=\"EQUITY\",\"\",IF(AND(AND(E76=\"FUTURES\",AG85=\"\"),E80=\"SAME\"),VLOOKUP(A74,'AB15'!A:CF,HLOOKUP(AF82,'AB15'!$AF$2:$AS$3,2,FALSE),FALSE),IF(AND(AND(E76=\"FUTURES\",AG85=\"\"),E80=\"DIFF\"),VLOOKUP(A74,'AB15'!A:CF,HLOOKUP(AF82,'AB15'!$AY$2:$BL$3,2,FALSE),FALSE),IF(AND(OR(E76=\"OPTIONS BUY\",E76=\"OPTIONS SELL\"),AG85=\"\"),AG83,\"\")))),G83))))"
+          },
+          {
+            "cell": "AI82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"FUTURES\",IF(AE86>0,MIN(AE82,AE86),IF(AE85>0,MIN(AE82,AE85),AE82)),IF(E76=\"OPTIONS SELL\",IF(AE86>0,MIN(AE83,AE86),IF(AE85>0,MIN(AE83,AE85),AE83)),IF(E76=\"OPTIONS BUY\",IF(AE86>0,MAX(AE83,AE86),IF(AE85>0,MAX(AE83,AE85),AE83)),IF(E76=\"EQUITY\",\"\"))))))"
+          },
+          {
+            "cell": "AK82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$AI$14,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$28,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$42)))))))"
+          },
+          {
+            "cell": "AL82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),MROUND(AL81,E84),IF(AND(OR(E76=\"OPTIONS SELL\",E76=\"OPTIONS BUY\"),AO84=\"Round Down\"),FLOOR(AO83,E84),IF(AND(OR(E76=\"OPTIONS SELL\",E76=\"OPTIONS BUY\"),AO84=\"Round Up\"),CEILING(AO83,E84))))))))"
+          },
+          {
+            "cell": "AN82",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AL$14,IF(E76=\"OPTIONS SELL\",'AB17'!$AL$28,IF(E76=\"OPTIONS BUY\",'AB17'!$AL$42)))))))"
+          },
+          {
+            "cell": "AO82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48EF0>"
+          },
+          {
+            "cell": "AP82",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F493D0>"
+          }
+        ]
+      },
+      {
+        "row": 83,
+        "cells": [
+          {
+            "cell": "A83",
+            "value": "=A74"
+          },
+          {
+            "cell": "B83",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$15),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$29),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$43),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$57))))))"
+          },
+          {
+            "cell": "C83",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$15),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$29),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$43),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$57))))))"
+          },
+          {
+            "cell": "D83",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$15,IF(E76=\"OPTIONS SELL\",'AB17'!$C$29,IF(E76=\"OPTIONS BUY\",'AB17'!$C$43,IF(E76=\"EQUITY\",'AB17'!$C$57)))))"
+          },
+          {
+            "cell": "E83",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F494F0>"
+          },
+          {
+            "cell": "F83",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F650>"
+          },
+          {
+            "cell": "G83",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473FA70>"
+          },
+          {
+            "cell": "I83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$H$15,IF(E76=\"OPTIONS SELL\",'AB17'!$H$29,IF(E76=\"OPTIONS BUY\",'AB17'!$H$43,IF(E76=\"EQUITY\",\"\"))))))"
+          },
+          {
+            "cell": "J83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$15,IF(E76=\"OPTIONS SELL\",'AB17'!$I$29,IF(E76=\"OPTIONS BUY\",'AB17'!$I$43))))))"
+          },
+          {
+            "cell": "K83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(K84=\"\",IF(E76=\"FUTURES\",MROUND(AI82*(1-K81),E83),IF(E76=\"OPTIONS SELL\",MROUND(AI82*(1-K81),E83),IF(E76=\"OPTIONS BUY\",MROUND(AI82*(1+K81),E83)))),K84),G83)))))"
+          },
+          {
+            "cell": "M83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(K85=\"\",\"TGT\",IF(K85=\"NO TGT\",$P$1,IF(K85=\"TGT 1\",$Q$1,IF(K85=\"TGT 2\",$R$1,IF(K85=\"TGT 3\",$S$1,IF(K85=\"TGT 4\",$T$1,IF(K85=\"TGT 5\",$U$1))))))))))"
+          },
+          {
+            "cell": "N83",
+            "value": "=IF(K85=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(K85=\"NO TGT\",P83,IF(K85=\"TGT 1\",Q83,IF(K85=\"TGT 2\",R83,IF(K85=\"TGT 3\",S83,IF(K85=\"TGT 4\",T83,IF(K85=\"TGT 5\",U83)))))))))"
+          },
+          {
+            "cell": "P83",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(K85=\"TGT 1\",K85=\"TGT 2\",K85=\"TGT 3\",K85=\"TGT 4\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"FUTURES\",IF(OR(K85=\"\",K85=\"NO TGT\"),MROUND(K83*(1-P81),E83)),IF(E76=\"OPTIONS SELL\",IF(OR(K85=\"\",K85=\"NO TGT\"),MROUND(K83*(1-P81),E83)),IF(E74=\"S25\", MROUND(K83*(1+P81),E83),IF(E76=\"OPTIONS BUY\",IF(OR(K85=\"\",K85=\"NO TGT\"),MROUND(K83+(N81*P81),E83))))))),G83)))))"
+          },
+          {
+            "cell": "Q83",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E79=\"APS\",\"N.A.\",IF(OR(K85=\"TGT 2\",K85=\"TGT 3\",K85=\"TGT 4\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"FUTURES\",IF(E79=\"1 & APS\",Q81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\"),MROUND(K83*(1-Q81),E83))),IF(E76=\"OPTIONS SELL\",IF(E79=\"1 & APS\",Q81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\"),MROUND(K83*(1-Q81),E83))),IF(E76=\"OPTIONS BUY\",IF(E79=\"1 & APS\",Q81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\"),MROUND(K83+(N81*Q81),E83)))))))),G83)))))"
+          },
+          {
+            "cell": "R83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\"),\"N.A.\",IF(OR(K85=\"TGT 3\",K85=\"TGT 4\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"FUTURES\",IF(E79=\"2 & APS\",R81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\"),MROUND(K83*(1-R81),E83))),IF(E76=\"OPTIONS SELL\",IF(E79=\"2 & APS\",R81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\"),MROUND(K83*(1-R81),E83))),IF(E76=\"OPTIONS BUY\",IF(E79=\"2 & APS\",R81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\"),MROUND(K83+(N81*R81),E83)))))))),G83)))))"
+          },
+          {
+            "cell": "S83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\"),\"N.A.\",IF(OR(K85=\"TGT 4\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"FUTURES\",IF(E79=\"3 & APS\",S81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\",K85=\"TGT 3\"),MROUND(K83*(1-S81),E83))),IF(E76=\"OPTIONS SELL\",IF(E79=\"3 & APS\",S81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\",K85=\"TGT 3\"),MROUND(K83*(1-S81),E83))),IF(E76=\"OPTIONS BUY\",IF(E79=\"3 & APS\",S81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\",K85=\"TGT 3\"),MROUND(K83+(N81*S81),E83)))))))),G83)))))"
+          },
+          {
+            "cell": "T83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",E79=\"3 & APS\"),\"N.A.\",IF(K85=\"TGT 5\",\"N.A.\",IF(E76=\"FUTURES\",IF(E79=\"4 & APS\",T81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\",K85=\"TGT 3\",K85=\"TGT 4\"),MROUND(K83*(1-T81),E83))),IF(E76=\"OPTIONS SELL\",IF(E79=\"4 & APS\",T81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\",K85=\"TGT 3\",K85=\"TGT 4\"),MROUND(K83*(1-T81),E83))),IF(E76=\"OPTIONS BUY\",IF(E79=\"4 & APS\",T81,IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\",K85=\"TGT 3\",K85=\"TGT 4\"),MROUND(K83+(N81*T81),E83)))))))),G83)))))"
+          },
+          {
+            "cell": "U83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",E79=\"3 & APS\",E79=\"4 & APS\"),\"N.A.\",IF(OR(K85=\"\",K85=\"NO TGT\",K85=\"TGT 1\",K85=\"TGT 2\",K85=\"TGT 3\",K85=\"TGT 4\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"FUTURES\",IF(E79=\"5 & APS\",U81),IF(E76=\"OPTIONS SELL\",IF(E79=\"5 & APS\",U81),IF(E76=\"OPTIONS BUY\",IF(E79=\"5 & APS\",U81)))))),G83)))))"
+          },
+          {
+            "cell": "W83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$15,IF(E76=\"OPTIONS SELL\",'AB17'!$V$29,IF(E76=\"OPTIONS BUY\",'AB17'!$V$43))))))"
+          },
+          {
+            "cell": "X83",
+            "value": "=IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(AND(E76=\"FUTURES\",X81=\"Yes\"),\"SELL\",IF(AND(E76=\"OPTIONS BUY\",X81=\"Yes\"),\"BUY\",IF(AND(E76=\"OPTIONS SELL\",X81=\"Yes\"),\"SELL\",\"\")))))"
+          },
+          {
+            "cell": "Y83",
+            "value": "=IF(E76=\"EQUITY\",\"\",IF(H81=\"\",\"\",IF(AND(E76=\"FUTURES\",Y81=\"Yes\"),\"BUY\",IF(AND(E76=\"OPTIONS BUY\",Y81=\"Yes\"),\"SELL\",IF(AND(E76=\"OPTIONS SELL\",Y81=\"Yes\"),\"BUY\",\"\")))))"
+          },
+          {
+            "cell": "Z83",
+            "value": "=IF(E76=\"EQUITY\",\"\",IF(H81=\"\",\"\",IF(AND(E76=\"FUTURES\",Z81=\"Yes\"),\"BUY\",IF(AND(E76=\"OPTIONS BUY\",Z81=\"Yes\"),\"SELL\",IF(AND(E76=\"OPTIONS SELL\",Z81=\"Yes\"),\"BUY\",\"\")))))"
+          },
+          {
+            "cell": "AD83",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49070>"
+          },
+          {
+            "cell": "AE83",
+            "value": "809.5"
+          },
+          {
+            "cell": "AF83",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49790>"
+          },
+          {
+            "cell": "AG83",
+            "value": "1300"
+          },
+          {
+            "cell": "AI83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"FUTURES\",IF(AG86>0,MAX(AG82,AG86),IF(AG85>0,MAX(AG82,AG85),AG82)),IF(E76=\"OPTIONS SELL\",IF(AG86>0,MAX(AG83,AG86),IF(AG85>0,MAX(AG83,AG85),AG83)),IF(E76=\"OPTIONS BUY\",IF(AG86>0,MIN(AG83,AG86),IF(AG85>0,MIN(AG83,AG85),AG83)),IF(E76=\"EQUITY\",\"\"))))))"
+          },
+          {
+            "cell": "AK83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$AI$15,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$29,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$43))))))"
+          },
+          {
+            "cell": "AL83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"\",IF(E74=\"S27\",AL82+E84,IF(E74=\"S25\",AL82-(4*E84),IF(AND(E76=\"OPTIONS BUY\",AP84=\"Round Down\"),FLOOR(AP83,E84),IF(AND(E76=\"OPTIONS BUY\",AP84=\"Round Up\"),CEILING(AP83,E84),IF(E76=\"OPTIONS SELL\",IF(AND(AP84=\"Round Down\",AP85=\"-\"),FLOOR(AP83,E84)-(AP86*E84),IF(AND(AP84=\"Round Down\",AP85=\"+\"),FLOOR(AP83,E84)+(AP86*E84),IF(AND(AP84=\"Round Up\",AP85=\"-\"),CEILING(AP83,E84)-(AP86*E84),IF(AND(AP84=\"Round Up\",AP85=\"+\"),CEILING(AP83,E84)+(AP86*E84))))))))))))))"
+          },
+          {
+            "cell": "AN83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AL$15,IF(E76=\"OPTIONS SELL\",'AB17'!$AL$29,IF(E76=\"OPTIONS BUY\",'AB17'!$AL$43)))))))"
+          },
+          {
+            "cell": "AO83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H81=\"\",\"\",IF(E76=\"FUTURES\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(OR(E76=\"OPTIONS SELL\",E76=\"OPTIONS BUY\"),IF(AO81=\"+\",AL81*(1+AO82),IF(AO81=\"-\",AL81*(1-AO82))))))))))"
+          },
+          {
+            "cell": "AP83",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(OR(E76=\"OPTIONS SELL\",E76=\"OPTIONS BUY\"),IF(AP81=\"+\",AL81*(1+AP82),IF(AP81=\"-\",AL81*(1-AP82),IF(AP81=\"\",AL81)))))))))"
+          }
+        ]
+      },
+      {
+        "row": 84,
+        "cells": [
+          {
+            "cell": "A84",
+            "value": "=A74"
+          },
+          {
+            "cell": "B84",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$16),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$30),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$44),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$58))))))"
+          },
+          {
+            "cell": "C84",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$16),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$30),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$44),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$58))))))"
+          },
+          {
+            "cell": "D84",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$16,IF(E76=\"OPTIONS SELL\",'AB17'!$C$30,IF(E76=\"OPTIONS BUY\",'AB17'!$C$44,IF(E76=\"EQUITY\",'AB17'!$C$58)))))"
+          },
+          {
+            "cell": "E84",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49430>"
+          },
+          {
+            "cell": "I84",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48EF0>"
+          },
+          {
+            "cell": "J84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$16,IF(E76=\"OPTIONS SELL\",'AB17'!$I$30,IF(E76=\"OPTIONS BUY\",'AB17'!$I$44))))))"
+          },
+          {
+            "cell": "K84",
+            "value": "748.8"
+          },
+          {
+            "cell": "M84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(K85=\"\",\"SL\",IF(K85=\"NO TGT\",$P$2,IF(K85=\"TGT 1\",$Q$2,IF(K85=\"TGT 2\",$R$2,IF(K85=\"TGT 3\",$S$2,IF(K85=\"TGT 4\",$T$2,IF(K85=\"TGT 5\",$U$2))))))))))"
+          },
+          {
+            "cell": "N84",
+            "value": "=IF(K85=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(K85=\"NO TGT\",P84,IF(K85=\"TGT 1\",Q84,IF(K85=\"TGT 2\",R84,IF(K85=\"TGT 3\",S84,IF(K85=\"TGT 4\",T84,IF(K85=\"TGT 5\",U84)))))))))"
+          },
+          {
+            "cell": "P84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(K83=\"TGT 1\",K83=\"TGT 2\",K83=\"TGT 3\",K83=\"TGT 4\",K83=\"TGT 5\"),\"N.A.\",IF(E76=\"EQUITY\",\"\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),AG85>0),MROUND(AG85*(1+P86),E83),IF(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),MROUND(MIN(AI85,AI83*(1+P86)),E83),IF(AND(E76=\"OPTIONS BUY\",AG85>0),MROUND(AG85*(1-P86),E83),IF(AND(E76=\"OPTIONS BUY\",AI85=\"N.A.\"),\"N.A.\",IF(E76=\"OPTIONS BUY\",MROUND(MAX(AI85,AI83*(1-P86)),E83)))))))),G83))))"
+          },
+          {
+            "cell": "Q84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E79=\"APS\",\"N.A.\",IF(OR(K85=\"TGT 2\",K85=\"TGT 3\",K85=\"TGT 4\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"EQUITY\",\"\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),AG85>0),MROUND(AG85*(1+P86),E83),IF(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),MROUND(MIN(AI86,AI83*(1+P86)),E83),IF(AND(E76=\"OPTIONS BUY\",AG85>0),MROUND(AG85*(1-P86),E83),IF(AND(E76=\"OPTIONS BUY\",AI86=\"N.A.\"),\"N.A.\",IF(E76=\"OPTIONS BUY\",MROUND(MAX(AI86,AI83*(1-P86)),E83))))))))),G83))))"
+          },
+          {
+            "cell": "R84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\"),\"N.A.\",IF(OR(K85=\"TGT 3\",K85=\"TGT 4\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"EQUITY\",\"\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),AG85>0),MROUND(AG85*(1+P86),E83),IF(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),MROUND(MIN(AI86,AI83*(1+P86)),E83),IF(AND(E76=\"OPTIONS BUY\",AG85>0),MROUND(AG85*(1-P86),E83),IF(AND(E76=\"OPTIONS BUY\",AI86=\"N.A.\"),\"N.A.\",IF(E76=\"OPTIONS BUY\",MROUND(MAX(AI86,AI83*(1-P86)),E83))))))))),G83))))"
+          },
+          {
+            "cell": "S84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E76=\"EQUITY\",\"\",IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",K85=\"TGT 4\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"EQUITY\",\"\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),AG85>0),MROUND(AG85*(1+P86),E83),IF(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),MROUND(MIN(AI86,AI83*(1+P86)),E83),IF(AND(E76=\"OPTIONS BUY\",AG85>0),MROUND(AG85*(1-P86),E83),IF(AND(E76=\"OPTIONS BUY\",AI86=\"N.A.\"),\"N.A.\",IF(E76=\"OPTIONS BUY\",MROUND(MAX(AI86,AI83*(1-P86)),E83))))))))),G83))))"
+          },
+          {
+            "cell": "T84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",E79=\"3 & APS\",K85=\"TGT 5\"),\"N.A.\",IF(E76=\"EQUITY\",\"\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),AG85>0),MROUND(AG85*(1+P86),E83),IF(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),MROUND(MIN(AI86,AI83*(1+P86)),E83),IF(AND(E76=\"OPTIONS BUY\",AG85>0),MROUND(AG85*(1-P86),E83),IF(AND(E76=\"OPTIONS BUY\",AI86=\"N.A.\"),\"N.A.\",IF(E76=\"OPTIONS BUY\",MROUND(MAX(AI86,AI83*(1-P86)),E83)))))))),G83))))"
+          },
+          {
+            "cell": "U84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(OR(E79=\"APS\",E79=\"1 & APS\",E79=\"2 & APS\",E79=\"3 & APS\",E79=\"4 & APS\"),\"N.A.\",IF(E76=\"EQUITY\",\"\",IF(AND(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),AG85>0),MROUND(AG85*(1+P86),E83),IF(OR(E76=\"FUTURES\",E76=\"OPTIONS SELL\"),MROUND(MIN(AI86,AI83*(1+P86)),E83),IF(AND(E76=\"OPTIONS BUY\",AG85>0),MROUND(AG85*(1-P86),E83),IF(AND(E76=\"OPTIONS BUY\",AI86=\"N.A.\"),\"N.A.\",IF(E76=\"OPTIONS BUY\",MROUND(MAX(AI86,AI83*(1-P86)),E83)))))))),G83))))"
+          },
+          {
+            "cell": "W84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$16,IF(E76=\"OPTIONS SELL\",'AB17'!$V$30,IF(E76=\"OPTIONS BUY\",'AB17'!$V$44))))))"
+          },
+          {
+            "cell": "X84",
+            "value": "=IF(E74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(AND(X81=\"Yes\",E75=\"USDINR\"),K82,IF(X81=\"Yes\",K82*I84,\"\")))))"
+          },
+          {
+            "cell": "Y84",
+            "value": "=IF(E74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(Y81=\"Yes\",N82*I84,\"\"))))"
+          },
+          {
+            "cell": "Z84",
+            "value": "=IF(E74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(AND(Z81=\"Yes\",E75=\"USDINR\"),N85,IF(Z81=\"Yes\",N85*I84,\"\")))))"
+          },
+          {
+            "cell": "AD84",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F493D0>"
+          },
+          {
+            "cell": "AF84",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49910>"
+          },
+          {
+            "cell": "AH84",
+            "value": "=IF(A81=\"\",\"\",IF(H81=\"\",\"\",IF(AG85<>\"\",\"Gap Detected in Stoploss\",\"\")))"
+          },
+          {
+            "cell": "AI84",
+            "value": "=IF(A74=\"\",\"\",IF(E74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$AG$16,IF(E76=\"EQUITY\",'AB17'!$AG$58,IF(E76=\"OPTIONS SELL\",'AB17'!$AG$30,IF(E76=\"OPTIONS BUY\",'AB17'!$AG$44)))))))"
+          },
+          {
+            "cell": "AK84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E74=\"S27\",\"Last Choice Strike\",IF(E74=\"S25\",\"\",IF(E76=\"FUTURES\",'AB17'!$AI$16,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$30,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$44))))))))"
+          },
+          {
+            "cell": "AL84",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49010>"
+          },
+          {
+            "cell": "AN84",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AL$16,IF(E76=\"OPTIONS SELL\",'AB17'!$AL$30,IF(E76=\"OPTIONS BUY\",'AB17'!$AL$44)))))))"
+          },
+          {
+            "cell": "AO84",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49310>"
+          },
+          {
+            "cell": "AP84",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F490D0>"
+          }
+        ]
+      },
+      {
+        "row": 85,
+        "cells": [
+          {
+            "cell": "A85",
+            "value": "=A74"
+          },
+          {
+            "cell": "B85",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$17),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$31),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$45),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$59))))))"
+          },
+          {
+            "cell": "C85",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$17),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$31),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$45),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$59))))))"
+          },
+          {
+            "cell": "D85",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$17,IF(E76=\"OPTIONS SELL\",'AB17'!$C$31,IF(E76=\"OPTIONS BUY\",'AB17'!$C$45,IF(E76=\"EQUITY\",'AB17'!$C$59)))))"
+          },
+          {
+            "cell": "E85",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473FA70>"
+          },
+          {
+            "cell": "I85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$H$17,IF(E76=\"OPTIONS SELL\",'AB17'!$H$31,IF(E76=\"OPTIONS BUY\",'AB17'!$H$45))))))"
+          },
+          {
+            "cell": "J85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$17,IF(E76=\"OPTIONS SELL\",'AB17'!$I$31,IF(E76=\"OPTIONS BUY\",'AB17'!$I$45))))))"
+          },
+          {
+            "cell": "K85",
+            "value": "NO TGT"
+          },
+          {
+            "cell": "M85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF($A$4=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$L$17,IF(E76=\"OPTIONS SELL\",'AB17'!$L$31,IF(E76=\"OPTIONS BUY\",'AB17'!$L$45)))))))"
+          },
+          {
+            "cell": "N85",
+            "value": "=IF(K85=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(K85=\"NO TGT\",P85,IF(K85=\"TGT 1\",Q85,IF(K85=\"TGT 2\",R85,IF(K85=\"TGT 3\",S85,IF(K85=\"TGT 4\",T85,IF(K85=\"TGT 5\",U85))))))))"
+          },
+          {
+            "cell": "P85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(H81=\"\",\"\",K82))))"
+          },
+          {
+            "cell": "Q85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",P85-P82)))"
+          },
+          {
+            "cell": "R85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",Q85-Q82)))"
+          },
+          {
+            "cell": "S85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",R85-R82)))"
+          },
+          {
+            "cell": "T85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",S85-S82)))"
+          },
+          {
+            "cell": "U85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",U82)))"
+          },
+          {
+            "cell": "W85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$17,IF(E76=\"OPTIONS SELL\",'AB17'!$V$31,IF(E76=\"OPTIONS BUY\",'AB17'!$V$45))))))"
+          },
+          {
+            "cell": "X85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(AND(E76=\"FUTURES\",X81=\"Yes\"),0,IF(AND(AND(E76=\"OPTIONS SELL\",E75=\"USDINR\"),X81=\"Yes\"),X86-0.01,IF(AND(E76=\"OPTIONS SELL\",X81=\"Yes\"),MROUND(X86*(1-5%),E83),IF(AND(AND(E76=\"OPTIONS BUY\",E75=\"USDINR\"),X81=\"Yes\"),X86+0.01,IF(AND(E76=\"OPTIONS BUY\",X81=\"Yes\"),MROUND(X86*(1+5%),E83),\"\")))))),G83)))))"
+          },
+          {
+            "cell": "Y85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(Y81=\"Yes\",N83,\"\")),G83)))))"
+          },
+          {
+            "cell": "Z85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(Z86=\"N.A.\",\"N.A.\",IF(AND(E76=\"FUTURES\",Z81=\"Yes\"),0,IF(AND(AND(E76=\"OPTIONS SELL\",E75=\"USDINR\"),Z81=\"Yes\"),Z86+0.01,IF(AND(E76=\"OPTIONS SELL\",Z81=\"Yes\"),MROUND(Z86*(1+5%),E83),IF(AND(AND(E76=\"OPTIONS BUY\",E75=\"USDINR\"),Z81=\"Yes\"),Z86-0.01,IF(AND(E76=\"OPTIONS BUY\",Z81=\"Yes\"),MROUND(Z86*(1-5%),E83),\"\"))))))),G83)))))"
+          },
+          {
+            "cell": "AD85",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F8F0>"
+          },
+          {
+            "cell": "AF85",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F494F0>"
+          },
+          {
+            "cell": "AI85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"FUTURES\",MROUND(K83*(1+N86),E83),IF(E76=\"OPTIONS SELL\",MROUND(K83*(1+N86),E83),IF(AND(E74=\"S25\",E76=\"OPTIONS BUY\"),MROUND(K83*(1-N86),E83),IF(AND(E74=\"S26\",E76=\"OPTIONS BUY\"),MROUND(K83-(N81*N86),E83),IF(IF(AND(E74=\"S27\",E76=\"OPTIONS BUY\"),K83-(N81*N86))<0,\"N.A.\",IF(AND(E74=\"S27\",E76=\"OPTIONS BUY\"),MROUND(K83-(N81*N86),E83),IF(E76=\"EQUITY\",\"\")))))))))"
+          },
+          {
+            "cell": "AK85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AI$17,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$31,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$45)))))))"
+          },
+          {
+            "cell": "AL85",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F950>"
+          },
+          {
+            "cell": "AN85",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(OR(E74=\"S25\",E74=\"S27\"),\"\",IF(E76=\"FUTURES\",'AB17'!$AO$17,IF(E76=\"OPTIONS SELL\",'AB17'!$AO$31,IF(E76=\"OPTIONS BUY\",'AB17'!$AO$45)))))))"
+          },
+          {
+            "cell": "AO85",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49070>"
+          },
+          {
+            "cell": "AP85",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B473F5F0>"
+          }
+        ]
+      },
+      {
+        "row": 86,
+        "cells": [
+          {
+            "cell": "A86",
+            "value": "=A74"
+          },
+          {
+            "cell": "B86",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(E74,'AB17'!$B$18),IF(E76=\"OPTIONS SELL\",CONCATENATE(E74,'AB17'!$B$32),IF(E76=\"OPTIONS BUY\",CONCATENATE(E74,'AB17'!$B$46),IF(E76=\"EQUITY\",CONCATENATE(E74,'AB17'!$B$60))))))"
+          },
+          {
+            "cell": "C86",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",CONCATENATE(A74,'AB17'!$B$18),IF(E76=\"OPTIONS SELL\",CONCATENATE(A74,'AB17'!$B$32),IF(E76=\"OPTIONS BUY\",CONCATENATE(A74,'AB17'!$B$46),IF(E76=\"EQUITY\",CONCATENATE(A74,'AB17'!$B$60))))))"
+          },
+          {
+            "cell": "D86",
+            "value": "=IF(A74=\"\",\"\",IF(E76=\"FUTURES\",'AB17'!$C$18,IF(E76=\"OPTIONS SELL\",'AB17'!$C$32,IF(E76=\"OPTIONS BUY\",'AB17'!$C$46,IF(E76=\"EQUITY\",'AB17'!$C$60)))))"
+          },
+          {
+            "cell": "E86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49430>"
+          },
+          {
+            "cell": "F86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48EF0>"
+          },
+          {
+            "cell": "I86",
+            "value": "72267"
+          },
+          {
+            "cell": "J86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$I$18,IF(E76=\"OPTIONS SELL\",'AB17'!$I$32,IF(E76=\"OPTIONS BUY\",'AB17'!$I$46))))))"
+          },
+          {
+            "cell": "M86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F493D0>"
+          },
+          {
+            "cell": "N86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49910>"
+          },
+          {
+            "cell": "P86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49010>"
+          },
+          {
+            "cell": "Q86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49310>"
+          },
+          {
+            "cell": "R86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F490D0>"
+          },
+          {
+            "cell": "S86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F491F0>"
+          },
+          {
+            "cell": "T86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49190>"
+          },
+          {
+            "cell": "U86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F48A10>"
+          },
+          {
+            "cell": "W86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$V$18,IF(E76=\"OPTIONS SELL\",'AB17'!$V$32,IF(E76=\"OPTIONS BUY\",'AB17'!$V$46))))))"
+          },
+          {
+            "cell": "X86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(X81=\"Yes\",K83,\"\")),G83)))))"
+          },
+          {
+            "cell": "Y86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(Y81=\"Yes\",0,\"\")),G83)))))"
+          },
+          {
+            "cell": "Z86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(IFERROR(LEN(RIGHT(E83,LEN(E83)-FIND(\".\",E83))),1)=F83,TEXT(IF(E74=\"\",\"\",IF(Z81=\"Yes\",N84,\"\")),G83)))))"
+          },
+          {
+            "cell": "AD86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"Current Day LL\",IF(E76=\"OPTIONS BUY\",\"Current Day HH\",IF(E76=\"OPTIONS SELL\",\"Current Day LL\"))))))"
+          },
+          {
+            "cell": "AF86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",\"Current Day HH\",IF(E76=\"OPTIONS BUY\",\"Current Day LL\",IF(E76=\"OPTIONS SELL\",\"Current Day HH\"))))))"
+          },
+          {
+            "cell": "AI86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"FUTURES\",MROUND(K83*(1+M86),E83),IF(E76=\"OPTIONS SELL\",MROUND(K83*(1+M86),E83),IF(AND(E74=\"S25\",E76=\"OPTIONS BUY\"),MROUND(K83*(1-M86),E83),IF(AND(E74=\"S26\",E76=\"OPTIONS BUY\"),MROUND(K83-(N81*M86),E83),IF(IF(AND(E74=\"S27\",E76=\"OPTIONS BUY\"),K83-(N81*N86))<0,\"N.A.\",IF(AND(E74=\"S27\",E76=\"OPTIONS BUY\"),MROUND(K83-(N81*N86),E83),IF(E76=\"EQUITY\",\"\")))))))))"
+          },
+          {
+            "cell": "AK86",
+            "value": "=IF(A74=\"\",\"\",IF(H81=\"\",\"\",IF(E76=\"EQUITY\",\"\",IF(E76=\"FUTURES\",'AB17'!$AI$18,IF(E76=\"OPTIONS SELL\",'AB17'!$AI$32,IF(E76=\"OPTIONS BUY\",'AB17'!$AI$46))))))"
+          },
+          {
+            "cell": "AL86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F49730>"
+          },
+          {
+            "cell": "AP86",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x00000164B2F499D0>"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "verdict": "S21_SOURCE_CLOSURE_ACCEPT",
+  "strategy": "S21",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "source_precedence": [
+    "exact authoritative workbook file, sheet and cell",
+    "explicit user clarification tied to the source rule",
+    "accepted source-trace and authoritative rule-matrix documentation",
+    "workbook-crosschecked strategy configuration",
+    "legacy code only as non-authoritative discrepancy evidence"
+  ],
+  "legacy_quarantine": {
+    "legacy_s21_code_inspected": false,
+    "legacy_s21_tests_inspected": false,
+    "s23_used_as_s21_authority": false
+  },
+  "rules": [
+    {
+      "rule_id": "OPTION_SELLING.EOD.GLOBAL.001",
+      "status": "USER_CLARIFIED",
+      "source": "S21 workbook strict operators: AB6 OS!F96:J97 and AB6 OS!Q96:U97; user clarification 2026-08-01.",
+      "raw_text": "Close at 03:00 PM > Original SL -> square off; Close at 03:00 PM < Original SL -> continue position for next day.",
+      "normalized_meaning": "At configured EOD decision time, Option Selling exits only when closing price is greater than Original SL. Closing price less than or equal to Original SL carries forward.",
+      "operator": "exit if Close > Original SL; carry if Close <= Original SL",
+      "equality_outcome": "CARRY_FORWARD",
+      "excluded_products": "Futures, Option Buying, Equity unless separately verified"
+    },
+    {
+      "rule_id": "S21.IDENTITY.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB2!A26:AD26; AB10!A11:H11",
+      "normalized_meaning": "S21 is BankNifty monthly option selling with unique code BANKNIFTY_OP_SELL_MT_DIFF_2D_3D."
+    },
+    {
+      "rule_id": "S21.MONTHLY_STATUS.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "TFIS_Monthly_Status_Reference_and_Implementation_Specification_v1.0.docx; AB11!D11",
+      "normalized_meaning": "S21 consumes the shared upstream Monthly Status service result. The cached workbook state is Bull CF."
+    },
+    {
+      "rule_id": "S21.BRANCH_RESOLUTION.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB6 OS!D100:D110; AB6 OS!F100:F110; AB6 OS!J100:K110",
+      "normalized_meaning": "BULL/BULL_CF map to Bull Call and Bull Put rows. BEAR/BEAR_CF map to Bear Call and Bear Put rows. Call and Put are independent branch rows."
+    },
+    {
+      "rule_id": "S21.CONTRACT_SELECTION.001",
+      "status": "USER_CLARIFIED",
+      "source": "AB2!V26:AA26; AB1!D28:K28; AB6 OS!G100:I110; AB15!J11:P11; S21 user decision-pack closure directive 2026-08-02.",
+      "normalized_meaning": "S21 searches Near monthly expiry first independently for each Call/Put leg. If strike, OI, ideal premium, or minimum premium qualification fails in Near, it searches Next monthly expiry with the same phases. If Next also fails, the leg is NO_TRADE. Call and Put do not need the same expiry. Tie-break traversal is Start Strike to End Strike, choosing the first qualifying strike.",
+      "closure_question_id": "S21-Q001"
+    },
+    {
+      "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB6 OS!A113:AA118",
+      "normalized_meaning": "S21 Call and Put fresh-entry missed checks use 09:24:59 AM LL < entry, and missed entries recalculate at 09:29:59."
+    },
+    {
+      "rule_id": "S21.GAP_CLASSIFICATION.001",
+      "status": "USER_CLARIFIED",
+      "source": "AB6 OS!D112:E118; AB6 OS!I114:X118; S21 user decision-pack closure directive 2026-08-02.",
+      "normalized_meaning": "S21 has no separate GAP_UP/GAP_DOWN/no-gap branch logic for V1. Generic OpeningMarketContext may record opening gap evidence, but S21 trade behavior uses only workbook ORPT missed-entry checks and RC recalculation rules.",
+      "closure_question_id": "S21-Q002"
+    },
+    {
+      "rule_id": "S21.BULL_CALL.STATIC.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB6 OS!A100:P102",
+      "normalized_meaning": "Bull/Bull CF Call Sell uses 3DLL for start/end/entry references, target CE Entry - 60%, and SL/TRP Min(CE Entry + 60%, OPT PRV 2DHH + 7%)."
+    },
+    {
+      "rule_id": "S21.BULL_PUT.STATIC.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB6 OS!A103:P104",
+      "normalized_meaning": "Bull/Bull CF Put Sell uses 2DHH for strike/premium, 2DLL for entry, target PE Entry - 60%, and SL/TRP Min(PE Entry + 60%, OPT PRV 3DHH + 10%)."
+    },
+    {
+      "rule_id": "S21.BEAR_CALL.STATIC.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB6 OS!A106:P108",
+      "normalized_meaning": "Bear/Bear CF Call Sell uses 2DLL for strike/premium/entry, target CE Entry - 60%, and SL/TRP Min(CE Entry + 60%, OPT PRV 3DHH + 10%)."
+    },
+    {
+      "rule_id": "S21.BEAR_PUT.STATIC.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB6 OS!A109:P110",
+      "normalized_meaning": "Bear/Bear CF Put Sell uses 3DHH for strike/premium, 3DLL for entry, target PE Entry - 60%, and SL/TRP Min(PE Entry + 60%, OPT PRV 2DHH + 7%)."
+    },
+    {
+      "rule_id": "S21.CARRIED_CALL.FSL_TRP.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB6 OS!A121:Z123",
+      "normalized_meaning": "Open Call Sell SL path uses 09:15 HH > Call Sell SL to identify FSL/TRP missed; revised formulas use 09:29:59 AM HH + 7% or +10% by monthly-status family."
+    },
+    {
+      "rule_id": "S21.CARRIED_PUT.FSL_TRP.001",
+      "status": "WORKBOOK_VERIFIED",
+      "source": "AB6 OS!A124:Z126",
+      "normalized_meaning": "Open Put Sell SL path uses 09:15 HH > Short SL to identify FSL/TRP missed; revised formulas use 09:29:59 AM HH + 10% or +7% by monthly-status family."
+    },
+    {
+      "rule_id": "S21.CARRIED_LIFECYCLE.001",
+      "status": "USER_CLARIFIED",
+      "source": "User carried-position protection clarification; AB6 OS!J97/U97; AB6 OS!A121:Z126",
+      "normalized_meaning": "Carried positions follow separate lifecycle semantics with target-first handling, no blind prior-day SL placement, adverse-gap revised SL requirement, and S21 FSL/TRP policy inputs."
+    },
+    {
+      "rule_id": "S21.POSITION_PROTECTION.001",
+      "status": "USER_CLARIFIED",
+      "source": "User carried-position protection clarification; AB18!A37:U38; AB18!A40:U41",
+      "normalized_meaning": "S21 target and stop-loss output rows exist; platform protection mechanics remain non-strategy execution design and do not grant broker/paper/live authority."
+    },
+    {
+      "rule_id": "S21.APS.001",
+      "status": "USER_CLARIFIED",
+      "source": "AB2!K26; AB6 OS!C107; AB15!S11; AB16!E79; authoritative user APS clarification 2026-08-02.",
+      "normalized_meaning": "APS_NOT_APPLICABLE for S21 Option Selling because configured trading quantity is one lot. S21 uses one complete position with one Target and one protection sequence. There is no APS, no partial Target allocation, no quantity splitting, no partial PositionCycle, and no APS-specific protection adjustment.",
+      "result": "APS_NOT_APPLICABLE",
+      "closure_question_id": "S21-Q003"
+    },
+    {
+      "rule_id": "S21.QUANTITY_PNL.001",
+      "status": "USER_CLARIFIED",
+      "source": "AB11!H11/K11/V11/X11; AB16!K75/K82/I77/I84; AB18!O38/O41; AB15!U11; authoritative user APS clarification 2026-08-02; S21 user decision-pack closure directive 2026-08-02.",
+      "normalized_meaning": "S21 configured trading quantity is one lot. BANKNIFTY lot size is 15 per workbook source, so exchange quantity is 15. P&L multiplies by confirmed exchange quantity, not by lot size again. 500 Lots is the OI threshold, not order quantity. AB15!U11=2 is not execution or P&L quantity for S21 V1.",
+      "closure_question_id": "S21-Q004"
+    },
+    {
+      "rule_id": "S21.ROLLOVER_EXPIRY.001",
+      "status": "USER_CLARIFIED",
+      "source": "AB2!X26:AA26; AB11!M11:P11; AB1!D28:K28; AB6 OS!J97/U97; S21 user decision-pack closure directive 2026-08-02.",
+      "normalized_meaning": "S21 has no automatic rollover for open positions in V1. Fresh entries follow approved contract-selection rules. Open positions follow verified EOD/carry and carried-position lifecycle rules. If a position would continue into an unsupported expiry state, fail closed and require operator/user decision; do not close old and open new automatically.",
+      "closure_question_id": "S21-Q005"
+    }
+  ],
+  "blocking_questions": [],
+  "closed_questions": [
+    "S21-Q001",
+    "S21-Q002",
+    "S21-Q003",
+    "S21-Q004",
+    "S21-Q005"
+  ],
+  "source_closure": "No remaining financially material S21 source questions after the 2026-08-02 user APS clarification and source-closure directive.",
+  "runtime_impact": "NONE",
+  "broker_paper_live_authority": "NONE"
+}

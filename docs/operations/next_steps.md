@@ -6,11 +6,67 @@ way.
 
 ## Immediate Next Priorities
 
-0.54. `TODO` Run focused multi-session S23 observation across naturally
+0.58. `DONE` Close the S21 source-question register. Decision artifacts:
+   `reports/s21_source_closure/s21_user_decision_pack.md` and
+   `reports/s21_source_closure/s21_user_decision_pack.json` are retained as a
+   closed audit trail. `S21-Q001` contract/expiry fallback, `S21-Q002` gap
+   classification versus ORPT/RC, `S21-Q003` APS/partial exits, `S21-Q004`
+   quantity and P&L unit, and `S21-Q005` rollover/expiry action are closed.
+   APS is `APS_NOT_APPLICABLE` for S21/S22/S23 one-lot Option Selling. S21
+   implementation readiness is `S21_SOURCE_CLOSURE_ACCEPT`. Runtime impact:
+   `NONE`. Broker/paper/live authority: `NONE`.
+
+0.57. `TODO` Preserve Monthly Status as a generic business engine before any
+   S21/S22 onboarding work. The engine must accept structured instrument
+   identity, evaluation timestamp, monthly candle/reference evidence, rule
+   version, provenance, and data quality; return independently keyed immutable
+   results with status, references, transition evidence, warnings/failures, and
+   deterministic result hash; and support batch requests for NIFTY, BANKNIFTY,
+   F&O stocks, and future eligible instruments. Strategy policies may map the
+   typed Monthly Status result to branch/trade/block decisions, but generic
+   Monthly Status code must not branch on S21, S22, S23, option-selling, or
+   symbols.
+
+0.56. `DONE` Resolve S21 source questions before any S21 implementation.
+   Source inspected:
+   `All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx`, Monthly Status v1.0
+   specification, and S21 workbook rows/cells recorded under
+   `reports/s21_source_closure/`. The 15:00 equality behavior is closed by
+   global Option Selling user clarification:
+   `close > Original SL` exits and `close <= Original SL` carries forward.
+   No checklist row remains `PARTIAL`; S21 source closure is accepted with
+   exact questions `S21-Q001` through `S21-Q005` closed. Legacy S21 may be
+   inspected only as non-authoritative discrepancy evidence during
+   implementation planning.
+
+0.55.5. `TODO` Plan the next S21 onboarding milestone from the accepted source
+   closure. Treat S23 as the reference implementation, justify any generic code
+   change as reusable platform capability, keep Monthly Status generic and
+   strategy-independent, and do not add APS logic for S21/S22/S23 one-lot
+   Option Selling. No broker, external paper, or live authority is approved.
+
+0.55. `TODO` Continue complete-S23 internal-paper observation with additional
+   naturally selected CE/PE sessions and prioritize replacing fixture-backed
+   cases with captured evidence. Do not start S21 extraction, broker sandbox,
+   or external paper/live planning until Phase 5C is accepted or the captured
+   evidence gap is explicitly dispositioned. Capture should specifically
+   include Monthly Status, option-chain/OI, selected CE and PE quotes, ORPT,
+   RC, EOD, and carry evidence.
+
+0.54. `DONE` Run focused multi-session S23 observation across naturally
    selected CE and PE sessions using the complete four-branch internal-paper
-   profile. Do not add S21, external broker writes, paper authority expansion,
-   live authority, or arbitrary formula-expression evaluation in this next
-   step.
+   profile. Result: all four S23 branches are naturally resolved in the
+   observation set, CE/PE routing isolation, three-run determinism,
+   duplicate-action audit, carry/recovery, position/protection safety, shared
+   accounting, profitability observation, block funnel, performance/resource,
+   reuse, readiness, and gap reports are generated under `reports/phase5c/`.
+   One Put missed-entry defect was fixed: active paper live-decision now uses
+   accepted `OPTION_LOW < Entry Price` authority for Put ORPT missed-entry
+   instead of legacy option-high behavior.
+   Verdict: `PHASE5C_M1_CONDITIONAL` because complete captured S23 evidence
+   remains incomplete and the proof is still partly fixture-backed. Runtime
+   impact: `MULTI-SESSION COMPLETE-S23 INTERNAL-PAPER OBSERVATION`.
+   Broker/live authority: `NONE`.
 
 0.53. `DONE` Complete Phase 5B S23 Bull Put and Bear Put end-to-end
    internal-paper onboarding. Result: Put missed-entry authority is closed as

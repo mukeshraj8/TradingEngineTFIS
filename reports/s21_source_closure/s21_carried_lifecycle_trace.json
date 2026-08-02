@@ -1,0 +1,43 @@
+{
+  "verdict": "USER_CLARIFIED",
+  "stage": "carried_position_lifecycle",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "workbook_sources": [
+    {
+      "sheet": "AB6 OS",
+      "cells": "J97,U97",
+      "raw_text": "Then Continue the Position for Next Day And Calculate Stop Loss Price as per the Rules",
+      "meaning": "EOD carry enters a next-day stop-loss calculation path."
+    },
+    {
+      "sheet": "AB6 OS",
+      "cells": "A121:Z126",
+      "raw_text": "For Call Sell SL / For Put Sell SL, FSL/TRP Not Missed, FSL/TRP Missed, recalculation at 09:29:59",
+      "meaning": "S21 next-day carried/open-position SL/FSL/TRP formulas are source-defined."
+    }
+  ],
+  "user_clarification": {
+    "authority": "AUTHORITATIVE_CARRIED_POSITION_PROTECTION_SEMANTICS",
+    "applies_to": "A position carried from a previous trading day",
+    "normalized_rules": [
+      "Target protection must be available from market open.",
+      "If carried-contract opening market has crossed Target, book profit and exit.",
+      "Stop-loss protection must not blindly reuse and place prior-day SL at market open.",
+      "Evaluate new-day opening gap and carried-contract opening premium first.",
+      "If gap is adverse, wait until configured lifecycle recalculation time and calculate revised SL from strategy policy.",
+      "Fresh-entry Gap/Missed-Entry and carried-position SL recalculation are separate processes.",
+      "Gap favourability uses economic exposure, not only GAP_UP/GAP_DOWN.",
+      "Offline lifecycle may produce EXIT_REQUIRED or REVISED_SL_PLACEMENT_REQUIRED only; no broker mutation authority.",
+      "Exact recalculation time and revised-SL formula remain strategy-policy inputs."
+    ]
+  },
+  "s21_policy_inputs": {
+    "call_not_missed": "AB6 OS!E121:I121, place order at ORPT when 09:15 HH is not greater than Call Sell SL.",
+    "call_missed_bull": "AB6 OS!I122:M122, revised FSL/TRP uses 09:29:59 AM HH + 7.00%.",
+    "call_missed_bear": "AB6 OS!I123:M123, revised FSL/TRP uses 09:29:59 AM HH + 10.00%.",
+    "put_not_missed": "AB6 OS!D124:I124, place order at ORPT when 09:15 HH is not greater than Short SL.",
+    "put_missed_bull": "AB6 OS!I125:M125, revised FSL/TRP uses 09:29:59 AM HH + 10.00%.",
+    "put_missed_bear": "AB6 OS!I126:M126, revised FSL/TRP uses 09:29:59 AM HH + 7.00%."
+  }
+}

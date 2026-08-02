@@ -1,0 +1,45 @@
+{
+  "verdict": "USER_CLARIFIED",
+  "stage": "accounting_pnl_unit",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "verified_source": [
+    {
+      "sheet": "AB11",
+      "cells": "H11,K11,V11,X11",
+      "raw_text": "15; 15; 100; 100",
+      "meaning": "Cached S21 monthly CE/PE lot size is 15 and strike factor is 100."
+    },
+    {
+      "sheet": "AB16",
+      "cells": "K75,K82,I77,I84",
+      "raw_text": "Lots 1; Lot Size 15",
+      "meaning": "S21 final decision rows show one lot and lot size 15 for both Call and Put."
+    },
+    {
+      "sheet": "AB18",
+      "cells": "O38,O41",
+      "raw_text": "15; 15",
+      "meaning": "Stop-loss output rows show exchange/order quantity 15."
+    },
+    {
+      "sheet": "AB15",
+      "cells": "U11",
+      "raw_text": "2",
+      "meaning": "A cached final-calculation value remains unnormalized and is not execution/P&L quantity for S21 V1 under user clarification."
+    }
+  ],
+  "closed_rules": {
+    "configured_trading_quantity": "1 lot",
+    "lot_size": "15",
+    "exchange_order_quantity": "15",
+    "pnl_unit": "confirmed exchange quantity",
+    "minimum_oi_threshold": "500 Lots, not order quantity",
+    "ab15_u11": "not execution/P&L quantity for S21 V1",
+    "premium_price_unit": "option premium per unit, tick size 0.05 from AB2!U26 and AB15!T11"
+  },
+  "closure_question_id": "S21-Q004",
+  "closure_authority": "Authoritative user APS clarification 2026-08-02 and S21 user decision-pack closure directive 2026-08-02",
+  "runtime_impact": "NONE",
+  "broker_paper_live_authority": "NONE"
+}

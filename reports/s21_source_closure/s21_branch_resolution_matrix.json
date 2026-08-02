@@ -1,0 +1,95 @@
+{
+  "verdict": "WORKBOOK_VERIFIED",
+  "stage": "branch_resolution",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "source_cells": [
+    {
+      "sheet": "AB6 OS",
+      "cells": "D100:D104",
+      "raw_text": "BULL / BULL CF",
+      "normalized": "BULL and BULL_CF select Bull branch rows."
+    },
+    {
+      "sheet": "AB6 OS",
+      "cells": "D106:D110",
+      "raw_text": "BEAR / BEAR CF",
+      "normalized": "BEAR and BEAR_CF select Bear branch rows."
+    },
+    {
+      "sheet": "AB6 OS",
+      "cells": "F100:F110, K100:K110",
+      "raw_text": "Call / Put",
+      "normalized": "Option type is explicit per branch row."
+    },
+    {
+      "sheet": "AB6 OS",
+      "cells": "L100:L110",
+      "raw_text": "E & T / SL / TRP",
+      "normalized": "Rows pair entry/target with stop/lifecycle output."
+    }
+  ],
+  "branch_table": [
+    {
+      "monthly_status": "BULL",
+      "branch": "BULL_CALL",
+      "option_type": "CALL",
+      "order_side": "SELL entry, BUY exits",
+      "source_rows": "AB6 OS!100:102"
+    },
+    {
+      "monthly_status": "BULL_CF",
+      "branch": "BULL_CALL",
+      "option_type": "CALL",
+      "order_side": "SELL entry, BUY exits",
+      "source_rows": "AB6 OS!100:102"
+    },
+    {
+      "monthly_status": "BULL",
+      "branch": "BULL_PUT",
+      "option_type": "PUT",
+      "order_side": "SELL entry, BUY exits",
+      "source_rows": "AB6 OS!103:104"
+    },
+    {
+      "monthly_status": "BULL_CF",
+      "branch": "BULL_PUT",
+      "option_type": "PUT",
+      "order_side": "SELL entry, BUY exits",
+      "source_rows": "AB6 OS!103:104"
+    },
+    {
+      "monthly_status": "BEAR",
+      "branch": "BEAR_CALL",
+      "option_type": "CALL",
+      "order_side": "SELL entry, BUY exits",
+      "source_rows": "AB6 OS!106:108"
+    },
+    {
+      "monthly_status": "BEAR_CF",
+      "branch": "BEAR_CALL",
+      "option_type": "CALL",
+      "order_side": "SELL entry, BUY exits",
+      "source_rows": "AB6 OS!106:108"
+    },
+    {
+      "monthly_status": "BEAR",
+      "branch": "BEAR_PUT",
+      "option_type": "PUT",
+      "order_side": "SELL entry, BUY exits",
+      "source_rows": "AB6 OS!109:110"
+    },
+    {
+      "monthly_status": "BEAR_CF",
+      "branch": "BEAR_PUT",
+      "option_type": "PUT",
+      "order_side": "SELL entry, BUY exits",
+      "source_rows": "AB6 OS!109:110"
+    }
+  ],
+  "no_trade_conditions": [
+    "Monthly Status UNKNOWN or UNAVAILABLE blocks branch resolution.",
+    "Missing branch inputs or contract-selection evidence blocks downstream planning."
+  ],
+  "branch_precedence": "No precedence between Call and Put is inferred. Workbook provides independent Call and Put rows inside the selected monthly-status family."
+}

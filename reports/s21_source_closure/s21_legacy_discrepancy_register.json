@@ -1,0 +1,15 @@
+{
+  "verdict": "READY_FOR_OPTIONAL_NON_AUTHORITY_LEGACY_COMPARISON",
+  "reason": "S21 source closure is accepted. Legacy S21 code and tests may now be inspected only as discrepancy evidence, not as rule authority, if implementation planning requires it.",
+  "legacy_s21_code_inspected": false,
+  "legacy_s21_tests_inspected": false,
+  "blocked_by_questions": [],
+  "closed_questions": [
+    "S21-Q001",
+    "S21-Q002",
+    "S21-Q003",
+    "S21-Q004",
+    "S21-Q005"
+  ],
+  "allowed_next_legacy_step": "Inspect legacy/current S21 implementation only as non-authoritative discrepancy evidence after implementation planning begins."
+}

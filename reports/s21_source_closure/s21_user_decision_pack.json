@@ -1,0 +1,207 @@
+{
+  "verdict": "S21_USER_DECISION_PACK_CLOSED",
+  "scope": "S21 BankNifty monthly option-selling source-question decision pack only",
+  "implementation_code_written": false,
+  "runtime_impact": "NONE",
+  "broker_paper_live_authority": "NONE",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "monthly_status_confirmation": {
+    "engine": "generic_strategy_independent_monthly_status_engine",
+    "s21_consumes": "BANKNIFTY Monthly Status",
+    "s21_branch_mapping_separate": true,
+    "s21_formula_inside_monthly_status_engine": false,
+    "s22_batch_requirement": "future S22 stock instances request independent Monthly Status results per enabled F&O stock"
+  },
+  "closure_status": {
+    "verdict": "S21_SOURCE_CLOSURE_ACCEPT",
+    "closed_on": "2026-08-02",
+    "open_financially_material_questions": [],
+    "closed_questions": {
+      "S21-Q001": "Closed by source-closure directive using Option 1.",
+      "S21-Q002": "Closed by source-closure directive using Option 1.",
+      "S21-Q003": "Closed by authoritative APS clarification as APS_NOT_APPLICABLE.",
+      "S21-Q004": "Closed by authoritative one-lot Option Selling quantity clarification.",
+      "S21-Q005": "Closed by source-closure directive using Option 1."
+    }
+  },
+  "questions": [
+    {
+      "id": "S21-Q001",
+      "business_stage": "contract_selection_and_expiry_selection",
+      "decision_required": false,
+      "recommended_option": "Option 1: independent near-first fallback per Call/Put leg",
+      "rule_category": [
+        "strategy_specific",
+        "generic_platform_behavior",
+        "instrument_metadata_behavior"
+      ],
+      "source_cells": [
+        "AB2!V26:AA26",
+        "AB1!D28:K28",
+        "AB11!E11:P11",
+        "AB15!J11:P11",
+        "AB6 OS!G100:I110"
+      ],
+      "raw_evidence": [
+        "AB2!V26 = Monthly : NEAR",
+        "AB15!J11 = L/CE : Exp : Near _ S/PE : Exp : Next",
+        "AB15!K11/L11 = BANKNIFTY 25-Jan-2024 CE 47000 / 2024-01-25",
+        "AB15!N11/O11 = BANKNIFTY 29-Feb-2024 PE 48000 / 2024-02-29",
+        "AB6 OS!I101/I104/I107/I110 = 1 Exp"
+      ],
+      "supported_interpretations": [
+        "Independent near-first fallback per option type",
+        "Fixed CE Near and PE Next",
+        "Same-expiry requirement",
+        "Near-only"
+      ],
+      "call_put_may_differ": true,
+      "another_sheet_contains_missing_authority": false,
+      "existing_configuration_matches_any_interpretation": "Configuration/scaffold may support monthly expiry metadata and fallback fields, but is not authority.",
+      "legacy_differs_non_authoritative": "Not inspected; legacy may be compared only after source closure.",
+      "copy_paste_response": "S21-Q001: Option 1\nClarification: For S21, search Near monthly expiry first independently for each Call/Put leg. If no qualifying contract is found due to strike, OI, ideal premium, or minimum premium failure, search Next monthly expiry. If Next also fails, do not trade that leg. Call and Put do not need the same expiry.\nTie-break: traverse from Start Strike to End Strike and choose the first qualifying strike."
+    },
+    {
+      "id": "S21-Q002",
+      "business_stage": "gap_classification_orpt_missed_entry_rc",
+      "decision_required": false,
+      "recommended_option": "Option 1: NOT_APPLICABLE_TO_S21_BRANCH_LOGIC",
+      "rule_category": [
+        "generic_platform_behavior",
+        "strategy_specific"
+      ],
+      "source_cells": [
+        "AB6 OS!D112:E118",
+        "AB6 OS!I114:X118"
+      ],
+      "raw_evidence": [
+        "AB6 OS!D112 = Gap Check",
+        "AB6 OS!E113 = Check If 09:24:59 AM LL < Call Sell Entry",
+        "AB6 OS!E116 = Check If 09:24:59 AM LL < Put Sell Entry",
+        "AB6 OS!I114/I115/I117/I118 = Recalcuate ... Entry",
+        "AB6 OS!L114/L115/L117/L118 = 09:29:59.400000"
+      ],
+      "supported_interpretations": [
+        "Generic OpeningMarketContext records gap; S21 only consumes ORPT/RC missed-entry evidence",
+        "S21 has hidden gap classifier but source is missing",
+        "Workbook Gap Check means missed-entry detection"
+      ],
+      "call_put_may_differ": "ORPT operator is parallel, RC formulas differ by branch/option type.",
+      "another_sheet_contains_missing_authority": false,
+      "existing_configuration_matches_any_interpretation": "Existing S21 gap/missed-entry code is evidence-only/unresolved, not authority.",
+      "legacy_differs_non_authoritative": "Legacy-adjacent code contains unresolved S21 timing profiles; not used as authority.",
+      "copy_paste_response": "S21-Q002: Option 1\nClarification: S21 has no separate GAP_UP/GAP_DOWN/no-gap branch logic for V1. Generic OpeningMarketContext may record opening gap evidence, but S21 trade behavior uses only the workbook ORPT missed-entry checks and RC recalculation rules."
+    },
+    {
+      "id": "S21-Q003",
+      "business_stage": "aps_partial_exits",
+      "decision_required": false,
+      "recommended_option": "Closed: APS_NOT_APPLICABLE for one-lot Option Selling",
+      "rule_category": [
+        "strategy_specific"
+      ],
+      "source_cells": [
+        "AB2!K26",
+        "AB6 OS!C107",
+        "AB15!S11",
+        "AB16!E79",
+        "AB16!M75:N85",
+        "AB18!O37:O41"
+      ],
+      "raw_evidence": [
+        "AB2!K26 = APS",
+        "AB6 OS!C107 = APS",
+        "AB15!S11 = APS",
+        "AB16!E79 = APS",
+        "AB18!O37/O40 = 0 target quantity",
+        "AB18!O38/O41 = 15 stop-loss quantity"
+      ],
+      "supported_interpretations": [
+        "APS is a target-profile label suppressing ordinary target orders in the cached case",
+        "APS is an additional profit-stop/trailing process with missing trigger/formula",
+        "APS is partial square-off/allocation with missing quantity authority",
+        "APS is output/report metadata only"
+      ],
+      "call_put_may_differ": "Unknown; cached Call and Put both show APS and zero target output quantity.",
+      "another_sheet_contains_missing_authority": "AB16 contains APS formulas, but no complete executable business rule was found.",
+      "existing_configuration_matches_any_interpretation": "Configuration labels cannot authorize executable APS behavior.",
+      "legacy_differs_non_authoritative": "Not inspected; not authority.",
+      "copy_paste_response_recommended": "S21-Q003: USER_CLARIFIED\nClarification: APS is NOT_APPLICABLE to S21 execution because S21 is one-lot Option Selling. Use only verified Target/SL/FSL/TRP/EOD/carry-forward behavior; do not create partial-exit or APS orders unless a future source explicitly defines them for a multi-lot strategy.",
+      "copy_paste_response_alternative": null,
+      "closure_result": "APS_NOT_APPLICABLE",
+      "closure_authority": "Authoritative user APS clarification 2026-08-02"
+    },
+    {
+      "id": "S21-Q004",
+      "business_stage": "quantity_lot_handling_accounting_pnl_unit",
+      "decision_required": false,
+      "recommended_option": "Option 1: one lot, lot size 15, exchange quantity 15, AB15!U11 not execution quantity",
+      "rule_category": [
+        "instrument_metadata_behavior",
+        "strategy_specific",
+        "generic_platform_behavior"
+      ],
+      "source_cells": [
+        "AB11!H11/K11/V11/X11",
+        "AB15!U11",
+        "AB16!K75/K82/I77/I84/Y77/Z77/Y84/Z84",
+        "AB18!O37:O41",
+        "AB6 OS!I100/I103/I106/I109",
+        "AB16!AK79/AL79"
+      ],
+      "raw_evidence": [
+        "AB16!K75/K82 = 1",
+        "AB16!I77/I84 = 15",
+        "AB18!O38/O41 = 15",
+        "AB6 OS!I100/I103/I106/I109 = 500 Lots",
+        "AB16!AL79 = 7500",
+        "AB15!U11 = 2"
+      ],
+      "supported_interpretations": [
+        "One lot * lot size 15 = 15 exchange units; 500 Lots is minimum OI threshold",
+        "AB15!U11=2 means two lots",
+        "500 Lots is order quantity"
+      ],
+      "call_put_may_differ": "Cached quantities match, but future branch output should remain data-driven.",
+      "another_sheet_contains_missing_authority": false,
+      "existing_configuration_matches_any_interpretation": "Existing config must be checked after approval; workbook remains authority.",
+      "legacy_differs_non_authoritative": "Not inspected; not authority.",
+      "copy_paste_response": "S21-Q004: Option 1\nClarification: For S21, configured trading quantity is 1 lot. BANKNIFTY lot size is 15 per workbook source, so exchange quantity is 15. P&L must multiply by confirmed exchange quantity, not by lot size again. \"500 Lots\" is minimum OI threshold, not order quantity. AB15!U11=2 is not execution/P&L quantity for S21 V1.\nLot size effective date/source: ..."
+    },
+    {
+      "id": "S21-Q005",
+      "business_stage": "rollover_expiry_action",
+      "decision_required": false,
+      "recommended_option": "Option 1: no automatic rollover",
+      "rule_category": [
+        "strategy_specific",
+        "generic_platform_behavior"
+      ],
+      "source_cells": [
+        "AB2!X26:AA26",
+        "AB11!M11:P11",
+        "AB1!I28/K28",
+        "AB6 OS!J97/U97",
+        "AB6 OS!A121:Z126"
+      ],
+      "raw_evidence": [
+        "AB2!X26 = EXP Day - 0 TRD Day",
+        "AB2!Y26 = 14:20:00",
+        "AB2!Z26/AA26 = EXP Day - 1 TRD Day",
+        "AB6 OS!J97/U97 = Then Continue the Position for Next Day And Calculate Stop Loss Price as per the Rules"
+      ],
+      "supported_interpretations": [
+        "No automatic rollover; fresh entries use contract selection; open positions follow EOD/carry/lifecycle and fail closed on unsupported expiry continuation",
+        "Close old and open new on rollover date",
+        "Carry same contract through expiry-day lifecycle",
+        "Select Next only for fresh entries"
+      ],
+      "call_put_may_differ": true,
+      "another_sheet_contains_missing_authority": false,
+      "existing_configuration_matches_any_interpretation": "Expiry metadata does not authorize automatic rollover.",
+      "legacy_differs_non_authoritative": "Not inspected; not authority.",
+      "copy_paste_response": "S21-Q005: Option 1\nClarification: S21 has no automatic rollover for open positions in V1. Fresh entries follow approved contract-selection rules. Open positions follow verified EOD/carry and carried-position lifecycle rules. If a position would continue into an unsupported expiry state, fail closed and require operator/user decision; do not close old and open new automatically."
+    }
+  ]
+}

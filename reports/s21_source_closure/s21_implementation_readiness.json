@@ -1,0 +1,41 @@
+{
+  "verdict": "S21_SOURCE_CLOSURE_ACCEPT",
+  "implementation_readiness": "S21_SOURCE_CLOSURE_ACCEPT",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "requirements_met": {
+    "no_partial_material_stages": true,
+    "complete_branch_table": true,
+    "complete_fresh_entry_path": true,
+    "complete_monthly_status_rule": true,
+    "complete_contract_selection_sequence": true,
+    "complete_carried_position_path": true,
+    "quantity_pnl_units_closed": true,
+    "legacy_discrepancy_register_produced": true,
+    "implementation_code_written": false,
+    "user_decision_pack_ready": true
+  },
+  "user_decision_pack": {
+    "markdown": "reports/s21_source_closure/s21_user_decision_pack.md",
+    "json": "reports/s21_source_closure/s21_user_decision_pack.json",
+    "verdict": "S21_USER_DECISION_PACK_CLOSED"
+  },
+  "blocking_questions": [],
+  "closed_questions": [
+    "S21-Q001",
+    "S21-Q002",
+    "S21-Q003",
+    "S21-Q004",
+    "S21-Q005"
+  ],
+  "aps_closure": {
+    "question_id": "S21-Q003",
+    "classification": "USER_CLARIFIED",
+    "result": "APS_NOT_APPLICABLE",
+    "authority": "Authoritative user APS clarification 2026-08-02",
+    "implementation_boundary": "Do not implement APS inside generic PositionCycle or lifecycle logic for S21/S22/S23 one-lot Option Selling."
+  },
+  "recommended_first_s21_branch": null,
+  "runtime_impact": "NONE",
+  "broker_paper_live_authority": "NONE"
+}

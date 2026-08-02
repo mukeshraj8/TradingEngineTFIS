@@ -6,6 +6,61 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Sunday, August 2, 2026, S21 source closure is accepted after the
+  authoritative APS clarification. APS is `APS_NOT_APPLICABLE` for S21/S22/S23
+  and other one-lot Option Selling strategies using the same trading model:
+  one lot means one complete position, one Target, one protection sequence, no
+  partial Target allocation, no quantity splitting, no partial PositionCycle,
+  and no APS-specific protection adjustment. The S21 source-closure artifacts
+  under `reports/s21_source_closure/` now have no remaining financially
+  material source questions and `s21_implementation_readiness.json` reports
+  `S21_SOURCE_CLOSURE_ACCEPT`. Runtime impact: `NONE`.
+  Broker/paper/live authority: `NONE`.
+- as of Sunday, August 2, 2026, the S21 source-question decision pack is ready
+  under `reports/s21_source_closure/s21_user_decision_pack.md` and
+  `reports/s21_source_closure/s21_user_decision_pack.json`. It gave the user
+  source-cited choices for `S21-Q001` through `S21-Q005`; it is now retained as
+  a closed audit trail after the 2026-08-02 source-closure directive and APS
+  clarification. Runtime impact: `NONE`.
+  Broker/paper/live authority: `NONE`.
+- as of Sunday, August 2, 2026, the Monthly Status independence requirement is
+  recorded as a permanent platform invariant in `AGENTS.md`. Monthly Status is
+  a generic strategy-independent business engine, not an S21/S22/S23 adapter
+  concern. It owns monthly-reference calculation, status classification,
+  transitions, evidence validation, deterministic result construction,
+  instrument-keyed immutable outputs, and batch requests for multiple
+  instruments. Strategy policies own only which instrument status they request,
+  how the typed status maps to a branch, and whether the strategy trades or
+  blocks. Runtime impact: `NONE`. Broker/paper/live authority: `NONE`.
+- as of Saturday, August 1, 2026, S21 source closure has been advanced under the
+  authoritative-source directive. Workbook extraction is isolated to
+  `TFISRulesAndSpec` and no S21 implementation code, runtime configuration,
+  strategy policy, broker path, paper path, or live path has changed.
+  Source artifacts live under `reports/s21_source_closure/`.
+  The S21 15:00 Original SL equality gap is closed by global Option Selling
+  user clarification: close greater than Original SL exits; close less than or
+  equal to Original SL carries forward. Verdict:
+  `S21_SOURCE_CLOSURE_ACCEPT`. No checklist row remains `PARTIAL`; the prior
+  material questions `S21-Q001` through `S21-Q005` are now closed, including
+  APS as not applicable for one-lot Option Selling. Legacy discrepancy
+  detection was not performed as authority and may only be used later as
+  non-authoritative discrepancy evidence.
+  External broker/live authority: `NONE`.
+- as of Saturday, August 1, 2026, Phase 5C adds complete-S23
+  multi-session internal-paper observation over the accepted four-branch S23
+  profile. The observation set naturally resolves `BULL_CALL`, `BEAR_CALL`,
+  `BULL_PUT`, and `BEAR_PUT`, keeps CE/PE routing isolated, runs three-pass
+  determinism, distinguishes trade/no-trade/blocked outcomes, and records
+  carry/recovery, duplicate-action, protection, accounting, profitability,
+  block-funnel, performance, reuse, readiness, and gap reports under
+  `reports/phase5c/`. A Phase 5C defect was fixed in the active paper
+  live-decision path: S23 Put ORPT missed-entry now uses the accepted
+  `OPTION_LOW < Entry Price` authority, with dashboard and architecture
+  wording aligned to the same rule. Verdict is conditional because the
+  strongest complete four-branch proof is still fixture-backed and captured
+  S23 evidence remains incomplete. Runtime impact:
+  `MULTI-SESSION COMPLETE-S23 INTERNAL-PAPER OBSERVATION`. External
+  broker/live authority: `NONE`.
 - as of Saturday, August 1, 2026, Phase 5B completed authoritative S23
   Bull Put and Bear Put internal-paper onboarding evidence. The Put
   missed-entry conflict is closed as `AUTHORITATIVE_OPTION_LOW`, with legacy

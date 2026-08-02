@@ -1,0 +1,34 @@
+{
+  "verdict": "USER_CLARIFIED",
+  "stage": "gap_vs_missed_entry",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "verified_source": [
+    {
+      "sheet": "AB6 OS",
+      "cells": "D112:E118",
+      "raw_text": "Gap Check; Check If 09:24:59 AM LL < Call Sell Entry; Check If 09:24:59 AM LL < Put Sell Entry",
+      "meaning": "Workbook labels the section Gap Check but defines entry missed by ORPT low strictly below entry."
+    },
+    {
+      "sheet": "AB6 OS",
+      "cells": "I114:X118",
+      "raw_text": "Recalculate Call/Put Sell Entry at 09:29:59 using branch-specific Min/Max formulas",
+      "meaning": "RC recalculation exists for missed entries."
+    }
+  ],
+  "closed_rules": {
+    "orpt": "09:24:59.400000",
+    "rc": "09:29:59.400000",
+    "call_missed_operator": "09:24:59 AM LL < Call Sell Entry",
+    "put_missed_operator": "09:24:59 AM LL < Put Sell Entry",
+    "not_missed_action": "Place order at ORPT",
+    "missed_action": "Wait until recalculation time and recalculate effective entry",
+    "separate_s21_gap_up_down_logic": "NOT_APPLICABLE_TO_S21_V1",
+    "generic_opening_market_context": "May record opening gap evidence for audit, but does not create S21-specific GAP_UP/GAP_DOWN branch behavior."
+  },
+  "closure_question_id": "S21-Q002",
+  "closure_authority": "S21 user decision-pack closure directive 2026-08-02",
+  "runtime_impact": "NONE",
+  "broker_paper_live_authority": "NONE"
+}

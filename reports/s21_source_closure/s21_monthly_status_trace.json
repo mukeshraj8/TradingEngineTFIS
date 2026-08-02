@@ -1,0 +1,98 @@
+{
+  "verdict": "WORKBOOK_VERIFIED",
+  "stage": "monthly_status",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "authority_documents": [
+    {
+      "file": "TFISRulesAndSpec/TFIS_Monthly_Status_Reference_and_Implementation_Specification_v1.0.docx",
+      "status": "WORKBOOK_VERIFIED",
+      "raw_text_refs": [
+        "Document authority: supersedes older FTAS sections that marked exact Monthly Status transitions as open.",
+        "Monthly Status is a persistent, evaluation-driven state machine.",
+        "All TFIS strategies consume Monthly Status before selecting the Bull, Bull CF, Bear or Bear CF strategy branch.",
+        "Monthly Status shall be calculated once upstream and consumed by all strategies; strategies shall not recalculate it."
+      ]
+    },
+    {
+      "file": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+      "sheet": "AB11",
+      "cells": "D11",
+      "raw_text": "Bull CF",
+      "normalized_rule": "S21 consumes the upstream Monthly Status value from AB11, not an S21-specific recalculation."
+    }
+  ],
+  "normalized_rules": {
+    "scope": "shared_global_monthly_status_service",
+    "s21_specific": false,
+    "cmp_source_for_s21": "Index Option Selling / Buying uses corresponding index spot/underlying price; for S21 this is BANKNIFTY spot/underlying.",
+    "parameters_for_banknifty": {
+      "a_pct": "0.75%",
+      "b_pct": "0.75%",
+      "c_pct": "0.15%",
+      "source": "Monthly Status v1.0 segment parameter table: BANKNIFTY"
+    },
+    "states": [
+      "BULL",
+      "BULL_CF",
+      "BEAR",
+      "BEAR_CF",
+      "UNKNOWN",
+      "UNAVAILABLE"
+    ],
+    "routine_evaluation": [
+      "Resolve strategy instance, segment, evaluation timestamp and authoritative CMP source.",
+      "Load previously established valid Monthly Status.",
+      "Resolve PMH, PML, PWH, PWL, CWH and CWL as of evaluation time.",
+      "Evaluate only transitions permitted from current state.",
+      "Persist transition if valid; otherwise retain previous state."
+    ],
+    "transitions": [
+      {
+        "from": "BULL",
+        "to": "BULL_CF",
+        "operator": "CMP >= Bullish Value + b%"
+      },
+      {
+        "from": "BULL",
+        "to": "BEAR",
+        "operator": "CMP <= min(PWL, CWL) - c%"
+      },
+      {
+        "from": "BULL_CF",
+        "to": "BEAR",
+        "operator": "CMP <= PML - a%"
+      },
+      {
+        "from": "BEAR",
+        "to": "BEAR_CF",
+        "operator": "CMP <= Bearish Value - b%"
+      },
+      {
+        "from": "BEAR",
+        "to": "BULL",
+        "operator": "CMP >= max(PWH, CWH) + c%"
+      },
+      {
+        "from": "BEAR_CF",
+        "to": "BULL",
+        "operator": "CMP >= PMH + a%"
+      }
+    ],
+    "equality": "Bullish comparisons use >= and bearish comparisons use <=. Equality at threshold is a valid transition.",
+    "missing_or_stale": "UNKNOWN/UNAVAILABLE or missing required evidence fails closed before strategy branch selection.",
+    "pre_market_required_evidence": [
+      "previous status",
+      "evaluation timestamp",
+      "CMP from segment-specific source",
+      "PMH",
+      "PML",
+      "PWH",
+      "PWL",
+      "CWH",
+      "CWL",
+      "BANKNIFTY a/b/c parameters"
+    ],
+    "existing_generic_capability_mapping": "Use one shared Monthly Status service before branch resolution."
+  }
+}

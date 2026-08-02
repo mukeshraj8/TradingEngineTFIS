@@ -2,6 +2,69 @@
 
 ## Current Snapshot
 
+- as of Sunday, August 2, 2026, S21 source closure is accepted after the
+  authoritative APS clarification. APS is `APS_NOT_APPLICABLE` for one-lot
+  Option Selling strategies such as S21, S22 and S23. S21/S22/S23 one-lot
+  Option Selling must use single Target, single PositionCycle quantity, no
+  staged exits, no quantity splitting, no partial PositionCycle, and no
+  APS-specific protection adjustment. Reports under
+  `reports/s21_source_closure/` now close `S21-Q001` through `S21-Q005`, and
+  `s21_implementation_readiness.json` reports `S21_SOURCE_CLOSURE_ACCEPT`.
+  Runtime impact: `NONE`. Broker/paper/live routing and external
+  order/position mutation authority: `NONE`.
+- as of Sunday, August 2, 2026, the S21 user decision pack was produced for
+  the five remaining source questions. Files:
+  `reports/s21_source_closure/s21_user_decision_pack.md`,
+  `reports/s21_source_closure/s21_user_decision_pack.json`,
+  `reports/s21_source_closure/s21_remaining_source_questions.md`,
+  `reports/s21_source_closure/s21_source_closure_summary.md`, and
+  `reports/s21_source_closure/s21_implementation_readiness.json`. Verdict:
+  `S21_USER_DECISION_PACK_CLOSED`. The decision pack is now a closed audit
+  trail after the 2026-08-02 source-closure directive and APS clarification.
+  Runtime impact: `NONE`.
+  Broker/paper/live routing and external order/position mutation authority:
+  `NONE`.
+- as of Sunday, August 2, 2026, the Monthly Status independence requirement was
+  added to `AGENTS.md` as a permanent generic-business-engine invariant.
+  Monthly Status must remain strategy-independent, instrument-keyed,
+  immutable, auditable, batch-capable, and free of S21/S22/S23 or
+  option-selling-specific branch logic. Strategy-specific branch mapping stays
+  in policy/adapter composition. Runtime impact: `NONE`. Broker/paper/live
+  routing and external order/position mutation authority: `NONE`.
+- as of Saturday, August 1, 2026, S21 source closure advanced as a
+  source-only milestone with legacy S21 code quarantined. Reports are under
+  `reports/s21_source_closure/`, including `s21_rule_matrix.json`,
+  `s21_source_closure_summary.md`, `s21_open_questions.md`,
+  `s21_remaining_source_questions.md`, stage trace files, implementation
+  readiness, and workbook cell dumps. Verdict:
+  `S21_SOURCE_CLOSURE_ACCEPT`. The initial S21 15:00 equality gap is
+  closed by global Option Selling user clarification:
+  `close > Original SL` exits and `close <= Original SL` carries forward for
+  S21, S22, S23, and other Option Selling strategies unless a future workbook
+  explicitly proves otherwise. Runtime impact: `NONE`. Broker/paper/live
+  routing and external order/position mutation authority: `NONE`. No checklist
+  row remains `PARTIAL`; prior material questions for Near/Next expiry
+  fallback, separate gap classification, APS/partial exits, quantity/P&L unit,
+  and rollover/expiry action are closed. Legacy S21 discrepancy audit was not
+  performed as authority.
+- as of Saturday, August 1, 2026, Phase 5C implemented complete-S23
+  multi-session internal-paper observation. Files include
+  `src/tfis/internal_paper/observation/phase5c_complete_s23.py`,
+  `scripts/run_phase5c_complete_s23_observation.py`,
+  `tests/integration/test_phase5c_complete_s23_observation.py`,
+  `tests/architecture/test_phase5c_observation_boundary.py`, and the
+  `reports/phase5c/` report set. Verdict: `PHASE5C_M1_CONDITIONAL`.
+  All four branches are naturally reached in the selected observation set,
+  CE/PE routing and state isolation pass, three-run determinism passes,
+  duplicate-action audit passes, and shared accounting/protection evidence is
+  recorded. A Put missed-entry implementation/observability defect was fixed:
+  active paper live-decision and operator/architecture wording now use
+  `OPTION_LOW < Entry Price` for Put ORPT missed-entry. Conditional reason:
+  complete captured S23 evidence remains
+  incomplete, so the milestone proves fixture-backed complete-S23 stability
+  plus captured-data gaps rather than full captured parity. Runtime impact:
+  `MULTI-SESSION COMPLETE-S23 INTERNAL-PAPER OBSERVATION`. Broker/paper/live
+  routing and external order/position mutation authority: `NONE`.
 - as of Saturday, August 1, 2026, Phase 5B completed S23 Bull Put and Bear
   Put internal-paper onboarding and certified the complete S23 four-branch
   evidence path. Files include

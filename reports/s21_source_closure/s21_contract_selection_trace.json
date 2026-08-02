@@ -1,0 +1,47 @@
+{
+  "verdict": "USER_CLARIFIED",
+  "stage": "contract_selection",
+  "primary_workbook": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+  "primary_workbook_sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd",
+  "verified_source": [
+    {
+      "sheet": "AB2",
+      "cells": "V26:AA26",
+      "raw_text": "Monthly : NEAR; Every Week On Wed (TD); EXP Day - 0 TRD Day; 14:20:00; EXP Day - 1 TRD Day; EXP Day - 1 TRD Day",
+      "meaning": "S21 has monthly-near expiry metadata and expiry-day timing metadata."
+    },
+    {
+      "sheet": "AB1",
+      "cells": "D28:K28",
+      "raw_text": "BANKNIFTY; Monthly : NEAR; EXP Day - 0 TRD Day; EXP Day - 2 TRD Day",
+      "meaning": "BANKNIFTY monthly option/future expiry metadata exists."
+    },
+    {
+      "sheet": "AB6 OS",
+      "cells": "G100:I110",
+      "raw_text": "Start/end strikes, ideal/minimum premium, 500 Lots, and 1 Exp rows",
+      "meaning": "Strike range, premium and OI filters are source-defined."
+    },
+    {
+      "sheet": "AB15",
+      "cells": "J11:P11",
+      "raw_text": "L/CE : Exp : Near _ S/PE : Exp : Next; CE 25-Jan-2024; PE 29-Feb-2024",
+      "meaning": "Cached final workbook state selected CE near expiry and PE next expiry."
+    }
+  ],
+  "closed_rules": {
+    "start_strike": "Defined per branch in AB6 OS!G100:G110.",
+    "end_strike": "Defined per branch in AB6 OS!G101/G104/G107/G110.",
+    "traversal_direction": "Call rows round down; Put rows round up.",
+    "tie_break": "Traverse from Start Strike to End Strike and choose the first qualifying strike.",
+    "ideal_premium": "2.00% of branch spot reference.",
+    "minimum_premium": "1.50% of branch spot reference.",
+    "oi_threshold": "500 lots, cached as 7500 with lot size 15.",
+    "expiry_fallback": "Search Near monthly expiry first independently for each Call/Put leg; if no qualifying contract is found, search Next monthly expiry; if Next also fails, do not trade that leg.",
+    "same_expiry_requirement": false
+  },
+  "closure_question_id": "S21-Q001",
+  "closure_authority": "S21 user decision-pack closure directive 2026-08-02",
+  "runtime_impact": "NONE",
+  "broker_paper_live_authority": "NONE"
+}

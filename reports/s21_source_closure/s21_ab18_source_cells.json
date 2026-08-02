@@ -1,0 +1,2379 @@
+{
+  "workbook": "All in One - TFIS 26-12-2023.xlsx",
+  "sheet": "AB18",
+  "ranges": "A34:AS43",
+  "modes": {
+    "cached": [
+      {
+        "row": 34,
+        "cells": [
+          {
+            "cell": "A34",
+            "value": "29"
+          },
+          {
+            "cell": "B34",
+            "value": "5"
+          },
+          {
+            "cell": "F34",
+            "value": "No"
+          },
+          {
+            "cell": "AC34",
+            "value": "81"
+          }
+        ]
+      },
+      {
+        "row": 35,
+        "cells": [
+          {
+            "cell": "A35",
+            "value": "30"
+          },
+          {
+            "cell": "B35",
+            "value": "5"
+          },
+          {
+            "cell": "F35",
+            "value": "No"
+          },
+          {
+            "cell": "AC35",
+            "value": "85"
+          }
+        ]
+      },
+      {
+        "row": 36,
+        "cells": [
+          {
+            "cell": "A36",
+            "value": "31"
+          },
+          {
+            "cell": "B36",
+            "value": "6"
+          },
+          {
+            "cell": "F36",
+            "value": "No"
+          },
+          {
+            "cell": "AC36",
+            "value": "92"
+          }
+        ]
+      },
+      {
+        "row": 37,
+        "cells": [
+          {
+            "cell": "A37",
+            "value": "32"
+          },
+          {
+            "cell": "B37",
+            "value": "6"
+          },
+          {
+            "cell": "C37",
+            "value": "OPTIONS SELL"
+          },
+          {
+            "cell": "D37",
+            "value": "BANKNIFTY_OP_SELL_MT_DIFF_2D_3D"
+          },
+          {
+            "cell": "E37",
+            "value": "CALL SELL TARGET"
+          },
+          {
+            "cell": "F37",
+            "value": "Yes"
+          },
+          {
+            "cell": "G37",
+            "value": "09:15:00 AM"
+          },
+          {
+            "cell": "H37",
+            "value": "0.3854166666666667"
+          },
+          {
+            "cell": "I37",
+            "value": "NF"
+          },
+          {
+            "cell": "J37",
+            "value": "NSEFO"
+          },
+          {
+            "cell": "K37",
+            "value": "55827"
+          },
+          {
+            "cell": "L37",
+            "value": "BANKNIFTY 25-Jan-2024 CE 47000"
+          },
+          {
+            "cell": "M37",
+            "value": "396.00"
+          },
+          {
+            "cell": "N37",
+            "value": "0.00"
+          },
+          {
+            "cell": "O37",
+            "value": "0"
+          },
+          {
+            "cell": "P37",
+            "value": "0"
+          },
+          {
+            "cell": "Q37",
+            "value": "BUY"
+          },
+          {
+            "cell": "R37",
+            "value": "NEW"
+          },
+          {
+            "cell": "T37",
+            "value": "Limit"
+          },
+          {
+            "cell": "U37",
+            "value": "468476"
+          },
+          {
+            "cell": "V37",
+            "value": "468476"
+          },
+          {
+            "cell": "W37",
+            "value": "0"
+          },
+          {
+            "cell": "X37",
+            "value": "0"
+          },
+          {
+            "cell": "Y37",
+            "value": "0"
+          },
+          {
+            "cell": "Z37",
+            "value": "GFD"
+          },
+          {
+            "cell": "AC37",
+            "value": "97"
+          },
+          {
+            "cell": "AM37",
+            "value": "32"
+          },
+          {
+            "cell": "AR37",
+            "value": "32"
+          }
+        ]
+      },
+      {
+        "row": 38,
+        "cells": [
+          {
+            "cell": "A38",
+            "value": "33"
+          },
+          {
+            "cell": "B38",
+            "value": "6"
+          },
+          {
+            "cell": "C38",
+            "value": "OPTIONS SELL"
+          },
+          {
+            "cell": "D38",
+            "value": "BANKNIFTY_OP_SELL_MT_DIFF_2D_3D"
+          },
+          {
+            "cell": "E38",
+            "value": "CALL SELL STOPLOSS"
+          },
+          {
+            "cell": "F38",
+            "value": "Yes"
+          },
+          {
+            "cell": "G38",
+            "value": "09:24:59 AM"
+          },
+          {
+            "cell": "H38",
+            "value": "0.39234953703703707"
+          },
+          {
+            "cell": "I38",
+            "value": "NF"
+          },
+          {
+            "cell": "J38",
+            "value": "NSEFO"
+          },
+          {
+            "cell": "K38",
+            "value": "55827"
+          },
+          {
+            "cell": "L38",
+            "value": "BANKNIFTY 25-Jan-2024 CE 47000"
+          },
+          {
+            "cell": "M38",
+            "value": "1663.20"
+          },
+          {
+            "cell": "N38",
+            "value": "1584.00"
+          },
+          {
+            "cell": "O38",
+            "value": "15"
+          },
+          {
+            "cell": "P38",
+            "value": "0"
+          },
+          {
+            "cell": "Q38",
+            "value": "BUY"
+          },
+          {
+            "cell": "R38",
+            "value": "NEW"
+          },
+          {
+            "cell": "T38",
+            "value": "Limit"
+          },
+          {
+            "cell": "U38",
+            "value": "468476"
+          },
+          {
+            "cell": "V38",
+            "value": "468476"
+          },
+          {
+            "cell": "W38",
+            "value": "0"
+          },
+          {
+            "cell": "X38",
+            "value": "0"
+          },
+          {
+            "cell": "Y38",
+            "value": "0"
+          },
+          {
+            "cell": "Z38",
+            "value": "GFD"
+          },
+          {
+            "cell": "AC38",
+            "value": "104"
+          },
+          {
+            "cell": "AM38",
+            "value": "33"
+          }
+        ]
+      },
+      {
+        "row": 39,
+        "cells": [
+          {
+            "cell": "A39",
+            "value": "34"
+          },
+          {
+            "cell": "B39",
+            "value": "6"
+          },
+          {
+            "cell": "F39",
+            "value": "No"
+          },
+          {
+            "cell": "AC39",
+            "value": "110"
+          }
+        ]
+      },
+      {
+        "row": 40,
+        "cells": [
+          {
+            "cell": "A40",
+            "value": "35"
+          },
+          {
+            "cell": "B40",
+            "value": "6"
+          },
+          {
+            "cell": "C40",
+            "value": "OPTIONS SELL"
+          },
+          {
+            "cell": "D40",
+            "value": "BANKNIFTY_OP_SELL_MT_DIFF_2D_3D"
+          },
+          {
+            "cell": "E40",
+            "value": "PUT SELL TARGET"
+          },
+          {
+            "cell": "F40",
+            "value": "Yes"
+          },
+          {
+            "cell": "G40",
+            "value": "09:15:00 AM"
+          },
+          {
+            "cell": "H40",
+            "value": "0.3854166666666667"
+          },
+          {
+            "cell": "I40",
+            "value": "NF"
+          },
+          {
+            "cell": "J40",
+            "value": "NSEFO"
+          },
+          {
+            "cell": "K40",
+            "value": "72267"
+          },
+          {
+            "cell": "L40",
+            "value": "BANKNIFTY 29-Feb-2024 PE 48000"
+          },
+          {
+            "cell": "M40",
+            "value": "299.50"
+          },
+          {
+            "cell": "N40",
+            "value": "0.00"
+          },
+          {
+            "cell": "O40",
+            "value": "0"
+          },
+          {
+            "cell": "P40",
+            "value": "0"
+          },
+          {
+            "cell": "Q40",
+            "value": "BUY"
+          },
+          {
+            "cell": "R40",
+            "value": "NEW"
+          },
+          {
+            "cell": "T40",
+            "value": "Limit"
+          },
+          {
+            "cell": "U40",
+            "value": "468476"
+          },
+          {
+            "cell": "V40",
+            "value": "468476"
+          },
+          {
+            "cell": "W40",
+            "value": "0"
+          },
+          {
+            "cell": "X40",
+            "value": "0"
+          },
+          {
+            "cell": "Y40",
+            "value": "0"
+          },
+          {
+            "cell": "Z40",
+            "value": "GFD"
+          },
+          {
+            "cell": "AC40",
+            "value": "116"
+          },
+          {
+            "cell": "AM40",
+            "value": "35"
+          },
+          {
+            "cell": "AR40",
+            "value": "35"
+          }
+        ]
+      },
+      {
+        "row": 41,
+        "cells": [
+          {
+            "cell": "A41",
+            "value": "36"
+          },
+          {
+            "cell": "B41",
+            "value": "6"
+          },
+          {
+            "cell": "C41",
+            "value": "OPTIONS SELL"
+          },
+          {
+            "cell": "D41",
+            "value": "BANKNIFTY_OP_SELL_MT_DIFF_2D_3D"
+          },
+          {
+            "cell": "E41",
+            "value": "PUT SELL STOPLOSS"
+          },
+          {
+            "cell": "F41",
+            "value": "Yes"
+          },
+          {
+            "cell": "G41",
+            "value": "09:24:59 AM"
+          },
+          {
+            "cell": "H41",
+            "value": "0.39234953703703707"
+          },
+          {
+            "cell": "I41",
+            "value": "NF"
+          },
+          {
+            "cell": "J41",
+            "value": "NSEFO"
+          },
+          {
+            "cell": "K41",
+            "value": "72267"
+          },
+          {
+            "cell": "L41",
+            "value": "BANKNIFTY 29-Feb-2024 PE 48000"
+          },
+          {
+            "cell": "M41",
+            "value": "1258.00"
+          },
+          {
+            "cell": "N41",
+            "value": "1198.10"
+          },
+          {
+            "cell": "O41",
+            "value": "15"
+          },
+          {
+            "cell": "P41",
+            "value": "0"
+          },
+          {
+            "cell": "Q41",
+            "value": "BUY"
+          },
+          {
+            "cell": "R41",
+            "value": "NEW"
+          },
+          {
+            "cell": "T41",
+            "value": "Limit"
+          },
+          {
+            "cell": "U41",
+            "value": "468476"
+          },
+          {
+            "cell": "V41",
+            "value": "468476"
+          },
+          {
+            "cell": "W41",
+            "value": "0"
+          },
+          {
+            "cell": "X41",
+            "value": "0"
+          },
+          {
+            "cell": "Y41",
+            "value": "0"
+          },
+          {
+            "cell": "Z41",
+            "value": "GFD"
+          },
+          {
+            "cell": "AC41",
+            "value": "121"
+          },
+          {
+            "cell": "AM41",
+            "value": "36"
+          }
+        ]
+      },
+      {
+        "row": 42,
+        "cells": [
+          {
+            "cell": "A42",
+            "value": "37"
+          },
+          {
+            "cell": "B42",
+            "value": "7"
+          },
+          {
+            "cell": "C42",
+            "value": "OPTIONS SELL"
+          },
+          {
+            "cell": "D42",
+            "value": "RELIANCE_OP_SELL_MT_DIFF_2D_4D"
+          },
+          {
+            "cell": "E42",
+            "value": "CALL SELL ENTRY"
+          },
+          {
+            "cell": "F42",
+            "value": "Yes"
+          },
+          {
+            "cell": "G42",
+            "value": "09:24:59 AM"
+          },
+          {
+            "cell": "H42",
+            "value": "0.39234953703703707"
+          },
+          {
+            "cell": "I42",
+            "value": "NF"
+          },
+          {
+            "cell": "J42",
+            "value": "NSEFO"
+          },
+          {
+            "cell": "K42",
+            "value": "164749"
+          },
+          {
+            "cell": "L42",
+            "value": "RELIANCE 25-Jan-2024 CE 2400"
+          },
+          {
+            "cell": "M42",
+            "value": "75.25"
+          },
+          {
+            "cell": "N42",
+            "value": "79.20"
+          },
+          {
+            "cell": "O42",
+            "value": "250"
+          },
+          {
+            "cell": "P42",
+            "value": "0"
+          },
+          {
+            "cell": "Q42",
+            "value": "SELL"
+          },
+          {
+            "cell": "R42",
+            "value": "NEW"
+          },
+          {
+            "cell": "T42",
+            "value": "Limit"
+          },
+          {
+            "cell": "U42",
+            "value": "468476"
+          },
+          {
+            "cell": "V42",
+            "value": "468476"
+          },
+          {
+            "cell": "W42",
+            "value": "0"
+          },
+          {
+            "cell": "X42",
+            "value": "0"
+          },
+          {
+            "cell": "Y42",
+            "value": "0"
+          },
+          {
+            "cell": "Z42",
+            "value": "GFD"
+          },
+          {
+            "cell": "AC42",
+            "value": "127"
+          },
+          {
+            "cell": "AM42",
+            "value": "37"
+          }
+        ]
+      },
+      {
+        "row": 43,
+        "cells": [
+          {
+            "cell": "A43",
+            "value": "38"
+          },
+          {
+            "cell": "B43",
+            "value": "7"
+          },
+          {
+            "cell": "F43",
+            "value": "No"
+          },
+          {
+            "cell": "AC43",
+            "value": "130"
+          }
+        ]
+      }
+    ],
+    "formula": [
+      {
+        "row": 34,
+        "cells": [
+          {
+            "cell": "A34",
+            "value": "=A33+1"
+          },
+          {
+            "cell": "B34",
+            "value": "=B30"
+          },
+          {
+            "cell": "C34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9958B0>"
+          },
+          {
+            "cell": "D34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995010>"
+          },
+          {
+            "cell": "E34",
+            "value": "=IF(B34=\"\",\"\",IF(F34=\"No\",\"\",IF(C34=\"EQUITY\",\"\",IF(C34=\"FUTURES\",\"SHORT TARGET\",IF(C34=\"OPTIONS SELL\",\"PUT SELL TARGET\",IF(C34=\"OPTIONS BUY\",\"PUT BUY TARGET\"))))))"
+          },
+          {
+            "cell": "F34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995610>"
+          },
+          {
+            "cell": "G34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995670>"
+          },
+          {
+            "cell": "H34",
+            "value": "=IF(G34=\"\",\"\",TIMEVALUE(G34))"
+          },
+          {
+            "cell": "I34",
+            "value": "=IF(J34=\"\",\"\",IF(J34=\"NSE\",\"NC\",IF(J34=\"NSEFO\",\"NF\",IF(J34=\"NSECURR\",\"RN\",IF(J34=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9956D0>"
+          },
+          {
+            "cell": "K34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995730>"
+          },
+          {
+            "cell": "L34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995790>"
+          },
+          {
+            "cell": "M34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9957F0>"
+          },
+          {
+            "cell": "N34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995970>"
+          },
+          {
+            "cell": "O34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995A30>"
+          },
+          {
+            "cell": "P34",
+            "value": "=IF(B34=\"\",\"\",IF(F34=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995550>"
+          },
+          {
+            "cell": "R34",
+            "value": "=IF(B34=\"\",\"\",IF(F34=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T34",
+            "value": "=IF(B34=\"\",\"\",IF(F34=\"Yes\",IF(ABS(M34)=0,\"Market\",IF(ABS(M34)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9954F0>"
+          },
+          {
+            "cell": "V34",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995430>"
+          },
+          {
+            "cell": "W34",
+            "value": "=IF(B34=\"\",\"\",IF(F34=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X34",
+            "value": "=IF(B34=\"\",\"\",IF(F34=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y34",
+            "value": "=IF(B34=\"\",\"\",IF(F34=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z34",
+            "value": "=IF(B34=\"\",\"\",IF(F34=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC34",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A34),\"\")"
+          },
+          {
+            "cell": "AD34",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A34),\"\")"
+          },
+          {
+            "cell": "AE34",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A34),\"\")"
+          },
+          {
+            "cell": "AF34",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A34),\"\")"
+          },
+          {
+            "cell": "AG34",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A34),\"\")"
+          },
+          {
+            "cell": "AH34",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A34),\"\")"
+          },
+          {
+            "cell": "AI34",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A34),\"\")"
+          },
+          {
+            "cell": "AJ34",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A34),\"\")"
+          },
+          {
+            "cell": "AK34",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A34),\"\")"
+          },
+          {
+            "cell": "AM34",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F34)),A34,\"\")"
+          },
+          {
+            "cell": "AN34",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G34)),A34,\"\")"
+          },
+          {
+            "cell": "AO34",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G34)),A34,\"\")"
+          },
+          {
+            "cell": "AP34",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G34)),A34,\"\")"
+          },
+          {
+            "cell": "AQ34",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G34)),A34,\"\")"
+          },
+          {
+            "cell": "AR34",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G34)),A34,\"\")"
+          },
+          {
+            "cell": "AS34",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G34)),A34,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 35,
+        "cells": [
+          {
+            "cell": "A35",
+            "value": "=A34+1"
+          },
+          {
+            "cell": "B35",
+            "value": "=B30"
+          },
+          {
+            "cell": "C35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995370>"
+          },
+          {
+            "cell": "D35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9952B0>"
+          },
+          {
+            "cell": "E35",
+            "value": "=IF(B35=\"\",\"\",IF(F35=\"No\",\"\",IF(C35=\"EQUITY\",\"\",IF(C35=\"FUTURES\",\"SHORT STOPLOSS\",IF(C35=\"OPTIONS SELL\",\"PUT SELL STOPLOSS\",IF(C35=\"OPTIONS BUY\",\"PUT BUY STOPLOSS\"))))))"
+          },
+          {
+            "cell": "F35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995310>"
+          },
+          {
+            "cell": "G35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA994A70>"
+          },
+          {
+            "cell": "H35",
+            "value": "=IF(G35=\"\",\"\",TIMEVALUE(G35))"
+          },
+          {
+            "cell": "I35",
+            "value": "=IF(J35=\"\",\"\",IF(J35=\"NSE\",\"NC\",IF(J35=\"NSEFO\",\"NF\",IF(J35=\"NSECURR\",\"RN\",IF(J35=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995070>"
+          },
+          {
+            "cell": "K35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9950D0>"
+          },
+          {
+            "cell": "L35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995130>"
+          },
+          {
+            "cell": "M35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995190>"
+          },
+          {
+            "cell": "N35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC19BB90>"
+          },
+          {
+            "cell": "O35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380230>"
+          },
+          {
+            "cell": "P35",
+            "value": "=IF(B35=\"\",\"\",IF(F35=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380290>"
+          },
+          {
+            "cell": "R35",
+            "value": "=IF(B35=\"\",\"\",IF(F35=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T35",
+            "value": "=IF(B35=\"\",\"\",IF(F35=\"Yes\",IF(ABS(M35)=0,\"Market\",IF(ABS(M35)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC3802F0>"
+          },
+          {
+            "cell": "V35",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380350>"
+          },
+          {
+            "cell": "W35",
+            "value": "=IF(B35=\"\",\"\",IF(F35=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X35",
+            "value": "=IF(B35=\"\",\"\",IF(F35=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y35",
+            "value": "=IF(B35=\"\",\"\",IF(F35=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z35",
+            "value": "=IF(B35=\"\",\"\",IF(F35=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC35",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A35),\"\")"
+          },
+          {
+            "cell": "AD35",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A35),\"\")"
+          },
+          {
+            "cell": "AE35",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A35),\"\")"
+          },
+          {
+            "cell": "AF35",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A35),\"\")"
+          },
+          {
+            "cell": "AG35",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A35),\"\")"
+          },
+          {
+            "cell": "AH35",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A35),\"\")"
+          },
+          {
+            "cell": "AI35",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A35),\"\")"
+          },
+          {
+            "cell": "AJ35",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A35),\"\")"
+          },
+          {
+            "cell": "AK35",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A35),\"\")"
+          },
+          {
+            "cell": "AM35",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F35)),A35,\"\")"
+          },
+          {
+            "cell": "AN35",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G35)),A35,\"\")"
+          },
+          {
+            "cell": "AO35",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G35)),A35,\"\")"
+          },
+          {
+            "cell": "AP35",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G35)),A35,\"\")"
+          },
+          {
+            "cell": "AQ35",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G35)),A35,\"\")"
+          },
+          {
+            "cell": "AR35",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G35)),A35,\"\")"
+          },
+          {
+            "cell": "AS35",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G35)),A35,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 36,
+        "cells": [
+          {
+            "cell": "A36",
+            "value": "=A35+1"
+          },
+          {
+            "cell": "B36",
+            "value": "=IF('AB13'!A11=\"\",\"\",'AB13'!A11)"
+          },
+          {
+            "cell": "C36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9958B0>"
+          },
+          {
+            "cell": "D36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995010>"
+          },
+          {
+            "cell": "E36",
+            "value": "=IF(B36=\"\",\"\",IF(F36=\"No\",\"\",IF(OR(C36=\"FUTURES\",C36=\"EQUITY\"),\"LONG ENTRY\",IF(C36=\"OPTIONS SELL\",\"CALL SELL ENTRY\",IF(C36=\"OPTIONS BUY\",\"CALL BUY ENTRY\")))))"
+          },
+          {
+            "cell": "F36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995610>"
+          },
+          {
+            "cell": "G36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995670>"
+          },
+          {
+            "cell": "H36",
+            "value": "=IF(G36=\"\",\"\",TIMEVALUE(G36))"
+          },
+          {
+            "cell": "I36",
+            "value": "=IF(J36=\"\",\"\",IF(J36=\"NSE\",\"NC\",IF(J36=\"NSEFO\",\"NF\",IF(J36=\"NSECURR\",\"RN\",IF(J36=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9956D0>"
+          },
+          {
+            "cell": "K36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995730>"
+          },
+          {
+            "cell": "L36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995790>"
+          },
+          {
+            "cell": "M36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9957F0>"
+          },
+          {
+            "cell": "N36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995970>"
+          },
+          {
+            "cell": "O36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995A30>"
+          },
+          {
+            "cell": "P36",
+            "value": "=IF(B36=\"\",\"\",IF(F36=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995550>"
+          },
+          {
+            "cell": "R36",
+            "value": "=IF(B36=\"\",\"\",IF(F36=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T36",
+            "value": "=IF(B36=\"\",\"\",IF(F36=\"Yes\",IF(ABS(M36)=0,\"Market\",IF(ABS(M36)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9954F0>"
+          },
+          {
+            "cell": "V36",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995430>"
+          },
+          {
+            "cell": "W36",
+            "value": "=IF(B36=\"\",\"\",IF(F36=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X36",
+            "value": "=IF(B36=\"\",\"\",IF(F36=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y36",
+            "value": "=IF(B36=\"\",\"\",IF(F36=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z36",
+            "value": "=IF(B36=\"\",\"\",IF(F36=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC36",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A36),\"\")"
+          },
+          {
+            "cell": "AD36",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A36),\"\")"
+          },
+          {
+            "cell": "AE36",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A36),\"\")"
+          },
+          {
+            "cell": "AF36",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A36),\"\")"
+          },
+          {
+            "cell": "AG36",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A36),\"\")"
+          },
+          {
+            "cell": "AH36",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A36),\"\")"
+          },
+          {
+            "cell": "AI36",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A36),\"\")"
+          },
+          {
+            "cell": "AJ36",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A36),\"\")"
+          },
+          {
+            "cell": "AK36",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A36),\"\")"
+          },
+          {
+            "cell": "AM36",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F36)),A36,\"\")"
+          },
+          {
+            "cell": "AN36",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G36)),A36,\"\")"
+          },
+          {
+            "cell": "AO36",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G36)),A36,\"\")"
+          },
+          {
+            "cell": "AP36",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G36)),A36,\"\")"
+          },
+          {
+            "cell": "AQ36",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G36)),A36,\"\")"
+          },
+          {
+            "cell": "AR36",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G36)),A36,\"\")"
+          },
+          {
+            "cell": "AS36",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G36)),A36,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 37,
+        "cells": [
+          {
+            "cell": "A37",
+            "value": "=A36+1"
+          },
+          {
+            "cell": "B37",
+            "value": "=B36"
+          },
+          {
+            "cell": "C37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995370>"
+          },
+          {
+            "cell": "D37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9952B0>"
+          },
+          {
+            "cell": "E37",
+            "value": "=IF(B37=\"\",\"\",IF(F37=\"No\",\"\",IF(OR(C37=\"FUTURES\",C37=\"EQUITY\"),\"LONG TARGET\",IF(C37=\"OPTIONS SELL\",\"CALL SELL TARGET\",IF(C37=\"OPTIONS BUY\",\"CALL BUY TARGET\")))))"
+          },
+          {
+            "cell": "F37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995310>"
+          },
+          {
+            "cell": "G37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA994A70>"
+          },
+          {
+            "cell": "H37",
+            "value": "=IF(G37=\"\",\"\",TIMEVALUE(G37))"
+          },
+          {
+            "cell": "I37",
+            "value": "=IF(J37=\"\",\"\",IF(J37=\"NSE\",\"NC\",IF(J37=\"NSEFO\",\"NF\",IF(J37=\"NSECURR\",\"RN\",IF(J37=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995070>"
+          },
+          {
+            "cell": "K37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9950D0>"
+          },
+          {
+            "cell": "L37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995130>"
+          },
+          {
+            "cell": "M37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995190>"
+          },
+          {
+            "cell": "N37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC19BB90>"
+          },
+          {
+            "cell": "O37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380230>"
+          },
+          {
+            "cell": "P37",
+            "value": "=IF(B37=\"\",\"\",IF(F37=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380290>"
+          },
+          {
+            "cell": "R37",
+            "value": "=IF(B37=\"\",\"\",IF(F37=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T37",
+            "value": "=IF(B37=\"\",\"\",IF(F37=\"Yes\",IF(ABS(M37)=0,\"Market\",IF(ABS(M37)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC3802F0>"
+          },
+          {
+            "cell": "V37",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380350>"
+          },
+          {
+            "cell": "W37",
+            "value": "=IF(B37=\"\",\"\",IF(F37=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X37",
+            "value": "=IF(B37=\"\",\"\",IF(F37=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y37",
+            "value": "=IF(B37=\"\",\"\",IF(F37=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z37",
+            "value": "=IF(B37=\"\",\"\",IF(F37=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC37",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A37),\"\")"
+          },
+          {
+            "cell": "AD37",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A37),\"\")"
+          },
+          {
+            "cell": "AE37",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A37),\"\")"
+          },
+          {
+            "cell": "AF37",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A37),\"\")"
+          },
+          {
+            "cell": "AG37",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A37),\"\")"
+          },
+          {
+            "cell": "AH37",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A37),\"\")"
+          },
+          {
+            "cell": "AI37",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A37),\"\")"
+          },
+          {
+            "cell": "AJ37",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A37),\"\")"
+          },
+          {
+            "cell": "AK37",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A37),\"\")"
+          },
+          {
+            "cell": "AM37",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F37)),A37,\"\")"
+          },
+          {
+            "cell": "AN37",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G37)),A37,\"\")"
+          },
+          {
+            "cell": "AO37",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G37)),A37,\"\")"
+          },
+          {
+            "cell": "AP37",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G37)),A37,\"\")"
+          },
+          {
+            "cell": "AQ37",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G37)),A37,\"\")"
+          },
+          {
+            "cell": "AR37",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G37)),A37,\"\")"
+          },
+          {
+            "cell": "AS37",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G37)),A37,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 38,
+        "cells": [
+          {
+            "cell": "A38",
+            "value": "=A37+1"
+          },
+          {
+            "cell": "B38",
+            "value": "=B36"
+          },
+          {
+            "cell": "C38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9958B0>"
+          },
+          {
+            "cell": "D38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995010>"
+          },
+          {
+            "cell": "E38",
+            "value": "=IF(B38=\"\",\"\",IF(F38=\"No\",\"\",IF(OR(C38=\"FUTURES\",C38=\"EQUITY\"),\"LONG STOPLOSS\",IF(C38=\"OPTIONS SELL\",\"CALL SELL STOPLOSS\",IF(C38=\"OPTIONS BUY\",\"CALL BUY STOPLOSS\")))))"
+          },
+          {
+            "cell": "F38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995610>"
+          },
+          {
+            "cell": "G38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995670>"
+          },
+          {
+            "cell": "H38",
+            "value": "=IF(G38=\"\",\"\",TIMEVALUE(G38))"
+          },
+          {
+            "cell": "I38",
+            "value": "=IF(J38=\"\",\"\",IF(J38=\"NSE\",\"NC\",IF(J38=\"NSEFO\",\"NF\",IF(J38=\"NSECURR\",\"RN\",IF(J38=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9956D0>"
+          },
+          {
+            "cell": "K38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995730>"
+          },
+          {
+            "cell": "L38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995790>"
+          },
+          {
+            "cell": "M38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9957F0>"
+          },
+          {
+            "cell": "N38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995970>"
+          },
+          {
+            "cell": "O38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995A30>"
+          },
+          {
+            "cell": "P38",
+            "value": "=IF(B38=\"\",\"\",IF(F38=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995550>"
+          },
+          {
+            "cell": "R38",
+            "value": "=IF(B38=\"\",\"\",IF(F38=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T38",
+            "value": "=IF(B38=\"\",\"\",IF(F38=\"Yes\",IF(ABS(M38)=0,\"Market\",IF(ABS(M38)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9954F0>"
+          },
+          {
+            "cell": "V38",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995430>"
+          },
+          {
+            "cell": "W38",
+            "value": "=IF(B38=\"\",\"\",IF(F38=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X38",
+            "value": "=IF(B38=\"\",\"\",IF(F38=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y38",
+            "value": "=IF(B38=\"\",\"\",IF(F38=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z38",
+            "value": "=IF(B38=\"\",\"\",IF(F38=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC38",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A38),\"\")"
+          },
+          {
+            "cell": "AD38",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A38),\"\")"
+          },
+          {
+            "cell": "AE38",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A38),\"\")"
+          },
+          {
+            "cell": "AF38",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A38),\"\")"
+          },
+          {
+            "cell": "AG38",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A38),\"\")"
+          },
+          {
+            "cell": "AH38",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A38),\"\")"
+          },
+          {
+            "cell": "AI38",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A38),\"\")"
+          },
+          {
+            "cell": "AJ38",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A38),\"\")"
+          },
+          {
+            "cell": "AK38",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A38),\"\")"
+          },
+          {
+            "cell": "AM38",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F38)),A38,\"\")"
+          },
+          {
+            "cell": "AN38",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G38)),A38,\"\")"
+          },
+          {
+            "cell": "AO38",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G38)),A38,\"\")"
+          },
+          {
+            "cell": "AP38",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G38)),A38,\"\")"
+          },
+          {
+            "cell": "AQ38",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G38)),A38,\"\")"
+          },
+          {
+            "cell": "AR38",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G38)),A38,\"\")"
+          },
+          {
+            "cell": "AS38",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G38)),A38,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 39,
+        "cells": [
+          {
+            "cell": "A39",
+            "value": "=A38+1"
+          },
+          {
+            "cell": "B39",
+            "value": "=B36"
+          },
+          {
+            "cell": "C39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995370>"
+          },
+          {
+            "cell": "D39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9952B0>"
+          },
+          {
+            "cell": "E39",
+            "value": "=IF(B39=\"\",\"\",IF(F39=\"No\",\"\",IF(C39=\"EQUITY\",\"\",IF(C39=\"FUTURES\",\"SHORT ENTRY\",IF(C39=\"OPTIONS SELL\",\"PUT SELL ENTRY\",IF(C39=\"OPTIONS BUY\",\"PUT BUY ENTRY\"))))))"
+          },
+          {
+            "cell": "F39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995310>"
+          },
+          {
+            "cell": "G39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA994A70>"
+          },
+          {
+            "cell": "H39",
+            "value": "=IF(G39=\"\",\"\",TIMEVALUE(G39))"
+          },
+          {
+            "cell": "I39",
+            "value": "=IF(J39=\"\",\"\",IF(J39=\"NSE\",\"NC\",IF(J39=\"NSEFO\",\"NF\",IF(J39=\"NSECURR\",\"RN\",IF(J39=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995070>"
+          },
+          {
+            "cell": "K39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9950D0>"
+          },
+          {
+            "cell": "L39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995130>"
+          },
+          {
+            "cell": "M39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995190>"
+          },
+          {
+            "cell": "N39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC19BB90>"
+          },
+          {
+            "cell": "O39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380230>"
+          },
+          {
+            "cell": "P39",
+            "value": "=IF(B39=\"\",\"\",IF(F39=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380290>"
+          },
+          {
+            "cell": "R39",
+            "value": "=IF(B39=\"\",\"\",IF(F39=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T39",
+            "value": "=IF(B39=\"\",\"\",IF(F39=\"Yes\",IF(ABS(M39)=0,\"Market\",IF(ABS(M39)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC3802F0>"
+          },
+          {
+            "cell": "V39",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380350>"
+          },
+          {
+            "cell": "W39",
+            "value": "=IF(B39=\"\",\"\",IF(F39=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X39",
+            "value": "=IF(B39=\"\",\"\",IF(F39=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y39",
+            "value": "=IF(B39=\"\",\"\",IF(F39=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z39",
+            "value": "=IF(B39=\"\",\"\",IF(F39=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC39",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A39),\"\")"
+          },
+          {
+            "cell": "AD39",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A39),\"\")"
+          },
+          {
+            "cell": "AE39",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A39),\"\")"
+          },
+          {
+            "cell": "AF39",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A39),\"\")"
+          },
+          {
+            "cell": "AG39",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A39),\"\")"
+          },
+          {
+            "cell": "AH39",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A39),\"\")"
+          },
+          {
+            "cell": "AI39",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A39),\"\")"
+          },
+          {
+            "cell": "AJ39",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A39),\"\")"
+          },
+          {
+            "cell": "AK39",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A39),\"\")"
+          },
+          {
+            "cell": "AM39",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F39)),A39,\"\")"
+          },
+          {
+            "cell": "AN39",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G39)),A39,\"\")"
+          },
+          {
+            "cell": "AO39",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G39)),A39,\"\")"
+          },
+          {
+            "cell": "AP39",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G39)),A39,\"\")"
+          },
+          {
+            "cell": "AQ39",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G39)),A39,\"\")"
+          },
+          {
+            "cell": "AR39",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G39)),A39,\"\")"
+          },
+          {
+            "cell": "AS39",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G39)),A39,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 40,
+        "cells": [
+          {
+            "cell": "A40",
+            "value": "=A39+1"
+          },
+          {
+            "cell": "B40",
+            "value": "=B36"
+          },
+          {
+            "cell": "C40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9958B0>"
+          },
+          {
+            "cell": "D40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995010>"
+          },
+          {
+            "cell": "E40",
+            "value": "=IF(B40=\"\",\"\",IF(F40=\"No\",\"\",IF(C40=\"EQUITY\",\"\",IF(C40=\"FUTURES\",\"SHORT TARGET\",IF(C40=\"OPTIONS SELL\",\"PUT SELL TARGET\",IF(C40=\"OPTIONS BUY\",\"PUT BUY TARGET\"))))))"
+          },
+          {
+            "cell": "F40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995610>"
+          },
+          {
+            "cell": "G40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995670>"
+          },
+          {
+            "cell": "H40",
+            "value": "=IF(G40=\"\",\"\",TIMEVALUE(G40))"
+          },
+          {
+            "cell": "I40",
+            "value": "=IF(J40=\"\",\"\",IF(J40=\"NSE\",\"NC\",IF(J40=\"NSEFO\",\"NF\",IF(J40=\"NSECURR\",\"RN\",IF(J40=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9956D0>"
+          },
+          {
+            "cell": "K40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995730>"
+          },
+          {
+            "cell": "L40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995790>"
+          },
+          {
+            "cell": "M40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9957F0>"
+          },
+          {
+            "cell": "N40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995970>"
+          },
+          {
+            "cell": "O40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995A30>"
+          },
+          {
+            "cell": "P40",
+            "value": "=IF(B40=\"\",\"\",IF(F40=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995550>"
+          },
+          {
+            "cell": "R40",
+            "value": "=IF(B40=\"\",\"\",IF(F40=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T40",
+            "value": "=IF(B40=\"\",\"\",IF(F40=\"Yes\",IF(ABS(M40)=0,\"Market\",IF(ABS(M40)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9954F0>"
+          },
+          {
+            "cell": "V40",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995430>"
+          },
+          {
+            "cell": "W40",
+            "value": "=IF(B40=\"\",\"\",IF(F40=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X40",
+            "value": "=IF(B40=\"\",\"\",IF(F40=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y40",
+            "value": "=IF(B40=\"\",\"\",IF(F40=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z40",
+            "value": "=IF(B40=\"\",\"\",IF(F40=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC40",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A40),\"\")"
+          },
+          {
+            "cell": "AD40",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A40),\"\")"
+          },
+          {
+            "cell": "AE40",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A40),\"\")"
+          },
+          {
+            "cell": "AF40",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A40),\"\")"
+          },
+          {
+            "cell": "AG40",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A40),\"\")"
+          },
+          {
+            "cell": "AH40",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A40),\"\")"
+          },
+          {
+            "cell": "AI40",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A40),\"\")"
+          },
+          {
+            "cell": "AJ40",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A40),\"\")"
+          },
+          {
+            "cell": "AK40",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A40),\"\")"
+          },
+          {
+            "cell": "AM40",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F40)),A40,\"\")"
+          },
+          {
+            "cell": "AN40",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G40)),A40,\"\")"
+          },
+          {
+            "cell": "AO40",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G40)),A40,\"\")"
+          },
+          {
+            "cell": "AP40",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G40)),A40,\"\")"
+          },
+          {
+            "cell": "AQ40",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G40)),A40,\"\")"
+          },
+          {
+            "cell": "AR40",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G40)),A40,\"\")"
+          },
+          {
+            "cell": "AS40",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G40)),A40,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 41,
+        "cells": [
+          {
+            "cell": "A41",
+            "value": "=A40+1"
+          },
+          {
+            "cell": "B41",
+            "value": "=B36"
+          },
+          {
+            "cell": "C41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995370>"
+          },
+          {
+            "cell": "D41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9952B0>"
+          },
+          {
+            "cell": "E41",
+            "value": "=IF(B41=\"\",\"\",IF(F41=\"No\",\"\",IF(C41=\"EQUITY\",\"\",IF(C41=\"FUTURES\",\"SHORT STOPLOSS\",IF(C41=\"OPTIONS SELL\",\"PUT SELL STOPLOSS\",IF(C41=\"OPTIONS BUY\",\"PUT BUY STOPLOSS\"))))))"
+          },
+          {
+            "cell": "F41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995310>"
+          },
+          {
+            "cell": "G41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA994A70>"
+          },
+          {
+            "cell": "H41",
+            "value": "=IF(G41=\"\",\"\",TIMEVALUE(G41))"
+          },
+          {
+            "cell": "I41",
+            "value": "=IF(J41=\"\",\"\",IF(J41=\"NSE\",\"NC\",IF(J41=\"NSEFO\",\"NF\",IF(J41=\"NSECURR\",\"RN\",IF(J41=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995070>"
+          },
+          {
+            "cell": "K41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9950D0>"
+          },
+          {
+            "cell": "L41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995130>"
+          },
+          {
+            "cell": "M41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995190>"
+          },
+          {
+            "cell": "N41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC19BB90>"
+          },
+          {
+            "cell": "O41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380230>"
+          },
+          {
+            "cell": "P41",
+            "value": "=IF(B41=\"\",\"\",IF(F41=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380290>"
+          },
+          {
+            "cell": "R41",
+            "value": "=IF(B41=\"\",\"\",IF(F41=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T41",
+            "value": "=IF(B41=\"\",\"\",IF(F41=\"Yes\",IF(ABS(M41)=0,\"Market\",IF(ABS(M41)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC3802F0>"
+          },
+          {
+            "cell": "V41",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380350>"
+          },
+          {
+            "cell": "W41",
+            "value": "=IF(B41=\"\",\"\",IF(F41=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X41",
+            "value": "=IF(B41=\"\",\"\",IF(F41=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y41",
+            "value": "=IF(B41=\"\",\"\",IF(F41=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z41",
+            "value": "=IF(B41=\"\",\"\",IF(F41=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC41",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A41),\"\")"
+          },
+          {
+            "cell": "AD41",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A41),\"\")"
+          },
+          {
+            "cell": "AE41",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A41),\"\")"
+          },
+          {
+            "cell": "AF41",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A41),\"\")"
+          },
+          {
+            "cell": "AG41",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A41),\"\")"
+          },
+          {
+            "cell": "AH41",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A41),\"\")"
+          },
+          {
+            "cell": "AI41",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A41),\"\")"
+          },
+          {
+            "cell": "AJ41",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A41),\"\")"
+          },
+          {
+            "cell": "AK41",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A41),\"\")"
+          },
+          {
+            "cell": "AM41",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F41)),A41,\"\")"
+          },
+          {
+            "cell": "AN41",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G41)),A41,\"\")"
+          },
+          {
+            "cell": "AO41",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G41)),A41,\"\")"
+          },
+          {
+            "cell": "AP41",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G41)),A41,\"\")"
+          },
+          {
+            "cell": "AQ41",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G41)),A41,\"\")"
+          },
+          {
+            "cell": "AR41",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G41)),A41,\"\")"
+          },
+          {
+            "cell": "AS41",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G41)),A41,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 42,
+        "cells": [
+          {
+            "cell": "A42",
+            "value": "=A41+1"
+          },
+          {
+            "cell": "B42",
+            "value": "=IF('AB13'!A12=\"\",\"\",'AB13'!A12)"
+          },
+          {
+            "cell": "C42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9958B0>"
+          },
+          {
+            "cell": "D42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995010>"
+          },
+          {
+            "cell": "E42",
+            "value": "=IF(B42=\"\",\"\",IF(F42=\"No\",\"\",IF(OR(C42=\"FUTURES\",C42=\"EQUITY\"),\"LONG ENTRY\",IF(C42=\"OPTIONS SELL\",\"CALL SELL ENTRY\",IF(C42=\"OPTIONS BUY\",\"CALL BUY ENTRY\")))))"
+          },
+          {
+            "cell": "F42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995610>"
+          },
+          {
+            "cell": "G42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995670>"
+          },
+          {
+            "cell": "H42",
+            "value": "=IF(G42=\"\",\"\",TIMEVALUE(G42))"
+          },
+          {
+            "cell": "I42",
+            "value": "=IF(J42=\"\",\"\",IF(J42=\"NSE\",\"NC\",IF(J42=\"NSEFO\",\"NF\",IF(J42=\"NSECURR\",\"RN\",IF(J42=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9956D0>"
+          },
+          {
+            "cell": "K42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995730>"
+          },
+          {
+            "cell": "L42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995790>"
+          },
+          {
+            "cell": "M42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9957F0>"
+          },
+          {
+            "cell": "N42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995970>"
+          },
+          {
+            "cell": "O42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995A30>"
+          },
+          {
+            "cell": "P42",
+            "value": "=IF(B42=\"\",\"\",IF(F42=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995550>"
+          },
+          {
+            "cell": "R42",
+            "value": "=IF(B42=\"\",\"\",IF(F42=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T42",
+            "value": "=IF(B42=\"\",\"\",IF(F42=\"Yes\",IF(ABS(M42)=0,\"Market\",IF(ABS(M42)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9954F0>"
+          },
+          {
+            "cell": "V42",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995430>"
+          },
+          {
+            "cell": "W42",
+            "value": "=IF(B42=\"\",\"\",IF(F42=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X42",
+            "value": "=IF(B42=\"\",\"\",IF(F42=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y42",
+            "value": "=IF(B42=\"\",\"\",IF(F42=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z42",
+            "value": "=IF(B42=\"\",\"\",IF(F42=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC42",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A42),\"\")"
+          },
+          {
+            "cell": "AD42",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A42),\"\")"
+          },
+          {
+            "cell": "AE42",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A42),\"\")"
+          },
+          {
+            "cell": "AF42",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A42),\"\")"
+          },
+          {
+            "cell": "AG42",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A42),\"\")"
+          },
+          {
+            "cell": "AH42",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A42),\"\")"
+          },
+          {
+            "cell": "AI42",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A42),\"\")"
+          },
+          {
+            "cell": "AJ42",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A42),\"\")"
+          },
+          {
+            "cell": "AK42",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A42),\"\")"
+          },
+          {
+            "cell": "AM42",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F42)),A42,\"\")"
+          },
+          {
+            "cell": "AN42",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G42)),A42,\"\")"
+          },
+          {
+            "cell": "AO42",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G42)),A42,\"\")"
+          },
+          {
+            "cell": "AP42",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G42)),A42,\"\")"
+          },
+          {
+            "cell": "AQ42",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G42)),A42,\"\")"
+          },
+          {
+            "cell": "AR42",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G42)),A42,\"\")"
+          },
+          {
+            "cell": "AS42",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G42)),A42,\"\")"
+          }
+        ]
+      },
+      {
+        "row": 43,
+        "cells": [
+          {
+            "cell": "A43",
+            "value": "=A42+1"
+          },
+          {
+            "cell": "B43",
+            "value": "=B42"
+          },
+          {
+            "cell": "C43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995370>"
+          },
+          {
+            "cell": "D43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9952B0>"
+          },
+          {
+            "cell": "E43",
+            "value": "=IF(B43=\"\",\"\",IF(F43=\"No\",\"\",IF(OR(C43=\"FUTURES\",C43=\"EQUITY\"),\"LONG TARGET\",IF(C43=\"OPTIONS SELL\",\"CALL SELL TARGET\",IF(C43=\"OPTIONS BUY\",\"CALL BUY TARGET\")))))"
+          },
+          {
+            "cell": "F43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995310>"
+          },
+          {
+            "cell": "G43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA994A70>"
+          },
+          {
+            "cell": "H43",
+            "value": "=IF(G43=\"\",\"\",TIMEVALUE(G43))"
+          },
+          {
+            "cell": "I43",
+            "value": "=IF(J43=\"\",\"\",IF(J43=\"NSE\",\"NC\",IF(J43=\"NSEFO\",\"NF\",IF(J43=\"NSECURR\",\"RN\",IF(J43=\"MCX\",\"MX\")))))"
+          },
+          {
+            "cell": "J43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995070>"
+          },
+          {
+            "cell": "K43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA9950D0>"
+          },
+          {
+            "cell": "L43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995130>"
+          },
+          {
+            "cell": "M43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAA995190>"
+          },
+          {
+            "cell": "N43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC19BB90>"
+          },
+          {
+            "cell": "O43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380230>"
+          },
+          {
+            "cell": "P43",
+            "value": "=IF(B43=\"\",\"\",IF(F43=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Q43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380290>"
+          },
+          {
+            "cell": "R43",
+            "value": "=IF(B43=\"\",\"\",IF(F43=\"Yes\",\"NEW\",\"\"))"
+          },
+          {
+            "cell": "T43",
+            "value": "=IF(B43=\"\",\"\",IF(F43=\"Yes\",IF(ABS(M43)=0,\"Market\",IF(ABS(M43)<>0,\"Limit\")),\"\"))"
+          },
+          {
+            "cell": "U43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC3802F0>"
+          },
+          {
+            "cell": "V43",
+            "value": "<openpyxl.worksheet.formula.ArrayFormula object at 0x0000015DAC380350>"
+          },
+          {
+            "cell": "W43",
+            "value": "=IF(B43=\"\",\"\",IF(F43=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "X43",
+            "value": "=IF(B43=\"\",\"\",IF(F43=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Y43",
+            "value": "=IF(B43=\"\",\"\",IF(F43=\"Yes\",\"0\",\"\"))"
+          },
+          {
+            "cell": "Z43",
+            "value": "=IF(B43=\"\",\"\",IF(F43=\"Yes\",\"GFD\",\"\"))"
+          },
+          {
+            "cell": "AC43",
+            "value": "=IFERROR(SMALL($AM$6:$AM$901,A43),\"\")"
+          },
+          {
+            "cell": "AD43",
+            "value": "=IFERROR(SMALL($AN$6:$AN$901,A43),\"\")"
+          },
+          {
+            "cell": "AE43",
+            "value": "=IFERROR(SMALL($AO$6:$AO$901,A43),\"\")"
+          },
+          {
+            "cell": "AF43",
+            "value": "=IFERROR(SMALL($AP$6:$AP$901,A43),\"\")"
+          },
+          {
+            "cell": "AG43",
+            "value": "=IFERROR(SMALL($AQ$6:$AQ$901,A43),\"\")"
+          },
+          {
+            "cell": "AH43",
+            "value": "=IFERROR(SMALL($AR$6:$AR$901,A43),\"\")"
+          },
+          {
+            "cell": "AI43",
+            "value": "=IFERROR(SMALL($AS$6:$AS$901,A43),\"\")"
+          },
+          {
+            "cell": "AJ43",
+            "value": "=IFERROR(SMALL($AT$6:$AT$901,A43),\"\")"
+          },
+          {
+            "cell": "AK43",
+            "value": "=IFERROR(SMALL($AU$6:$AU$901,A43),\"\")"
+          },
+          {
+            "cell": "AM43",
+            "value": "=IF(ISNUMBER(SEARCH($AM$2,F43)),A43,\"\")"
+          },
+          {
+            "cell": "AN43",
+            "value": "=IF(ISNUMBER(SEARCH($AN$3,G43)),A43,\"\")"
+          },
+          {
+            "cell": "AO43",
+            "value": "=IF(ISNUMBER(SEARCH($AO$3,G43)),A43,\"\")"
+          },
+          {
+            "cell": "AP43",
+            "value": "=IF(ISNUMBER(SEARCH($AP$3,G43)),A43,\"\")"
+          },
+          {
+            "cell": "AQ43",
+            "value": "=IF(ISNUMBER(SEARCH($AQ$3,G43)),A43,\"\")"
+          },
+          {
+            "cell": "AR43",
+            "value": "=IF(ISNUMBER(SEARCH($AR$3,G43)),A43,\"\")"
+          },
+          {
+            "cell": "AS43",
+            "value": "=IF(ISNUMBER(SEARCH($AS$3,G43)),A43,\"\")"
+          }
+        ]
+      }
+    ]
+  }
+}
