@@ -1,0 +1,28 @@
+{
+  "schema_version": "s22.premarket_fanout_model.v2",
+  "stage1_scope": {
+    "enabled_symbol": "RELIANCE",
+    "strategy_instances": 1,
+    "account_scope": "one internal-paper account",
+    "substitute_allowed_if_metadata_incomplete": false
+  },
+  "steps": [
+    "load S22 definition once",
+    "load operator-enabled stock subset containing only RELIANCE for Stage 1",
+    "resolve RELIANCE dated instrument-master metadata",
+    "request generic Monthly Status for RELIANCE",
+    "obtain RELIANCE 2D/4D references",
+    "evaluate RELIANCE stock-specific option contract selection",
+    "calculate Base Entry, Target, and SL for RELIANCE",
+    "create one PreMarketStrategyPlan for the RELIANCE S22 instance",
+    "classify each instance independently"
+  ],
+  "allowed_instance_states": [
+    "PREPARED",
+    "NO_QUALIFYING_CONTRACT",
+    "BLOCKED_MISSING_DATA",
+    "BLOCKED_METADATA",
+    "DISABLED"
+  ],
+  "batching": "Monthly Status and market-reference requests may batch or cache immutable results, but outputs remain keyed per instrument."
+}

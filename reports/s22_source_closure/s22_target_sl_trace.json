@@ -1,0 +1,37 @@
+{
+  "aps": "NOT_APPLICABLE_ONE_LOT_OPTION_SELLING",
+  "branch_rules": [
+    {
+      "branch_id": "BULL_CALL",
+      "original_sl_msl": "Min(CE Entry + 60%, OPT:PRV:2DHH + 7%)",
+      "revised_sl_fsl_trp": "09:29:59 AM HH + 7%",
+      "target": "CE Entry - 60%"
+    },
+    {
+      "branch_id": "BULL_PUT",
+      "original_sl_msl": "Min(PE Entry + 60%, OPT:PRV:3DHH + 10%)",
+      "revised_sl_fsl_trp": "09:29:59 AM HH + 10%",
+      "target": "PE Entry - 60%"
+    },
+    {
+      "branch_id": "BEAR_CALL",
+      "original_sl_msl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+      "revised_sl_fsl_trp": "09:29:59 AM HH + 10%",
+      "target": "CE Entry - 60%"
+    },
+    {
+      "branch_id": "BEAR_PUT",
+      "original_sl_msl": "Min(PE Entry + 60%, OPT:PRV:2DHH + 7%)",
+      "revised_sl_fsl_trp": "09:29:59 AM HH + 7%",
+      "target": "PE Entry - 60%"
+    }
+  ],
+  "schema_version": "s22.target_sl_trace.v1",
+  "source_cells": [
+    "AB6 OS!L131:O141",
+    "AB14!F42:BG46",
+    "AB6 OS!B151:Z157"
+  ],
+  "target_quantity": "confirmed filled exchange quantity for the single lot",
+  "target_sl_hash": "418dccdbb745ce889cb0191f6f298a29c6c78ef36a65606a519ad361991d8964"
+}

@@ -1,0 +1,69 @@
+{
+  "schema_version": "s22.reliance.strategy_instance_sufficiency_audit.v1",
+  "strategy_code": "S22",
+  "stage": "STAGE1_ONE_STOCK_PROOF",
+  "instrument": "RELIANCE",
+  "account_scope": "ACCOUNT_A_INTERNAL_PAPER",
+  "trading_session_scope": "single deterministic internal-paper session",
+  "verdict": "STRATEGY_INSTANCE_SUFFICIENT",
+  "existing_abstraction": "StrategyInstanceDefinition",
+  "evidence": {
+    "domain_contract": "src/tfis/domain/strategy_identity.py",
+    "identity_fields_available": [
+      "strategy_instance_id",
+      "strategy_definition_id",
+      "strategy_version",
+      "underlying",
+      "exchange",
+      "segment",
+      "account_ref",
+      "execution_mode",
+      "lot_quantity",
+      "schedule_ref",
+      "instance_overrides"
+    ],
+    "state_isolation_contract": "PositionCycleIdentity.state_isolation_key = strategy_instance_id + trading_date + position_cycle_id",
+    "accepted_s22_identity_model": "reports/s22_universe/s22_instance_identity_model.json"
+  },
+  "assessment": [
+    {
+      "capability": "selected contract",
+      "can_be_owned_by_strategy_instance": true,
+      "reason": "The existing instance identity already binds strategy definition, version, underlying, account, segment, execution mode, and session schedule. The selected contract can be attached to the evaluation/plan for that instance."
+    },
+    {
+      "capability": "branch",
+      "can_be_owned_by_strategy_instance": true,
+      "reason": "Branch is derived from the generic Monthly Status result and S22 policy for the instance underlying."
+    },
+    {
+      "capability": "orders",
+      "can_be_owned_by_strategy_instance": true,
+      "reason": "ExecutionIntent and ClientOrder identities already include strategy instance context and account scope."
+    },
+    {
+      "capability": "PositionCycle",
+      "can_be_owned_by_strategy_instance": true,
+      "reason": "PositionCycleIdentity explicitly includes strategy_instance_id, trading_date, and product instrument identity."
+    },
+    {
+      "capability": "accounting",
+      "can_be_owned_by_strategy_instance": true,
+      "reason": "TradeFact and PnLFact can project by strategy instance, account, instrument, and position cycle without a new domain abstraction."
+    },
+    {
+      "capability": "carry",
+      "can_be_owned_by_strategy_instance": true,
+      "reason": "Carry state remains attached to the same PositionCycle for the instrument-bound strategy instance."
+    },
+    {
+      "capability": "protection",
+      "can_be_owned_by_strategy_instance": true,
+      "reason": "Protection generation is per PositionCycle and therefore isolated by strategy instance and contract identity."
+    }
+  ],
+  "new_abstraction_required": false,
+  "instrument_bound_strategy_instance_required": false,
+  "implementation_constraint": "Do not create InstrumentBoundStrategyInstance for S22 Stage 1 unless a later implementation defect proves StrategyInstance cannot isolate a stock instance.",
+  "runtime_or_domain_changes_made": false
+}

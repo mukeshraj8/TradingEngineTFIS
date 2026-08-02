@@ -1,0 +1,20 @@
+{
+  "accounting_unit_hash": "5f87bb47a810bae354bf54377bf5541a3a99b3e1931e2362465011a90133d655",
+  "configured_quantity_lots": 1,
+  "exchange_quantity_formula": "quantity_lots * lot_size",
+  "multiplier": "1 unless instrument metadata supplies a verified alternate multiplier",
+  "oi_unit": "workbook says 100 lots; runtime must compare either lots or units explicitly and not confuse OI threshold with order quantity",
+  "partial_fill_handling": "generic internal-paper PositionCycle handles confirmed exchange units; no APS splitting for one-lot S22",
+  "pnl_formula": "short option realized gross P&L = (entry_fill_price - exit_fill_price) * confirmed_exchange_quantity * multiplier",
+  "premium_unit": "per exchange unit option premium",
+  "reliance_workbook_lot_size": 250,
+  "schema_version": "s22.accounting_unit_trace.v1",
+  "source_cells": [
+    "AB11!H12/K12",
+    "AB16!K89/K96",
+    "AB16!I90/I97",
+    "AB16!W91",
+    "AB2!U27"
+  ],
+  "tick_size": 0.05
+}

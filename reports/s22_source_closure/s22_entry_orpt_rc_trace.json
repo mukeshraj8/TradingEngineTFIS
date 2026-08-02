@@ -1,0 +1,33 @@
+{
+  "branch_recalculation": [
+    {
+      "branch_id": "BULL_CALL",
+      "revised_entry": "Min(SPT:PRV:4DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation"
+    },
+    {
+      "branch_id": "BULL_PUT",
+      "revised_entry": "Max(SPT:PRV:2DHH, 09:29:59 AM LL) with branch strike/premium/entry recalculation"
+    },
+    {
+      "branch_id": "BEAR_CALL",
+      "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation"
+    },
+    {
+      "branch_id": "BEAR_PUT",
+      "revised_entry": "Max(SPT:PRV:4DHH, 09:29:59 AM LL) with branch strike/premium/entry recalculation"
+    }
+  ],
+  "call_observation_source": "selected Call option low at ORPT per AB6 OS rows 144-146",
+  "entry_orpt_rc_hash": "fc53cc11eb861fc1caf8e284b43ecb0daac701f9741f8c52046fb580e5ed3381",
+  "generic_gap_role": "diagnostic opening context only; not S22 trading authority unless future workbook source says so",
+  "missed_entry_operator": "09:24:59 AM LL < option sell entry",
+  "normal_path": "Entry Not Missed -> Place order at ORPT",
+  "orpt_time": "09:24:59.400000",
+  "put_observation_source": "selected Put option low at ORPT per AB6 OS rows 147-149",
+  "rc_path": "Entry Missed -> wait until recalculation time and recompute branch-specific strike, premium thresholds, minimum OI and option entry.",
+  "rc_time": "09:29:59.400000",
+  "schema_version": "s22.entry_orpt_rc_trace.v1",
+  "source_cells": [
+    "AB6 OS!B143:AA149"
+  ]
+}

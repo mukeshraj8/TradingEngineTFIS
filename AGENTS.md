@@ -353,6 +353,28 @@ Strategy-specific branch mapping
 
 This is a platform invariant, not an S21 implementation detail.
 
+### MULTI-INSTRUMENT STRATEGY RULE
+
+A strategy that supports multiple instruments must use:
+
+- one versioned strategy definition;
+- a versioned eligible universe;
+- an explicit operator-enabled subset;
+- independent instrument-bound strategy instances;
+- shared immutable market data;
+- isolated mutable orders, positions, lifecycle, and P&L.
+
+Prohibited:
+
+- copied strategy definitions per symbol;
+- hardcoded stock lists in engine code;
+- one mutable strategy object owning all instruments;
+- symbol-only position/order keys;
+- shared mutable state across instruments.
+
+Every instrument instance must be keyed by structured strategy, account,
+instrument, session, and PositionCycle identity.
+
 ---
 
 ## 9. Product-aware trading flow

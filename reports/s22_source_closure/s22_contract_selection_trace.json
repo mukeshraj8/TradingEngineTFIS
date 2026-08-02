@@ -1,0 +1,79 @@
+{
+  "branch_rules": [
+    {
+      "branch_id": "BULL_CALL",
+      "end_strike": "(SPT:PRV:4DLL) round down - 1 strike",
+      "ideal_premium": "SPT:PRV:4DLL * 4%",
+      "minimum_oi": "100 lots",
+      "minimum_premium": "SPT:PRV:4DLL * 3%",
+      "option_type": "CALL",
+      "source_cells": [
+        "AB6 OS!D131:M132",
+        "AB14!F42:BG42"
+      ],
+      "start_strike": "(SPT:PRV:4DLL + 10%) round down",
+      "traversal": "START_TO_END_DIRECTIONAL"
+    },
+    {
+      "branch_id": "BULL_PUT",
+      "end_strike": "(SPT:PRV:2DHH) round up + 1 strike",
+      "ideal_premium": "SPT:PRV:2DHH * 4%",
+      "minimum_oi": "100 lots",
+      "minimum_premium": "SPT:PRV:2DHH * 3%",
+      "option_type": "PUT",
+      "source_cells": [
+        "AB6 OS!F134:M135",
+        "AB14!G43:BG43"
+      ],
+      "start_strike": "(SPT:PRV:2DHH - 10%) round up",
+      "traversal": "START_TO_END_DIRECTIONAL"
+    },
+    {
+      "branch_id": "BEAR_CALL",
+      "end_strike": "(SPT:PRV:2DLL) round down - 1 strike",
+      "ideal_premium": "SPT:PRV:2DLL * 4%",
+      "minimum_oi": "100 lots",
+      "minimum_premium": "SPT:PRV:2DLL * 3%",
+      "option_type": "CALL",
+      "source_cells": [
+        "AB6 OS!D137:M138",
+        "AB14!F45:BG45"
+      ],
+      "start_strike": "(SPT:PRV:2DLL + 10%) round down",
+      "traversal": "START_TO_END_DIRECTIONAL"
+    },
+    {
+      "branch_id": "BEAR_PUT",
+      "end_strike": "(SPT:PRV:4DHH) round up + 1 strike",
+      "ideal_premium": "SPT:PRV:4DHH * 4%",
+      "minimum_oi": "100 lots",
+      "minimum_premium": "SPT:PRV:4DHH * 3%",
+      "option_type": "PUT",
+      "source_cells": [
+        "AB6 OS!F140:M141",
+        "AB14!G46:BG46"
+      ],
+      "start_strike": "(SPT:PRV:4DHH - 10%) round up",
+      "traversal": "START_TO_END_DIRECTIONAL"
+    }
+  ],
+  "contract_selection_hash": "0ecdd968e9367959d5e7f550d0d65a0b83da5e296d3cc81f57eb5441e795d9df",
+  "expiry_search": "Near monthly expiry first; Next expiry/fallback must be explicitly represented by contract evidence. AB11 provides Near and Next expiry/lot fields for the RELIANCE example.",
+  "no_contract_behavior": "NO_QUALIFYING_CONTRACT fail closed when no Near/Next candidate satisfies strike/premium/OI/quality.",
+  "schema_version": "s22.contract_selection_trace.v1",
+  "source_cells": [
+    "AB6 OS!G131:I141",
+    "AB6 OS!M145:W149",
+    "AB11!E12:X12",
+    "AB16!AK88:AP100"
+  ],
+  "stock_specific_requirements": [
+    "strike interval",
+    "lot size",
+    "available expiries",
+    "option chain",
+    "premium quote",
+    "OI quote",
+    "broker/data-provider symbols/tokens"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "inventory_hash": "bf135e1029010702fada454b07144da076dc81da8f09eecbb9ad62ba846abaae",
+  "legacy_authority_used": false,
+  "schema_version": "s22.source_inventory.v1",
+  "source_cells": [
+    {
+      "purpose": "strategy identity and timing",
+      "range": "A27:AH27",
+      "sheet": "AB2"
+    },
+    {
+      "purpose": "S22 option-selling business rules",
+      "range": "A131:AA160",
+      "sheet": "AB6 OS"
+    },
+    {
+      "purpose": "workbook S22 stock example and unique code",
+      "range": "A12:H12",
+      "sheet": "AB10"
+    },
+    {
+      "purpose": "expiry, lot size, strike factor metadata example",
+      "range": "A12:X12",
+      "sheet": "AB11"
+    },
+    {
+      "purpose": "target/SL formula cross-check",
+      "range": "A42:BG46",
+      "sheet": "AB14"
+    },
+    {
+      "purpose": "contract-selection/generated example",
+      "range": "A12:AU12",
+      "sheet": "AB15"
+    },
+    {
+      "purpose": "RELIANCE generated execution example",
+      "range": "A88:AP100",
+      "sheet": "AB16"
+    },
+    {
+      "purpose": "bulk/order label cross-check",
+      "range": "D42:E69",
+      "sheet": "AB18"
+    }
+  ],
+  "source_closure_boundary": "SOURCE_AND_UNIVERSE_ONLY_NO_S22_IMPLEMENTATION",
+  "strategy_code": "S22",
+  "unique_strategy_identity": "STOCKS_OP_SELL_MT_DIFF_2D_4D",
+  "workbooks": [
+    {
+      "path": "TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx",
+      "role": "authoritative_all_in_one_workbook",
+      "sha256": "603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd"
+    },
+    {
+      "path": "TFISRulesAndSpec/AB6 OS.xlsx",
+      "role": "extracted_option_selling_sheet",
+      "sha256": "a53249475ee6653545c9a4e984667ae405142abee657acabe17348379cadb836"
+    }
+  ]
+}

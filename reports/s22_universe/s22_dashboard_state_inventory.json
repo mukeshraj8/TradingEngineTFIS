@@ -1,0 +1,23 @@
+{
+  "schema_version": "s22.dashboard_state_inventory.v1",
+  "per_stock_instance_fields": [
+    "enabled/disabled",
+    "Monthly Status",
+    "branch",
+    "plan state",
+    "selected contract",
+    "premium/OI",
+    "entry state",
+    "ORPT/RC state",
+    "order state",
+    "PositionCycle",
+    "protection",
+    "carried state",
+    "P&L",
+    "block reason",
+    "health",
+    "evidence quality"
+  ],
+  "frontend_implemented": false,
+  "purpose": "Read-model requirements for future multi-stock S22 dashboard work."
+}

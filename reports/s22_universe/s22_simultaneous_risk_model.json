@@ -1,0 +1,21 @@
+{
+  "schema_version": "s22.simultaneous_risk_model.v1",
+  "separation": {
+    "s22_business_qualification": "Determines whether each stock instance qualifies by source-backed S22 rules.",
+    "account_portfolio_acceptance": "Determines whether qualified instances may proceed under account, margin, exposure, and operator controls."
+  },
+  "required_controls": [
+    "maximum enabled stocks",
+    "maximum active S22 positions",
+    "maximum new entries per session",
+    "maximum active orders",
+    "maximum account margin usage",
+    "maximum exposure per stock",
+    "maximum aggregate stock-option exposure",
+    "duplicate underlying prevention",
+    "one active fresh-entry cycle per S22 stock instance",
+    "carried-position interaction",
+    "priority and tie handling when capital is insufficient"
+  ],
+  "architecture_boundary": "Account allocation and portfolio gates do not belong inside S22 formula policy."
+}

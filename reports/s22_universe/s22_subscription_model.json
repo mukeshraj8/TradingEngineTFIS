@@ -1,0 +1,21 @@
+{
+  "schema_version": "s22.subscription_model.v1",
+  "subscribe_to": [
+    "enabled underlying stocks",
+    "required candidate option contracts",
+    "selected contracts",
+    "active-position contracts",
+    "carried-position contracts"
+  ],
+  "avoid": "Do not subscribe blindly to the entire option universe when S22 requires only enabled and candidate instruments.",
+  "requirements": [
+    "shared instrument owner",
+    "immutable market snapshots",
+    "subscription index",
+    "affected-instance routing",
+    "contract pinning lifecycle",
+    "stale-data handling",
+    "quote and OI freshness checks",
+    "option type, expiry, and strike isolation"
+  ]
+}

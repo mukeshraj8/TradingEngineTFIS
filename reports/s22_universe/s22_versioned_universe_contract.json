@@ -1,0 +1,79 @@
+{
+  "schema_version": "s22.versioned_universe_contract.v2",
+  "closure_decision": {
+    "classification": "USER_CLARIFIED_ARCHITECTURE_RULE",
+    "decision": "Use a versioned instrument-master snapshot applicable to the trading date as the authoritative EXCHANGE_ELIGIBLE_UNIVERSE. Workbook AB8/AB10 stock lists are historical STRATEGY_SUPPORTED_UNIVERSE evidence, not permanent current exchange-eligibility authority.",
+    "runnable_rule": "A stock is runnable only when it belongs to STRATEGY_SUPPORTED_UNIVERSE, EXCHANGE_ELIGIBLE_UNIVERSE, and OPERATOR_ENABLED_SUBSET."
+  },
+  "required_layers": [
+    {
+      "layer": "STRATEGY_SUPPORTED_UNIVERSE",
+      "authority": "WORKBOOK_VERIFIED",
+      "source": "AB8/AB10 workbook stock list and verified S22 product rules"
+    },
+    {
+      "layer": "EXCHANGE_ELIGIBLE_UNIVERSE",
+      "authority": "VERSIONED_INSTRUMENT_MASTER_SNAPSHOT",
+      "source": "dated instrument-master snapshot applicable to the trading date"
+    },
+    {
+      "layer": "OPERATOR_ENABLED_SUBSET",
+      "authority": "EXPLICIT_USER_APPROVAL",
+      "source": "versioned and auditable operator subset"
+    }
+  ],
+  "universe_contract": {
+    "universe_id": "required",
+    "universe_version": "required",
+    "effective_from": "required",
+    "effective_to": "optional",
+    "exchange": "required",
+    "product": "STOCK_OPTIONS",
+    "source": "required",
+    "source_hash": "required",
+    "symbols": "required list",
+    "exclusions": "required list",
+    "operator_enabled_subset": "required list",
+    "metadata_version": "required",
+    "validation_state": "required"
+  },
+  "per_symbol_required_fields": [
+    "structured_underlying_identity",
+    "exchange_symbol",
+    "data_provider_symbol",
+    "data_provider_token",
+    "broker_symbol",
+    "broker_token",
+    "option_eligibility",
+    "lot_size",
+    "lot_size_effective_from",
+    "lot_size_effective_to",
+    "tick_size",
+    "strike_interval",
+    "expiry_support",
+    "status",
+    "exclusion_reason"
+  ],
+  "storage_governance": {
+    "persistence": "versioned operational reference data",
+    "current_internal_paper_storage": "SQLite acceptable",
+    "preserve": [
+      "source file/reference",
+      "source hash",
+      "ingestion timestamp",
+      "effective dates",
+      "snapshot version",
+      "validation result",
+      "supersession relationship"
+    ],
+    "historical_replay_rule": "Use instrument metadata applicable to the historical trading date.",
+    "overwrite_historical_snapshots": false
+  },
+  "prohibited": [
+    "hardcode symbols in Python",
+    "treat workbook list as indefinitely current",
+    "infer F&O eligibility",
+    "silently retain symbols removed from a later dated snapshot"
+  ],
+  "implementation_status": "ARCHITECTURE_READY_NO_RUNTIME_CONFIG_CHANGE"
+}

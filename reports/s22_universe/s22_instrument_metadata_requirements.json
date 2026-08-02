@@ -1,0 +1,55 @@
+{
+  "schema_version": "s22.instrument_metadata_requirements.v2",
+  "strategy_code": "S22",
+  "decision": {
+    "classification": "USER_CLARIFIED_ARCHITECTURE_RULE",
+    "source": "versioned, trading-date-specific instrument-master snapshot",
+    "missing_stale_conflicting_or_ambiguous_metadata_result": "BLOCKED_METADATA"
+  },
+  "required_per_stock_underlying_fields": [
+    "structured instrument identity",
+    "exchange",
+    "exchange symbol",
+    "product eligibility",
+    "F&O eligibility",
+    "effective dates",
+    "market-data provider identity",
+    "broker identity"
+  ],
+  "required_option_contract_fields": [
+    "underlying identity",
+    "expiry",
+    "strike",
+    "option type",
+    "exchange contract symbol",
+    "instrument token",
+    "lot size",
+    "lot-size effective dates",
+    "tick size",
+    "strike interval",
+    "multiplier",
+    "currency",
+    "status",
+    "source/version/hash"
+  ],
+  "blocked_without_metadata": [
+    "strike traversal",
+    "candidate option subscription",
+    "contract identity",
+    "exchange quantity",
+    "P&L unit",
+    "portfolio exposure checks",
+    "dashboard identity"
+  ],
+  "quantity_rule": {
+    "configured_quantity_lots": 1,
+    "runtime_quantity_exchange_units": "configured_quantity_lots * trading-date-applicable lot_size",
+    "do_not_hardcode_in_s22_policy": [
+      "per-stock lot sizes",
+      "strike intervals",
+      "tokens",
+      "expiries"
+    ]
+  },
+  "status": "ARCHITECTURE_READY_AWAITING_VERSIONED_SNAPSHOT"
+}

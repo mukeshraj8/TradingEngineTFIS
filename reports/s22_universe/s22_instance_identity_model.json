@@ -1,0 +1,31 @@
+{
+  "schema_version": "s22.instance_identity_model.v1",
+  "identity": [
+    "strategy_definition_id",
+    "strategy_version",
+    "underlying_instrument_id",
+    "logical_or_broker_account_id",
+    "trading_session_id"
+  ],
+  "example_instances": [
+    "S22 / RELIANCE / Account A / session",
+    "S22 / TCS / Account A / session",
+    "S22 / INFY / Account A / session"
+  ],
+  "per_instance_owned_state": [
+    "Monthly Status result reference",
+    "branch",
+    "selected contract",
+    "pre-market plan",
+    "ORPT/RC state",
+    "orders",
+    "PositionCycle",
+    "lifecycle",
+    "P&L"
+  ],
+  "prohibited": [
+    "copied strategy definitions per stock",
+    "one mutable S22 object owning all stocks",
+    "symbol-only order or position keys"
+  ]
+}

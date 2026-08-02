@@ -2,6 +2,35 @@
 
 ## Current Snapshot
 
+- as of Sunday, August 2, 2026, the S22 RELIANCE Stage 1 implementation was
+  stopped at the mandatory metadata gate. Reports:
+  `reports/s22_reliance/s22_strategy_instance_sufficiency_audit.json`,
+  `reports/s22_reliance/s22_reliance_metadata_validation.json`, and
+  `reports/s22_reliance/s22_reliance_blocked_summary.md`. Verdict:
+  `S22_RELIANCE_BLOCKED`. `StrategyInstanceDefinition` is sufficient for the
+  one-stock S22 model and no `InstrumentBoundStrategyInstance` was introduced.
+  The blocking gap is missing dated RELIANCE instrument-master and market-data
+  evidence: F&O eligibility, lot size/effective date, strike interval/tick
+  size, monthly expiry availability, broker/data identifiers, option-chain,
+  premium, and OI. Runtime impact: `NONE`. Broker/paper/live routing and
+  external order/position mutation authority: `NONE`.
+- as of Sunday, August 2, 2026, S22 source and universe closure completed as a
+  source-only conditional milestone. Files were updated under
+  `reports/s22_source_closure/` and `reports/s22_universe/`. Workbook evidence
+  closes S22 identity, branch matrix, contract selection, Entry/ORPT/RC,
+  Target, SL/MSL/FSL/TRP, EOD/carry, one-lot quantity, and APS
+  non-applicability. User clarification closes `S22-Q001` and `S22-Q003`:
+  AB8/AB10 are historical `STRATEGY_SUPPORTED_UNIVERSE` evidence; current
+  exchange eligibility and per-stock metadata must come from a dated versioned
+  instrument-master snapshot. Verdict:
+  `S22_SOURCE_AND_UNIVERSE_CONDITIONAL`. Implementation readiness:
+  `READY_FOR_METADATA_GATED_ONE_STOCK_PROOF`. `S22-Q002` is closed by user
+  selection of `RELIANCE` as the only Stage 1 S22 internal-paper stock,
+  subject to dated RELIANCE instrument-master validation. If RELIANCE metadata
+  is incomplete, the next implementation must return `BLOCKED_METADATA` and
+  must not auto-substitute another stock. Runtime impact: `NONE`.
+  Broker/paper/live routing and external order/position mutation authority:
+  `NONE`.
 - as of Sunday, August 2, 2026, S21 source closure is accepted after the
   authoritative APS clarification. APS is `APS_NOT_APPLICABLE` for one-lot
   Option Selling strategies such as S21, S22 and S23. S21/S22/S23 one-lot

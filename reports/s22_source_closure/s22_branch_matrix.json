@@ -1,0 +1,124 @@
+{
+  "branch_matrix_hash": "9a63725a614d214fa05217089057b273ad81b39e496e67709083d944101ae3dd",
+  "branches": [
+    {
+      "base_entry": "OPT:PRV:4DLL - 10%",
+      "branch_id": "BULL_CALL",
+      "end_strike": "(SPT:PRV:4DLL) round down - 1 strike",
+      "ideal_premium": "SPT:PRV:4DLL * 4%",
+      "minimum_oi": "100 lots",
+      "minimum_premium": "SPT:PRV:4DLL * 3%",
+      "monthly_status": [
+        "BULL",
+        "BULL_CF"
+      ],
+      "option_type": "CALL",
+      "order_side": "SELL entry, BUY exits",
+      "original_sl_msl": "Min(CE Entry + 60%, OPT:PRV:2DHH + 7%)",
+      "revised_entry": "Min(SPT:PRV:4DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+      "revised_sl_fsl_trp": "09:29:59 AM HH + 7%",
+      "source_cells": [
+        "AB6 OS!D131:M132",
+        "AB14!F42:BG42"
+      ],
+      "start_strike": "(SPT:PRV:4DLL + 10%) round down",
+      "target": "CE Entry - 60%",
+      "traversal": "START_TO_END_DIRECTIONAL",
+      "workbook_row_ids": [
+        "S22A"
+      ]
+    },
+    {
+      "base_entry": "OPT:PRV:2DLL - 10%",
+      "branch_id": "BULL_PUT",
+      "end_strike": "(SPT:PRV:2DHH) round up + 1 strike",
+      "ideal_premium": "SPT:PRV:2DHH * 4%",
+      "minimum_oi": "100 lots",
+      "minimum_premium": "SPT:PRV:2DHH * 3%",
+      "monthly_status": [
+        "BULL",
+        "BULL_CF"
+      ],
+      "option_type": "PUT",
+      "order_side": "SELL entry, BUY exits",
+      "original_sl_msl": "Min(PE Entry + 60%, OPT:PRV:3DHH + 10%)",
+      "revised_entry": "Max(SPT:PRV:2DHH, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+      "revised_sl_fsl_trp": "09:29:59 AM HH + 10%",
+      "source_cells": [
+        "AB6 OS!F134:M135",
+        "AB14!G43:BG43"
+      ],
+      "start_strike": "(SPT:PRV:2DHH - 10%) round up",
+      "target": "PE Entry - 60%",
+      "traversal": "START_TO_END_DIRECTIONAL",
+      "workbook_row_ids": [
+        "S22B"
+      ]
+    },
+    {
+      "base_entry": "OPT:PRV:2DLL - 10%",
+      "branch_id": "BEAR_CALL",
+      "end_strike": "(SPT:PRV:2DLL) round down - 1 strike",
+      "ideal_premium": "SPT:PRV:2DLL * 4%",
+      "minimum_oi": "100 lots",
+      "minimum_premium": "SPT:PRV:2DLL * 3%",
+      "monthly_status": [
+        "BEAR",
+        "BEAR_CF"
+      ],
+      "option_type": "CALL",
+      "order_side": "SELL entry, BUY exits",
+      "original_sl_msl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+      "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+      "revised_sl_fsl_trp": "09:29:59 AM HH + 10%",
+      "source_cells": [
+        "AB6 OS!D137:M138",
+        "AB14!F45:BG45"
+      ],
+      "start_strike": "(SPT:PRV:2DLL + 10%) round down",
+      "target": "CE Entry - 60%",
+      "traversal": "START_TO_END_DIRECTIONAL",
+      "workbook_row_ids": [
+        "S22D"
+      ]
+    },
+    {
+      "base_entry": "OPT:PRV:4DLL - 10%",
+      "branch_id": "BEAR_PUT",
+      "end_strike": "(SPT:PRV:4DHH) round up + 1 strike",
+      "ideal_premium": "SPT:PRV:4DHH * 4%",
+      "minimum_oi": "100 lots",
+      "minimum_premium": "SPT:PRV:4DHH * 3%",
+      "monthly_status": [
+        "BEAR",
+        "BEAR_CF"
+      ],
+      "option_type": "PUT",
+      "order_side": "SELL entry, BUY exits",
+      "original_sl_msl": "Min(PE Entry + 60%, OPT:PRV:2DHH + 7%)",
+      "revised_entry": "Max(SPT:PRV:4DHH, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+      "revised_sl_fsl_trp": "09:29:59 AM HH + 7%",
+      "source_cells": [
+        "AB6 OS!F140:M141",
+        "AB14!G46:BG46"
+      ],
+      "start_strike": "(SPT:PRV:4DHH - 10%) round up",
+      "target": "PE Entry - 60%",
+      "traversal": "START_TO_END_DIRECTIONAL",
+      "workbook_row_ids": [
+        "S22E"
+      ]
+    }
+  ],
+  "legacy_authority_used": false,
+  "no_trade_conditions": [
+    "monthly status unavailable or invalid",
+    "no branch for status",
+    "no qualifying contract in configured expiries",
+    "missing stock metadata",
+    "operator-disabled stock",
+    "risk/account gate rejection"
+  ],
+  "precedence": "Monthly Status determines Bull/Bear family; Call and Put candidates evaluated independently from branch-specific contract evidence; account/portfolio controls decide among simultaneous qualified instances outside S22 policy.",
+  "schema_version": "s22.branch_matrix.v1"
+}

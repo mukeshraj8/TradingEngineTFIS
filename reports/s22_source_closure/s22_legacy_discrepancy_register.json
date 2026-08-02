@@ -1,0 +1,14 @@
+{
+  "schema_version": "s22.legacy_discrepancy_register.v1",
+  "strategy_code": "S22",
+  "reference_repository": "D:\\TradingEngineTFIS",
+  "legacy_authority_used": false,
+  "search_terms": [
+    "S22",
+    "STOCKS_OP_SELL_MT_DIFF_2D_4D",
+    "RELIANCE_OP_SELL_MT_DIFF_2D_4D"
+  ],
+  "legacy_matches_found": 0,
+  "classification": "CANNOT_COMPARE",
+  "reason": "No legacy S22 implementation matches were found during read-only discovery. Workbook-derived behavior remains authoritative."
+}

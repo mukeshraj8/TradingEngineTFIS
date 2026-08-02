@@ -1,0 +1,15 @@
+{
+  "carried_lifecycle_hash": "407b677250c6c3fed060b1b0b7692de9af1a3f400b5fa577dbc57e232e350420",
+  "eod_rule": "Close > Original SL exits; Close <= Original SL carries forward",
+  "equality": "USER_CLARIFIED_GLOBAL_OPTION_SELLING_CARRY",
+  "expiry_handling": "NO_AUTOMATIC_ROLLOVER_UNLESS_FUTURE_SOURCE_PROVES_OTHERWISE; unsupported expiry lifecycle fails closed",
+  "fresh_entry_gap_separate": true,
+  "normal_sl_requirement": "if FSL/TRP not missed, place the order at ORPT",
+  "original_sl_evaluation": "09:15:00 AM HH > Original SL for Call and Put carried/open positions",
+  "revised_sl_requirement": "if FSL/TRP missed, wait until 09:29:59 and calculate revised FSL/TRP from branch row",
+  "schema_version": "s22.carried_lifecycle_trace.v1",
+  "source_cells": [
+    "AB6 OS!B151:U160"
+  ],
+  "target_at_open": "REQUIRED_BY_GLOBAL_CARRIED_POSITION_PROTECTION_SEMANTICS; S22-specific target-open cells not separately found in AB6 OS S22 block"
+}

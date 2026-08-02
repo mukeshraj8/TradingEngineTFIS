@@ -1,0 +1,24 @@
+{
+  "schema_version": "s22.shared_data_isolated_state.v1",
+  "shared_immutable_data": [
+    "stock quotes",
+    "historical candles",
+    "option chains",
+    "contract quotes",
+    "open interest",
+    "instrument metadata",
+    "expiry metadata"
+  ],
+  "isolated_mutable_state_per_instance": [
+    "branch",
+    "plan",
+    "selected contract",
+    "effective entry",
+    "order state",
+    "PositionCycle",
+    "protection generation",
+    "carry state",
+    "P&L"
+  ],
+  "isolation_rule": "One stock instance's gap, contract selection, order, position, protection, carry, or P&L state must not mutate or decide another stock instance."
+}

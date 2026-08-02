@@ -1,0 +1,85 @@
+{
+  "rule_matrix_hash": "c760620874a7b27144db2f1972e409b8f1ee93fd0b74ab7e8197be1c3e1bc84a",
+  "rules": [
+    {
+      "authority": "WORKBOOK_VERIFIED",
+      "rule": "S22 is OPTIONS SELL/STOCKS/MONTHLY/DIFF 2D-4D with unique code STOCKS_OP_SELL_MT_DIFF_2D_4D.",
+      "rule_id": "S22.STRATEGY_IDENTITY.001",
+      "source": "AB2!A27:AH27"
+    },
+    {
+      "authority": "WORKBOOK_VERIFIED_AND_ARCHITECTURE_INVARIANT",
+      "rule": "One S22 strategy definition applies to stock underlyings; symbol is an instance input.",
+      "rule_id": "S22.MULTI_STOCK_DEFINITION.001",
+      "source": "AB2!D27:E27; AB10!E12 as example instance input"
+    },
+    {
+      "authority": "WORKBOOK_VERIFIED_PLUS_GENERIC_ENGINE_INVARIANT",
+      "rule": "S22 consumes independent Monthly Status per enabled stock and maps BULL/BULL_CF/BEAR/BEAR_CF to S22 branches.",
+      "rule_id": "S22.MONTHLY_STATUS_CONSUMPTION.001",
+      "source": "AB11!D12; AGENTS.md Monthly Status independence"
+    },
+    {
+      "authority": "WORKBOOK_VERIFIED",
+      "rule": "Search monthly Near first and only configured expiries; branch-specific Start/End/Last Choice strike, directional traversal, ideal/minimum premium and minimum OI are evaluated per stock.",
+      "rule_id": "S22.CONTRACT_SELECTION.001",
+      "source": "AB6 OS!G131:I141; AB6 OS!M145:W149; AB11!E12:X12"
+    },
+    {
+      "authority": "WORKBOOK_VERIFIED",
+      "rule": "At ORPT check 09:24:59 AM LL < option sell entry for Call and Put. If not missed place at ORPT; if missed wait for RC 09:29:59 and recalculate branch-specific strike/premium/entry.",
+      "rule_id": "S22.ENTRY_ORPT_RC.001",
+      "source": "AB6 OS!B143:AA149"
+    },
+    {
+      "authority": "WORKBOOK_VERIFIED",
+      "rule": "One target per one-lot Option Selling position; Target = entry - 60%; Original SL/MSL is Min(entry + 60%, branch-specific option historical high reference plus 7% or 10%).",
+      "rule_id": "S22.TARGET_SL.001",
+      "source": "AB6 OS!L131:O141; AB14!F42:BG46"
+    },
+    {
+      "authority": "WORKBOOK_VERIFIED_FOR_PROCESS_AND_GLOBAL_EOD_USER_CLARIFIED_FOR_EQUALITY",
+      "rule": "Carried/open-position SL checks use 09:15 HH > SL; if missed wait until RC and use branch-specific revised FSL/TRP. At 15:00 Close > Original SL exits; Close <= Original SL carries.",
+      "rule_id": "S22.CARRIED_LIFECYCLE.001",
+      "source": "AB6 OS!B151:U160"
+    },
+    {
+      "authority": "WORKBOOK_VERIFIED_PARTIAL_METADATA",
+      "rule": "Configured order quantity is one lot. RELIANCE workbook example lot size is 250. Exchange units = quantity_lots * lot_size. P&L uses confirmed exchange units and short-option premium difference; no double lot-size multiplication.",
+      "rule_id": "S22.QUANTITY_ACCOUNTING.001",
+      "source": "AB11!H12/K12; AB16!K89/K96; AB16!I90/I97; AB16!W91; global APS clarification"
+    },
+    {
+      "authority": "USER_CLARIFIED_ARCHITECTURE_RULE",
+      "rule": "S22 requires STRATEGY_SUPPORTED_UNIVERSE from workbook evidence, EXCHANGE_ELIGIBLE_UNIVERSE from a dated versioned instrument-master snapshot, and an explicit OPERATOR_ENABLED_SUBSET. Current runnable scope is pending user selection of the first enabled stock.",
+      "rule_id": "S22.UNIVERSE.001",
+      "source": "AB8 stock dropdown list; config/tradable_universe/liquid_stock_options.yaml; config/monthly_status_instruments.yaml"
+    }
+  ],
+  "schema_version": "s22.rule_matrix.v1",
+  "strategy_identity": {
+    "aps_applicability": "NOT_APPLICABLE_ONE_LOT_OPTION_SELLING",
+    "common_definition_applies_to_many_stocks": true,
+    "copied_definition_per_stock_prohibited": true,
+    "expiry_family": "MONTHLY",
+    "orpt": "09:24:59.400000",
+    "product": "stock option selling",
+    "quantity": "1 lot",
+    "rc": "09:29:59.400000",
+    "required_lookbacks": [
+      "2D",
+      "4D"
+    ],
+    "segment": "OPTIONS SELL",
+    "source_cells": [
+      "AB2!A27:AH27",
+      "AB6 OS!A131:C138",
+      "AB10!A12:H12"
+    ],
+    "stock_symbol_instance_input": true,
+    "strategy_code": "S22",
+    "target_count": "1 target; APS label present but global one-lot Option Selling APS clarification makes APS not applicable",
+    "underlying_type": "STOCKS",
+    "unique_code": "STOCKS_OP_SELL_MT_DIFF_2D_4D"
+  }
+}

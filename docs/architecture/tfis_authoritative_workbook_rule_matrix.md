@@ -13,11 +13,27 @@ Phase 5B Put closure trace:
 S21 source closure trace:
 `reports/s21_source_closure/s21_rule_matrix.json`.
 
+S22 source and universe closure trace:
+`reports/s22_source_closure/s22_rule_matrix.json`.
+
 Current S21 source-closure verdict:
 `S21_SOURCE_CLOSURE_ACCEPT`. No financially material S21 source questions
 remain open after the 2026-08-02 source-closure directive and APS
 clarification. S21 implementation has not started and no broker, paper, live,
 order, or position mutation authority is granted by this closure.
+
+Current S22 source/universe verdict:
+`S22_SOURCE_AND_UNIVERSE_CONDITIONAL`. Workbook rules are traced for identity,
+four branches, contract selection, Entry/ORPT/RC, Target, SL/MSL/FSL/TRP,
+EOD/carry and quantity semantics. Universe and instrument-metadata governance
+is now user-clarified: AB8/AB10 are historical strategy-supported-universe
+evidence; current exchange eligibility and per-stock metadata must come from a
+dated versioned instrument-master snapshot; no stock is runnable without an
+explicit operator-enabled subset. `S22-Q002` is closed by user selection of
+`RELIANCE` as the only Stage 1 S22 internal-paper stock, subject to dated
+instrument-master and metadata validation. No S22 implementation, runtime
+configuration, broker, paper, live, order, or position mutation authority is
+granted by this closure.
 
 ## Authority Vocabulary
 
@@ -49,6 +65,8 @@ order, or position mutation authority is granted by this closure.
 - current S23 strategy/recalculation/lifecycle code
 - Phase 5B S23 Put reports under `reports/phase5b/`
 - S21 source closure reports under `reports/s21_source_closure/`
+- S22 source and universe closure reports under
+  `reports/s22_source_closure/` and `reports/s22_universe/`
 
 Workbook hash:
 
@@ -56,6 +74,8 @@ Workbook hash:
 - SHA256 `1D2DB2C2834C2081AE21E460471CD1546D988DCF8125B312AD453BA8027BD301`
 - `TFISRulesAndSpec/All_in_One_TFIS_26-12-2023_Unprotected_Copy.xlsx`
 - SHA256 `603ea7bc09ebb0c7df2ad0202d492c9ca49e890cfefdb3f0eddb1edcbe8fbddd`
+- `TFISRulesAndSpec/AB6 OS.xlsx`
+- SHA256 `a53249475ee6653545c9a4e984667ae405142abee657acabe17348379cadb836`
 
 ## S23 Carried-Position Rules
 
@@ -77,6 +97,20 @@ Workbook hash:
 | `S21-APS-Q003-CLOSED` | `AB2!K26`, `AB6 OS!C107`, `AB15!S11`, `AB16!E79`; global APS clarification 2026-08-02 | `APS_NOT_APPLICABLE` for S21 one-lot Option Selling. No APS, no partial Target allocation, no quantity splitting, no partial PositionCycle, and no APS-specific protection adjustment. | Source-closed; implementation not started. |
 | `S21-QUANTITY-PNL-Q004-CLOSED` | `AB11!H11/K11`, `AB16!K75/K82`, `AB16!I77/I84`, `AB18!O38/O41`, `AB15!U11`; global APS/quantity clarification 2026-08-02 | Configured trading quantity is one lot. BANKNIFTY lot size is 15, so exchange quantity is 15. P&L uses confirmed exchange quantity. `500 Lots` is the OI threshold, not order quantity. `AB15!U11=2` is not execution/P&L quantity for S21 V1. | Source-closed; implementation not started. |
 | `S21-ROLLOVER-EXPIRY-Q005-CLOSED` | `AB2!X26:AA26`, `AB11!M11:P11`, `AB1!D28:K28`, `AB6 OS!J97/U97`; source-closure directive 2026-08-02 | No automatic rollover for open S21 positions in V1. Fresh entries follow approved contract-selection rules. Open positions follow verified EOD/carry and carried-position lifecycle rules. Unsupported expiry continuation fails closed for operator/user decision. | Source-closed; implementation not started. |
+
+## S22 Source And Universe Closure Rules
+
+| Rule ID | Source | Business Rule | Code Status |
+| --- | --- | --- | --- |
+| `S22-STRATEGY-IDENTITY-AB2-27` | `AB2!A27:AH27`, `AB6 OS!A131:C138`, `AB10!A12:H12` | S22 is the common stock Option Selling monthly strategy `STOCKS_OP_SELL_MT_DIFF_2D_4D`. Stock symbol is an instrument-instance input; copied strategy definitions per stock are prohibited. | Source-closed; implementation waits only for explicit enabled stock selection. |
+| `S22-BRANCH-MATRIX-AB6OS-131-141` | `AB6 OS!D131:M141`, `AB14!A42:BG46` | `BULL`/`BULL_CF` and `BEAR`/`BEAR_CF` map to independent Call and Put sell branches with branch-specific 2D/4D references, strike formulas, ideal/minimum premium filters, OI threshold, Base Entry, Target and SL/MSL formulas. | Source-closed; implementation waits only for explicit enabled stock selection. |
+| `S22-CONTRACT-SELECTION-AB6OS-131-149` | `AB6 OS!G131:I141`, `AB6 OS!M145:W149`, `AB11!E12:X12` | Contract selection uses Near monthly expiry evidence, branch-specific Start/End strike traversal, ideal premium, minimum premium, minimum OI of 100 lots, and one expiry in the workbook example. Evaluated values are stock-specific and resolved through the trading-date instrument-master snapshot and market evidence. | Source-closed; instrument-master architecture ready. |
+| `S22-ENTRY-ORPT-RC-AB6OS-143-149` | `AB6 OS!B143:AA149` | At ORPT, compare `09:24:59 AM LL < option sell entry`. If not missed, place at ORPT; if missed, wait until RC `09:29:59` and recalculate branch-specific strike, premium and entry. | Source-closed; implementation waits only for explicit enabled stock selection. |
+| `S22-TARGET-SL-FSL-TRP-AB6OS-131-157` | `AB6 OS!M131:O141`, `AB6 OS!M153:M157`, `AB14!F42:BG46` | Target is entry minus 60 percent. Original SL/MSL is the workbook `Min(entry + 60%, branch option high reference + 7% or +10%)`. Carried-position missed-SL recalculation uses the branch-specific `09:29:59 AM HH + 7%` or `+10%` FSL/TRP rule. | Source-closed; implementation waits only for explicit enabled stock selection. |
+| `S22-EOD-CARRY-AB6OS-159-160` | `AB6 OS!F159:J160`, `AB6 OS!Q159:U160`; global Option Selling EOD rule for equality | At 15:00, close greater than Original SL exits. Close less than or equal to Original SL carries forward. Equality is user-clarified globally for Option Selling. | Source-closed; implementation waits only for explicit enabled stock selection. |
+| `S22-QUANTITY-ACCOUNTING-ONE-LOT` | `AB11!H12/K12`, `AB16!I90:W91`; global APS clarification; S22 universe closure directive | S22 Option Selling stores `configured_quantity_lots = 1`. Runtime resolves `quantity_exchange_units = configured_quantity_lots * trading-date-applicable lot_size` from the versioned instrument master. APS is not applicable. P&L must use confirmed exchange units and must not double-multiply lot size. | Source-closed; instrument-master architecture ready. |
+| `S22-UNIVERSE-GOVERNANCE` | `AB8`, `AB10`, S22 universe closure directive 2026-08-02 | AB8/AB10 are historical `STRATEGY_SUPPORTED_UNIVERSE` evidence. `EXCHANGE_ELIGIBLE_UNIVERSE` must come from a dated versioned instrument-master snapshot. `OPERATOR_ENABLED_SUBSET` requires explicit user-approved symbols. A stock is runnable only when it belongs to all required layers. | Architecture-ready. Stage 1 user-selected stock is `RELIANCE`. |
+| `S22-STAGE1-RELIANCE-OPERATOR-SELECTION` | User clarification 2026-08-02 | Enable `RELIANCE` as the only Stage 1 S22 internal-paper stock, with one instrument-bound S22 strategy instance and one internal-paper account. Before implementation, dated instrument-master metadata must confirm F&O eligibility, lot size/effective date, strike interval/tick size, monthly option expiry availability, broker/data identifiers, and usable option-chain/premium/OI evidence. If incomplete, return `BLOCKED_METADATA` and do not select a substitute automatically. | Operator selection closed; implementation gated by RELIANCE metadata validation. |
 
 | Rule ID | Source | Business Rule | Code Status |
 | --- | --- | --- | --- |

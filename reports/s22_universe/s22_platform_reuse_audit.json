@@ -1,0 +1,23 @@
+{
+  "schema_version": "s22.platform_reuse_audit.v1",
+  "strategy_code": "S22",
+  "items": [
+    {"capability": "Monthly Status", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Market Structure", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Contract Selection boundary", "classification": "S22_POLICY_ONLY", "change_required": "S22 policy/config only after universe closure"},
+    {"capability": "Entry", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Gap/Missed Entry", "classification": "S22_POLICY_ONLY", "change_required": "S22 ORPT/RC policy only"},
+    {"capability": "Runtime", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Persistence", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Reconciliation", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "ExecutionIntent", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "AccountCoordinator", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Orders/fills", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "PositionCycle", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Lifecycle", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Accounting", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "TradeFact/PnLFact", "classification": "REUSE_UNCHANGED", "change_required": "No"},
+    {"capability": "Operator controls", "classification": "CONFIG_EXTENSION_ONLY", "change_required": "Enabled subset and simultaneous-risk limits"}
+  ],
+  "generic_code_change_required_now": false
+}

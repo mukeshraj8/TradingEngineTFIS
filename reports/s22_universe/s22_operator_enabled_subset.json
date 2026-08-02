@@ -1,0 +1,66 @@
+{
+  "schema_version": "s22.operator_enabled_subset.v3",
+  "strategy_code": "S22",
+  "required_layer": "OPERATOR_ENABLED_SUBSET",
+  "current_config_path": "config/tradable_universe/liquid_stock_options.yaml",
+  "current_enabled_symbols": [
+    "RELIANCE"
+  ],
+  "status": "STAGE1_SELECTED_PENDING_METADATA_VALIDATION",
+  "rule": "A stock may be evaluated only when it is strategy-supported, exchange-eligible for the date, and explicitly operator-enabled.",
+  "decision": "RELIANCE is the only Stage 1 operator-enabled S22 internal-paper stock, subject to dated instrument-master and metadata validation. Do not select a substitute automatically if RELIANCE metadata is incomplete.",
+  "approval": {
+    "question_id": "S22-Q002",
+    "classification": "USER_CLARIFIED_OPERATOR_SELECTION",
+    "stage": 1,
+    "enabled_symbols": [
+      "RELIANCE"
+    ],
+    "account_scope": "one internal-paper account",
+    "strategy_instances": "one S22 instrument-bound strategy instance",
+    "approval_date": "2026-08-02",
+    "source_hash": "N/A_USER_CLARIFICATION_IN_CONVERSATION"
+  },
+  "metadata_gate_before_implementation": {
+    "required_result_if_incomplete": "BLOCKED_METADATA",
+    "required_confirmations": [
+      "F&O eligibility for the test trading date",
+      "lot size and effective date",
+      "strike interval and tick size",
+      "monthly option expiry availability",
+      "broker and market-data identifiers",
+      "usable option-chain, premium and OI evidence"
+    ]
+  },
+  "staged_onboarding": [
+    {
+      "stage": 1,
+      "scope": "exactly one user-selected stock, one internal-paper account, one S22 instrument-bound strategy instance"
+    },
+    {
+      "stage": 2,
+      "scope": "at least three user-selected stocks with different prices, lot sizes, and strike intervals"
+    },
+    {
+      "stage": 3,
+      "scope": "wider explicitly approved subset"
+    }
+  ],
+  "required_fields": [
+    "subset_id",
+    "subset_version",
+    "effective_from",
+    "effective_to",
+    "strategy_definition_id",
+    "account scope",
+    "enabled symbols",
+    "excluded symbols and reasons",
+    "maximum active instruments",
+    "operator/source",
+    "approval timestamp",
+    "source hash"
+  ],
+  "runtime_config_changed": false,
+  "runtime_authority_granted": false,
+  "broker_paper_live_authority": "NONE"
+}

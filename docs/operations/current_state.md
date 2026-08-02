@@ -6,6 +6,35 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Sunday, August 2, 2026, the S22 RELIANCE Stage 1 implementation gate
+  was evaluated under `reports/s22_reliance/`. `StrategyInstanceDefinition` is
+  sufficient for modeling one S22 RELIANCE/account/session instance; no
+  `InstrumentBoundStrategyInstance` abstraction is required by the current
+  evidence. The implementation is blocked at Checkpoint 3 because no dated
+  versioned RELIANCE instrument-master snapshot is present to confirm current
+  F&O eligibility, lot size/effective date, strike interval/tick size, monthly
+  expiry availability, broker/data identifiers, and usable option-chain,
+  premium, and OI evidence. Verdict: `S22_RELIANCE_BLOCKED` /
+  `BLOCKED_METADATA`. No PreMarketStrategyPlan, ExecutionIntent, internal-paper
+  order, PositionCycle, TradeFact, or PnLFact was created for RELIANCE.
+  Runtime impact: `NONE`. Broker/paper/live authority: `NONE`.
+- as of Sunday, August 2, 2026, S22 source and universe closure is conditionally
+  accepted under `reports/s22_source_closure/` and `reports/s22_universe/`.
+  Workbook evidence closes S22 identity, four branches, contract selection,
+  Entry/ORPT/RC, Target, SL/MSL/FSL/TRP, EOD/carry, one-lot quantity, and APS
+  non-applicability. User clarification closes the universe and instrument
+  metadata architecture: AB8/AB10 are historical
+  `STRATEGY_SUPPORTED_UNIVERSE` evidence; current `EXCHANGE_ELIGIBLE_UNIVERSE`
+  and per-stock metadata must come from a dated versioned instrument-master
+  snapshot; `OPERATOR_ENABLED_SUBSET` requires explicit user-approved symbols.
+  Verdict: `S22_SOURCE_AND_UNIVERSE_CONDITIONAL`. `S22-Q002` is now closed by
+  user selection of `RELIANCE` as the only Stage 1 S22 internal-paper stock.
+  The next implementation gate is dated RELIANCE instrument-master validation:
+  F&O eligibility, lot size/effective date, strike interval/tick size, monthly
+  option expiry availability, broker/data identifiers, and usable
+  option-chain/premium/OI evidence must be present. If incomplete, the next
+  task must return `BLOCKED_METADATA` and must not auto-substitute another
+  stock. Runtime impact: `NONE`. Broker/paper/live authority: `NONE`.
 - as of Sunday, August 2, 2026, S21 source closure is accepted after the
   authoritative APS clarification. APS is `APS_NOT_APPLICABLE` for S21/S22/S23
   and other one-lot Option Selling strategies using the same trading model:
