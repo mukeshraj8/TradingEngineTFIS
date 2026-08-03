@@ -6,6 +6,46 @@ way.
 
 ## Immediate Next Priorities
 
+0.672. `RUN_TOMORROW_BEFORE_OPEN_FULL_UNIFIED_SESSION` The next exact critical
+   path is one full unified internal-paper session from before market open on
+   the patched code path. Today's after-market closure moved readiness to
+   `CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF`: the heartbeat is terminal
+   `STOPPED`, the late-start session did enter `EOD_PROCESSING` at the 15:00
+   boundary, the old PIDs are gone, and bounded deterministic cadence proof is
+   now recorded under `reports/live_closure_20260803/`. The remaining proof is
+   a fresh before-open real session only.
+
+0.671. `USE_AUTHORITATIVE_AFTER_MARKET_CLOSURE_PACK` Govern tomorrow's operator
+   startup from:
+   `reports/unified_readiness/authoritative_readiness_projection.json`,
+   `reports/live_closure_20260803/eod_scheduler_result.json`,
+   `reports/live_closure_20260803/final_checkpoint_result.json`, and
+   `reports/live_closure_20260803/fresh_supervisor_cadence_final.json`.
+   Treat the old live summary `EOD_PROCESSING` terminal state as a historical
+   reporting gap from the pre-fix PID, not as the current repo truth.
+
+0.6705. `KEEP_TCS_DISABLED_PENDING_ONE_EXACT_GAP` `TCS` now has dated live
+   FYERS read-only metadata and remains disabled in
+   `config/s22_multi_stock_registry.yaml`. Its remaining enablement gap is
+   `BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY`; no simultaneous qualifying-stock
+   priority rule has been approved yet.
+
+0.6704. `KEEP_INFY_DISABLED_AND_BLOCKED` `INFY` remains disabled and must not
+   be enabled from the current capture set. The latest authoritative
+   classification is `BLOCKED_STRIKE_INTERVAL_EVIDENCE`: the read-only capture
+   proved irregular strike spacing but did not prove safe strike traversal for
+   contract selection.
+
+0.67. `KEEP_TOMORROW_SCOPE_TIGHT` Keep tomorrow focused: do not add new
+   strategies, do not enable TCS or INFY, and do not add external broker order
+   authority while the before-open full-session proof is still pending.
+
+0.665. `WAIT_FOR_EXPLICIT_APPROVAL` Keep RELIANCE as the only enabled S22 stock.
+   `TCS` and `INFY` are now prepared as disabled candidates in
+   `config/s22_multi_stock_registry.yaml`, but both remain source- and
+   metadata-gated. Before enabling either candidate, capture a dated versioned
+   read-only metadata snapshot and receive explicit operator approval.
+
 0.66. `NO_GO_UNTIL_CLEARED` Do not start the next full unified
    pre-market-to-EOD internal-paper session until all three gates are green:
    FYERS read-only session validation must pass, the existing late-start

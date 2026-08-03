@@ -1,0 +1,82 @@
+{
+  "schema_version": "tfis.live_closure.cadence_stage_breakdown.v1",
+  "captured_at": "2026-08-03T14:39:46.564467+05:30",
+  "running_session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+  "running_pid": 16256,
+  "configured_poll_seconds": 5.0,
+  "observed_average_loop_seconds": 7.21,
+  "measurement_mode": "CURRENT_RUNNING_PROCESS_V1_REPORT_PLUS_CODE_PATH_INSPECTION",
+  "root_cause_summary": [
+    "The running supervisor adds a fixed sleep of poll_seconds after work completes, so loop cadence becomes work_time plus poll_seconds.",
+    "Current live code path also performs sequential read-only broker work inside the poll loop: authentication revalidation, underlying quote batch, selected-contract quote reads, RELIANCE option-chain refresh, persistence, checkpointing, and dashboard publication.",
+    "The committed code fix in src/tfis/runtime/multi_strategy/supervisor.py now sleeps only until the earlier of the next poll deadline or the next critical market-time boundary, but that fix is not active in the already-running PID 16256 session."
+  ],
+  "stage_breakdown": [
+    {
+      "stage": "broker_authentication",
+      "runs_every_cycle": false,
+      "required_every_cycle": false,
+      "status": "CACHED_FOR_300S_WHEN_HEALTHY"
+    },
+    {
+      "stage": "provider_underlying_quotes",
+      "runs_every_cycle": true,
+      "required_every_cycle": true,
+      "status": "BATCHED_SESSION_SCOPE"
+    },
+    {
+      "stage": "provider_symbol_master_nsefo",
+      "runs_every_cycle": false,
+      "required_every_cycle": false,
+      "status": "CACHED_AFTER_FIRST_SUCCESS"
+    },
+    {
+      "stage": "provider_selected_contract_quote",
+      "runs_every_cycle": true,
+      "required_every_cycle": true,
+      "status": "PER_INSTANCE"
+    },
+    {
+      "stage": "provider_option_chain",
+      "runs_every_cycle": false,
+      "required_every_cycle": false,
+      "status": "RELIANCE_REFRESHED_BY_TTL"
+    },
+    {
+      "stage": "recovery_snapshot",
+      "runs_every_cycle": false,
+      "required_every_cycle": false,
+      "status": "CACHED_BY_TTL"
+    },
+    {
+      "stage": "dashboard_projection_build",
+      "runs_every_cycle": true,
+      "required_every_cycle": true,
+      "status": "IN_PROCESS"
+    },
+    {
+      "stage": "dashboard_snapshot_write",
+      "runs_every_cycle": true,
+      "required_every_cycle": false,
+      "status": "SKIPS_ON_NO_CHANGE"
+    },
+    {
+      "stage": "checkpoint_write",
+      "runs_every_cycle": true,
+      "required_every_cycle": false,
+      "status": "SKIPS_ON_NO_CHANGE"
+    },
+    {
+      "stage": "sqlite_runtime_persistence",
+      "runs_every_cycle": true,
+      "required_every_cycle": false,
+      "status": "SKIPS_ON_NO_CHANGE"
+    },
+    {
+      "stage": "live_supervisor_reports",
+      "runs_every_cycle": false,
+      "required_every_cycle": false,
+      "status": "PERIODIC_OR_FINAL"
+    }
+  ]
+}

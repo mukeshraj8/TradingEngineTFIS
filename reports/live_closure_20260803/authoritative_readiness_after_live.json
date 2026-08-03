@@ -1,0 +1,57 @@
+{
+  "authority_mode": "INTERNAL_PAPER_ONLY",
+  "blocking_reasons": [
+    "Fresh optimized live supervisor averaged approximately 7.21 seconds per loop over 97 observed iterations against a configured 5.0 second poll interval.",
+    "Current fresh proof is a late-start observation session and therefore does not yet replace the required before-market-open complete-session cadence proof.",
+    "DUPLICATE_SUPERVISOR_PROCESS_LOCK_PRESENT"
+  ],
+  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "external_broker_order_authority": "NONE",
+  "go_for_next_complete_session": false,
+  "governing_inputs": {
+    "complete_session_preflight": {
+      "captured_at": "2026-08-03T13:31:41.727215+05:30",
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\live_supervisor\\complete_session_preflight.json",
+      "reasons": [],
+      "verdict": "READY_FOR_COMPLETE_UNIFIED_SESSION"
+    },
+    "current_supervisor_heartbeat": {
+      "late_start_mode": true,
+      "path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\heartbeat.json",
+      "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+      "state": "LIVE_OBSERVATION",
+      "timestamp": "2026-08-03T13:45:11.214070+05:30"
+    },
+    "current_supervisor_pid_metadata": {
+      "active_process_lock": true,
+      "created_at": "2026-08-03T08:03:31.870744+00:00",
+      "path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\continuous_unified_supervisor.pid.json",
+      "pid": 16256
+    },
+    "dashboard_market_session_readiness": {
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\dashboard_v1\\market_session_readiness.json",
+      "readiness": "READY_FOR_UNIFIED_MARKET_SESSION",
+      "verdict": "TFIS_RUNTIME_VALIDATION_ACCEPT"
+    },
+    "runtime_next_session_readiness": {
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\runtime_performance\\next_session_readiness.json",
+      "reasons": [
+        "Fresh optimized live supervisor averaged approximately 7.21 seconds per loop over 97 observed iterations against a configured 5.0 second poll interval.",
+        "Current fresh proof is a late-start observation session and therefore does not yet replace the required before-market-open complete-session cadence proof."
+      ],
+      "verdict": "BLOCKED_BY_RUNTIME_CADENCE"
+    }
+  },
+  "next_required_actions": [
+    "Refresh FYERS read-only authentication until diagnostics return AUTHENTICATED.",
+    "Gracefully stop the current late-start supervisor if it is still active.",
+    "Re-run complete-session preflight and require READY_FOR_COMPLETE_UNIFIED_SESSION.",
+    "Start one fresh before-market-open unified supervisor run on the optimized code path."
+  ],
+  "schema_version": "tfis.unified_internal_paper.authoritative_readiness_projection.v1",
+  "verdict": "NO_GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION",
+  "warnings": [
+    "DETERMINISTIC_DASHBOARD_READINESS_IS_SUPPORTING_EVIDENCE_ONLY",
+    "CURRENT_SUPERVISOR_SESSION_IS_LATE_START_OBSERVATION_MODE"
+  ]
+}

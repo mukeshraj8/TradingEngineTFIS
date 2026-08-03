@@ -1,0 +1,25 @@
+{
+  "captured_at": "2026-08-03T15:25:15.888273+05:30",
+  "matrix": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+      "aggregate_option_selling_exposure": 3,
+      "decision": "DEFERRED_INTENT",
+      "max_margin_usage_pct": 25,
+      "max_positions": 1
+    },
+    "S22_RELIANCE_INTERNAL_PAPER_A": {
+      "aggregate_option_selling_exposure": 3,
+      "decision": "DEFERRED_INTENT",
+      "max_margin_usage_pct": 20,
+      "max_positions": 1
+    },
+    "S23_NIFTY_INTERNAL_PAPER_A": {
+      "aggregate_option_selling_exposure": 3,
+      "decision": "DEFERRED_INTENT",
+      "max_margin_usage_pct": 25,
+      "max_positions": 1
+    }
+  },
+  "schema_version": "tfis.live_supervisor.account_risk_acceptance_matrix.v1",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER"
+}

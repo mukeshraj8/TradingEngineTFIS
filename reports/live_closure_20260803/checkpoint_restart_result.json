@@ -1,0 +1,11 @@
+{
+  "active_process_lock_present": false,
+  "captured_at": "2026-08-03T16:55:03.969268+05:30",
+  "checkpoint_available": true,
+  "heartbeat_terminal_state": "STOPPED",
+  "known_gap": "OLD_RUNNING_PID_NEVER_PUBLISHED_STOPPED_SUMMARY",
+  "restart_blocker": null,
+  "schema_version": "tfis.live_closure.checkpoint_restart_result.v2",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+  "verdict": "READY_FOR_FRESH_NEXT_SESSION_PREFLIGHT"
+}

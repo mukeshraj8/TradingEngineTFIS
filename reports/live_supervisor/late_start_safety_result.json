@@ -1,0 +1,8 @@
+{
+  "captured_at": "2026-08-03T15:25:15.888273+05:30",
+  "late_start_mode": true,
+  "mode": "INTERNAL_PAPER_LATE_START_NO_NEW_ENTRY",
+  "retroactive_entry_blocked": true,
+  "schema_version": "tfis.live_supervisor.late_start_safety.v1",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER"
+}

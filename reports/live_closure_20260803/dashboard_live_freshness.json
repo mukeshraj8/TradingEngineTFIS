@@ -1,0 +1,24 @@
+{
+  "capture_classification_present": false,
+  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "dashboard_health": {
+    "broker_order_authority": "NONE",
+    "status": "HEALTHY"
+  },
+  "dashboard_url": "http://127.0.0.1:8766/index.html",
+  "evidence_labels": [
+    "DETERMINISTIC_TIMING_SUPPLEMENT",
+    "FIXTURE_BACKED",
+    "INTERNAL_PAPER_SIMULATED",
+    "LIVE_FYERS_READ_ONLY_CAPTURE",
+    "MISSED_BEFORE_SUPERVISOR_START",
+    "NO_EXTERNAL_ORDER_AUTHORITY"
+  ],
+  "health_url": "http://127.0.0.1:8766/api/health",
+  "meets_required_labels": false,
+  "missing_required_labels": [],
+  "schema_version": "tfis.live_closure.dashboard_live_freshness.v1",
+  "snapshot_last_write_time": "2026-08-03T13:45:06.063880+05:30",
+  "snapshot_path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_dashboard_v1\\api\\snapshot.json",
+  "snapshot_url": "http://127.0.0.1:8766/api/snapshot.json"
+}

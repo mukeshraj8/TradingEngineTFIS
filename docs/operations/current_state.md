@@ -6,6 +6,73 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Monday, August 3, 2026 after market close, the fast-track closure lane
+  is `CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF`. The live unified
+  supervisor session `NSE:2026-08-03:UNIFIED_INTERNAL_PAPER` is no longer
+  running, the terminal heartbeat is `STOPPED` at `15:30:02 IST`, and the old
+  owner/wrapper PIDs are gone. Today's late-start observation did transition
+  all three strategy streams into `EOD_PROCESSING` at approximately
+  `15:00:02.64-15:00:02.67 IST`, so the 15:00 boundary was not missed, but the
+  historical live report never published a final `STOPPED` summary and no
+  once-only EOD lifecycle event was persisted. The checkpoint/heartbeat truth
+  and the source fix are both now captured under
+  `reports/live_closure_20260803/`. The patched scheduler path is now proved
+  in deterministic bounded harness runs: the loop sleeps only the remaining
+  time to the next cycle deadline, wakes on earlier ORPT/RC/EOD boundaries,
+  and no longer adds a full extra `poll_seconds` after work completion.
+  Readiness therefore advances from `NO_GO` to
+  `CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF` in
+  `reports/unified_readiness/authoritative_readiness_projection.json`. S22
+  multi-stock truth is now sharper: `TCS` remains disabled but
+  metadata-ready-conditional pending one exact gap
+  (`BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY`), while `INFY` remains disabled
+  and blocked at `BLOCKED_STRIKE_INTERVAL_EVIDENCE` because read-only capture
+  proved irregular strike spacing without proving safe traversal. External
+  broker-order authority remains `NONE`.
+- as of Monday, August 3, 2026 at 14:40 IST, the fast-track continuation lane
+  is `CONDITIONAL` pre-EOD. The running unified supervisor is still the same
+  protected live observation session with owner `pid 16256` and wrapper
+  `pid 17604` on `NSE:2026-08-03:UNIFIED_INTERNAL_PAPER`; heartbeat and
+  checkpoint updates are still advancing and the repo classifies the current
+  NSE session state as `LIVE`. FYERS read-only diagnostics have been
+  revalidated as `AUTHENTICATED` through the canonical boundary, external
+  broker-order authority remains `NONE`, and fresh TCS/INFY read-only captures
+  completed under `data/strategies/S22/fyers_read_only_snapshots/2026-08-03/`.
+  Candidate reports and sanitized fixtures are now under
+  `reports/s22_multi_stock/` and `tests/fixtures/s22_multi_stock/`. The exact
+  cadence root cause is now closed in code for the next run: the supervisor had
+  been sleeping a full `poll_seconds` after work completed, which turned a
+  `~2.2s` work loop into the observed `~7.21s` live cadence. The next-session
+  code path now sleeps only until the earlier of the next poll deadline or the
+  next critical market-time boundary, but that fix is not active in the
+  already-running live PID and still requires a future restart plus a
+  before-open proof. EOD dispatch, carry observation, graceful stop, and final
+  restart assessment remain pending the post-15:00 window. Governing artifacts:
+  `reports/live_closure_20260803/cadence_stage_breakdown.json`,
+  `reports/live_closure_20260803/critical_scheduler_independence.json`, and
+  `reports/s22_multi_stock/candidate_activation_decision_pack.json`.
+- as of Monday, August 3, 2026 at 13:45 IST, the fast-track live-closure lane
+  is `CONDITIONAL`. FYERS read-only authentication is healthy, the obsolete
+  late-start supervisor (`pid 9704`) stopped cleanly, and one fresh optimized
+  unified supervisor session was started at approximately `13:33 IST` with
+  owner `pid 16256` on session
+  `NSE:2026-08-03:UNIFIED_INTERNAL_PAPER`. Dashboard health is `HEALTHY`,
+  broker-order authority remains `NONE`, subscription ownership is isolated for
+  `BANKNIFTY`, `RELIANCE`, and `NIFTY`, and heartbeat advancement is live.
+  However, fresh cadence evidence remains blocked: the running session is still
+  averaging above the configured `5s` poll target, and today's proof began
+  after the authoritative fresh-entry windows. `reports/live_closure_20260803/`
+  and `reports/unified_readiness/authoritative_readiness_projection.json`
+  capture this truth. Verdict for the next complete session remains
+  `NO_GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION`.
+- as of Monday, August 3, 2026 at 13:45 IST, the S22 multi-stock onboarding
+  foundation is now prepared under `reports/s22_multi_stock/` and
+  `config/s22_multi_stock_registry.yaml`. RELIANCE remains the only
+  operator-enabled S22 stock. `TCS` and `INFY` are modeled as disabled
+  candidate instances with `BLOCKED_METADATA` and `NOT_APPROVED` gates. The
+  RELIANCE capture contract is now generic at the interface level through
+  `scripts/capture_s22_reliance_fyers_snapshot.py --symbol <SYMBOL>`, while
+  preserving backward compatibility and external broker-order authority `NONE`.
 - as of Monday, August 3, 2026 at 12:45 IST, a production-readiness review of
   the complete unified S21/S22/S23 internal-paper platform is `NO_GO` for the
   next full pre-market-to-EOD session. Two clear runtime defects were fixed in

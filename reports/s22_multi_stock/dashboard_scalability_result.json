@@ -1,0 +1,17 @@
+{
+  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "frontend_strategy_specific_code_required": false,
+  "implemented": [
+    "strategy table rendering",
+    "filter/search input",
+    "per-row evidence quality",
+    "aggregate command-centre summary"
+  ],
+  "pending_before_many_stock_scale": [
+    "sorting",
+    "grouping by strategy/account/instrument",
+    "pagination or virtualization for larger S22 row counts"
+  ],
+  "schema_version": "s22.multi_stock.dashboard_scalability_result.v1",
+  "verdict": "CONDITIONAL_READY_FOR_SMALL_ROW_EXPANSION_ONLY"
+}

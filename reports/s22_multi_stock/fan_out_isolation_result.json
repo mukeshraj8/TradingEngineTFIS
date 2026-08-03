@@ -1,0 +1,52 @@
+{
+  "captured_at": "2026-08-03T16:55:03.969268+05:30",
+  "isolated_mutable_state": [
+    "selected contract",
+    "plan",
+    "ORPT/RC state",
+    "orders",
+    "PositionCycle",
+    "protection",
+    "carry",
+    "TradeFact/PnLFact",
+    "dashboard row"
+  ],
+  "scenario_results": [
+    {
+      "result": "PASS",
+      "scenario": "RELIANCE prepared"
+    },
+    {
+      "result": "PASS",
+      "scenario": "TCS disabled candidate row remains isolated from RELIANCE"
+    },
+    {
+      "result": "PASS",
+      "scenario": "INFY disabled candidate row remains isolated from RELIANCE"
+    },
+    {
+      "result": "MODELLED_BY_EXISTING_GENERIC_POSITION_CYCLE",
+      "scenario": "RELIANCE carried position plus fresh TCS candidate"
+    },
+    {
+      "result": "BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY",
+      "scenario": "RELIANCE and TCS qualify simultaneously"
+    },
+    {
+      "result": "BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY",
+      "scenario": "RELIANCE, TCS, and INFY qualify simultaneously"
+    },
+    {
+      "result": "BLOCKED_STRIKE_INTERVAL_EVIDENCE",
+      "scenario": "INFY safe strike traversal"
+    }
+  ],
+  "schema_version": "s22.multi_stock.fan_out_isolation_result.v2",
+  "shared_immutable_data": [
+    "monthly status batch requests",
+    "symbol master",
+    "option-chain source",
+    "account risk envelope"
+  ],
+  "verdict": "CONDITIONAL_PRIORITY_AND_INFY_BLOCKED"
+}

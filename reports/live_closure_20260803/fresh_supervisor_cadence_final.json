@@ -1,0 +1,80 @@
+{
+  "bounded_supervisor_validation": "DETERMINISTIC_HARNESS",
+  "captured_at": "2026-08-03T16:55:03.969268+05:30",
+  "critical_event_wake_seconds": {
+    "eod": 2.0,
+    "orpt": 1.4,
+    "rc": 1.4
+  },
+  "cycle_start_to_start_seconds": {
+    "maximum": 7.0,
+    "median": 5.0,
+    "minimum": 5.0,
+    "p90": 7.0
+  },
+  "poll_seconds": 5.0,
+  "scenarios": [
+    {
+      "final_state": "WAITING_FOR_MARKET",
+      "sleep_calls": [
+        4.5,
+        4.5
+      ],
+      "start_to_start_intervals": [
+        5.0,
+        5.0
+      ],
+      "starts": [
+        0.0,
+        5.0,
+        10.0
+      ],
+      "work_seconds": 0.5
+    },
+    {
+      "final_state": "WAITING_FOR_MARKET",
+      "sleep_calls": [
+        3.0,
+        3.0
+      ],
+      "start_to_start_intervals": [
+        5.0,
+        5.0
+      ],
+      "starts": [
+        0.0,
+        5.0,
+        10.0
+      ],
+      "work_seconds": 2.0
+    },
+    {
+      "final_state": "WAITING_FOR_MARKET",
+      "sleep_calls": [],
+      "start_to_start_intervals": [
+        7.0,
+        7.0
+      ],
+      "starts": [
+        0.0,
+        7.0,
+        14.0
+      ],
+      "work_seconds": 7.0
+    }
+  ],
+  "scheduler_drift_summary": {
+    "work_0_5s_with_5s_poll": "start-to-start stayed at 5.0s with remaining sleep 4.5s",
+    "work_2_0s_with_5s_poll": "start-to-start stayed at 5.0s with remaining sleep 3.0s",
+    "work_7_0s_with_5s_poll": "no extra poll sleep applied; next cycle began immediately after work"
+  },
+  "schema_version": "tfis.live_closure.patched_cadence_benchmark.v2",
+  "unit_test_evidence": [
+    "test_next_sleep_seconds_uses_remaining_poll_budget_instead_of_fixed_post_work_sleep",
+    "test_next_sleep_seconds_prefers_critical_event_boundary_over_later_poll_deadline",
+    "test_seconds_until_next_critical_event_in_late_start_mode_skips_orpt_and_rc_but_keeps_eod",
+    "test_supervisor_skips_no_change_snapshot_checkpoint_and_reports_within_intervals",
+    "test_supervisor_reports_stopped_final_state_after_until_time_boundary"
+  ],
+  "verdict": "PATCHED_DETERMINISTIC_PATH_PROVED"
+}

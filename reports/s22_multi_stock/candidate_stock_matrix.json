@@ -1,0 +1,93 @@
+{
+  "schema_version": "s22.multi_stock.candidate_stock_matrix.v2",
+  "captured_at": "2026-08-03T14:39:46.564467+05:30",
+  "stage1_enabled_symbol": "RELIANCE",
+  "candidate_recommendation_order": [
+    "TCS",
+    "INFY"
+  ],
+  "rows": [
+    {
+      "symbol": "RELIANCE",
+      "operator_enabled": true,
+      "approval_state": "APPROVED_INTERNAL_PAPER",
+      "decision": "KEEP_ENABLED",
+      "metadata_quality": "READY_STAGE1",
+      "lot_size": 500,
+      "lot_size_effective_date": "2026-07-31",
+      "tick_size": "0.05",
+      "strike_interval": "LIVE_SESSION_SELECTION_CONTINUITY_ONLY",
+      "near_next_monthly_expiries": [
+        "2026-08-27",
+        "2026-09-24"
+      ],
+      "option_chain_availability": "LIVE_SESSION_SELECTION_CONTINUITY_ONLY",
+      "premium_coverage": "LIVE_SESSION_SELECTION_CONTINUITY_ONLY",
+      "oi_coverage": "LIVE_SESSION_SELECTION_CONTINUITY_ONLY",
+      "historical_data_completeness": "VERIFIED_STAGE1",
+      "monthly_status_readiness": "READY",
+      "broker_identifiers": "VERIFIED_STAGE1",
+      "warnings": [
+        "LIVE_OPEN_ORPT_RC_PENDING"
+      ]
+    },
+    {
+      "symbol": "TCS",
+      "operator_enabled": false,
+      "approval_state": "NOT_APPROVED",
+      "decision": "KEEP_DISABLED",
+      "metadata_quality": "READY_STAGE1",
+      "lot_size": 225,
+      "lot_size_effective_date": "2026-07-31",
+      "tick_size": "0.05",
+      "strike_interval": [
+        20.0,
+        40.0
+      ],
+      "near_next_monthly_expiries": [
+        "2026-08-25",
+        "2026-09-29"
+      ],
+      "option_chain_availability": "CAPTURED",
+      "premium_coverage": 332,
+      "oi_coverage": 147,
+      "historical_data_completeness": 123,
+      "monthly_status_readiness": "READY",
+      "broker_identifiers": "CAPTURED",
+      "warnings": [
+        "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
+        "SPARSE_STRIKE_GAPS_PRESENT"
+      ]
+    },
+    {
+      "symbol": "INFY",
+      "operator_enabled": false,
+      "approval_state": "NOT_APPROVED",
+      "decision": "KEEP_DISABLED",
+      "metadata_quality": "READY_STAGE1",
+      "lot_size": 400,
+      "lot_size_effective_date": "2026-07-31",
+      "tick_size": "0.05",
+      "strike_interval": [
+        5.0,
+        15.0,
+        20.0,
+        40.0
+      ],
+      "near_next_monthly_expiries": [
+        "2026-08-25",
+        "2026-09-29"
+      ],
+      "option_chain_availability": "CAPTURED",
+      "premium_coverage": 191,
+      "oi_coverage": 103,
+      "historical_data_completeness": 123,
+      "monthly_status_readiness": "READY",
+      "broker_identifiers": "CAPTURED",
+      "warnings": [
+        "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
+        "SPARSE_STRIKE_GAPS_PRESENT"
+      ]
+    }
+  ]
+}

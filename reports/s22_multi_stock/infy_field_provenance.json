@@ -1,0 +1,20 @@
+{
+  "schema_version": "s22.multi_stock.field_provenance.v1",
+  "symbol": "INFY",
+  "snapshot_path": "D:\\TradingEngineTFISRefactored\\data\\strategies\\S22\\fyers_read_only_snapshots\\2026-08-03\\s22-infy-fyers-20260803T142931+0530\\snapshot.json",
+  "source_authority": "LIVE_FYERS_READ_ONLY_CAPTURE",
+  "fields": {
+    "fno_eligibility": "symbol_master.underlying_records[*].source_symbol",
+    "lot_size": "symbol_master.underlying_records[*].source_row.lotSize",
+    "tick_size": "symbol_master.underlying_records[*].source_row.tickSize",
+    "effective_date": "symbol_master.underlying_records[*].source_row.source_effective_date",
+    "near_next_monthly_expiry": "expiry_classification.near_monthly_expiry / next_monthly_expiry",
+    "history": "history.payload.candles",
+    "option_chain": "option_chains[*].payload.contracts",
+    "broker_identifiers": "symbol_master.underlying_records[*].instrument_id / instrument_token / source_symbol"
+  },
+  "warnings": [
+    "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
+    "SPARSE_STRIKE_GAPS_PRESENT"
+  ]
+}

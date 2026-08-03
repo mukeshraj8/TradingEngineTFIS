@@ -1,0 +1,16 @@
+{
+  "actual_india_time": "2026-08-03T13:45:11.282584+05:30",
+  "actual_market_session_state": "LIVE",
+  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "classification": "READY_AT_START_BUT_LATE_START_MODE_REQUIRED",
+  "complete_session_preflight": {
+    "captured_at": "2026-08-03T13:31:41.727215+05:30",
+    "reasons": [],
+    "reported_at": "2026-08-03T13:43:36.512239+05:30",
+    "schema_version": "tfis.live_supervisor.complete_session_preflight.v1",
+    "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+    "source": "STORED_EXPLICIT_PREFLIGHT_REPORT",
+    "verdict": "READY_FOR_COMPLETE_UNIFIED_SESSION"
+  },
+  "schema_version": "tfis.live_closure.fresh_supervisor_preflight.v1"
+}

@@ -1,0 +1,33 @@
+{
+  "captured_at": "2026-08-03T16:55:03.969268+05:30",
+  "required_fields": [
+    "F&O eligibility for the trading date",
+    "lot size and effective date",
+    "strike interval and tick size",
+    "monthly Near/Next expiries",
+    "broker and market-data identifiers",
+    "usable option-chain, premium and OI evidence"
+  ],
+  "schema_version": "s22.multi_stock.candidate_metadata_validation.v3",
+  "symbols": {
+    "INFY": {
+      "missing_fields": [],
+      "status": "BLOCKED_STRIKE_INTERVAL_EVIDENCE",
+      "warnings": [
+        "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
+        "SPARSE_STRIKE_GAPS_PRESENT",
+        "SAFE_STRIKE_TRAVERSAL_NOT_PROVED"
+      ]
+    },
+    "TCS": {
+      "missing_fields": [],
+      "status": "METADATA_READY_CONDITIONAL",
+      "warnings": [
+        "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
+        "SPARSE_STRIKE_GAPS_PRESENT",
+        "SIMULTANEOUS_ACCEPTANCE_PRIORITY_UNRESOLVED"
+      ]
+    }
+  },
+  "validation_gate": "CONDITIONAL_TCS_BLOCKED_INFY"
+}

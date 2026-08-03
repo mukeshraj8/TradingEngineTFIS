@@ -1,0 +1,22 @@
+{
+  "accepted_intents": [],
+  "account_reference": "INTERNAL_PAPER_ACCOUNT_A",
+  "activation_rule": "Do not enable every qualified stock automatically.",
+  "captured_at": "2026-08-03T16:55:03.969268+05:30",
+  "limits": {
+    "aggregate_option_selling_exposure": 3,
+    "daily_loss_limit": 50000,
+    "duplicate_underlying_prevention": true,
+    "global_halt": false,
+    "maximum_account_margin_usage_pct": 70,
+    "maximum_concurrent_positions": 3,
+    "maximum_new_entries_per_session": 3
+  },
+  "priority_rule": "NOT_DEFINED_BY_AUTHORITY",
+  "reason": "The generic account/risk envelope exists, but no authoritative simultaneous acceptance priority between qualifying S22 stocks has been approved.",
+  "rejected_intents": [],
+  "rejection_reason": "BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY",
+  "result": "BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY",
+  "schema_version": "s22.multi_stock.simultaneous_intent_risk_matrix.v2",
+  "strategy_policy_mutation": "NONE"
+}

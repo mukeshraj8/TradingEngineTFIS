@@ -1,0 +1,17 @@
+{
+  "captured_at": "2026-08-03T16:55:03.969268+05:30",
+  "heartbeat_stopped": true,
+  "live_supervisor_lock_present": false,
+  "logs_preserved": true,
+  "owner_process_active": false,
+  "process_exit_verified": true,
+  "requested_action": "CREATE_STOP_SIGNAL_IF_ACTIVE",
+  "schema_version": "tfis.live_closure.graceful_shutdown_result.v1",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+  "stop_signal_created": false,
+  "terminal_heartbeat_state": "STOPPED",
+  "terminal_heartbeat_timestamp": "2026-08-03T15:30:02.122046+05:30",
+  "verdict": "ALREADY_STOPPED_NO_ADDITIONAL_ACTION_REQUIRED",
+  "wrapper_exit_verified": true,
+  "wrapper_process_active": false
+}

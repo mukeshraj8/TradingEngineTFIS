@@ -1,0 +1,13 @@
+{
+  "average_loop_seconds": 7.21,
+  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "configured_poll_seconds": 5.0,
+  "heartbeat_advancing": true,
+  "observation_window_seconds": 699.343,
+  "observed_iterations": 97,
+  "process_alive": true,
+  "reason": "Fresh optimized live supervisor averaged approximately 7.21 seconds per loop over 97 observed iterations against a configured 5.0 second poll interval.",
+  "report_schema_observed": "tfis.live_supervisor.performance_metrics.v1",
+  "schema_version": "tfis.live_closure.fresh_supervisor_cadence.v1",
+  "verdict": "BLOCKED_RUNTIME_CADENCE"
+}

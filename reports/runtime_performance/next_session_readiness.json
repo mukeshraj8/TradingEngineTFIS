@@ -1,8 +1,18 @@
 {
+  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "evidence": {
+    "average_loop_seconds": 7.21,
+    "configured_poll_seconds": 5.0,
+    "heartbeat_timestamp": "2026-08-03T13:45:11.214070+05:30",
+    "observation_window_seconds": 699.343,
+    "observed_iterations": 97,
+    "pid": 16256,
+    "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER"
+  },
   "reasons": [
-    "Active live process still shows passive publish gaps far above the 5 second configured poll interval.",
-    "Optimized code path is implemented and unit-validated but has not yet been exercised on a real before-market-open session."
+    "Fresh optimized live supervisor averaged approximately 7.21 seconds per loop over 97 observed iterations against a configured 5.0 second poll interval.",
+    "Current fresh proof is a late-start observation session and therefore does not yet replace the required before-market-open complete-session cadence proof."
   ],
-  "schema_version": "tfis.runtime_performance.next_session_readiness.v1",
+  "schema_version": "tfis.runtime_performance.next_session_readiness.v2",
   "verdict": "BLOCKED_BY_RUNTIME_CADENCE"
 }

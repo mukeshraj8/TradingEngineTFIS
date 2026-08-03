@@ -1,0 +1,8 @@
+{
+  "event_count": 3,
+  "iterations": 1192,
+  "poll_seconds": 5.0,
+  "production_scale_claimed": false,
+  "projection_hash": "bffd65f7f5874a77f88b97fd01009de1016fcd367a764a04593c5dadf43cd588",
+  "schema_version": "tfis.live_supervisor.performance_metrics.v1"
+}

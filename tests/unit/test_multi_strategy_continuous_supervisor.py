@@ -16,6 +16,10 @@ from tfis.runtime.multi_strategy.supervisor import (
     ContinuousSupervisorConfig,
     SubscriptionOwner,
     UnifiedInternalPaperSupervisor,
+    _collect_projection_labels,
+    _next_sleep_seconds,
+    _projection_meets_required_labels,
+    _seconds_until_next_critical_event,
     build_authoritative_readiness_projection,
     run_complete_session_preflight,
 )
@@ -38,6 +42,34 @@ def test_subscription_owner_deduplicates_and_builds_runtime_index() -> None:
     assert payload["contracts"]["BANKNIFTY26AUG47000CE"]["S21_A"] == ["SELECTED_CONTRACT_PINNED"]
     assert snapshot.underlying_to_strategy_instances["NSE:NIFTYBANK-INDEX"] == ("S21_A",)
     assert snapshot.contract_to_strategy_instances["BANKNIFTY26AUG47000CE"] == ("S21_A",)
+
+
+def test_next_sleep_seconds_uses_remaining_poll_budget_instead_of_fixed_post_work_sleep() -> None:
+    now = datetime(2026, 8, 3, 9, 20, 0, tzinfo=IST)
+    sleep_seconds = _next_sleep_seconds(
+        now=now,
+        current_monotonic=102.2,
+        next_poll_deadline_monotonic=105.0,
+        late_start=False,
+    )
+    assert round(sleep_seconds, 3) == 2.8
+
+
+def test_next_sleep_seconds_prefers_critical_event_boundary_over_later_poll_deadline() -> None:
+    now = datetime(2026, 8, 3, 9, 24, 58, tzinfo=IST)
+    sleep_seconds = _next_sleep_seconds(
+        now=now,
+        current_monotonic=200.0,
+        next_poll_deadline_monotonic=205.0,
+        late_start=False,
+    )
+    assert round(sleep_seconds, 3) == 1.4
+
+
+def test_seconds_until_next_critical_event_in_late_start_mode_skips_orpt_and_rc_but_keeps_eod() -> None:
+    now = datetime(2026, 8, 3, 14, 27, 16, 917352, tzinfo=IST)
+    seconds_until_event = _seconds_until_next_critical_event(now, late_start=True)
+    assert round(seconds_until_event or 0.0, 3) == round((datetime(2026, 8, 3, 15, 0, tzinfo=IST) - now).total_seconds(), 3)
 
 
 def test_complete_session_preflight_is_ready_with_fake_auth_and_clean_db(tmp_path: Path) -> None:
@@ -313,6 +345,62 @@ def test_supervisor_reports_stopped_final_state_when_stop_signal_exists_before_c
     assert result.final_state == "STOPPED"
 
 
+def test_supervisor_reports_stopped_final_state_after_until_time_boundary(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    times = [
+        datetime(2026, 8, 3, 15, 29, 58, tzinfo=IST),
+        datetime(2026, 8, 3, 15, 30, 1, tzinfo=IST),
+        datetime(2026, 8, 3, 15, 30, 1, tzinfo=IST),
+        datetime(2026, 8, 3, 15, 30, 1, tzinfo=IST),
+    ]
+    time_index = {"value": 0}
+
+    def _now_provider() -> datetime:
+        index = time_index["value"]
+        if index < len(times) - 1:
+            time_index["value"] = index + 1
+        return times[index]
+
+    class _Auth:
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=datetime(2026, 8, 3, 15, 29, 58, tzinfo=IST),
+                status=BrokerSessionStatus.AUTHENTICATED,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=tmp_path / "reports" / "live_supervisor",
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+        max_iterations=0,
+        poll_seconds=0.01,
+    )
+    supervisor = UnifiedInternalPaperSupervisor(
+        config,
+        now_provider=_now_provider,
+        sleep_fn=lambda _seconds: None,
+        auth_factory=lambda _root: _Auth(),
+    )
+
+    result = supervisor.run()
+
+    assert result.final_state == "STOPPED"
+    summary = (config.report_dir / "continuous_supervisor_summary.md").read_text(encoding="utf-8")
+    assert "Final State: `STOPPED`" in summary
+
+
 def test_supervisor_summary_labels_stored_explicit_preflight_with_original_timestamp(tmp_path: Path) -> None:
     _write_test_repo_files(tmp_path)
     now = datetime(2026, 8, 3, 9, 45, tzinfo=IST)
@@ -440,6 +528,79 @@ def test_authoritative_readiness_projection_prefers_live_preflight_and_runtime_g
     assert "DETERMINISTIC_DASHBOARD_READINESS_IS_SUPPORTING_EVIDENCE_ONLY" in payload["warnings"]
     assert package["commands"][3]["name"] == "run_complete_session_preflight"
     assert payload["governing_inputs"]["dashboard_market_session_readiness"]["readiness"] == "READY_FOR_UNIFIED_MARKET_SESSION"
+
+
+def test_collect_projection_labels_adds_supervisor_and_partial_capture_labels() -> None:
+    projection = {
+        "strategies": [
+            {
+                "state": {"evidence_quality": "FIXTURE_BACKED"},
+                "plan": {"evidence_quality": "LIVE_FYERS_READ_ONLY_CAPTURE"},
+                "execution": {"simulated_or_observed": "INTERNAL_PAPER_SIMULATED"},
+            },
+            {
+                "state": {"evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT"},
+                "plan": {"evidence_quality": "MISSED_BEFORE_SUPERVISOR_START"},
+                "execution": {"simulated_or_observed": "INTERNAL_PAPER_SIMULATED"},
+            },
+        ]
+    }
+
+    labels = _collect_projection_labels(projection)
+
+    assert "LIVE_SUPERVISOR_OBSERVED" in labels
+    assert "FYERS_METADATA_CAPTURED" in labels
+    assert "PARTIAL_CAPTURE" in labels
+    assert "COMPLETE_CAPTURE" not in labels
+    assert _projection_meets_required_labels(projection) is True
+
+
+def test_supervisor_performance_report_includes_current_cycle_metrics(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    now = datetime(2026, 8, 3, 9, 45, tzinfo=IST)
+
+    class _Auth:
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=now,
+                status=BrokerSessionStatus.NETWORK_UNAVAILABLE,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=tmp_path / "reports" / "live_supervisor",
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+        max_iterations=1,
+        poll_seconds=0.01,
+    )
+    supervisor = UnifiedInternalPaperSupervisor(
+        config,
+        now_provider=lambda: now,
+        sleep_fn=lambda _seconds: None,
+        auth_factory=lambda _root: _Auth(),
+    )
+
+    supervisor.run()
+
+    payload = json.loads((config.report_dir / "performance_metrics.json").read_text(encoding="utf-8"))
+
+    assert payload["schema_version"] == "tfis.live_supervisor.performance_metrics.v2"
+    assert payload["sample_count"] == 1
+    assert payload["current_cycle"]["iteration"] == 1
+    assert payload["current_cycle"]["final_state"] == "LATE_START_NO_NEW_ENTRY"
+    assert payload["cycle_duration_ms"]["maximum"] >= payload["cycle_duration_ms"]["minimum"]
 
 
 def _write_test_repo_files(root: Path, *, include_snapshot: bool = True) -> None:

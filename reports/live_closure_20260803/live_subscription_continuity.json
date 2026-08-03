@@ -1,0 +1,31 @@
+{
+  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "contracts": {
+    "NSE:RELIANCE26AUG1260CE": {
+      "S22_RELIANCE_INTERNAL_PAPER_A": [
+        "SELECTED_CONTRACT_PINNED"
+      ]
+    }
+  },
+  "duplicate_provider_subscriptions": false,
+  "routing_status": "PASS",
+  "schema_version": "tfis.live_closure.subscription_continuity.v1",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+  "underlyings": {
+    "NSE:NIFTY50-INDEX": {
+      "S23_NIFTY_INTERNAL_PAPER_A": [
+        "UNDERLYING_OBSERVATION"
+      ]
+    },
+    "NSE:NIFTYBANK-INDEX": {
+      "S21_BANKNIFTY_INTERNAL_PAPER_A": [
+        "UNDERLYING_OBSERVATION"
+      ]
+    },
+    "NSE:RELIANCE-EQ": {
+      "S22_RELIANCE_INTERNAL_PAPER_A": [
+        "UNDERLYING_OBSERVATION"
+      ]
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": "s22.multi_stock.metadata_validation.v1",
+  "symbol": "INFY",
+  "status": "METADATA_READY",
+  "external_broker_order_authority": "NONE",
+  "fno_eligibility": "PASS",
+  "lot_size": 400,
+  "lot_size_consistency": "CONSISTENT",
+  "source_effective_date": "2026-07-31",
+  "tick_size": "0.05",
+  "tick_size_consistency": "CONSISTENT",
+  "strike_interval_observed": [
+    5.0,
+    15.0,
+    20.0,
+    40.0
+  ],
+  "near_monthly_expiry": "2026-08-25",
+  "next_monthly_expiry": "2026-09-29",
+  "history_ready": true,
+  "monthly_status_ready": true,
+  "option_chain_ready": true,
+  "premium_available_contracts": 191,
+  "oi_available_contracts": 103,
+  "total_option_contracts_observed": 199,
+  "warnings": [
+    "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
+    "SPARSE_STRIKE_GAPS_PRESENT"
+  ],
+  "missing_fields": []
+}

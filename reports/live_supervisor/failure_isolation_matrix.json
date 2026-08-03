@@ -1,0 +1,39 @@
+{
+  "captured_at": "2026-08-03T15:25:15.888273+05:30",
+  "scenarios": [
+    {
+      "failure": "S21 data missing",
+      "status": "SUPPORTED_BY_INSTANCE_ISOLATION",
+      "survivors": [
+        "S22",
+        "S23"
+      ]
+    },
+    {
+      "failure": "S22 quote stale",
+      "status": "SUPPORTED_BY_INSTANCE_ISOLATION",
+      "survivors": [
+        "S21",
+        "S23"
+      ]
+    },
+    {
+      "failure": "S23 selection blocked",
+      "status": "SUPPORTED_BY_INSTANCE_ISOLATION",
+      "survivors": [
+        "S21",
+        "S22"
+      ]
+    },
+    {
+      "failure": "dashboard disconnected",
+      "status": "SUPPORTED_BY_FILE_BACKED_SNAPSHOT",
+      "survivors": [
+        "supervisor",
+        "positions"
+      ]
+    }
+  ],
+  "schema_version": "tfis.live_supervisor.failure_isolation_matrix.v1",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER"
+}

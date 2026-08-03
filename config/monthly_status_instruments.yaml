@@ -32,6 +32,12 @@ instruments:
     spot_symbol: NSE:INFY-EQ
     futures_continuous_symbol: null
     lot_size: 400
+  TCS:
+    label: TCS
+    instrument_group: stock
+    spot_symbol: NSE:TCS-EQ
+    futures_continuous_symbol: null
+    lot_size: 225
   TATACHEM:
     label: TATACHEM
     instrument_group: stock

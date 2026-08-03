@@ -33,6 +33,8 @@ from .registry import EnabledStrategyInstance, EnabledStrategyRegistry, load_ena
 IST = ZoneInfo("Asia/Calcutta")
 MARKET_OPEN = time(9, 15)
 MARKET_CLOSE = time(15, 30)
+ORPT_TIME = time(9, 24, 59, 400000)
+RC_TIME = time(9, 29, 59, 400000)
 EOD_DECISION = time(15, 0)
 RULE_MATRIX_VERSION = "tfis_authoritative_workbook_rule_matrix.v1"
 DEFAULT_HEALTH = {"status": "UNKNOWN", "broker_order_authority": "NONE"}
@@ -251,6 +253,7 @@ class UnifiedInternalPaperSupervisor:
         self.config.dashboard_output_root.mkdir(parents=True, exist_ok=True)
         self._restore_checkpoint_if_available()
         final_state = "CREATED"
+        next_poll_deadline_monotonic = time_module.monotonic()
         try:
             while True:
                 self.iterations += 1
@@ -266,9 +269,19 @@ class UnifiedInternalPaperSupervisor:
                     break
                 if now.timetz().replace(tzinfo=None) >= self.config.until_time:
                     break
-                self.sleep_fn(max(1.0, self.config.poll_seconds))
+                next_poll_deadline_monotonic += self.config.poll_seconds
+                sleep_seconds = _next_sleep_seconds(
+                    now=self.now_provider(),
+                    current_monotonic=time_module.monotonic(),
+                    next_poll_deadline_monotonic=next_poll_deadline_monotonic,
+                    late_start=self._late_start_mode,
+                )
+                if sleep_seconds > 0:
+                    self.sleep_fn(sleep_seconds)
             final_now = self.now_provider()
-            if final_state not in {"STOPPED", "BLOCKED"}:
+            if final_state not in {"STOPPED", "BLOCKED"} and final_now.timetz().replace(tzinfo=None) >= self.config.until_time:
+                final_state = "STOPPED"
+            elif final_state not in {"STOPPED", "BLOCKED"}:
                 final_state = self._state_for_time(final_now)
             self._write_reports(final_now, final_state, stage_metrics=[])
             return ContinuousSupervisorRunResult(
@@ -325,8 +338,6 @@ class UnifiedInternalPaperSupervisor:
         self._write_dashboard_snapshot(projection, now=now, stage_metrics=stage_metrics)
         self._append_timeline(final_state, "CAPTURED", now=now, projection_hash=projection["projection_hash"])
         self._persist_runtime_state(now=now, final_state=final_state, projection=projection, live_context=live_context, stage_metrics=stage_metrics)
-        self._write_heartbeat(state=final_state, now=now)
-        self._write_reports(now, final_state, stage_metrics=stage_metrics)
         cycle_ended_at = self.now_provider()
         self._record_stage(
             stage_metrics,
@@ -340,6 +351,8 @@ class UnifiedInternalPaperSupervisor:
             },
         )
         self._latest_cycle_metrics = stage_metrics
+        self._write_heartbeat(state=final_state, now=self.now_provider())
+        self._write_reports(now, final_state, stage_metrics=stage_metrics)
         self._append_cycle_history(now=now, final_state=final_state, stage_metrics=stage_metrics)
         return final_state
 
@@ -873,19 +886,26 @@ class UnifiedInternalPaperSupervisor:
                 "schema_version": "tfis.live_supervisor.dashboard_evidence_label_audit.v1",
                 "captured_at": now.isoformat(),
                 "session_id": self.session_id,
-                "required_labels": [
+                "required_labels_all": [
                     "FIXTURE_BACKED",
-                    "FYERS_METADATA_CAPTURED",
                     "LIVE_FYERS_READ_ONLY_CAPTURE",
                     "LIVE_SUPERVISOR_OBSERVED",
                     "DETERMINISTIC_TIMING_SUPPLEMENT",
                     "MISSED_BEFORE_SUPERVISOR_START",
                     "INTERNAL_PAPER_SIMULATED",
-                    "PARTIAL_CAPTURE",
-                    "COMPLETE_CAPTURE",
+                    "FYERS_METADATA_CAPTURED",
                     "NO_EXTERNAL_ORDER_AUTHORITY",
                 ],
+                "required_capture_classification_any_of": [
+                    "PARTIAL_CAPTURE",
+                    "COMPLETE_CAPTURE",
+                ],
                 "projection_labels": sorted(_collect_projection_labels(self._projection or {})),
+                "capture_classification_present": any(
+                    label in _collect_projection_labels(self._projection or {})
+                    for label in ("PARTIAL_CAPTURE", "COMPLETE_CAPTURE")
+                ),
+                "meets_required_labels": _projection_meets_required_labels(self._projection or {}),
                 "misrepresents_fixture_as_live": False,
             },
             "account_risk_acceptance_matrix.json": {
@@ -925,12 +945,7 @@ class UnifiedInternalPaperSupervisor:
                 "expected_result": "CONTINUOUS UNIFIED S21/S22/S23 INTERNAL-PAPER SUPERVISOR",
             },
             "performance_metrics.json": {
-                "schema_version": "tfis.live_supervisor.performance_metrics.v1",
-                "iterations": self.iterations,
-                "poll_seconds": self.config.poll_seconds,
-                "projection_hash": self._last_projection_hash,
-                "event_count": len(self._timeline),
-                "production_scale_claimed": False,
+                **self._performance_payload(now=now, final_state=final_state, stage_metrics=stage_metrics),
             },
             "gap_register.json": {
                 "schema_version": "tfis.live_supervisor.gap_register.v1",
@@ -963,6 +978,39 @@ class UnifiedInternalPaperSupervisor:
         self._last_report_write_at = now
         self._last_report_state = final_state
         self._record_stage(stage_metrics, "live_supervisor_reports", "EXECUTED", started_at=reports_started_at, ended_at=self.now_provider())
+
+    def _performance_payload(
+        self,
+        *,
+        now: datetime,
+        final_state: str,
+        stage_metrics: list[StageMetric],
+    ) -> dict[str, Any]:
+        current_sample = self._build_cycle_sample(now=now, final_state=final_state, stage_metrics=stage_metrics)
+        retained_samples = list(self._cycle_metrics_history)
+        if not retained_samples or retained_samples[-1]["iteration"] != current_sample["iteration"]:
+            retained_samples.append(current_sample)
+        durations = sorted(float(item["cycle_duration_ms"]) for item in retained_samples)
+        overruns = [float(item["overrun_ms"]) for item in retained_samples]
+        return {
+            "schema_version": "tfis.live_supervisor.performance_metrics.v2",
+            "iterations": self.iterations,
+            "poll_seconds": self.config.poll_seconds,
+            "projection_hash": self._last_projection_hash,
+            "event_count": len(self._timeline),
+            "production_scale_claimed": False,
+            "sample_count": len(retained_samples),
+            "current_cycle": current_sample,
+            "cycle_duration_ms": {
+                "minimum": round(min(durations), 3),
+                "median": round(_percentile(durations, 0.5), 3),
+                "p90": round(_percentile(durations, 0.9), 3),
+                "p95": round(_percentile(durations, 0.95), 3),
+                "maximum": round(max(durations), 3),
+            },
+            "overrun_count": sum(1 for item in overruns if item > 0),
+            "consecutive_overruns": int(retained_samples[-1]["consecutive_overruns"]),
+        }
 
     def _append_timeline(self, event_type: str, result: str, *, now: datetime, **extra: Any) -> None:
         sequence = len(self._timeline) + 1
@@ -1116,7 +1164,13 @@ class UnifiedInternalPaperSupervisor:
             )
         )
 
-    def _append_cycle_history(self, *, now: datetime, final_state: str, stage_metrics: list[StageMetric]) -> None:
+    def _build_cycle_sample(
+        self,
+        *,
+        now: datetime,
+        final_state: str,
+        stage_metrics: list[StageMetric],
+    ) -> dict[str, Any]:
         total_metric = next((item for item in stage_metrics if item.stage == "cycle_total"), None)
         if total_metric is None:
             total_ms = 0.0
@@ -1125,7 +1179,7 @@ class UnifiedInternalPaperSupervisor:
         overrun_ms = max(0.0, total_ms - (self.config.poll_seconds * 1000.0))
         previous_overruns = self._cycle_metrics_history[-1]["consecutive_overruns"] if self._cycle_metrics_history else 0
         consecutive_overruns = previous_overruns + 1 if overrun_ms > 0 else 0
-        sample = {
+        return {
             "iteration": self.iterations,
             "captured_at": now.isoformat(),
             "final_state": final_state,
@@ -1146,6 +1200,9 @@ class UnifiedInternalPaperSupervisor:
                 for item in stage_metrics
             ],
         }
+
+    def _append_cycle_history(self, *, now: datetime, final_state: str, stage_metrics: list[StageMetric]) -> None:
+        sample = self._build_cycle_sample(now=now, final_state=final_state, stage_metrics=stage_metrics)
         self._cycle_metrics_history.append(sample)
         if len(self._cycle_metrics_history) > self.config.performance_retention_cycles:
             self._cycle_metrics_history = self._cycle_metrics_history[-self.config.performance_retention_cycles :]
@@ -1641,8 +1698,8 @@ def _timing_matrix(registry: EnabledStrategyRegistry, *, now: datetime, late_sta
     for item in registry.enabled_instances:
         rows[item.strategy_instance_id] = {
             "market_open": _classify_window(now, MARKET_OPEN, late_start=late_start),
-            "orpt": _classify_window(now, time(9, 24, 59, 400000), late_start=late_start),
-            "rc": _classify_window(now, time(9, 29, 59, 400000), late_start=late_start),
+            "orpt": _classify_window(now, ORPT_TIME, late_start=late_start),
+            "rc": _classify_window(now, RC_TIME, late_start=late_start),
             "eod_carry": _classify_window(now, EOD_DECISION, late_start=False),
             "shutdown_checkpoint": "FUTURE_WINDOW" if now.timetz().replace(tzinfo=None) < MARKET_CLOSE else "CURRENT_WINDOW",
         }
@@ -1660,6 +1717,45 @@ def _classify_window(now: datetime, event_time: time, *, late_start: bool) -> st
     if late_start:
         return "MISSED_BEFORE_SUPERVISOR_START"
     return "CURRENT_WINDOW" if current == event_time else "CAPTURED"
+
+
+def _next_sleep_seconds(
+    *,
+    now: datetime,
+    current_monotonic: float,
+    next_poll_deadline_monotonic: float,
+    late_start: bool,
+) -> float:
+    poll_sleep = max(0.0, next_poll_deadline_monotonic - current_monotonic)
+    critical_sleep = _seconds_until_next_critical_event(now, late_start=late_start)
+    if critical_sleep is None:
+        return poll_sleep
+    return max(0.0, min(poll_sleep, critical_sleep))
+
+
+def _seconds_until_next_critical_event(now: datetime, *, late_start: bool) -> float | None:
+    current = now.timetz().replace(tzinfo=None)
+    candidates: list[time] = []
+    if not late_start and current < MARKET_OPEN:
+        candidates.append(MARKET_OPEN)
+    if not late_start and current < ORPT_TIME:
+        candidates.append(ORPT_TIME)
+    if not late_start and current < RC_TIME:
+        candidates.append(RC_TIME)
+    if current < EOD_DECISION:
+        candidates.append(EOD_DECISION)
+    if current < MARKET_CLOSE:
+        candidates.append(MARKET_CLOSE)
+    if not candidates:
+        return None
+    target = min(candidates)
+    target_dt = now.replace(
+        hour=target.hour,
+        minute=target.minute,
+        second=target.second,
+        microsecond=target.microsecond,
+    )
+    return max(0.0, (target_dt - now).total_seconds())
 
 
 def _market_session_state(now: datetime) -> str:
@@ -1747,14 +1843,49 @@ def _supervisor_gaps(projection: Mapping[str, Any], *, late_start: bool) -> list
 
 
 def _collect_projection_labels(projection: Mapping[str, Any]) -> set[str]:
-    labels: set[str] = {"NO_EXTERNAL_ORDER_AUTHORITY"}
+    labels: set[str] = {"LIVE_SUPERVISOR_OBSERVED", "NO_EXTERNAL_ORDER_AUTHORITY"}
     for strategy in projection.get("strategies", []):
         state = strategy.get("state", {})
         plan = strategy.get("plan", {})
         for value in (state.get("evidence_quality"), plan.get("evidence_quality"), strategy.get("execution", {}).get("simulated_or_observed")):
             if value:
                 labels.add(str(value))
+    if "LIVE_FYERS_READ_ONLY_CAPTURE" in labels:
+        labels.add("FYERS_METADATA_CAPTURED")
+    if "MISSED_BEFORE_SUPERVISOR_START" in labels or "DETERMINISTIC_TIMING_SUPPLEMENT" in labels:
+        labels.add("PARTIAL_CAPTURE")
+    elif "LIVE_FYERS_READ_ONLY_CAPTURE" in labels:
+        labels.add("COMPLETE_CAPTURE")
     return labels
+
+
+def _projection_meets_required_labels(projection: Mapping[str, Any]) -> bool:
+    labels = _collect_projection_labels(projection)
+    required_all = {
+        "FIXTURE_BACKED",
+        "FYERS_METADATA_CAPTURED",
+        "LIVE_FYERS_READ_ONLY_CAPTURE",
+        "LIVE_SUPERVISOR_OBSERVED",
+        "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "MISSED_BEFORE_SUPERVISOR_START",
+        "INTERNAL_PAPER_SIMULATED",
+        "NO_EXTERNAL_ORDER_AUTHORITY",
+    }
+    if not required_all.issubset(labels):
+        return False
+    return bool({"PARTIAL_CAPTURE", "COMPLETE_CAPTURE"} & labels)
+
+
+def _percentile(values: list[float], ratio: float) -> float:
+    if not values:
+        return 0.0
+    if len(values) == 1:
+        return float(values[0])
+    index = ratio * (len(values) - 1)
+    lower = int(index)
+    upper = min(lower + 1, len(values) - 1)
+    fraction = index - lower
+    return float(values[lower] + ((values[upper] - values[lower]) * fraction))
 
 
 def _continuity_map_from_projection(projection: Mapping[str, Any]) -> dict[str, Any]:

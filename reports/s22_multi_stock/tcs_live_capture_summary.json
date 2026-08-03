@@ -1,0 +1,42 @@
+{
+  "schema_version": "s22.multi_stock.live_capture_summary.v1",
+  "symbol": "TCS",
+  "captured_at": "2026-08-03T14:29:25.663913+05:30",
+  "snapshot_path": "D:\\TradingEngineTFISRefactored\\data\\strategies\\S22\\fyers_read_only_snapshots\\2026-08-03\\s22-tcs-fyers-20260803T142925+0530\\snapshot.json",
+  "verdict": "CAPTURE_COMPLETE",
+  "external_broker_order_authority": "NONE",
+  "fno_eligibility": "OBSERVED_IN_NSEFO_SYMBOL_MASTER",
+  "lot_sizes_observed": [
+    225
+  ],
+  "tick_sizes_observed": [
+    "0.05"
+  ],
+  "effective_dates_observed": [
+    "2026-07-31"
+  ],
+  "near_monthly_expiry": "2026-08-25",
+  "next_monthly_expiry": "2026-09-29",
+  "history_status": "SUCCESS",
+  "history_candle_count": 123,
+  "option_chain_quality": [
+    {
+      "expiry": "2026-08-25",
+      "status": "SUCCESS",
+      "contract_count": 174,
+      "oi_available_contracts": 103,
+      "premium_available_contracts": 166
+    },
+    {
+      "expiry": "2026-09-29",
+      "status": "SUCCESS",
+      "contract_count": 174,
+      "oi_available_contracts": 44,
+      "premium_available_contracts": 166
+    }
+  ],
+  "warnings": [
+    "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
+    "SPARSE_STRIKE_GAPS_PRESENT"
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "config_path": "config/s22_multi_stock_registry.yaml",
+  "disabled_instances": [
+    "S22_TCS_INTERNAL_PAPER_DISABLED",
+    "S22_INFY_INTERNAL_PAPER_DISABLED"
+  ],
+  "enabled_instances": [
+    "S22_RELIANCE_INTERNAL_PAPER_A"
+  ],
+  "instances": [
+    {
+      "account_reference": "INTERNAL_PAPER_ACCOUNT_A",
+      "authority_mode": "INTERNAL_PAPER_CONTROLLED",
+      "configured_quantity": {
+        "lot_size": 500,
+        "lots": 1
+      },
+      "deterministic_projection": {
+        "branch": "BEAR_CALL",
+        "broker_data_health": "S22_LIVE_OPEN_ORPT_RC_PENDING",
+        "entry": "57.50",
+        "evidence_alerts": [
+          {
+            "code": "S22_LIVE_OPEN_ORPT_RC_PENDING",
+            "message": "S22 RELIANCE still requires real opening/ORPT/RC capture before complete live-evidence certification.",
+            "severity": "WARNING"
+          }
+        ],
+        "expiry_candidates": [
+          "2026-08-27",
+          "2026-09-24"
+        ],
+        "market_references": {
+          "2DHH": "1309.70",
+          "2DLL": "1275.30",
+          "4DHH": "1309.70",
+          "4DLL": "1265.90"
+        },
+        "monthly_status": "BEAR_CF",
+        "opening_context": "CAPTURED_STATIC_DATA",
+        "original_sl": "92.00",
+        "orpt_state": "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "rc_state": "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "realized_pnl": "-2500.00",
+        "scenario_flags": {
+          "blocked_evidence_candidate": true,
+          "order_rejection_candidate": true
+        },
+        "selected_contract": "NSE:RELIANCE26AUG1260CE",
+        "target": "23.00",
+        "trade_classification": "LOSS",
+        "unrealized_pnl": "0.00"
+      },
+      "enabled": true,
+      "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "external_authority": {
+        "broker_sandbox_submission": "NONE",
+        "external_broker_submission": "NONE",
+        "external_order_mutation": "NONE",
+        "external_position_mutation": "NONE",
+        "live_submission": "NONE"
+      },
+      "instance_hash": "a610865cb00589f7ff84cd49c871fcf747c9d8035205220c4922e6043ea96d4b",
+      "market_data_source": "FYERS_READ_ONLY_FIXTURE",
+      "operator_approval_status": "APPROVED_INTERNAL_PAPER",
+      "product": "OPTION_SELLING",
+      "risk_allocation": {
+        "max_margin_usage_pct": 20,
+        "max_positions": 1
+      },
+      "rule_config_hash": "s22-source-closure-config-v1",
+      "source_reports": {
+        "dashboard_projection": "reports/s22_reliance/s22_reliance_dashboard_projection.json",
+        "summary": "reports/s22_reliance/s22_reliance_summary.md"
+      },
+      "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "strategy_version": "s22.reliance.stage1.v1",
+      "underlying": {
+        "exchange": "NSE",
+        "instrument_type": "STOCK",
+        "symbol": "RELIANCE"
+      }
+    },
+    {
+      "account_reference": "INTERNAL_PAPER_ACCOUNT_A",
+      "authority_mode": "INTERNAL_PAPER_CONTROLLED",
+      "configured_quantity": {
+        "lot_size": 225,
+        "lots": 1
+      },
+      "deterministic_projection": {},
+      "enabled": false,
+      "evidence_quality": "LIVE_FYERS_READ_ONLY_CAPTURE",
+      "external_authority": {
+        "broker_sandbox_submission": "NONE",
+        "external_broker_submission": "NONE",
+        "external_order_mutation": "NONE",
+        "external_position_mutation": "NONE",
+        "live_submission": "NONE"
+      },
+      "instance_hash": "b17eccd4883390c7e2ffc8532f2f4e9817163d4b44e27ea15006177e5e2a2188",
+      "market_data_source": "LIVE_FYERS_READ_ONLY_CAPTURE",
+      "operator_approval_status": "NOT_APPROVED",
+      "product": "OPTION_SELLING",
+      "risk_allocation": {
+        "max_margin_usage_pct": 20,
+        "max_positions": 1
+      },
+      "rule_config_hash": "s22-source-closure-config-v1",
+      "source_reports": {
+        "dashboard_projection": "reports/s22_multi_stock/multi_stock_registry.json",
+        "summary": "reports/s22_multi_stock/s22_multi_stock_summary.md"
+      },
+      "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "strategy_instance_id": "S22_TCS_INTERNAL_PAPER_DISABLED",
+      "strategy_version": "s22.multi_stock.foundation.v1",
+      "underlying": {
+        "exchange": "NSE",
+        "instrument_type": "STOCK",
+        "symbol": "TCS"
+      }
+    },
+    {
+      "account_reference": "INTERNAL_PAPER_ACCOUNT_A",
+      "authority_mode": "INTERNAL_PAPER_CONTROLLED",
+      "configured_quantity": {
+        "lot_size": 400,
+        "lots": 1
+      },
+      "deterministic_projection": {},
+      "enabled": false,
+      "evidence_quality": "LIVE_FYERS_READ_ONLY_CAPTURE",
+      "external_authority": {
+        "broker_sandbox_submission": "NONE",
+        "external_broker_submission": "NONE",
+        "external_order_mutation": "NONE",
+        "external_position_mutation": "NONE",
+        "live_submission": "NONE"
+      },
+      "instance_hash": "ff37f81f74666a82e215fede3e11e6e12ce068095064ce6f7c8f32ac4023774c",
+      "market_data_source": "LIVE_FYERS_READ_ONLY_CAPTURE",
+      "operator_approval_status": "NOT_APPROVED",
+      "product": "OPTION_SELLING",
+      "risk_allocation": {
+        "max_margin_usage_pct": 20,
+        "max_positions": 1
+      },
+      "rule_config_hash": "s22-source-closure-config-v1",
+      "source_reports": {
+        "dashboard_projection": "reports/s22_multi_stock/multi_stock_registry.json",
+        "summary": "reports/s22_multi_stock/s22_multi_stock_summary.md"
+      },
+      "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "strategy_instance_id": "S22_INFY_INTERNAL_PAPER_DISABLED",
+      "strategy_version": "s22.multi_stock.foundation.v1",
+      "underlying": {
+        "exchange": "NSE",
+        "instrument_type": "STOCK",
+        "symbol": "INFY"
+      }
+    }
+  ],
+  "operator_enabled_symbols": [
+    "RELIANCE"
+  ],
+  "registry_hash": "92de1c978befa77e1901f3b4ddfe99b46185936bff3ff3ed7c40ff6019323746",
+  "schema_version": "s22.multi_stock.registry.v2"
+}

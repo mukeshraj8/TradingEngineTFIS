@@ -1,0 +1,94 @@
+{
+  "candidates": {
+    "INFY": {
+      "account_risk_impact": "NOT_EVALUATED_FOR_ENABLEMENT_WHILE_STRIKE_TRAVERSAL_REMAINS_UNSAFE",
+      "dashboard_result": "CANDIDATE_ROW_SUPPORTED_AS_DISABLED_WITH_WARNING",
+      "deterministic_fan_out_result": "BLOCKED_BY_CONTRACT_SELECTION_EVIDENCE",
+      "history_monthly_status_quality": "READY",
+      "lot_size": 400,
+      "metadata_status": "BLOCKED_STRIKE_INTERVAL_EVIDENCE",
+      "option_chain_quality": [
+        {
+          "contract_count": 109,
+          "expiry": "2026-08-25",
+          "oi_available_contracts": 69,
+          "premium_available_contracts": 105,
+          "status": "SUCCESS"
+        },
+        {
+          "contract_count": 90,
+          "expiry": "2026-09-29",
+          "oi_available_contracts": 34,
+          "premium_available_contracts": 86,
+          "status": "SUCCESS"
+        }
+      ],
+      "premium_oi_quality": {
+        "oi_available_contracts": 103,
+        "premium_available_contracts": 191
+      },
+      "recommendation": "BLOCKED_CONTRACT_SELECTION",
+      "remaining_gap": [
+        "BLOCKED_STRIKE_INTERVAL_EVIDENCE",
+        "SAFE_STRIKE_TRAVERSAL_NOT_PROVED"
+      ],
+      "strike_interval_observed": [
+        5.0,
+        15.0,
+        20.0,
+        40.0
+      ],
+      "strike_spacing_resolution": {
+        "authoritative_classification": "RULE_AUTHORITY_UNRESOLVED_FOR_SAFE_TRAVERSAL",
+        "observed_structure": [
+          5.0,
+          15.0,
+          20.0,
+          40.0
+        ],
+        "reason": "The read-only capture proves irregular intervals are present in returned INFY contracts, but does not prove a safe generic traversal rule for contract selection."
+      }
+    },
+    "TCS": {
+      "account_risk_impact": "NO_POLICY_MUTATION; simultaneous acceptance priority unresolved",
+      "dashboard_result": "CANDIDATE_ROW_SUPPORTED_AS_DISABLED",
+      "deterministic_fan_out_result": "CONDITIONAL_PRIORITY_BLOCKED",
+      "history_monthly_status_quality": "READY",
+      "lot_size": 225,
+      "metadata_status": "METADATA_READY_CONDITIONAL",
+      "option_chain_quality": [
+        {
+          "contract_count": 174,
+          "expiry": "2026-08-25",
+          "oi_available_contracts": 103,
+          "premium_available_contracts": 166,
+          "status": "SUCCESS"
+        },
+        {
+          "contract_count": 174,
+          "expiry": "2026-09-29",
+          "oi_available_contracts": 44,
+          "premium_available_contracts": 166,
+          "status": "SUCCESS"
+        }
+      ],
+      "premium_oi_quality": {
+        "oi_available_contracts": 147,
+        "premium_available_contracts": 332
+      },
+      "recommendation": "KEEP_DISABLED_PENDING_ONE_EXACT_GAP",
+      "remaining_gap": [
+        "SIMULTANEOUS_ACCEPTANCE_PRIORITY_UNRESOLVED",
+        "EXPLICIT_USER_APPROVAL_REQUIRED"
+      ],
+      "strike_interval_observed": [
+        20.0,
+        40.0
+      ]
+    }
+  },
+  "captured_at": "2026-08-03T16:55:03.969268+05:30",
+  "external_broker_order_authority": "NONE",
+  "schema_version": "s22.multi_stock.candidate_activation_decision_pack.v2",
+  "stage1_enabled_symbol": "RELIANCE"
+}

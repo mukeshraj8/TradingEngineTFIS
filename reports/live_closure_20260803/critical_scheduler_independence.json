@@ -1,0 +1,14 @@
+{
+  "captured_at": "2026-08-03T16:55:03.969268+05:30",
+  "critical_event_due_during_provider_call": "event dispatch waits until the provider call returns or times out; no additional fixed post-work sleep is added afterward",
+  "external_broker_order_authority": "NONE",
+  "historical_running_pid_classification": "CRITICAL_EVENTS_POLL_BOUND",
+  "historical_running_pid_reason": "The live market PID that ran on 2026-08-03 checked ORPT/RC/EOD only when the ordinary poll loop re-entered _run_once().",
+  "latest_source_classification": "PARTIALLY_INDEPENDENT",
+  "latest_source_reason": "Latest source wakes on the earlier of the next poll deadline or the next critical market-time boundary, but the loop remains single-threaded and critical dispatch can still be delayed by one in-flight provider cycle.",
+  "maximum_expected_blocking_time": "bounded by the current cycle duration plus the configured provider timeout budget",
+  "provider_call_interaction": "critical events are checked between cycles; an in-flight provider call can still delay dispatch until the current cycle returns",
+  "restart_required_for_fix_activation": false,
+  "scheduler_model": "single-threaded cooperative loop with earlier-of(poll_deadline, critical_boundary) sleep calculation",
+  "schema_version": "tfis.live_closure.critical_scheduler_independence.v2"
+}

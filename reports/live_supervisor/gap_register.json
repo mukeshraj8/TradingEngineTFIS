@@ -1,0 +1,21 @@
+{
+  "gaps": [
+    {
+      "classification": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
+      "description": "S21_BANKNIFTY_INTERNAL_PAPER_A remains blocked in the current supervisor session.",
+      "gap_id": "SUPERVISOR-S21_BANKNIFTY_INTERNAL_PAPER_A"
+    },
+    {
+      "classification": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
+      "description": "S23_NIFTY_INTERNAL_PAPER_A remains blocked in the current supervisor session.",
+      "gap_id": "SUPERVISOR-S23_NIFTY_INTERNAL_PAPER_A"
+    },
+    {
+      "classification": "LATE_START_NO_NEW_ENTRY",
+      "description": "Current session started after authoritative fresh-entry windows.",
+      "gap_id": "SUPERVISOR-LATE-START"
+    }
+  ],
+  "schema_version": "tfis.live_supervisor.gap_register.v1",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER"
+}

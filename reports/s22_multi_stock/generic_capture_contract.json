@@ -1,0 +1,31 @@
+{
+  "backward_compatible_default_symbol": "RELIANCE",
+  "dry_run_examples": {
+    "INFY": [
+      "fetch_historical_candles:NSE:INFY-EQ:daily",
+      "fetch_option_chain:NSE:INFY-EQ:near_monthly",
+      "fetch_option_chain:NSE:INFY-EQ:next_monthly"
+    ],
+    "RELIANCE": [
+      "fetch_historical_candles:NSE:RELIANCE-EQ:daily",
+      "fetch_option_chain:NSE:RELIANCE-EQ:near_monthly",
+      "fetch_option_chain:NSE:RELIANCE-EQ:next_monthly"
+    ],
+    "TCS": [
+      "fetch_historical_candles:NSE:TCS-EQ:daily",
+      "fetch_option_chain:NSE:TCS-EQ:near_monthly",
+      "fetch_option_chain:NSE:TCS-EQ:next_monthly"
+    ]
+  },
+  "external_order_authority": "NONE",
+  "generic_arguments": [
+    "--symbol",
+    "--session-date",
+    "--artifact-root",
+    "--capture-read-only",
+    "--allow-refresh",
+    "--strike-count"
+  ],
+  "schema_version": "s22.multi_stock.generic_capture_contract.v1",
+  "script_path": "scripts/capture_s22_reliance_fyers_snapshot.py"
+}

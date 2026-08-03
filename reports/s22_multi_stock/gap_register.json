@@ -1,0 +1,21 @@
+{
+  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "gaps": [
+    {
+      "classification": "TCS_METADATA_NOT_CAPTURED",
+      "description": "TCS remains a candidate only. No dated versioned read-only metadata snapshot has been captured.",
+      "gap_id": "S22-MS-G001"
+    },
+    {
+      "classification": "INFY_METADATA_NOT_CAPTURED",
+      "description": "INFY remains a candidate only. Monthly Status discovery exists, but dated option metadata has not been captured.",
+      "gap_id": "S22-MS-G002"
+    },
+    {
+      "classification": "NO_MULTI_STOCK_FINANCIAL_ACTIVATION",
+      "description": "Additional S22 stocks remain disabled until metadata gates and explicit operator approval are both satisfied.",
+      "gap_id": "S22-MS-G003"
+    }
+  ],
+  "schema_version": "s22.multi_stock.gap_register.v1"
+}

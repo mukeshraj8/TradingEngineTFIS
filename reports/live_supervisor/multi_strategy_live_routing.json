@@ -1,0 +1,48 @@
+{
+  "captured_at": "2026-08-03T15:25:15.888273+05:30",
+  "projection_hash": "bffd65f7f5874a77f88b97fd01009de1016fcd367a764a04593c5dadf43cd588",
+  "schema_version": "tfis.live_supervisor.live_routing.v1",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+  "timeline_events": [
+    {
+      "command": "PREFLIGHT",
+      "event_id": "supervisor:0001",
+      "evidence_hash": "4eb9e623040681c09d4526c3f689c52ea8dd33dce382a549a4d635af98c24452",
+      "new_state": "PREFLIGHT",
+      "operator": "SYSTEM",
+      "preview": true,
+      "previous_state": "NONE",
+      "reason": "STARTED",
+      "result": "STARTED",
+      "scope": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+      "timestamp": "2026-08-03T15:25:15.888273+05:30"
+    },
+    {
+      "command": "BROKER_DIAGNOSTICS",
+      "event_id": "supervisor:0002",
+      "evidence_hash": "dcf6ff7fc213a2cbcc29af513bbedd6a84d63834e97071060819f99884bf1a62",
+      "new_state": "BROKER_DIAGNOSTICS",
+      "operator": "SYSTEM",
+      "preview": true,
+      "previous_state": "PREFLIGHT",
+      "reason": "AUTHENTICATED",
+      "result": "AUTHENTICATED",
+      "scope": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+      "timestamp": "2026-08-03T15:25:15.888273+05:30"
+    },
+    {
+      "command": "EOD_PROCESSING",
+      "event_id": "supervisor:0003",
+      "evidence_hash": "8e1332bd5aa05657b7a88f2b6298889ebdf6decb401cbbb13ce15e21b31b41f2",
+      "new_state": "EOD_PROCESSING",
+      "operator": "SYSTEM",
+      "preview": true,
+      "previous_state": "BROKER_DIAGNOSTICS",
+      "projection_hash": "bffd65f7f5874a77f88b97fd01009de1016fcd367a764a04593c5dadf43cd588",
+      "reason": "CAPTURED",
+      "result": "CAPTURED",
+      "scope": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+      "timestamp": "2026-08-03T15:25:15.888273+05:30"
+    }
+  ]
+}

@@ -32,6 +32,10 @@ Important current truth:
   next-session operator gate is now the authoritative readiness projection at
   `reports/unified_readiness/authoritative_readiness_projection.json`;
 - the system is still internal-paper plus read-only observation only;
+- a continuous unified supervisor does now exist through
+  `scripts/run_tfis_internal_paper.py --continuous-supervisor`, but its
+  current accepted use is still tightly controlled and read-only at the broker
+  boundary;
 - no broker order placement, modification, cancellation, square-off, or live
   position mutation is allowed;
 - the current enabled registry is deterministic and pinned to
@@ -40,6 +44,25 @@ Important current truth:
 - S21 and S23 are fixture-backed projections;
 - S22 RELIANCE still has a known evidence gap: real opening, ORPT, and RC
   capture for the next eligible session.
+- TCS and INFY now have live FYERS read-only metadata captures plus sanitized
+  fixtures, but both remain disabled until explicit operator approval.
+
+## Monday, August 3, 2026 Live Status Addendum
+
+As of `14:40 IST` on Monday, August 3, 2026:
+
+- one protected late-start live supervisor is still running on
+  `NSE:2026-08-03:UNIFIED_INTERNAL_PAPER`;
+- FYERS diagnostics were revalidated as `AUTHENTICATED`;
+- external broker-order authority is still `NONE`;
+- the live cadence root cause is now understood:
+  the old running process sleeps a full `5s` after work completion, so total
+  loop cadence becomes work time plus sleep;
+- the next-session code path has been patched to wake at the earlier of the
+  next poll deadline or the next critical market-time boundary, but that fix
+  will only take effect after a future restart;
+- today's remaining live value is the `15:00` EOD window and the graceful
+  post-market shutdown/restart assessment.
 
 ## What The System Is Doing Right Now
 
@@ -50,16 +73,23 @@ account:
 - `S22_RELIANCE_INTERNAL_PAPER_A`
 - `S23_NIFTY_INTERNAL_PAPER_A`
 
-The current runner builds a deterministic unified projection from accepted
-strategy artifacts, not a live autonomous trading session.
+The current runner supports two distinct modes:
+
+- deterministic unified projection from accepted strategy artifacts; and
+- a bounded continuous supervisor for internal-paper plus read-only live
+  observation.
 
 That means:
 
 - it loads the enabled strategy registry;
-- it builds a deterministic session result;
+- it can build a deterministic session result;
+- it can also run a continuous supervisor loop with read-only FYERS inputs and
+  internal-paper state;
 - it writes reports under `reports/dashboard_v1/`;
+- it writes supervisor-state and live-closure reports under
+  `reports/live_supervisor/` and `reports/live_closure_20260803/`;
 - it can build and serve a read-only dashboard from those reports;
-- it does not sit on a live event loop and trade the market by itself.
+- it still does not create broker-write financial actions by itself.
 
 ## Safe Commands To Use Today
 
@@ -102,6 +132,25 @@ What this does:
 - does not subscribe to live market ticks;
 - does not create broker orders.
 
+### 3A. Start The Continuous Unified Supervisor
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_tfis_internal_paper.py --continuous-supervisor --poll-seconds 5 --dashboard-port 8766
+```
+
+What this does:
+
+- starts one internal-paper continuous supervisor session;
+- uses FYERS only in read-only mode;
+- writes heartbeat/checkpoint/report state under `tmp/tfis_supervisor_state/`
+  and `reports/live_supervisor/`;
+- must not be started twice;
+- must be stopped with:
+
+```powershell
+New-Item -ItemType File -Force tmp\tfis_supervisor_state\continuous_unified_supervisor.stop
+```
+
 ### 4. Build The Dashboard
 
 ```powershell
@@ -140,10 +189,13 @@ Use this order on Monday, August 3, 2026:
 2. Run FYERS read-only diagnostics.
 3. Run `scripts/run_tfis_internal_paper.py`.
 4. Run `scripts/run_tfis_dashboard.py --serve --port 8766`.
-5. Review:
+5. If using continuous observation, start exactly one supervisor.
+6. Review:
    - `reports/unified_readiness/authoritative_readiness_projection.json`
    - `reports/unified_readiness/clean_start_operator_package.md`
    - `reports/live_supervisor/complete_session_preflight.json`
+   - `reports/live_closure_20260803/live_closure_summary.md`
+   - `reports/s22_multi_stock/s22_multi_stock_summary.md`
    - `reports/dashboard_v1/dashboard_summary.md`
    - the dashboard itself
 
