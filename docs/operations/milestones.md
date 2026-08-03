@@ -2318,3 +2318,24 @@
 
 - The current project is strong on offline rule validation, workbook tracing, and structural backtesting.
 - Production-grade runtime behavior is intentionally deferred until broader broker-backed ingress evidence, operator close-out enforcement, and controlled live-like paper rehearsals are clarified.
+
+## Monday, August 3, 2026 Unified Supervisor Continuation
+
+- Added the first continuous unified internal-paper supervisor slice for
+  S21/BANKNIFTY, S22/RELIANCE, and S23/NIFTY under
+  `src/tfis/runtime/multi_strategy/supervisor.py`.
+- Added CLI wiring in `scripts/run_tfis_internal_paper.py`, dynamic snapshot
+  serving in `scripts/run_tfis_dashboard.py`, and frontend polling in
+  `dashboard/frontend/app.js`.
+- Added focused reports under `reports/live_supervisor/` covering supervisor
+  contract, subscription ownership, scheduler, checkpoint/resume, late-start
+  safety, live routing, dashboard evidence labels, account risk acceptance,
+  failure isolation, preflight, startup plan, performance, gap register, and
+  validation summary.
+- Fixed the duplicate-supervisor preflight false positive caused by stale PID
+  metadata and added bounded FYERS read-only client-call timeouts so one SDK
+  call cannot stall the whole loop indefinitely.
+- Milestone verdict remains `TFIS_CONTINUOUS_SUPERVISOR_CONDITIONAL` because a
+  full pre-market-to-EOD operational proof with acceptable steady-state loop
+  cadence has not yet been captured. External broker/live order authority
+  remains `NONE`.

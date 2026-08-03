@@ -1,0 +1,28 @@
+{
+  "captured_at": "2026-08-03T09:50:16.452977+05:30",
+  "instances": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+      "eod_carry": "FUTURE_WINDOW",
+      "market_open": "MISSED_BEFORE_SUPERVISOR_START",
+      "orpt": "MISSED_BEFORE_SUPERVISOR_START",
+      "rc": "MISSED_BEFORE_SUPERVISOR_START",
+      "shutdown_checkpoint": "FUTURE_WINDOW"
+    },
+    "S22_RELIANCE_INTERNAL_PAPER_A": {
+      "eod_carry": "FUTURE_WINDOW",
+      "market_open": "MISSED_BEFORE_SUPERVISOR_START",
+      "orpt": "MISSED_BEFORE_SUPERVISOR_START",
+      "rc": "MISSED_BEFORE_SUPERVISOR_START",
+      "shutdown_checkpoint": "FUTURE_WINDOW"
+    },
+    "S23_NIFTY_INTERNAL_PAPER_A": {
+      "eod_carry": "FUTURE_WINDOW",
+      "market_open": "MISSED_BEFORE_SUPERVISOR_START",
+      "orpt": "MISSED_BEFORE_SUPERVISOR_START",
+      "rc": "MISSED_BEFORE_SUPERVISOR_START",
+      "shutdown_checkpoint": "FUTURE_WINDOW"
+    }
+  },
+  "schema_version": "tfis.live_session.timing_windows.v1",
+  "session_start": "2026-08-03T09:50:16.452977+05:30"
+}

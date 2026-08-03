@@ -1,0 +1,10 @@
+{
+  "authentication_status": "AUTHENTICATED",
+  "broker_write_available": false,
+  "dashboard_healthy": true,
+  "external_broker_order_authority": "NONE",
+  "external_paper_authority": "NONE",
+  "live_money_authority": "NONE",
+  "operator_session_process_count": 6,
+  "schema_version": "tfis.live_session.authority_audit.v1"
+}

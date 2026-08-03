@@ -3220,3 +3220,22 @@ Current notes:
   remain `NONE`. The short-option accounting provenance label is now
   strategy-neutral (`tfis.short_option_accounting.v1`) with P&L formula,
   quantity, multiplier and charge behavior unchanged.
+- Monday, August 3, 2026 added the first continuous unified internal-paper
+  supervisor slice under `src/tfis/runtime/multi_strategy/supervisor.py` for
+  S21/BANKNIFTY, S22/RELIANCE, and S23/NIFTY. The supervisor now owns
+  late-start no-new-entry persistence, session-scoped subscription ownership,
+  runtime checkpointing, dashboard snapshot publication, and complete-session
+  preflight output under `reports/live_supervisor/`. FYERS remains strictly
+  `READ_ONLY`, TFIS execution remains `INTERNAL_PAPER_ONLY`, and external
+  broker/live order authority remains `NONE`.
+- The same August 3, 2026 market-hour validation fixed two operational defects:
+  stale supervisor PID metadata no longer blocks safe preflight restart, and
+  the FYERS read-only adapter now bounds SDK calls so one broker read cannot
+  hang the entire loop indefinitely. The dashboard also now reloads
+  supervisor-written snapshot JSON continuously instead of relying only on the
+  startup projection.
+- Milestone status remains conditional because steady-state live-loop cadence is
+  still slower than the configured poll interval during full observation
+  passes. A full before-market-open through EOD run is still required to prove
+  real continuous-session cadence, restart/resume behavior, and honest
+  dashboard freshness across the whole day.

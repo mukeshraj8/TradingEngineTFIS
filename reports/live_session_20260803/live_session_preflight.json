@@ -1,0 +1,30 @@
+{
+  "current_time": "2026-08-03T09:50:16.452977+05:30",
+  "dashboard_state": {
+    "health_payload": {
+      "broker_order_authority": "NONE",
+      "projection_hash": "6ee9b3eb055b9e9dce122eddc2cf4e70d9c300daea7d0695455847ff2cfdc63e",
+      "status": "HEALTHY"
+    },
+    "healthy": true,
+    "url": "http://127.0.0.1:8766/api/health"
+  },
+  "market_session_state": "LIVE",
+  "schema_version": "tfis.live_session.preflight.v1",
+  "session_id": "NSE:2026-08-03:LIVE_OBSERVATION",
+  "worktree_status": [
+    " M dashboard/frontend/app.js",
+    " M reports/dashboard_v1/dashboard_gap_register.json",
+    " M reports/dashboard_v1/dashboard_performance_metrics.json",
+    " M reports/dashboard_v1/dashboard_process_cleanup.json",
+    " M reports/dashboard_v1/dashboard_summary.md",
+    " M scripts/run_tfis_internal_paper.py",
+    " M src/tfis/dashboard/api/contracts.py",
+    " M src/tfis/runtime/multi_strategy/__init__.py",
+    " M tests/unit/test_multi_strategy_runtime_dashboard_v1.py",
+    "?? TFIS_Architecture_Blueprint_Phase1.docx",
+    "?? docs/operations/tfis_operation_runbook_v1.md",
+    "?? src/tfis/runtime/multi_strategy/live_observation.py",
+    "?? tests/unit/test_multi_strategy_live_observation.py"
+  ]
+}

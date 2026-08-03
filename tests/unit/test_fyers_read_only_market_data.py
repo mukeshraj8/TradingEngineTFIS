@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
+import time
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -281,6 +282,25 @@ def test_rate_limit_timeout_and_malformed_payloads_are_classified() -> None:
         range_from=date(2026, 7, 1),
         range_to=date(2026, 8, 1),
     ).status == FyersReadOnlyStatus.MALFORMED
+
+
+def test_quotes_timeout_is_bounded_by_adapter_timeout() -> None:
+    class HangingQuotesClient(FakeFyersClient):
+        def quotes(self, request):
+            time.sleep(0.2)
+            return {"s": "ok", "d": []}
+
+    adapter = FyersReadOnlyAdapter(
+        client=HangingQuotesClient(),
+        now_provider=lambda: NOW,
+        sleeper=lambda _: None,
+        timeout_seconds=0.05,
+        max_retries=0,
+    )
+
+    result = adapter.fetch_quotes(("NSE:RELIANCE-EQ",))
+
+    assert result.status == FyersReadOnlyStatus.TIMEOUT
 
 
 def test_redaction_preserves_instrument_token_metadata_but_removes_credentials() -> None:

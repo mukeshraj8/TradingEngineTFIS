@@ -142,7 +142,7 @@ def _account_projection(
     alerts = tuple(
         {"severity": "CRITICAL", "code": "MISSING_PROTECTION", "strategy_instance_id": row["strategy_instance_id"]}
         for row in positions
-        if row["protection_status"] != "PROTECTED"
+        if row["health"].startswith("OPEN") and row["protection_status"] != "PROTECTED"
     )
     return AccountRiskProjection(
         account_reference=str(registry.accounts[0].get("account_reference", "INTERNAL_PAPER_ACCOUNT_A")),

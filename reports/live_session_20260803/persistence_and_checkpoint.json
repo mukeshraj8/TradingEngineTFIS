@@ -1,0 +1,8 @@
+{
+  "artifacts_hash": "52060b55d19ca827aad9f23786c8eaeeaab02127188cfda856ef259e6e2519e6",
+  "existing_internal_paper_files": [],
+  "live_session_sqlite_checkpoint": "NOT_ACTIVE_FOR_BOUNDED_OBSERVATION",
+  "report_dir": "reports\\live_session_20260803",
+  "schema_version": "tfis.live_session.persistence_and_checkpoint.v1",
+  "session_id": "NSE:2026-08-03:LIVE_OBSERVATION"
+}

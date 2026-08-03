@@ -11,6 +11,7 @@ class DashboardApiRouter:
     def resolve(self, path: str) -> tuple[int, dict[str, Any]]:
         normalized = path.rstrip("/") or "/"
         routes = {
+            "/api/snapshot.json": lambda: self.projection,
             "/api/system": lambda: self.projection["system"],
             "/api/brokers": self._brokers,
             "/api/accounts": lambda: {"accounts": self.projection["accounts"]},

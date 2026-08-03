@@ -27,12 +27,13 @@ class DashboardV1RequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self) -> None:
         request = urlsplit(self.path)
+        projection = self._load_projection()
         if request.path.startswith("/api/"):
-            status, payload = self.router.resolve(request.path)
+            status, payload = DashboardApiRouter(projection).resolve(request.path)
             self._send_json(payload, status=status)
             return
         if request.path == "/events":
-            body = build_sse_event_stream(self.projection).encode("utf-8")
+            body = build_sse_event_stream(projection).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream; charset=utf-8")
             self.send_header("Cache-Control", "no-store")
@@ -57,6 +58,13 @@ class DashboardV1RequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _load_projection(self) -> dict[str, object]:
+        snapshot_path = self.dashboard_root / "api" / "snapshot.json"
+        try:
+            return json.loads(snapshot_path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            return dict(self.projection)
 
 
 class ReusableTcpServer(socketserver.TCPServer):

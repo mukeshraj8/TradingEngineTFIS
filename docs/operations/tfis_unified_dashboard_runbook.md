@@ -88,3 +88,47 @@ Get-NetTCPConnection -LocalPort 8766 -State Listen -ErrorAction SilentlyContinue
 - The dashboard does not submit, modify, cancel, or square off broker orders.
 - S22 RELIANCE live opening/ORPT/RC evidence remains pending and is displayed
   as degraded evidence quality until a real FYERS session is captured.
+
+## Continuous Unified Supervisor
+
+Preflight the next complete unified session:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_tfis_internal_paper.py --preflight-complete-session
+```
+
+Run the continuous unified internal-paper supervisor in the foreground:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_tfis_internal_paper.py --continuous-supervisor --poll-seconds 5 --dashboard-port 8766
+```
+
+Example operator background launch:
+
+```powershell
+$env:CONFIG_PROFILE='prod'
+Start-Process -FilePath '.\.venv\Scripts\python.exe' `
+  -ArgumentList @('-u','scripts/run_tfis_internal_paper.py','--continuous-supervisor','--poll-seconds','5','--dashboard-port','8766') `
+  -WorkingDirectory 'D:\TradingEngineTFISRefactored' `
+  -RedirectStandardOutput 'logs\live_supervisor\continuous_supervisor_stdout.log' `
+  -RedirectStandardError 'logs\live_supervisor\continuous_supervisor_stderr.log' `
+  -WindowStyle Hidden
+```
+
+Supervisor runtime files:
+
+- `tmp/tfis_supervisor_state/heartbeat.json`
+- `tmp/tfis_supervisor_state/continuous_unified_supervisor.pid.json`
+- `tmp/tfis_supervisor_state/NSE_YYYY-MM-DD_UNIFIED_INTERNAL_PAPER.checkpoint.json`
+- `tmp/tfis_dashboard_v1/api/snapshot.json`
+
+Request a clean supervisor stop by creating the stop-signal file:
+
+```powershell
+New-Item -ItemType File -Force tmp\tfis_supervisor_state\continuous_unified_supervisor.stop
+```
+
+If the process is already stalled and the stop file does not complete the
+shutdown, identify the exact repository-owned PID from
+`tmp/tfis_supervisor_state/continuous_unified_supervisor.pid.json` and stop
+only that TFIS supervisor process.

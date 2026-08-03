@@ -10,6 +10,9 @@ const columns = {
 
 async function loadProjection() {
   const response = await fetch("api/snapshot.json", { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Snapshot request failed: ${response.status}`);
+  }
   state.projection = await response.json();
   render();
 }
@@ -153,3 +156,6 @@ document.getElementById("strategyFilter").addEventListener("input", () => render
 loadProjection().catch(error => {
   document.body.innerHTML = `<main class="section"><h1>Dashboard unavailable</h1><pre>${escapeHtml(error.message)}</pre></main>`;
 });
+setInterval(() => {
+  loadProjection().catch(() => {});
+}, 5000);

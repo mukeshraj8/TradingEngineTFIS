@@ -1,0 +1,21 @@
+{
+  "captured_at": "2026-08-03T09:50:16.452977+05:30",
+  "continuous_supervisor_active": false,
+  "enabled_instances": [
+    "S21_BANKNIFTY_INTERNAL_PAPER_A",
+    "S22_RELIANCE_INTERNAL_PAPER_A",
+    "S23_NIFTY_INTERNAL_PAPER_A"
+  ],
+  "existing_command_audited": ".\\.venv\\Scripts\\python.exe scripts\\run_tfis_internal_paper.py",
+  "existing_runtime_shape": "DETERMINISTIC_PROJECTION_ONLY",
+  "missing_capabilities": [
+    "continuous_live_event_loop",
+    "subscription_owner",
+    "scheduler_through_eod",
+    "checkpoint_resume_for_live_session"
+  ],
+  "result": "BOUNDED_LIVE_OBSERVATION_ONLY",
+  "schema_version": "tfis.live_session.unified_supervisor_startup.v1",
+  "session_id": "NSE:2026-08-03:LIVE_OBSERVATION",
+  "today_mode": "INTERNAL_PAPER_LATE_START_NO_NEW_ENTRY"
+}

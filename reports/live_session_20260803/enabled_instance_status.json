@@ -1,0 +1,114 @@
+{
+  "captured_at": "2026-08-03T09:50:16.452977+05:30",
+  "instances": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "blocked_reason": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
+      "branch": "BULL_CALL",
+      "dashboard_attached": true,
+      "entry_eligibility": "NO_NEW_ENTRY_LATE_SUPERVISOR_START",
+      "evidence_classification": "MISSED_BEFORE_SUPERVISOR_START",
+      "lifecycle_state": "OBSERVATION_ONLY",
+      "monthly_status": "BULL_CF",
+      "plan_status": "NO_NEW_ENTRY_LATE_SUPERVISOR_START",
+      "quote_oi_quality": "LIVE_READ_OK",
+      "runtime_stage": "LATE_START_NO_NEW_ENTRY",
+      "selected_contract": null,
+      "session_id": "NSE:2026-08-03:LIVE_OBSERVATION",
+      "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "strategy_version": "s21.phase5d.complete.v1",
+      "timing_window_status": {
+        "eod_carry": "FUTURE_WINDOW",
+        "market_open": "MISSED_BEFORE_SUPERVISOR_START",
+        "orpt": "MISSED_BEFORE_SUPERVISOR_START",
+        "rc": "MISSED_BEFORE_SUPERVISOR_START",
+        "shutdown_checkpoint": "FUTURE_WINDOW"
+      },
+      "underlying": "BANKNIFTY",
+      "underlying_quote": {
+        "ask": "0",
+        "bid": "0",
+        "ltp": "57771.8",
+        "oi": null,
+        "source_hash": "48256638381a7ca8cbe2dc9dc67cd0555f47d56e7fc8e4b80fde089fea0033a0",
+        "symbol": "NSE:NIFTYBANK-INDEX",
+        "timestamp": "2026-08-03T05:30:00+05:30",
+        "volume": "0"
+      }
+    },
+    "S22_RELIANCE_INTERNAL_PAPER_A": {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "blocked_reason": null,
+      "branch": "BEAR_CALL",
+      "dashboard_attached": true,
+      "entry_eligibility": "NO_NEW_ENTRY_LATE_SUPERVISOR_START",
+      "evidence_classification": "LIVE_FYERS_READ_ONLY_CAPTURE",
+      "lifecycle_state": "OBSERVATION_ONLY",
+      "monthly_status": "BEAR_CF",
+      "plan_status": "PREPARED",
+      "quote_oi_quality": "LIVE_READ_OK",
+      "runtime_stage": "LATE_START_NO_NEW_ENTRY",
+      "selected_contract": "NSE:RELIANCE26AUG1260CE",
+      "session_id": "NSE:2026-08-03:LIVE_OBSERVATION",
+      "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "strategy_version": "s22.reliance.stage1.v1",
+      "timing_window_status": {
+        "eod_carry": "FUTURE_WINDOW",
+        "market_open": "MISSED_BEFORE_SUPERVISOR_START",
+        "orpt": "MISSED_BEFORE_SUPERVISOR_START",
+        "rc": "MISSED_BEFORE_SUPERVISOR_START",
+        "shutdown_checkpoint": "FUTURE_WINDOW"
+      },
+      "underlying": "RELIANCE",
+      "underlying_quote": {
+        "ask": "1310.6",
+        "bid": "1310.5",
+        "ltp": "1310.5",
+        "oi": null,
+        "source_hash": "48256638381a7ca8cbe2dc9dc67cd0555f47d56e7fc8e4b80fde089fea0033a0",
+        "symbol": "NSE:RELIANCE-EQ",
+        "timestamp": "2026-08-03T05:30:00+05:30",
+        "volume": "1606469"
+      }
+    },
+    "S23_NIFTY_INTERNAL_PAPER_A": {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "blocked_reason": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
+      "branch": "BULL_PUT",
+      "dashboard_attached": true,
+      "entry_eligibility": "NO_NEW_ENTRY_LATE_SUPERVISOR_START",
+      "evidence_classification": "MISSED_BEFORE_SUPERVISOR_START",
+      "lifecycle_state": "OBSERVATION_ONLY",
+      "monthly_status": "BULL_CF",
+      "plan_status": "NO_NEW_ENTRY_LATE_SUPERVISOR_START",
+      "quote_oi_quality": "LIVE_READ_OK",
+      "runtime_stage": "LATE_START_NO_NEW_ENTRY",
+      "selected_contract": null,
+      "session_id": "NSE:2026-08-03:LIVE_OBSERVATION",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "strategy_version": "s23.phase5c.complete.v1",
+      "timing_window_status": {
+        "eod_carry": "FUTURE_WINDOW",
+        "market_open": "MISSED_BEFORE_SUPERVISOR_START",
+        "orpt": "MISSED_BEFORE_SUPERVISOR_START",
+        "rc": "MISSED_BEFORE_SUPERVISOR_START",
+        "shutdown_checkpoint": "FUTURE_WINDOW"
+      },
+      "underlying": "NIFTY",
+      "underlying_quote": {
+        "ask": "0",
+        "bid": "0",
+        "ltp": "24555.2",
+        "oi": null,
+        "source_hash": "48256638381a7ca8cbe2dc9dc67cd0555f47d56e7fc8e4b80fde089fea0033a0",
+        "symbol": "NSE:NIFTY50-INDEX",
+        "timestamp": "2026-08-03T05:30:00+05:30",
+        "volume": "0"
+      }
+    }
+  },
+  "schema_version": "tfis.live_session.enabled_instance_status.v1"
+}

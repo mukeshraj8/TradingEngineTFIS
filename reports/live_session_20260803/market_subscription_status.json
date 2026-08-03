@@ -1,0 +1,34 @@
+{
+  "candidate_contracts_required": [],
+  "captured_at": "2026-08-03T09:50:16.452977+05:30",
+  "continuous_supervisor": false,
+  "duplicate_provider_subscription": false,
+  "mode": "BOUNDED_READ_ONLY_POLL",
+  "reconnect_evidence": "NOT_APPLICABLE_ONE_SHOT_CAPTURE",
+  "selected_contract_continuity": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+      "evidence": "MISSED_BEFORE_SUPERVISOR_START",
+      "selected_contract": null,
+      "status": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR"
+    },
+    "S22_RELIANCE_INTERNAL_PAPER_A": {
+      "evidence": "LIVE_FYERS_READ_ONLY_CAPTURE",
+      "selected_contract": "NSE:RELIANCE26AUG1260CE",
+      "status": "IDENTIFIABLE"
+    },
+    "S23_NIFTY_INTERNAL_PAPER_A": {
+      "evidence": "MISSED_BEFORE_SUPERVISOR_START",
+      "selected_contract": null,
+      "status": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR"
+    }
+  },
+  "selected_contracts_pinned": [
+    "NSE:RELIANCE26AUG1260CE"
+  ],
+  "subscription_owner": "scripts/run_tfis_internal_paper.py --live-observation-only",
+  "underlying_symbols": [
+    "NSE:NIFTY50-INDEX",
+    "NSE:NIFTYBANK-INDEX",
+    "NSE:RELIANCE-EQ"
+  ]
+}

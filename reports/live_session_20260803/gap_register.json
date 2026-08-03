@@ -1,0 +1,21 @@
+{
+  "captured_at": "2026-08-03T09:50:16.452977+05:30",
+  "gaps": [
+    {
+      "classification": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
+      "description": "S21_BANKNIFTY_INTERNAL_PAPER_A could not safely claim a live selected contract after supervisor late start.",
+      "gap_id": "LIVE-OBS-CONTINUITY-S21_BANKNIFTY_INTERNAL_PAPER_A"
+    },
+    {
+      "classification": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
+      "description": "S23_NIFTY_INTERNAL_PAPER_A could not safely claim a live selected contract after supervisor late start.",
+      "gap_id": "LIVE-OBS-CONTINUITY-S23_NIFTY_INTERNAL_PAPER_A"
+    },
+    {
+      "classification": "DASHBOARD_LIVE_LABELS_MISSING",
+      "description": "The existing operator dashboard does not yet display the required live-observation evidence labels.",
+      "gap_id": "LIVE-OBS-G004"
+    }
+  ],
+  "schema_version": "tfis.live_session.gap_register.v1"
+}

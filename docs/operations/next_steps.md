@@ -1989,3 +1989,17 @@ Phase 5D S21 complete-strategy result:
   behavior
 - exact next recommendation is begin S22 source closure and stock-universe
   audit; do not begin S22 implementation until source closure is accepted
+
+Unified continuous-supervisor next step:
+
+- run one complete unified S21/S22/S23 internal-paper session from before
+  market open using `scripts/run_tfis_internal_paper.py --preflight-complete-session`
+  followed by the continuous-supervisor operator start command
+- use that single session to certify pre-market planning, market-open
+  observation, ORPT/RC timing, steady-state supervisor cadence, EOD/carry
+  handling, checkpoint continuity, dashboard freshness, and operator shutdown
+- keep August 3, 2026 classified as a late-start observation/lifecycle-only
+  day; do not create retroactive fresh internal-paper entries from a missed
+  start
+- keep FYERS strictly read-only and do not broaden to external paper or live
+  authority from this milestone

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 import urllib.request
 from dataclasses import dataclass
@@ -354,7 +355,7 @@ class FyersReadOnlyAdapter:
         last_message = "unavailable"
         for attempt in range(self._max_retries + 1):
             try:
-                body = func()
+                body = self._invoke_with_timeout(func)
             except TimeoutError as exc:
                 last_status = FyersReadOnlyStatus.TIMEOUT
                 last_message = str(exc)
@@ -372,6 +373,25 @@ class FyersReadOnlyAdapter:
             if attempt < self._max_retries:
                 self._sleeper(min(1.0, 0.1 * (attempt + 1)))
         raise FyersReadOnlyError(last_status, last_message)
+
+    def _invoke_with_timeout(self, func: Callable[[], Mapping[str, Any]]) -> Mapping[str, Any]:
+        result: dict[str, Mapping[str, Any]] = {}
+        failure: dict[str, BaseException] = {}
+
+        def _runner() -> None:
+            try:
+                result["body"] = func()
+            except BaseException as exc:  # pragma: no cover - exercised through caller classification
+                failure["error"] = exc
+
+        worker = threading.Thread(target=_runner, name="fyers-read-only-call", daemon=True)
+        worker.start()
+        worker.join(timeout=self._timeout_seconds)
+        if worker.is_alive():
+            raise TimeoutError(f"FYERS read-only call timed out after {self._timeout_seconds:.1f}s")
+        if "error" in failure:
+            raise failure["error"]
+        return result.get("body", {})
 
     @staticmethod
     def _status_from_payload(body: Mapping[str, Any]) -> FyersReadOnlyStatus:

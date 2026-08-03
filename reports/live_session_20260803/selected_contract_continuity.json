@@ -1,0 +1,32 @@
+{
+  "gaps": [
+    {
+      "classification": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
+      "description": "S21_BANKNIFTY_INTERNAL_PAPER_A could not safely claim a live selected contract after supervisor late start.",
+      "gap_id": "LIVE-OBS-CONTINUITY-S21_BANKNIFTY_INTERNAL_PAPER_A"
+    },
+    {
+      "classification": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
+      "description": "S23_NIFTY_INTERNAL_PAPER_A could not safely claim a live selected contract after supervisor late start.",
+      "gap_id": "LIVE-OBS-CONTINUITY-S23_NIFTY_INTERNAL_PAPER_A"
+    }
+  ],
+  "instances": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+      "evidence": "MISSED_BEFORE_SUPERVISOR_START",
+      "selected_contract": null,
+      "status": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR"
+    },
+    "S22_RELIANCE_INTERNAL_PAPER_A": {
+      "evidence": "LIVE_FYERS_READ_ONLY_CAPTURE",
+      "selected_contract": "NSE:RELIANCE26AUG1260CE",
+      "status": "IDENTIFIABLE"
+    },
+    "S23_NIFTY_INTERNAL_PAPER_A": {
+      "evidence": "MISSED_BEFORE_SUPERVISOR_START",
+      "selected_contract": null,
+      "status": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR"
+    }
+  },
+  "schema_version": "tfis.live_session.selected_contract_continuity.v1"
+}

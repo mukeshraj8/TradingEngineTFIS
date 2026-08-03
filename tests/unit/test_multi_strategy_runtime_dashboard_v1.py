@@ -137,6 +137,9 @@ def test_dashboard_api_event_and_command_contracts_are_read_only() -> None:
     projection = MultiStrategyRuntimeCoordinator(registry).run_deterministic_session()["dashboard_projection"]
     router = DashboardApiRouter(projection)
 
+    status, snapshot = router.resolve("/api/snapshot.json")
+    assert status == 200
+    assert snapshot["projection_hash"] == projection["projection_hash"]
     status, health = router.resolve("/api/health")
     assert status == 200
     assert health["broker_order_authority"] == "NONE"
