@@ -181,6 +181,55 @@ def test_supervisor_persists_late_start_mode_and_snapshot_without_network(tmp_pa
     assert snapshot["system"]["broker_order_authority"] == "NONE"
 
 
+def test_supervisor_skips_no_change_snapshot_checkpoint_and_reports_within_intervals(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    now = datetime(2026, 8, 3, 9, 45, tzinfo=IST)
+
+    class _Auth:
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=now,
+                status=BrokerSessionStatus.NETWORK_UNAVAILABLE,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=tmp_path / "reports" / "live_supervisor",
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+        max_iterations=2,
+        poll_seconds=0.01,
+    )
+    supervisor = UnifiedInternalPaperSupervisor(
+        config,
+        now_provider=lambda: now,
+        sleep_fn=lambda _seconds: None,
+        auth_factory=lambda _root: _Auth(),
+    )
+
+    supervisor.run()
+
+    second_cycle = supervisor._cycle_metrics_history[-1]["stage_metrics"]
+    statuses = {item["stage"]: item["status"] for item in second_cycle}
+
+    assert statuses["recovery_snapshot"] == "CACHED"
+    assert statuses["dashboard_snapshot_write"] == "SKIPPED_NO_CHANGE"
+    assert statuses["checkpoint_write"] == "SKIPPED_NO_CHANGE"
+    assert statuses["sqlite_runtime_persistence"] == "SKIPPED_NO_CHANGE"
+    assert statuses["live_supervisor_reports"] == "SKIPPED_NO_CHANGE"
+
+
 def _write_test_repo_files(root: Path) -> None:
     (root / "config").mkdir(parents=True, exist_ok=True)
     (root / "tmp" / "tfis_dashboard_v1" / "api").mkdir(parents=True, exist_ok=True)

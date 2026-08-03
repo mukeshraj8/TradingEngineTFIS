@@ -2003,3 +2003,14 @@ Unified continuous-supervisor next step:
   start
 - keep FYERS strictly read-only and do not broaden to external paper or live
   authority from this milestone
+
+Unified runtime performance gate:
+
+- use `reports/runtime_performance/` as the evidence pack for cadence
+  certification
+- treat the August 3 live process as `BLOCKED_BY_RUNTIME_CADENCE` for
+  acceptance because passive publish gaps were far above the `5s` configured
+  interval
+- the next approval gate is one real before-market-open run on the updated
+  optimized supervisor path; do not claim readiness from fixture-only timing
+  or passive code inspection alone

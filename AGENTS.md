@@ -779,6 +779,24 @@ Performance work must remain measurable and honest:
 - reuse shared market snapshots across strategy instances;
 - isolate mutable per-account/per-strategy/per-position state.
 
+### LIVE RUNTIME HOT-PATH RULE
+
+- Business-critical scheduler events must not wait behind optional reporting,
+  dashboard, analytics, or bulk persistence work.
+- Monthly Status, Market Structure, metadata, and other stable calculations
+  must be cached by their correct source identity/version and invalidated
+  explicitly.
+- Ordinary quote updates may be conflated; ORPT, RC, EOD, orders, fills,
+  PositionCycle, protection, reconciliation, and operator commands may not.
+- Performance diagnostics must not affect business hashes or decisions.
+- No optimisation may weaken fail-closed safety, idempotency, auditability, or
+  recovery.
+- External provider calls must have bounded timeouts and failure isolation.
+- Long-running processes must expose PID, heartbeat, logs, health, and
+  graceful-shutdown controls.
+- Dashboard and analytics work must remain outside the critical financial
+  decision path wherever practical.
+
 ---
 
 ## 17. Accounting and analytics rules

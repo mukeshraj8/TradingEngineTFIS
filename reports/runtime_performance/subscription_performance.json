@@ -1,0 +1,6 @@
+{
+  "duplicate_provider_subscriptions": false,
+  "schema_version": "tfis.runtime_performance.subscription_performance.v1",
+  "selected_contract_subscription_count": 1,
+  "underlying_subscription_count": 3
+}

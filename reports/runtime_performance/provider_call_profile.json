@@ -1,0 +1,41 @@
+{
+  "calls": [
+    {
+      "after_fix": "CACHED_300S",
+      "before_fix": "EXECUTED_EVERY_CYCLE",
+      "capability": "broker_authentication_and_session_validation",
+      "classification": "REDUNDANT_PROVIDER_CALL"
+    },
+    {
+      "after_fix": "EXECUTED_EVERY_CYCLE_BATCHED",
+      "before_fix": "EXECUTED_EVERY_CYCLE_BATCHED",
+      "capability": "underlying_quote_reads",
+      "classification": "REQUIRED_HOT_PATH"
+    },
+    {
+      "after_fix": "SESSION_CACHE",
+      "before_fix": "EXECUTED_EVERY_CYCLE",
+      "capability": "nsefo_symbol_master",
+      "classification": "REPEATED_STATIC_DATA_LOAD"
+    },
+    {
+      "after_fix": "EXECUTED_EVERY_CYCLE_FOR_ACTIVE_INSTANCE",
+      "before_fix": "EXECUTED_EVERY_CYCLE_FOR_ACTIVE_INSTANCE",
+      "capability": "selected_contract_quote",
+      "classification": "REQUIRED_HOT_PATH"
+    },
+    {
+      "after_fix": "CACHED_60S",
+      "before_fix": "EXECUTED_EVERY_CYCLE",
+      "capability": "option_chain_read",
+      "classification": "REDUNDANT_PROVIDER_CALL"
+    },
+    {
+      "after_fix": "REMOVED_FROM_HOT_LOOP",
+      "before_fix": "EXECUTED_EVERY_CYCLE_VIA_REPORTS",
+      "capability": "hot_loop_preflight_auth_and_db_scan",
+      "classification": "REPORT_GENERATION_IN_LIVE_LOOP"
+    }
+  ],
+  "schema_version": "tfis.runtime_performance.provider_call_profile.v1"
+}

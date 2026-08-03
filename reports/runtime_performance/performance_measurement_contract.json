@@ -1,0 +1,30 @@
+{
+  "allowed_statuses": [
+    "EXECUTED",
+    "CACHED",
+    "SKIPPED_NOT_DUE",
+    "SKIPPED_NO_CHANGE",
+    "BLOCKED",
+    "FAILED",
+    "NOT_APPLICABLE"
+  ],
+  "business_hash_impact": "EXCLUDED",
+  "configured_poll_interval_seconds": 5.0,
+  "measurement_mode": "LIVE_PASSIVE_PLUS_FIXTURE_HOT_PATH",
+  "schema_version": "tfis.runtime_performance.measurement_contract.v1",
+  "stages": [
+    "cycle_start",
+    "broker_authentication",
+    "recovery_snapshot",
+    "provider_underlying_quotes",
+    "provider_symbol_master_nsefo",
+    "provider_selected_contract_quote",
+    "provider_option_chain",
+    "dashboard_projection_build",
+    "dashboard_snapshot_write",
+    "checkpoint_write",
+    "sqlite_runtime_persistence",
+    "live_supervisor_reports",
+    "cycle_total"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "gaps": [
+    {
+      "classification": "BLOCKED_BY_RUNTIME_CADENCE",
+      "description": "Need one real pre-market-to-EOD run on optimized code to certify three-instance cadence.",
+      "gap_id": "P1"
+    },
+    {
+      "classification": "DEFERRED_MARKET_HOURS",
+      "description": "10-stock and 50-stock synthetic load profiles deferred until market close.",
+      "gap_id": "P2"
+    }
+  ],
+  "schema_version": "tfis.runtime_performance.gap_register.v1"
+}

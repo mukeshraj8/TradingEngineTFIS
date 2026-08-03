@@ -1,0 +1,29 @@
+{
+  "baseline_type": "LIVE_PASSIVE_MEASURED_PRE_OPTIMIZATION_PROCESS",
+  "configured_poll_interval_seconds": 5.0,
+  "heartbeat_update_intervals_seconds": [
+    76.604,
+    346.986
+  ],
+  "sample_window": {
+    "first_observed_at": "2026-08-03T10:59:51.8929102+05:30",
+    "last_observed_at": "2026-08-03T11:06:10.0000000+05:30",
+    "sample_count": 7
+  },
+  "schema_version": "tfis.runtime_performance.three_instance_live_baseline.v1",
+  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+  "snapshot_update_intervals_seconds": [
+    76.878,
+    346.641
+  ],
+  "summary": {
+    "approx_cpu_single_core_pct": 86.88,
+    "max_cycle_gap_seconds": 346.986,
+    "median_cycle_gap_seconds": 211.795,
+    "min_cycle_gap_seconds": 76.604,
+    "sample_size_limited": true,
+    "working_set_mb_max": 601.965,
+    "working_set_mb_min": 388.926
+  },
+  "verdict": "OVERRUN_UNSTABLE"
+}

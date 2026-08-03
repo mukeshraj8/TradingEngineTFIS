@@ -1,0 +1,6 @@
+{
+  "current_live_process": "WRITES_CHECKPOINT_AND_SQLITE_EVERY_CYCLE",
+  "db_scan_behavior_after_fix": "recovery snapshot cached for 60 seconds; hot-loop preflight removed",
+  "next_session_behavior": "SEMANTIC_NO_CHANGE_SKIPS_WITH_30S_MAX_WRITE_INTERVAL",
+  "schema_version": "tfis.runtime_performance.persistence_profile.v1"
+}

@@ -1,0 +1,8 @@
+{
+  "reasons": [
+    "Active live process still shows passive publish gaps far above the 5 second configured poll interval.",
+    "Optimized code path is implemented and unit-validated but has not yet been exercised on a real before-market-open session."
+  ],
+  "schema_version": "tfis.runtime_performance.next_session_readiness.v1",
+  "verdict": "BLOCKED_BY_RUNTIME_CADENCE"
+}

@@ -1,0 +1,14 @@
+{
+  "configured_poll_interval_seconds": 5.0,
+  "current_state": "OVERRUN",
+  "measured_heartbeat_publish_gaps_seconds": [
+    76.604,
+    346.986
+  ],
+  "measured_snapshot_publish_gaps_seconds": [
+    76.878,
+    346.641
+  ],
+  "risk_to_orpt_rc_eod": "HIGH",
+  "schema_version": "tfis.runtime_performance.scheduler_drift_analysis.v1"
+}

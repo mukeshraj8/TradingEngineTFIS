@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import time
 import time as time_module
 from dataclasses import dataclass
 from datetime import date, datetime, time
@@ -35,6 +36,13 @@ MARKET_CLOSE = time(15, 30)
 EOD_DECISION = time(15, 0)
 RULE_MATRIX_VERSION = "tfis_authoritative_workbook_rule_matrix.v1"
 DEFAULT_HEALTH = {"status": "UNKNOWN", "broker_order_authority": "NONE"}
+DEFAULT_AUTH_REVALIDATE_INTERVAL_SECONDS = 300.0
+DEFAULT_RECOVERY_REFRESH_INTERVAL_SECONDS = 60.0
+DEFAULT_OPTION_CHAIN_REFRESH_INTERVAL_SECONDS = 60.0
+DEFAULT_SNAPSHOT_WRITE_INTERVAL_SECONDS = 15.0
+DEFAULT_CHECKPOINT_WRITE_INTERVAL_SECONDS = 30.0
+DEFAULT_REPORT_WRITE_INTERVAL_SECONDS = 300.0
+DEFAULT_PERFORMANCE_RETENTION_CYCLES = 240
 REQUIRED_SUPERVISOR_STATES = (
     "CREATED",
     "PREFLIGHT",
@@ -70,6 +78,13 @@ class ContinuousSupervisorConfig:
     max_iterations: int = 0
     until_time: time = MARKET_CLOSE
     session_date: date | None = None
+    auth_revalidate_interval_seconds: float = DEFAULT_AUTH_REVALIDATE_INTERVAL_SECONDS
+    recovery_refresh_interval_seconds: float = DEFAULT_RECOVERY_REFRESH_INTERVAL_SECONDS
+    option_chain_refresh_interval_seconds: float = DEFAULT_OPTION_CHAIN_REFRESH_INTERVAL_SECONDS
+    snapshot_write_interval_seconds: float = DEFAULT_SNAPSHOT_WRITE_INTERVAL_SECONDS
+    checkpoint_write_interval_seconds: float = DEFAULT_CHECKPOINT_WRITE_INTERVAL_SECONDS
+    report_write_interval_seconds: float = DEFAULT_REPORT_WRITE_INTERVAL_SECONDS
+    performance_retention_cycles: int = DEFAULT_PERFORMANCE_RETENTION_CYCLES
 
 
 @dataclass(frozen=True, slots=True)
@@ -90,6 +105,17 @@ class CompleteSessionPreflightResult:
     verdict: str
     reasons: tuple[str, ...]
     report_path: Path
+
+
+@dataclass(frozen=True, slots=True)
+class StageMetric:
+    stage: str
+    status: str
+    duration_ms: float
+    started_at: str
+    ended_at: str
+    scope: str = "SESSION"
+    details: Mapping[str, Any] | None = None
 
 
 class SubscriptionOwner:
@@ -195,8 +221,20 @@ class UnifiedInternalPaperSupervisor:
         self._timeline: list[dict[str, Any]] = []
         self._late_start_mode = False
         self._latest_auth: BrokerAuthenticationResult | None = None
+        self._latest_auth_checked_at: datetime | None = None
         self._last_projection_hash = ""
         self._cached_nsefo_records: tuple[Any, ...] = ()
+        self._cached_option_chain_by_underlying: dict[str, dict[str, Any]] = {}
+        self._cached_recovery_snapshot_value: dict[str, Any] | None = None
+        self._cached_recovery_snapshot_at: datetime | None = None
+        self._latest_cycle_metrics: list[StageMetric] = []
+        self._cycle_metrics_history: list[dict[str, Any]] = []
+        self._last_snapshot_write_at: datetime | None = None
+        self._last_snapshot_projection_hash: str | None = None
+        self._last_checkpoint_write_at: datetime | None = None
+        self._last_checkpoint_semantic_hash: str | None = None
+        self._last_report_write_at: datetime | None = None
+        self._last_report_state: str | None = None
 
     def run(self) -> ContinuousSupervisorRunResult:
         self._acquire_process_lock()
@@ -222,7 +260,7 @@ class UnifiedInternalPaperSupervisor:
                 self.sleep_fn(max(1.0, self.config.poll_seconds))
             final_now = self.now_provider()
             final_state = self._state_for_time(final_now)
-            self._write_reports(final_now, final_state)
+            self._write_reports(final_now, final_state, stage_metrics=[])
             return ContinuousSupervisorRunResult(
                 verdict="TFIS_CONTINUOUS_SUPERVISOR_CONDITIONAL",
                 session_id=self.session_id,
@@ -245,11 +283,14 @@ class UnifiedInternalPaperSupervisor:
 
     def _run_once(self, now: datetime) -> str:
         self._timeline = []
+        cycle_started_at = time_module.monotonic()
+        stage_metrics: list[StageMetric] = []
         self._write_heartbeat(state="PREFLIGHT", now=now)
         self._append_timeline("PREFLIGHT", "STARTED", now=now)
+        self._record_stage(stage_metrics, "cycle_start", "EXECUTED", started_at=now, ended_at=now)
 
         self._write_heartbeat(state="BROKER_DIAGNOSTICS", now=now)
-        auth_result = self.auth_factory(self.config.repo_root).authenticate(allow_refresh=False, validate_session=True)
+        auth_result = self._auth_result_for_cycle(now=now, stage_metrics=stage_metrics)
         self._latest_auth = auth_result
         self._append_timeline("BROKER_DIAGNOSTICS", auth_result.status.value, now=now)
 
@@ -258,9 +299,11 @@ class UnifiedInternalPaperSupervisor:
             self._late_start_mode = True
 
         self._write_heartbeat(state="LIVE_OBSERVATION", now=now)
-        live_context = self._collect_live_context(now, auth_result)
+        live_context = self._collect_live_context(now, auth_result, stage_metrics=stage_metrics)
         final_state = self._state_for_time(now)
+        projection_started_at = self.now_provider()
         projection = self._build_projection(now, live_context=live_context, final_state=final_state)
+        self._record_stage(stage_metrics, "dashboard_projection_build", "EXECUTED", started_at=projection_started_at, ended_at=self.now_provider())
         self._projection = projection
         self._last_projection_hash = projection["projection_hash"]
         self._latest_dashboard_health = {
@@ -269,14 +312,34 @@ class UnifiedInternalPaperSupervisor:
             "projection_hash": projection["projection_hash"],
         }
         self._write_heartbeat(state="CHECKPOINTING", now=now)
-        self._write_dashboard_snapshot(projection)
+        self._write_dashboard_snapshot(projection, now=now, stage_metrics=stage_metrics)
         self._append_timeline(final_state, "CAPTURED", now=now, projection_hash=projection["projection_hash"])
-        self._persist_runtime_state(now=now, final_state=final_state, projection=projection, live_context=live_context)
+        self._persist_runtime_state(now=now, final_state=final_state, projection=projection, live_context=live_context, stage_metrics=stage_metrics)
         self._write_heartbeat(state=final_state, now=now)
-        self._write_reports(now, final_state)
+        self._write_reports(now, final_state, stage_metrics=stage_metrics)
+        cycle_ended_at = self.now_provider()
+        self._record_stage(
+            stage_metrics,
+            "cycle_total",
+            "EXECUTED",
+            started_at=now,
+            ended_at=cycle_ended_at,
+            details={
+                "poll_interval_seconds": self.config.poll_seconds,
+                "cycle_duration_ms": round((time_module.monotonic() - cycle_started_at) * 1000.0, 3),
+            },
+        )
+        self._latest_cycle_metrics = stage_metrics
+        self._append_cycle_history(now=now, final_state=final_state, stage_metrics=stage_metrics)
         return final_state
 
-    def _collect_live_context(self, now: datetime, auth_result: BrokerAuthenticationResult) -> dict[str, Any]:
+    def _collect_live_context(
+        self,
+        now: datetime,
+        auth_result: BrokerAuthenticationResult,
+        *,
+        stage_metrics: list[StageMetric],
+    ) -> dict[str, Any]:
         live_context: dict[str, Any] = {
             "market_session_state": _market_session_state(now),
             "read_status": auth_result.status.value,
@@ -295,7 +358,7 @@ class UnifiedInternalPaperSupervisor:
             self.subscription_owner.pin_underlying(instance.strategy_instance_id, symbol, reason="UNDERLYING_OBSERVATION")
 
         live_context["timing"] = _timing_matrix(self.registry, now=now, late_start=self._late_start_mode)
-        live_context["recovery"] = self._recovery_snapshot()
+        live_context["recovery"] = self._recovery_snapshot(now=now, stage_metrics=stage_metrics)
 
         if auth_result.status is not BrokerSessionStatus.AUTHENTICATED or auth_result.session is None:
             for instance in self.registry.enabled_instances:
@@ -312,14 +375,43 @@ class UnifiedInternalPaperSupervisor:
             timeout_seconds=1.0,
             max_retries=0,
         )
+        call_started_at = self.now_provider()
         quotes = adapter.fetch_quotes(tuple(sorted(set(underlying_symbols.values()))))
+        self._record_stage(
+            stage_metrics,
+            "provider_underlying_quotes",
+            "EXECUTED",
+            started_at=call_started_at,
+            ended_at=self.now_provider(),
+            details={"symbol_count": len(set(underlying_symbols.values())), "status": quotes.status.value},
+        )
         live_context["underlying_reads"] = quotes.to_dict()
-        nsefo_master = adapter.fetch_symbol_master("NSEFO")
-        if nsefo_master.status is FyersReadOnlyStatus.SUCCESS:
-            records = tuple(nsefo_master.payload)
-            self._cached_nsefo_records = records
-        else:
+        if self._cached_nsefo_records:
             records = self._cached_nsefo_records
+            self._record_stage(
+                stage_metrics,
+                "provider_symbol_master_nsefo",
+                "CACHED",
+                started_at=now,
+                ended_at=now,
+                details={"record_count": len(records)},
+            )
+        else:
+            call_started_at = self.now_provider()
+            nsefo_master = adapter.fetch_symbol_master("NSEFO")
+            self._record_stage(
+                stage_metrics,
+                "provider_symbol_master_nsefo",
+                "EXECUTED",
+                started_at=call_started_at,
+                ended_at=self.now_provider(),
+                details={"status": nsefo_master.status.value},
+            )
+            if nsefo_master.status is FyersReadOnlyStatus.SUCCESS:
+                records = tuple(nsefo_master.payload)
+                self._cached_nsefo_records = records
+            else:
+                records = self._cached_nsefo_records
 
         for instance in self.registry.enabled_instances:
             continuity = self._continuity_for_instance(
@@ -327,6 +419,7 @@ class UnifiedInternalPaperSupervisor:
                 now=now,
                 adapter=adapter,
                 instrument_records=records,
+                stage_metrics=stage_metrics,
             )
             live_context["continuity"][instance.strategy_instance_id] = continuity
             selected_contract = continuity.get("selected_contract")
@@ -348,6 +441,7 @@ class UnifiedInternalPaperSupervisor:
         now: datetime,
         adapter: FyersReadOnlyAdapter,
         instrument_records: tuple[Any, ...],
+        stage_metrics: list[StageMetric],
     ) -> dict[str, Any]:
         if self._late_start_mode and instance.strategy_instance_id != "S22_RELIANCE_INTERNAL_PAPER_A":
             return {
@@ -366,16 +460,58 @@ class UnifiedInternalPaperSupervisor:
 
         if instance.symbol == "RELIANCE":
             selected_contract = _latest_reliance_snapshot_contract(self.config.repo_root) or selected_contract
+            call_started_at = self.now_provider()
             quote_result = adapter.fetch_quotes((selected_contract,))
+            self._record_stage(
+                stage_metrics,
+                "provider_selected_contract_quote",
+                "EXECUTED",
+                started_at=call_started_at,
+                ended_at=self.now_provider(),
+                scope=instance.strategy_instance_id,
+                details={"symbol": selected_contract, "status": quote_result.status.value},
+            )
             records_for_underlying = tuple(record for record in instrument_records if getattr(record, "underlying", None) == "RELIANCE")
             if records_for_underlying:
-                expiry = classify_monthly_expiries(records_for_underlying, underlying="RELIANCE", as_of=now.date())
-                option_chain = adapter.fetch_option_chain(
-                    underlying="NSE:RELIANCE-EQ",
-                    expiry=expiry.near_monthly_expiry,
-                    strike_count=25,
-                    instrument_records=records_for_underlying,
-                )
+                cache_key = "RELIANCE"
+                cached_chain = self._cached_option_chain_by_underlying.get(cache_key)
+                if cached_chain is not None and self._cache_is_fresh(
+                    cached_at=cached_chain["captured_at"],
+                    now=now,
+                    ttl_seconds=self.config.option_chain_refresh_interval_seconds,
+                ):
+                    option_chain = cached_chain["result"]
+                    self._record_stage(
+                        stage_metrics,
+                        "provider_option_chain",
+                        "CACHED",
+                        started_at=now,
+                        ended_at=now,
+                        scope=instance.strategy_instance_id,
+                        details={"underlying": "RELIANCE"},
+                    )
+                else:
+                    expiry = classify_monthly_expiries(records_for_underlying, underlying="RELIANCE", as_of=now.date())
+                    call_started_at = self.now_provider()
+                    option_chain = adapter.fetch_option_chain(
+                        underlying="NSE:RELIANCE-EQ",
+                        expiry=expiry.near_monthly_expiry,
+                        strike_count=25,
+                        instrument_records=records_for_underlying,
+                    )
+                    self._cached_option_chain_by_underlying[cache_key] = {
+                        "captured_at": now,
+                        "result": option_chain,
+                    }
+                    self._record_stage(
+                        stage_metrics,
+                        "provider_option_chain",
+                        "EXECUTED",
+                        started_at=call_started_at,
+                        ended_at=self.now_provider(),
+                        scope=instance.strategy_instance_id,
+                        details={"underlying": "RELIANCE", "status": option_chain.status.value},
+                    )
             else:
                 option_chain = None
             return {
@@ -386,7 +522,17 @@ class UnifiedInternalPaperSupervisor:
                 "option_chain_status": option_chain.to_dict() if option_chain is not None else {"status": "UNAVAILABLE"},
             }
 
+        call_started_at = self.now_provider()
         quote_result = adapter.fetch_quotes((selected_contract,))
+        self._record_stage(
+            stage_metrics,
+            "provider_selected_contract_quote",
+            "EXECUTED",
+            started_at=call_started_at,
+            ended_at=self.now_provider(),
+            scope=instance.strategy_instance_id,
+            details={"symbol": selected_contract, "status": quote_result.status.value},
+        )
         return {
             "status": "PREMARKET_SELECTED_CONTRACT_PINNED" if not self._late_start_mode else "IDENTIFIABLE",
             "selected_contract": selected_contract,
@@ -465,7 +611,15 @@ class UnifiedInternalPaperSupervisor:
         )
         return projection
 
-    def _persist_runtime_state(self, *, now: datetime, final_state: str, projection: Mapping[str, Any], live_context: Mapping[str, Any]) -> None:
+    def _persist_runtime_state(
+        self,
+        *,
+        now: datetime,
+        final_state: str,
+        projection: Mapping[str, Any],
+        live_context: Mapping[str, Any],
+        stage_metrics: list[StageMetric],
+    ) -> None:
         self.config.state_root.mkdir(parents=True, exist_ok=True)
         checkpoint_payload = {
             "session_id": self.session_id,
@@ -485,78 +639,142 @@ class UnifiedInternalPaperSupervisor:
                 "external_broker_orders": "NONE",
             },
         }
-        self._checkpoint_path.write_text(json.dumps(checkpoint_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-
-        db = PersistenceDatabase(self.config.db_path)
-        with UnitOfWork(db) as uow:
-            repo = uow.repo
-            repo.put_trading_session(
-                trading_session_id=self.session_id,
-                trading_date=self.session_date,
-                market="NSE",
-                timezone_name="Asia/Calcutta",
-                payload={
-                    "session_id": self.session_id,
-                    "state": final_state,
-                    "late_start_mode": self._late_start_mode,
-                },
+        semantic_hash = canonical_hash(
+            {
+                "state": checkpoint_payload["state"],
+                "late_start_mode": checkpoint_payload["late_start_mode"],
+                "projection_hash": checkpoint_payload["projection_hash"],
+                "subscription_owner": checkpoint_payload["subscription_owner"],
+                "continuity": checkpoint_payload["continuity"],
+                "timing": checkpoint_payload["timing"],
+                "market_state": checkpoint_payload["market_state"],
+                "authority": checkpoint_payload["authority"],
+            }
+        )
+        should_write_checkpoint = (
+            self._last_checkpoint_semantic_hash != semantic_hash
+            or self._last_checkpoint_write_at is None
+            or not self._cache_is_fresh(
+                cached_at=self._last_checkpoint_write_at,
+                now=now,
+                ttl_seconds=self.config.checkpoint_write_interval_seconds,
             )
-            for instance in self.registry.enabled_instances:
-                repo.put_strategy_instance(
-                    strategy_instance_id=instance.strategy_instance_id,
-                    strategy_definition_id=instance.strategy_definition_id,
-                    strategy_version=instance.strategy_version,
-                    configuration_hash=instance.rule_config_hash,
-                    payload=instance.to_dict(),
-                )
-                checkpoint_id = f"{self.session_id}:{instance.strategy_instance_id}:iteration:{self.iterations}"
-                repo.put_runtime_checkpoint(
-                    checkpoint_id=checkpoint_id,
-                    stream_identity=instance.strategy_instance_id,
-                    session_source_id=self.session_id,
-                    source_offset=self.iterations,
-                    current_state=final_state,
-                    consumed_event_ids=tuple(item["event_id"] for item in self._timeline),
-                    snapshot_hashes={"projection_hash": projection["projection_hash"]},
-                    artifact_hashes={"checkpoint_payload": canonical_hash(checkpoint_payload)},
-                    configuration_hash=self.registry.registry_hash,
-                    rule_matrix_version=RULE_MATRIX_VERSION,
-                )
-                expected_version = _load_projection_version(self.config.db_path, instance.strategy_instance_id)
-                repo.upsert_runtime_projection(
-                    projection_id=f"unified-supervisor:{instance.strategy_instance_id}",
-                    strategy_instance_id=instance.strategy_instance_id,
-                    trading_session_id=self.session_id,
-                    latest_state=final_state,
-                    latest_checkpoint_id=checkpoint_id,
-                    latest_artifact_hashes={"projection_hash": projection["projection_hash"]},
-                    consumed_event_watermark=self.iterations,
-                    expected_version=expected_version,
-                )
+        )
+        checkpoint_started_at = self.now_provider()
+        if should_write_checkpoint:
+            self._checkpoint_path.write_text(json.dumps(checkpoint_payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            self._last_checkpoint_semantic_hash = semantic_hash
+            self._last_checkpoint_write_at = now
+            checkpoint_status = "EXECUTED"
+        else:
+            checkpoint_status = "SKIPPED_NO_CHANGE"
+        self._record_stage(
+            stage_metrics,
+            "checkpoint_write",
+            checkpoint_status,
+            started_at=checkpoint_started_at,
+            ended_at=self.now_provider(),
+        )
 
-    def _write_dashboard_snapshot(self, projection: Mapping[str, Any]) -> None:
+        persistence_started_at = self.now_provider()
+        if should_write_checkpoint:
+            db = PersistenceDatabase(self.config.db_path)
+            with UnitOfWork(db) as uow:
+                repo = uow.repo
+                repo.put_trading_session(
+                    trading_session_id=self.session_id,
+                    trading_date=self.session_date,
+                    market="NSE",
+                    timezone_name="Asia/Calcutta",
+                    payload={
+                        "session_id": self.session_id,
+                        "state": final_state,
+                        "late_start_mode": self._late_start_mode,
+                    },
+                )
+                for instance in self.registry.enabled_instances:
+                    repo.put_strategy_instance(
+                        strategy_instance_id=instance.strategy_instance_id,
+                        strategy_definition_id=instance.strategy_definition_id,
+                        strategy_version=instance.strategy_version,
+                        configuration_hash=instance.rule_config_hash,
+                        payload=instance.to_dict(),
+                    )
+                    checkpoint_id = f"{self.session_id}:{instance.strategy_instance_id}:iteration:{self.iterations}"
+                    repo.put_runtime_checkpoint(
+                        checkpoint_id=checkpoint_id,
+                        stream_identity=instance.strategy_instance_id,
+                        session_source_id=self.session_id,
+                        source_offset=self.iterations,
+                        current_state=final_state,
+                        consumed_event_ids=tuple(item["event_id"] for item in self._timeline),
+                        snapshot_hashes={"projection_hash": projection["projection_hash"]},
+                        artifact_hashes={"checkpoint_payload": canonical_hash(checkpoint_payload)},
+                        configuration_hash=self.registry.registry_hash,
+                        rule_matrix_version=RULE_MATRIX_VERSION,
+                    )
+                    expected_version = _load_projection_version(self.config.db_path, instance.strategy_instance_id)
+                    repo.upsert_runtime_projection(
+                        projection_id=f"unified-supervisor:{instance.strategy_instance_id}",
+                        strategy_instance_id=instance.strategy_instance_id,
+                        trading_session_id=self.session_id,
+                        latest_state=final_state,
+                        latest_checkpoint_id=checkpoint_id,
+                        latest_artifact_hashes={"projection_hash": projection["projection_hash"]},
+                        consumed_event_watermark=self.iterations,
+                        expected_version=expected_version,
+                    )
+            persistence_status = "EXECUTED"
+        else:
+            persistence_status = "SKIPPED_NO_CHANGE"
+        self._record_stage(
+            stage_metrics,
+            "sqlite_runtime_persistence",
+            persistence_status,
+            started_at=persistence_started_at,
+            ended_at=self.now_provider(),
+        )
+
+    def _write_dashboard_snapshot(self, projection: Mapping[str, Any], *, now: datetime, stage_metrics: list[StageMetric]) -> None:
         api_dir = self.config.dashboard_output_root / "api"
         api_dir.mkdir(parents=True, exist_ok=True)
         snapshot_path = api_dir / "snapshot.json"
-        snapshot_path.write_text(json.dumps(projection, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        manifest_path = self.config.dashboard_output_root / "dashboard_manifest.json"
-        manifest_path.write_text(
-            json.dumps(
-                {
-                    "dashboard": "TFIS Professional Operations Dashboard",
-                    "projection_hash": projection["projection_hash"],
-                    "snapshot": "api/snapshot.json",
-                    "broker_order_authority": projection["system"]["broker_order_authority"],
-                    "frontend_formula_calculation": False,
-                    "session_id": self.session_id,
-                    "trading_date": self.session_date.isoformat(),
-                },
-                indent=2,
-                sort_keys=True,
+        should_write_snapshot = (
+            self._last_snapshot_write_at is None
+            or projection["projection_hash"] != self._last_snapshot_projection_hash
+            or not self._cache_is_fresh(
+                cached_at=self._last_snapshot_write_at,
+                now=now,
+                ttl_seconds=self.config.snapshot_write_interval_seconds,
             )
-            + "\n",
-            encoding="utf-8",
         )
+        snapshot_started_at = self.now_provider()
+        if should_write_snapshot:
+            snapshot_path.write_text(json.dumps(projection, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            manifest_path = self.config.dashboard_output_root / "dashboard_manifest.json"
+            manifest_path.write_text(
+                json.dumps(
+                    {
+                        "dashboard": "TFIS Professional Operations Dashboard",
+                        "projection_hash": projection["projection_hash"],
+                        "snapshot": "api/snapshot.json",
+                        "broker_order_authority": projection["system"]["broker_order_authority"],
+                        "frontend_formula_calculation": False,
+                        "session_id": self.session_id,
+                        "trading_date": self.session_date.isoformat(),
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            self._last_snapshot_write_at = now
+            self._last_snapshot_projection_hash = str(projection["projection_hash"])
+            status = "EXECUTED"
+        else:
+            status = "SKIPPED_NO_CHANGE"
+        self._record_stage(stage_metrics, "dashboard_snapshot_write", status, started_at=snapshot_started_at, ended_at=self.now_provider())
 
     def _write_heartbeat(self, *, state: str, now: datetime) -> None:
         payload = {
@@ -571,17 +789,25 @@ class UnifiedInternalPaperSupervisor:
         }
         self._heartbeat_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
-    def _write_reports(self, now: datetime, final_state: str) -> None:
+    def _write_reports(self, now: datetime, final_state: str, *, stage_metrics: list[StageMetric]) -> None:
         self.config.report_dir.mkdir(parents=True, exist_ok=True)
-        preflight = run_complete_session_preflight(
-            repo_root=self.config.repo_root,
-            registry_path=self.config.registry_path,
-            report_dir=self.config.report_dir,
-            db_path=self.config.db_path,
-            now_provider=lambda: now,
-            auth_factory=self.auth_factory,
-            allow_existing_lock=True,
+        should_write_reports = (
+            self._last_report_write_at is None
+            or self._last_report_state != final_state
+            or not self._cache_is_fresh(
+                cached_at=self._last_report_write_at,
+                now=now,
+                ttl_seconds=self.config.report_write_interval_seconds,
+            )
         )
+        reports_started_at = self.now_provider()
+        if not should_write_reports:
+            self._record_stage(stage_metrics, "live_supervisor_reports", "SKIPPED_NO_CHANGE", started_at=reports_started_at, ended_at=self.now_provider())
+            return
+
+        existing_preflight = self._load_existing_preflight_report()
+        preflight_verdict = existing_preflight.get("verdict", "NOT_RUN_IN_HOT_LOOP")
+        preflight_reasons = existing_preflight.get("reasons", [])
         files = {
             "continuous_supervisor_contract.json": {
                 "schema_version": "tfis.live_supervisor.contract.v1",
@@ -672,8 +898,8 @@ class UnifiedInternalPaperSupervisor:
                 "schema_version": "tfis.live_supervisor.complete_session_preflight.v1",
                 "captured_at": now.isoformat(),
                 "session_id": self.session_id,
-                "verdict": preflight.verdict,
-                "reasons": list(preflight.reasons),
+                "verdict": preflight_verdict,
+                "reasons": list(preflight_reasons),
             },
             "next_session_startup_plan.json": {
                 "schema_version": "tfis.live_supervisor.next_session_startup_plan.v1",
@@ -704,8 +930,8 @@ class UnifiedInternalPaperSupervisor:
                 "session_id": self.session_id,
                 "projection_hash": self._last_projection_hash,
                 "dashboard_snapshot_path": str(self.config.dashboard_output_root / "api" / "snapshot.json"),
-                "db_integrity": self._recovery_snapshot()["integrity"],
-                "recovery": self._recovery_snapshot()["recovery"],
+                "db_integrity": self._recovery_snapshot(now=now)["integrity"],
+                "recovery": self._recovery_snapshot(now=now)["recovery"],
             },
         }
         for name, payload in files.items():
@@ -718,9 +944,12 @@ class UnifiedInternalPaperSupervisor:
             f"- Dashboard Snapshot: `{self.config.dashboard_output_root / 'api' / 'snapshot.json'}`\n"
             f"- Checkpoint: `{self._checkpoint_path}`\n"
             f"- Late Start Mode: `{self._late_start_mode}`\n"
-            f"- Next-Session Preflight: `{preflight.verdict}`\n"
+            f"- Next-Session Preflight: `{preflight_verdict}`\n"
         )
         (self.config.report_dir / "continuous_supervisor_summary.md").write_text(summary, encoding="utf-8")
+        self._last_report_write_at = now
+        self._last_report_state = final_state
+        self._record_stage(stage_metrics, "live_supervisor_reports", "EXECUTED", started_at=reports_started_at, ended_at=self.now_provider())
 
     def _append_timeline(self, event_type: str, result: str, *, now: datetime, **extra: Any) -> None:
         sequence = len(self._timeline) + 1
@@ -790,7 +1019,21 @@ class UnifiedInternalPaperSupervisor:
             return "EOD_PROCESSING"
         return "STOPPED"
 
-    def _recovery_snapshot(self) -> dict[str, Any]:
+    def _recovery_snapshot(self, *, now: datetime, stage_metrics: list[StageMetric] | None = None) -> dict[str, Any]:
+        if (
+            self._cached_recovery_snapshot_value is not None
+            and self._cached_recovery_snapshot_at is not None
+            and self._cache_is_fresh(
+                cached_at=self._cached_recovery_snapshot_at,
+                now=now,
+                ttl_seconds=self.config.recovery_refresh_interval_seconds,
+            )
+        ):
+            if stage_metrics is not None:
+                self._record_stage(stage_metrics, "recovery_snapshot", "CACHED", started_at=now, ended_at=now)
+            return self._cached_recovery_snapshot_value
+
+        started_at = self.now_provider()
         db = PersistenceDatabase(self.config.db_path)
         with db.connect() as connection:
             apply_migrations(connection)
@@ -801,7 +1044,108 @@ class UnifiedInternalPaperSupervisor:
                 expected_rule_matrix_version=RULE_MATRIX_VERSION,
             ).to_dict()
             integrity = run_integrity_scan(connection)
-        return {"recovery": recovery, "integrity": integrity}
+        snapshot = {"recovery": recovery, "integrity": integrity}
+        self._cached_recovery_snapshot_value = snapshot
+        self._cached_recovery_snapshot_at = now
+        if stage_metrics is not None:
+            self._record_stage(stage_metrics, "recovery_snapshot", "EXECUTED", started_at=started_at, ended_at=self.now_provider())
+        return snapshot
+
+    def _auth_result_for_cycle(self, *, now: datetime, stage_metrics: list[StageMetric]) -> BrokerAuthenticationResult:
+        if (
+            self._latest_auth is not None
+            and self._latest_auth_checked_at is not None
+            and self._latest_auth.status is BrokerSessionStatus.AUTHENTICATED
+            and self._cache_is_fresh(
+                cached_at=self._latest_auth_checked_at,
+                now=now,
+                ttl_seconds=self.config.auth_revalidate_interval_seconds,
+            )
+        ):
+            self._record_stage(stage_metrics, "broker_authentication", "CACHED", started_at=now, ended_at=now)
+            return self._latest_auth
+        started_at = self.now_provider()
+        auth_result = self.auth_factory(self.config.repo_root).authenticate(allow_refresh=False, validate_session=True)
+        self._latest_auth_checked_at = now
+        self._record_stage(
+            stage_metrics,
+            "broker_authentication",
+            "EXECUTED",
+            started_at=started_at,
+            ended_at=self.now_provider(),
+            details={"status": auth_result.status.value},
+        )
+        return auth_result
+
+    def _cache_is_fresh(self, *, cached_at: datetime, now: datetime, ttl_seconds: float) -> bool:
+        return (now - cached_at).total_seconds() < ttl_seconds
+
+    def _record_stage(
+        self,
+        stage_metrics: list[StageMetric],
+        stage: str,
+        status: str,
+        *,
+        started_at: datetime,
+        ended_at: datetime,
+        scope: str = "SESSION",
+        details: Mapping[str, Any] | None = None,
+    ) -> None:
+        stage_metrics.append(
+            StageMetric(
+                stage=stage,
+                status=status,
+                duration_ms=round((ended_at - started_at).total_seconds() * 1000.0, 3),
+                started_at=started_at.isoformat(),
+                ended_at=ended_at.isoformat(),
+                scope=scope,
+                details=details,
+            )
+        )
+
+    def _append_cycle_history(self, *, now: datetime, final_state: str, stage_metrics: list[StageMetric]) -> None:
+        total_metric = next((item for item in stage_metrics if item.stage == "cycle_total"), None)
+        if total_metric is None:
+            total_ms = 0.0
+        else:
+            total_ms = float((total_metric.details or {}).get("cycle_duration_ms", total_metric.duration_ms))
+        overrun_ms = max(0.0, total_ms - (self.config.poll_seconds * 1000.0))
+        previous_overruns = self._cycle_metrics_history[-1]["consecutive_overruns"] if self._cycle_metrics_history else 0
+        consecutive_overruns = previous_overruns + 1 if overrun_ms > 0 else 0
+        sample = {
+            "iteration": self.iterations,
+            "captured_at": now.isoformat(),
+            "final_state": final_state,
+            "poll_seconds": self.config.poll_seconds,
+            "cycle_duration_ms": total_ms,
+            "overrun_ms": round(overrun_ms, 3),
+            "consecutive_overruns": consecutive_overruns,
+            "stage_metrics": [
+                {
+                    "stage": item.stage,
+                    "status": item.status,
+                    "duration_ms": item.duration_ms,
+                    "started_at": item.started_at,
+                    "ended_at": item.ended_at,
+                    "scope": item.scope,
+                    "details": dict(item.details or {}),
+                }
+                for item in stage_metrics
+            ],
+        }
+        self._cycle_metrics_history.append(sample)
+        if len(self._cycle_metrics_history) > self.config.performance_retention_cycles:
+            self._cycle_metrics_history = self._cycle_metrics_history[-self.config.performance_retention_cycles :]
+
+    def _load_existing_preflight_report(self) -> dict[str, Any]:
+        report_path = self.config.report_dir / "complete_session_preflight.json"
+        try:
+            payload = json.loads(report_path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return {"verdict": "NOT_RUN_IN_HOT_LOOP", "reasons": ["RUN_EXPLICIT_PREFLIGHT_COMMAND"]}
+        except json.JSONDecodeError:
+            return {"verdict": "INVALID_EXISTING_PREFLIGHT_REPORT", "reasons": ["PREFLIGHT_REPORT_MALFORMED"]}
+        return payload if isinstance(payload, dict) else {"verdict": "INVALID_EXISTING_PREFLIGHT_REPORT", "reasons": ["PREFLIGHT_REPORT_NOT_OBJECT"]}
 
 
 def run_continuous_supervisor(

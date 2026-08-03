@@ -132,3 +132,16 @@ If the process is already stalled and the stop file does not complete the
 shutdown, identify the exact repository-owned PID from
 `tmp/tfis_supervisor_state/continuous_unified_supervisor.pid.json` and stop
 only that TFIS supervisor process.
+
+Performance certification reports for the continuous supervisor live under:
+
+- `reports/runtime_performance/performance_measurement_contract.json`
+- `reports/runtime_performance/three_instance_live_baseline.json`
+- `reports/runtime_performance/provider_call_profile.json`
+- `reports/runtime_performance/runtime_performance_summary.md`
+
+Use those reports to distinguish:
+
+- passive live baseline from the currently running process
+- fixture-only hot-path verification from the next-session live proof
+- deferred synthetic scale work that must wait until market hours are over

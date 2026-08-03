@@ -1,0 +1,13 @@
+{
+  "focused_validations": [
+    "py_compile src/tfis/runtime/multi_strategy/supervisor.py",
+    "pytest tests/unit/test_multi_strategy_continuous_supervisor.py -q -> 5 passed"
+  ],
+  "market_hours_mode": "PASSIVE_LIVE_MEASUREMENT_ONLY",
+  "schema_version": "tfis.runtime_performance.validation_summary.v1",
+  "unrun_due_market_hours": [
+    "synthetic 10-stock load profile",
+    "synthetic 50-stock load profile",
+    "broad/full suite"
+  ]
+}

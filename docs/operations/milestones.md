@@ -2339,3 +2339,15 @@
   full pre-market-to-EOD operational proof with acceptable steady-state loop
   cadence has not yet been captured. External broker/live order authority
   remains `NONE`.
+- Monday, August 3, 2026 performance certification and cadence remediation
+  advanced the unified supervisor without interrupting the live market session.
+  Passive live evidence under `reports/runtime_performance/` proved the active
+  process was overrunning its `5s` poll interval with minute-scale publish gaps,
+  so current readiness remains `BLOCKED_BY_RUNTIME_CADENCE` on the running
+  process image. Reusable hot-path fixes were then implemented for the next
+  session: auth caching, recovery caching, session-scoped symbol-master cache,
+  bounded option-chain cache, hot-loop report removal, bounded no-change
+  snapshot/checkpoint/SQLite skipping, and stage-level instrumentation excluded
+  from business hashes. Focused validation passed at `25 passed`; the live
+  before-market-open proof remains pending. External broker/live order
+  authority remains `NONE`.

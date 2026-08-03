@@ -3239,3 +3239,22 @@ Current notes:
   passes. A full before-market-open through EOD run is still required to prove
   real continuous-session cadence, restart/resume behavior, and honest
   dashboard freshness across the whole day.
+- On Monday, August 3, 2026 during live market hours, passive cadence
+  measurement of the running unified supervisor showed that the active
+  pre-optimization process was healthy but materially overrunning its configured
+  `5s` poll interval. Observed heartbeat publish gaps were approximately
+  `76.604s`, `68.785s`, and `278.201s`; observed snapshot publish gaps were
+  approximately `76.878s` and `346.641s`. This proved the runtime cadence issue
+  is real rather than assumed and classified the live process as
+  `BLOCKED_BY_RUNTIME_CADENCE` for next-session acceptance on the old process
+  image.
+- The August 3 performance remediation changed the next-session code path under
+  `src/tfis/runtime/multi_strategy/supervisor.py` without restarting the live
+  process. Reusable fixes now include: broker-authentication caching, recovery
+  snapshot caching, session-scoped NSEFO symbol-master caching, bounded
+  RELIANCE option-chain caching, removal of hot-loop preflight/report
+  regeneration, bounded no-change snapshot/checkpoint/SQLite write skipping,
+  and stage-level performance instrumentation excluded from business hashes.
+  Focused validation passed at `25 passed` across FYERS read-only, continuous
+  supervisor, and runtime-dashboard tests. The live proof for these fixes is
+  still pending the next before-market-open session.

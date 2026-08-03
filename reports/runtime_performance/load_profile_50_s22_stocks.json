@@ -1,0 +1,4 @@
+{
+  "reason": "No CPU-heavy synthetic load should run while NSE is open and the live supervisor is active.",
+  "status": "DEFERRED_MARKET_HOURS"
+}

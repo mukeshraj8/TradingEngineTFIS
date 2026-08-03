@@ -1,0 +1,10 @@
+{
+  "after_fix_policy": "write snapshot on projection change or every 15 seconds",
+  "browser_request_recomputes_strategy": false,
+  "dashboard_server_mode": "READ_ONLY_FILE_BACKED",
+  "live_snapshot_publish_gaps_seconds": [
+    76.878,
+    346.641
+  ],
+  "schema_version": "tfis.runtime_performance.dashboard_latency_profile.v1"
+}

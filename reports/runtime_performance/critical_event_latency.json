@@ -1,0 +1,13 @@
+{
+  "inferred_risk": "HIGH_ON_PRE_OPTIMIZATION_PROCESS_BECAUSE_CYCLE_GAPS_EXCEED_POLL_INTERVAL_BY_13X_TO_55X",
+  "measurement_status": "NOT_DIRECTLY_MEASURED_ON_LIVE_ACTIVE_PROCESS",
+  "mitigations_applied_for_next_session": [
+    "bounded_provider_timeouts",
+    "auth_cache",
+    "recovery_cache",
+    "report_generation_removed_from_hot_loop",
+    "checkpoint_snapshot_write_throttling",
+    "option_chain_cache"
+  ],
+  "schema_version": "tfis.runtime_performance.critical_event_latency.v1"
+}

@@ -1,0 +1,203 @@
+{
+  "fixture_hot_path_after_fix": [
+    {
+      "captured_at": "2026-08-03T09:45:00+05:30",
+      "consecutive_overruns": 1,
+      "cycle_duration_ms": 116.016,
+      "final_state": "LATE_START_NO_NEW_ENTRY",
+      "iteration": 1,
+      "overrun_ms": 106.016,
+      "poll_seconds": 0.01,
+      "stage_metrics": [
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "cycle_start",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {
+            "status": "NETWORK_UNAVAILABLE"
+          },
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "broker_authentication",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "recovery_snapshot",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "dashboard_projection_build",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "dashboard_snapshot_write",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "checkpoint_write",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "sqlite_runtime_persistence",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "live_supervisor_reports",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {
+            "cycle_duration_ms": 116.016,
+            "poll_interval_seconds": 0.01
+          },
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "cycle_total",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        }
+      ]
+    },
+    {
+      "captured_at": "2026-08-03T09:45:00+05:30",
+      "consecutive_overruns": 2,
+      "cycle_duration_ms": 12.727,
+      "final_state": "LATE_START_NO_NEW_ENTRY",
+      "iteration": 2,
+      "overrun_ms": 2.727,
+      "poll_seconds": 0.01,
+      "stage_metrics": [
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "cycle_start",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {
+            "status": "NETWORK_UNAVAILABLE"
+          },
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "broker_authentication",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "recovery_snapshot",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "CACHED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "dashboard_projection_build",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "dashboard_snapshot_write",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "SKIPPED_NO_CHANGE"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "checkpoint_write",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "SKIPPED_NO_CHANGE"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "sqlite_runtime_persistence",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "SKIPPED_NO_CHANGE"
+        },
+        {
+          "details": {},
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "live_supervisor_reports",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "SKIPPED_NO_CHANGE"
+        },
+        {
+          "details": {
+            "cycle_duration_ms": 12.727,
+            "poll_interval_seconds": 0.01
+          },
+          "duration_ms": 0.0,
+          "ended_at": "2026-08-03T09:45:00+05:30",
+          "scope": "SESSION",
+          "stage": "cycle_total",
+          "started_at": "2026-08-03T09:45:00+05:30",
+          "status": "EXECUTED"
+        }
+      ]
+    }
+  ],
+  "measured_publish_gap_seconds": [
+    76.604,
+    346.986
+  ],
+  "schema_version": "tfis.runtime_performance.cycle_stage_profile.v1"
+}

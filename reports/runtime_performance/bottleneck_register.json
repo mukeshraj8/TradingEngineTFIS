@@ -1,0 +1,45 @@
+{
+  "bottlenecks": [
+    {
+      "classification": "REDUNDANT_PROVIDER_CALL",
+      "evidence": "broker authentication executed every cycle before fix",
+      "id": "B1"
+    },
+    {
+      "classification": "REPEATED_STATIC_DATA_LOAD",
+      "evidence": "NSEFO symbol master downloaded every cycle before fix",
+      "id": "B2"
+    },
+    {
+      "classification": "REDUNDANT_PROVIDER_CALL",
+      "evidence": "RELIANCE option chain fetched every cycle before fix",
+      "id": "B3"
+    },
+    {
+      "classification": "REPORT_GENERATION_IN_LIVE_LOOP",
+      "evidence": "run_complete_session_preflight executed from _write_reports every cycle before fix",
+      "id": "B4"
+    },
+    {
+      "classification": "SQLITE_TRANSACTION_LATENCY",
+      "evidence": "checkpoint plus projection writes executed every cycle before fix",
+      "id": "B5"
+    },
+    {
+      "classification": "CHECKPOINT_WRITE_LATENCY",
+      "evidence": "full checkpoint rewrite every cycle before fix",
+      "id": "B6"
+    },
+    {
+      "classification": "DASHBOARD_SNAPSHOT_LATENCY",
+      "evidence": "snapshot rewrite every cycle before fix",
+      "id": "B7"
+    },
+    {
+      "classification": "TIMEOUT_WAIT",
+      "evidence": "provider calls were only partially bounded before the fix; passive live cadence showed long stalls",
+      "id": "B8"
+    }
+  ],
+  "schema_version": "tfis.runtime_performance.bottleneck_register.v1"
+}
