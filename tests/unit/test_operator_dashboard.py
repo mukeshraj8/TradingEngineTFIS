@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import importlib.util
 import json
+import os
 import re
+import sys
+import threading
+import time
 from datetime import date
 from datetime import datetime
 from pathlib import Path
@@ -95,6 +100,16 @@ def _trade_row_with_stream_health(
         stream_health=stream_health,
         raw_artifact_links={},
     )
+
+
+def test_dashboard_auto_refresh_runs_only_for_visible_tabs() -> None:
+    script = TfisOperatorDashboardBuilder._dashboard_refresh_script()
+
+    assert "document.visibilityState" in script
+    assert "visibilitychange" in script
+    assert "refreshMs = 30000" in script
+    assert "window.clearTimeout" in script
+    assert "window.location.reload()" in script
 
 
 def _write_runtime_targets_config(
@@ -729,7 +744,7 @@ def test_dashboard_builds_from_stage_artifacts(
 
     assert "TFIS Operator Dashboard" in index_html
     assert "Dashboard built at" in index_html
-    assert "Serving refreshes rebuild stale pages automatically" in index_html
+    assert "Stale pages schedule a background rebuild" in index_html
     assert "2026-06-10" in strategy_html
     assert "Run Status" in strategy_html
     assert "Final Contract" in strategy_html
@@ -1115,10 +1130,64 @@ def test_dashboard_server_routes_orders_manager_page() -> None:
     assert "--disable-auto-rebuild" in server_script
     assert "def _maybe_rebuild_dashboard" in server_script
     assert "dashboard_manifest.json" in server_script
-    assert "builder.build(output_root=self.dashboard_root)" in server_script
+    assert "threading.Thread" in server_script
+    assert "target=self._run_dashboard_rebuild" in server_script
+    assert "def _run_dashboard_rebuild" in server_script
     assert "request_path.startswith(\"/strategies/\")" in server_script
     assert "request_path.startswith(\"/trades/\")" in server_script
     assert "request_path.startswith(\"/tools/\")" in server_script
+
+
+def test_dashboard_server_schedules_stale_rebuild_without_blocking_request(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    script_path = _repo_root() / "scripts" / "serve_operator_dashboard.py"
+    spec = importlib.util.spec_from_file_location("serve_operator_dashboard", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    started = threading.Event()
+    release = threading.Event()
+
+    class SlowDashboardBuilder:
+        def __init__(self, *, strategy_configs):
+            self.strategy_configs = strategy_configs
+
+        def build(self, *, output_root: Path):
+            started.set()
+            release.wait(timeout=5)
+            return None
+
+    monkeypatch.setattr(module, "TfisOperatorDashboardBuilder", SlowDashboardBuilder)
+
+    manifest_path = tmp_path / "dashboard_manifest.json"
+    manifest_path.write_text("{}", encoding="utf-8")
+    stale_time = time.time() - 120
+    os.utime(manifest_path, (stale_time, stale_time))
+
+    handler_class = module.DashboardRequestHandler
+    handler_class.rebuild_lock = threading.Lock()
+    handler = handler_class.__new__(handler_class)
+    handler.dashboard_root = tmp_path
+    handler.strategy_configs = ()
+    handler.auto_rebuild_seconds = 60
+
+    start = time.perf_counter()
+    try:
+        handler._maybe_rebuild_dashboard()
+        elapsed = time.perf_counter() - start
+
+        assert elapsed < 0.2
+        assert started.wait(timeout=1)
+        assert handler_class.rebuild_lock.locked()
+    finally:
+        release.set()
+        deadline = time.time() + 2
+        while handler_class.rebuild_lock.locked() and time.time() < deadline:
+            time.sleep(0.01)
 
 
 def test_dashboard_chart_review_page_surfaces_selected_contract_market_evidence(
@@ -1403,6 +1472,54 @@ def test_operator_status_panel_flags_degraded_market_data_heartbeat(tmp_path: Pa
     assert "Runtime heartbeat attention required." in html
     assert "MARKET_DATA_UNAVAILABLE" in html
     assert "selected_contract_event_fetch_failed" in html
+
+
+def test_operator_status_panel_does_not_warn_for_idle_terminal_heartbeat(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import tfis.dashboard.operator_dashboard as operator_dashboard_module
+
+    class _FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls.fromisoformat("2026-08-03T10:35:00+05:30")
+
+    monkeypatch.setattr(operator_dashboard_module, "datetime", _FixedDateTime)
+
+    builder = TfisOperatorDashboardBuilder(strategy_configs=())
+    builder._runtime_guardrail_statuses = []
+    builder._runtime_order_routing_statuses = []
+    builder._runtime_heartbeat_statuses = [
+        SimpleNamespace(
+            strategy_code="S23",
+            status="IDLE",
+            latest_timestamp="2026-08-03T10:28:15+05:30",
+            latest_owner_id="tfis-paper-lifecycle-supervisor:s23:20552",
+            latest_state_directory=str(tmp_path / "state"),
+            message=(
+                "latest supervisor heartbeat is for an idle paper lifecycle state "
+                "runtime_status=PAPER_POSITION_FRESH_ENTRY_REQUIRED"
+            ),
+        )
+    ]
+    builder._runtime_reconciliation_statuses = []
+    builder._runtime_fresh_entry_handoff_statuses = []
+    builder._latest_operator_control_event = None
+    builder._runtime_control_state = SimpleNamespace(
+        global_pause_active=False,
+        paused_strategies=frozenset(),
+    )
+
+    html = builder._render_operator_status_panel(
+        title="Operator Status",
+        rows=[],
+        strategy_code="S23",
+    )
+
+    assert "Runtime heartbeat attention required." not in html
+    assert ">IDLE<" in html
+    assert "No active order or open-position rows are currently visible." in html
 
 
 def test_operator_status_panel_keeps_stale_stream_warning_during_active_market(

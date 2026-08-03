@@ -120,6 +120,15 @@ class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
         if not self.rebuild_lock.acquire(blocking=False):
             return
+        rebuild_thread = threading.Thread(
+            target=self._run_dashboard_rebuild,
+            name="tfis-dashboard-background-rebuild",
+            daemon=True,
+        )
+        rebuild_thread.start()
+
+    def _run_dashboard_rebuild(self) -> None:
+        manifest_path = self.dashboard_root / "dashboard_manifest.json"
         try:
             try:
                 manifest_age_seconds = time.time() - manifest_path.stat().st_mtime
@@ -129,6 +138,12 @@ class DashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 return
             builder = TfisOperatorDashboardBuilder(strategy_configs=self.strategy_configs)
             builder.build(output_root=self.dashboard_root)
+        except Exception as exc:
+            print(
+                f"WARNING: TFIS dashboard background rebuild failed: {type(exc).__name__}: {exc}",
+                file=sys.stderr,
+                flush=True,
+            )
         finally:
             self.rebuild_lock.release()
 

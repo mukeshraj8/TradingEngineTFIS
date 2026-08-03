@@ -6,6 +6,40 @@ way.
 
 ## Immediate Next Priorities
 
+0.18. `DONE` Resolve the August 3 morning startup failure, stale dashboard
+   signal, and no-watcher ambiguity. The scheduled `TFIS Morning Startup`
+   task did launch at `09:08:38` but exited with result `1` after S21 failed
+   on a stale July monthly expiry anchor in `market.weekly_expiry`; the shared
+   FYERS snapshot collector now advances stale monthly expiry anchors to the
+   next same-weekday monthly expiry for monthly strategies, preserving the
+   existing weekly-expiry behavior for NIFTY weekly S23. Active-market
+   recovery started only the shared supervisor through
+   `-RecoverSharedSupervisor`, processed the carried S23 position, and moved
+   it to `PAPER_POSITION_FRESH_ENTRY_REQUIRED` after target evidence. Terminal
+   paper lifecycle states now report `IDLE` instead of aging into false stale
+   heartbeat warnings, and runtime status reports `IDLE_ACTIVE_MARKET` when no
+   active/waiting lifecycle target currently requires a supervisor. The S21
+   and S23 morning runner boundary now retries the known transient FYERS
+   no-intraday-candles condition three times with a 20-second delay before
+   recording `MARKET_CLOSED_NO_ACTION`; other broker snapshot failures are not
+   retried, and exhausted attempts still fail closed with no trade decision or
+   runner-local supervisor startup.
+
+0.17. `DONE` Clear the July 29 selected-contract future-timestamp warning and
+   dashboard tab-switching slowdown without touching active processes. The
+   supervisor now filters in-progress future-ended selected-contract bar
+   events before stale/future checks, so a current FYERS one-minute candle
+   ending at `:59` does not block lifecycle management when a fresh quote is
+   present; future-dated quotes remain fail-closed. Dashboard pages now
+   auto-refresh only while visible and use a 30-second interval to avoid
+   hidden tabs repeatedly reloading heavy static pages, and stale page
+   requests now schedule a background rebuild instead of blocking the browser
+   while `builder.build(...)` runs. Next operator action: apply through the
+   dashboard-only safe path:
+   `scripts\refresh_tfis_operator_dashboard.ps1 -RestartDashboardServer`,
+   which rebuilds HTML and restarts only the dashboard server without
+   interrupting the shared lifecycle supervisor.
+
 0.16. `DONE` Centralize Windows-safe atomic text writes across active TFIS
    persistence paths. The live-state/order-state fixes from 0.15 are now
    factored into `tfis.storage.atomic_write.atomic_write_text`; paper artifact,

@@ -6,6 +6,46 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Monday, August 3, 2026, the scheduled `TFIS Morning Startup` task did
+  run at `09:08:38` but exited with result `1`: S21 failed before writing
+  same-day artifacts because the shared FYERS snapshot collector treated the
+  stale July monthly expiry anchor in `market.weekly_expiry` as fatal for a
+  BankNifty monthly strategy, while S23 safely returned
+  `MARKET_CLOSED_NO_ACTION` because FYERS returned no intraday candles for the
+  09:16 snapshot window. During active-market recovery, the shared supervisor
+  was started through `-RecoverSharedSupervisor`, the carried S23 position was
+  processed, target was hit, and the position moved to
+  `PAPER_POSITION_FRESH_ENTRY_REQUIRED`; no open-position or waiting-order
+  rows remain. The collector now advances stale monthly expiry anchors to the
+  next same-weekday monthly expiry (for example `2026-07-28` -> `2026-08-25`
+  for the `2026-08-03` S21 run), terminal paper lifecycle heartbeats report
+  `IDLE` instead of aging into false stale warnings, and runtime status now
+  reports `IDLE_ACTIVE_MARKET` when no active/waiting lifecycle target needs a
+  supervisor. The dashboard was rebuilt at `2026-08-03T10:38:41+05:30` and
+  the Active Trades page shows `IDLE` with no stale heartbeat warning. The
+  S21/S23 morning runner boundary now retries the known transient FYERS
+  no-intraday-candles condition three times with a 20-second delay before
+  recording `MARKET_CLOSED_NO_ACTION`; non-no-candle broker failures still
+  fail immediately, and exhausted no-candle attempts remain fail-closed with
+  no trade decision or supervisor startup from that runner.
+- as of Wednesday, July 29, 2026, the shared paper lifecycle supervisor no
+  longer treats an in-progress FYERS selected-contract one-minute candle as a
+  fatal future-dated market event: the runner discards only future-ended bar
+  events before the existing selected-contract freshness gate, while
+  future-dated quotes still fail closed as `MARKET_DATA_UNAVAILABLE`; this
+  preserves paper lifecycle safety without changing strategy formulas, target,
+  SL, FSL, rollover, or broker routing behavior. The static operator
+  dashboard auto-refresh script now reloads only visible tabs and uses a
+  30-second interval, and the dashboard server no longer runs a full static
+  rebuild inside the page-request path; stale page requests now schedule one
+  background rebuild and serve the existing HTML immediately, removing the
+  recent tab-navigation regression caused by synchronous request-time rebuilds.
+  Currently running dashboard/supervisor processes must be refreshed or
+  restarted through the normal TFIS-safe path before these code changes are
+  active in the live UI/runtime; for the dashboard server fix specifically,
+  use `scripts\refresh_tfis_operator_dashboard.ps1 -RestartDashboardServer`
+  to rebuild HTML and restart only the local dashboard server without stopping
+  the shared paper lifecycle supervisor.
 - as of Tuesday, July 28, 2026, TFIS now has a shared
   `tfis.storage.atomic_write.atomic_write_text` helper for Windows-safe atomic
   text persistence; paper artifact, ingress, lifecycle, order/position,

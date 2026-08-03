@@ -16,6 +16,7 @@ from tfis.paper import (
     paper_morning_supervised_market_closed_no_action,
     paper_morning_supervised_process_lock_path,
     run_paper_morning_supervised_decision,
+    run_paper_morning_supervised_decision_with_no_candle_retries,
 )
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 
@@ -62,6 +63,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--timezone", default="Asia/Kolkata")
     parser.add_argument("--if-past", choices=["run_now", "abort"], default="run_now")
     parser.add_argument("--disable-position-watch", action="store_true")
+    parser.add_argument("--no-candle-retries", type=int, default=3)
+    parser.add_argument("--no-candle-retry-delay-seconds", type=float, default=20.0)
     return parser
 
 
@@ -96,20 +99,25 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ERROR: {exc}", file=sys.stderr, flush=True)
         return 1
     try:
-        result = run_paper_morning_supervised_decision(
-            tfis_root=args.tfis_root,
-            config_path=args.config,
-            strategy_path=strategy_paths[0],
-            strategy_paths=strategy_paths,
-            reference_packet_path=args.reference_packet,
-            artifact_root=args.artifact_root,
-            dashboard_output_root=args.dashboard_output_root,
-            session_id_prefix=args.session_id_prefix,
-            carry_forward_state_dir=args.carry_forward_state_dir,
-            enable_smoke_override=args.enable_smoke_override,
-            skip_refresh=args.skip_refresh,
-            timezone_name=args.timezone,
-            if_past=args.if_past,
+        result = run_paper_morning_supervised_decision_with_no_candle_retries(
+            lambda: run_paper_morning_supervised_decision(
+                tfis_root=args.tfis_root,
+                config_path=args.config,
+                strategy_path=strategy_paths[0],
+                strategy_paths=strategy_paths,
+                reference_packet_path=args.reference_packet,
+                artifact_root=args.artifact_root,
+                dashboard_output_root=args.dashboard_output_root,
+                session_id_prefix=args.session_id_prefix,
+                carry_forward_state_dir=args.carry_forward_state_dir,
+                enable_smoke_override=args.enable_smoke_override,
+                skip_refresh=args.skip_refresh,
+                timezone_name=args.timezone,
+                if_past=args.if_past,
+            ),
+            no_candle_retries=args.no_candle_retries,
+            retry_delay_seconds=args.no_candle_retry_delay_seconds,
+            retry_logger=lambda message: print(message, file=sys.stderr, flush=True),
         )
     except (PaperFyersSnapshotCollectorError, RuntimeError) as exc:
         code = getattr(exc, "code", "MORNING_SUPERVISED_DECISION_FAILED")

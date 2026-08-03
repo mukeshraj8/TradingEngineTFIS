@@ -532,6 +532,7 @@ from .live_decision_task import (
 from .morning_supervised_runtime import (
     paper_morning_supervised_market_closed_no_action,
     paper_morning_supervised_process_lock_path,
+    run_paper_morning_supervised_decision_with_no_candle_retries,
 )
 from .models import (
     CalendarContextEvent,
@@ -1055,6 +1056,7 @@ __all__ = [
     "build_paper_morning_wrapper_command",
     "paper_morning_supervised_market_closed_no_action",
     "paper_morning_supervised_process_lock_path",
+    "run_paper_morning_supervised_decision_with_no_candle_retries",
     "default_morning_decision_checkpoints",
     "build_s23_morning_runner_arguments",
     "build_s23_morning_wrapper_command",

@@ -55,7 +55,8 @@ function Get-TfisRestartRecoveryStatus {
         [int]$SupervisorProcessCount,
         [int]$OtherProcessCount,
         [bool]$WaitingOrderFailure,
-        [string]$MarketSessionPhase
+        [string]$MarketSessionPhase,
+        [bool]$RequiresSupervisorDuringActiveMarket = $true
     )
 
     $pending = @()
@@ -67,7 +68,9 @@ function Get-TfisRestartRecoveryStatus {
     }
     if ($SupervisorProcessCount -eq 0) {
         if ($MarketSessionPhase -eq "ACTIVE_MARKET") {
-            $pending += "start_shared_supervisor"
+            if ($RequiresSupervisorDuringActiveMarket) {
+                $pending += "start_shared_supervisor"
+            }
         }
         elseif ($MarketSessionPhase -eq "PRE_MARKET") {
             $pending += "run_morning_startup"
@@ -98,6 +101,11 @@ function Get-TfisRestartRecoveryStatus {
         $status = "AFTER_MARKET_IDLE"
         $pending = @("none")
         $message = "Market lifecycle window has ended; dashboard/status may remain available and no shared supervisor restart is required."
+    }
+    elseif (($MarketSessionPhase -eq "ACTIVE_MARKET") -and ($SupervisorProcessCount -eq 0) -and (-not $RequiresSupervisorDuringActiveMarket)) {
+        $status = "IDLE_ACTIVE_MARKET"
+        $pending = @("none")
+        $message = "No shared supervisor is visible, but no active or waiting paper lifecycle target currently requires supervision."
     }
     else {
         $status = "RUNNING"
@@ -294,13 +302,34 @@ else {
 }
 
 $waitingOrderFailure = @($waitingOrderLines | Where-Object { $_ -match "status=FAIL" }).Count -gt 0
+$heartbeatRequiresSupervisor = @(
+    $heartbeatLines |
+    Where-Object { $_ -match "status=(OK|DEGRADED|STALE)" }
+).Count -gt 0
+$lifecycleAuditHasActionableState = @(
+    $lifecycleAuditLines |
+    Where-Object { $_ -match "actionable_state_count=([1-9]\d*)" }
+).Count -gt 0
+$waitingOrdersRequireSupervisor = @(
+    $waitingOrderLines |
+    Where-Object {
+        $_ -match "waiting_order_count=([1-9]\d*)" -or
+        $_ -match "current_session_waiting_order_count=([1-9]\d*)"
+    }
+).Count -gt 0
+$requiresSupervisorDuringActiveMarket = (
+    $heartbeatRequiresSupervisor -or
+    $lifecycleAuditHasActionableState -or
+    $waitingOrdersRequireSupervisor
+)
 $restartRecoveryStatus = Get-TfisRestartRecoveryStatus `
     -DashboardReady:$dashboardReady `
     -DashboardProcessCount $dashboardProcesses.Count `
     -SupervisorProcessCount $supervisorProcesses.Count `
     -OtherProcessCount $otherProcesses.Count `
     -WaitingOrderFailure:$waitingOrderFailure `
-    -MarketSessionPhase $marketSessionPhase
+    -MarketSessionPhase $marketSessionPhase `
+    -RequiresSupervisorDuringActiveMarket:$requiresSupervisorDuringActiveMarket
 Write-Host ("RestartRecoveryStatus: status={0} pending={1} message={2}" -f `
     $restartRecoveryStatus.Status, `
     ($restartRecoveryStatus.PendingActions -join ","), `

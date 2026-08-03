@@ -1900,6 +1900,8 @@ class TfisOperatorDashboardBuilder:
             return "STALE"
         if "OK" in labels:
             return "OK"
+        if "IDLE" in labels:
+            return "IDLE"
         if "NONE" in labels:
             return "NONE"
         if "DISABLED" in labels:
@@ -2455,7 +2457,24 @@ class TfisOperatorDashboardBuilder:
       writeState(nextState);
     });
   });
-  setTimeout(function(){ window.location.reload(); }, 10000);
+  var refreshTimer = null;
+  var refreshMs = 30000;
+  function scheduleRefresh() {
+    if (refreshTimer !== null) {
+      window.clearTimeout(refreshTimer);
+      refreshTimer = null;
+    }
+    if (document.visibilityState !== "visible") {
+      return;
+    }
+    refreshTimer = window.setTimeout(function(){
+      if (document.visibilityState === "visible") {
+        window.location.reload();
+      }
+    }, refreshMs);
+  }
+  document.addEventListener("visibilitychange", scheduleRefresh);
+  scheduleRefresh();
 })();
 </script>"""
 
@@ -6926,7 +6945,7 @@ calculate();
                 "<body>",
                 "<div class=\"freshness-bar\">"
                 f"<span>Dashboard built at <code>{html.escape(generated_at)}</code></span>"
-                "<span>Serving refreshes rebuild stale pages automatically; use dashboard refresh for an immediate rebuild.</span>"
+                "<span>Stale pages schedule a background rebuild; use dashboard refresh for an immediate rebuild.</span>"
                 "</div>",
                 body,
                 "</body>",

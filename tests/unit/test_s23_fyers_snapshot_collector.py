@@ -4,12 +4,14 @@ import json
 from dataclasses import replace
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 import pytest
 import yaml
 
 from tfis.brokers import BrokerNormalizationError
+from tfis.domain import ExpiryType
 from tfis.market_data import UnderlyingHistoryBar
 from tfis.paper import (
     OptionChainContract,
@@ -517,6 +519,25 @@ def test_successful_snapshot_collection(tmp_path: Path) -> None:
     assert adapter.get_option_quote_calls == 0
     assert adapter.stream_ticks_calls == 0
     assert adapter.order_api_calls == 0
+
+
+def test_monthly_strategy_advances_stale_configured_expiry_anchor() -> None:
+    collector = S23FyersSnapshotCollector()
+    config = SimpleNamespace(
+        market=SimpleNamespace(
+            weekly_expiry=date(2026, 7, 28),
+        )
+    )
+    strategy = SimpleNamespace(
+        symbol="BANKNIFTY",
+        expiry_policy=SimpleNamespace(expiry_type=ExpiryType.MONTHLY),
+    )
+
+    assert collector._resolve_configured_expiry(
+        config=config,
+        strategy=strategy,
+        session_date=date(2026, 8, 3),
+    ) == date(2026, 8, 25)
 
 
 def test_snapshot_collection_retries_transient_underlying_quote_payload_error(

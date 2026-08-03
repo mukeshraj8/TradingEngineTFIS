@@ -104,6 +104,7 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "TFIS RUNTIME STATUS" in status_script
     assert "function Test-TfisDashboardPortReady" in status_script
     assert "function Get-TfisRestartRecoveryStatus" in status_script
+    assert "RequiresSupervisorDuringActiveMarket" in status_script
     assert "function Get-TfisMarketSessionPhase" in status_script
     assert ". $tradingCalendarHelperPath" in status_script
     assert "MarketSessionPhase:" in status_script
@@ -129,11 +130,15 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "ACTION_REQUIRED" in status_script
     assert "STOPPED_AFTER_MARKET" in status_script
     assert "AFTER_MARKET_IDLE" in status_script
+    assert "IDLE_ACTIVE_MARKET" in status_script
     assert "ACTIVE_MARKET" in status_script
     assert "POST_MARKET" in status_script
     assert "resolve_stale_waiting_orders" in status_script
     assert "start_or_recover_dashboard" in status_script
     assert "start_shared_supervisor" in status_script
+    assert "No shared supervisor is visible, but no active or waiting paper lifecycle target currently requires supervision." in status_script
+    assert "actionable_state_count=([1-9]\\d*)" in status_script
+    assert "status=(OK|DEGRADED|STALE)" in status_script
     assert "OrderRoutingSafety:" in status_script
     assert "StrategyTrust:" in status_script
     assert "RuntimeReconciliation:" in status_script
@@ -325,11 +330,16 @@ def test_refresh_script_rebuilds_dashboard_without_stopping_runtime() -> None:
     script = _script_text("refresh_tfis_operator_dashboard.ps1")
 
     assert '. $runtimeProcessHelperPath' in script
+    assert "[switch]$RestartDashboardServer" in script
     assert "TFIS OPERATOR DASHBOARD REFRESH" in script
     assert "It does not stop or restart the shared TFIS paper runtime." in script
     assert 'build_operator_dashboard.py' in script
     assert 'serve_operator_dashboard.py' in script
     assert 'Stop-TfisRuntimeProcesses' not in script
+    assert "function Stop-TfisExistingDashboardServer" in script
+    assert "Stopping TFIS dashboard server PID=" in script
+    assert "Stop-Process -Id $processId -Force" in script
+    assert "$RestartDashboardServer -and $existingDashboard.Count -gt 0" in script
     assert "Reusing existing TFIS dashboard server PID=" in script
     assert "Get-TfisPortOwnerProcesses -Port $DashboardPort" in script
     assert "TFIS operator dashboard refresh complete in" in script

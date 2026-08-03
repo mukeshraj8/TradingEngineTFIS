@@ -5,14 +5,19 @@ import json
 import os
 import sys
 from dataclasses import replace
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 
 import pytest
 
 from tfis.brokers import BrokerAdapterError, FyersBrokerAdapter
 from tfis.domain import ExpiryType, MonthlyStatus, OptionType, RolloverPolicy, Segment, StrategyExpiryPolicy, StrategyRule
-from tfis.normalized_events import EventEnvelope, PaperEventType, SelectedContractQuoteEvent
+from tfis.normalized_events import (
+    EventEnvelope,
+    PaperEventType,
+    SelectedContractBarEvent,
+    SelectedContractQuoteEvent,
+)
 from tfis.paper import (
     build_paper_expiry_governance,
     build_paper_live_state_store_from_yaml,
@@ -494,6 +499,62 @@ def test_load_paper_runtime_heartbeat_statuses_reports_market_data_unavailable_a
     assert statuses[0].latest_runtime_status == "MARKET_DATA_UNAVAILABLE"
     assert statuses[0].latest_reason_code == "selected_contract_event_fetch_failed"
     assert "MARKET_DATA_UNAVAILABLE" in statuses[0].message
+
+
+def test_load_paper_runtime_heartbeat_statuses_treats_terminal_state_as_idle(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config" / "paper.s23.yaml"
+    artifact_root = tmp_path / "data" / "strategies" / "S23" / "fyers_morning_supervised_decision"
+    live_state_root = tmp_path / "paper-live-state"
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    config_path.write_text(
+        "\n".join(
+            (
+                "source_mode: broker_fyers_live_paper_ingress",
+                "broker:",
+                "  provider: fyers",
+                "  timezone: Asia/Kolkata",
+                "paper:",
+                "  paper_mode_enabled: true",
+                "  no_live_orders_allowed: true",
+                "  kill_switch_enabled: true",
+                "  session_kill_switch_active: false",
+                "live_state:",
+                "  enabled: true",
+                "  provider: filesystem",
+                f"  root: {live_state_root.as_posix()}",
+            )
+        ),
+        encoding="utf-8",
+    )
+    targets_path = _targets_yaml(tmp_path, config_path=config_path, artifact_root=artifact_root)
+    live_state_store = build_paper_live_state_store_from_yaml(config_path, strict=True)
+    live_state_store.set_watch_heartbeat(
+        session_date=date(2026, 8, 3),
+        trade_id="S23-terminal-heartbeat",
+        payload={
+            "trade_id": "S23-terminal-heartbeat",
+            "owner_id": "tfis-paper-lifecycle-supervisor:s23:1234",
+            "timestamp": "2026-08-03T10:28:15+05:30",
+            "status": "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+            "reason_code": "target_hit",
+            "selected_contract_symbol": "NIFTY_20260811_24350_PE",
+            "state_directory": str(artifact_root / "2026-07-30" / "session" / "BRANCH"),
+            "strategy_code": "S23",
+            "supervisor_pid": 1234,
+        },
+    )
+
+    statuses = load_paper_runtime_heartbeat_statuses(
+        targets_path,
+        repo_root=tmp_path,
+        stale_after_seconds=0.01,
+    )
+
+    assert statuses[0].status == "IDLE"
+    assert statuses[0].latest_runtime_status == "PAPER_POSITION_FRESH_ENTRY_REQUIRED"
+    assert "idle paper lifecycle state" in statuses[0].message
 
 
 def test_load_paper_runtime_lifecycle_audit_statuses_reports_present_audit(
@@ -2207,6 +2268,120 @@ def test_process_target_records_stale_selected_contract_event_without_state_tran
     assert audit_rows[-1]["event_type"] == "MARKET_DATA_UNAVAILABLE"
     assert audit_rows[-1]["status"] == "SKIPPED"
     assert audit_rows[-1]["reason_code"] == "selected_contract_event_stale"
+
+
+def test_in_progress_future_bar_is_discarded_without_masking_fresh_quote() -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    evaluated_at = datetime(2026, 7, 29, 9, 32, 45)
+    future_bar = SelectedContractBarEvent(
+        envelope=EventEnvelope(
+            event_type=PaperEventType.SELECTED_CONTRACT_BAR,
+            session_date=date(2026, 7, 29),
+            effective_timestamp=evaluated_at.replace(second=59),
+            captured_at=evaluated_at,
+            timezone="Asia/Kolkata",
+            source_type="broker",
+            source_id="fyers:selected-contract-history",
+            synthetic_fixture=True,
+            normalized_by="test",
+        ),
+        symbol="NIFTY_20260804_23900_CE",
+        open=210.0,
+        high=211.0,
+        low=209.5,
+        close=210.5,
+        bar_start=evaluated_at.replace(second=0),
+        bar_end=evaluated_at.replace(second=59),
+        volume=100.0,
+    )
+    fresh_quote = SelectedContractQuoteEvent(
+        envelope=EventEnvelope(
+            event_type=PaperEventType.SELECTED_CONTRACT_QUOTE,
+            session_date=date(2026, 7, 29),
+            effective_timestamp=evaluated_at,
+            captured_at=evaluated_at,
+            timezone="Asia/Kolkata",
+            source_type="broker",
+            source_id="fyers:selected-contract-quote",
+            synthetic_fixture=True,
+            normalized_by="test",
+        ),
+        symbol="NIFTY_20260804_23900_CE",
+        option_type=OptionType.CALL,
+        strike=23900.0,
+        expiry=date(2026, 8, 4),
+        bid=210.0,
+        ask=210.5,
+        ltp=210.25,
+        oi=100000.0,
+    )
+
+    filtered = module._discard_in_progress_future_bar_events(
+        events=(future_bar, fresh_quote),
+        evaluated_at=evaluated_at,
+    )
+
+    assert filtered == (fresh_quote,)
+    assert (
+        module._selected_contract_events_stale_reason(
+            events=filtered,
+            evaluated_at=evaluated_at,
+            max_age_seconds=120.0,
+        )
+        is None
+    )
+
+
+def test_future_quote_is_not_discarded_and_still_fails_closed() -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    evaluated_at = datetime(2026, 7, 29, 9, 32, 45)
+    future_quote = SelectedContractQuoteEvent(
+        envelope=EventEnvelope(
+            event_type=PaperEventType.SELECTED_CONTRACT_QUOTE,
+            session_date=date(2026, 7, 29),
+            effective_timestamp=evaluated_at + timedelta(seconds=14),
+            captured_at=evaluated_at,
+            timezone="Asia/Kolkata",
+            source_type="broker",
+            source_id="fyers:selected-contract-quote",
+            synthetic_fixture=True,
+            normalized_by="test",
+        ),
+        symbol="NIFTY_20260804_23900_CE",
+        option_type=OptionType.CALL,
+        strike=23900.0,
+        expiry=date(2026, 8, 4),
+        bid=210.0,
+        ask=210.5,
+        ltp=210.25,
+        oi=100000.0,
+    )
+
+    filtered = module._discard_in_progress_future_bar_events(
+        events=(future_quote,),
+        evaluated_at=evaluated_at,
+    )
+    reason = module._selected_contract_events_stale_reason(
+        events=filtered,
+        evaluated_at=evaluated_at,
+        max_age_seconds=120.0,
+    )
+
+    assert filtered == (future_quote,)
+    assert reason is not None
+    assert reason[0] == "selected_contract_event_future_timestamp"
 
 
 def test_connect_paper_broker_runtime_contextualizes_health_failures() -> None:

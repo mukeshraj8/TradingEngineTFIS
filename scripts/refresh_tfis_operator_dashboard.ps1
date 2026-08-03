@@ -1,6 +1,7 @@
 param(
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
-    [int]$DashboardPort = 8765
+    [int]$DashboardPort = 8765,
+    [switch]$RestartDashboardServer
 )
 
 $ErrorActionPreference = "Stop"
@@ -67,6 +68,25 @@ function Get-TfisExistingDashboardProcess {
     return @(Get-TfisPortOwnerProcesses -Port $DashboardPort)
 }
 
+function Stop-TfisExistingDashboardServer {
+    param([object[]]$Processes)
+
+    $processIds = @()
+    foreach ($proc in @($Processes)) {
+        if ($null -ne $proc.ProcessIds) {
+            $processIds += @($proc.ProcessIds | ForEach-Object { [int]$_ })
+        }
+        elseif ($null -ne $proc.ProcessId) {
+            $processIds += [int]$proc.ProcessId
+        }
+    }
+    $processIds = @($processIds | Sort-Object -Unique)
+    foreach ($processId in $processIds) {
+        Write-Host "Stopping TFIS dashboard server PID=$processId to load refreshed server code."
+        Stop-Process -Id $processId -Force -ErrorAction Stop
+    }
+}
+
 $refreshStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 Write-Host "============================================================"
@@ -79,6 +99,11 @@ Write-Host "============================================================"
 Write-Host ("Built TFIS dashboard in {0:n1}s total" -f $refreshStopwatch.Elapsed.TotalSeconds)
 
 $existingDashboard = @(Get-TfisExistingDashboardProcess)
+if ($RestartDashboardServer -and $existingDashboard.Count -gt 0) {
+    Stop-TfisExistingDashboardServer -Processes $existingDashboard
+    $existingDashboard = @()
+}
+
 if ($existingDashboard.Count -gt 0) {
     Write-Host "Reusing existing TFIS dashboard server PID=$($existingDashboard[0].ProcessId) URL=http://127.0.0.1:$DashboardPort/index.html"
 }

@@ -695,26 +695,26 @@ class S23FyersSnapshotCollector:
         session_date: date,
         runtime_fixture: dict[str, Any] | None,
     ) -> tuple[PaperExpiryGovernance, date]:
-        weekly_expiry = (
+        resolved_expiry = (
             self._optional_date(runtime_fixture.get("weekly_expiry"))
             if runtime_fixture is not None
             else None
         )
-        if weekly_expiry is None:
-            weekly_expiry = self._resolve_configured_weekly_expiry(
+        if resolved_expiry is None:
+            resolved_expiry = self._resolve_configured_expiry(
                 config=config,
                 strategy=strategy,
                 session_date=session_date,
             )
         explicit_expiries = {
-            (strategy.expiry_policy.expiry_type, session_date): weekly_expiry,
+            (strategy.expiry_policy.expiry_type, session_date): resolved_expiry,
         }
         governance = PaperExpiryGovernance(
             DeterministicExpiryCalendar(explicit_expiries=explicit_expiries)
         )
-        return governance, weekly_expiry
+        return governance, resolved_expiry
 
-    def _resolve_configured_weekly_expiry(
+    def _resolve_configured_expiry(
         self,
         *,
         config: PaperLiveIngressConfig,
@@ -726,6 +726,11 @@ class S23FyersSnapshotCollector:
             return configured_expiry
         if strategy.expiry_policy.expiry_type is ExpiryType.WEEKLY and strategy.symbol == "NIFTY":
             return self._resolve_live_nifty_weekly_expiry(session_date)
+        if strategy.expiry_policy.expiry_type is ExpiryType.MONTHLY:
+            return self._resolve_live_monthly_expiry_from_anchor(
+                configured_expiry,
+                session_date=session_date,
+            )
         raise S23FyersSnapshotCollectorError(
             "STALE_WEEKLY_EXPIRY",
             "Configured market.weekly_expiry "
@@ -739,6 +744,21 @@ class S23FyersSnapshotCollector:
         while cursor.weekday() != 1:
             cursor += timedelta(days=1)
         return cursor
+
+    @classmethod
+    def _resolve_live_monthly_expiry_from_anchor(
+        cls,
+        configured_expiry: date,
+        *,
+        session_date: date,
+    ) -> date:
+        resolved_expiry = configured_expiry
+        while resolved_expiry < session_date:
+            resolved_expiry = cls._next_expiry_after(
+                resolved_expiry,
+                expiry_type=ExpiryType.MONTHLY,
+            )
+        return resolved_expiry
 
     def _validate_normalized_snapshot(
         self,

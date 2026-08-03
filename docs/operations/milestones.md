@@ -2,6 +2,32 @@
 
 ## Current Snapshot
 
+- as of Monday, August 3, 2026, the scheduled `TFIS Morning Startup` task was
+  confirmed to have launched at `09:08:38` but failed with result `1` because
+  S21 treated the stale July monthly expiry anchor in `market.weekly_expiry`
+  as fatal before writing same-day artifacts; the FYERS snapshot collector now
+  advances stale monthly anchors to the next valid monthly expiry while
+  preserving S23 weekly-expiry behavior. Active-market recovery started only
+  the shared paper lifecycle supervisor, processed the carried S23 position,
+  and moved it to `PAPER_POSITION_FRESH_ENTRY_REQUIRED` after target evidence.
+  Terminal paper lifecycle heartbeats now report `IDLE`, and runtime status
+  reports `IDLE_ACTIVE_MARKET` when no active/waiting lifecycle target needs a
+  watcher, so the dashboard no longer shows a false stale heartbeat warning
+  once all paper lifecycle work is idle. The S21/S23 morning runner boundary
+  also now retries the known transient FYERS no-intraday-candles snapshot
+  condition before recording `MARKET_CLOSED_NO_ACTION`, while preserving
+  immediate fail-closed behavior for other broker snapshot failures.
+- as of Wednesday, July 29, 2026, the paper lifecycle supervisor was hardened
+  against FYERS current-minute option-history bars whose effective timestamp
+  is the bar end (`:59`) and can appear ahead of the poll timestamp: only
+  in-progress future-ended bar events are discarded before lifecycle
+  freshness checks, while future-dated quotes still fail closed; generated
+  dashboard pages also pause auto-refresh in hidden tabs and refresh visible
+  tabs every 30 seconds, and the local dashboard server schedules stale-page
+  rebuilds in the background instead of blocking page responses during tab
+  switching; `refresh_tfis_operator_dashboard.ps1 -RestartDashboardServer`
+  can now apply dashboard server code fixes without stopping the shared paper
+  lifecycle supervisor
 - as of Tuesday, July 28, 2026, the Windows-safe atomic persistence pattern is
   now centralized in `tfis.storage.atomic_write.atomic_write_text` and used by
   paper lifecycle/artifact/order/position/live-state writers, broker order

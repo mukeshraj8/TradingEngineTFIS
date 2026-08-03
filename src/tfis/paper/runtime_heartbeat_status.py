@@ -9,6 +9,18 @@ from .lifecycle_supervisor_runtime import load_paper_lifecycle_supervisor_target
 from .live_state_store import PaperLiveStateSettings
 
 
+_IDLE_RUNTIME_STATUSES = frozenset(
+    {
+        "PAPER_ORDER_NOT_FILLED",
+        "PAPER_POSITION_CLOSED",
+        "PAPER_POSITION_FORCE_CLOSED",
+        "PAPER_POSITION_FRESH_ENTRY_REQUIRED",
+        "PAPER_POSITION_ROLLOVER_REQUIRED",
+        "PAPER_PREVIOUS_SESSION_ORDER_EXPIRED",
+    }
+)
+
+
 @dataclass(frozen=True, slots=True)
 class PaperRuntimeHeartbeatStatus:
     strategy_code: str
@@ -145,6 +157,8 @@ def _load_strategy_runtime_heartbeat_status(
     latest_reason_code = _string_or_none(latest.get("reason_code"))
     if latest_runtime_status == "MARKET_DATA_UNAVAILABLE":
         status = "DEGRADED"
+    elif latest_runtime_status in _IDLE_RUNTIME_STATUSES:
+        status = "IDLE"
     else:
         status = "OK" if age_seconds is not None and age_seconds <= stale_after_seconds else "STALE"
     latest_pid = None
@@ -227,6 +241,9 @@ def _heartbeat_status_message(
     if status == "DEGRADED":
         suffix = f" reason={latest_reason_code}" if latest_reason_code else ""
         return f"latest supervisor heartbeat reports {latest_runtime_status}{suffix}"
+    if status == "IDLE":
+        suffix = f" runtime_status={latest_runtime_status}" if latest_runtime_status else ""
+        return f"latest supervisor heartbeat is for an idle paper lifecycle state{suffix}"
     if status == "OK":
         return "filesystem supervisor heartbeat is fresh"
     return "filesystem supervisor heartbeat is stale"

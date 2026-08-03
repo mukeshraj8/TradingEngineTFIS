@@ -554,6 +554,10 @@ def _process_target(
             message=f"{type(exc).__name__}: {exc}",
         )
         return
+    events = _discard_in_progress_future_bar_events(
+        events=events,
+        evaluated_at=evaluated_at,
+    )
     stale_reason = _selected_contract_events_stale_reason(
         events=events,
         evaluated_at=evaluated_at,
@@ -702,6 +706,26 @@ def _selected_contract_events_stale_reason(
             ),
         )
     return None
+
+
+def _discard_in_progress_future_bar_events(
+    *,
+    events: tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...],
+    evaluated_at: datetime,
+    future_tolerance_seconds: float = 5.0,
+) -> tuple[SelectedContractQuoteEvent | SelectedContractBarEvent, ...]:
+    if not events:
+        return events
+    tolerance = timedelta(seconds=future_tolerance_seconds)
+    filtered: list[SelectedContractQuoteEvent | SelectedContractBarEvent] = []
+    for event in events:
+        event_timestamp = event.envelope.effective_timestamp
+        evaluated = _as_comparable_datetime(evaluated_at, reference=event_timestamp)
+        latest = _as_comparable_datetime(event_timestamp, reference=evaluated)
+        if isinstance(event, SelectedContractBarEvent) and latest > evaluated + tolerance:
+            continue
+        filtered.append(event)
+    return tuple(filtered)
 
 
 def _as_comparable_datetime(value: datetime, *, reference: datetime) -> datetime:
