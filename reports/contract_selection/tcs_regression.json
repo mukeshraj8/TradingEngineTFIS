@@ -1,0 +1,24 @@
+{
+  "monthly_status": "BEAR_CF",
+  "result": "PASS",
+  "schema_version": "tfis.contract_selection.tcs_regression.v1",
+  "selected_branch": "BEAR_CALL",
+  "selected_contract": {
+    "ask": "101.3",
+    "bid": "100.55",
+    "expiry": "2026-08-25",
+    "lot_size": 225,
+    "ltp": "101",
+    "oi": "166725",
+    "oi_quality": "AVAILABLE",
+    "oi_unit": "SOURCE_UNSPECIFIED",
+    "option_type": "CALL",
+    "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+    "quote_timestamp": null,
+    "source_quality": "LIVE_READ_OR_FIXTURE",
+    "strike": "2380",
+    "symbol": "NSE:TCS26AUG2380CE",
+    "tick_size": "0.05",
+    "underlying": "TCS"
+  }
+}

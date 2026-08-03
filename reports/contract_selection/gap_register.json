@@ -1,0 +1,15 @@
+{
+  "gaps": [
+    {
+      "classification": "NO_ACTIVE_DEFECT",
+      "description": "S21 complete internal-paper support remains certified. This contract-selection milestone did not need to modify an active S21 selector.",
+      "id": "S21_RUNTIME_ACTUAL_CHAIN_NOT_STARTED"
+    },
+    {
+      "classification": "NO_ACTIVE_DEFECT",
+      "description": "S23 still computes numeric start/end boundaries from verified config, but selection already traverses actual normalized contracts and emits no synthetic strike.",
+      "id": "S23_NUMERIC_BOUNDARY_REFERENCE_REMAINS_CONFIGURED"
+    }
+  ],
+  "schema_version": "tfis.contract_selection.gap_register.v1"
+}

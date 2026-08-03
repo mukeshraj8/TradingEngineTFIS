@@ -1,0 +1,69 @@
+{
+  "rows": [
+    {
+      "branch_id": "BEAR_CALL",
+      "candidate_count": 15,
+      "decision": "SELECTED",
+      "option_chain_quality": [
+        "COMPLETE_FOR_REQUIRED_RANGE"
+      ],
+      "selected_contract": "NSE:RELIANCE26AUG1260CE",
+      "selected_expiry_kind": "NEAR",
+      "symbol": "RELIANCE"
+    },
+    {
+      "branch_id": "BEAR_PUT",
+      "candidate_count": 0,
+      "decision": "NO_QUALIFYING_CONTRACT",
+      "option_chain_quality": [],
+      "selected_contract": null,
+      "selected_expiry_kind": null,
+      "symbol": "RELIANCE"
+    },
+    {
+      "branch_id": "BEAR_CALL",
+      "candidate_count": 13,
+      "decision": "SELECTED",
+      "option_chain_quality": [
+        "COMPLETE_FOR_REQUIRED_RANGE"
+      ],
+      "selected_contract": "NSE:TCS26AUG2380CE",
+      "selected_expiry_kind": "NEAR",
+      "symbol": "TCS"
+    },
+    {
+      "branch_id": "BEAR_PUT",
+      "candidate_count": 14,
+      "decision": "SELECTED",
+      "option_chain_quality": [
+        "COMPLETE_FOR_REQUIRED_RANGE"
+      ],
+      "selected_contract": "NSE:TCS26AUG2520PE",
+      "selected_expiry_kind": "NEAR",
+      "symbol": "TCS"
+    },
+    {
+      "branch_id": "BEAR_CALL",
+      "candidate_count": 11,
+      "decision": "SELECTED",
+      "option_chain_quality": [
+        "COMPLETE_FOR_REQUIRED_RANGE"
+      ],
+      "selected_contract": "NSE:INFY26AUG1140CE",
+      "selected_expiry_kind": "NEAR",
+      "symbol": "INFY"
+    },
+    {
+      "branch_id": "BEAR_PUT",
+      "candidate_count": 13,
+      "decision": "SELECTED",
+      "option_chain_quality": [
+        "COMPLETE_FOR_REQUIRED_RANGE"
+      ],
+      "selected_contract": "NSE:INFY26AUG1200PE",
+      "selected_expiry_kind": "NEAR",
+      "symbol": "INFY"
+    }
+  ],
+  "schema_version": "tfis.contract_selection.option_chain_quality_matrix.v1"
+}

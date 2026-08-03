@@ -18,35 +18,35 @@
     },
     {
       "result": "PASS",
-      "scenario": "TCS disabled candidate row remains isolated from RELIANCE"
+      "scenario": "TCS approved-but-disabled candidate row remains isolated from RELIANCE baseline"
     },
     {
       "result": "PASS",
-      "scenario": "INFY disabled candidate row remains isolated from RELIANCE"
+      "scenario": "INFY approved-but-disabled candidate row remains isolated from RELIANCE baseline"
     },
     {
       "result": "MODELLED_BY_EXISTING_GENERIC_POSITION_CYCLE",
       "scenario": "RELIANCE carried position plus fresh TCS candidate"
     },
     {
-      "result": "BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY",
+      "result": "SEQUENTIAL_QUEUE_REQUIRED",
       "scenario": "RELIANCE and TCS qualify simultaneously"
     },
     {
-      "result": "BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY",
+      "result": "SEQUENTIAL_QUEUE_REQUIRED",
       "scenario": "RELIANCE, TCS, and INFY qualify simultaneously"
     },
     {
-      "result": "BLOCKED_STRIKE_INTERVAL_EVIDENCE",
+      "result": "ACTUAL_STRIKE_TRAVERSAL_PROVED",
       "scenario": "INFY safe strike traversal"
     }
   ],
-  "schema_version": "s22.multi_stock.fan_out_isolation_result.v2",
+  "schema_version": "s22.multi_stock.fan_out_isolation_result.v4",
   "shared_immutable_data": [
     "monthly status batch requests",
     "symbol master",
     "option-chain source",
     "account risk envelope"
   ],
-  "verdict": "CONDITIONAL_PRIORITY_AND_INFY_BLOCKED"
+  "verdict": "CONDITIONAL_SEQUENTIAL_QUEUE_AND_CANDIDATES_READY_PENDING_BASELINE_UNIFIED_CERTIFICATION"
 }

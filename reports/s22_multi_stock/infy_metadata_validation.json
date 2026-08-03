@@ -1,31 +1,55 @@
 {
-  "schema_version": "s22.multi_stock.metadata_validation.v1",
-  "symbol": "INFY",
-  "status": "METADATA_READY",
   "external_broker_order_authority": "NONE",
   "fno_eligibility": "PASS",
+  "history_ready": true,
   "lot_size": 400,
   "lot_size_consistency": "CONSISTENT",
+  "missing_fields": [],
+  "monthly_status_ready": true,
+  "near_monthly_expiry": "2026-08-25",
+  "next_monthly_expiry": "2026-09-29",
+  "oi_available_contracts": 103,
+  "option_chain_ready": true,
+  "premium_available_contracts": 191,
+  "schema_version": "s22.multi_stock.metadata_validation.v2",
+  "selection_result": {
+    "monthly_status": "BEAR",
+    "result": "INFY_CONTRACT_SELECTION_READY",
+    "selected_branch": "BEAR_CALL",
+    "selected_contract": {
+      "ask": "51.25",
+      "bid": "51.05",
+      "expiry": "2026-08-25",
+      "lot_size": 400,
+      "ltp": "51",
+      "oi": "1306000",
+      "oi_quality": "AVAILABLE",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "option_type": "CALL",
+      "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+      "quote_timestamp": null,
+      "source_quality": "LIVE_READ_OR_FIXTURE",
+      "strike": "1140",
+      "symbol": "NSE:INFY26AUG1140CE",
+      "tick_size": "0.05",
+      "underlying": "INFY"
+    }
+  },
   "source_effective_date": "2026-07-31",
-  "tick_size": "0.05",
-  "tick_size_consistency": "CONSISTENT",
+  "status": "METADATA_READY_CONDITIONAL",
   "strike_interval_observed": [
     5.0,
     15.0,
     20.0,
     40.0
   ],
-  "near_monthly_expiry": "2026-08-25",
-  "next_monthly_expiry": "2026-09-29",
-  "history_ready": true,
-  "monthly_status_ready": true,
-  "option_chain_ready": true,
-  "premium_available_contracts": 191,
-  "oi_available_contracts": 103,
+  "symbol": "INFY",
+  "tick_size": "0.05",
+  "tick_size_consistency": "CONSISTENT",
   "total_option_contracts_observed": 199,
   "warnings": [
     "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
-    "SPARSE_STRIKE_GAPS_PRESENT"
-  ],
-  "missing_fields": []
+    "SPARSE_STRIKE_GAPS_PRESENT",
+    "ACTUAL_LISTED_STRIKE_TRAVERSAL_PROVED"
+  ]
 }

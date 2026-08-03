@@ -23,12 +23,27 @@ change in a meaningful way.
   Readiness therefore advances from `NO_GO` to
   `CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF` in
   `reports/unified_readiness/authoritative_readiness_projection.json`. S22
-  multi-stock truth is now sharper: `TCS` remains disabled but
-  metadata-ready-conditional pending one exact gap
-  (`BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY`), while `INFY` remains disabled
-  and blocked at `BLOCKED_STRIKE_INTERVAL_EVIDENCE` because read-only capture
-  proved irregular strike spacing without proving safe traversal. External
-  broker-order authority remains `NONE`.
+  multi-stock truth is now sharper: the simultaneous-acceptance ambiguity is
+  closed by the global sequential-account acceptance rule, so `TCS` is no
+  longer blocked by missing priority authority. Focused internal-paper proof is
+  now committed under
+  `reports/s22_multi_stock/sequential_account_acceptance_test.json`,
+  `reports/s22_multi_stock/margin_reservation_lifecycle.json`, and
+  `reports/s22_multi_stock/insufficient_margin_warning_contract.json`: same-
+  account intents are consumed one at a time with deterministic ordering,
+  effective-margin checks, reservation reconciliation, rejection release, and
+  warning-only insufficient-margin outcomes. The new contract-selection
+  correction under `src/tfis/contract_selection/actual_chain.py` and
+  `reports/contract_selection/` closes the old uneven-strike blocker:
+  `RELIANCE`, `TCS`, and `INFY` are now all evaluated against actual listed
+  contracts only, synthetic strike generation is removed from the S22 stock
+  path, and `INFY` is reclassified from
+  `BLOCKED_STRIKE_INTERVAL_EVIDENCE` to `METADATA_READY_CONDITIONAL` /
+  `READY_FOR_USER_APPROVAL`. User approval is now explicitly recorded for
+  `TCS` and `INFY`, but both remain disabled for the next baseline unified-
+  session certification. After that baseline pass, the approved controlled S22
+  multi-stock profile is `RELIANCE + TCS + INFY` on the existing shared
+  internal-paper account. External broker-order authority remains `NONE`.
 - as of Monday, August 3, 2026 at 14:40 IST, the fast-track continuation lane
   is `CONDITIONAL` pre-EOD. The running unified supervisor is still the same
   protected live observation session with owner `pid 16256` and wrapper
@@ -69,7 +84,8 @@ change in a meaningful way.
   foundation is now prepared under `reports/s22_multi_stock/` and
   `config/s22_multi_stock_registry.yaml`. RELIANCE remains the only
   operator-enabled S22 stock. `TCS` and `INFY` are modeled as disabled
-  candidate instances with `BLOCKED_METADATA` and `NOT_APPROVED` gates. The
+  candidate instances with metadata-ready status and explicit user approval,
+  but with a hold-until-baseline-certification gate. The
   RELIANCE capture contract is now generic at the interface level through
   `scripts/capture_s22_reliance_fyers_snapshot.py --symbol <SYMBOL>`, while
   preserving backward compatibility and external broker-order authority `NONE`.

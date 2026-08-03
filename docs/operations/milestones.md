@@ -18,10 +18,20 @@
   Readiness truth now lives in
   `reports/unified_readiness/authoritative_readiness_projection.json` with
   verdict `CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF`. S22 lane truth is
-  also tightened: `TCS` remains disabled pending
-  `BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY`, while `INFY` remains disabled and
-  `BLOCKED_STRIKE_INTERVAL_EVIDENCE`. External broker-order/live authority
-  remains `NONE`.
+  also tightened: the simultaneous-acceptance ambiguity is now closed by the
+  global sequential-account acceptance rule, so `TCS` no longer carries a
+  missing-priority-authority blocker. Focused internal-paper proof is now
+  recorded under `reports/s22_multi_stock/sequential_account_acceptance_test.json`,
+  `reports/s22_multi_stock/margin_reservation_lifecycle.json`, and
+  `reports/s22_multi_stock/insufficient_margin_warning_contract.json`. The new
+  actual-listed strike traversal proof under `reports/contract_selection/`
+  removes the old INFY interval blocker: `INFY` now selects
+  `NSE:INFY26AUG1140CE` from real near-monthly contracts and is reclassified
+  to `READY_FOR_USER_APPROVAL`. User approval is now explicitly recorded for
+  `TCS` and `INFY`, but both remain disabled for the next baseline unified-
+  session certification. After that certification passes, the approved
+  controlled S22 multi-stock profile is `RELIANCE + TCS + INFY`. External
+  broker-order/live authority remains `NONE`.
 - as of Monday, August 3, 2026 at 14:40 IST, the
   `CLOSE_LIVE_OPERATIONAL_BLOCKERS_AND_BEGIN_S22_MULTI_STOCK_ONBOARDING`
   milestone remains `CONDITIONAL` pre-EOD. The live session is still the

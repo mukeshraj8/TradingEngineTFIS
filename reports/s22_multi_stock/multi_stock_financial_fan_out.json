@@ -1,0 +1,28 @@
+{
+  "candidate_symbols": [
+    "TCS",
+    "INFY"
+  ],
+  "enabled_symbol": "RELIANCE",
+  "external_broker_order_authority": "NONE",
+  "operator_activation_plan": {
+    "approved_disabled_candidates": [
+      "TCS",
+      "INFY"
+    ],
+    "baseline_session_gate": "KEEP_DISABLED_FOR_NEXT_BASELINE_UNIFIED_SESSION_CERTIFICATION",
+    "post_baseline_profile": [
+      "RELIANCE",
+      "TCS",
+      "INFY"
+    ]
+  },
+  "result": "CANDIDATE_FAN_OUT_SAFE_PENDING_BASELINE_UNIFIED_CERTIFICATION",
+  "same_account_acceptance_model": "GLOBAL_SEQUENTIAL_ACCOUNT_ACCEPTANCE_RULE",
+  "schema_version": "s22.multi_stock.financial_fan_out.v1",
+  "selected_contracts_if_enabled": {
+    "INFY": "NSE:INFY26AUG1140CE",
+    "RELIANCE": "NSE:RELIANCE26AUG1260CE",
+    "TCS": "NSE:TCS26AUG2380CE"
+  }
+}

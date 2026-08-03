@@ -5,7 +5,8 @@
   "code_readiness": {
     "checkpoint_terminal_reporting": "FIXED_FOR_NEXT_RUN_AND_UNIT_TESTED",
     "dashboard": "READY_FOR_OPERATOR_START",
-    "fan_out": "CONDITIONAL_TCS_BLOCKED_INFY",
+    "fan_out": "CONDITIONAL_TCS_INFY_APPROVED_BUT_DISABLED_PENDING_BASELINE_CERTIFICATION",
+    "multi_stock_activation_gate": "RELIANCE_BASELINE_ONLY_UNTIL_TCS_INFY_POST_BASELINE_ACTIVATION",
     "patched_scheduler": "PATCHED_DETERMINISTIC_PATH_PROVED",
     "strategies": "S21_S22_RELIANCE_S23_READY_FOR_INTERNAL_PAPER"
   },
@@ -19,9 +20,9 @@
   "go_for_next_complete_session": true,
   "governing_inputs": {
     "candidate_activation_pack": {
-      "infy_recommendation": "BLOCKED_CONTRACT_SELECTION",
+      "infy_recommendation": "APPROVED_KEEP_DISABLED_UNTIL_BASELINE_UNIFIED_CERTIFICATION",
       "path": "D:\\TradingEngineTFISRefactored\\reports\\s22_multi_stock\\candidate_activation_decision_pack.json",
-      "tcs_recommendation": "KEEP_DISABLED_PENDING_ONE_EXACT_GAP"
+      "tcs_recommendation": "APPROVED_KEEP_DISABLED_UNTIL_BASELINE_UNIFIED_CERTIFICATION"
     },
     "critical_scheduler_independence": {
       "classification": "PARTIALLY_INDEPENDENT",
@@ -60,7 +61,7 @@
   "next_required_action": "Run tomorrow's full unified session from before market open on the patched code path.",
   "operator_state": {
     "authentication": "AUTHENTICATED_FROM_LATEST_DIAGNOSTIC",
-    "configuration": "READY_WITH_TCS_INFY_STILL_DISABLED",
+    "configuration": "READY_WITH_RELIANCE_BASELINE_AND_TCS_INFY_APPROVED_BUT_DISABLED_PENDING_BASELINE_CERTIFICATION",
     "dashboard": "MANUAL_START_REQUIRED_NEXT_SESSION",
     "db": "HEALTHY",
     "duplicate_process": "CLEAR"
@@ -70,7 +71,6 @@
   "warnings": [
     "NEXT_COMPLETE_SESSION_IS_STILL_THE_REQUIRED_BEFORE_OPEN_PROOF",
     "OLD_2026_08_03_LIVE_SUMMARY_FINISHED_AT_EOD_PROCESSING_INSTEAD_OF_STOPPED",
-    "TCS_REMAINS_DISABLED_PENDING_PRIORITY_AUTHORITY_AND_APPROVAL",
-    "INFY_REMAINS_BLOCKED_STRIKE_INTERVAL_EVIDENCE"
+    "TCS_AND_INFY_REMAIN_DISABLED_FOR_NEXT_BASELINE_UNIFIED_SESSION_CERTIFICATION"
   ]
 }

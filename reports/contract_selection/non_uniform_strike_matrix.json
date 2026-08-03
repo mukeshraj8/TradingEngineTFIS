@@ -1,0 +1,42 @@
+{
+  "schema_version": "tfis.contract_selection.non_uniform_strike_matrix.v1",
+  "symbols": {
+    "INFY": {
+      "classification": "NON_UNIFORM_VALID_EXCHANGE_LISTED",
+      "near_call_gaps": [
+        5.0,
+        15.0,
+        20.0,
+        40.0
+      ],
+      "near_put_gaps": [
+        5.0,
+        15.0,
+        20.0,
+        40.0
+      ]
+    },
+    "RELIANCE": {
+      "classification": "NON_UNIFORM_VALID_EXCHANGE_LISTED",
+      "near_call_gaps": [
+        10.0,
+        20.0
+      ],
+      "near_put_gaps": [
+        10.0,
+        20.0
+      ]
+    },
+    "TCS": {
+      "classification": "NON_UNIFORM_VALID_EXCHANGE_LISTED",
+      "near_call_gaps": [
+        20.0,
+        40.0
+      ],
+      "near_put_gaps": [
+        20.0,
+        40.0
+      ]
+    }
+  }
+}

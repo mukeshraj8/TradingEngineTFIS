@@ -1,0 +1,147 @@
+{
+  "captured_at": "2026-08-03T23:59:00+05:30",
+  "external_broker_order_authority": "NONE",
+  "ordering_rule": [
+    "qualification_timestamp",
+    "intent_creation_sequence",
+    "strategy_instance_id"
+  ],
+  "rejection_release_case": {
+    "broker_account_id": "INTERNAL_PAPER_ACCOUNT_A",
+    "external_broker_order_authority": "NONE",
+    "final_account_snapshot": {
+      "account_blocked": false,
+      "account_enabled": true,
+      "active_order_count": 0,
+      "active_order_reservation": "0",
+      "available_paper_margin": "180000",
+      "broker_account_id": "INTERNAL_PAPER_ACCOUNT_A",
+      "margin_per_quantity": "100",
+      "max_active_order_count": 10,
+      "opening_paper_cash": "1000000",
+      "released_margin": "220000",
+      "reserved_margin": "0",
+      "simulated_charges": "0"
+    },
+    "lifecycle_protection_preserved": true,
+    "ordered_intent_ids": [
+      "intent:reliance-reject",
+      "intent:tcs-after-reject"
+    ],
+    "outcomes": [
+      {
+        "available_margin": "180000",
+        "broker_account_id": "INTERNAL_PAPER_ACCOUNT_A",
+        "client_order_id": "client-order:7ba75b10131b5ba832bed1ef",
+        "decision": "PROCESSED_INTERNAL_PAPER",
+        "effective_available_margin": "180000",
+        "execution_intent_id": "intent:reliance-reject",
+        "final_state": "REJECTED_INTERNAL",
+        "instrument": "NSE:RELIANCE26AUG2400CE",
+        "intent_creation_sequence": 1,
+        "qualification_timestamp": "2026-07-30T09:19:59+05:30",
+        "queue_position": 1,
+        "required_margin": "120000",
+        "reservation_created": true,
+        "reservation_reconciled": true,
+        "reservation_released": true,
+        "result_hash": "6f54828fc948261b95a282d3387e5113c9152ae90307536aec5335d852a3294f",
+        "shortfall": null,
+        "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+        "warning": null
+      },
+      {
+        "available_margin": "180000",
+        "broker_account_id": "INTERNAL_PAPER_ACCOUNT_A",
+        "client_order_id": "client-order:a4f3176ea4c780518205b90d",
+        "decision": "PROCESSED_INTERNAL_PAPER",
+        "effective_available_margin": "180000",
+        "execution_intent_id": "intent:tcs-after-reject",
+        "final_state": "FILLED_INTERNAL",
+        "instrument": "NSE:TCS26AUG4500CE",
+        "intent_creation_sequence": 2,
+        "qualification_timestamp": "2026-07-30T09:20:00+05:30",
+        "queue_position": 2,
+        "required_margin": "100000",
+        "reservation_created": true,
+        "reservation_reconciled": true,
+        "reservation_released": true,
+        "result_hash": "b595390be01f2d581b334edf144484b4a258d7941a6ea9e7fbd6b7d9fefa96bb",
+        "shortfall": null,
+        "strategy_instance_id": "S22_TCS_INTERNAL_PAPER_A",
+        "warning": null
+      }
+    ],
+    "result_hash": "096f317b13077770e6fb06d7772853055853610fa5e2d9ea7f9164064afa9219"
+  },
+  "schema_version": "s22.multi_stock.sequential_account_acceptance_test.v1",
+  "sufficient_margin_case": {
+    "broker_account_id": "INTERNAL_PAPER_ACCOUNT_A",
+    "external_broker_order_authority": "NONE",
+    "final_account_snapshot": {
+      "account_blocked": false,
+      "account_enabled": true,
+      "active_order_count": 1,
+      "active_order_reservation": "120000",
+      "available_paper_margin": "180000",
+      "broker_account_id": "INTERNAL_PAPER_ACCOUNT_A",
+      "margin_per_quantity": "100",
+      "max_active_order_count": 10,
+      "opening_paper_cash": "1000000",
+      "released_margin": "100000",
+      "reserved_margin": "120000",
+      "simulated_charges": "0"
+    },
+    "lifecycle_protection_preserved": true,
+    "ordered_intent_ids": [
+      "intent:reliance",
+      "intent:tcs"
+    ],
+    "outcomes": [
+      {
+        "available_margin": "300000",
+        "broker_account_id": "INTERNAL_PAPER_ACCOUNT_A",
+        "client_order_id": "client-order:879cfe1807cd1720816a7216",
+        "decision": "PROCESSED_INTERNAL_PAPER",
+        "effective_available_margin": "300000",
+        "execution_intent_id": "intent:reliance",
+        "final_state": "PARTIALLY_FILLED_INTERNAL",
+        "instrument": "NSE:RELIANCE26AUG2400CE",
+        "intent_creation_sequence": 2,
+        "qualification_timestamp": "2026-07-30T09:19:59+05:30",
+        "queue_position": 1,
+        "required_margin": "120000",
+        "reservation_created": true,
+        "reservation_reconciled": true,
+        "reservation_released": false,
+        "result_hash": "ed35d315761915ba07a6efec69da0b6d1e7946b4e7be4fd288740810c4416c9f",
+        "shortfall": null,
+        "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+        "warning": null
+      },
+      {
+        "available_margin": "300000",
+        "broker_account_id": "INTERNAL_PAPER_ACCOUNT_A",
+        "client_order_id": "client-order:075e44eb21491f660a61dca0",
+        "decision": "PROCESSED_INTERNAL_PAPER",
+        "effective_available_margin": "180000",
+        "execution_intent_id": "intent:tcs",
+        "final_state": "FILLED_INTERNAL",
+        "instrument": "NSE:TCS26AUG4500CE",
+        "intent_creation_sequence": 3,
+        "qualification_timestamp": "2026-07-30T09:20:04+05:30",
+        "queue_position": 2,
+        "required_margin": "100000",
+        "reservation_created": true,
+        "reservation_reconciled": true,
+        "reservation_released": true,
+        "result_hash": "178ac05ede4f59400c2cb3147186f18b36ca83f3da1f561d6a7c727db1c1b15f",
+        "shortfall": null,
+        "strategy_instance_id": "S22_TCS_INTERNAL_PAPER_A",
+        "warning": null
+      }
+    ],
+    "result_hash": "b51b76429d966b46706ef9809a4bc003acd099748d6b23e77eaa4e6439eda34c"
+  },
+  "verdict": "SEQUENTIAL_ACCEPTANCE_PROVED_INTERNAL_PAPER"
+}

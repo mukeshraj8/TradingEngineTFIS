@@ -34,7 +34,7 @@
     {
       "symbol": "TCS",
       "operator_enabled": false,
-      "approval_state": "NOT_APPROVED",
+      "approval_state": "APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION",
       "decision": "KEEP_DISABLED",
       "metadata_quality": "READY_STAGE1",
       "lot_size": 225,
@@ -56,13 +56,14 @@
       "broker_identifiers": "CAPTURED",
       "warnings": [
         "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
-        "SPARSE_STRIKE_GAPS_PRESENT"
+        "SPARSE_STRIKE_GAPS_PRESENT",
+        "USER_APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION"
       ]
     },
     {
       "symbol": "INFY",
       "operator_enabled": false,
-      "approval_state": "NOT_APPROVED",
+      "approval_state": "APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION",
       "decision": "KEEP_DISABLED",
       "metadata_quality": "READY_STAGE1",
       "lot_size": 400,
@@ -86,7 +87,8 @@
       "broker_identifiers": "CAPTURED",
       "warnings": [
         "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
-        "SPARSE_STRIKE_GAPS_PRESENT"
+        "SPARSE_STRIKE_GAPS_PRESENT",
+        "USER_APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION"
       ]
     }
   ]

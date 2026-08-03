@@ -1,0 +1,262 @@
+{
+  "captured_at": "2026-08-03T18:05:00+05:30",
+  "schema_version": "tfis.contract_selection.actual_strike_set_contract.v1",
+  "symbols": {
+    "INFY": {
+      "chain_stats": [
+        {
+          "available_strike_count": 53,
+          "contract_count": 53,
+          "expiry": "2026-08-25",
+          "first_strike": "640",
+          "last_strike": "1640",
+          "observed_gaps": [
+            5.0,
+            15.0,
+            20.0,
+            40.0
+          ],
+          "oi_available_contracts": 53,
+          "option_type": "CALL",
+          "premium_available_contracts": 53,
+          "symbol": "INFY"
+        },
+        {
+          "available_strike_count": 56,
+          "contract_count": 56,
+          "expiry": "2026-08-25",
+          "first_strike": "640",
+          "last_strike": "1640",
+          "observed_gaps": [
+            5.0,
+            15.0,
+            20.0,
+            40.0
+          ],
+          "oi_available_contracts": 56,
+          "option_type": "PUT",
+          "premium_available_contracts": 56,
+          "symbol": "INFY"
+        },
+        {
+          "available_strike_count": 45,
+          "contract_count": 45,
+          "expiry": "2026-09-29",
+          "first_strike": "640",
+          "last_strike": "1640",
+          "observed_gaps": [
+            20.0,
+            40.0
+          ],
+          "oi_available_contracts": 45,
+          "option_type": "CALL",
+          "premium_available_contracts": 45,
+          "symbol": "INFY"
+        },
+        {
+          "available_strike_count": 45,
+          "contract_count": 45,
+          "expiry": "2026-09-29",
+          "first_strike": "640",
+          "last_strike": "1640",
+          "observed_gaps": [
+            20.0,
+            40.0
+          ],
+          "oi_available_contracts": 45,
+          "option_type": "PUT",
+          "premium_available_contracts": 45,
+          "symbol": "INFY"
+        }
+      ],
+      "monthly_status": "BEAR",
+      "selected_branch": "BEAR_CALL",
+      "selected_contract": {
+        "ask": "51.25",
+        "bid": "51.05",
+        "expiry": "2026-08-25",
+        "lot_size": 400,
+        "ltp": "51",
+        "oi": "1306000",
+        "oi_quality": "AVAILABLE",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "option_type": "CALL",
+        "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+        "quote_timestamp": null,
+        "source_quality": "LIVE_READ_OR_FIXTURE",
+        "strike": "1140",
+        "symbol": "NSE:INFY26AUG1140CE",
+        "tick_size": "0.05",
+        "underlying": "INFY"
+      }
+    },
+    "RELIANCE": {
+      "chain_stats": [
+        {
+          "available_strike_count": 100,
+          "contract_count": 100,
+          "expiry": "2026-08-25",
+          "first_strike": "680",
+          "last_strike": "1900",
+          "observed_gaps": [
+            10.0,
+            20.0
+          ],
+          "oi_available_contracts": 100,
+          "option_type": "CALL",
+          "premium_available_contracts": 100,
+          "symbol": "RELIANCE"
+        },
+        {
+          "available_strike_count": 100,
+          "contract_count": 100,
+          "expiry": "2026-08-25",
+          "first_strike": "680",
+          "last_strike": "1900",
+          "observed_gaps": [
+            10.0,
+            20.0
+          ],
+          "oi_available_contracts": 100,
+          "option_type": "PUT",
+          "premium_available_contracts": 100,
+          "symbol": "RELIANCE"
+        },
+        {
+          "available_strike_count": 100,
+          "contract_count": 100,
+          "expiry": "2026-09-29",
+          "first_strike": "680",
+          "last_strike": "1900",
+          "observed_gaps": [
+            10.0,
+            20.0
+          ],
+          "oi_available_contracts": 100,
+          "option_type": "CALL",
+          "premium_available_contracts": 100,
+          "symbol": "RELIANCE"
+        },
+        {
+          "available_strike_count": 100,
+          "contract_count": 100,
+          "expiry": "2026-09-29",
+          "first_strike": "680",
+          "last_strike": "1900",
+          "observed_gaps": [
+            10.0,
+            20.0
+          ],
+          "oi_available_contracts": 100,
+          "option_type": "PUT",
+          "premium_available_contracts": 100,
+          "symbol": "RELIANCE"
+        }
+      ],
+      "monthly_status": "BEAR_CF",
+      "selected_branch": "BEAR_CALL",
+      "selected_contract": {
+        "ask": "58.05",
+        "bid": "57.6",
+        "expiry": "2026-08-25",
+        "lot_size": 500,
+        "ltp": "57.6",
+        "oi": "632500",
+        "oi_quality": "AVAILABLE",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "option_type": "CALL",
+        "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+        "quote_timestamp": null,
+        "source_quality": "LIVE_READ_OR_FIXTURE",
+        "strike": "1260",
+        "symbol": "NSE:RELIANCE26AUG1260CE",
+        "tick_size": "0.05",
+        "underlying": "RELIANCE"
+      }
+    },
+    "TCS": {
+      "chain_stats": [
+        {
+          "available_strike_count": 87,
+          "contract_count": 87,
+          "expiry": "2026-08-25",
+          "first_strike": "1400",
+          "last_strike": "3400",
+          "observed_gaps": [
+            20.0,
+            40.0
+          ],
+          "oi_available_contracts": 87,
+          "option_type": "CALL",
+          "premium_available_contracts": 87,
+          "symbol": "TCS"
+        },
+        {
+          "available_strike_count": 87,
+          "contract_count": 87,
+          "expiry": "2026-08-25",
+          "first_strike": "1400",
+          "last_strike": "3400",
+          "observed_gaps": [
+            20.0,
+            40.0
+          ],
+          "oi_available_contracts": 87,
+          "option_type": "PUT",
+          "premium_available_contracts": 87,
+          "symbol": "TCS"
+        },
+        {
+          "available_strike_count": 87,
+          "contract_count": 87,
+          "expiry": "2026-09-29",
+          "first_strike": "1400",
+          "last_strike": "3400",
+          "observed_gaps": [
+            20.0,
+            40.0
+          ],
+          "oi_available_contracts": 87,
+          "option_type": "CALL",
+          "premium_available_contracts": 87,
+          "symbol": "TCS"
+        },
+        {
+          "available_strike_count": 87,
+          "contract_count": 87,
+          "expiry": "2026-09-29",
+          "first_strike": "1400",
+          "last_strike": "3400",
+          "observed_gaps": [
+            20.0,
+            40.0
+          ],
+          "oi_available_contracts": 87,
+          "option_type": "PUT",
+          "premium_available_contracts": 87,
+          "symbol": "TCS"
+        }
+      ],
+      "monthly_status": "BEAR_CF",
+      "selected_branch": "BEAR_CALL",
+      "selected_contract": {
+        "ask": "101.3",
+        "bid": "100.55",
+        "expiry": "2026-08-25",
+        "lot_size": 225,
+        "ltp": "101",
+        "oi": "166725",
+        "oi_quality": "AVAILABLE",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "option_type": "CALL",
+        "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+        "quote_timestamp": null,
+        "source_quality": "LIVE_READ_OR_FIXTURE",
+        "strike": "2380",
+        "symbol": "NSE:TCS26AUG2380CE",
+        "tick_size": "0.05",
+        "underlying": "TCS"
+      }
+    }
+  }
+}

@@ -24,27 +24,41 @@ way.
    Treat the old live summary `EOD_PROCESSING` terminal state as a historical
    reporting gap from the pre-fix PID, not as the current repo truth.
 
-0.6705. `KEEP_TCS_DISABLED_PENDING_ONE_EXACT_GAP` `TCS` now has dated live
-   FYERS read-only metadata and remains disabled in
-   `config/s22_multi_stock_registry.yaml`. Its remaining enablement gap is
-   `BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY`; no simultaneous qualifying-stock
-   priority rule has been approved yet.
+0.6705. `KEEP_TCS_DISABLED_UNTIL_BASELINE_CERTIFICATION` `TCS` now has
+   dated live FYERS read-only metadata and remains disabled in
+   `config/s22_multi_stock_registry.yaml`. The old simultaneous-acceptance
+   ambiguity is closed by the global sequential-account acceptance rule:
+   qualifying intents for the same account must be processed through a
+   deterministic queue with per-order margin checks and reservation
+   reconciliation. Focused proof now exists in
+   `reports/s22_multi_stock/sequential_account_acceptance_test.json`,
+   `reports/s22_multi_stock/margin_reservation_lifecycle.json`, and
+   `reports/s22_multi_stock/insufficient_margin_warning_contract.json`. `TCS`
+   is now explicitly approved for controlled S22 onboarding, but it remains
+   disabled for the next baseline unified-session certification, not because
+   business priority authority is missing.
 
-0.6704. `KEEP_INFY_DISABLED_AND_BLOCKED` `INFY` remains disabled and must not
-   be enabled from the current capture set. The latest authoritative
-   classification is `BLOCKED_STRIKE_INTERVAL_EVIDENCE`: the read-only capture
-   proved irregular strike spacing but did not prove safe strike traversal for
-   contract selection.
+0.6704. `KEEP_INFY_DISABLED_UNTIL_BASELINE_CERTIFICATION` `INFY` remains
+   disabled in `config/s22_multi_stock_registry.yaml`, but it is no longer
+   blocked by uneven strike spacing. The latest authoritative classification is
+   `METADATA_READY_CONDITIONAL` / `READY_FOR_USER_APPROVAL`: read-only capture
+   now proves safe actual-listed strike traversal under
+   `reports/contract_selection/infy_actual_chain_selection.json`. `INFY` is
+   also explicitly user-approved for controlled S22 onboarding, but it remains
+   disabled for the next baseline unified-session certification.
 
 0.67. `KEEP_TOMORROW_SCOPE_TIGHT` Keep tomorrow focused: do not add new
-   strategies, do not enable TCS or INFY, and do not add external broker order
-   authority while the before-open full-session proof is still pending.
+   strategies, keep `TCS` and `INFY` disabled until the next baseline unified
+   session certification passes, and do not add external broker order authority while
+   the before-open full-session proof is still pending.
 
-0.665. `WAIT_FOR_EXPLICIT_APPROVAL` Keep RELIANCE as the only enabled S22 stock.
+0.665. `ACTIVATE_MULTI_STOCK_ONLY_AFTER_BASELINE_PASS` Keep RELIANCE as the
+   only enabled S22 stock for the next baseline unified-session certification.
    `TCS` and `INFY` are now prepared as disabled candidates in
-   `config/s22_multi_stock_registry.yaml`, but both remain source- and
-   metadata-gated. Before enabling either candidate, capture a dated versioned
-   read-only metadata snapshot and receive explicit operator approval.
+   `config/s22_multi_stock_registry.yaml` with explicit user approval already
+   recorded. After the baseline unified-session certification passes, activate
+   `RELIANCE`, `TCS`, and `INFY` together in one controlled S22 multi-stock
+   internal-paper profile. External FYERS order authority remains `NONE`.
 
 0.66. `NO_GO_UNTIL_CLEARED` Do not start the next full unified
    pre-market-to-EOD internal-paper session until all three gates are green:

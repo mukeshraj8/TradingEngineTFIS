@@ -1,0 +1,17 @@
+{
+  "S21": {
+    "classification": "LEGACY_STATIC_REPORT_ONLY",
+    "result": "PASS",
+    "runtime_scope": "first-branch synthetic certification remains unchanged",
+    "selection_engine_changed": false,
+    "validated_by": "tests/integration/test_s21_complete_strategy.py"
+  },
+  "S23": {
+    "classification": "ACTUAL_CHAIN_TRAVERSAL_ALREADY_IN_FORCE",
+    "result": "PASS",
+    "runtime_scope": "generic S23 paper selector already consumes actual normalized contracts only",
+    "selection_engine_changed": false,
+    "validated_by": "tests/unit/test_s23_paper_contract_selection.py"
+  },
+  "schema_version": "tfis.contract_selection.s21_s23_regression.v1"
+}

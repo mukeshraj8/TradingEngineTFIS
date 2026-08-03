@@ -8,15 +8,17 @@
     "broker and market-data identifiers",
     "usable option-chain, premium and OI evidence"
   ],
-  "schema_version": "s22.multi_stock.candidate_metadata_validation.v3",
+  "schema_version": "s22.multi_stock.candidate_metadata_validation.v4",
   "symbols": {
     "INFY": {
       "missing_fields": [],
-      "status": "BLOCKED_STRIKE_INTERVAL_EVIDENCE",
+      "status": "METADATA_READY_CONDITIONAL",
       "warnings": [
         "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
         "SPARSE_STRIKE_GAPS_PRESENT",
-        "SAFE_STRIKE_TRAVERSAL_NOT_PROVED"
+        "ACTUAL_LISTED_STRIKE_TRAVERSAL_PROVED",
+        "SEQUENTIAL_ACCOUNT_ACCEPTANCE_RULE_APPLIES_ON_SHARED_ACCOUNT",
+        "USER_APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION"
       ]
     },
     "TCS": {
@@ -25,9 +27,10 @@
       "warnings": [
         "NON_UNIFORM_STRIKE_SPACING_OBSERVED",
         "SPARSE_STRIKE_GAPS_PRESENT",
-        "SIMULTANEOUS_ACCEPTANCE_PRIORITY_UNRESOLVED"
+        "SEQUENTIAL_ACCOUNT_ACCEPTANCE_RULE_APPLIES_ON_SHARED_ACCOUNT",
+        "USER_APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION"
       ]
     }
   },
-  "validation_gate": "CONDITIONAL_TCS_BLOCKED_INFY"
+  "validation_gate": "CONDITIONAL_TCS_INFY_APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION"
 }

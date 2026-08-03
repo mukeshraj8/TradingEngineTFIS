@@ -1,0 +1,123 @@
+{
+  "captured_at": "2026-08-03T18:05:00+05:30",
+  "paths": [
+    {
+      "classification": "ACTUAL_CHAIN_TRAVERSAL",
+      "expiry_filtering": "near then next monthly expiry, independent per branch",
+      "file": "src/tfis/adapters/phase5e/s22_reliance.py",
+      "fixed_spacing_assumed": false,
+      "function": "_evaluate_branch_contracts / _evaluate_expiry_contracts",
+      "input_source": "FYERS sanitized option-chain fixture / approved option-chain source",
+      "option_type_filtering": "CALL/PUT isolated before traversal",
+      "ordering_method": "start/end boundary resolution over sorted actual listed contracts",
+      "premium_oi_filtering": "ideal premium, minimum premium, and minimum OI evaluated on real contracts only",
+      "preserves_actual_contract_identity": true,
+      "required_correction": "implemented in this change set",
+      "risk_classification": "CLOSED",
+      "start_end_handling": "rounded reference resolves to first actual listed strike in workbook direction; end offset is applied as actual listed strike steps",
+      "strategy_scope": [
+        "S22 RELIANCE",
+        "S22 TCS",
+        "S22 INFY"
+      ],
+      "strike_construction_method": "actual listed strike traversal via src/tfis/contract_selection/actual_chain.py"
+    },
+    {
+      "classification": "ACTUAL_CHAIN_TRAVERSAL",
+      "expiry_filtering": "exact expiry only",
+      "file": "src/tfis/contract_selection/actual_chain.py",
+      "fixed_spacing_assumed": false,
+      "function": "build_actual_option_chain_traversal",
+      "input_source": "normalized option contracts or fixture-backed contract dictionaries",
+      "option_type_filtering": "exact option type only",
+      "ordering_method": "ascending or descending over actual listed strike set",
+      "premium_oi_filtering": "performed by consuming engine after traversal",
+      "preserves_actual_contract_identity": true,
+      "required_correction": "new reusable helper added",
+      "risk_classification": "CLOSED",
+      "start_end_handling": "boundary references are resolved against actual listed strikes",
+      "strategy_scope": [
+        "generic option traversal helper"
+      ],
+      "strike_construction_method": "deduplicate and sort actual listed strikes; no gap filling"
+    },
+    {
+      "classification": "ACTUAL_CHAIN_TRAVERSAL",
+      "expiry_filtering": "near expiry plus explicit fallback expiries",
+      "file": "src/tfis/paper/contract_selection.py",
+      "fixed_spacing_assumed": false,
+      "function": "S23PaperContractSelector._select_for_expiry",
+      "input_source": "normalized OptionChainSnapshotEvent contracts",
+      "option_type_filtering": "exact option type only",
+      "ordering_method": "sorted actual contracts by strike in workbook direction",
+      "premium_oi_filtering": "minimum premium and OI before ordered ideal/minimum selection",
+      "preserves_actual_contract_identity": true,
+      "required_correction": "none",
+      "risk_classification": "SAFE_BEFORE_AND_AFTER",
+      "start_end_handling": "numeric start/end remain search boundaries only",
+      "strategy_scope": [
+        "S23 NIFTY",
+        "generic paper option-chain selector"
+      ],
+      "strike_construction_method": "filters actual normalized contracts by numeric bounds; no synthetic strike emission"
+    },
+    {
+      "classification": "ROUNDING_REFERENCE",
+      "expiry_filtering": "not applicable",
+      "file": "src/tfis/formulas/formula_engine.py",
+      "fixed_spacing_assumed": true,
+      "function": "strike_step parameter handling",
+      "input_source": "strategy config formula evaluation",
+      "option_type_filtering": "not applicable",
+      "ordering_method": "none",
+      "premium_oi_filtering": "none",
+      "preserves_actual_contract_identity": true,
+      "required_correction": "no immediate defect because this path does not generate candidate contracts",
+      "risk_classification": "MONITOR",
+      "start_end_handling": "numeric boundary/reference calculation only",
+      "strategy_scope": [
+        "S21/S23 formula references"
+      ],
+      "strike_construction_method": "none"
+    },
+    {
+      "classification": "DESCRIPTIVE_METADATA_ONLY",
+      "expiry_filtering": "read-only display",
+      "file": "src/tfis/dashboard/operator_dashboard.py",
+      "fixed_spacing_assumed": false,
+      "function": "S23 strike-factor and audit rendering helpers",
+      "input_source": "strategy evidence and selected contract reports",
+      "option_type_filtering": "read-only display",
+      "ordering_method": "none",
+      "premium_oi_filtering": "read-only display",
+      "preserves_actual_contract_identity": true,
+      "required_correction": "none",
+      "risk_classification": "SAFE",
+      "start_end_handling": "describes workbook formulas and selected evidence",
+      "strategy_scope": [
+        "dashboard/read projection"
+      ],
+      "strike_construction_method": "none"
+    },
+    {
+      "classification": "LEGACY_OR_DEAD_CODE",
+      "expiry_filtering": "static near/next examples",
+      "file": "src/tfis/adapters/phase5d/s21_first_branch.py",
+      "fixed_spacing_assumed": false,
+      "function": "_contract_selection_report / _candidate",
+      "input_source": "static synthetic report evidence, not runtime option chain",
+      "option_type_filtering": "static call/put examples",
+      "ordering_method": "static report ordering",
+      "premium_oi_filtering": "static examples",
+      "preserves_actual_contract_identity": false,
+      "required_correction": "none in this milestone",
+      "risk_classification": "NON_RUNTIME",
+      "start_end_handling": "source-closure documentation only",
+      "strategy_scope": [
+        "S21 first-branch synthetic certification only"
+      ],
+      "strike_construction_method": "prebuilt static candidate contracts"
+    }
+  ],
+  "schema_version": "tfis.contract_selection.strike_traversal_audit.v1"
+}

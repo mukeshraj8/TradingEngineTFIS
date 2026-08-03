@@ -1,0 +1,32 @@
+{
+  "captured_at": "2026-08-03T23:59:00+05:30",
+  "external_broker_order_authority": "NONE",
+  "reservation_events": [
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "case": "partial_open_then_second_processed",
+      "final_active_order_reservation": "120000",
+      "final_available_margin": "180000",
+      "final_reserved_margin": "120000",
+      "ordered_intent_ids": [
+        "intent:reliance",
+        "intent:tcs"
+      ]
+    },
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "case": "first_rejected_then_reservation_released",
+      "final_active_order_reservation": "0",
+      "final_available_margin": "180000",
+      "final_reserved_margin": "0",
+      "first_final_state": "REJECTED_INTERNAL",
+      "first_reservation_released": true,
+      "ordered_intent_ids": [
+        "intent:reliance-reject",
+        "intent:tcs-after-reject"
+      ]
+    }
+  ],
+  "schema_version": "s22.multi_stock.margin_reservation_lifecycle.v1",
+  "verdict": "RESERVATION_LIFECYCLE_PROVED"
+}

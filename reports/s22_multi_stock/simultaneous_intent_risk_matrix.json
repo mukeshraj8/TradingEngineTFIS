@@ -12,11 +12,11 @@
     "maximum_concurrent_positions": 3,
     "maximum_new_entries_per_session": 3
   },
-  "priority_rule": "NOT_DEFINED_BY_AUTHORITY",
-  "reason": "The generic account/risk envelope exists, but no authoritative simultaneous acceptance priority between qualifying S22 stocks has been approved.",
+  "priority_rule": "GLOBAL_SEQUENTIAL_ACCOUNT_ACCEPTANCE_RULE",
+  "reason": "Focused internal-paper validation now proves that same-account qualifying intents can be processed through a deterministic sequential queue with per-order effective-margin checks and post-response reservation reconciliation. No strategy or instrument has inherent business priority. RELIANCE remains the only enabled baseline S22 stock for the next unified-session certification; approved TCS and INFY activation is deferred until that baseline pass is complete.",
   "rejected_intents": [],
-  "rejection_reason": "BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY",
-  "result": "BLOCKED_SIMULTANEOUS_ACCEPTANCE_PRIORITY",
-  "schema_version": "s22.multi_stock.simultaneous_intent_risk_matrix.v2",
+  "rejection_reason": null,
+  "result": "SEQUENTIAL_ACCEPTANCE_PROVED_INTERNAL_PAPER",
+  "schema_version": "s22.multi_stock.simultaneous_intent_risk_matrix.v3",
   "strategy_policy_mutation": "NONE"
 }

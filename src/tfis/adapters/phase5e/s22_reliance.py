@@ -3,13 +3,17 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, fields, is_dataclass, replace
 from datetime import date, datetime, time, timedelta
-from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 from zoneinfo import ZoneInfo
 
 from tfis.accounting.builders import PnLFactBuilder, TradeFactBuilder, build_accounting_result
 from tfis.accounting.models import AccountingQuality, ChargeEvidence, InstrumentDimensions
+from tfis.contract_selection import (
+    ActualOptionChainQualityCode,
+    build_actual_option_chain_traversal,
+)
 from tfis.domain.effective_execution_plan import (
     EffectiveExecutionPath,
     EffectiveExecutionPlan,
@@ -82,7 +86,6 @@ APS_RULE_ID = "GLOBAL.OPTION_SELLING.APS_NOT_APPLICABLE_ONE_LOT.001"
 CONFIGURED_LOTS = 1
 LOT_SIZE = 500
 EXCHANGE_QUANTITY = 500
-STRIKE_INTERVAL = Decimal("20")
 TICK_SIZE = Decimal("0.05")
 MULTIPLIER = Decimal("1")
 CURRENCY = "INR"
@@ -590,16 +593,23 @@ def _contract_selection_report(
     return payload | {"contract_selection_hash": _report_hash(payload)}
 
 
-def _evaluate_branch_contracts(fixture: Mapping[str, Any], market_structure: Mapping[str, Any], spec: S22BranchSpec, *, force_near_fail: bool = False) -> dict[str, Any]:
+def _evaluate_branch_contracts(
+    fixture: Mapping[str, Any],
+    market_structure: Mapping[str, Any],
+    spec: S22BranchSpec,
+    *,
+    underlying_symbol: str = "RELIANCE",
+    metadata_version: str = "fyers-symbol-master:NSEFO:2026-08-02",
+    force_near_fail: bool = False,
+) -> dict[str, Any]:
     references = {key: Decimal(value) for key, value in market_structure["references"].items()}
     near = date.fromisoformat(fixture["expiry_classification"]["near_monthly_expiry"])
     next_expiry = date.fromisoformat(fixture["expiry_classification"]["next_monthly_expiry"])
-    start = _strike_start(spec, references)
-    end = _strike_end(spec, references)
-    strikes = _strike_range(start, end, spec.traversal)
     min_oi = CONFIGURED_LOTS * LOT_SIZE * Decimal("100")
     ideal = (references[spec.premium_reference] * spec.ideal_premium_pct / Decimal("100")).quantize(Decimal("0.001"))
     minimum = (references[spec.premium_reference] * spec.minimum_premium_pct / Decimal("100")).quantize(Decimal("0.001"))
+    start_reference = (references[spec.start_reference] * (Decimal("1") + (spec.start_buffer_pct / Decimal("100")))).quantize(Decimal("0.001"))
+    end_reference = references[spec.end_reference].quantize(Decimal("0.001"))
 
     expiry_attempts = []
     selected = None
@@ -609,10 +619,13 @@ def _evaluate_branch_contracts(fixture: Mapping[str, Any], market_structure: Map
             spec,
             expiry,
             expiry_kind,
-            strikes,
+            start_reference,
+            end_reference,
             ideal,
             minimum,
             min_oi,
+            underlying_symbol=underlying_symbol,
+            metadata_version=metadata_version,
             force_all_fail=force_near_fail and expiry_kind == "NEAR",
         )
         expiry_attempts.append(evaluated)
@@ -624,9 +637,11 @@ def _evaluate_branch_contracts(fixture: Mapping[str, Any], market_structure: Map
         "option_type": spec.option_type,
         "source_cells": spec.source_cells,
         "workbook_row_id": spec.workbook_row_id,
-        "start_strike": str(start),
-        "end_strike": str(end),
-        "strike_candidates": [str(item) for item in strikes],
+        "start_reference_strike": str(start_reference),
+        "end_reference_strike": str(end_reference),
+        "start_strike": selected["resolved_start_strike"] if selected else None,
+        "end_strike": selected["resolved_end_strike"] if selected else None,
+        "strike_candidates": selected["strike_candidates"] if selected else [],
         "ideal_premium": str(ideal),
         "minimum_premium": str(minimum),
         "minimum_oi_exchange_units": str(min_oi),
@@ -634,6 +649,7 @@ def _evaluate_branch_contracts(fixture: Mapping[str, Any], market_structure: Map
         "selected_expiry_kind": selected["expiry_kind"] if selected else None,
         "selected_contract": selected["selected_contract"] if selected else None,
         "qualification_phase": selected["qualification_phase"] if selected else None,
+        "option_chain_quality": selected["option_chain_quality"] if selected else [],
         "expiry_attempts": expiry_attempts,
     }
 
@@ -643,34 +659,47 @@ def _evaluate_expiry_contracts(
     spec: S22BranchSpec,
     expiry: date,
     expiry_kind: str,
-    strikes: tuple[Decimal, ...],
+    start_reference: Decimal,
+    end_reference: Decimal,
     ideal: Decimal,
     minimum: Decimal,
     min_oi: Decimal,
     *,
+    underlying_symbol: str,
+    metadata_version: str,
     force_all_fail: bool = False,
 ) -> dict[str, Any]:
-    contracts = {
-        Decimal(str(contract["strike"])): contract
-        for contract in _all_contracts(fixture)
-        if contract["expiry"] == expiry.isoformat() and contract["option_type"] == spec.option_type
-    }
+    traversal = build_actual_option_chain_traversal(
+        _all_contracts(fixture),
+        expected_underlying=underlying_symbol,
+        expiry=expiry,
+        option_type=spec.option_type,
+        traversal_direction=spec.traversal,
+        start_reference_strike=start_reference,
+        start_round_mode=spec.round_start,
+        end_reference_strike=end_reference,
+        end_round_mode=spec.round_end,
+        end_offset_steps=spec.end_offset_strikes,
+        exchange="NSE",
+        metadata_version=metadata_version,
+        chain_quality_flags=_chain_quality_flags(fixture, expiry),
+    )
     rejected: list[dict[str, Any]] = []
     minimum_candidate = None
-    for strike in strikes:
-        contract = contracts.get(strike)
-        if contract is None:
-            rejected.append({"strike": str(strike), "reason": "MISSING_STRIKE_OR_WRONG_OPTION_TYPE"})
-            continue
-        premium = Decimal(str(contract["ltp"]))
-        oi = Decimal(str(contract["oi"]))
+    for contract_entry in traversal.contracts:
+        contract = contract_entry.raw_contract
+        premium = Decimal(str(contract_entry.ltp))
+        oi = Decimal(str(contract_entry.oi)) if contract_entry.oi is not None else None
         if force_all_fail:
             rejected.append(_rejection(contract, "FORCED_NEAR_FAIL_TEST"))
             continue
-        if contract.get("quote_timestamp") is None:
+        if contract_entry.quote_timestamp is None:
             freshness = "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE"
         else:
             freshness = "SOURCE_TIMESTAMP_AVAILABLE"
+        if oi is None:
+            rejected.append(_rejection(contract, "OI_MISSING", freshness=freshness))
+            continue
         if oi < min_oi:
             rejected.append(_rejection(contract, "OI_BELOW_MINIMUM", freshness=freshness))
             continue
@@ -681,12 +710,15 @@ def _evaluate_expiry_contracts(
                 "expiry": expiry.isoformat(),
                 "qualification_phase": "IDEAL_PREMIUM",
                 "selected_contract": _selected_contract_dict(contract, premium, oi, freshness),
-                "rejected_candidates": rejected,
+                "rejected_candidates": rejected + list(traversal.rejected_contracts),
+                "resolved_start_strike": str(traversal.resolved_start_strike) if traversal.resolved_start_strike is not None else None,
+                "resolved_end_strike": str(traversal.resolved_end_strike) if traversal.resolved_end_strike is not None else None,
+                "strike_candidates": [str(item) for item in traversal.ordered_candidate_strikes],
+                "option_chain_quality": [item.value for item in traversal.quality_codes],
             }
         if premium >= minimum and minimum_candidate is None:
             minimum_candidate = (contract, premium, oi, freshness)
-        else:
-            rejected.append(_rejection(contract, "PREMIUM_BELOW_MINIMUM", freshness=freshness))
+        rejected.append(_rejection(contract, "IDEAL_PREMIUM_NOT_MET", freshness=freshness))
     if minimum_candidate is not None:
         contract, premium, oi, freshness = minimum_candidate
         return {
@@ -695,15 +727,25 @@ def _evaluate_expiry_contracts(
             "expiry": expiry.isoformat(),
             "qualification_phase": "MINIMUM_PREMIUM",
             "selected_contract": _selected_contract_dict(contract, premium, oi, freshness),
-            "rejected_candidates": rejected,
+            "rejected_candidates": rejected + list(traversal.rejected_contracts),
+            "resolved_start_strike": str(traversal.resolved_start_strike) if traversal.resolved_start_strike is not None else None,
+            "resolved_end_strike": str(traversal.resolved_end_strike) if traversal.resolved_end_strike is not None else None,
+            "strike_candidates": [str(item) for item in traversal.ordered_candidate_strikes],
+            "option_chain_quality": [item.value for item in traversal.quality_codes],
         }
+    if not traversal.contracts and ActualOptionChainQualityCode.EMPTY_CHAIN in traversal.quality_codes:
+        rejected.append({"reason": "OPTION_CHAIN_EMPTY"})
     return {
         "decision": "NO_QUALIFYING_CONTRACT",
         "expiry_kind": expiry_kind,
         "expiry": expiry.isoformat(),
         "qualification_phase": None,
         "selected_contract": None,
-        "rejected_candidates": rejected,
+        "rejected_candidates": rejected + list(traversal.rejected_contracts),
+        "resolved_start_strike": str(traversal.resolved_start_strike) if traversal.resolved_start_strike is not None else None,
+        "resolved_end_strike": str(traversal.resolved_end_strike) if traversal.resolved_end_strike is not None else None,
+        "strike_candidates": [str(item) for item in traversal.ordered_candidate_strikes],
+        "option_chain_quality": [item.value for item in traversal.quality_codes],
     }
 
 
@@ -1472,30 +1514,19 @@ def _trace_entry_dict(entry: Any) -> dict[str, Any]:
     return _jsonable(entry)
 
 
-def _strike_start(spec: S22BranchSpec, refs: Mapping[str, Decimal]) -> Decimal:
-    value = refs[spec.start_reference] * (Decimal("1") + (spec.start_buffer_pct / Decimal("100")))
-    return _round_to_interval(value, STRIKE_INTERVAL, spec.round_start)
-
-
-def _strike_end(spec: S22BranchSpec, refs: Mapping[str, Decimal]) -> Decimal:
-    value = _round_to_interval(refs[spec.end_reference], STRIKE_INTERVAL, spec.round_end)
-    return value + (STRIKE_INTERVAL * Decimal(spec.end_offset_strikes))
-
-
-def _round_to_interval(value: Decimal, interval: Decimal, mode: str) -> Decimal:
-    quotient = value / interval
-    rounding = ROUND_CEILING if mode == "UP" else ROUND_FLOOR
-    return (quotient.to_integral_value(rounding=rounding) * interval).quantize(Decimal("1"))
-
-
-def _strike_range(start: Decimal, end: Decimal, traversal: str) -> tuple[Decimal, ...]:
-    step = -STRIKE_INTERVAL if traversal.startswith("DESC") else STRIKE_INTERVAL
-    values: list[Decimal] = []
-    current = start
-    while (step < 0 and current >= end) or (step > 0 and current <= end):
-        values.append(current)
-        current += step
-    return tuple(values)
+def _chain_quality_flags(fixture: Mapping[str, Any], expiry: date) -> tuple[str, ...]:
+    for chain in fixture["option_chains"]:
+        payload = chain["payload"]
+        requested_expiry = payload.get("requested_expiry")
+        if requested_expiry is None:
+            requested_expiry = chain.get("expiry") or payload.get("expiry")
+        if requested_expiry is None:
+            contracts = payload.get("contracts", ())
+            if contracts:
+                requested_expiry = contracts[0].get("expiry")
+        if requested_expiry == expiry.isoformat():
+            return tuple(payload.get("warnings", ()))
+    return ()
 
 
 def _rejection(contract: Mapping[str, Any], reason: str, *, freshness: str | None = None) -> dict[str, Any]:
@@ -1512,9 +1543,12 @@ def _rejection(contract: Mapping[str, Any], reason: str, *, freshness: str | Non
 
 
 def _selected_contract_dict(contract: Mapping[str, Any], premium: Decimal, oi: Decimal, freshness: str) -> dict[str, Any]:
+    underlying = str(contract.get("underlying") or "UNKNOWN")
+    if underlying.endswith("-EQ"):
+        underlying = underlying[:-3]
     return {
         "symbol": contract["symbol"],
-        "underlying": "RELIANCE",
+        "underlying": underlying,
         "expiry": contract["expiry"],
         "strike": str(contract["strike"]),
         "option_type": contract["option_type"],

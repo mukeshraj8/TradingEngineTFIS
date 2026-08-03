@@ -94,7 +94,7 @@ instances:
     risk_allocation:
       max_positions: 1
       max_margin_usage_pct: 20
-    operator_approval_status: NOT_APPROVED
+    operator_approval_status: APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION
     evidence_quality: LIVE_FYERS_READ_ONLY_CAPTURE
     source_reports:
       summary: reports/s22_multi_stock/s22_multi_stock_summary.md
@@ -119,7 +119,7 @@ instances:
     risk_allocation:
       max_positions: 1
       max_margin_usage_pct: 20
-    operator_approval_status: NOT_APPROVED
+    operator_approval_status: APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION
     evidence_quality: LIVE_FYERS_READ_ONLY_CAPTURE
     source_reports:
       summary: reports/s22_multi_stock/s22_multi_stock_summary.md

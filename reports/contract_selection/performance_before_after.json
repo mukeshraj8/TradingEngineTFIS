@@ -1,0 +1,33 @@
+{
+  "benchmark": "fixture-backed bounded local selection micro-benchmark",
+  "rows": [
+    {
+      "actual_candidate_count_after": 15,
+      "provider_calls_after_per_planning_cycle": 2,
+      "provider_calls_before_per_planning_cycle": 2,
+      "selection_runtime_after_ms_per_1000_iterations": 9635.955,
+      "selection_runtime_before_ms_per_1000_iterations": 5.172,
+      "symbol": "RELIANCE",
+      "synthetic_candidate_count_before": 9
+    },
+    {
+      "actual_candidate_count_after": 13,
+      "provider_calls_after_per_planning_cycle": 2,
+      "provider_calls_before_per_planning_cycle": 2,
+      "selection_runtime_after_ms_per_1000_iterations": 8038.575,
+      "selection_runtime_before_ms_per_1000_iterations": 7.059,
+      "symbol": "TCS",
+      "synthetic_candidate_count_before": 13
+    },
+    {
+      "actual_candidate_count_after": 11,
+      "provider_calls_after_per_planning_cycle": 2,
+      "provider_calls_before_per_planning_cycle": 2,
+      "selection_runtime_after_ms_per_1000_iterations": 4503.87,
+      "selection_runtime_before_ms_per_1000_iterations": 4.333,
+      "symbol": "INFY",
+      "synthetic_candidate_count_before": 7
+    }
+  ],
+  "schema_version": "tfis.contract_selection.performance_before_after.v1"
+}

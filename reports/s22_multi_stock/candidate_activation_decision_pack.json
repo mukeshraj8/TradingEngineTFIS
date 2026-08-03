@@ -1,25 +1,25 @@
 {
   "candidates": {
     "INFY": {
-      "account_risk_impact": "NOT_EVALUATED_FOR_ENABLEMENT_WHILE_STRIKE_TRAVERSAL_REMAINS_UNSAFE",
-      "dashboard_result": "CANDIDATE_ROW_SUPPORTED_AS_DISABLED_WITH_WARNING",
-      "deterministic_fan_out_result": "BLOCKED_BY_CONTRACT_SELECTION_EVIDENCE",
+      "account_risk_impact": "NO_POLICY_MUTATION; same-account sequential acceptance and margin reservation rules apply exactly as for RELIANCE/TCS",
+      "dashboard_result": "CANDIDATE_ROW_SUPPORTED_AS_DISABLED",
+      "deterministic_fan_out_result": "ACTUAL_STRIKE_TRAVERSAL_PROVED",
       "history_monthly_status_quality": "READY",
       "lot_size": 400,
-      "metadata_status": "BLOCKED_STRIKE_INTERVAL_EVIDENCE",
+      "metadata_status": "METADATA_READY_CONDITIONAL",
       "option_chain_quality": [
         {
-          "contract_count": 109,
+          "contract_count": 53,
           "expiry": "2026-08-25",
-          "oi_available_contracts": 69,
-          "premium_available_contracts": 105,
+          "oi_available_contracts": 53,
+          "premium_available_contracts": 53,
           "status": "SUCCESS"
         },
         {
-          "contract_count": 90,
+          "contract_count": 45,
           "expiry": "2026-09-29",
-          "oi_available_contracts": 34,
-          "premium_available_contracts": 86,
+          "oi_available_contracts": 45,
+          "premium_available_contracts": 45,
           "status": "SUCCESS"
         }
       ],
@@ -27,11 +27,29 @@
         "oi_available_contracts": 103,
         "premium_available_contracts": 191
       },
-      "recommendation": "BLOCKED_CONTRACT_SELECTION",
+      "recommendation": "APPROVED_KEEP_DISABLED_UNTIL_BASELINE_UNIFIED_CERTIFICATION",
       "remaining_gap": [
-        "BLOCKED_STRIKE_INTERVAL_EVIDENCE",
-        "SAFE_STRIKE_TRAVERSAL_NOT_PROVED"
+        "BASELINE_UNIFIED_SESSION_CERTIFICATION_PENDING"
       ],
+      "selected_branch": "BEAR_CALL",
+      "selected_contract": {
+        "ask": "51.25",
+        "bid": "51.05",
+        "expiry": "2026-08-25",
+        "lot_size": 400,
+        "ltp": "51",
+        "oi": "1306000",
+        "oi_quality": "AVAILABLE",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "option_type": "CALL",
+        "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+        "quote_timestamp": null,
+        "source_quality": "LIVE_READ_OR_FIXTURE",
+        "strike": "1140",
+        "symbol": "NSE:INFY26AUG1140CE",
+        "tick_size": "0.05",
+        "underlying": "INFY"
+      },
       "strike_interval_observed": [
         5.0,
         15.0,
@@ -39,20 +57,20 @@
         40.0
       ],
       "strike_spacing_resolution": {
-        "authoritative_classification": "RULE_AUTHORITY_UNRESOLVED_FOR_SAFE_TRAVERSAL",
+        "authoritative_classification": "ACTUAL_LISTED_STRIKE_TRAVERSAL_PROVED",
         "observed_structure": [
           5.0,
           15.0,
           20.0,
           40.0
         ],
-        "reason": "The read-only capture proves irregular intervals are present in returned INFY contracts, but does not prove a safe generic traversal rule for contract selection."
+        "reason": "TFIS now traverses the actual listed option-chain contracts and does not invent synthetic strikes."
       }
     },
     "TCS": {
-      "account_risk_impact": "NO_POLICY_MUTATION; simultaneous acceptance priority unresolved",
+      "account_risk_impact": "NO_POLICY_MUTATION; focused internal-paper proof now covers the same-account deterministic sequential queue, margin reservation, warning, and rejection-release path",
       "dashboard_result": "CANDIDATE_ROW_SUPPORTED_AS_DISABLED",
-      "deterministic_fan_out_result": "CONDITIONAL_PRIORITY_BLOCKED",
+      "deterministic_fan_out_result": "CONDITIONAL_SEQUENTIAL_QUEUE_PROVED",
       "history_monthly_status_quality": "READY",
       "lot_size": 225,
       "metadata_status": "METADATA_READY_CONDITIONAL",
@@ -76,10 +94,9 @@
         "oi_available_contracts": 147,
         "premium_available_contracts": 332
       },
-      "recommendation": "KEEP_DISABLED_PENDING_ONE_EXACT_GAP",
+      "recommendation": "APPROVED_KEEP_DISABLED_UNTIL_BASELINE_UNIFIED_CERTIFICATION",
       "remaining_gap": [
-        "SIMULTANEOUS_ACCEPTANCE_PRIORITY_UNRESOLVED",
-        "EXPLICIT_USER_APPROVAL_REQUIRED"
+        "BASELINE_UNIFIED_SESSION_CERTIFICATION_PENDING"
       ],
       "strike_interval_observed": [
         20.0,
@@ -89,6 +106,15 @@
   },
   "captured_at": "2026-08-03T16:55:03.969268+05:30",
   "external_broker_order_authority": "NONE",
-  "schema_version": "s22.multi_stock.candidate_activation_decision_pack.v2",
+  "operator_approval_record": {
+    "approved_disabled_candidates": [
+      "TCS",
+      "INFY"
+    ],
+    "baseline_session_gate": "KEEP_DISABLED_FOR_NEXT_BASELINE_UNIFIED_SESSION_CERTIFICATION",
+    "next_activation_profile": "ENABLE_RELIANCE_TCS_INFY_TOGETHER_AFTER_BASELINE_CERTIFICATION_PASSES",
+    "external_fyers_order_authority": "NONE"
+  },
+  "schema_version": "s22.multi_stock.candidate_activation_decision_pack.v4",
   "stage1_enabled_symbol": "RELIANCE"
 }

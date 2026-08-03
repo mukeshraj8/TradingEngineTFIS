@@ -1,0 +1,9 @@
+{
+  "actual_selected_contract": "NSE:RELIANCE26AUG1260CE",
+  "decision": "SELECTED",
+  "expected_selected_contract": "NSE:RELIANCE26AUG1260CE",
+  "qualification_phase": "IDEAL_PREMIUM",
+  "result": "PASS",
+  "schema_version": "tfis.contract_selection.reliance_regression.v1",
+  "selected_contract_unchanged": true
+}

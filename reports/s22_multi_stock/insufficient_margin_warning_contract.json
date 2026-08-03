@@ -1,0 +1,25 @@
+{
+  "captured_at": "2026-08-03T23:59:00+05:30",
+  "decision": "ORDER_NOT_SUBMITTED_INSUFFICIENT_MARGIN",
+  "external_broker_order_authority": "NONE",
+  "first_order_unchanged": {
+    "execution_intent_id": "intent:reliance-margin",
+    "final_state": "PARTIALLY_FILLED_INTERNAL",
+    "reservation_reconciled": true
+  },
+  "schema_version": "s22.multi_stock.insufficient_margin_warning_contract.v1",
+  "verdict": "WARNING_CONTRACT_PROVED",
+  "warning": {
+    "account": "INTERNAL_PAPER_ACCOUNT_A",
+    "available_margin": "180000",
+    "effective_available_margin": "60000",
+    "execution_intent_id": "intent:tcs-margin",
+    "instrument": "NSE:TCS26AUG4500CE",
+    "operator_guidance": "Do not submit this intent. Review effective available margin, active reservations, and account exposure before retrying in a future cycle.",
+    "reason": "INSUFFICIENT_MARGIN",
+    "required_margin": "100000",
+    "severity": "WARNING",
+    "shortfall": "40000",
+    "strategy_instance_id": "S22_TCS_INTERNAL_PAPER_A"
+  }
+}

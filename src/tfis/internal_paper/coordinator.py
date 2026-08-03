@@ -211,6 +211,18 @@ def margin_after_reservation(snapshot: SimulatedPaperAccountSnapshot, quantity: 
     )
 
 
+def release_margin_after_resolution(snapshot: SimulatedPaperAccountSnapshot, quantity: int) -> SimulatedPaperAccountSnapshot:
+    amount = snapshot.margin_per_quantity * Decimal(quantity)
+    return replace(
+        snapshot,
+        reserved_margin=max(Decimal("0"), snapshot.reserved_margin - amount),
+        released_margin=snapshot.released_margin + amount,
+        available_paper_margin=snapshot.available_paper_margin + amount,
+        active_order_reservation=max(Decimal("0"), snapshot.active_order_reservation - amount),
+        active_order_count=max(0, snapshot.active_order_count - 1),
+    )
+
+
 def position_candidate_from_fill(fill_id: str, position_cycle_id: str | None, quantity_delta: int, fill_price: Decimal) -> PositionCycleUpdateCandidate:
     return PositionCycleUpdateCandidate(
         candidate_id="pc-update-candidate:" + canonical_hash({"fill_id": fill_id})[:24],

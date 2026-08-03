@@ -353,6 +353,35 @@ Strategy-specific branch mapping
 
 This is a platform invariant, not an S21 implementation detail.
 
+### GLOBAL OPTION STRIKE UNIVERSE RULE
+
+TFIS must select options only from actual exchange-listed contracts returned
+by an approved option-chain or instrument-master source.
+
+TFIS must never invent synthetic option contracts using a fixed strike
+interval.
+
+Uneven strike spacing is valid and must be preserved.
+
+Start Strike, End Strike, Last Choice, and traversal direction apply as
+boundaries and ordering over the actual listed strike set.
+
+A calculated or rounded strike is a search reference, not proof that a
+contract exists.
+
+Near and Next expiries must be evaluated independently.
+
+Missing or incomplete chains must fail closed with an explicit quality
+reason.
+
+Strategy code must never hardcode stock-specific strike ladders.
+
+Dashboard, read models, and analytics must preserve actual contract identity
+and evidence quality.
+
+Option-chain refresh must remain efficient and safely cached by source
+identity and version.
+
 ### MULTI-INSTRUMENT STRATEGY RULE
 
 A strategy that supports multiple instruments must use:
@@ -559,6 +588,39 @@ Every generic code change during strategy onboarding must explain:
 - Broker diagnostic snapshots must distinguish configuration health,
   credential-source health, authentication/session health, read health, and
   write authority.
+
+### GLOBAL SEQUENTIAL ACCOUNT ACCEPTANCE RULE
+
+- When multiple valid `ExecutionIntent` values qualify for the same account,
+  TFIS must process them through a deterministic sequential queue.
+- No strategy or instrument has inherent business priority.
+- Before each submission attempt, TFIS must obtain or calculate:
+  - latest broker-observed available margin;
+  - locally reserved margin for accepted but unsettled orders;
+  - effective available margin;
+  - estimated required margin for the current order.
+- If effective available margin is sufficient, the order may continue through
+  the normal authority and broker-submission gates.
+- After each broker response, TFIS must update or reconcile funds, margin
+  reservations, and order state before processing the next intent.
+- If margin is insufficient, TFIS must not submit the order. The outcome is an
+  operational warning, not a system error, and must display:
+  - required margin;
+  - available margin;
+  - shortfall;
+  - account;
+  - strategy;
+  - instrument;
+  - order identity;
+  - reason;
+  - operator guidance.
+- If FYERS rejects an order despite the local margin check, TFIS must preserve
+  and display the sanitized broker rejection response, classify the order as
+  `BROKER_ORDER_REJECTED`, release or reconcile any local margin reservation,
+  and continue safely with unaffected intents.
+- Blind retry is prohibited.
+- Internal paper mode must use the same sequential acceptance model with
+  clearly labelled simulated funds and estimated margin.
 
 Agents must also read and follow `docs/operations/ai_change_agreement.md` and
 `docs/operations/project_rulebook.md`. If a user request conflicts with these
