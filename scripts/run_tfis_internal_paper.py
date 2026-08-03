@@ -10,8 +10,13 @@ SRC_ROOT = REPO_ROOT / "src"
 if str(SRC_ROOT) not in sys.path:
     sys.path.insert(0, str(SRC_ROOT))
 
-from tfis.runtime.multi_strategy import build_unified_runtime_reports, run_live_observation
-from tfis.runtime.multi_strategy import run_complete_session_preflight, run_continuous_supervisor
+from tfis.runtime.multi_strategy import (
+    build_authoritative_readiness_projection,
+    build_unified_runtime_reports,
+    run_complete_session_preflight,
+    run_continuous_supervisor,
+    run_live_observation,
+)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -28,6 +33,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--supervisor-state-root", default="tmp/tfis_supervisor_state")
     parser.add_argument("--dashboard-output-root", default="tmp/tfis_dashboard_v1")
     parser.add_argument("--db-path", default="data/internal_paper/unified_supervisor.sqlite")
+    parser.add_argument("--readiness-report-dir", default="reports/unified_readiness")
     args = parser.parse_args(argv)
     if args.preflight_complete_session:
         result = run_complete_session_preflight(
@@ -36,12 +42,18 @@ def main(argv: list[str] | None = None) -> int:
             report_dir=args.supervisor_report_dir,
             db_path=args.db_path,
         )
+        readiness = build_authoritative_readiness_projection(
+            repo_root=REPO_ROOT,
+            report_dir=REPO_ROOT / args.readiness_report_dir,
+        )
         print(result.verdict)
         if result.reasons:
             print("Reasons:")
             for reason in result.reasons:
                 print(f"- {reason}")
         print(f"Report: {result.report_path}")
+        print(f"Authoritative readiness: {readiness.report_path}")
+        print(f"Clean-start package: {readiness.operator_package_md}")
         return 0 if result.verdict == "READY_FOR_COMPLETE_UNIFIED_SESSION" else 1
     if args.live_observation_only:
         live_dir = f"reports/live_session_{datetime_now_ist().strftime('%Y%m%d')}"

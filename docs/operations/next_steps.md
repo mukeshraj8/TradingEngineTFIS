@@ -6,16 +6,27 @@ way.
 
 ## Immediate Next Priorities
 
-0.65. `READY` Run the unified S21/S22/S23 internal-paper dashboard during the
-   next eligible NSE session. The validation blockers from the interrupted
-   full-suite attempt are closed and
-   `reports/dashboard_v1/market_session_readiness.json` now reports
-   `READY_FOR_UNIFIED_MARKET_SESSION`. Use
+0.66. `NO_GO_UNTIL_CLEARED` Do not start the next full unified
+   pre-market-to-EOD internal-paper session until all three gates are green:
+   FYERS read-only session validation must pass, the existing late-start
+   supervisor PID/lock must be cleared by graceful shutdown, and one fresh
+   before-market-open run must prove the optimized continuous-supervisor cadence
+   on the new code path. Treat
+   `reports/runtime_performance/next_session_readiness.json` and
+   `reports/production_readiness_review_20260803.md` as the governing go/no-go
+   artifacts. Use
+   `reports/unified_readiness/authoritative_readiness_projection.json` as the
+   single operator-facing readiness file produced from those inputs; do not rely
+   on older deterministic green artifacts alone.
+
+0.65. `CONDITIONAL` Run the unified S21/S22/S23 internal-paper dashboard during
+   the next eligible NSE session only after 0.66 is cleared. Use
    `.venv/Scripts/python.exe scripts/run_tfis_internal_paper.py` before the
    session to refresh deterministic certification reports, then
    `.venv/Scripts/python.exe scripts/run_tfis_dashboard.py --serve --port 8766`
    for the local read-only dashboard/API. Keep FYERS order authority `NONE`;
-   the key live gap to replace remains S22 RELIANCE opening/ORPT/RC evidence.
+   the key live gaps to replace remain S22 RELIANCE opening/ORPT/RC evidence
+   and fresh cadence proof for the optimized supervisor path.
 
 0.64. `TODO` Repeat the S22 RELIANCE live-session read-only observation on the
    next eligible NSE trading session, preferably before market open. The next

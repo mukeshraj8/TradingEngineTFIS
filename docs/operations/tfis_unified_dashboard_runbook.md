@@ -97,6 +97,17 @@ Preflight the next complete unified session:
 .\.venv\Scripts\python.exe scripts\run_tfis_internal_paper.py --preflight-complete-session
 ```
 
+This command also refreshes the governing readiness artifacts:
+
+- `reports/unified_readiness/authoritative_readiness_projection.json`
+- `reports/unified_readiness/clean_start_operator_package.json`
+- `reports/unified_readiness/clean_start_operator_package.md`
+
+For the next full session, treat `reports/unified_readiness/authoritative_readiness_projection.json`
+as the authoritative go/no-go file. The older deterministic
+`reports/dashboard_v1/market_session_readiness.json` remains supporting
+evidence only.
+
 Run the continuous unified internal-paper supervisor in the foreground:
 
 ```powershell

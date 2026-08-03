@@ -16,6 +16,7 @@ from tfis.runtime.multi_strategy.supervisor import (
     ContinuousSupervisorConfig,
     SubscriptionOwner,
     UnifiedInternalPaperSupervisor,
+    build_authoritative_readiness_projection,
     run_complete_session_preflight,
 )
 
@@ -75,6 +76,43 @@ def test_complete_session_preflight_is_ready_with_fake_auth_and_clean_db(tmp_pat
     payload = json.loads(result.report_path.read_text(encoding="utf-8"))
     assert payload["verdict"] == "READY_FOR_COMPLETE_UNIFIED_SESSION"
     assert payload["reasons"] == []
+
+
+def test_complete_session_preflight_does_not_require_prebuilt_dashboard_snapshot(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path, include_snapshot=False)
+    db = PersistenceDatabase(tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite")
+    with db.connect() as connection:
+        apply_migrations(connection)
+        connection.commit()
+
+    class _Auth:
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=datetime(2026, 8, 3, 8, 50, tzinfo=IST),
+                status=BrokerSessionStatus.AUTHENTICATED,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    result = run_complete_session_preflight(
+        repo_root=tmp_path,
+        registry_path="config/internal_paper_strategy_instances.yaml",
+        report_dir=tmp_path / "reports" / "live_supervisor",
+        db_path="data/internal_paper/unified_supervisor.sqlite",
+        now_provider=lambda: datetime(2026, 8, 3, 8, 50, tzinfo=IST),
+        auth_factory=lambda _root: _Auth(),
+    )
+
+    payload = json.loads(result.report_path.read_text(encoding="utf-8"))
+    assert result.verdict == "READY_FOR_COMPLETE_UNIFIED_SESSION"
+    assert "DASHBOARD_SNAPSHOT_MISSING" not in payload["reasons"]
 
 
 def test_complete_session_preflight_ignores_stale_pid_metadata(tmp_path: Path) -> None:
@@ -230,21 +268,196 @@ def test_supervisor_skips_no_change_snapshot_checkpoint_and_reports_within_inter
     assert statuses["live_supervisor_reports"] == "SKIPPED_NO_CHANGE"
 
 
-def _write_test_repo_files(root: Path) -> None:
-    (root / "config").mkdir(parents=True, exist_ok=True)
-    (root / "tmp" / "tfis_dashboard_v1" / "api").mkdir(parents=True, exist_ok=True)
-    (root / "reports" / "live_supervisor").mkdir(parents=True, exist_ok=True)
-    (root / "data" / "internal_paper").mkdir(parents=True, exist_ok=True)
-    (root / "tmp" / "tfis_dashboard_v1" / "api" / "snapshot.json").write_text(
+def test_supervisor_reports_stopped_final_state_when_stop_signal_exists_before_cycle(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    now = datetime(2026, 8, 3, 9, 10, tzinfo=IST)
+
+    class _Auth:
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=now,
+                status=BrokerSessionStatus.AUTHENTICATED,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=tmp_path / "reports" / "live_supervisor",
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+        max_iterations=1,
+        poll_seconds=0.01,
+    )
+    config.state_root.mkdir(parents=True, exist_ok=True)
+    (config.state_root / "continuous_unified_supervisor.stop").write_text("", encoding="utf-8")
+
+    supervisor = UnifiedInternalPaperSupervisor(
+        config,
+        now_provider=lambda: now,
+        sleep_fn=lambda _seconds: None,
+        auth_factory=lambda _root: _Auth(),
+    )
+
+    result = supervisor.run()
+
+    assert result.final_state == "STOPPED"
+
+
+def test_supervisor_summary_labels_stored_explicit_preflight_with_original_timestamp(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    now = datetime(2026, 8, 3, 9, 45, tzinfo=IST)
+    report_dir = tmp_path / "reports" / "live_supervisor"
+    (report_dir / "complete_session_preflight.json").write_text(
         json.dumps(
             {
-                "projection_hash": "bootstrap",
-                "system": {"broker_order_authority": "NONE"},
-                "command_centre": {"system_state": "HEALTHY"},
+                "schema_version": "tfis.live_supervisor.complete_session_preflight.v1",
+                "captured_at": "2026-08-03T08:50:00+05:30",
+                "verdict": "READY_FOR_COMPLETE_UNIFIED_SESSION",
+                "reasons": [],
             }
         ),
         encoding="utf-8",
     )
+
+    class _Auth:
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=now,
+                status=BrokerSessionStatus.NETWORK_UNAVAILABLE,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=report_dir,
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+        max_iterations=1,
+        poll_seconds=0.01,
+    )
+    supervisor = UnifiedInternalPaperSupervisor(
+        config,
+        now_provider=lambda: now,
+        sleep_fn=lambda _seconds: None,
+        auth_factory=lambda _root: _Auth(),
+    )
+
+    supervisor.run()
+
+    summary = (report_dir / "continuous_supervisor_summary.md").read_text(encoding="utf-8")
+    preflight = json.loads((report_dir / "complete_session_preflight.json").read_text(encoding="utf-8"))
+
+    assert "Stored Explicit Preflight" in summary
+    assert "2026-08-03T08:50:00+05:30" in summary
+    assert preflight["captured_at"] == "2026-08-03T08:50:00+05:30"
+    assert preflight["source"] == "STORED_EXPLICIT_PREFLIGHT_REPORT"
+    assert preflight["reported_at"] == now.isoformat()
+
+
+def test_authoritative_readiness_projection_prefers_live_preflight_and_runtime_gate(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    (tmp_path / "reports" / "dashboard_v1").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "reports" / "runtime_performance").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "reports" / "live_supervisor").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "tmp" / "tfis_supervisor_state").mkdir(parents=True, exist_ok=True)
+
+    (tmp_path / "reports" / "dashboard_v1" / "market_session_readiness.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "tfis.dashboard_v1.market_session_readiness.v1",
+                "readiness": "READY_FOR_UNIFIED_MARKET_SESSION",
+                "verdict": "TFIS_RUNTIME_VALIDATION_ACCEPT",
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "reports" / "runtime_performance" / "next_session_readiness.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "tfis.runtime_performance.next_session_readiness.v1",
+                "verdict": "BLOCKED_BY_RUNTIME_CADENCE",
+                "reasons": ["Cadence still unproven on fresh before-market-open session."],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "reports" / "live_supervisor" / "complete_session_preflight.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "tfis.live_supervisor.complete_session_preflight.v1",
+                "captured_at": "2026-08-03T08:55:00+05:30",
+                "verdict": "FAIL_CLOSED",
+                "reasons": ["AUTHENTICATION_SESSION_VALIDATION_FAILED"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "tmp" / "tfis_supervisor_state" / "heartbeat.json").write_text(
+        json.dumps(
+            {
+                "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+                "state": "LIVE_OBSERVATION",
+                "timestamp": "2026-08-03T12:37:23.064580+05:30",
+                "late_start_mode": True,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = build_authoritative_readiness_projection(
+        repo_root=tmp_path,
+        report_dir=tmp_path / "reports" / "unified_readiness",
+        now_provider=lambda: datetime(2026, 8, 3, 12, 50, tzinfo=IST),
+    )
+
+    payload = json.loads(result.report_path.read_text(encoding="utf-8"))
+    package = json.loads(result.operator_package_json.read_text(encoding="utf-8"))
+
+    assert result.verdict == "NO_GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION"
+    assert payload["go_for_next_complete_session"] is False
+    assert "AUTHENTICATION_SESSION_VALIDATION_FAILED" in payload["blocking_reasons"]
+    assert "Cadence still unproven on fresh before-market-open session." in payload["blocking_reasons"]
+    assert "DETERMINISTIC_DASHBOARD_READINESS_IS_SUPPORTING_EVIDENCE_ONLY" in payload["warnings"]
+    assert package["commands"][3]["name"] == "run_complete_session_preflight"
+    assert payload["governing_inputs"]["dashboard_market_session_readiness"]["readiness"] == "READY_FOR_UNIFIED_MARKET_SESSION"
+
+
+def _write_test_repo_files(root: Path, *, include_snapshot: bool = True) -> None:
+    (root / "config").mkdir(parents=True, exist_ok=True)
+    (root / "tmp" / "tfis_dashboard_v1" / "api").mkdir(parents=True, exist_ok=True)
+    (root / "reports" / "live_supervisor").mkdir(parents=True, exist_ok=True)
+    (root / "data" / "internal_paper").mkdir(parents=True, exist_ok=True)
+    if include_snapshot:
+        (root / "tmp" / "tfis_dashboard_v1" / "api" / "snapshot.json").write_text(
+            json.dumps(
+                {
+                    "projection_hash": "bootstrap",
+                    "system": {"broker_order_authority": "NONE"},
+                    "command_centre": {"system_state": "HEALTHY"},
+                }
+            ),
+            encoding="utf-8",
+        )
     (root / "config" / "monthly_status_instruments.yaml").write_text(
         "\n".join(
             (

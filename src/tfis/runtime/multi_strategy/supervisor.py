@@ -108,6 +108,14 @@ class CompleteSessionPreflightResult:
 
 
 @dataclass(frozen=True, slots=True)
+class AuthoritativeReadinessProjectionResult:
+    verdict: str
+    report_path: Path
+    operator_package_json: Path
+    operator_package_md: Path
+
+
+@dataclass(frozen=True, slots=True)
 class StageMetric:
     stage: str
     status: str
@@ -242,6 +250,7 @@ class UnifiedInternalPaperSupervisor:
         self.config.state_root.mkdir(parents=True, exist_ok=True)
         self.config.dashboard_output_root.mkdir(parents=True, exist_ok=True)
         self._restore_checkpoint_if_available()
+        final_state = "CREATED"
         try:
             while True:
                 self.iterations += 1
@@ -259,7 +268,8 @@ class UnifiedInternalPaperSupervisor:
                     break
                 self.sleep_fn(max(1.0, self.config.poll_seconds))
             final_now = self.now_provider()
-            final_state = self._state_for_time(final_now)
+            if final_state not in {"STOPPED", "BLOCKED"}:
+                final_state = self._state_for_time(final_now)
             self._write_reports(final_now, final_state, stage_metrics=[])
             return ContinuousSupervisorRunResult(
                 verdict="TFIS_CONTINUOUS_SUPERVISOR_CONDITIONAL",
@@ -808,6 +818,7 @@ class UnifiedInternalPaperSupervisor:
         existing_preflight = self._load_existing_preflight_report()
         preflight_verdict = existing_preflight.get("verdict", "NOT_RUN_IN_HOT_LOOP")
         preflight_reasons = existing_preflight.get("reasons", [])
+        preflight_captured_at = existing_preflight.get("captured_at", "UNKNOWN")
         files = {
             "continuous_supervisor_contract.json": {
                 "schema_version": "tfis.live_supervisor.contract.v1",
@@ -896,10 +907,12 @@ class UnifiedInternalPaperSupervisor:
             },
             "complete_session_preflight.json": {
                 "schema_version": "tfis.live_supervisor.complete_session_preflight.v1",
-                "captured_at": now.isoformat(),
+                "captured_at": preflight_captured_at,
+                "reported_at": now.isoformat(),
                 "session_id": self.session_id,
                 "verdict": preflight_verdict,
                 "reasons": list(preflight_reasons),
+                "source": "STORED_EXPLICIT_PREFLIGHT_REPORT",
             },
             "next_session_startup_plan.json": {
                 "schema_version": "tfis.live_supervisor.next_session_startup_plan.v1",
@@ -944,7 +957,7 @@ class UnifiedInternalPaperSupervisor:
             f"- Dashboard Snapshot: `{self.config.dashboard_output_root / 'api' / 'snapshot.json'}`\n"
             f"- Checkpoint: `{self._checkpoint_path}`\n"
             f"- Late Start Mode: `{self._late_start_mode}`\n"
-            f"- Next-Session Preflight: `{preflight_verdict}`\n"
+            f"- Stored Explicit Preflight: `{preflight_verdict}` (captured `{preflight_captured_at}`)\n"
         )
         (self.config.report_dir / "continuous_supervisor_summary.md").write_text(summary, encoding="utf-8")
         self._last_report_write_at = now
@@ -1206,9 +1219,6 @@ def run_complete_session_preflight(
         reasons.append("DB_INTEGRITY_FAILED")
     if recovery.status.value in {"UNSUPPORTED_SCHEMA", "CORRUPTED_STATE"}:
         reasons.append(f"RECOVERY_{recovery.status.value}")
-    snapshot_path = root / "tmp" / "tfis_dashboard_v1" / "api" / "snapshot.json"
-    if not snapshot_path.exists():
-        reasons.append("DASHBOARD_SNAPSHOT_MISSING")
     if not allow_existing_lock:
         lock_path = root / "tmp" / "tfis_supervisor_state" / "continuous_unified_supervisor.pid.json"
         if _pid_metadata_is_active(lock_path):
@@ -1229,6 +1239,212 @@ def run_complete_session_preflight(
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return CompleteSessionPreflightResult(verdict=verdict, reasons=tuple(reasons), report_path=report_path)
+
+
+def build_authoritative_readiness_projection(
+    *,
+    repo_root: str | Path,
+    report_dir: str | Path,
+    now_provider: Callable[[], datetime] | None = None,
+) -> AuthoritativeReadinessProjectionResult:
+    root = Path(repo_root)
+    report_root = Path(report_dir)
+    report_root.mkdir(parents=True, exist_ok=True)
+    now = (now_provider or (lambda: datetime.now(tz=IST)))()
+
+    dashboard_readiness_path = root / "reports" / "dashboard_v1" / "market_session_readiness.json"
+    runtime_readiness_path = root / "reports" / "runtime_performance" / "next_session_readiness.json"
+    preflight_path = root / "reports" / "live_supervisor" / "complete_session_preflight.json"
+    heartbeat_path = root / "tmp" / "tfis_supervisor_state" / "heartbeat.json"
+    pid_metadata_path = root / "tmp" / "tfis_supervisor_state" / "continuous_unified_supervisor.pid.json"
+
+    dashboard_readiness = _read_json_object(dashboard_readiness_path)
+    runtime_readiness = _read_json_object(runtime_readiness_path)
+    preflight = _read_json_object(preflight_path)
+    heartbeat = _read_json_object(heartbeat_path)
+    pid_metadata = _read_json_object(pid_metadata_path)
+
+    blocking_reasons: list[str] = []
+    warnings: list[str] = []
+
+    preflight_verdict = str(preflight.get("verdict") or "MISSING")
+    preflight_reasons = [str(item) for item in (preflight.get("reasons") or [])]
+    if preflight_verdict != "READY_FOR_COMPLETE_UNIFIED_SESSION":
+        if preflight_reasons:
+            blocking_reasons.extend(preflight_reasons)
+        else:
+            blocking_reasons.append(f"PREFLIGHT_{preflight_verdict}")
+
+    runtime_verdict = str(runtime_readiness.get("verdict") or "MISSING")
+    runtime_reasons = [str(item) for item in (runtime_readiness.get("reasons") or [])]
+    if runtime_verdict != "READY_FOR_COMPLETE_UNIFIED_SESSION":
+        if runtime_reasons:
+            blocking_reasons.extend(runtime_reasons)
+        else:
+            blocking_reasons.append(f"RUNTIME_READINESS_{runtime_verdict}")
+
+    deterministic_readiness = str(dashboard_readiness.get("readiness") or "UNKNOWN")
+    if deterministic_readiness == "READY_FOR_UNIFIED_MARKET_SESSION" and blocking_reasons:
+        warnings.append("DETERMINISTIC_DASHBOARD_READINESS_IS_SUPPORTING_EVIDENCE_ONLY")
+
+    heartbeat_state = str(heartbeat.get("state") or "MISSING")
+    heartbeat_session_id = str(heartbeat.get("session_id") or "UNKNOWN")
+    active_process_lock = _pid_metadata_is_active(pid_metadata_path)
+    if active_process_lock and "DUPLICATE_SUPERVISOR_PROCESS_LOCK_PRESENT" not in blocking_reasons:
+        blocking_reasons.append("DUPLICATE_SUPERVISOR_PROCESS_LOCK_PRESENT")
+    if heartbeat_state == "LIVE_OBSERVATION":
+        warnings.append("CURRENT_SUPERVISOR_SESSION_IS_LATE_START_OBSERVATION_MODE")
+
+    deduped_blocking = list(dict.fromkeys(blocking_reasons))
+    deduped_warnings = list(dict.fromkeys(warnings))
+    verdict = "GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION" if not deduped_blocking else "NO_GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION"
+
+    projection = {
+        "schema_version": "tfis.unified_internal_paper.authoritative_readiness_projection.v1",
+        "captured_at": now.isoformat(),
+        "verdict": verdict,
+        "authority_mode": "INTERNAL_PAPER_ONLY",
+        "external_broker_order_authority": "NONE",
+        "go_for_next_complete_session": verdict == "GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION",
+        "governing_inputs": {
+            "dashboard_market_session_readiness": {
+                "path": str(dashboard_readiness_path),
+                "readiness": deterministic_readiness,
+                "verdict": dashboard_readiness.get("verdict"),
+            },
+            "runtime_next_session_readiness": {
+                "path": str(runtime_readiness_path),
+                "verdict": runtime_verdict,
+                "reasons": runtime_reasons,
+            },
+            "complete_session_preflight": {
+                "path": str(preflight_path),
+                "captured_at": preflight.get("captured_at"),
+                "verdict": preflight_verdict,
+                "reasons": preflight_reasons,
+            },
+            "current_supervisor_heartbeat": {
+                "path": str(heartbeat_path),
+                "state": heartbeat_state,
+                "timestamp": heartbeat.get("timestamp"),
+                "session_id": heartbeat_session_id,
+                "late_start_mode": heartbeat.get("late_start_mode"),
+            },
+            "current_supervisor_pid_metadata": {
+                "path": str(pid_metadata_path),
+                "pid": pid_metadata.get("pid"),
+                "created_at": pid_metadata.get("created_at"),
+                "active_process_lock": active_process_lock,
+            },
+        },
+        "blocking_reasons": deduped_blocking,
+        "warnings": deduped_warnings,
+        "next_required_actions": [
+            "Refresh FYERS read-only authentication until diagnostics return AUTHENTICATED.",
+            "Gracefully stop the current late-start supervisor if it is still active.",
+            "Re-run complete-session preflight and require READY_FOR_COMPLETE_UNIFIED_SESSION.",
+            "Start one fresh before-market-open unified supervisor run on the optimized code path.",
+        ],
+    }
+
+    operator_package = {
+        "schema_version": "tfis.unified_internal_paper.clean_start_operator_package.v1",
+        "captured_at": now.isoformat(),
+        "authoritative_readiness_verdict": verdict,
+        "authority_mode": "INTERNAL_PAPER_ONLY",
+        "external_broker_order_authority": "NONE",
+        "commands": [
+            {
+                "step": 1,
+                "name": "refresh_fyers_token",
+                "command": ".\\.venv\\Scripts\\python.exe scripts\\fyers_token_refresh.py --prepare",
+                "expect": "Token/session prepared for read-only diagnostics.",
+            },
+            {
+                "step": 2,
+                "name": "run_broker_diagnostics",
+                "command": ".\\.venv\\Scripts\\python.exe scripts\\run_broker_diagnostics.py --broker fyers",
+                "expect": "authentication_status=AUTHENTICATED and order_write_status=NOT_AUTHORIZED",
+            },
+            {
+                "step": 3,
+                "name": "graceful_stop_existing_supervisor_if_active",
+                "command": "New-Item -ItemType File -Force tmp\\tfis_supervisor_state\\continuous_unified_supervisor.stop",
+                "expect": "Existing late-start supervisor shuts down cleanly and the active lock clears.",
+            },
+            {
+                "step": 4,
+                "name": "run_complete_session_preflight",
+                "command": ".\\.venv\\Scripts\\python.exe scripts\\run_tfis_internal_paper.py --preflight-complete-session",
+                "expect": "READY_FOR_COMPLETE_UNIFIED_SESSION",
+            },
+            {
+                "step": 5,
+                "name": "start_unified_supervisor",
+                "command": ".\\.venv\\Scripts\\python.exe scripts\\run_tfis_internal_paper.py --continuous-supervisor --poll-seconds 5 --dashboard-port 8766",
+                "expect": "Fresh before-market-open unified supervisor session starts on the optimized path.",
+            },
+            {
+                "step": 6,
+                "name": "start_dashboard",
+                "command": ".\\.venv\\Scripts\\python.exe scripts\\run_tfis_dashboard.py --serve --port 8766",
+                "expect": "Local read-only dashboard available at http://127.0.0.1:8766/index.html",
+            },
+        ],
+        "must_verify": [
+            "reports/unified_readiness/authoritative_readiness_projection.json",
+            "reports/live_supervisor/complete_session_preflight.json",
+            "tmp/tfis_supervisor_state/heartbeat.json",
+            "tmp/tfis_dashboard_v1/api/snapshot.json",
+        ],
+    }
+
+    report_path = report_root / "authoritative_readiness_projection.json"
+    package_json_path = report_root / "clean_start_operator_package.json"
+    package_md_path = report_root / "clean_start_operator_package.md"
+    report_path.write_text(json.dumps(projection, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    package_json_path.write_text(json.dumps(operator_package, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    package_md_path.write_text(_clean_start_operator_package_markdown(operator_package), encoding="utf-8")
+    return AuthoritativeReadinessProjectionResult(
+        verdict=verdict,
+        report_path=report_path,
+        operator_package_json=package_json_path,
+        operator_package_md=package_md_path,
+    )
+
+
+def _read_json_object(path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _clean_start_operator_package_markdown(payload: Mapping[str, Any]) -> str:
+    lines = [
+        "# Clean-Start Operator Package",
+        "",
+        f"- Captured At: `{payload['captured_at']}`",
+        f"- Authoritative Readiness Verdict: `{payload['authoritative_readiness_verdict']}`",
+        f"- External Broker Order Authority: `{payload['external_broker_order_authority']}`",
+        "",
+        "## Commands",
+        "",
+    ]
+    for item in payload["commands"]:
+        lines.extend(
+            [
+                f"{item['step']}. `{item['name']}`",
+                f"   - Command: `{item['command']}`",
+                f"   - Expect: {item['expect']}",
+            ]
+        )
+    lines.extend(["", "## Must Verify", ""])
+    for item in payload["must_verify"]:
+        lines.append(f"- `{item}`")
+    lines.append("")
+    return "\n".join(lines)
 
 
 def _live_instance_result(

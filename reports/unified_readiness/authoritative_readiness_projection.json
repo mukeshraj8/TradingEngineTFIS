@@ -1,0 +1,61 @@
+{
+  "authority_mode": "INTERNAL_PAPER_ONLY",
+  "blocking_reasons": [
+    "AUTHENTICATION_SESSION_VALIDATION_FAILED",
+    "DUPLICATE_SUPERVISOR_PROCESS_LOCK_PRESENT",
+    "Active live process still shows passive publish gaps far above the 5 second configured poll interval.",
+    "Optimized code path is implemented and unit-validated but has not yet been exercised on a real before-market-open session."
+  ],
+  "captured_at": "2026-08-03T12:51:17.292349+05:30",
+  "external_broker_order_authority": "NONE",
+  "go_for_next_complete_session": false,
+  "governing_inputs": {
+    "complete_session_preflight": {
+      "captured_at": "2026-08-03T12:51:16.771846+05:30",
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\live_supervisor\\complete_session_preflight.json",
+      "reasons": [
+        "AUTHENTICATION_SESSION_VALIDATION_FAILED",
+        "DUPLICATE_SUPERVISOR_PROCESS_LOCK_PRESENT"
+      ],
+      "verdict": "FAIL_CLOSED"
+    },
+    "current_supervisor_heartbeat": {
+      "late_start_mode": true,
+      "path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\heartbeat.json",
+      "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+      "state": "LIVE_OBSERVATION",
+      "timestamp": "2026-08-03T12:50:32.669056+05:30"
+    },
+    "current_supervisor_pid_metadata": {
+      "active_process_lock": true,
+      "created_at": "2026-08-03T05:09:05.810712+00:00",
+      "path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\continuous_unified_supervisor.pid.json",
+      "pid": 9704
+    },
+    "dashboard_market_session_readiness": {
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\dashboard_v1\\market_session_readiness.json",
+      "readiness": "READY_FOR_UNIFIED_MARKET_SESSION",
+      "verdict": "TFIS_RUNTIME_VALIDATION_ACCEPT"
+    },
+    "runtime_next_session_readiness": {
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\runtime_performance\\next_session_readiness.json",
+      "reasons": [
+        "Active live process still shows passive publish gaps far above the 5 second configured poll interval.",
+        "Optimized code path is implemented and unit-validated but has not yet been exercised on a real before-market-open session."
+      ],
+      "verdict": "BLOCKED_BY_RUNTIME_CADENCE"
+    }
+  },
+  "next_required_actions": [
+    "Refresh FYERS read-only authentication until diagnostics return AUTHENTICATED.",
+    "Gracefully stop the current late-start supervisor if it is still active.",
+    "Re-run complete-session preflight and require READY_FOR_COMPLETE_UNIFIED_SESSION.",
+    "Start one fresh before-market-open unified supervisor run on the optimized code path."
+  ],
+  "schema_version": "tfis.unified_internal_paper.authoritative_readiness_projection.v1",
+  "verdict": "NO_GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION",
+  "warnings": [
+    "DETERMINISTIC_DASHBOARD_READINESS_IS_SUPPORTING_EVIDENCE_ONLY",
+    "CURRENT_SUPERVISOR_SESSION_IS_LATE_START_OBSERVATION_MODE"
+  ]
+}

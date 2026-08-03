@@ -1,0 +1,51 @@
+{
+  "authoritative_readiness_verdict": "NO_GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION",
+  "authority_mode": "INTERNAL_PAPER_ONLY",
+  "captured_at": "2026-08-03T12:51:17.292349+05:30",
+  "commands": [
+    {
+      "command": ".\\.venv\\Scripts\\python.exe scripts\\fyers_token_refresh.py --prepare",
+      "expect": "Token/session prepared for read-only diagnostics.",
+      "name": "refresh_fyers_token",
+      "step": 1
+    },
+    {
+      "command": ".\\.venv\\Scripts\\python.exe scripts\\run_broker_diagnostics.py --broker fyers",
+      "expect": "authentication_status=AUTHENTICATED and order_write_status=NOT_AUTHORIZED",
+      "name": "run_broker_diagnostics",
+      "step": 2
+    },
+    {
+      "command": "New-Item -ItemType File -Force tmp\\tfis_supervisor_state\\continuous_unified_supervisor.stop",
+      "expect": "Existing late-start supervisor shuts down cleanly and the active lock clears.",
+      "name": "graceful_stop_existing_supervisor_if_active",
+      "step": 3
+    },
+    {
+      "command": ".\\.venv\\Scripts\\python.exe scripts\\run_tfis_internal_paper.py --preflight-complete-session",
+      "expect": "READY_FOR_COMPLETE_UNIFIED_SESSION",
+      "name": "run_complete_session_preflight",
+      "step": 4
+    },
+    {
+      "command": ".\\.venv\\Scripts\\python.exe scripts\\run_tfis_internal_paper.py --continuous-supervisor --poll-seconds 5 --dashboard-port 8766",
+      "expect": "Fresh before-market-open unified supervisor session starts on the optimized path.",
+      "name": "start_unified_supervisor",
+      "step": 5
+    },
+    {
+      "command": ".\\.venv\\Scripts\\python.exe scripts\\run_tfis_dashboard.py --serve --port 8766",
+      "expect": "Local read-only dashboard available at http://127.0.0.1:8766/index.html",
+      "name": "start_dashboard",
+      "step": 6
+    }
+  ],
+  "external_broker_order_authority": "NONE",
+  "must_verify": [
+    "reports/unified_readiness/authoritative_readiness_projection.json",
+    "reports/live_supervisor/complete_session_preflight.json",
+    "tmp/tfis_supervisor_state/heartbeat.json",
+    "tmp/tfis_dashboard_v1/api/snapshot.json"
+  ],
+  "schema_version": "tfis.unified_internal_paper.clean_start_operator_package.v1"
+}

@@ -2,6 +2,30 @@
 
 ## Current Snapshot
 
+- as of Monday, August 3, 2026 at 12:45 IST, a production-readiness review of
+  the complete unified S21/S22/S23 internal-paper platform was completed and
+  recorded under `reports/production_readiness_review_20260803.md`. Verdict:
+  `NO_GO` for the next full pre-market-to-EOD session in the current operator
+  state. Fixed defects: complete-session preflight no longer blocks on a
+  missing prebuilt dashboard snapshot; supervisor terminal results now preserve
+  explicit `STOPPED` and `BLOCKED` states; live-supervisor reports now label
+  preflight as stored explicit evidence with the original capture timestamp
+  rather than rewriting stale readiness as fresh truth. Focused validation
+  passed at `8 passed` for supervisor tests and `8 passed` for dashboard/runtime
+  tests. Remaining blocking conditions are operational rather than new code
+  defects: FYERS session validation currently fails, preflight detects an
+  existing active supervisor lock, and the optimized cadence path still needs
+  one fresh before-market-open complete-session proof. External
+  broker-order/live authority remains `NONE`.
+- the same Monday, August 3, 2026 readiness hardening also unified the
+  conflicting next-session readiness artifacts behind one committed operator
+  output. `scripts/run_tfis_internal_paper.py --preflight-complete-session` now
+  refreshes `reports/unified_readiness/authoritative_readiness_projection.json`
+  plus the matching clean-start package files. This authoritative projection
+  treats explicit complete-session preflight and runtime cadence readiness as
+  governing inputs and demotes the older deterministic dashboard readiness file
+  to supporting evidence only. Runtime/strategy logic and external authority
+  remain unchanged.
 - as of Sunday, August 2, 2026 at 22:05 IST, the
   `CLOSE_UNIFIED_RUNTIME_VALIDATION_BLOCKERS_BEFORE_MARKET_SESSION_RUN`
   milestone is accepted. The selected-contract `None` failure, FYERS timestamp
