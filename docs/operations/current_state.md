@@ -6,6 +6,35 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Sunday, August 2, 2026 at 22:05 IST, the unified runtime validation
+  blockers are closed. The contract-specific lifecycle `selected_contract=None`
+  failure was traced to incomplete deterministic S23 fixture evidence
+  (`TEST_FIXTURE_MISSING_REQUIRED_CONTRACT`) and corrected by adding qualifying
+  option-chain OI/date coverage plus matching contract-intraday rows. The FYERS
+  timestamp mismatch was corrected with a shared timestamp normalization
+  boundary and integer epoch-second provider request timestamps. S23 stale
+  sample expectations were reconciled to accepted Phase 5B/5C outputs. Bounded
+  validation passed, including broad unit batch `1447 passed`, architecture
+  batch `70 passed`, dashboard/runtime batch `11 passed`, FYERS read-only
+  diagnostics `27 passed`, and dashboard smoke cleanup. Market-session readiness
+  is now `READY_FOR_UNIFIED_MARKET_SESSION` for a bounded unified internal-paper
+  run. External broker-order/live authority remains `NONE`.
+- as of Sunday, August 2, 2026, the first unified S21/S22/S23 internal-paper
+  runtime and professional dashboard slice is implemented. The enabled
+  strategy-instance registry is configuration-driven at
+  `config/internal_paper_strategy_instances.yaml` and initially enables
+  `S21/BANKNIFTY`, `S22/RELIANCE`, and `S23/NIFTY` against
+  `INTERNAL_PAPER_ACCOUNT_A`. New generic runtime/read-model/dashboard
+  modules under `src/tfis/runtime/multi_strategy/`,
+  `src/tfis/read_models/operations/`, and `src/tfis/dashboard/` compose the
+  accepted strategy artifacts into a unified deterministic internal-paper
+  projection without adding strategy-specific branch logic to the coordinator
+  and without adding broker write authority. Reports are under
+  `reports/dashboard_v1/`, and the professional static dashboard builds to
+  `tmp/tfis_dashboard_v1/index.html` via `scripts/run_tfis_dashboard.py`.
+  Verdict remains conditional because S22 RELIANCE still needs a real FYERS
+  session for opening/ORPT/RC evidence. External broker-order/live authority:
+  `NONE`.
 - as of Sunday, August 2, 2026 at 14:20 IST, the S22 RELIANCE live-session
   read-only observation gate was evaluated and blocked before any FYERS live
   read because the date is Sunday and no NSE trading session is available.

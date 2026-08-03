@@ -1,0 +1,33 @@
+{
+  "schema_version": "tfis.dashboard_v1.selected_contract_continuity_regression.v1",
+  "verdict": "PASSED",
+  "covered_strategy_instances": [
+    "S21_BANKNIFTY_ACCOUNT_A_INTERNAL_PAPER",
+    "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+    "S23_NIFTY_ACCOUNT_A_INTERNAL_PAPER"
+  ],
+  "covered_scenarios": [
+    "all_three_qualify",
+    "one_strategy_blocked",
+    "rc_and_normal",
+    "one_position_carried",
+    "restart_restore"
+  ],
+  "identity_chain_checked": [
+    "strategy instance",
+    "PreMarketStrategyPlan projection",
+    "ExecutionIntent/read execution projection",
+    "ClientOrder/read order row",
+    "PositionCycle/read position projection",
+    "accounting projection",
+    "dashboard projection",
+    "contract subscription snapshot"
+  ],
+  "fail_closed_case": "Missing deterministic selected_contract raises ValueError before runtime projection is built.",
+  "validation": {
+    "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_multi_strategy_runtime_dashboard_v1.py tests\\architecture\\test_multi_strategy_dashboard_boundaries.py -q --tb=short",
+    "result": "PASSED",
+    "summary": "11 passed"
+  },
+  "external_broker_order_authority": "NONE"
+}

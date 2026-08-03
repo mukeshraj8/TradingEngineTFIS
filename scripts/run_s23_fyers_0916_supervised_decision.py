@@ -30,6 +30,22 @@ DEFAULT_STRATEGIES = (
     "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
 )
 DEFAULT_STRATEGY_ROOT = REPO_ROOT / "config" / "strategies" / "options_sell" / "nifty"
+
+
+def _supervised_decision_process_lock_path(
+    *,
+    artifact_root: Path,
+    session_id_prefix: str,
+    lock_root: Path,
+) -> Path:
+    return paper_morning_supervised_process_lock_path(
+        artifact_root=artifact_root,
+        session_id_prefix=session_id_prefix,
+        lock_root=lock_root,
+        strategy_code="S23",
+    )
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=(
@@ -75,11 +91,10 @@ def main(argv: list[str] | None = None) -> int:
     process_lock_handle: ProcessLockHandle | None = None
     try:
         process_lock_handle = acquire_process_lock(
-            paper_morning_supervised_process_lock_path(
+            _supervised_decision_process_lock_path(
                 artifact_root=Path(args.artifact_root),
                 session_id_prefix=args.session_id_prefix,
                 lock_root=Path(args.process_lock_root),
-                strategy_code="S23",
             ),
             label=f"s23-supervised-decision:{args.session_id_prefix}",
             metadata={

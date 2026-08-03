@@ -1,0 +1,123 @@
+{
+  "schema_version": "tfis.dashboard_v1.validation_summary.v2",
+  "verdict": "TFIS_RUNTIME_VALIDATION_ACCEPT",
+  "market_session_readiness": "READY_FOR_UNIFIED_MARKET_SESSION",
+  "external_broker_order_authority": "NONE",
+  "resolved_blockers": [
+    {
+      "blocker": "contract-specific lifecycle selected_contract unexpectedly None",
+      "classification": "TEST_FIXTURE_MISSING_REQUIRED_CONTRACT",
+      "status": "RESOLVED",
+      "root_cause": "The S23 backtest option-chain fixture did not include OI at or above the 32500 exchange-unit threshold and did not include 2026-05-20 option-chain rows, so option-chain selection failed before lifecycle handoff."
+    },
+    {
+      "blocker": "FYERS option-chain timestamp integer expected but string observed",
+      "classification": "CONTRACT_NORMALIZATION_DEFECT",
+      "status": "RESOLVED",
+      "root_cause": "FYERS adapters had independent timestamp conversion paths and emitted provider expiry timestamps as strings in one path and integers in another."
+    },
+    {
+      "blocker": "S23 start-strike sample mismatches",
+      "classification": "CONTRADICTORY_SAMPLE_FIXTURE_RESOLVED",
+      "status": "RESOLVED",
+      "root_cause": "Four S23 sample expectations were stale against accepted Phase 5B/5C workbook-backed behavior."
+    }
+  ],
+  "validation": {
+    "exact_selected_contract_failure": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\integration\\test_contract_specific_lifecycle_mode.py::test_contract_specific_lifecycle_uses_selected_contract_series_when_available -q --tb=short",
+      "result": "PASSED",
+      "summary": "1 passed"
+    },
+    "exact_fyers_timestamp_failure": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_fyers_adapter.py::test_fyers_adapter_requests_specific_expiry_and_configured_strike_count -q --tb=short",
+      "result": "PASSED",
+      "summary": "1 passed"
+    },
+    "contract_lifecycle_regression": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\integration\\test_contract_specific_lifecycle_mode.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "4 passed"
+    },
+    "timestamp_fyers_regression": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_broker_timestamp_normalization.py tests\\unit\\test_fyers_adapter.py tests\\unit\\test_fyers_read_only_market_data.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "31 passed"
+    },
+    "dashboard_runtime_regression": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_multi_strategy_runtime_dashboard_v1.py tests\\architecture\\test_multi_strategy_dashboard_boundaries.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "11 passed"
+    },
+    "s21_regression": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_s21_all_branches.py tests\\integration\\test_s21_complete_strategy.py tests\\architecture\\test_s21_first_branch_reuse_boundary.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "21 passed"
+    },
+    "s22_regression": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_s22_reliance_contract_selection.py tests\\unit\\test_s22_reliance_time_semantics.py tests\\unit\\test_s22_reliance_accounting.py tests\\integration\\test_s22_reliance_end_to_end.py tests\\architecture\\test_s22_reliance_reuse_boundary.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "15 passed"
+    },
+    "s23_phase_regression": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\integration\\test_phase5b_s23_put_four_branch.py tests\\integration\\test_phase5c_complete_s23_observation.py tests\\architecture\\test_phase5c_observation_boundary.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "26 passed"
+    },
+    "s23_all_branches_and_monthly_selection": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\integration\\test_historical_backtest_monthly_status_mode.py::test_historical_monthly_status_mode_option_chain_selection_reports_selected_contract tests\\unit\\test_s23_all_branches.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "17 passed"
+    },
+    "lifecycle_batch": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\integration\\test_contract_specific_lifecycle_mode.py tests\\integration\\test_historical_backtest_monthly_status_mode.py tests\\integration\\test_historical_backtest_s23_recalculation_mode.py tests\\integration\\test_historical_backtest_s23_current_day_fsl_trp_mode.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "18 passed"
+    },
+    "fyers_read_only_diagnostics": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_broker_authentication_fyers.py tests\\unit\\test_broker_diagnostics_fyers.py tests\\unit\\test_fyers_read_only_market_data.py tests\\architecture\\test_fyers_read_only_authority_boundary.py tests\\architecture\\test_broker_authentication_authority_boundary.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "27 passed"
+    },
+    "order_position_accounting": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_broker_order_idempotency.py tests\\unit\\test_broker_order_state.py tests\\unit\\test_broker_reconciliation.py tests\\unit\\test_broker_abstractions.py tests\\unit\\test_phase4b_broker_read_boundary.py tests\\unit\\test_s22_reliance_accounting.py -q --tb=short",
+      "result": "PASSED",
+      "summary": "36 passed"
+    },
+    "architecture_tests": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\architecture -q --tb=short --maxfail=20",
+      "result": "PASSED",
+      "summary": "70 passed"
+    },
+    "broad_unit_batch": {
+      "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit -q --tb=short --maxfail=20",
+      "result": "PASSED",
+      "summary": "1447 passed in 330.91s"
+    },
+    "strategy_config_validation": {
+      "command": ".venv\\Scripts\\python.exe scripts\\validate_strategy_configs.py",
+      "result": "PASSED",
+      "summary": "All checked strategy configs passed"
+    },
+    "project_validation": {
+      "command": ".venv\\Scripts\\python.exe scripts\\validate_project.py",
+      "result": "PASSED",
+      "summary": "PROJECT VALIDATION PASSED"
+    },
+    "dashboard_smoke": {
+      "command": ".venv\\Scripts\\python.exe scripts\\run_dashboard_v1_smoke.py",
+      "result": "PASSED",
+      "summary": "Health, API, SSE, static dashboard, authority and secret checks passed; process cleanup recorded."
+    }
+  },
+  "not_run": [
+    {
+      "scope": "real market-session workflow",
+      "reason": "Explicitly prohibited by task."
+    },
+    {
+      "scope": "external broker order/paper/live submission",
+      "reason": "Authority remains NONE."
+    }
+  ]
+}

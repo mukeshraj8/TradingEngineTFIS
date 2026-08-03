@@ -1,0 +1,61 @@
+{
+  "schema_version": "tfis.dashboard_v1.fyers_timestamp_normalization_matrix.v1",
+  "canonical_read_boundary": "timezone-aware datetime plus integer epoch_seconds; provider request timestamp uses integer epoch seconds",
+  "source_timezone": "Asia/Kolkata",
+  "cases": [
+    {
+      "case": "integer epoch seconds",
+      "result": "PASSED",
+      "quality": "EPOCH_SECONDS"
+    },
+    {
+      "case": "integer epoch milliseconds",
+      "result": "PASSED",
+      "quality": "EPOCH_MILLISECONDS"
+    },
+    {
+      "case": "numeric string",
+      "result": "PASSED",
+      "quality": "NUMERIC_STRING_SECONDS"
+    },
+    {
+      "case": "ISO-8601 string with timezone",
+      "result": "PASSED",
+      "quality": "ISO_WITH_TIMEZONE"
+    },
+    {
+      "case": "timezone-naive ISO-8601 string",
+      "result": "PASSED",
+      "quality": "ISO_ASSUMED_SOURCE_TIMEZONE"
+    },
+    {
+      "case": "timezone-naive ISO-8601 string with assumption disabled",
+      "result": "PASSED",
+      "failure_classification": "TIMESTAMP_TIMEZONE_AMBIGUOUS"
+    },
+    {
+      "case": "invalid string",
+      "result": "PASSED",
+      "failure_classification": "TIMESTAMP_FORMAT_UNSUPPORTED"
+    },
+    {
+      "case": "null",
+      "result": "PASSED",
+      "failure_classification": "TIMESTAMP_MISSING"
+    },
+    {
+      "case": "boolean",
+      "result": "PASSED",
+      "failure_classification": "MALFORMED_PROVIDER_PAYLOAD"
+    },
+    {
+      "case": "out-of-range timestamp",
+      "result": "PASSED",
+      "failure_classification": "TIMESTAMP_OUT_OF_RANGE"
+    }
+  ],
+  "validation": {
+    "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_broker_timestamp_normalization.py -q --tb=short",
+    "result": "PASSED"
+  }
+}

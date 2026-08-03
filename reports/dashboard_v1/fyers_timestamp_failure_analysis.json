@@ -1,0 +1,37 @@
+{
+  "schema_version": "tfis.dashboard_v1.fyers_timestamp_failure_analysis.v1",
+  "verdict": "RESOLVED",
+  "classification": "CONTRACT_NORMALIZATION_DEFECT",
+  "failing_test": "tests/unit/test_fyers_adapter.py::test_fyers_adapter_requests_specific_expiry_and_configured_strike_count",
+  "endpoint": "FYERS optionchain",
+  "raw_before_fix": {
+    "field": "timestamp",
+    "value": "1782813600",
+    "type": "str"
+  },
+  "expected_normalized_contract": {
+    "field": "timestamp",
+    "value": 1782813600,
+    "type": "int epoch seconds"
+  },
+  "root_cause": "FYERS adapter and FYERS read-only adapter independently converted expiry timestamps, creating string-versus-integer drift.",
+  "correction": [
+    "Added tfis.broker.timestamp_normalization for deterministic provider timestamp normalization.",
+    "FYERS option-chain request timestamps now use integer epoch seconds.",
+    "FYERS read-only option-chain request timestamps now use the same integer epoch representation.",
+    "Raw provider timestamp values are preserved in NormalizedProviderTimestamp.to_dict()."
+  ],
+  "failure_classifications": [
+    "TIMESTAMP_MISSING",
+    "TIMESTAMP_FORMAT_UNSUPPORTED",
+    "TIMESTAMP_OUT_OF_RANGE",
+    "TIMESTAMP_TIMEZONE_AMBIGUOUS",
+    "MALFORMED_PROVIDER_PAYLOAD"
+  ],
+  "post_fix_validation": {
+    "exact_reproduction": "1 passed",
+    "timestamp_and_fyers_batch": "31 passed",
+    "fyers_read_only_diagnostics": "27 passed"
+  },
+  "external_broker_order_authority": "NONE"
+}

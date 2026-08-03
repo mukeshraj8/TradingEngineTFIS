@@ -1,0 +1,39 @@
+{
+  "schema_version": "tfis.dashboard_v1.selected_contract_failure_analysis.v1",
+  "verdict": "RESOLVED",
+  "classification": "TEST_FIXTURE_MISSING_REQUIRED_CONTRACT",
+  "failing_test": "tests/integration/test_contract_specific_lifecycle_mode.py::test_contract_specific_lifecycle_uses_selected_contract_series_when_available",
+  "failing_assertion": "Generator dereferenced option_chain_selection.selected_contract.symbol while selected_contract was None.",
+  "expected_selected_contracts": [
+    "NIFTY_20260528_22100_CE",
+    "NIFTY_20260528_22300_PE"
+  ],
+  "actual_before_fix": {
+    "selected_contract": null,
+    "rejection_reason": "No option-chain contracts meet minimum_oi 32500",
+    "lifecycle_price_source": "generic_option_series",
+    "fallback_reason": "no_selected_contract"
+  },
+  "root_cause": "The deterministic S23 option-chain CSV fixture used OI values around 1200-1550 while the strategy minimum OI was 32500 exchange units, and it omitted 2026-05-20 option-chain rows. Selection failed before plan/lifecycle handoff.",
+  "identity_loss_point": "contract_selection",
+  "not_identity_loss_points": [
+    "plan construction",
+    "serialization",
+    "projection construction",
+    "recovery",
+    "lifecycle handoff",
+    "runtime routing"
+  ],
+  "correction": [
+    "Updated tests/fixtures/backtest/s23_option_chain.csv with qualifying exchange-unit OI values for intended fixture contracts.",
+    "Added 2026-05-20 option-chain rows.",
+    "Added contract-intraday rows for selected fixture symbols lacking lifecycle bars.",
+    "Added dashboard/runtime selected-contract continuity regressions."
+  ],
+  "post_fix_validation": {
+    "exact_reproduction": "1 passed",
+    "contract_specific_lifecycle_file": "4 passed",
+    "lifecycle_batch": "18 passed"
+  },
+  "external_broker_order_authority": "NONE"
+}

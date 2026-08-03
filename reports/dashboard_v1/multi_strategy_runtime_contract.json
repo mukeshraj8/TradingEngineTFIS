@@ -1,0 +1,30 @@
+{
+  "authority": {
+    "broker_sandbox_submission": "NONE",
+    "external_broker_submission": "NONE",
+    "external_order_mutation": "NONE",
+    "external_position_mutation": "NONE",
+    "live_submission": "NONE"
+  },
+  "configuration_driven": true,
+  "enabled_instance_count": 3,
+  "schema_version": "tfis.multi_strategy_runtime_contract.v1",
+  "startup_sequence": [
+    "load_enabled_strategy_registry",
+    "validate_persistence_and_recovery",
+    "run_broker_diagnostics_once_per_broker_account",
+    "restore_carried_positions",
+    "build_premarket_plans",
+    "request_shared_market_subscriptions",
+    "route_immutable_observations",
+    "coordinate_opening_orpt_rc_eod",
+    "validate_execution_intents",
+    "route_accepted_intents_to_account_coordinator",
+    "simulate_internal_paper_orders_and_fills",
+    "update_position_cycles_and_accounting",
+    "emit_dashboard_read_models",
+    "checkpoint_state",
+    "graceful_shutdown"
+  ],
+  "strategy_specific_branch_logic_in_coordinator": false
+}

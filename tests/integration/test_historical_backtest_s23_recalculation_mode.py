@@ -87,8 +87,11 @@ def _find_eval(
     *,
     branch_unique_code: str,
     entry_missed: bool | None = None,
+    timestamp: str | None = None,
 ) -> dict[str, object]:
     for evaluation in report["evaluations"]:
+        if timestamp is not None and evaluation["timestamp"] != timestamp:
+            continue
         audit = evaluation["validation"].get("s23_recalculation")
         if not isinstance(audit, dict):
             continue
@@ -98,7 +101,7 @@ def _find_eval(
             continue
         return evaluation
     raise AssertionError(
-        f"Could not find evaluation for branch {branch_unique_code} with entry_missed={entry_missed}"
+        f"Could not find evaluation for branch {branch_unique_code} with entry_missed={entry_missed} timestamp={timestamp}"
     )
 
 
@@ -149,7 +152,7 @@ def test_default_historical_monthly_status_backtest_is_unchanged_without_flag(
     )
 
     assert "enable_s23_recalculation" not in report
-    assert report["metrics"]["total_evaluations"] == 10
+    assert report["metrics"]["total_evaluations"] == 12
     assert report["evaluations"][0]["trade_outputs"]["entry_price"] == pytest.approx(197.95)
     assert "s23_recalculation" not in report["evaluations"][0]["validation"]
 
@@ -206,9 +209,9 @@ def test_recalculation_mode_uses_spot_intraday_csv_when_provided(
     assert audit["recalculation_spot_snapshot_source"] == "spot_intraday_csv"
     assert audit["orpt_snapshot"]["spot_high"] == pytest.approx(22520.0)
     assert audit["recalculation_snapshot"]["spot_high"] == pytest.approx(22850.0)
-    assert audit["recalculated_trade_plan"]["start_strike"] == 21708
+    assert audit["recalculated_trade_plan"]["start_strike"] == 22576
     assert audit["recalculated_trade_plan"]["end_strike"] == 22851
-    assert evaluation["trade_outputs"]["start_strike"] == 21708
+    assert evaluation["trade_outputs"]["start_strike"] == 22576
 
 
 def test_recalculation_mode_keeps_base_plan_when_entry_is_not_missed(

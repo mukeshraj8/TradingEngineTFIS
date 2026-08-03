@@ -1,0 +1,25 @@
+{
+  "schema_version": "tfis.dashboard_v1.market_session_readiness.v1",
+  "readiness": "READY_FOR_UNIFIED_MARKET_SESSION",
+  "verdict": "TFIS_RUNTIME_VALIDATION_ACCEPT",
+  "entry_criteria": {
+    "selected_contract_none_failure_resolved": true,
+    "timestamp_mismatch_resolved": true,
+    "no_unexplained_common_path_failure": true,
+    "s21_s22_s23_focused_tests_pass": true,
+    "dashboard_runtime_tests_pass": true,
+    "fyers_read_only_diagnostics_pass": true,
+    "persistence_and_process_cleanup_pass": true,
+    "external_broker_order_authority": "NONE"
+  },
+  "remaining_non_blocking_gap": {
+    "classification": "S22_LIVE_EVIDENCE_PENDING",
+    "description": "S22 RELIANCE still needs real opening/ORPT/RC evidence during the next eligible session."
+  },
+  "prohibited_in_this_task": [
+    "real market-session workflow was not run",
+    "dashboard server was not left running",
+    "external broker-order authority was not added"
+  ],
+  "recommended_next_action": "run unified S21/S22/S23 internal paper during the next eligible session"
+}

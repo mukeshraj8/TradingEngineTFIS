@@ -33,7 +33,7 @@ BRANCH_CASES = {
             "stoploss_formula": "M163",
         },
         "expected": {
-            "start_strike": 23100,
+            "start_strike": 22250,
             "end_strike": 21950,
             "ideal_premium": 264.0,
             "minimum_premium": 198.0,
@@ -59,7 +59,7 @@ BRANCH_CASES = {
             "stoploss_formula": "M166",
         },
         "expected": {
-            "start_strike": 21400,
+            "start_strike": 22250,
             "end_strike": 22550,
             "ideal_premium": 270.0,
             "minimum_premium": 202.5,
@@ -85,7 +85,7 @@ BRANCH_CASES = {
             "stoploss_formula": "M169",
         },
         "expected": {
-            "start_strike": 22950,
+            "start_strike": 22150,
             "end_strike": 21850,
             "ideal_premium": 262.8,
             "minimum_premium": 197.1,
@@ -111,7 +111,7 @@ BRANCH_CASES = {
             "stoploss_formula": "M172",
         },
         "expected": {
-            "start_strike": 21500,
+            "start_strike": 22350,
             "end_strike": 22650,
             "ideal_premium": 271.2,
             "minimum_premium": 203.4,

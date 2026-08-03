@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TFIS Operations</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">TFIS Internal Paper</p>
+      <h1>Command Centre</h1>
+    </div>
+    <div class="top-actions">
+      <button id="themeToggle" type="button" aria-label="Toggle theme">Theme</button>
+      <span id="authorityBadge" class="badge">Broker order authority: NONE</span>
+    </div>
+  </header>
+  <nav class="tabs" aria-label="Dashboard sections">
+    <a href="#command">Command Centre</a>
+    <a href="#strategies">Strategies</a>
+    <a href="#premarket">Pre-Market</a>
+    <a href="#orders">Orders</a>
+    <a href="#positions">Positions</a>
+    <a href="#accounts">Accounts</a>
+    <a href="#risk">Risk</a>
+    <a href="#analytics">Analytics</a>
+    <a href="#alerts">Alerts</a>
+    <a href="#audit">Audit</a>
+    <a href="#settings">Settings</a>
+  </nav>
+  <main>
+    <section id="command" class="section">
+      <div id="statusGrid" class="metric-grid"></div>
+    </section>
+    <section id="strategies" class="section">
+      <div class="section-title">
+        <h2>Strategies</h2>
+        <input id="strategyFilter" type="search" placeholder="Filter strategy, instrument, stage">
+      </div>
+      <div class="table-wrap"><table id="strategyTable"></table></div>
+    </section>
+    <section id="premarket" class="section">
+      <div class="section-title"><h2>Pre-Market</h2></div>
+      <div class="table-wrap"><table id="premarketTable"></table></div>
+    </section>
+    <section id="orders" class="section">
+      <div class="section-title"><h2>Orders</h2></div>
+      <div class="table-wrap"><table id="ordersTable"></table></div>
+    </section>
+    <section id="positions" class="section">
+      <div class="section-title"><h2>Positions</h2></div>
+      <div class="table-wrap"><table id="positionsTable"></table></div>
+    </section>
+    <section id="accounts" class="section two-col">
+      <div><h2>Accounts</h2><div id="accountsPanel" class="panel-list"></div></div>
+      <div id="risk"><h2>Risk</h2><div id="riskPanel" class="panel-list"></div></div>
+    </section>
+    <section id="analytics" class="section">
+      <div class="section-title"><h2>Analytics</h2></div>
+      <div id="analyticsGrid" class="metric-grid"></div>
+    </section>
+    <section id="alerts" class="section">
+      <div class="section-title"><h2>Alerts</h2></div>
+      <div id="alertsPanel" class="panel-list"></div>
+    </section>
+    <section id="audit" class="section">
+      <div class="section-title"><h2>Audit</h2></div>
+      <div class="table-wrap"><table id="auditTable"></table></div>
+    </section>
+    <section id="settings" class="section">
+      <div class="section-title"><h2>Settings / Profiles</h2></div>
+      <pre id="settingsBlock"></pre>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

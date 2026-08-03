@@ -149,14 +149,17 @@ def _find_eval(
     report: dict[str, object],
     *,
     branch_unique_code: str,
+    timestamp: str | None = None,
 ) -> dict[str, object]:
     for evaluation in report["evaluations"]:
+        if timestamp is not None and evaluation["timestamp"] != timestamp:
+            continue
         audit = evaluation["validation"].get("s23_current_day_fsl_trp")
         if not isinstance(audit, dict):
             continue
         if audit.get("branch_unique_code") == branch_unique_code:
             return evaluation
-    raise AssertionError(f"Could not find evaluation for {branch_unique_code}")
+    raise AssertionError(f"Could not find evaluation for {branch_unique_code} timestamp={timestamp}")
 
 
 def test_default_historical_backtest_is_unchanged_without_current_day_fsl_trp_flag() -> None:
@@ -234,6 +237,7 @@ def test_row_184_bull_call_missed_updates_effective_plan_entry_and_records_resol
     evaluation = _find_eval(
         report,
         branch_unique_code="NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        timestamp="2026-05-18T15:30:00",
     )
     audit = evaluation["validation"]["s23_current_day_fsl_trp"]
 
@@ -255,7 +259,7 @@ def test_row_184_bull_call_missed_updates_effective_plan_entry_and_records_resol
         audit["resolved_workbook_clarifications"][0]["id"]
         == "s23_fsl_trp_row_184_mixed_mapping"
     )
-    assert evaluation["trade_outputs"]["start_strike"] == 21518
+    assert evaluation["trade_outputs"]["start_strike"] == 22379
     assert evaluation["trade_outputs"]["entry_price"] == pytest.approx(188.7)
     assert evaluation["trade_outputs"]["ideal_premium"] == pytest.approx(265.44)
     assert evaluation["trade_outputs"]["minimum_premium"] == pytest.approx(199.08)

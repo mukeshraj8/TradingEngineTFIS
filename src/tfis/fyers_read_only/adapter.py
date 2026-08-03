@@ -10,6 +10,7 @@ from enum import Enum
 from typing import Any, Callable, Iterable, Mapping, Protocol
 
 from tfis.broker.authentication import ValidatedBrokerSession
+from tfis.broker.timestamp_normalization import provider_epoch_seconds_for_expiry
 
 from .models import (
     CompletedCandleSet,
@@ -290,9 +291,7 @@ class FyersReadOnlyAdapter:
         records = tuple(instrument_records)
         request: dict[str, Any] = {"symbol": underlying, "strikecount": int(strike_count)}
         if expiry is not None:
-            request["timestamp"] = _expiry_timestamp_from_records(records, expiry) or str(
-                int(datetime.combine(expiry, datetime.min.time()).timestamp())
-            )
+            request["timestamp"] = _expiry_timestamp_from_records(records, expiry) or provider_epoch_seconds_for_expiry(expiry)
         try:
             body, retries = self._call_with_retries(lambda: client.optionchain(request))
             chain = normalize_option_chain_payload(
@@ -403,13 +402,13 @@ class FyersReadOnlyAdapter:
             return response.read().decode("utf-8")
 
 
-def _expiry_timestamp_from_records(records: Iterable[InstrumentMasterRecord], expiry: date) -> str | None:
+def _expiry_timestamp_from_records(records: Iterable[InstrumentMasterRecord], expiry: date) -> int | None:
     for record in records:
         if record.expiry != expiry:
             continue
         raw_expiry = record.source_row.get("expiry") if isinstance(record.source_row, Mapping) else None
         if raw_expiry and str(raw_expiry).isdigit():
-            return str(raw_expiry)
+            return int(str(raw_expiry))
     return None
 
 

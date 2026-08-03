@@ -1,0 +1,10 @@
+{
+  "pid": 15516,
+  "port": 8766,
+  "process_exit_code": 1,
+  "process_started": true,
+  "process_stopped": true,
+  "schema_version": "tfis.dashboard_v1.process_cleanup.v1",
+  "stderr_log": "reports\\dashboard_v1\\dashboard_smoke_server.stderr.log",
+  "stdout_log": "reports\\dashboard_v1\\dashboard_smoke_server.stdout.log"
+}

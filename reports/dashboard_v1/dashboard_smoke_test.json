@@ -1,0 +1,62 @@
+{
+  "checks": {
+    "/api/brokers": {
+      "http_status": 200,
+      "status": "PASSED"
+    },
+    "/api/orders": {
+      "http_status": 200,
+      "status": "PASSED"
+    },
+    "/api/pnl": {
+      "http_status": 200,
+      "status": "PASSED"
+    },
+    "/api/positions": {
+      "http_status": 200,
+      "status": "PASSED"
+    },
+    "/api/strategy-instances": {
+      "http_status": 200,
+      "status": "PASSED"
+    },
+    "/events": {
+      "http_status": 200,
+      "status": "PASSED"
+    },
+    "/index.html": {
+      "http_status": 200,
+      "status": "PASSED"
+    },
+    "broker_authority": {
+      "authority": "NONE",
+      "status": "PASSED"
+    },
+    "event_stream": {
+      "contains_snapshot_event": true,
+      "status": "PASSED"
+    },
+    "health": {
+      "payload": {
+        "broker_order_authority": "NONE",
+        "projection_hash": "6ee9b3eb055b9e9dce122eddc2cf4e70d9c300daea7d0695455847ff2cfdc63e",
+        "status": "HEALTHY"
+      },
+      "status": "PASSED"
+    },
+    "secret_scan": {
+      "secret_token_seen": false,
+      "status": "PASSED"
+    },
+    "strategy_rows": {
+      "required_symbols_present": true,
+      "status": "PASSED"
+    }
+  },
+  "external_broker_order_authority": "NONE",
+  "failed_checks": [],
+  "port": 8766,
+  "schema_version": "tfis.dashboard_v1.smoke_test.v1",
+  "secret_leak_detected": false,
+  "status": "PASSED"
+}

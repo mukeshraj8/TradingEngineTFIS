@@ -19,6 +19,11 @@ from tfis.normalized_events import (
     SelectedContractQuoteEvent,
     UnderlyingQuoteEvent,
 )
+from tfis.broker.timestamp_normalization import (
+    TimestampNormalizationError,
+    normalize_provider_timestamp,
+    provider_epoch_seconds_for_expiry,
+)
 
 from .base import (
     BrokerAdapter,
@@ -772,8 +777,12 @@ class FyersBrokerAdapter(BrokerAdapter):
             contracts=tuple(contracts),
         )
 
-    def _option_chain_expiry_timestamp(self, expiry: date) -> str:
-        return str(int(datetime.combine(expiry, time(15, 30), tzinfo=self._tzinfo).timestamp()))
+    def _option_chain_expiry_timestamp(self, expiry: date) -> int:
+        return provider_epoch_seconds_for_expiry(
+            expiry,
+            source_timezone=self._timezone,
+            expiry_time=time(15, 30),
+        )
 
     def _normalize_selected_contract_bar_payload(
         self,
@@ -1035,12 +1044,13 @@ class FyersBrokerAdapter(BrokerAdapter):
     def _read_datetime(self, value: Any) -> datetime:
         if value in (None, ""):
             return self._now_provider()
-        if isinstance(value, datetime):
-            return value if value.tzinfo is not None else value.replace(tzinfo=self._tzinfo)
-        if isinstance(value, (int, float)):
-            return datetime.fromtimestamp(float(value), tz=self._tzinfo)
-        parsed = datetime.fromisoformat(str(value))
-        return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=self._tzinfo)
+        try:
+            return normalize_provider_timestamp(
+                value,
+                source_timezone=self._timezone,
+            ).normalized_timestamp
+        except TimestampNormalizationError as exc:
+            raise BrokerNormalizationError(str(exc)) from exc
 
     def _optional_float(self, value: Any) -> float | None:
         if value in (None, ""):

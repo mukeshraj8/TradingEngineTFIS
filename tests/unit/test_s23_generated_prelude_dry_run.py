@@ -58,19 +58,34 @@ def _write_strategy_folder(tmp_path: Path) -> Path:
     (strategy_dir / "formulas.yaml").write_text(
         yaml.safe_dump(
             {
-                "start_strike_formula": "24625",
-                "end_strike_formula": "25000",
-                "ideal_premium_formula": "790",
-                "minimum_premium_formula": "760",
-                "entry_formula": "798.3",
-                "target_formula": "791.85",
-                "stoploss_formula": "816.35",
+                "start_strike_formula": "ROUND_UP(PRV_3DHH - PARAM(strike_buffer_pct)%)",
+                "end_strike_formula": "ROUND_UP(PRV_3DHH) + PARAM(strike_step)",
+                "ideal_premium_formula": "PRV_3DHH * PARAM(ideal_premium_pct)%",
+                "minimum_premium_formula": "PRV_3DHH * PARAM(minimum_premium_pct)%",
+                "entry_formula": "OPT_PRV_3DLL - PARAM(entry_discount_pct)%",
+                "target_formula": "ENTRY - PARAM(target_pct)%",
+                "stoploss_formula": "MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)",
             },
             sort_keys=False,
         ),
         encoding="utf-8",
     )
-    (strategy_dir / "parameters.yaml").write_text("{}", encoding="utf-8")
+    (strategy_dir / "parameters.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "strike_buffer_pct": 1.2,
+                "strike_step": 50,
+                "ideal_premium_pct": 1.2,
+                "minimum_premium_pct": 0.9,
+                "entry_discount_pct": 7.5,
+                "target_pct": 60,
+                "sl_entry_pct": 60,
+                "sl_reference_pct": 7,
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
     return strategy_dir
 
 
@@ -152,10 +167,18 @@ def _write_runtime_fixture(
         "market_levels": {
             "d2hh": 22500.0,
             "d2ll": 22300.0,
+            "d3hh": 25000.0,
+            "d3ll": 22200.0,
             "current_day_high": 22462.0,
             "current_day_low": 22395.0,
         },
-        "runtime_values": {},
+        "runtime_values": {
+            "ENTRY": 799.1,
+            "OPT_LEVELS": {
+                "OPT_PRV_2DHH": 763.0,
+                "OPT_PRV_3DLL": 863.0,
+            },
+        },
         "snapshots": [
             {
                 "snapshot_label": "0915",
@@ -329,7 +352,7 @@ def test_smoke_override_requires_explicit_flag(tmp_path: Path) -> None:
                     "expiry": "2026-05-12",
                     "bid": 780.0,
                     "ask": 781.5,
-                    "ltp": 780.9,
+                    "ltp": 260.0,
                     "oi": 1000.0,
                     "volume": 410.0,
                 }

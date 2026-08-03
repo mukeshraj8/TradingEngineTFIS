@@ -1,0 +1,35 @@
+{
+  "schema_version": "tfis.dashboard_gap_register.v2",
+  "gaps": [
+    {
+      "gap_id": "DASH-V1-G001",
+      "classification": "S22_LIVE_EVIDENCE_PENDING",
+      "description": "S22 RELIANCE opening/ORPT/RC evidence remains deterministic timing supplement until the next eligible FYERS trading session.",
+      "blocks": [
+        "complete real-session S22 evidence certification"
+      ],
+      "does_not_block": [
+        "unified internal-paper runtime",
+        "dashboard implementation",
+        "bounded unified internal-paper market-session run with external broker-order authority NONE"
+      ]
+    }
+  ],
+  "closed_gaps": [
+    {
+      "gap_id": "DASH-V1-G002",
+      "classification": "CONTRADICTORY_SAMPLE_FIXTURE_RESOLVED",
+      "description": "Four S23 start-strike sample expectations were updated to accepted Phase 5B/5C workbook-backed behavior and tests now pass."
+    },
+    {
+      "gap_id": "DASH-V1-G003",
+      "classification": "SELECTED_CONTRACT_NONE_RESOLVED",
+      "description": "S23 contract-specific lifecycle fixture now contains qualifying OI and contract-intraday coverage for selected contracts."
+    },
+    {
+      "gap_id": "DASH-V1-G004",
+      "classification": "FYERS_TIMESTAMP_NORMALIZATION_RESOLVED",
+      "description": "FYERS timestamp normalization now uses a shared deterministic read-boundary normalizer and provider expiry requests use integer epoch seconds."
+    }
+  ]
+}

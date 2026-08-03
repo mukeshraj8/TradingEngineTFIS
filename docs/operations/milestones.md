@@ -2,6 +2,30 @@
 
 ## Current Snapshot
 
+- as of Sunday, August 2, 2026 at 22:05 IST, the
+  `CLOSE_UNIFIED_RUNTIME_VALIDATION_BLOCKERS_BEFORE_MARKET_SESSION_RUN`
+  milestone is accepted. The selected-contract `None` failure, FYERS timestamp
+  mismatch, and stale S23 sample-output failures were corrected and documented
+  under `reports/dashboard_v1/`. Validation included exact blocker
+  reproductions, contract-specific lifecycle, timestamp/FYERS, S21/S22/S23,
+  dashboard/runtime, lifecycle, architecture, broad unit, config/project, and
+  dashboard smoke/process-cleanup checks. Runtime impact:
+  `UNIFIED_RUNTIME_VALIDATION_ACCEPTED_FOR_INTERNAL_PAPER_MARKET_SESSION`.
+  External broker-order/live authority remains `NONE`.
+- as of Sunday, August 2, 2026, TFIS has a unified deterministic
+  S21/S22/S23 internal-paper runtime projection and professional read-only
+  dashboard slice. Files added include the configuration-driven enabled
+  strategy registry, generic multi-strategy runtime coordinator,
+  strategy-neutral operations read models, read-only dashboard API/event/command
+  contracts, static frontend assets, `scripts/run_tfis_internal_paper.py`,
+  `scripts/run_tfis_dashboard.py`, and
+  `docs/operations/tfis_unified_dashboard_runbook.md`. Reports are generated
+  under `reports/dashboard_v1/`; the dashboard builds under
+  `tmp/tfis_dashboard_v1/`. Runtime impact:
+  `UNIFIED S21/S22/S23 INTERNAL-PAPER SYSTEM + PROFESSIONAL TFIS OPERATIONAL
+  DASHBOARD`. Verdict: conditional, because S22 RELIANCE live opening/ORPT/RC
+  evidence remains pending. External broker-order/live authority remains
+  `NONE`.
 - as of Sunday, August 2, 2026 at 14:20 IST, the S22 RELIANCE live-session
   read-only observation milestone was stopped at Checkpoint 1 with
   `LIVE_SESSION_WINDOW_UNAVAILABLE`. The task was evaluated on Sunday, outside

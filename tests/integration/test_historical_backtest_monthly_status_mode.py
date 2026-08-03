@@ -71,13 +71,12 @@ def test_historical_monthly_status_mode_selects_bull_and_bear_branches(
     assert "enable_option_chain_selection" not in report
     assert report["strategy_root"].endswith("config\\strategies\\options_sell\\nifty")
     assert report["strategy_path"] is None
-    assert report["metrics"]["total_evaluations"] == 10
-    assert report["monthly_status_skips"]
-    assert report["monthly_status_skips"][0]["reason"] == "no eligible strategy branches for monthly status UNKNOWN"
+    assert report["metrics"]["total_evaluations"] == 12
+    assert report["monthly_status_skips"] == []
 
     first_eval = report["evaluations"][0]
     assert first_eval["monthly_status"] == "BULL"
-    assert first_eval["monthly_status_trigger"] == "BULL_A_THRESHOLD"
+    assert first_eval["monthly_status_trigger"] == "BULL_CONTINUES"
     assert first_eval["selected_branch_unique_codes"] == [
         "NIFTY_OP_SELL_WK_DIFF_2D_3D",
         "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
@@ -216,7 +215,10 @@ def test_historical_monthly_status_mode_option_chain_selection_reports_selected_
 
     assert report["enable_option_chain_selection"] is True
     assert selection["selected"] is True
-    assert selection["selection_reason"] == "Selected contract closest to ideal premium."
+    assert (
+        selection["selection_reason"]
+        == "Selected first strike meeting minimum premium in reverse rule-sheet search order."
+    )
     assert selection["selected_contract"]["symbol"] == "NIFTY_20260528_22100_CE"
     assert selection["selected_contract"]["option_type"] == "CALL"
     assert selection["selected_contract"]["ltp"] == pytest.approx(263.0)

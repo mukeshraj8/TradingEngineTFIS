@@ -222,7 +222,7 @@ def test_option_chain_uses_symbol_master_expiry_and_strike_price_shape() -> None
         instrument_records=(record,),
     )
 
-    assert client.last_optionchain_request["timestamp"] == "1787652000"
+    assert client.last_optionchain_request["timestamp"] == 1787652000
     assert result.status == FyersReadOnlyStatus.SUCCESS
     assert result.payload.contracts[0].expiry == date(2026, 8, 25)
     assert result.payload.contracts[0].strike == Decimal("1260")

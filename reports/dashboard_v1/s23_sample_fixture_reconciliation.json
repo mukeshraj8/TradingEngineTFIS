@@ -1,0 +1,42 @@
+{
+  "schema_version": "tfis.dashboard_v1.s23_sample_fixture_reconciliation.v1",
+  "verdict": "RESOLVED",
+  "classification_before_fix": "CONTRADICTORY_SAMPLE_FIXTURE",
+  "source_basis": [
+    "reports/phase5b/phase5b_put_rule_matrix.json",
+    "reports/phase5b/phase5b_put_source_inventory.json",
+    "reports/phase5c/phase5c_call_put_regression_matrix.json",
+    "tests/unit/test_s23_all_branches.py"
+  ],
+  "mismatches_resolved": [
+    {
+      "strategy_folder": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "formula_cell": "G162",
+      "previous_expected_start_strike": 23100,
+      "accepted_start_strike": 22250
+    },
+    {
+      "strategy_folder": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+      "formula_cell": "G165",
+      "previous_expected_start_strike": 21400,
+      "accepted_start_strike": 22250
+    },
+    {
+      "strategy_folder": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+      "formula_cell": "G168",
+      "previous_expected_start_strike": 22950,
+      "accepted_start_strike": 22150
+    },
+    {
+      "strategy_folder": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+      "formula_cell": "G171",
+      "previous_expected_start_strike": 21500,
+      "accepted_start_strike": 22350
+    }
+  ],
+  "validation": {
+    "command": ".venv\\Scripts\\python.exe -m pytest tests\\unit\\test_s23_all_branches.py -q --tb=short",
+    "result": "PASSED",
+    "summary": "16 passed"
+  }
+}

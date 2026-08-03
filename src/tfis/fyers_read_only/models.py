@@ -11,6 +11,8 @@ from io import StringIO
 from typing import Any, Iterable, Mapping
 from zoneinfo import ZoneInfo
 
+from tfis.broker.timestamp_normalization import normalize_provider_timestamp
+
 
 _IST = ZoneInfo("Asia/Kolkata")
 
@@ -498,12 +500,10 @@ def _interval_duration(interval: str):
 
 
 def _datetime_from_epoch_or_iso(value: Any) -> datetime:
-    if isinstance(value, datetime):
-        return value if value.tzinfo else value.replace(tzinfo=_IST)
-    if isinstance(value, (int, float)) or str(value).isdigit():
-        return datetime.fromtimestamp(int(value), tz=_IST)
-    parsed = datetime.fromisoformat(str(value))
-    return parsed if parsed.tzinfo else parsed.replace(tzinfo=_IST)
+    return normalize_provider_timestamp(
+        value,
+        source_timezone="Asia/Kolkata",
+    ).normalized_timestamp
 
 
 def _datetime_or_none(value: Any) -> datetime | None:
@@ -519,7 +519,7 @@ def _parse_date(value: Any) -> date | None:
         return value
     text = str(value)
     if text.isdigit() and len(text) >= 10:
-        return datetime.fromtimestamp(int(text), tz=_IST).date()
+        return normalize_provider_timestamp(text, source_timezone="Asia/Kolkata").normalized_timestamp.date()
     return date.fromisoformat(text[:10])
 
 

@@ -70,9 +70,10 @@ def _request(
 def test_option_chain_csv_fixture_loads() -> None:
     contracts = load_option_chain_csv(FIXTURE_PATH)
 
-    assert len(contracts) == 20
+    assert len(contracts) == 24
     assert contracts[0].timestamp == datetime(2026, 5, 18, 15, 30)
     assert contracts[0].option_type in {OptionType.CALL, OptionType.PUT}
+    assert any(contract.timestamp == datetime(2026, 5, 20, 15, 30) for contract in contracts)
 
 
 def test_selects_first_minimum_premium_in_reverse_rule_order() -> None:
