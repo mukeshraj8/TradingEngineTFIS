@@ -1,76 +1,55 @@
 {
   "authority_mode": "INTERNAL_PAPER_ONLY",
-  "blocking_reasons": [],
-  "captured_at": "2026-08-03T16:55:03.969268+05:30",
-  "code_readiness": {
-    "checkpoint_terminal_reporting": "FIXED_FOR_NEXT_RUN_AND_UNIT_TESTED",
-    "dashboard": "READY_FOR_OPERATOR_START",
-    "fan_out": "CONDITIONAL_TCS_INFY_APPROVED_BUT_DISABLED_PENDING_BASELINE_CERTIFICATION",
-    "multi_stock_activation_gate": "RELIANCE_BASELINE_ONLY_UNTIL_TCS_INFY_POST_BASELINE_ACTIVATION",
-    "patched_scheduler": "PATCHED_DETERMINISTIC_PATH_PROVED",
-    "strategies": "S21_S22_RELIANCE_S23_READY_FOR_INTERNAL_PAPER"
-  },
-  "evidence_readiness": {
-    "cadence_proof": "PATCHED_DETERMINISTIC_PATH_PROVED",
-    "eod_proof": "CAPTURED_WITH_OLD_PID_REPORTING_GAP",
-    "full_before_open_proof": "PENDING_NEXT_COMPLETE_SESSION",
-    "restart_proof": "CHECKPOINT_SAFE_FOR_FRESH_SESSION_PREFLIGHT"
-  },
+  "blocking_reasons": [
+    "Fresh optimized live supervisor averaged approximately 7.21 seconds per loop over 97 observed iterations against a configured 5.0 second poll interval.",
+    "Current fresh proof is a late-start observation session and therefore does not yet replace the required before-market-open complete-session cadence proof."
+  ],
+  "captured_at": "2026-08-04T12:24:26.134392+05:30",
   "external_broker_order_authority": "NONE",
-  "go_for_next_complete_session": true,
+  "go_for_next_complete_session": false,
   "governing_inputs": {
-    "candidate_activation_pack": {
-      "infy_recommendation": "APPROVED_KEEP_DISABLED_UNTIL_BASELINE_UNIFIED_CERTIFICATION",
-      "path": "D:\\TradingEngineTFISRefactored\\reports\\s22_multi_stock\\candidate_activation_decision_pack.json",
-      "tcs_recommendation": "APPROVED_KEEP_DISABLED_UNTIL_BASELINE_UNIFIED_CERTIFICATION"
+    "complete_session_preflight": {
+      "captured_at": "2026-08-04T12:24:22.450405+05:30",
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\live_supervisor\\complete_session_preflight.json",
+      "reasons": [],
+      "verdict": "READY_FOR_COMPLETE_UNIFIED_SESSION"
     },
-    "critical_scheduler_independence": {
-      "classification": "PARTIALLY_INDEPENDENT",
-      "path": "D:\\TradingEngineTFISRefactored\\reports\\live_closure_20260803\\critical_scheduler_independence.json"
+    "current_supervisor_heartbeat": {
+      "late_start_mode": null,
+      "path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\heartbeat.json",
+      "session_id": "UNKNOWN",
+      "state": "MISSING",
+      "timestamp": null
     },
-    "final_checkpoint_result": {
-      "captured_at": "2026-08-03T16:55:03.969268+05:30",
-      "checkpoint_path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\NSE_2026-08-03_UNIFIED_INTERNAL_PAPER.checkpoint.json",
-      "checkpoint_state": "EOD_PROCESSING",
-      "checkpoint_updated_at": "2026-08-03T15:30:00.876194+05:30",
-      "heartbeat_path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\heartbeat.json",
-      "heartbeat_state": "STOPPED",
-      "heartbeat_timestamp": "2026-08-03T15:30:02.122046+05:30",
-      "restart_assessment": "SAFE_FOR_FRESH_NEXT_SESSION_AFTER_PREFLIGHT",
-      "schema_version": "tfis.live_closure.final_checkpoint_result.v1",
-      "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
-      "summary_final_state": "EOD_PROCESSING",
-      "terminal_state_consistency": "HEARTBEAT_STOPPED_BUT_OLD_SUMMARY_STALE_EOD",
-      "verdict": "CONDITIONAL_STALE_OLD_SUMMARY"
+    "current_supervisor_pid_metadata": {
+      "active_process_lock": false,
+      "created_at": null,
+      "path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\continuous_unified_supervisor.pid.json",
+      "pid": null
     },
-    "patched_cadence_benchmark": {
-      "path": "D:\\TradingEngineTFISRefactored\\reports\\live_closure_20260803\\fresh_supervisor_cadence_final.json",
-      "verdict": "PATCHED_DETERMINISTIC_PATH_PROVED"
+    "dashboard_market_session_readiness": {
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\dashboard_v1\\market_session_readiness.json",
+      "readiness": "READY_FOR_UNIFIED_MARKET_SESSION",
+      "verdict": "TFIS_RUNTIME_VALIDATION_ACCEPT"
     },
-    "terminal_heartbeat": {
-      "db_path": "D:\\TradingEngineTFISRefactored\\data\\internal_paper\\unified_supervisor.sqlite",
-      "late_start_mode": true,
-      "pid": 16256,
-      "projection_hash": "a6f766b54d769b8c60af99346f5a60b473d2deb86bc10ce15a70841a6608ccfe",
-      "report_dir": "D:\\TradingEngineTFISRefactored\\reports\\live_supervisor",
-      "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
-      "state": "STOPPED",
-      "timestamp": "2026-08-03T15:30:02.122046+05:30"
+    "runtime_next_session_readiness": {
+      "path": "D:\\TradingEngineTFISRefactored\\reports\\runtime_performance\\next_session_readiness.json",
+      "reasons": [
+        "Fresh optimized live supervisor averaged approximately 7.21 seconds per loop over 97 observed iterations against a configured 5.0 second poll interval.",
+        "Current fresh proof is a late-start observation session and therefore does not yet replace the required before-market-open complete-session cadence proof."
+      ],
+      "verdict": "BLOCKED_BY_RUNTIME_CADENCE"
     }
   },
-  "next_required_action": "Run tomorrow's full unified session from before market open on the patched code path.",
-  "operator_state": {
-    "authentication": "AUTHENTICATED_FROM_LATEST_DIAGNOSTIC",
-    "configuration": "READY_WITH_RELIANCE_BASELINE_AND_TCS_INFY_APPROVED_BUT_DISABLED_PENDING_BASELINE_CERTIFICATION",
-    "dashboard": "MANUAL_START_REQUIRED_NEXT_SESSION",
-    "db": "HEALTHY",
-    "duplicate_process": "CLEAR"
-  },
-  "schema_version": "tfis.unified_internal_paper.authoritative_readiness_projection.v3",
-  "verdict": "CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF",
+  "next_required_actions": [
+    "Refresh FYERS read-only authentication until diagnostics return AUTHENTICATED.",
+    "Gracefully stop the current late-start supervisor if it is still active.",
+    "Re-run complete-session preflight and require READY_FOR_COMPLETE_UNIFIED_SESSION.",
+    "Start one fresh before-market-open unified supervisor run on the optimized code path."
+  ],
+  "schema_version": "tfis.unified_internal_paper.authoritative_readiness_projection.v1",
+  "verdict": "NO_GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION",
   "warnings": [
-    "NEXT_COMPLETE_SESSION_IS_STILL_THE_REQUIRED_BEFORE_OPEN_PROOF",
-    "OLD_2026_08_03_LIVE_SUMMARY_FINISHED_AT_EOD_PROCESSING_INSTEAD_OF_STOPPED",
-    "TCS_AND_INFY_REMAIN_DISABLED_FOR_NEXT_BASELINE_UNIFIED_SESSION_CERTIFICATION"
+    "DETERMINISTIC_DASHBOARD_READINESS_IS_SUPPORTING_EVIDENCE_ONLY"
   ]
 }

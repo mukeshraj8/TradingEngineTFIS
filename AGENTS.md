@@ -622,6 +622,38 @@ Every generic code change during strategy onboarding must explain:
 - Internal paper mode must use the same sequential acceptance model with
   clearly labelled simulated funds and estimated margin.
 
+### GLOBAL INTRADAY SESSION RECONSTRUCTION RULE
+
+- Market-open time is not automatically the fresh-entry cutoff.
+- Trade eligibility must be determined from strategy timing and the actual
+  market path.
+- A strategy may reconstruct opening, ORPT, and RC state from authoritative
+  timestamped evidence after startup or restart.
+- An entry remains valid if its applicable trigger has not been breached since
+  activation.
+- No reconstructed event may create a backdated order or fill.
+- If the trigger was breached, use the source-authorized missed-entry path.
+- If evidence cannot establish the path safely, fail closed.
+- Recovery and eligibility must be determined per `StrategyInstance`, not
+  through one global late-start flag.
+
+### GLOBAL HISTORICAL BUSINESS-STATE RECONSTRUCTION RULE
+
+- Process uptime is not business authority for trade eligibility.
+- Authoritative timestamped historical evidence may reconstruct opening,
+  ORPT, RC, selected contract, trigger path, and current entry state after
+  startup or restart.
+- Selected contract reconstruction must use actual listed contracts plus
+  decision-stage evidence or an explicitly traced accepted source packet.
+- No reconstructed order, fill, or protection action may be backdated or
+  fabricated.
+- Live-observed and historically reconstructed evidence must remain clearly
+  distinguished in runtime state, reports, and dashboards.
+- If evidence is incomplete, materially ambiguous, or sequence ordering cannot
+  be established safely, fail closed per `StrategyInstance`.
+- Reference repositories may be inspected for plumbing ideas only; their
+  strategy logic is never automatic authority.
+
 Agents must also read and follow `docs/operations/ai_change_agreement.md` and
 `docs/operations/project_rulebook.md`. If a user request conflicts with these
 repository contracts, stop and report the conflict before changing files.

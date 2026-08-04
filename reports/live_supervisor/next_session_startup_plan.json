@@ -3,5 +3,5 @@
   "expected_result": "CONTINUOUS UNIFIED S21/S22/S23 INTERNAL-PAPER SUPERVISOR",
   "operator_start_command": ".\\.venv\\Scripts\\python.exe scripts\\run_tfis_internal_paper.py --continuous-supervisor --poll-seconds 5 --dashboard-port 8766",
   "schema_version": "tfis.live_supervisor.next_session_startup_plan.v1",
-  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER"
+  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER"
 }

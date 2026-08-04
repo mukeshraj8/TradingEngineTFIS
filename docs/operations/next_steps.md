@@ -6,6 +6,59 @@ way.
 
 ## Immediate Next Priorities
 
+0.6746. `USE_AUGUST_4_HISTORICAL_RECONSTRUCTION_AS_THE_NEW_LATE_START_BASELINE`
+   The old session-wide late-start assumption is no longer acceptable repo
+   truth. Govern all restart and recovery work from
+   `reports/historical_reconstruction/`, especially
+   `august4_baseline_reassessment.json`,
+   `reconstruction_evidence_contract.json`, and
+   `historical_reconstruction_summary.md`. Today, Tuesday, August 4, 2026,
+   the truthful reconstructed baseline is:
+   `S21 = NORMAL_ENTRY_STILL_VALID`,
+   `S22 RELIANCE = RC_ENTRY_ALREADY_MISSED`,
+   `S23 = NORMAL_ENTRY_STILL_VALID`.
+
+0.6745. `RUN_ONE_CLEAN_BEFORE_OPEN_BASELINE_ON_THE_PATCHED_LIVE_SELECTION_PATH`
+   The next exact operational gate is now sharper than it was this morning:
+   stop the old late-start PID `20840`, then run one fresh before-market-open
+   unified supervisor session on the patched live-selection path. Governing
+   evidence is now under `reports/live_contract_selection/`. S21 and S23 are
+   no longer blocked by fixture contract identity in code; the remaining step
+   is one clean runtime start that actually uses the new path in the operator
+   session.
+
+0.674. `MAKE_SELECTED_CONTRACTS_AUTHORITATIVE_IN_LIVE_BASELINE` Today's
+   reconstruction proved that per-instance recovery works, but it also exposed
+   the next hard blocker: `S21` and `S23` cannot be reconstructed honestly in
+   a live baseline while their enabled strategy registry still points to
+   fixture selected-contract identities. The next implementation slice should
+   keep the new generic reconstruction coordinator and wire live selected-
+   contract identity capture into the baseline supervisor before the next
+   before-open proof.
+
+0.6735. `KEEP_TODAY_SESSION_OBSERVATIONAL_ONLY` For the remainder of Tuesday,
+   August 4, 2026, do not create new internal-paper orders from the degraded
+   live baseline session. The truthful current reconstruction result is:
+   `S22 RELIANCE = RC_ENTRY_ALREADY_MISSED`; `S21` and `S23` are blocked by
+   insufficient live selected-option evidence. `TCS` and `INFY` stay disabled.
+
+0.673. `RERUN_BEFORE_OPEN_BASELINE_ON_PATCHED_LATE_START_FIX` Today's Tuesday,
+   August 4, 2026 baseline open-window proof failed because the running
+   supervisor incorrectly classified the first `09:15` cycle as
+   `LATE_START_NO_NEW_ENTRY` even though the process was already started
+   before market open. The defect is now fixed in
+   `src/tfis/runtime/multi_strategy/supervisor.py` with focused validation
+   `17 passed`, but the current live session cannot be reused as baseline
+   certification because all baseline instances were already deferred. The
+   next exact gate is one fresh before-open unified session on the patched
+   code path.
+
+0.6725. `DO_NOT_ENABLE_TCS_OR_INFY_AFTER_TODAY_S_FAILED_BASELINE` Keep `TCS`
+   and `INFY` disabled in `config/s22_multi_stock_registry.yaml` for the
+   remainder of today's Tuesday, August 4, 2026 session. User approval remains
+   recorded, but today's degraded baseline did not satisfy the required
+   activation gate.
+
 0.672. `RUN_TOMORROW_BEFORE_OPEN_FULL_UNIFIED_SESSION` The next exact critical
    path is one full unified internal-paper session from before market open on
    the patched code path. Today's after-market closure moved readiness to

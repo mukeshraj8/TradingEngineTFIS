@@ -1,0 +1,36 @@
+{
+  "captured_at": "2026-08-04T11:01:07.296343+05:30",
+  "current_time": "2026-08-04T11:01:07.296343+05:30",
+  "invalid_runtime_classification": {
+    "affected_strategy_instances": [
+      "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "S22_RELIANCE_INTERNAL_PAPER_A",
+      "S23_NIFTY_INTERNAL_PAPER_A"
+    ],
+    "classification": "INVALID_RUNTIME_CLASSIFICATION",
+    "incorrect_state": "LATE_START_NO_NEW_ENTRY",
+    "previous_state": "WAITING_FOR_MARKET",
+    "root_cause": "Cycle timestamp after 09:15 was used as late-start proxy instead of persisted supervisor session start time.",
+    "timestamp": "2026-08-04T11:01:05.560163+05:30"
+  },
+  "market_session_state": "LIVE",
+  "preserved_artifacts": {
+    "checkpoint": "D:\\TradingEngineTFISRefactored\\reports\\session_reconstruction\\preserved_live_session\\NSE_2026-08-04_UNIFIED_INTERNAL_PAPER.checkpoint.json",
+    "complete_session_preflight": "D:\\TradingEngineTFISRefactored\\reports\\session_reconstruction\\preserved_live_session\\complete_session_preflight.json",
+    "continuous_supervisor_summary": "D:\\TradingEngineTFISRefactored\\reports\\session_reconstruction\\preserved_live_session\\continuous_supervisor_summary.md",
+    "dashboard_snapshot": "D:\\TradingEngineTFISRefactored\\reports\\session_reconstruction\\preserved_live_session\\snapshot.json",
+    "gap_register": "D:\\TradingEngineTFISRefactored\\reports\\session_reconstruction\\preserved_live_session\\gap_register.json",
+    "heartbeat": "D:\\TradingEngineTFISRefactored\\reports\\session_reconstruction\\preserved_live_session\\heartbeat.json",
+    "performance_metrics": "D:\\TradingEngineTFISRefactored\\reports\\session_reconstruction\\preserved_live_session\\performance_metrics.json"
+  },
+  "schema_version": "tfis.session_reconstruction.rule.v1",
+  "session_start_authority": {
+    "checkpoint_late_start_state": true,
+    "current_cycle_time": "2026-08-04T11:01:05.560163+05:30",
+    "late_start_state_persisted": true,
+    "market_open_time": "09:15:00",
+    "process_start_source": "heartbeat/checkpoint/preflight explicit evidence",
+    "session_started_at": "2026-08-04T08:21:29.058659+05:30"
+  },
+  "trading_date": "2026-08-04"
+}

@@ -1,0 +1,10 @@
+{
+  "db_path": "D:\\TradingEngineTFISRefactored\\data\\internal_paper\\unified_supervisor.sqlite",
+  "late_start_mode": true,
+  "pid": 20840,
+  "projection_hash": "03dd290db8c49049686b0e912c958a31976c0ebad1ba0ee0d13fe85ffc5f3a53",
+  "report_dir": "D:\\TradingEngineTFISRefactored\\reports\\live_supervisor",
+  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+  "state": "LIVE_OBSERVATION",
+  "timestamp": "2026-08-04T12:18:45.342689+05:30"
+}

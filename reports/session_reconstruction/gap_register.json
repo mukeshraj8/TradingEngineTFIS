@@ -1,0 +1,15 @@
+{
+  "gaps": [
+    {
+      "classification": "INSUFFICIENT_RECONSTRUCTION_EVIDENCE",
+      "reason": "SELECTED_CONTRACT_NOT_AUTHORITATIVE_FOR_CURRENT_SESSION",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"
+    },
+    {
+      "classification": "INSUFFICIENT_RECONSTRUCTION_EVIDENCE",
+      "reason": "SELECTED_CONTRACT_NOT_AUTHORITATIVE_FOR_CURRENT_SESSION",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A"
+    }
+  ],
+  "schema_version": "tfis.session_reconstruction.gap_register.v1"
+}

@@ -1,0 +1,15 @@
+{
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "inputs": {
+    "checkpoint_continuity": true,
+    "checkpoint_selected_contract_reads": true,
+    "workbook_timing_authority_corrected": true
+  },
+  "integration_status": "UPDATED_TO_PREFER_LIVE_CHECKPOINT_CONTINUITY",
+  "script": "scripts/run_session_reconstruction.py",
+  "today_assessment": {
+    "S21": "TODAY_S21_NOT_RECOVERABLE",
+    "S23": "TODAY_S23_NOT_RECOVERABLE",
+    "reason": "the original August 4 running session never established authoritative S21/S23 selected-contract identity before ORPT/RC, so reconstruction cannot honestly backfill those morning decisions"
+  }
+}

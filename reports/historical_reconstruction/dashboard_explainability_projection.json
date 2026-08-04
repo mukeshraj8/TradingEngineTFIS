@@ -1,0 +1,36 @@
+{
+  "captured_at": "2026-08-04T12:59:47.331344+05:30",
+  "schema_version": "tfis.dashboard.historical_reconstruction_projection.v1",
+  "strategies": [
+    {
+      "current_entry_validity": "NORMAL_ENTRY_STILL_VALID",
+      "evidence_label": "HISTORICALLY_RECONSTRUCTED",
+      "opening_evidence_source": "HISTORICALLY_RECONSTRUCTED",
+      "orpt_status": "ORPT_ENTRY_NOT_MISSED",
+      "rc_status": "RC_NOT_REQUIRED",
+      "reconstruction_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+      "session_started_at": "2026-08-04T12:24:22.450405+05:30",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"
+    },
+    {
+      "current_entry_validity": "RC_ENTRY_ALREADY_MISSED",
+      "evidence_label": "HISTORICALLY_RECONSTRUCTED",
+      "opening_evidence_source": "HISTORICALLY_RECONSTRUCTED",
+      "orpt_status": "ORPT_ENTRY_MISSED_WAITING_FOR_RC",
+      "rc_status": "RC_ENTRY_ALREADY_MISSED",
+      "reconstruction_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+      "session_started_at": "2026-08-04T12:24:22.450405+05:30",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A"
+    },
+    {
+      "current_entry_validity": "NORMAL_ENTRY_STILL_VALID",
+      "evidence_label": "HISTORICALLY_RECONSTRUCTED",
+      "opening_evidence_source": "HISTORICALLY_RECONSTRUCTED",
+      "orpt_status": "ORPT_ENTRY_NOT_MISSED",
+      "rc_status": "RC_NOT_REQUIRED",
+      "reconstruction_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+      "session_started_at": "2026-08-04T12:24:22.450405+05:30",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A"
+    }
+  ]
+}

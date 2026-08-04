@@ -1,0 +1,8 @@
+{
+  "instances": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": "RC_BLOCKED_MISSING_EVIDENCE",
+    "S22_RELIANCE_INTERNAL_PAPER_A": "RC_ENTRY_ALREADY_MISSED",
+    "S23_NIFTY_INTERNAL_PAPER_A": "RC_BLOCKED_MISSING_EVIDENCE"
+  },
+  "schema_version": "tfis.session_reconstruction.rc_result.v1"
+}

@@ -1,0 +1,21 @@
+{
+  "block_reason": "SELECTED_CONTRACT_NOT_AUTHORITATIVE_FOR_CURRENT_SESSION",
+  "current_entry_state": "BLOCKED_INSUFFICIENT_HISTORICAL_EVIDENCE",
+  "evidence_hash": "d7df2744da8b5483799927fa5464c0d2b2c6b11d182e3490b13f4fd535cad966",
+  "invalid_runtime_classification": "INVALID_RUNTIME_CLASSIFICATION",
+  "normal_entry": null,
+  "opening_bar_timestamp": "2026-08-04T09:15:00+05:30",
+  "opening_price": "58068.95",
+  "option_evidence_quality": "MISSING",
+  "orpt_result": "ORPT_BLOCKED_MISSING_EVIDENCE",
+  "rc_result": "RC_BLOCKED_MISSING_EVIDENCE",
+  "revised_entry": null,
+  "selected_contract_authoritative": false,
+  "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+  "timing_policy": {
+    "market_open": "09:15:00",
+    "orpt_time": "09:19:59",
+    "rc_time": "09:29:59"
+  },
+  "underlying_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS"
+}

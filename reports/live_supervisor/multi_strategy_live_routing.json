@@ -1,8 +1,8 @@
 {
-  "captured_at": "2026-08-03T15:25:15.888273+05:30",
-  "projection_hash": "bffd65f7f5874a77f88b97fd01009de1016fcd367a764a04593c5dadf43cd588",
+  "captured_at": "2026-08-04T12:15:20.327502+05:30",
+  "projection_hash": "18765958761714e75ff621d24141afcd2d72179b2b973c44c6ca1aadbe9c0c15",
   "schema_version": "tfis.live_supervisor.live_routing.v1",
-  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
   "timeline_events": [
     {
       "command": "PREFLIGHT",
@@ -14,8 +14,8 @@
       "previous_state": "NONE",
       "reason": "STARTED",
       "result": "STARTED",
-      "scope": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
-      "timestamp": "2026-08-03T15:25:15.888273+05:30"
+      "scope": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+      "timestamp": "2026-08-04T12:15:20.327502+05:30"
     },
     {
       "command": "BROKER_DIAGNOSTICS",
@@ -27,22 +27,22 @@
       "previous_state": "PREFLIGHT",
       "reason": "AUTHENTICATED",
       "result": "AUTHENTICATED",
-      "scope": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
-      "timestamp": "2026-08-03T15:25:15.888273+05:30"
+      "scope": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+      "timestamp": "2026-08-04T12:15:20.327502+05:30"
     },
     {
-      "command": "EOD_PROCESSING",
+      "command": "LATE_START_NO_NEW_ENTRY",
       "event_id": "supervisor:0003",
-      "evidence_hash": "8e1332bd5aa05657b7a88f2b6298889ebdf6decb401cbbb13ce15e21b31b41f2",
-      "new_state": "EOD_PROCESSING",
+      "evidence_hash": "b214a12a2874c302bf963be08d8f38fa1b95a9ecdcc2fba82cb177e8a6229048",
+      "new_state": "LATE_START_NO_NEW_ENTRY",
       "operator": "SYSTEM",
       "preview": true,
       "previous_state": "BROKER_DIAGNOSTICS",
-      "projection_hash": "bffd65f7f5874a77f88b97fd01009de1016fcd367a764a04593c5dadf43cd588",
+      "projection_hash": "18765958761714e75ff621d24141afcd2d72179b2b973c44c6ca1aadbe9c0c15",
       "reason": "CAPTURED",
       "result": "CAPTURED",
-      "scope": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
-      "timestamp": "2026-08-03T15:25:15.888273+05:30"
+      "scope": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+      "timestamp": "2026-08-04T12:15:20.327502+05:30"
     }
   ]
 }

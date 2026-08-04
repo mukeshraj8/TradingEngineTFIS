@@ -1,0 +1,8 @@
+{
+  "instances": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": "ORPT_BLOCKED_MISSING_EVIDENCE",
+    "S22_RELIANCE_INTERNAL_PAPER_A": "ORPT_ENTRY_MISSED_WAITING_FOR_RC",
+    "S23_NIFTY_INTERNAL_PAPER_A": "ORPT_BLOCKED_MISSING_EVIDENCE"
+  },
+  "schema_version": "tfis.session_reconstruction.orpt_result.v1"
+}

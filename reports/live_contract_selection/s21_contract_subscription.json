@@ -1,0 +1,35 @@
+{
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "cross_strategy_leakage": false,
+  "selected_contract_reads": [
+    {
+      "ask": "1162.7",
+      "bid": "1159.25",
+      "data_quality": [],
+      "ltp": "1159.85",
+      "oi": "671700",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "source_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbol": "NSE:BANKNIFTY26AUG57000CE"
+    },
+    {
+      "ask": "1147.1",
+      "bid": "1144",
+      "data_quality": [],
+      "ltp": "1144",
+      "oi": "671460",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "source_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbol": "NSE:BANKNIFTY26AUG57000CE"
+    }
+  ],
+  "status": "PINNED_AND_CAPTURED",
+  "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+  "subscription_owner_contract_entry": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": [
+      "SELECTED_CONTRACT_PINNED"
+    ]
+  }
+}

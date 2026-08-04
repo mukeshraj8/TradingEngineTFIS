@@ -12,11 +12,13 @@ from tfis.broker.authentication import (
     BrokerSessionStatus,
 )
 from tfis.persistence import PersistenceDatabase, apply_migrations
+from tfis.runtime.multi_strategy.registry import EnabledStrategyInstance
 from tfis.runtime.multi_strategy.supervisor import (
     ContinuousSupervisorConfig,
     SubscriptionOwner,
     UnifiedInternalPaperSupervisor,
     _collect_projection_labels,
+    _live_instance_result,
     _next_sleep_seconds,
     _projection_meets_required_labels,
     _seconds_until_next_critical_event,
@@ -26,6 +28,181 @@ from tfis.runtime.multi_strategy.supervisor import (
 
 
 IST = ZoneInfo("Asia/Calcutta")
+
+
+def test_live_instance_result_prefers_authoritative_live_plan_values_over_fixture_projection() -> None:
+    instance = EnabledStrategyInstance(
+        strategy_definition_id="S21_BANKNIFTY_OP_SELL_MONTHLY",
+        strategy_version="s21.test.v1",
+        strategy_instance_id="S21_BANKNIFTY_INTERNAL_PAPER_A",
+        account_reference="INTERNAL_PAPER_ACCOUNT_A",
+        underlying={"exchange": "NSE", "symbol": "BANKNIFTY", "instrument_type": "INDEX"},
+        product="OPTION_SELLING",
+        enabled=True,
+        configured_quantity={"lots": 1, "lot_size": 15},
+        authority_mode="INTERNAL_PAPER_CONTROLLED",
+        market_data_source="FYERS_READ_ONLY",
+        rule_config_hash="test-hash",
+        risk_allocation={"max_positions": 1, "max_margin_usage_pct": 25},
+        operator_approval_status="APPROVED_INTERNAL_PAPER",
+        evidence_quality="FIXTURE_BACKED",
+        deterministic_projection={
+            "branch": "BULL_CALL",
+            "selected_contract": "BANKNIFTY24JAN47000CE",
+            "entry": "925.00",
+            "target": "370.00",
+            "original_sl": "1337.50",
+            "monthly_status": "BULL_CF",
+            "market_references": {"2DHH": "47200.00"},
+        },
+    )
+
+    result = _live_instance_result(
+        instance,
+        now=datetime(2026, 8, 4, 9, 12, tzinfo=IST),
+        session_id="NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+        continuity={
+            "status": "LIVE_AUTHORITATIVE_SELECTED_CONTRACT",
+            "selected_contract": "NSE:BANKNIFTY26AUG47000CE",
+            "selected_branch": "BEAR_CALL",
+            "monthly_status": "BEAR_CF",
+            "entry": "812.00",
+            "target": "301.00",
+            "original_sl": "1184.10",
+            "evidence": "LIVE_READ_ONLY_RUNTIME_SELECTION",
+            "selected_contract_quote": {
+                "symbol": "NSE:BANKNIFTY26AUG47000CE",
+                "ltp": "810.50",
+                "oi": "84000",
+                "source_timestamp": "2026-08-04T09:12:00+05:30",
+                "receipt_timestamp": "2026-08-04T09:12:01+05:30",
+            },
+            "live_plan": {
+                "plan_hash": "live-plan-hash",
+                "market_references": {"2DHH": "52120.00", "2DLL": "51780.00"},
+                "timing": {"orpt": "09:24:59.400000", "rc": "09:29:59.400000"},
+            },
+            "option_history_status": "SUCCESS",
+        },
+        timing={"market_open": "FUTURE_WINDOW", "orpt": "FUTURE_WINDOW", "rc": "FUTURE_WINDOW", "eod_carry": "FUTURE_WINDOW"},
+        selected_contract_reads=(
+            {"symbol": "NSE:BANKNIFTY26AUG47000CE", "receipt_timestamp": "2026-08-04T09:12:01+05:30"},
+            {"symbol": "NSE:BANKNIFTY26AUG47000CE", "receipt_timestamp": "2026-08-04T09:12:05+05:30"},
+        ),
+        late_start=False,
+    )
+
+    assert result["plan"]["selected_contract"] == "NSE:BANKNIFTY26AUG47000CE"
+    assert result["plan"]["branch"] == "BEAR_CALL"
+    assert result["plan"]["monthly_status"] == "BEAR_CF"
+    assert result["plan"]["base_entry"] == "812.00"
+    assert result["plan"]["target"] == "301.00"
+    assert result["plan"]["original_sl"] == "1184.10"
+    assert result["plan"]["premium"] == "810.50"
+    assert result["plan"]["oi"] == "84000"
+    assert result["plan"]["plan_hash"] == "live-plan-hash"
+    assert result["plan"]["history_completeness"] == "SUCCESS"
+    assert result["plan"]["subscription_state"] == "PINNED"
+    assert result["plan"]["first_quote_timestamp"] == "2026-08-04T09:12:01+05:30"
+    assert result["plan"]["latest_quote_timestamp"] == "2026-08-04T09:12:05+05:30"
+
+
+def test_live_instance_result_uses_capture_state_when_no_authoritative_history_exists() -> None:
+    instance = EnabledStrategyInstance(
+        strategy_definition_id="S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+        strategy_version="s23.test.v1",
+        strategy_instance_id="S23_NIFTY_INTERNAL_PAPER_A",
+        account_reference="INTERNAL_PAPER_ACCOUNT_A",
+        underlying={"exchange": "NSE", "symbol": "NIFTY", "instrument_type": "INDEX"},
+        product="OPTION_SELLING",
+        enabled=True,
+        configured_quantity={"lots": 1, "lot_size": 50},
+        authority_mode="INTERNAL_PAPER_CONTROLLED",
+        market_data_source="FYERS_READ_ONLY",
+        rule_config_hash="test-hash",
+        risk_allocation={"max_positions": 1, "max_margin_usage_pct": 25},
+        operator_approval_status="APPROVED_INTERNAL_PAPER",
+        evidence_quality="FIXTURE_BACKED",
+        deterministic_projection={
+            "branch": "BULL_PUT",
+            "entry": "194.25",
+            "target": "77.70",
+            "original_sl": "310.80",
+            "monthly_status": "BULL_CF",
+        },
+    )
+
+    result = _live_instance_result(
+        instance,
+        now=datetime(2026, 8, 4, 9, 5, tzinfo=IST),
+        session_id="NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+        continuity={"status": "BLOCKED_OPTION_CHAIN_UNAVAILABLE", "selected_contract": None, "evidence": "LIVE_ACTUAL_CHAIN_SELECTION_FAILED_CLOSED"},
+        timing={"market_open": "FUTURE_WINDOW", "orpt": "FUTURE_WINDOW", "rc": "FUTURE_WINDOW", "eod_carry": "FUTURE_WINDOW"},
+        selected_contract_reads=(),
+        late_start=False,
+    )
+
+    assert result["plan"]["plan_status"] == "BLOCKED"
+    assert result["plan"]["block_reason"] == "BLOCKED_OPTION_CHAIN_UNAVAILABLE"
+    assert result["plan"]["history_completeness"] == "NOT_CAPTURED"
+    assert result["plan"]["subscription_state"] == "NOT_PINNED"
+
+
+def test_live_instance_result_allows_reconstructed_late_start_entry_to_continue() -> None:
+    instance = EnabledStrategyInstance(
+        strategy_definition_id="S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+        strategy_version="s23.test.v1",
+        strategy_instance_id="S23_NIFTY_INTERNAL_PAPER_A",
+        account_reference="INTERNAL_PAPER_ACCOUNT_A",
+        underlying={"exchange": "NSE", "symbol": "NIFTY", "instrument_type": "INDEX"},
+        product="OPTION_SELLING",
+        enabled=True,
+        configured_quantity={"lots": 1, "lot_size": 50},
+        authority_mode="INTERNAL_PAPER_CONTROLLED",
+        market_data_source="FYERS_READ_ONLY",
+        rule_config_hash="test-hash",
+        risk_allocation={"max_positions": 1, "max_margin_usage_pct": 25},
+        operator_approval_status="APPROVED_INTERNAL_PAPER",
+        evidence_quality="FIXTURE_BACKED",
+        deterministic_projection={"branch": "BULL_PUT", "entry": "194.25", "target": "77.70", "original_sl": "310.80", "monthly_status": "BULL_CF"},
+    )
+
+    result = _live_instance_result(
+        instance,
+        now=datetime(2026, 8, 4, 10, 0, tzinfo=IST),
+        session_id="NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+        continuity={
+            "status": "SELECTED_CONTRACT_RECONSTRUCTED",
+            "recovery_mode": "HISTORICALLY_RECONSTRUCTED",
+            "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+            "selected_contract": "NSE:NIFTY26AUG22500PE",
+            "selected_branch": "BULL_PUT",
+            "entry": "194.25",
+            "target": "77.70",
+            "original_sl": "310.80",
+            "evidence": "HISTORICAL_UNDERLYING_PLUS_CURRENT_CHAIN_RECONSTRUCTION",
+            "selected_contract_quote": {
+                "symbol": "NSE:NIFTY26AUG22500PE",
+                "ltp": "201.00",
+                "oi": "45000",
+                "source_timestamp": "2026-08-04T10:00:00+05:30",
+                "receipt_timestamp": "2026-08-04T10:00:01+05:30",
+            },
+            "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+            "rc_result": "RC_NOT_REQUIRED",
+            "option_history_status": "SUCCESS",
+            "live_plan": {"plan_hash": "historical-plan"},
+        },
+        timing={"market_open": "MISSED_BEFORE_SUPERVISOR_START", "orpt": "MISSED_BEFORE_SUPERVISOR_START", "rc": "MISSED_BEFORE_SUPERVISOR_START", "eod_carry": "FUTURE_WINDOW"},
+        selected_contract_reads=(),
+        late_start=True,
+    )
+
+    assert result["runtime_stage"] == "POSITION_MONITORING"
+    assert result["execution"]["opening_context"] == "HISTORICALLY_RECONSTRUCTED"
+    assert result["execution"]["execution_intent"] == "PENDING_VALIDATION"
+    assert result["execution"]["risk_result"] == "ACCEPTED"
+    assert result["accounting"]["trade_classification"] == "NORMAL_ENTRY_STILL_VALID"
 
 
 def test_subscription_owner_deduplicates_and_builds_runtime_index() -> None:
@@ -251,6 +428,120 @@ def test_supervisor_persists_late_start_mode_and_snapshot_without_network(tmp_pa
     assert snapshot["system"]["broker_order_authority"] == "NONE"
 
 
+def test_supervisor_clears_stale_checkpoint_contract_pins_when_current_cycle_does_not_reselect_contracts(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    now = datetime(2026, 8, 4, 11, 45, tzinfo=IST)
+
+    class _Auth:
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=now,
+                status=BrokerSessionStatus.NETWORK_UNAVAILABLE,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=tmp_path / "reports" / "live_supervisor",
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+        max_iterations=1,
+        poll_seconds=0.01,
+    )
+    config.state_root.mkdir(parents=True, exist_ok=True)
+    checkpoint_path = config.state_root / "NSE_2026-08-04_UNIFIED_INTERNAL_PAPER.checkpoint.json"
+    checkpoint_path.write_text(
+        json.dumps(
+            {
+                "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+                "subscription_owner": {
+                    "underlyings": {
+                        "NSE:NIFTYBANK-INDEX": {"S21_BANKNIFTY_INTERNAL_PAPER_A": ["UNDERLYING_OBSERVATION"]},
+                    },
+                    "contracts": {
+                        "BANKNIFTY24JAN47000CE": {"S21_BANKNIFTY_INTERNAL_PAPER_A": ["SELECTED_CONTRACT_PINNED"]},
+                    },
+                    "duplicate_provider_subscriptions": False,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    supervisor = UnifiedInternalPaperSupervisor(
+        config,
+        now_provider=lambda: now,
+        sleep_fn=lambda _seconds: None,
+        auth_factory=lambda _root: _Auth(),
+    )
+
+    supervisor.run()
+
+    snapshot = json.loads((config.dashboard_output_root / "api" / "snapshot.json").read_text(encoding="utf-8"))
+    assert snapshot["analytics"]["subscription_owner"]["contracts"] == {}
+
+
+def test_supervisor_started_before_open_does_not_flip_to_late_start_at_open_microseconds(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    current = {"value": datetime(2026, 8, 3, 9, 14, 59, 900000, tzinfo=IST)}
+
+    class _Auth:
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=current["value"],
+                status=BrokerSessionStatus.AUTHENTICATED,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=tmp_path / "reports" / "live_supervisor",
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+        max_iterations=1,
+        poll_seconds=0.01,
+    )
+    supervisor = UnifiedInternalPaperSupervisor(
+        config,
+        now_provider=lambda: current["value"],
+        sleep_fn=lambda _seconds: None,
+        auth_factory=lambda _root: _Auth(),
+    )
+    current["value"] = datetime(2026, 8, 3, 9, 15, 0, 176, tzinfo=IST)
+
+    result = supervisor.run()
+
+    checkpoint_path = config.state_root / f"{result.session_id.replace(':', '_')}.checkpoint.json"
+    checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+    heartbeat = json.loads((config.state_root / "heartbeat.json").read_text(encoding="utf-8"))
+
+    assert result.final_state == "LIVE_OBSERVATION"
+    assert checkpoint["late_start_mode"] is False
+    assert checkpoint["session_started_at"] == "2026-08-03T09:14:59.900000+05:30"
+    assert heartbeat["late_start_mode"] is False
+    assert heartbeat["session_started_at"] == "2026-08-03T09:14:59.900000+05:30"
+
+
 def test_supervisor_skips_no_change_snapshot_checkpoint_and_reports_within_intervals(tmp_path: Path) -> None:
     _write_test_repo_files(tmp_path)
     now = datetime(2026, 8, 3, 9, 45, tzinfo=IST)
@@ -460,6 +751,86 @@ def test_supervisor_summary_labels_stored_explicit_preflight_with_original_times
     assert preflight["captured_at"] == "2026-08-03T08:50:00+05:30"
     assert preflight["source"] == "STORED_EXPLICIT_PREFLIGHT_REPORT"
     assert preflight["reported_at"] == now.isoformat()
+
+
+def test_supervisor_auth_retries_with_canonical_refresh_after_ready_preflight(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    now = datetime(2026, 8, 4, 8, 23, tzinfo=IST)
+    report_dir = tmp_path / "reports" / "live_supervisor"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    (report_dir / "complete_session_preflight.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "tfis.live_supervisor.complete_session_preflight.v1",
+                "captured_at": "2026-08-04T08:21:29.058659+05:30",
+                "verdict": "READY_FOR_COMPLETE_UNIFIED_SESSION",
+                "reasons": [],
+                "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    class _Auth:
+        def __init__(self) -> None:
+            self.calls: list[bool] = []
+
+        def authenticate(self, *, allow_refresh: bool = False, validate_session: bool = True) -> BrokerAuthenticationResult:
+            self.calls.append(allow_refresh)
+            if not allow_refresh:
+                return BrokerAuthenticationResult(
+                    broker="fyers",
+                    logical_account_ref="test",
+                    environment="local",
+                    observed_at=now,
+                    status=BrokerSessionStatus.SESSION_VALIDATION_FAILED,
+                    credential_reference=BrokerCredentialReference(
+                        source_type="LOCAL_TOKEN_STORE",
+                        path="data/token_store.json",
+                        schema="json.access_token",
+                        ignored_by_git=True,
+                    ),
+                )
+            return BrokerAuthenticationResult(
+                broker="fyers",
+                logical_account_ref="test",
+                environment="local",
+                observed_at=now,
+                status=BrokerSessionStatus.AUTHENTICATED,
+                credential_reference=BrokerCredentialReference(
+                    source_type="LOCAL_TOKEN_STORE",
+                    path="data/token_store.json",
+                    schema="json.access_token",
+                    ignored_by_git=True,
+                ),
+            )
+
+    auth = _Auth()
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=report_dir,
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+        max_iterations=1,
+        poll_seconds=0.01,
+    )
+    supervisor = UnifiedInternalPaperSupervisor(
+        config,
+        now_provider=lambda: now,
+        sleep_fn=lambda _seconds: None,
+        auth_factory=lambda _root: auth,
+    )
+
+    result = supervisor.run()
+    payload = json.loads((report_dir / "performance_metrics.json").read_text(encoding="utf-8"))
+    auth_metric = next(item for item in payload["current_cycle"]["stage_metrics"] if item["stage"] == "broker_authentication")
+
+    assert result.final_state == "WAITING_FOR_MARKET"
+    assert auth.calls == [False, True]
+    assert auth_metric["details"]["status"] == "AUTHENTICATED"
+    assert auth_metric["details"]["refresh_recovered"] is True
 
 
 def test_authoritative_readiness_projection_prefers_live_preflight_and_runtime_gate(tmp_path: Path) -> None:

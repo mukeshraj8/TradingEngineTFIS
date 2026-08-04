@@ -1,0 +1,52 @@
+{
+  "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+    "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+    "current_quote_ltp": "1142.4",
+    "normal_entry": {
+      "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+    },
+    "revised_entry": null
+  },
+  "S22_RELIANCE_INTERNAL_PAPER_A": {
+    "current_entry_state": "RC_ENTRY_ALREADY_MISSED",
+    "current_quote_ltp": "47.35",
+    "normal_entry": {
+      "breach_bar": {
+        "bar_end": "2026-08-04T09:31:00+05:30",
+        "bar_start": "2026-08-04T09:30:00+05:30",
+        "close": "57.4",
+        "complete": true,
+        "high": "57.4",
+        "low": "57.4",
+        "open": "57.4",
+        "source_id": "fyers:history:NSE:RELIANCE26AUG1260CE",
+        "symbol": "NSE:RELIANCE26AUG1260CE",
+        "volume": "1500"
+      },
+      "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+    },
+    "revised_entry": {
+      "breach_bar": {
+        "bar_end": "2026-08-04T09:33:00+05:30",
+        "bar_start": "2026-08-04T09:32:00+05:30",
+        "close": "56.8",
+        "complete": true,
+        "high": "56.8",
+        "low": "56.8",
+        "open": "56.8",
+        "source_id": "fyers:history:NSE:RELIANCE26AUG1260CE",
+        "symbol": "NSE:RELIANCE26AUG1260CE",
+        "volume": "500"
+      },
+      "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+    }
+  },
+  "S23_NIFTY_INTERNAL_PAPER_A": {
+    "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+    "current_quote_ltp": "299",
+    "normal_entry": {
+      "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+    },
+    "revised_entry": null
+  }
+}

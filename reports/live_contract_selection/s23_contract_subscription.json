@@ -1,0 +1,35 @@
+{
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "cross_strategy_leakage": false,
+  "selected_contract_reads": [
+    {
+      "ask": "315",
+      "bid": "314.45",
+      "data_quality": [],
+      "ltp": "314.25",
+      "oi": "785395",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "source_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbol": "NSE:NIFTY2680424250CE"
+    },
+    {
+      "ask": "306",
+      "bid": "305.45",
+      "data_quality": [],
+      "ltp": "305.35",
+      "oi": "785980",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "source_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbol": "NSE:NIFTY2680424250CE"
+    }
+  ],
+  "status": "PINNED_AND_CAPTURED",
+  "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+  "subscription_owner_contract_entry": {
+    "S23_NIFTY_INTERNAL_PAPER_A": [
+      "SELECTED_CONTRACT_PINNED"
+    ]
+  }
+}

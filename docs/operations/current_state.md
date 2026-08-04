@@ -6,6 +6,83 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Tuesday, August 4, 2026 at 13:01 IST, the authoritative late-start
+  reconstruction lane is `AUGUST4_BASELINE_RECOVERED`. The unified runtime no
+  longer needs to treat supervisor uptime as business authority when FYERS
+  read-only historical evidence is available. A new shared reconstruction path
+  now exists across `src/tfis/runtime/multi_strategy/live_contract_selection.py`,
+  `src/tfis/runtime/multi_strategy/session_reconstruction.py`, and
+  `src/tfis/runtime/multi_strategy/supervisor.py`. The generated evidence pack
+  under `reports/historical_reconstruction/` proves the truthful current
+  August 4, 2026 states: `S21/BANKNIFTY = NORMAL_ENTRY_STILL_VALID`,
+  `S22/RELIANCE = RC_ENTRY_ALREADY_MISSED`,
+  `S23/NIFTY = NORMAL_ENTRY_STILL_VALID`. The supervisor late-start path now
+  attempts per-instance historical recovery instead of blindly returning
+  `CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR`, and reconstructed
+  instances remain explicitly labelled as historical rather than live. No
+  external broker-order authority was added; `TCS` and `INFY` remain disabled.
+- as of Tuesday, August 4, 2026 at 11:35 IST, the authoritative live-contract
+  selection lane is `CONDITIONAL_READY_FOR_NEXT_BASELINE_WITH_CLEAN_RESTART`.
+  The new generic live actual-chain selector in
+  `src/tfis/runtime/multi_strategy/live_contract_selection.py` is now wired
+  into the unified supervisor for the supported live-baseline strategies
+  `S21/BANKNIFTY` and `S23/NIFTY`. Direct FYERS read-only capture now proves
+  both strategies can resolve current live selected contracts from actual
+  listed option-chain data without fixture identities:
+  `S21 -> NSE:BANKNIFTY26AUG57000CE`,
+  `S23 -> NSE:NIFTY2680424250CE`. An isolated pre-market supervisor proof at
+  deterministic `08:50 IST` using live read-only provider data also produced
+  `3/3` prepared plans with real pinned contracts only and no S21/S23 fixture
+  leakage in the verification snapshot under
+  `tmp/live_contract_selection_verification/`. Remaining honest limit:
+  the already-running late-start PID `20840` still reflects the older August
+  4 degraded session path and must be cleanly restarted before the next
+  baseline run. Today's original S21/S23 morning session remains
+  unrecoverable because authoritative selected-contract identity was never
+  established before ORPT/RC in that running session. External broker-order
+  authority remains `NONE`; `TCS` and `INFY` remain disabled.
+- as of Tuesday, August 4, 2026 at 11:01 IST, the urgent intraday session
+  reconstruction lane is `PARTIALLY_RECOVERED`. Today's invalid
+  `LATE_START_NO_NEW_ENTRY` session-level state is now preserved under
+  `reports/session_reconstruction/preserved_live_session/` and explicitly
+  reclassified as `INVALID_RUNTIME_CLASSIFICATION`. A new generic
+  reconstruction slice now exists in
+  `src/tfis/runtime/multi_strategy/session_reconstruction.py` with the live
+  read-only runner `scripts/run_session_reconstruction.py`. Live FYERS
+  evidence from `09:15` onward proves the truthful per-instance state for the
+  baseline session `NSE:2026-08-04:UNIFIED_INTERNAL_PAPER`: `S22 RELIANCE`
+  is not valid anymore because the normal sell-entry `57.50` was breached at
+  `09:31:00 IST` and the revised RC entry `57.00` was also breached at
+  `09:33:00 IST`, so the authoritative current state is
+  `RC_ENTRY_ALREADY_MISSED`. `S21` and `S23` remain
+  `BLOCKED_INSUFFICIENT_HISTORICAL_EVIDENCE` because today's live baseline
+  never had authoritative selected-option identities; their configured
+  selected contracts are still fixture identities, so current selected-option
+  history cannot be reconstructed honestly. The baseline session is therefore
+  `BASELINE_SESSION_PARTIALLY_RECOVERED`, not fully invalidated and not fully
+  certifiable. No retroactive order or fill was created. External
+  broker-order/live authority remains `NONE`, and `TCS` / `INFY` remain
+  disabled.
+- as of Tuesday, August 4, 2026 at 09:32 IST, the live baseline unified
+  internal-paper session `NSE:2026-08-04:UNIFIED_INTERNAL_PAPER` did not pass
+  the opening-window proof and must not be used as the activation gate for
+  `TCS` or `INFY`. Although the supervisor was started before market open and
+  FYERS read-only authentication remained `AUTHENTICATED`, the running PID
+  `20840` flipped into `LATE_START_NO_NEW_ENTRY` at the first `09:15` live
+  cycle and downgraded the dashboard to `DEGRADED`, leaving all three baseline
+  instances (`S21`, `S22 RELIANCE`, `S23`) in deferred/no-order mode with
+  `0.00` session P&L. Root cause: the continuous supervisor late-start check
+  was incorrectly based on the current cycle timestamp being greater than
+  `09:15:00`, so the first live cycle at `09:15:00.000176 IST` was treated as
+  a late start even though the session was already running before open. The
+  code is now fixed under `src/tfis/runtime/multi_strategy/supervisor.py` to
+  persist and reuse the actual supervisor session start timestamp; focused
+  validation passed at `17 passed` in
+  `tests/unit/test_multi_strategy_continuous_supervisor.py`. Operational
+  consequence: `TCS` and `INFY` remain disabled today, the current live
+  session is not baseline-certifying evidence, and the next authoritative
+  proof remains one fresh before-open unified session on the patched code
+  path. External broker-order/live authority remains `NONE`.
 - as of Monday, August 3, 2026 after market close, the fast-track closure lane
   is `CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF`. The live unified
   supervisor session `NSE:2026-08-03:UNIFIED_INTERNAL_PAPER` is no longer

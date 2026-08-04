@@ -1,0 +1,122 @@
+{
+  "active_late_start_snapshot": {
+    "heartbeat_state": "LATE_START_NO_NEW_ENTRY",
+    "late_start_mode": true,
+    "note": "active PID 20840 predates this patch set and still reflects the old late-start path; it must be restarted before the next baseline run",
+    "stale_contracts": {
+      "BANKNIFTY24JAN47000CE": {
+        "S21_BANKNIFTY_INTERNAL_PAPER_A": [
+          "SELECTED_CONTRACT_PINNED"
+        ]
+      },
+      "NIFTY_PHASE5C_PUT_FIXTURE": {
+        "S23_NIFTY_INTERNAL_PAPER_A": [
+          "SELECTED_CONTRACT_PINNED"
+        ]
+      },
+      "NSE:RELIANCE26AUG1260CE": {
+        "S22_RELIANCE_INTERNAL_PAPER_A": [
+          "SELECTED_CONTRACT_PINNED"
+        ]
+      }
+    }
+  },
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "isolated_premarket_snapshot": {
+    "market_state": "PRE_OPEN",
+    "strategies": {
+      "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+        "base_entry": "727.65",
+        "block_reason": null,
+        "branch": "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+        "chain_quality_state": "LIVE_AUTHORITATIVE_SELECTED_CONTRACT",
+        "evidence_quality": "LIVE_READ_ONLY_RUNTIME_SELECTION",
+        "expiry_candidates": [
+          "2024-01-25",
+          "2024-02-29"
+        ],
+        "first_quote_timestamp": "2026-08-04T08:50:00+05:30",
+        "history_completeness": "SUCCESS",
+        "latest_quote_timestamp": "2026-08-04T08:50:00+05:30",
+        "market_references": {
+          "2DHH": "58247.95",
+          "2DLL": "57139.60",
+          "3DHH": "58247.95",
+          "3DLL": "56768.60"
+        },
+        "monthly_status": "BULL_CF",
+        "oi": "671460",
+        "original_sl": "1164.24",
+        "orpt": "09:24:59",
+        "plan_hash": "02c6c82784473622ff9710e19563f33bfbdf9fbf622289d935fa49d7e067a3b9",
+        "plan_status": "PREPARED",
+        "premium": "1144",
+        "rc": "09:29:59",
+        "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+        "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+        "selected_expiry": "2026-08-25",
+        "selected_option_type": "CALL",
+        "selected_strike": "57000",
+        "selection_timestamp": "2026-08-04T08:50:00+05:30",
+        "source_timestamp": "2026-08-04T08:50:00+05:30",
+        "subscription_state": "PINNED",
+        "target": "291.06"
+      },
+      "S23_NIFTY_INTERNAL_PAPER_A": {
+        "base_entry": "80.48",
+        "block_reason": null,
+        "branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "chain_quality_state": "LIVE_AUTHORITATIVE_SELECTED_CONTRACT",
+        "evidence_quality": "LIVE_READ_ONLY_RUNTIME_SELECTION",
+        "expiry_candidates": [
+          "2026-06-11",
+          "2026-06-18"
+        ],
+        "first_quote_timestamp": "2026-08-04T08:50:00+05:30",
+        "history_completeness": "SUCCESS",
+        "latest_quote_timestamp": "2026-08-04T08:50:00+05:30",
+        "market_references": {
+          "2DHH": "24774.30",
+          "2DLL": "24299.70",
+          "3DHH": "24774.30",
+          "3DLL": "24187.10"
+        },
+        "monthly_status": "BULL",
+        "oi": "785980",
+        "original_sl": "128.76",
+        "orpt": "09:24:59",
+        "plan_hash": "b3fbb849372fdfd82f82bf2091ccb70757c03150678a9b1a274e194c9a71225d",
+        "plan_status": "PREPARED",
+        "premium": "305.35",
+        "rc": "09:29:59",
+        "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+        "selected_contract": "NSE:NIFTY2680424250CE",
+        "selected_expiry": "2026-08-04",
+        "selected_option_type": "CALL",
+        "selected_strike": "24250",
+        "selection_timestamp": "2026-08-04T08:50:00+05:30",
+        "source_timestamp": "2026-08-04T08:50:00+05:30",
+        "subscription_state": "PINNED",
+        "target": "32.19"
+      }
+    },
+    "subscription_owner_contracts": {
+      "NSE:BANKNIFTY26AUG57000CE": {
+        "S21_BANKNIFTY_INTERNAL_PAPER_A": [
+          "SELECTED_CONTRACT_PINNED"
+        ]
+      },
+      "NSE:NIFTY2680424250CE": {
+        "S23_NIFTY_INTERNAL_PAPER_A": [
+          "SELECTED_CONTRACT_PINNED"
+        ]
+      },
+      "NSE:RELIANCE26AUG1260CE": {
+        "S22_RELIANCE_INTERNAL_PAPER_A": [
+          "SELECTED_CONTRACT_PINNED"
+        ]
+      }
+    },
+    "system_state": "HEALTHY"
+  }
+}

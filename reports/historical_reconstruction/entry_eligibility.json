@@ -1,0 +1,140 @@
+{
+  "captured_at": "2026-08-04T12:59:47.331344+05:30",
+  "instances": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+      "block_reason": null,
+      "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+      "evidence_hash": "2adc3aac922c963ecc014c3c8acd6dfc5b59a00f812e59055a25056063de7c48",
+      "invalid_runtime_classification": "INVALID_RUNTIME_CLASSIFICATION",
+      "normal_entry": {
+        "activation_time": "2026-08-04T09:24:59.400000+05:30",
+        "breach_source": null,
+        "breach_timestamp": null,
+        "current_quote_breached": false,
+        "details": {
+          "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+        },
+        "evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+        "status": "NORMAL_ENTRY",
+        "still_valid": true,
+        "trigger_price": "774.60"
+      },
+      "opening_bar_timestamp": "2026-08-04T09:15:00+05:30",
+      "opening_price": "58068.95",
+      "option_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+      "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+      "rc_result": "RC_NOT_REQUIRED",
+      "revised_entry": null,
+      "selected_contract_authoritative": true,
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "timing_policy": {
+        "market_open": "09:15:00",
+        "orpt_time": "09:24:59.400000",
+        "rc_time": "09:29:59.400000"
+      },
+      "underlying_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS"
+    },
+    "S22_RELIANCE_INTERNAL_PAPER_A": {
+      "block_reason": null,
+      "current_entry_state": "RC_ENTRY_ALREADY_MISSED",
+      "evidence_hash": "a6998caa6697bfc72a5f79b89e31571421c69a0abd3cc5f1c7dae4526d731c11",
+      "invalid_runtime_classification": "INVALID_RUNTIME_CLASSIFICATION",
+      "normal_entry": {
+        "activation_time": "2026-08-04T09:24:59.400000+05:30",
+        "breach_source": "HISTORICAL_CANDLE_LOW",
+        "breach_timestamp": "2026-08-04T09:31:00+05:30",
+        "current_quote_breached": false,
+        "details": {
+          "breach_bar": {
+            "bar_end": "2026-08-04T09:31:00+05:30",
+            "bar_start": "2026-08-04T09:30:00+05:30",
+            "close": "57.4",
+            "complete": true,
+            "high": "57.4",
+            "low": "57.4",
+            "open": "57.4",
+            "source_id": "fyers:history:NSE:RELIANCE26AUG1260CE",
+            "symbol": "NSE:RELIANCE26AUG1260CE",
+            "volume": "1500"
+          },
+          "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+        },
+        "evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+        "status": "NORMAL_ENTRY",
+        "still_valid": false,
+        "trigger_price": "57.50"
+      },
+      "opening_bar_timestamp": "2026-08-04T09:15:00+05:30",
+      "opening_price": "1315.0",
+      "option_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+      "orpt_result": "ORPT_ENTRY_MISSED_WAITING_FOR_RC",
+      "rc_result": "RC_ENTRY_ALREADY_MISSED",
+      "revised_entry": {
+        "activation_time": "2026-08-04T09:29:59.400000+05:30",
+        "breach_source": "HISTORICAL_CANDLE_LOW",
+        "breach_timestamp": "2026-08-04T09:33:00+05:30",
+        "current_quote_breached": false,
+        "details": {
+          "breach_bar": {
+            "bar_end": "2026-08-04T09:33:00+05:30",
+            "bar_start": "2026-08-04T09:32:00+05:30",
+            "close": "56.8",
+            "complete": true,
+            "high": "56.8",
+            "low": "56.8",
+            "open": "56.8",
+            "source_id": "fyers:history:NSE:RELIANCE26AUG1260CE",
+            "symbol": "NSE:RELIANCE26AUG1260CE",
+            "volume": "500"
+          },
+          "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+        },
+        "evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+        "status": "RC_ENTRY",
+        "still_valid": false,
+        "trigger_price": "57.00"
+      },
+      "selected_contract_authoritative": true,
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "timing_policy": {
+        "market_open": "09:15:00",
+        "orpt_time": "09:24:59.400000",
+        "rc_time": "09:29:59.400000"
+      },
+      "underlying_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS"
+    },
+    "S23_NIFTY_INTERNAL_PAPER_A": {
+      "block_reason": null,
+      "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+      "evidence_hash": "f13ff5a7660432e8c88c71e2fc5f2e2c8b6c0ca6a61b3f0b876fc849cc7cc5b9",
+      "invalid_runtime_classification": "INVALID_RUNTIME_CLASSIFICATION",
+      "normal_entry": {
+        "activation_time": "2026-08-04T09:24:59.400000+05:30",
+        "breach_source": null,
+        "breach_timestamp": null,
+        "current_quote_breached": false,
+        "details": {
+          "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+        },
+        "evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+        "status": "NORMAL_ENTRY",
+        "still_valid": true,
+        "trigger_price": "102.03"
+      },
+      "opening_bar_timestamp": "2026-08-04T09:15:00+05:30",
+      "opening_price": "24703.9",
+      "option_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+      "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+      "rc_result": "RC_NOT_REQUIRED",
+      "revised_entry": null,
+      "selected_contract_authoritative": true,
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "timing_policy": {
+        "market_open": "09:15:00",
+        "orpt_time": "09:24:59.400000",
+        "rc_time": "09:29:59.400000"
+      },
+      "underlying_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS"
+    }
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-08-03T15:25:15.888273+05:30",
+  "captured_at": "2026-08-04T12:15:20.327502+05:30",
   "matrix": {
     "S21_BANKNIFTY_INTERNAL_PAPER_A": {
       "aggregate_option_selling_exposure": 3,
@@ -21,5 +21,5 @@
     }
   },
   "schema_version": "tfis.live_supervisor.account_risk_acceptance_matrix.v1",
-  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER"
+  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER"
 }

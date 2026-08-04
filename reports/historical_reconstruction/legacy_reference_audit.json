@@ -1,0 +1,31 @@
+{
+  "audit_hash": "ce90c1a8e32ed2b8e720535e218e5e2e5386bbb163e2933f5cd7599ea3ade488",
+  "captured_at": "2026-08-04T13:01:25.168745+05:30",
+  "references": [
+    {
+      "disposition": "ADAPTED_AS_PLUMBING_IDEA",
+      "function_or_section": "historical option-chain selection and contract-specific lifecycle sections",
+      "old_rule_risk": "Legacy backtest documentation is plumbing-only and not business-rule authority.",
+      "reusable_idea": "Reconstruct from actual listed contracts, preserve rejected candidates, then fetch selected-contract-specific path.",
+      "source": "D:\\TradingEngineTFIS\\docs\\strategy\\backtesting_and_experiments.md",
+      "target_component": "src/tfis/runtime/multi_strategy/live_contract_selection.py"
+    },
+    {
+      "disposition": "ADAPTED_AS_PLUMBING_IDEA",
+      "function_or_section": "_normalize_option_history_payload",
+      "old_rule_risk": "Transport/normalization only; no strategy thresholds or trade decisions copied.",
+      "reusable_idea": "Contract-specific historical candle normalization and session-window filtering.",
+      "source": "D:\\TradingEngineTFIS\\src\\tfis\\brokers\\fyers.py",
+      "target_component": "src/tfis/fyers_read_only/adapter.py"
+    },
+    {
+      "disposition": "ADAPTED_AS_GUARDRAIL",
+      "function_or_section": "option-chain presence and contract-identity validation",
+      "old_rule_risk": "Validation semantics only; not a replacement for workbook-sourced TFIS rules.",
+      "reusable_idea": "Fail closed when selected contract is not proven present in chain evidence.",
+      "source": "D:\\TradingEngineTFIS\\src\\tfis\\paper\\validation.py",
+      "target_component": "src/tfis/runtime/multi_strategy/session_reconstruction.py"
+    }
+  ],
+  "schema_version": "tfis.historical_reconstruction.legacy_reference_audit.v1"
+}

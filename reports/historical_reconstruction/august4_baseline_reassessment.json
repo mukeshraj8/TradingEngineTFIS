@@ -1,0 +1,11 @@
+{
+  "instance_states": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": "NORMAL_ENTRY_STILL_VALID",
+    "S22_RELIANCE_INTERNAL_PAPER_A": "RC_ENTRY_ALREADY_MISSED",
+    "S23_NIFTY_INTERNAL_PAPER_A": "NORMAL_ENTRY_STILL_VALID"
+  },
+  "reason": "Per-instance reconstruction replaces the invalid global late-start classification.",
+  "schema_version": "tfis.historical_reconstruction.baseline_assessment.v1",
+  "session_started_at": "2026-08-04T12:24:22.450405+05:30",
+  "verdict": "AUGUST4_BASELINE_RECOVERED"
+}

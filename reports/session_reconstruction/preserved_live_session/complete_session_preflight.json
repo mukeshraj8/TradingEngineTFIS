@@ -1,0 +1,9 @@
+{
+  "captured_at": "2026-08-04T08:21:29.058659+05:30",
+  "reasons": [],
+  "reported_at": "2026-08-04T11:00:00.169106+05:30",
+  "schema_version": "tfis.live_supervisor.complete_session_preflight.v1",
+  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+  "source": "STORED_EXPLICIT_PREFLIGHT_REPORT",
+  "verdict": "READY_FOR_COMPLETE_UNIFIED_SESSION"
+}

@@ -1,0 +1,16 @@
+{
+  "S21": {
+    "reason": "authoritative selected-contract identity was not established in the original running August 4 session before the fresh-entry windows",
+    "verdict": "TODAY_S21_NOT_RECOVERABLE"
+  },
+  "S22": {
+    "reason": "S22 already had authoritative selected-contract continuity and stays governed by the existing reconstruction result",
+    "verdict": "UNCHANGED_EXISTING_RECONSTRUCTION"
+  },
+  "S23": {
+    "reason": "authoritative selected-contract identity was not established in the original running August 4 session before the fresh-entry windows",
+    "verdict": "TODAY_S23_NOT_RECOVERABLE"
+  },
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "trading_date": "2026-08-04"
+}

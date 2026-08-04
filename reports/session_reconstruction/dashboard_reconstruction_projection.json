@@ -1,0 +1,39 @@
+{
+  "captured_at": "2026-08-04T11:01:07.296343+05:30",
+  "schema_version": "tfis.dashboard.reconstruction_projection.v1",
+  "strategies": [
+    {
+      "current_entry_validity": "BLOCKED_INSUFFICIENT_HISTORICAL_EVIDENCE",
+      "evidence_label": "MISSING",
+      "opening_evidence_source": "HISTORICALLY_RECONSTRUCTED",
+      "orpt_status": "ORPT_BLOCKED_MISSING_EVIDENCE",
+      "rc_status": "RC_BLOCKED_MISSING_EVIDENCE",
+      "reconstruction_evidence_quality": "MISSING",
+      "selected_contract": null,
+      "session_started_at": "2026-08-04T08:21:29.058659+05:30",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"
+    },
+    {
+      "current_entry_validity": "RC_ENTRY_ALREADY_MISSED",
+      "evidence_label": "HISTORICALLY_RECONSTRUCTED",
+      "opening_evidence_source": "HISTORICALLY_RECONSTRUCTED",
+      "orpt_status": "ORPT_ENTRY_MISSED_WAITING_FOR_RC",
+      "rc_status": "RC_ENTRY_ALREADY_MISSED",
+      "reconstruction_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS",
+      "selected_contract": null,
+      "session_started_at": "2026-08-04T08:21:29.058659+05:30",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A"
+    },
+    {
+      "current_entry_validity": "BLOCKED_INSUFFICIENT_HISTORICAL_EVIDENCE",
+      "evidence_label": "MISSING",
+      "opening_evidence_source": "HISTORICALLY_RECONSTRUCTED",
+      "orpt_status": "ORPT_BLOCKED_MISSING_EVIDENCE",
+      "rc_status": "RC_BLOCKED_MISSING_EVIDENCE",
+      "reconstruction_evidence_quality": "MISSING",
+      "selected_contract": null,
+      "session_started_at": "2026-08-04T08:21:29.058659+05:30",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A"
+    }
+  ]
+}

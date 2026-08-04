@@ -1,0 +1,67 @@
+{
+  "captured_at": "2026-08-04T11:35:21.983494+05:30",
+  "dashboard_projection": {
+    "chain_quality_state": "LIVE_AUTHORITATIVE_SELECTED_CONTRACT",
+    "first_quote_timestamp": "2026-08-04T08:50:00+05:30",
+    "history_completeness": "SUCCESS",
+    "latest_quote_timestamp": "2026-08-04T08:50:00+05:30",
+    "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+    "selected_expiry": "2026-08-25",
+    "selected_option_type": "CALL",
+    "selected_strike": "57000",
+    "subscription_state": "PINNED"
+  },
+  "entry": "727.65",
+  "evidence": "LIVE_READ_ONLY_RUNTIME_SELECTION",
+  "monthly_status": "BULL_CF",
+  "option_history_status": "SUCCESS",
+  "original_sl": "1164.24",
+  "plan_hash": "f9d7ce66e42f0dcdb9c67cb6de173bbe77cde8fd376116f8e197633f5772ef07",
+  "selected_branch": "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+  "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+  "selected_contract_history": [
+    {
+      "ask": "1162.7",
+      "bid": "1159.25",
+      "data_quality": [],
+      "ltp": "1159.85",
+      "oi": "671700",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "source_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbol": "NSE:BANKNIFTY26AUG57000CE"
+    },
+    {
+      "ask": "1147.1",
+      "bid": "1144",
+      "data_quality": [],
+      "ltp": "1144",
+      "oi": "671460",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "source_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbol": "NSE:BANKNIFTY26AUG57000CE"
+    }
+  ],
+  "selected_contract_quote": {
+    "ask": "1168.75",
+    "bid": "1164.8",
+    "data_quality": [],
+    "ltp": "1166.4",
+    "oi": "676320",
+    "oi_unit": "SOURCE_UNSPECIFIED",
+    "receipt_timestamp": "2026-08-04T11:35:21.983494+05:30",
+    "source_timestamp": "2026-08-04T11:35:21.983494+05:30",
+    "symbol": "NSE:BANKNIFTY26AUG57000CE"
+  },
+  "selected_expiry": "2026-08-25",
+  "selected_option_type": "CALL",
+  "selected_strike": "57000",
+  "source_rule_ids": [
+    "MONTHLY_STATUS.GENERIC.ENGINE.001",
+    "LIVE.ACTUAL_CHAIN.CONTRACT_SELECTION.001",
+    "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL"
+  ],
+  "status": "LIVE_AUTHORITATIVE_SELECTED_CONTRACT",
+  "target": "291.06"
+}

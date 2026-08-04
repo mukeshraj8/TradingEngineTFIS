@@ -1,0 +1,58 @@
+{
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "current_verified_path": {
+    "S21": [
+      "Monthly Status BULL_CF",
+      "BULL_CALL branch",
+      "CALL option type",
+      "monthly expiry 2026-08-25",
+      "actual-listed BANKNIFTY chain traversal",
+      "premium/OI qualification",
+      "selected contract NSE:BANKNIFTY26AUG57000CE"
+    ],
+    "S23": [
+      "Monthly Status BULL",
+      "BULL/CALL weekly branch family",
+      "CALL option type",
+      "weekly expiry 2026-08-04",
+      "actual-listed NIFTY chain traversal",
+      "premium/OI qualification",
+      "selected contract NSE:NIFTY2680424250CE"
+    ]
+  },
+  "root_causes": [
+    {
+      "classification": "LIVE_RUNTIME_DEFECT",
+      "location": "config/internal_paper_strategy_instances.yaml",
+      "observed_identity": "BANKNIFTY24JAN47000CE",
+      "path_stage": "enabled strategy registry deterministic projection",
+      "resolution": "supervisor now computes an authoritative actual-chain contract for live-supported strategies",
+      "strategy": "S21"
+    },
+    {
+      "classification": "LIVE_RUNTIME_DEFECT",
+      "location": "config/internal_paper_strategy_instances.yaml",
+      "observed_identity": "NIFTY_PHASE5C_PUT_FIXTURE",
+      "path_stage": "enabled strategy registry deterministic projection",
+      "resolution": "supervisor now computes an authoritative actual-chain contract for live-supported strategies",
+      "strategy": "S23"
+    },
+    {
+      "classification": "LIVE_RUNTIME_DEFECT",
+      "location": "tmp/tfis_supervisor_state and tmp/tfis_dashboard_v1",
+      "observed_identity": "stale fixture pins from the pre-patch running session",
+      "path_stage": "old active late-start runtime state",
+      "resolution": "fresh continuity now clears stale strategy-owned contract pins before each cycle; a clean restart is still required for the old PID",
+      "strategy": "S21/S23"
+    },
+    {
+      "classification": "REPORT_ONLY",
+      "location": "reports/session_reconstruction/*",
+      "observed_identity": "fixture identity preserved as historical August 4 evidence",
+      "path_stage": "historical reconstruction reports",
+      "resolution": "kept as truthful prior-session artifact, not as current runtime authority",
+      "strategy": "S21/S23"
+    }
+  ],
+  "schema_version": "tfis.live_contract_selection.identity_audit.v1"
+}

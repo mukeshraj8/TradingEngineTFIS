@@ -2,6 +2,79 @@
 
 ## Current Snapshot
 
+- as of Tuesday, August 4, 2026 at 13:01 IST, the
+  `URGENT_CORRECTION_AUTHORITATIVE_LATE_START_RECONSTRUCTION_FROM_FYERS_HISTORICAL_EVIDENCE`
+  milestone is `CONDITIONAL_ACCEPTED`. The unified runtime now contains one
+  generic historical recovery path instead of the old blanket
+  `CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR` outcome for late
+  starts. Shared code now reconstructs selected-contract continuity,
+  historical option path, ORPT/RC state, and current eligibility per strategy
+  instance. Live read-only FYERS evidence captured on Tuesday, August 4, 2026
+  produced `AUGUST4_BASELINE_RECOVERED` under
+  `reports/historical_reconstruction/`: `S21/BANKNIFTY` and `S23/NIFTY`
+  remained `NORMAL_ENTRY_STILL_VALID`, while `S22/RELIANCE` was truthfully
+  reconstructed as `RC_ENTRY_ALREADY_MISSED`. Remaining honest condition: the
+  S21/S23 selection leg currently uses current-chain plus historical-path
+  reconstruction rather than a proven decision-stage historical option-chain
+  snapshot, so the evidence is clearly labelled as reconstructed and not live
+  observed. External broker-order authority remains `NONE`; `TCS` and `INFY`
+  remain disabled.
+- as of Tuesday, August 4, 2026 at 11:35 IST, the
+  `COMPLETE_AUTHORITATIVE_LIVE_CONTRACT_SELECTION_AND_CAPTURE_FOR_S21_AND_S23`
+  milestone is `CONDITIONAL`. Workbook-backed ORPT/RC timing authority is now
+  explicitly reverified for S21 and S23 under
+  `reports/live_contract_selection/timing_authority_verification.json`, the
+  unified supervisor now computes authoritative live selected contracts from
+  `src/tfis/contract_selection/actual_chain.py`, and direct FYERS read-only
+  capture proves current real selections for both baseline index strategies:
+  `S21 -> NSE:BANKNIFTY26AUG57000CE`, `S23 -> NSE:NIFTY2680424250CE`. An
+  isolated pre-market supervisor proof in
+  `tmp/live_contract_selection_verification/` reached `WAITING_FOR_MARKET`
+  with all three baseline plans prepared and with only real selected
+  contracts pinned in the verification snapshot. Additional fixes closed two
+  runtime defects found during integration: stale checkpoint contract pins are
+  now released before each new continuity evaluation, and live selected-plan
+  payloads are now JSON-safe for checkpoint/report persistence. Remaining
+  condition: the already-running August 4 late-start PID `20840` still holds
+  the old degraded session state and must be cleanly restarted before the next
+  baseline run. Today's original S21/S23 morning session remains honestly
+  non-recoverable because authoritative selected-contract identity was never
+  established before ORPT/RC in that running session. External broker-order
+  authority remains `NONE`; `TCS` and `INFY` remain disabled.
+- as of Tuesday, August 4, 2026 at 11:01 IST, the
+  `CLOSE_LIVE_OPERATIONAL_BLOCKERS_AND_BEGIN_S22_MULTI_STOCK_ONBOARDING`
+  milestone advances from a blind failed-open assessment to a
+  `PARTIALLY_RECOVERED` live truth state. The invalid session-wide
+  `LATE_START_NO_NEW_ENTRY` classification is now preserved and diagnosed
+  under `reports/session_reconstruction/` rather than being treated as
+  business authority. New generic reconstruction code and focused tests now
+  prove that the supervisor/session start time must be separated from current
+  cycle time and that current entry validity must be evaluated per strategy
+  from authoritative post-open evidence. Live FYERS read-only reconstruction
+  produced one truthful business outcome today: `S22 RELIANCE` was missed on
+  both the normal and RC paths (`57.50` breached at `09:31:00 IST`;
+  `57.00` breached at `09:33:00 IST`), so no entry remains valid. `S21` and
+  `S23` remain blocked because today's enabled registry still uses fixture
+  selected-contract identities and therefore lacks authoritative selected-
+  option history. No retroactive financial action was created, external
+  broker-order authority remains `NONE`, and `TCS` / `INFY` remain disabled.
+- as of Tuesday, August 4, 2026 at 09:32 IST, the
+  `CLOSE_LIVE_OPERATIONAL_BLOCKERS_AND_BEGIN_S22_MULTI_STOCK_ONBOARDING`
+  milestone remains `CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF` and does
+  not advance to multi-stock activation. The live baseline session was started
+  before market open with healthy FYERS read-only authentication, but the
+  running supervisor immediately degraded at the first opening cycle because
+  late-start detection was keyed to the current cycle timestamp rather than to
+  the actual supervisor session start. The first live cycle at
+  `09:15:00.000176 IST` therefore forced `LATE_START_NO_NEW_ENTRY`, deferred
+  `S21`, `S22 RELIANCE`, and `S23`, and left the dashboard in
+  `DEGRADED` / `0.00` session P&L state. The defect is now fixed in
+  `src/tfis/runtime/multi_strategy/supervisor.py`, including persisted
+  `session_started_at` state and a focused regression test proving that a
+  supervisor started before open does not flip to late-start at open-time
+  microseconds; focused validation passed at `17 passed`. `TCS` and `INFY`
+  remain disabled because today's failed baseline is not an acceptable
+  activation gate. External broker-order/live authority remains `NONE`.
 - as of Monday, August 3, 2026 after market close, the
   `CLOSE_LIVE_OPERATIONAL_BLOCKERS_AND_BEGIN_S22_MULTI_STOCK_ONBOARDING`
   milestone is advanced to `CONDITIONAL_READY_PENDING_BEFORE_OPEN_PROOF`.

@@ -1,0 +1,67 @@
+{
+  "captured_at": "2026-08-04T11:35:21.983494+05:30",
+  "dashboard_projection": {
+    "chain_quality_state": "LIVE_AUTHORITATIVE_SELECTED_CONTRACT",
+    "first_quote_timestamp": "2026-08-04T08:50:00+05:30",
+    "history_completeness": "SUCCESS",
+    "latest_quote_timestamp": "2026-08-04T08:50:00+05:30",
+    "selected_contract": "NSE:NIFTY2680424250CE",
+    "selected_expiry": "2026-08-04",
+    "selected_option_type": "CALL",
+    "selected_strike": "24250",
+    "subscription_state": "PINNED"
+  },
+  "entry": "80.48",
+  "evidence": "LIVE_READ_ONLY_RUNTIME_SELECTION",
+  "monthly_status": "BULL",
+  "option_history_status": "SUCCESS",
+  "original_sl": "128.76",
+  "plan_hash": "6e59988ec7da916d3b082384f903e97260a4f58346d7620377edff170ee659da",
+  "selected_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "selected_contract": "NSE:NIFTY2680424250CE",
+  "selected_contract_history": [
+    {
+      "ask": "315",
+      "bid": "314.45",
+      "data_quality": [],
+      "ltp": "314.25",
+      "oi": "785395",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "source_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbol": "NSE:NIFTY2680424250CE"
+    },
+    {
+      "ask": "306",
+      "bid": "305.45",
+      "data_quality": [],
+      "ltp": "305.35",
+      "oi": "785980",
+      "oi_unit": "SOURCE_UNSPECIFIED",
+      "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "source_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbol": "NSE:NIFTY2680424250CE"
+    }
+  ],
+  "selected_contract_quote": {
+    "ask": "321.25",
+    "bid": "320.15",
+    "data_quality": [],
+    "ltp": "321.45",
+    "oi": "782600",
+    "oi_unit": "SOURCE_UNSPECIFIED",
+    "receipt_timestamp": "2026-08-04T11:35:21.983494+05:30",
+    "source_timestamp": "2026-08-04T11:35:21.983494+05:30",
+    "symbol": "NSE:NIFTY2680424250CE"
+  },
+  "selected_expiry": "2026-08-04",
+  "selected_option_type": "CALL",
+  "selected_strike": "24250",
+  "source_rule_ids": [
+    "MONTHLY_STATUS.GENERIC.ENGINE.001",
+    "LIVE.ACTUAL_CHAIN.CONTRACT_SELECTION.001",
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D"
+  ],
+  "status": "LIVE_AUTHORITATIVE_SELECTED_CONTRACT",
+  "target": "32.19"
+}

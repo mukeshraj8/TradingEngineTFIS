@@ -1,0 +1,30 @@
+{
+  "baseline_scope": [
+    "S21/BANKNIFTY",
+    "S22/RELIANCE",
+    "S23/NIFTY"
+  ],
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "disabled_scope": [
+    "S22/TCS",
+    "S22/INFY"
+  ],
+  "isolated_premarket_verification": {
+    "blocked_instances": 0,
+    "broker_sessions": "AUTHENTICATED",
+    "plans_prepared": 3,
+    "selected_contracts": {
+      "S21": "NSE:BANKNIFTY26AUG57000CE",
+      "S22": "NSE:RELIANCE26AUG1260CE",
+      "S23": "NSE:NIFTY2680424250CE"
+    },
+    "state": "WAITING_FOR_MARKET"
+  },
+  "required_operator_actions": [
+    "stop the old active late-start supervisor PID 20840 cleanly before the next baseline run",
+    "start one fresh before-market-open unified supervisor session on the patched code path",
+    "keep external FYERS order authority NONE",
+    "keep TCS and INFY disabled for the next baseline certification run"
+  ],
+  "verdict": "READY_FOR_NEXT_BEFORE_OPEN_BASELINE_WITH_CLEAN_RESTART"
+}

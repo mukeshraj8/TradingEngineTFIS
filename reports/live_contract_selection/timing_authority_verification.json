@@ -1,0 +1,51 @@
+{
+  "authority_source": "TFISRulesAndSpec/AB6 OS.xlsx",
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "conflicts_closed": [
+    {
+      "corrected_to": "09:24:59.400000",
+      "file": "scripts/run_session_reconstruction.py",
+      "previous_s21_orpt": "09:19:59",
+      "status": "FIXED_THIS_MILESTONE"
+    }
+  ],
+  "schema_version": "tfis.live_contract_selection.timing_authority.v1",
+  "timings": [
+    {
+      "applicability": "all four monthly option-selling branches",
+      "orpt": {
+        "cell": "B114",
+        "displayed_value": "09:24:59.400000",
+        "normalized_timestamp": "09:24:59.400000",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "sheet": "AB6 OS"
+      },
+      "rc": {
+        "cell": "C114 / L114",
+        "displayed_value": "09:29:59.400000",
+        "normalized_timestamp": "09:29:59.400000",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "sheet": "AB6 OS"
+      },
+      "strategy": "S21"
+    },
+    {
+      "applicability": "all four weekly option-selling branches",
+      "orpt": {
+        "cell": "B176",
+        "displayed_value": "09:24:59.400000",
+        "normalized_timestamp": "09:24:59.400000",
+        "rule_id": "S23.PUT_ORPT_RC.001 / call-side equivalent",
+        "sheet": "AB6 OS"
+      },
+      "rc": {
+        "cell": "C176 / L176",
+        "displayed_value": "09:29:59.400000",
+        "normalized_timestamp": "09:29:59.400000",
+        "rule_id": "S23.PUT_ORPT_RC.001 / call-side equivalent",
+        "sheet": "AB6 OS"
+      },
+      "strategy": "S23"
+    }
+  ]
+}

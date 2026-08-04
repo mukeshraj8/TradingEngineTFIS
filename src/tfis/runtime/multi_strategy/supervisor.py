@@ -5,6 +5,7 @@ import time
 import time as time_module
 from dataclasses import dataclass
 from datetime import date, datetime, time
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, Callable, Mapping
 from zoneinfo import ZoneInfo
@@ -27,7 +28,13 @@ from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lo
 from tfis.runtime.process_lock import _process_exists, _process_matches_payload, _read_lock_payload
 from tfis.runtime.coordination import RuntimeSubscriptionIndex
 
+from .live_contract_selection import (
+    build_authoritative_historical_selection,
+    build_authoritative_live_selection,
+    supports_authoritative_live_selection,
+)
 from .registry import EnabledStrategyInstance, EnabledStrategyRegistry, load_enabled_strategy_registry
+from .session_reconstruction import StrategyTimingPolicy, reconstruct_option_selling_entry, selected_contract_is_authoritative
 
 
 IST = ZoneInfo("Asia/Calcutta")
@@ -218,6 +225,7 @@ class UnifiedInternalPaperSupervisor:
         self.registry = load_enabled_strategy_registry(config.registry_path)
         self.session_date = config.session_date or self.now_provider().date()
         self.session_id = f"NSE:{self.session_date.isoformat()}:UNIFIED_INTERNAL_PAPER"
+        self._session_started_at = self.now_provider()
         self.session_file_stem = self.session_id.replace(":", "_")
         self.subscription_owner = SubscriptionOwner()
         self.lock_handle: ProcessLockHandle | None = None
@@ -245,6 +253,7 @@ class UnifiedInternalPaperSupervisor:
         self._last_checkpoint_semantic_hash: str | None = None
         self._last_report_write_at: datetime | None = None
         self._last_report_state: str | None = None
+        self._selected_contract_history: dict[str, list[dict[str, Any]]] = {}
 
     def run(self) -> ContinuousSupervisorRunResult:
         self._acquire_process_lock()
@@ -377,6 +386,7 @@ class UnifiedInternalPaperSupervisor:
         self.subscription_owner = SubscriptionOwner.from_dict(self._load_checkpoint_payload().get("subscription_owner", {}))
         underlying_symbols = _load_underlying_symbols(self.config.repo_root)
         for instance in self.registry.enabled_instances:
+            self.subscription_owner.release_strategy(instance.strategy_instance_id)
             symbol = _resolve_underlying_symbol(instance.symbol, underlying_symbols)
             self.subscription_owner.pin_underlying(instance.strategy_instance_id, symbol, reason="UNDERLYING_OBSERVATION")
 
@@ -445,6 +455,9 @@ class UnifiedInternalPaperSupervisor:
                 stage_metrics=stage_metrics,
             )
             live_context["continuity"][instance.strategy_instance_id] = continuity
+            live_context["selected_contract_reads"][instance.strategy_instance_id] = list(
+                self._selected_contract_history.get(instance.strategy_instance_id, [])
+            )
             selected_contract = continuity.get("selected_contract")
             if selected_contract:
                 self.subscription_owner.pin_contract(
@@ -466,12 +479,49 @@ class UnifiedInternalPaperSupervisor:
         instrument_records: tuple[Any, ...],
         stage_metrics: list[StageMetric],
     ) -> dict[str, Any]:
-        if self._late_start_mode and instance.strategy_instance_id != "S22_RELIANCE_INTERNAL_PAPER_A":
-            return {
-                "status": "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR",
-                "selected_contract": None,
-                "evidence": "MISSED_BEFORE_SUPERVISOR_START",
+        if self._late_start_mode:
+            reconstruction = build_authoritative_historical_selection(
+                repo_root=self.config.repo_root,
+                instance=instance,
+                adapter=adapter,
+                instrument_records=instrument_records,
+                session_date=self.session_date,
+                now=now,
+            )
+            continuity = {
+                "status": reconstruction.status,
+                "selected_contract": reconstruction.selected_contract,
+                "selected_branch": reconstruction.selected_branch,
+                "selected_option_type": reconstruction.selected_option_type,
+                "selected_expiry": reconstruction.selected_expiry,
+                "selected_strike": reconstruction.selected_strike,
+                "monthly_status": reconstruction.monthly_status,
+                "entry": reconstruction.entry,
+                "target": reconstruction.target,
+                "original_sl": reconstruction.original_sl,
+                "evidence": reconstruction.evidence,
+                "selected_contract_quote": reconstruction.quote,
+                "live_plan": reconstruction.plan_payload,
+                "option_history_status": reconstruction.option_history_status,
+                "recovery_mode": reconstruction.recovery_mode,
+                "candidate_count": reconstruction.candidate_count,
+                "rejected_candidates": list(reconstruction.rejected_candidates),
+                "unresolved_gap": reconstruction.unresolved_gap,
             }
+            if reconstruction.selected_contract:
+                continuity.update(
+                    self._reconstructed_entry_context(
+                        instance=instance,
+                        now=now,
+                        adapter=adapter,
+                        selected_contract=reconstruction.selected_contract,
+                    )
+                )
+            self._append_selected_contract_history(
+                instance.strategy_instance_id,
+                reconstruction.quote,
+            )
+            return continuity
 
         selected_contract = str(instance.deterministic_projection.get("selected_contract") or "")
         if not selected_contract:
@@ -480,6 +530,37 @@ class UnifiedInternalPaperSupervisor:
                 "selected_contract": None,
                 "evidence": "BLOCKED_CONFIGURATION",
             }
+
+        if supports_authoritative_live_selection(instance):
+            result = build_authoritative_live_selection(
+                repo_root=self.config.repo_root,
+                instance=instance,
+                adapter=adapter,
+                instrument_records=instrument_records,
+                session_date=self.session_date,
+                now=now,
+            )
+            continuity = {
+                "status": result.status,
+                "selected_contract": result.selected_contract,
+                "selected_branch": result.selected_branch,
+                "selected_option_type": result.selected_option_type,
+                "selected_expiry": result.selected_expiry,
+                "selected_strike": result.selected_strike,
+                "monthly_status": result.monthly_status,
+                "entry": result.entry,
+                "target": result.target,
+                "original_sl": result.original_sl,
+                "evidence": result.evidence,
+                "selected_contract_quote": result.quote,
+                "live_plan": result.plan_payload,
+                "option_history_status": result.option_history_status,
+            }
+            self._append_selected_contract_history(
+                instance.strategy_instance_id,
+                result.quote,
+            )
+            return continuity
 
         if instance.symbol == "RELIANCE":
             selected_contract = _latest_reliance_snapshot_contract(self.config.repo_root) or selected_contract
@@ -556,12 +637,90 @@ class UnifiedInternalPaperSupervisor:
             scope=instance.strategy_instance_id,
             details={"symbol": selected_contract, "status": quote_result.status.value},
         )
+        self._append_selected_contract_history(
+            instance.strategy_instance_id,
+            {
+                "symbol": selected_contract,
+                "quote_result": quote_result.to_dict(),
+                "receipt_timestamp": now.isoformat(),
+            },
+        )
         return {
             "status": "PREMARKET_SELECTED_CONTRACT_PINNED" if not self._late_start_mode else "IDENTIFIABLE",
             "selected_contract": selected_contract,
             "evidence": "FIXTURE_BACKED" if instance.evidence_quality == "FIXTURE_BACKED" else instance.evidence_quality,
             "selected_contract_quote": quote_result.to_dict(),
         }
+
+    def _reconstructed_entry_context(
+        self,
+        *,
+        instance: EnabledStrategyInstance,
+        now: datetime,
+        adapter: FyersReadOnlyAdapter,
+        selected_contract: str,
+    ) -> dict[str, Any]:
+        underlying_symbol = _resolve_underlying_symbol(instance.symbol, self._underlying_symbols)
+        underlying_history = adapter.fetch_historical_candles(
+            symbol=underlying_symbol,
+            resolution="1",
+            range_from=self.session_date,
+            range_to=self.session_date,
+            exclude_incomplete_after=now,
+        )
+        option_history = adapter.fetch_historical_candles(
+            symbol=selected_contract,
+            resolution="1",
+            range_from=self.session_date,
+            range_to=self.session_date,
+            exclude_incomplete_after=now,
+        )
+        quote_result = adapter.fetch_quotes((selected_contract,))
+        current_quote = None
+        if quote_result.status is FyersReadOnlyStatus.SUCCESS and quote_result.payload:
+            current_quote = quote_result.payload[0]
+        reconstructed = reconstruct_option_selling_entry(
+            strategy_instance_id=instance.strategy_instance_id,
+            timing_policy=StrategyTimingPolicy(
+                market_open=MARKET_OPEN,
+                orpt_time=ORPT_TIME,
+                rc_time=RC_TIME,
+            ),
+            now=now,
+            invalid_runtime_classification="INVALID_RUNTIME_CLASSIFICATION",
+            selected_contract_authoritative=selected_contract_is_authoritative(selected_contract),
+            base_entry=Decimal(str(instance.deterministic_projection.get("entry") or "0")),
+            revised_entry=_revised_entry_for_instance(instance),
+            underlying_bars=underlying_history.payload if underlying_history.status is FyersReadOnlyStatus.SUCCESS else None,
+            option_bars=option_history.payload if option_history.status is FyersReadOnlyStatus.SUCCESS else None,
+            current_quote=current_quote,
+        )
+        return {
+            "current_entry_state": reconstructed.current_entry_state,
+            "orpt_result": reconstructed.orpt_result,
+            "rc_result": reconstructed.rc_result,
+            "underlying_evidence_quality": reconstructed.underlying_evidence_quality,
+            "option_evidence_quality": reconstructed.option_evidence_quality,
+            "reconstruction": reconstructed.to_dict(),
+        }
+
+    def _append_selected_contract_history(
+        self,
+        strategy_instance_id: str,
+        payload: Mapping[str, Any] | None,
+    ) -> None:
+        if not payload:
+            return
+        event = dict(payload)
+        symbol = str(event.get("symbol") or "")
+        if not symbol:
+            return
+        history = self._selected_contract_history.setdefault(strategy_instance_id, [])
+        if history and canonical_hash(history[-1]) == canonical_hash(event):
+            return
+        history.append(event)
+        if len(history) > 240:
+            del history[:-240]
 
     def _build_projection(self, now: datetime, *, live_context: Mapping[str, Any], final_state: str) -> dict[str, Any]:
         instance_results = {
@@ -571,6 +730,7 @@ class UnifiedInternalPaperSupervisor:
                 session_id=self.session_id,
                 continuity=live_context["continuity"].get(item.strategy_instance_id) or {},
                 timing=live_context["timing"]["instances"].get(item.strategy_instance_id) or {},
+                selected_contract_reads=tuple(live_context["selected_contract_reads"].get(item.strategy_instance_id) or ()),
                 late_start=self._late_start_mode,
             )
             for item in self.registry.enabled_instances
@@ -647,12 +807,14 @@ class UnifiedInternalPaperSupervisor:
         checkpoint_payload = {
             "session_id": self.session_id,
             "session_date": self.session_date.isoformat(),
+            "session_started_at": self._session_started_at.isoformat(),
             "state": final_state,
             "late_start_mode": self._late_start_mode,
             "iteration": self.iterations,
             "projection_hash": projection["projection_hash"],
             "subscription_owner": self.subscription_owner.to_dict(),
             "continuity": live_context.get("continuity", {}),
+            "selected_contract_reads": live_context.get("selected_contract_reads", {}),
             "timing": live_context.get("timing", {}),
             "market_state": live_context.get("market_session_state"),
             "updated_at": now.isoformat(),
@@ -669,6 +831,7 @@ class UnifiedInternalPaperSupervisor:
                 "projection_hash": checkpoint_payload["projection_hash"],
                 "subscription_owner": checkpoint_payload["subscription_owner"],
                 "continuity": checkpoint_payload["continuity"],
+                "selected_contract_reads": checkpoint_payload["selected_contract_reads"],
                 "timing": checkpoint_payload["timing"],
                 "market_state": checkpoint_payload["market_state"],
                 "authority": checkpoint_payload["authority"],
@@ -804,6 +967,7 @@ class UnifiedInternalPaperSupervisor:
             "session_id": self.session_id,
             "state": state,
             "timestamp": now.isoformat(),
+            "session_started_at": self._session_started_at.isoformat(),
             "projection_hash": self._last_projection_hash,
             "late_start_mode": self._late_start_mode,
             "pid": self.lock_handle.pid if self.lock_handle is not None else None,
@@ -1036,8 +1200,21 @@ class UnifiedInternalPaperSupervisor:
             return
         if payload.get("session_date") != self.session_date.isoformat():
             return
+        session_started_at = payload.get("session_started_at")
+        if isinstance(session_started_at, str):
+            try:
+                self._session_started_at = datetime.fromisoformat(session_started_at)
+            except ValueError:
+                pass
         self._late_start_mode = bool(payload.get("late_start_mode"))
         self.subscription_owner = SubscriptionOwner.from_dict(payload.get("subscription_owner") or {})
+        restored_reads = payload.get("selected_contract_reads") or {}
+        if isinstance(restored_reads, Mapping):
+            self._selected_contract_history = {
+                str(strategy_instance_id): [dict(item) for item in values if isinstance(item, Mapping)]
+                for strategy_instance_id, values in restored_reads.items()
+                if isinstance(values, list)
+            }
 
     def _load_checkpoint_payload(self) -> dict[str, Any]:
         try:
@@ -1063,8 +1240,8 @@ class UnifiedInternalPaperSupervisor:
     def _detect_late_start(self, now: datetime) -> bool:
         if self._late_start_mode:
             return True
-        current = now.timetz().replace(tzinfo=None)
-        return current > MARKET_OPEN
+        started = self._session_started_at.timetz().replace(tzinfo=None)
+        return started > MARKET_OPEN
 
     def _state_for_time(self, now: datetime) -> str:
         current = now.timetz().replace(tzinfo=None)
@@ -1126,7 +1303,17 @@ class UnifiedInternalPaperSupervisor:
             self._record_stage(stage_metrics, "broker_authentication", "CACHED", started_at=now, ended_at=now)
             return self._latest_auth
         started_at = self.now_provider()
-        auth_result = self.auth_factory(self.config.repo_root).authenticate(allow_refresh=False, validate_session=True)
+        auth_adapter = self.auth_factory(self.config.repo_root)
+        auth_result = auth_adapter.authenticate(allow_refresh=False, validate_session=True)
+        refresh_recovered = False
+        if (
+            auth_result.status is BrokerSessionStatus.SESSION_VALIDATION_FAILED
+            and self._stored_preflight_ready_for_session()
+        ):
+            retry_result = auth_adapter.authenticate(allow_refresh=True, validate_session=True)
+            if retry_result.status is BrokerSessionStatus.AUTHENTICATED:
+                auth_result = retry_result
+                refresh_recovered = True
         self._latest_auth_checked_at = now
         self._record_stage(
             stage_metrics,
@@ -1134,9 +1321,20 @@ class UnifiedInternalPaperSupervisor:
             "EXECUTED",
             started_at=started_at,
             ended_at=self.now_provider(),
-            details={"status": auth_result.status.value},
+            details={"status": auth_result.status.value, "refresh_recovered": refresh_recovered},
         )
         return auth_result
+
+    def _stored_preflight_ready_for_session(self) -> bool:
+        preflight_path = self.config.report_dir / "complete_session_preflight.json"
+        try:
+            payload = json.loads(preflight_path.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            return False
+        if str(payload.get("verdict") or "") != "READY_FOR_COMPLETE_UNIFIED_SESSION":
+            return False
+        session_id = payload.get("session_id")
+        return session_id is None or str(session_id) == self.session_id
 
     def _cache_is_fresh(self, *, cached_at: datetime, now: datetime, ttl_seconds: float) -> bool:
         return (now - cached_at).total_seconds() < ttl_seconds
@@ -1511,60 +1709,99 @@ def _live_instance_result(
     session_id: str,
     continuity: Mapping[str, Any],
     timing: Mapping[str, Any],
+    selected_contract_reads: list[Mapping[str, Any]] | tuple[Mapping[str, Any], ...],
     late_start: bool,
 ) -> dict[str, Any]:
     selected_contract = continuity.get("selected_contract")
     selected_contract_text = str(selected_contract) if selected_contract else None
-    entry = str(instance.deterministic_projection.get("entry") or "")
-    target = str(instance.deterministic_projection.get("target") or "")
-    sl = str(instance.deterministic_projection.get("original_sl") or "")
-    plan_status = "PREPARED" if selected_contract_text else "BLOCKED"
-    blocked_reason = None if selected_contract_text else continuity.get("status", "SELECTED_CONTRACT_MISSING")
-    runtime_stage = "LATE_START_NO_NEW_ENTRY" if late_start else _instance_runtime_stage(timing)
+    live_plan = continuity.get("live_plan") if isinstance(continuity.get("live_plan"), Mapping) else {}
+    quote = continuity.get("selected_contract_quote") if isinstance(continuity.get("selected_contract_quote"), Mapping) else {}
+    recovery_mode = str(continuity.get("recovery_mode") or ("LIVE_OBSERVED" if not late_start else "LATE_START_UNRECOVERED"))
+    current_entry_state = str(continuity.get("current_entry_state") or "")
+    recovered_late_start = recovery_mode == "HISTORICALLY_RECONSTRUCTED"
+    entry_still_valid = current_entry_state in {"NORMAL_ENTRY_STILL_VALID", "RC_ENTRY_STILL_VALID"}
+    late_start_blocked = late_start and not recovered_late_start
+    entry = str(continuity.get("entry") or live_plan.get("entry") or instance.deterministic_projection.get("entry") or "")
+    target = str(continuity.get("target") or live_plan.get("target") or instance.deterministic_projection.get("target") or "")
+    sl = str(
+        continuity.get("original_sl")
+        or live_plan.get("original_sl")
+        or instance.deterministic_projection.get("original_sl")
+        or ""
+    )
+    blocked_reason = None if selected_contract_text and current_entry_state != "BLOCKED_INSUFFICIENT_HISTORICAL_EVIDENCE" else continuity.get("status", "SELECTED_CONTRACT_MISSING")
+    if selected_contract_text and recovered_late_start and not blocked_reason:
+        plan_status = "PREPARED"
+    else:
+        plan_status = "PREPARED" if selected_contract_text and not blocked_reason else "BLOCKED"
+    runtime_stage = "LATE_START_NO_NEW_ENTRY" if late_start_blocked else _instance_runtime_stage(timing)
     evidence_quality = str(continuity.get("evidence") or instance.evidence_quality)
     alert_items = list(_instance_alerts(instance, continuity, late_start=late_start))
     quantity = int(instance.configured_quantity["lots"]) * int(instance.configured_quantity["lot_size"])
-    risk_result = "DEFERRED" if late_start else "ACCEPTED"
-    order_state = "NO_ORDER" if late_start else "READY_INTERNAL"
+    risk_result = "DEFERRED" if late_start_blocked else ("ACCEPTED" if entry_still_valid or not recovered_late_start else "BLOCKED_BY_RULE")
+    order_state = "NO_ORDER" if late_start_blocked or (recovered_late_start and not entry_still_valid) else "READY_INTERNAL"
     fill_state = "NO_FILL"
+    live_market_references = live_plan.get("market_references") if isinstance(live_plan.get("market_references"), Mapping) else {}
+    live_timing = live_plan.get("timing") if isinstance(live_plan.get("timing"), Mapping) else {}
+    first_read = selected_contract_reads[0] if selected_contract_reads else {}
+    last_read = selected_contract_reads[-1] if selected_contract_reads else {}
+    option_type = continuity.get("selected_option_type") or quote.get("option_type")
+    expiry = continuity.get("selected_expiry")
+    strike = continuity.get("selected_strike")
+    plan_hash = str(live_plan.get("plan_hash") or "")
+    if not plan_hash:
+        plan_hash = canonical_hash(
+            {
+                "strategy_instance_id": instance.strategy_instance_id,
+                "selected_contract": selected_contract_text,
+                "monthly_status": continuity.get("monthly_status") or live_plan.get("monthly_status") or instance.deterministic_projection.get("monthly_status"),
+            }
+        )
     return {
         "trading_session_id": session_id,
         "runtime_stage": runtime_stage,
         "health": "DEGRADED_EVIDENCE" if blocked_reason else "HEALTHY",
         "last_update": now.isoformat(),
         "plan": {
-            "market_references": dict(instance.deterministic_projection.get("market_references") or {}),
+            "market_references": dict(live_market_references or instance.deterministic_projection.get("market_references") or {}),
             "expiry_candidates": list(instance.deterministic_projection.get("expiry_candidates") or []),
             "selected_contract": selected_contract_text,
-            "premium": entry,
-            "oi": "LIVE_READ_REQUIRED" if evidence_quality.startswith("LIVE") else "SOURCE_PROJECTION",
+            "selected_option_type": option_type,
+            "selected_expiry": expiry,
+            "selected_strike": strike,
+            "premium": str(quote.get("ltp") or entry or ""),
+            "oi": str(quote.get("oi") or ("LIVE_READ_REQUIRED" if evidence_quality.startswith("LIVE") else "SOURCE_PROJECTION")),
             "base_entry": entry,
             "target": target,
             "original_sl": sl,
-            "orpt": instance.deterministic_projection.get("orpt") or "09:24:59.400000",
-            "rc": instance.deterministic_projection.get("rc") or "09:29:59.400000",
+            "orpt": str(live_timing.get("orpt") or instance.deterministic_projection.get("orpt") or "09:24:59.400000"),
+            "rc": str(live_timing.get("rc") or instance.deterministic_projection.get("rc") or "09:29:59.400000"),
             "plan_status": plan_status,
             "block_reason": blocked_reason,
-            "monthly_status": instance.deterministic_projection.get("monthly_status"),
-            "branch": instance.deterministic_projection.get("branch"),
-            "plan_hash": canonical_hash(
-                {
-                    "strategy_instance_id": instance.strategy_instance_id,
-                    "selected_contract": selected_contract_text,
-                    "monthly_status": instance.deterministic_projection.get("monthly_status"),
-                }
-            ),
+            "monthly_status": continuity.get("monthly_status") or live_plan.get("monthly_status") or instance.deterministic_projection.get("monthly_status"),
+            "branch": continuity.get("selected_branch") or live_plan.get("selected_branch") or instance.deterministic_projection.get("branch"),
+            "plan_hash": plan_hash,
             "evidence_quality": evidence_quality,
-            "source_timestamp": now.isoformat(),
-            "receipt_timestamp": now.isoformat(),
+            "selection_timestamp": str(quote.get("source_timestamp") or first_read.get("source_timestamp") or now.isoformat()),
+            "source_timestamp": str(quote.get("source_timestamp") or now.isoformat()),
+            "receipt_timestamp": str(quote.get("receipt_timestamp") or last_read.get("receipt_timestamp") or now.isoformat()),
+            "chain_quality_state": continuity.get("status"),
+            "subscription_state": "PINNED" if selected_contract_text else "NOT_PINNED",
+            "first_quote_timestamp": str(first_read.get("receipt_timestamp") or quote.get("receipt_timestamp") or now.isoformat()),
+            "latest_quote_timestamp": str(last_read.get("receipt_timestamp") or quote.get("receipt_timestamp") or now.isoformat()),
+            "history_completeness": continuity.get("option_history_status") or ("CAPTURED" if selected_contract_reads else "NOT_CAPTURED"),
         },
         "execution": {
             "selected_contract": selected_contract_text,
-            "opening_context": "MISSED_BEFORE_SUPERVISOR_START" if late_start else instance.deterministic_projection.get("opening_context"),
-            "orpt_state": timing.get("orpt"),
-            "rc_state": timing.get("rc"),
+            "opening_context": "HISTORICALLY_RECONSTRUCTED" if recovered_late_start else ("MISSED_BEFORE_SUPERVISOR_START" if late_start else instance.deterministic_projection.get("opening_context")),
+            "orpt_state": continuity.get("orpt_result") or timing.get("orpt"),
+            "rc_state": continuity.get("rc_result") or timing.get("rc"),
             "effective_entry": entry,
-            "execution_intent": "NOT_CREATED_LATE_START" if late_start else "PENDING_VALIDATION",
+            "execution_intent": (
+                "PENDING_VALIDATION"
+                if entry_still_valid
+                else ("NOT_CREATED_LATE_START" if late_start_blocked else "NOT_CREATED_RECONSTRUCTED_MISSED")
+            ),
             "risk_result": risk_result,
             "order_state": order_state,
             "fill_state": fill_state,
@@ -1587,22 +1824,30 @@ def _live_instance_result(
             "active_protection": sl,
             "protection_status": "NO_POSITION",
             "fresh_or_carried": "CARRIED" if bool(instance.deterministic_projection.get("scenario_flags", {}).get("carried_position_candidate")) else "FRESH",
-            "carried_state": "OBSERVATION_ONLY" if late_start else "NOT_CARRIED",
-            "exit_reason": "OPEN" if not late_start else "NO_NEW_ENTRY",
+            "carried_state": "OBSERVATION_ONLY" if late_start_blocked else "NOT_CARRIED",
+            "exit_reason": "OPEN" if not late_start_blocked else "NO_NEW_ENTRY",
             "exit_deadline": EOD_DECISION.isoformat(),
             "health": "NO_POSITION",
         },
         "accounting": {
             "selected_contract": selected_contract_text,
-            "realized_pnl": "0.00" if late_start else str(instance.deterministic_projection.get("realized_pnl") or "0.00"),
-            "unrealized_pnl": "0.00" if late_start else str(instance.deterministic_projection.get("unrealized_pnl") or "0.00"),
+            "realized_pnl": "0.00" if late_start_blocked else str(instance.deterministic_projection.get("realized_pnl") or "0.00"),
+            "unrealized_pnl": "0.00" if late_start_blocked else str(instance.deterministic_projection.get("unrealized_pnl") or "0.00"),
             "charges_quality": "PROVISIONAL_INTERNAL_PAPER",
-            "trade_classification": "NO_TRADE_LATE_START" if late_start else str(instance.deterministic_projection.get("trade_classification") or "OPEN"),
+            "trade_classification": (
+                "NO_TRADE_LATE_START"
+                if late_start_blocked
+                else (
+                    current_entry_state
+                    if recovered_late_start and current_entry_state
+                    else str(instance.deterministic_projection.get("trade_classification") or "OPEN")
+                )
+            ),
             "accounting_quality": "INTERNAL_PAPER_SIMULATED",
         },
         "operations": {
             "alerts": alert_items,
-            "reconciliation": "READ_ONLY_RECOVERY_PENDING" if late_start else "READY",
+            "reconciliation": "READ_ONLY_RECOVERY_PENDING" if late_start_blocked else "READY",
             "checkpoint": f"{session_id}:{instance.strategy_instance_id}:iteration",
             "broker_data_health": continuity.get("status", "UNKNOWN"),
             "authority_mode": instance.authority_mode,
@@ -1637,12 +1882,20 @@ def _instance_runtime_stage(timing: Mapping[str, Any]) -> str:
 
 def _instance_alerts(instance: EnabledStrategyInstance, continuity: Mapping[str, Any], *, late_start: bool) -> tuple[dict[str, Any], ...]:
     alerts: list[dict[str, Any]] = []
-    if late_start:
+    if late_start and continuity.get("recovery_mode") != "HISTORICALLY_RECONSTRUCTED":
         alerts.append(
             {
                 "severity": "WARNING",
                 "code": "LATE_START_NO_NEW_ENTRY",
                 "message": f"{instance.strategy_instance_id} started after authoritative timing windows; no retroactive entry allowed.",
+            }
+        )
+    if continuity.get("recovery_mode") == "HISTORICALLY_RECONSTRUCTED":
+        alerts.append(
+            {
+                "severity": "INFO",
+                "code": "HISTORICAL_RECONSTRUCTION_ACTIVE",
+                "message": f"{instance.strategy_instance_id} was recovered from timestamped FYERS historical evidence.",
             }
         )
     if continuity.get("status") == "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR":
@@ -1675,13 +1928,15 @@ def _global_alerts(*, late_start: bool, auth_status: str, continuity: Mapping[st
             }
         )
     if late_start:
-        alerts.append(
-            {
-                "severity": "WARNING",
-                "code": "LATE_START_NO_NEW_ENTRY",
-                "message": "Supervisor is preserving observation/lifecycle mode and blocking retroactive fresh entry.",
-            }
-        )
+        unrecovered = [item for item in continuity.values() if item.get("recovery_mode") != "HISTORICALLY_RECONSTRUCTED"]
+        if unrecovered:
+            alerts.append(
+                {
+                    "severity": "WARNING",
+                    "code": "LATE_START_PARTIAL_BLOCK",
+                    "message": "One or more strategy instances started late and could not be fully reconstructed.",
+                }
+            )
     if any(item.get("status") == "CURRENT_SESSION_SELECTION_NOT_OBSERVED_BY_SUPERVISOR" for item in continuity.values()):
         alerts.append(
             {
@@ -1785,6 +2040,12 @@ def _resolve_underlying_symbol(symbol: str, underlying_symbols: Mapping[str, str
     return str(underlying_symbols[symbol])
 
 
+def _revised_entry_for_instance(instance: EnabledStrategyInstance) -> Decimal | None:
+    if instance.strategy_instance_id == "S22_RELIANCE_INTERNAL_PAPER_A":
+        return Decimal("57.00")
+    return None
+
+
 def _latest_reliance_snapshot_contract(root: Path) -> str | None:
     base = root / "data" / "strategies" / "S22" / "fyers_read_only_snapshots" / date.today().isoformat()
     snapshots = sorted(base.glob("s22-reliance-fyers-*/snapshot.json"))
@@ -1852,6 +2113,8 @@ def _collect_projection_labels(projection: Mapping[str, Any]) -> set[str]:
                 labels.add(str(value))
     if "LIVE_FYERS_READ_ONLY_CAPTURE" in labels:
         labels.add("FYERS_METADATA_CAPTURED")
+    if any("HISTORICAL" in str(label) for label in tuple(labels)):
+        labels.add("HISTORICALLY_RECONSTRUCTED")
     if "MISSED_BEFORE_SUPERVISOR_START" in labels or "DETERMINISTIC_TIMING_SUPPLEMENT" in labels:
         labels.add("PARTIAL_CAPTURE")
     elif "LIVE_FYERS_READ_ONLY_CAPTURE" in labels:

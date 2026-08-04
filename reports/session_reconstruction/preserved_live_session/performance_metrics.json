@@ -1,0 +1,150 @@
+{
+  "consecutive_overruns": 0,
+  "current_cycle": {
+    "captured_at": "2026-08-04T11:00:00.169106+05:30",
+    "consecutive_overruns": 0,
+    "cycle_duration_ms": 492.06,
+    "final_state": "LATE_START_NO_NEW_ENTRY",
+    "iteration": 1823,
+    "overrun_ms": 0.0,
+    "poll_seconds": 5.0,
+    "stage_metrics": [
+      {
+        "details": {},
+        "duration_ms": 0.0,
+        "ended_at": "2026-08-04T11:00:00.169106+05:30",
+        "scope": "SESSION",
+        "stage": "cycle_start",
+        "started_at": "2026-08-04T11:00:00.169106+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {},
+        "duration_ms": 0.0,
+        "ended_at": "2026-08-04T11:00:00.169106+05:30",
+        "scope": "SESSION",
+        "stage": "broker_authentication",
+        "started_at": "2026-08-04T11:00:00.169106+05:30",
+        "status": "CACHED"
+      },
+      {
+        "details": {},
+        "duration_ms": 0.0,
+        "ended_at": "2026-08-04T11:00:00.169106+05:30",
+        "scope": "SESSION",
+        "stage": "recovery_snapshot",
+        "started_at": "2026-08-04T11:00:00.169106+05:30",
+        "status": "CACHED"
+      },
+      {
+        "details": {
+          "status": "SUCCESS",
+          "symbol_count": 3
+        },
+        "duration_ms": 146.911,
+        "ended_at": "2026-08-04T11:00:00.362079+05:30",
+        "scope": "SESSION",
+        "stage": "provider_underlying_quotes",
+        "started_at": "2026-08-04T11:00:00.215168+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {
+          "record_count": 75161
+        },
+        "duration_ms": 0.0,
+        "ended_at": "2026-08-04T11:00:00.169106+05:30",
+        "scope": "SESSION",
+        "stage": "provider_symbol_master_nsefo",
+        "started_at": "2026-08-04T11:00:00.169106+05:30",
+        "status": "CACHED"
+      },
+      {
+        "details": {
+          "status": "SUCCESS",
+          "symbol": "NSE:RELIANCE26AUG1260CE"
+        },
+        "duration_ms": 127.227,
+        "ended_at": "2026-08-04T11:00:00.490146+05:30",
+        "scope": "S22_RELIANCE_INTERNAL_PAPER_A",
+        "stage": "provider_selected_contract_quote",
+        "started_at": "2026-08-04T11:00:00.362919+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {
+          "underlying": "RELIANCE"
+        },
+        "duration_ms": 0.0,
+        "ended_at": "2026-08-04T11:00:00.169106+05:30",
+        "scope": "S22_RELIANCE_INTERNAL_PAPER_A",
+        "stage": "provider_option_chain",
+        "started_at": "2026-08-04T11:00:00.169106+05:30",
+        "status": "CACHED"
+      },
+      {
+        "details": {},
+        "duration_ms": 13.563,
+        "ended_at": "2026-08-04T11:00:00.532330+05:30",
+        "scope": "SESSION",
+        "stage": "dashboard_projection_build",
+        "started_at": "2026-08-04T11:00:00.518767+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {},
+        "duration_ms": 1.548,
+        "ended_at": "2026-08-04T11:00:00.534522+05:30",
+        "scope": "SESSION",
+        "stage": "dashboard_snapshot_write",
+        "started_at": "2026-08-04T11:00:00.532974+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {},
+        "duration_ms": 1.812,
+        "ended_at": "2026-08-04T11:00:00.553652+05:30",
+        "scope": "SESSION",
+        "stage": "checkpoint_write",
+        "started_at": "2026-08-04T11:00:00.551840+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {},
+        "duration_ms": 107.491,
+        "ended_at": "2026-08-04T11:00:00.661188+05:30",
+        "scope": "SESSION",
+        "stage": "sqlite_runtime_persistence",
+        "started_at": "2026-08-04T11:00:00.553697+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {
+          "cycle_duration_ms": 492.06,
+          "poll_interval_seconds": 5.0
+        },
+        "duration_ms": 492.17,
+        "ended_at": "2026-08-04T11:00:00.661276+05:30",
+        "scope": "SESSION",
+        "stage": "cycle_total",
+        "started_at": "2026-08-04T11:00:00.169106+05:30",
+        "status": "EXECUTED"
+      }
+    ]
+  },
+  "cycle_duration_ms": {
+    "maximum": 5318.923,
+    "median": 484.29,
+    "minimum": 326.708,
+    "p90": 1150.455,
+    "p95": 2688.798
+  },
+  "event_count": 3,
+  "iterations": 1823,
+  "overrun_count": 1,
+  "poll_seconds": 5.0,
+  "production_scale_claimed": false,
+  "projection_hash": "f418a349f0d74bdb53fd51730a311b58e25fcc73022c692c4c183cc13c0bd9cd",
+  "sample_count": 241,
+  "schema_version": "tfis.live_supervisor.performance_metrics.v2"
+}

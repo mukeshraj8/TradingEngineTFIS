@@ -1,0 +1,19 @@
+{
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "gaps": [
+    {
+      "gap_id": "LCS-001",
+      "resolution_required": "clean restart before next baseline run",
+      "severity": "HIGH",
+      "status": "OPEN_OPERATIONAL",
+      "title": "Active PID 20840 still reflects the pre-patch late-start session and stale dashboard/checkpoint state"
+    },
+    {
+      "gap_id": "LCS-002",
+      "resolution_required": "accept truthful non-recoverable classification and rely on next clean before-open baseline session",
+      "severity": "MEDIUM",
+      "status": "OPEN_HISTORICAL_LIMITATION",
+      "title": "August 4 S21/S23 morning recovery cannot be certified because authoritative selected-contract identity was never established before ORPT/RC in the original session"
+    }
+  ]
+}

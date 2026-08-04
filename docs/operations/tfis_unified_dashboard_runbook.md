@@ -62,6 +62,22 @@ Run read-only broker diagnostics:
 These commands do not grant broker order authority. Authentication/read health
 and order-write authority remain separate checks.
 
+When a unified session starts before market open but later requires a truthful
+post-open reconstruction, run:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_session_reconstruction.py --session-date 2026-08-04
+```
+
+This preserves the current heartbeat/checkpoint/snapshot evidence, records any
+invalid runtime classification, fetches authoritative read-only FYERS history
+from market open onward, and writes per-instance reconstruction reports under
+`reports/historical_reconstruction/`. The headline August 4, 2026 outputs are
+`august4_baseline_reassessment.json`,
+`reconstruction_evidence_contract.json`, and
+`historical_reconstruction_summary.md`. The command does not grant broker write
+authority and must not backdate orders or fills.
+
 ## Graceful Shutdown And Port 8766 Troubleshooting
 
 For a normally started operator dashboard, press `Ctrl+C` in the terminal that
@@ -107,6 +123,17 @@ For the next full session, treat `reports/unified_readiness/authoritative_readin
 as the authoritative go/no-go file. The older deterministic
 `reports/dashboard_v1/market_session_readiness.json` remains supporting
 evidence only.
+
+For the S21/S23 live-selected-contract patch set completed on Tuesday,
+August 4, 2026, also review:
+
+- `reports/live_contract_selection/live_contract_selection_summary.md`
+- `reports/live_contract_selection/next_baseline_readiness.json`
+
+If `tmp/tfis_supervisor_state/continuous_unified_supervisor.pid.json` still
+points to the old August 4 late-start PID, stop that process cleanly before
+starting the next before-open baseline run so the supervisor picks up the
+patched live contract-selection path.
 
 Run the continuous unified internal-paper supervisor in the foreground:
 

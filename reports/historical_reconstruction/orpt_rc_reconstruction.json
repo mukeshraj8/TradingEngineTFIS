@@ -1,0 +1,18 @@
+{
+  "orpt": {
+    "instances": {
+      "S21_BANKNIFTY_INTERNAL_PAPER_A": "ORPT_ENTRY_NOT_MISSED",
+      "S22_RELIANCE_INTERNAL_PAPER_A": "ORPT_ENTRY_MISSED_WAITING_FOR_RC",
+      "S23_NIFTY_INTERNAL_PAPER_A": "ORPT_ENTRY_NOT_MISSED"
+    },
+    "schema_version": "tfis.historical_reconstruction.orpt_result.v1"
+  },
+  "rc": {
+    "instances": {
+      "S21_BANKNIFTY_INTERNAL_PAPER_A": "RC_NOT_REQUIRED",
+      "S22_RELIANCE_INTERNAL_PAPER_A": "RC_ENTRY_ALREADY_MISSED",
+      "S23_NIFTY_INTERNAL_PAPER_A": "RC_NOT_REQUIRED"
+    },
+    "schema_version": "tfis.historical_reconstruction.rc_result.v1"
+  }
+}

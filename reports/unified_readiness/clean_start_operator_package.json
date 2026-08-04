@@ -1,7 +1,7 @@
 {
   "authoritative_readiness_verdict": "NO_GO_FOR_NEXT_COMPLETE_UNIFIED_SESSION",
   "authority_mode": "INTERNAL_PAPER_ONLY",
-  "captured_at": "2026-08-03T13:45:11.282584+05:30",
+  "captured_at": "2026-08-04T12:24:26.134392+05:30",
   "commands": [
     {
       "command": ".\\.venv\\Scripts\\python.exe scripts\\fyers_token_refresh.py --prepare",

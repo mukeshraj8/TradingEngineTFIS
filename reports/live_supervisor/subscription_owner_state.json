@@ -1,6 +1,16 @@
 {
-  "captured_at": "2026-08-03T15:25:15.888273+05:30",
+  "captured_at": "2026-08-04T12:15:20.327502+05:30",
   "contracts": {
+    "BANKNIFTY24JAN47000CE": {
+      "S21_BANKNIFTY_INTERNAL_PAPER_A": [
+        "SELECTED_CONTRACT_PINNED"
+      ]
+    },
+    "NIFTY_PHASE5C_PUT_FIXTURE": {
+      "S23_NIFTY_INTERNAL_PAPER_A": [
+        "SELECTED_CONTRACT_PINNED"
+      ]
+    },
     "NSE:RELIANCE26AUG1260CE": {
       "S22_RELIANCE_INTERNAL_PAPER_A": [
         "SELECTED_CONTRACT_PINNED"
@@ -11,11 +21,17 @@
   "runtime_subscription_snapshot": {
     "contract_to_position_cycles": {},
     "contract_to_strategy_instances": {
+      "BANKNIFTY24JAN47000CE": [
+        "S21_BANKNIFTY_INTERNAL_PAPER_A"
+      ],
+      "NIFTY_PHASE5C_PUT_FIXTURE": [
+        "S23_NIFTY_INTERNAL_PAPER_A"
+      ],
       "NSE:RELIANCE26AUG1260CE": [
         "S22_RELIANCE_INTERNAL_PAPER_A"
       ]
     },
-    "subscription_hash": "4d1f2c45eb6e55b0339cb8d66b15a3759ac249c0baa98e08eb26ac258c51191b",
+    "subscription_hash": "341259552ffd5104d31a21148bce1c679b21999986af45f0f39716f3bdf3bcba",
     "underlying_to_position_cycles": {},
     "underlying_to_strategy_instances": {
       "NSE:NIFTY50-INDEX": [
@@ -30,7 +46,7 @@
     }
   },
   "schema_version": "tfis.live_supervisor.subscription_owner_state.v1",
-  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER",
+  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
   "underlyings": {
     "NSE:NIFTY50-INDEX": {
       "S23_NIFTY_INTERNAL_PAPER_A": [

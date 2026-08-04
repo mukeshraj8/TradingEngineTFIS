@@ -1,0 +1,79 @@
+{
+  "captured_at": "2026-08-04T11:49:09.304151+05:30",
+  "history_summary": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+      "count": 2,
+      "first_receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "latest_receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbols": [
+        "NSE:BANKNIFTY26AUG57000CE"
+      ]
+    },
+    "S22_RELIANCE_INTERNAL_PAPER_A": {
+      "count": 0,
+      "first_receipt_timestamp": null,
+      "latest_receipt_timestamp": null,
+      "symbols": []
+    },
+    "S23_NIFTY_INTERNAL_PAPER_A": {
+      "count": 2,
+      "first_receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "latest_receipt_timestamp": "2026-08-04T08:50:00+05:30",
+      "symbols": [
+        "NSE:NIFTY2680424250CE"
+      ]
+    }
+  },
+  "reconstruction_support_level": "quote-history continuity now persists selected-contract identity and time ordering; intrabar recovery for a previously failed session still remains evidence-limited",
+  "selected_contract_reads": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": [
+      {
+        "ask": "1162.7",
+        "bid": "1159.25",
+        "data_quality": [],
+        "ltp": "1159.85",
+        "oi": "671700",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+        "source_timestamp": "2026-08-04T08:50:00+05:30",
+        "symbol": "NSE:BANKNIFTY26AUG57000CE"
+      },
+      {
+        "ask": "1147.1",
+        "bid": "1144",
+        "data_quality": [],
+        "ltp": "1144",
+        "oi": "671460",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+        "source_timestamp": "2026-08-04T08:50:00+05:30",
+        "symbol": "NSE:BANKNIFTY26AUG57000CE"
+      }
+    ],
+    "S22_RELIANCE_INTERNAL_PAPER_A": [],
+    "S23_NIFTY_INTERNAL_PAPER_A": [
+      {
+        "ask": "315",
+        "bid": "314.45",
+        "data_quality": [],
+        "ltp": "314.25",
+        "oi": "785395",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+        "source_timestamp": "2026-08-04T08:50:00+05:30",
+        "symbol": "NSE:NIFTY2680424250CE"
+      },
+      {
+        "ask": "306",
+        "bid": "305.45",
+        "data_quality": [],
+        "ltp": "305.35",
+        "oi": "785980",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "receipt_timestamp": "2026-08-04T08:50:00+05:30",
+        "source_timestamp": "2026-08-04T08:50:00+05:30",
+        "symbol": "NSE:NIFTY2680424250CE"
+      }
+    ]
+  }
+}

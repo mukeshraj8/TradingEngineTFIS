@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-08-03T15:25:15.888273+05:30",
+  "captured_at": "2026-08-04T12:15:20.327502+05:30",
   "dashboard_snapshot_path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_dashboard_v1\\api\\snapshot.json",
   "db_integrity": {
     "authority_mode": "OBSERVATIONAL_OR_OFFLINE_ONLY",
@@ -7,10 +7,10 @@
     "issues": [],
     "status": "PASS"
   },
-  "projection_hash": "bffd65f7f5874a77f88b97fd01009de1016fcd367a764a04593c5dadf43cd588",
+  "projection_hash": "18765958761714e75ff621d24141afcd2d72179b2b973c44c6ca1aadbe9c0c15",
   "recovery": {
     "authority_mode": "OBSERVATIONAL_OR_OFFLINE_ONLY",
-    "checked_at": "2026-08-03T09:54:59.283840+00:00",
+    "checked_at": "2026-08-04T06:44:47.581492+00:00",
     "findings": [],
     "latest_broker_projection_count": 0,
     "latest_runtime_projection_count": 3,
@@ -19,5 +19,5 @@
     "status": "RECONCILIATION_REQUIRED"
   },
   "schema_version": "tfis.live_supervisor.validation_summary.v1",
-  "session_id": "NSE:2026-08-03:UNIFIED_INTERNAL_PAPER"
+  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER"
 }
