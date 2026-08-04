@@ -1,0 +1,7 @@
+{
+  "decision_explanation_count": 12,
+  "external_broker_order_authority": "NONE",
+  "projection_hash": "9d42f0d22b7ecf5ae71e5f90f2d71bf0d1e8fdc43e984f7735a3578259b7b457",
+  "schema_version": "tfis.fast_track.dashboard_snapshot_summary.v1",
+  "strategy_count": 3
+}

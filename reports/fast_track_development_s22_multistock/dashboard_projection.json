@@ -1,0 +1,3135 @@
+{
+  "accounts": [
+    {
+      "accepted_instances": [
+        "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+        "S22_RELIANCE_INTERNAL_PAPER_A",
+        "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A"
+      ],
+      "account_reference": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "alerts": [],
+      "limits": {
+        "max_margin_usage_pct": 70,
+        "max_new_entries_per_session": 3
+      },
+      "projection_hash": "ce322e72fb5f557dba7d77ba66659db4402359136b540a604793a2e3c220d5e6",
+      "rejected_instances": [],
+      "status": "HEALTHY",
+      "usage": {
+        "accepted_instances": 3,
+        "rejected_instances": 0
+      }
+    }
+  ],
+  "alerts": [],
+  "analytics": {
+    "decision_explanation_facts": 12,
+    "no_order": 0,
+    "processed_internal_paper": 3,
+    "strategy_count": 3
+  },
+  "audit": [],
+  "command_centre": {
+    "active_orders": 3,
+    "blocked_instances": 0,
+    "broker_sessions": "READ_ONLY_INTERNAL_PAPER",
+    "critical_alerts": 0,
+    "enabled_strategy_instances": 3,
+    "margin_usage_pct": 0,
+    "market_state": "HISTORICAL_RECONSTRUCTION",
+    "open_positions": 3,
+    "plans_prepared": 3,
+    "realized_pnl": "0.00",
+    "system_state": "HEALTHY",
+    "unprotected_positions": 0,
+    "unrealized_pnl": "-19293.75"
+  },
+  "decision_explanations": [
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "evaluated_contracts": [
+          {
+            "ask": "51.25",
+            "bid": "51.05",
+            "expiry": "2026-08-25",
+            "lot_size": 400,
+            "ltp": "51",
+            "oi": "1306000",
+            "oi_quality": "AVAILABLE",
+            "oi_unit": "SOURCE_UNSPECIFIED",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "quote_timestamp": null,
+            "source_quality": "LIVE_READ_OR_FIXTURE",
+            "strike": "1140",
+            "symbol": "NSE:INFY26AUG1140CE",
+            "tick_size": "0.05",
+            "underlying": "INFY"
+          }
+        ],
+        "plan_hash": "fabf3a14e6f856a928c2486fd26370ad2b750f89261c9a75c37247880ccfffb7",
+        "rejected_candidates": [
+          {
+            "expiry": "2026-08-25",
+            "ltp": "20",
+            "oi": "4512400",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1200",
+            "symbol": "NSE:INFY26AUG1200CE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "21.9",
+            "oi": "450400",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1195",
+            "symbol": "NSE:INFY26AUG1195CE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "28.5",
+            "oi": "2043600",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1180",
+            "symbol": "NSE:INFY26AUG1180CE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "30.9",
+            "oi": "835600",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1175",
+            "symbol": "NSE:INFY26AUG1175CE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "39",
+            "oi": "1970800",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1160",
+            "symbol": "NSE:INFY26AUG1160CE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "41.65",
+            "oi": "761200",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1155",
+            "symbol": "NSE:INFY26AUG1155CE"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG640PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "640"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG680PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "680"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG720PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "720"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG760PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "760"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG780PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "780"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG800PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "800"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG820PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "820"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG840PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "840"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG860PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "860"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG880PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "880"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG900PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "900"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG920PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "920"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG935PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "935"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG940PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "940"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG960PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "960"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG975PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "975"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG980PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "980"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1000PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1000"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1015PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1015"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1020PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1020"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1035PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1035"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1040PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1040"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1055PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1055"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1060PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1060"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1075PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1075"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1080PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1080"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1100PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1100"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1115PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1115"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1120PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1120"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1135PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1135"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1140PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1140"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1155PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1155"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1160PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1160"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1175PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1175"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1180PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1180"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1200PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1200"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1220PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1220"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1240PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1240"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1260PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1260"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1280PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1280"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1300PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1300"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1320PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1320"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1340PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1340"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1360PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1360"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1375PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1375"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1380PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1380"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1400PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1400"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1420PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1420"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1440PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1440"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1460PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1460"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1480PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1480"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1500PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1500"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1520PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1520"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1560PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1560"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1600PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1600"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1640PE",
+            "expiry": "2026-08-25",
+            "option_type": "PUT",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1640"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP640CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "640"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP640PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "640"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP680CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "680"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP680PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "680"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP720CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "720"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP720PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "720"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP760CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "760"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP760PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "760"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP780CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "780"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP780PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "780"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP800CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "800"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP800PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "800"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP820CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "820"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP820PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "820"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP840CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "840"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP840PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "840"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP860CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "860"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP860PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "860"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP880CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "880"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP880PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "880"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP900CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "900"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP900PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "900"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP920CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "920"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP920PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "920"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP940CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "940"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP940PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "940"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP960CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "960"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP960PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "960"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP980CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "980"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP980PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "980"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1000CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1000"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1000PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1000"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1020CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1020"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1020PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1020"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1040CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1040"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1040PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1040"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1060CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1060"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1060PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1060"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1080CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1080"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1080PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1080"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1100CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1100"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1100PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1100"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1120CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1120"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1120PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1120"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1140CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1140"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1140PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1140"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1160CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1160"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1160PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1160"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1180CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1180"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1180PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1180"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1200CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1200"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1200PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1200"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1220CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1220"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1220PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1220"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1240CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1240"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1240PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1240"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1260CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1260"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1260PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1260"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1280CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1280"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1280PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1280"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1300CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1300"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1300PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1300"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1320CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1320"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1320PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1320"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1340CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1340"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1340PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1340"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1360CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1360"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1360PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1360"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1380CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1380"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1380PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1380"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1400CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1400"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1400PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1400"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1420CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1420"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1420PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1420"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1440CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1440"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1440PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1440"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1460CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1460"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1460PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1460"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1480CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1480"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1480PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1480"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1500CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1500"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1500PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1500"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1520CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1520"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1520PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1520"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1560CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1560"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1560PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1560"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1600CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1600"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1600PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1600"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1640CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1640"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1640PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1640"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "8.35",
+            "oi": "1447600",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1075",
+            "symbol": "NSE:INFY26AUG1075PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "9",
+            "oi": "1137200",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1080",
+            "symbol": "NSE:INFY26AUG1080PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "12.15",
+            "oi": "4792000",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1100",
+            "symbol": "NSE:INFY26AUG1100PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "15.2",
+            "oi": "446400",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1115",
+            "symbol": "NSE:INFY26AUG1115PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "16.4",
+            "oi": "2151600",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1120",
+            "symbol": "NSE:INFY26AUG1120PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "20.55",
+            "oi": "136400",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1135",
+            "symbol": "NSE:INFY26AUG1135PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "22.25",
+            "oi": "1382800",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1140",
+            "symbol": "NSE:INFY26AUG1140PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "27.8",
+            "oi": "590800",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1155",
+            "symbol": "NSE:INFY26AUG1155PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "29.8",
+            "oi": "1714800",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1160",
+            "symbol": "NSE:INFY26AUG1160PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "36.6",
+            "oi": "734400",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1175",
+            "symbol": "NSE:INFY26AUG1175PE"
+          },
+          {
+            "expiry": "2026-08-25",
+            "ltp": "38.95",
+            "oi": "915200",
+            "option_type": "PUT",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "reason": "IDEAL_PREMIUM_NOT_MET",
+            "strike": "1180",
+            "symbol": "NSE:INFY26AUG1180PE"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG640CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "640"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG680CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "680"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG720CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "720"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG760CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "760"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG780CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "780"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG800CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "800"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG820CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "820"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG840CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "840"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG860CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "860"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG880CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "880"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG900CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "900"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG920CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "920"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG940CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "940"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG960CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "960"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG980CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "980"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1000CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1000"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1020CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1020"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1040CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1040"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1060CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1060"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1075CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1075"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1080CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1080"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1100CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1100"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1115CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1115"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1120CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1120"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1140CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1140"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1155CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1155"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1160CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1160"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1175CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1175"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1180CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1180"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1195CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1195"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1200CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1200"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1220CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1220"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1240CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1240"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1260CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1260"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1280CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1280"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1295CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1295"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1300CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1300"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1320CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1320"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1340CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1340"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1360CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1360"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1375CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1375"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1380CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1380"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1400CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1400"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1420CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1420"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1440CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1440"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1455CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1455"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1460CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1460"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1480CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1480"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1500CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1500"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1520CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1520"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1560CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1560"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1600CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1600"
+          },
+          {
+            "contract_id": "NSE:INFY26AUG1640CE",
+            "expiry": "2026-08-25",
+            "option_type": "CALL",
+            "reason": "OPTION_TYPE_MISMATCH",
+            "strike": "1640"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP640CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "640"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP640PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "640"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP680CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "680"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP680PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "680"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP720CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "720"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP720PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "720"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP760CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "760"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP760PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "760"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP780CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "780"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP780PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "780"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP800CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "800"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP800PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "800"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP820CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "820"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP820PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "820"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP840CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "840"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP840PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "840"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP860CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "860"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP860PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "860"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP880CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "880"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP880PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "880"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP900CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "900"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP900PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "900"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP920CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "920"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP920PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "920"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP940CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "940"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP940PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "940"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP960CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "960"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP960PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "960"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP980CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "980"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP980PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "980"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1000CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1000"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1000PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1000"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1020CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1020"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1020PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1020"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1040CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1040"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1040PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1040"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1060CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1060"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1060PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1060"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1080CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1080"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1080PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1080"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1100CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1100"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1100PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1100"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1120CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1120"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1120PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1120"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1140CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1140"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1140PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1140"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1160CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1160"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1160PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1160"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1180CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1180"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1180PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1180"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1200CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1200"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1200PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1200"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1220CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1220"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1220PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1220"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1240CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1240"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1240PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1240"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1260CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1260"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1260PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1260"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1280CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1280"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1280PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1280"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1300CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1300"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1300PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1300"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1320CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1320"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1320PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1320"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1340CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1340"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1340PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1340"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1360CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1360"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1360PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1360"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1380CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1380"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1380PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1380"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1400CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1400"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1400PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1400"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1420CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1420"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1420PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1420"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1440CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1440"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1440PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1440"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1460CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1460"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1460PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1460"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1480CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1480"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1480PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1480"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1500CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1500"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1500PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1500"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1520CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1520"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1520PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1520"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1560CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1560"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1560PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1560"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1600CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1600"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1600PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1600"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1640CE",
+            "expiry": "2026-09-29",
+            "option_type": "CALL",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1640"
+          },
+          {
+            "contract_id": "NSE:INFY26SEP1640PE",
+            "expiry": "2026-09-29",
+            "option_type": "PUT",
+            "reason": "EXPIRY_MISMATCH",
+            "strike": "1640"
+          }
+        ]
+      },
+      "decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:contract",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Select the first qualifying actual listed option contract from the authoritative traversal.",
+      "input_values": {
+        "branch": "BEAR_CALL",
+        "candidate_count": 11,
+        "monthly_status": "BEAR"
+      },
+      "instrument": "INFY",
+      "output_value": {
+        "selected_contract": "NSE:INFY26AUG1140CE",
+        "selected_expiry": "2026-08-25",
+        "selected_option_type": "CALL",
+        "selected_strike": "1140"
+      },
+      "parent_decision_id": null,
+      "rejection_reason": null,
+      "rule_id": "S22.CONTRACT_SELECTION.001",
+      "stage": "CONTRACT_SELECTION",
+      "strategy_instance_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "AB6 OS!D137:M138, AB14!F45:BG45"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "rule_matrix_version": "s22_source_closure_accepted_v1",
+        "workbook_row_id": "S22D"
+      },
+      "decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:plan",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "FYERS_READ_ONLY_DAILY_HISTORY",
+      "formula_text": "OPT:PRV:2DLL - 10% / CE Entry - 60% / Min(CE Entry + 60%, OPT:PRV:3DHH + 10%) / Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation / 09:29:59 AM HH + 10%",
+      "input_values": {
+        "market_references": {
+          "2DHH": "1180.00",
+          "2DLL": "1138.10",
+          "3DHH": "1180.00",
+          "4DHH": "1187.70",
+          "4DLL": "1107.20"
+        },
+        "selected_option_references": {
+          "OPT_PRV_2DHH": "61.5500",
+          "OPT_PRV_2DLL": "34.7000",
+          "OPT_PRV_3DHH": "61.5500",
+          "OPT_PRV_3DLL": "21.6000",
+          "OPT_PRV_4DHH": "67.8000",
+          "OPT_PRV_4DLL": "21.6000"
+        }
+      },
+      "instrument": "INFY",
+      "output_value": {
+        "normalized_prices": {
+          "base_entry": "31.25",
+          "original_sl": "49.95",
+          "revised_entry": "34.70",
+          "revised_sl": "67.70",
+          "target": "12.50"
+        },
+        "raw_prices": {
+          "base_entry": "31.23000",
+          "original_sl": "49.968000",
+          "revised_entry": "34.7000",
+          "revised_sl": "67.70500",
+          "target": "12.492000"
+        }
+      },
+      "parent_decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:contract",
+      "rejection_reason": null,
+      "rule_id": "S22.ENTRY_ORPT_RC.001",
+      "stage": "PLAN_COMPOSITION",
+      "strategy_instance_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "AB6 OS!D137:M138, AB14!F45:BG45"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "reconstruction": {
+          "block_reason": null,
+          "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+          "evidence_hash": "83f127bc6eee50b7c76e43cf52758e8f4bc82b3874d8a88d857e018f7c32034c",
+          "invalid_runtime_classification": "HISTORICAL_RECONSTRUCTION_ALLOWED",
+          "normal_entry": {
+            "activation_time": "2026-08-04T09:24:59.400000+05:30",
+            "breach_source": null,
+            "breach_timestamp": null,
+            "current_quote_breached": false,
+            "details": {
+              "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+            },
+            "evidence_quality": "PARTIAL_BUT_DECISIVE",
+            "status": "NORMAL_ENTRY",
+            "still_valid": true,
+            "trigger_price": "31.25"
+          },
+          "opening_bar_timestamp": "2026-08-04T09:15:00+05:30",
+          "opening_price": "1168.0",
+          "option_evidence_quality": "PARTIAL_BUT_DECISIVE",
+          "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+          "rc_result": "RC_NOT_REQUIRED",
+          "revised_entry": null,
+          "selected_contract_authoritative": true,
+          "strategy_instance_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+          "timing_policy": {
+            "market_open": "09:15:00",
+            "orpt_time": "09:24:59.400000",
+            "rc_time": "09:29:59.400000"
+          },
+          "underlying_evidence_quality": "PARTIAL_BUT_DECISIVE"
+        }
+      },
+      "decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:entry",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "PARTIAL_BUT_DECISIVE",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Reconstruct ORPT, RC, and current entry validity from authoritative timestamped option history without backdating action.",
+      "input_values": {
+        "base_entry": "31.25",
+        "latest_quote_ltp": "45.9",
+        "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+        "rc_result": "RC_NOT_REQUIRED",
+        "revised_entry": null
+      },
+      "instrument": "INFY",
+      "output_value": {
+        "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+        "trigger_breach_timestamp": null
+      },
+      "parent_decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:contract",
+      "rejection_reason": null,
+      "rule_id": "GLOBAL.HISTORICAL.RECONSTRUCTION.ENTRY.001",
+      "stage": "ENTRY_ELIGIBILITY",
+      "strategy_instance_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "TFIS authoritative timing matrix / accepted historical reconstruction rules"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "evaluated_contracts": [
+          {
+            "ask": "58.05",
+            "bid": "57.6",
+            "expiry": "2026-08-25",
+            "lot_size": 500,
+            "ltp": "57.6",
+            "oi": "632500",
+            "oi_quality": "AVAILABLE",
+            "oi_unit": "SOURCE_UNSPECIFIED",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "quote_timestamp": null,
+            "source_quality": "LIVE_READ_OR_FIXTURE",
+            "strike": "1260",
+            "symbol": "NSE:RELIANCE26AUG1260CE",
+            "tick_size": "0.05",
+            "underlying": "RELIANCE"
+          }
+        ],
+        "plan_hash": "f7e039b273ff8917e80bbc737dd2d3c35c8c2d568dfffc742d9f56b8fc6a9910",
+        "rejected_candidates": []
+      },
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:contract",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Select the first qualifying actual listed option contract from the authoritative traversal.",
+      "input_values": {
+        "branch": "BEAR_CALL",
+        "candidate_count": 1,
+        "monthly_status": "BEAR_CF"
+      },
+      "instrument": "RELIANCE",
+      "output_value": {
+        "selected_contract": "NSE:RELIANCE26AUG1260CE",
+        "selected_expiry": "2026-08-25",
+        "selected_option_type": "CALL",
+        "selected_strike": "1260"
+      },
+      "parent_decision_id": null,
+      "rejection_reason": null,
+      "rule_id": "S22.CONTRACT_SELECTION.001",
+      "stage": "CONTRACT_SELECTION",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "AB6 OS!D137:M138, AB14!F45:BG45"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "rule_matrix_version": "s22_source_closure_accepted_v1",
+        "workbook_row_id": "S22D"
+      },
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:plan",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "FYERS_READ_ONLY_DAILY_HISTORY",
+      "formula_text": "OPT:PRV:2DLL - 10% / CE Entry - 60% / Min(CE Entry + 60%, OPT:PRV:3DHH + 10%) / Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation / 09:29:59 AM HH + 10%",
+      "input_values": {
+        "market_references": {
+          "2DHH": "1319.00",
+          "2DLL": "1286.40",
+          "3DHH": "1319.00",
+          "4DHH": "1319.00",
+          "4DLL": "1275.30"
+        },
+        "selected_option_references": {
+          "OPT_PRV_2DHH": "65.0000",
+          "OPT_PRV_2DLL": "45.7500",
+          "OPT_PRV_3DHH": "65.0000",
+          "OPT_PRV_3DLL": "45.7500",
+          "OPT_PRV_4DHH": "65.0000",
+          "OPT_PRV_4DLL": "41.2500"
+        }
+      },
+      "instrument": "RELIANCE",
+      "output_value": {
+        "normalized_prices": {
+          "base_entry": "41.20",
+          "original_sl": "65.90",
+          "revised_entry": "45.75",
+          "revised_sl": "71.50",
+          "target": "16.45"
+        },
+        "raw_prices": {
+          "base_entry": "41.17500",
+          "original_sl": "65.880000",
+          "revised_entry": "45.7500",
+          "revised_sl": "71.50000",
+          "target": "16.470000"
+        }
+      },
+      "parent_decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:contract",
+      "rejection_reason": null,
+      "rule_id": "S22.ENTRY_ORPT_RC.001",
+      "stage": "PLAN_COMPOSITION",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "AB6 OS!D137:M138, AB14!F45:BG45"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "reconstruction": {
+          "block_reason": null,
+          "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+          "evidence_hash": "686d9bd5cb4d063074dd712bade43113cb6e503fbab518fff2aa7547d042d85b",
+          "invalid_runtime_classification": "HISTORICAL_RECONSTRUCTION_ALLOWED",
+          "normal_entry": {
+            "activation_time": "2026-08-04T09:24:59.400000+05:30",
+            "breach_source": null,
+            "breach_timestamp": null,
+            "current_quote_breached": false,
+            "details": {
+              "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+            },
+            "evidence_quality": "PARTIAL_BUT_DECISIVE",
+            "status": "NORMAL_ENTRY",
+            "still_valid": true,
+            "trigger_price": "41.20"
+          },
+          "opening_bar_timestamp": "2026-08-04T09:15:00+05:30",
+          "opening_price": "1315.0",
+          "option_evidence_quality": "PARTIAL_BUT_DECISIVE",
+          "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+          "rc_result": "RC_NOT_REQUIRED",
+          "revised_entry": null,
+          "selected_contract_authoritative": true,
+          "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+          "timing_policy": {
+            "market_open": "09:15:00",
+            "orpt_time": "09:24:59.400000",
+            "rc_time": "09:29:59.400000"
+          },
+          "underlying_evidence_quality": "PARTIAL_BUT_DECISIVE"
+        }
+      },
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:entry",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "PARTIAL_BUT_DECISIVE",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Reconstruct ORPT, RC, and current entry validity from authoritative timestamped option history without backdating action.",
+      "input_values": {
+        "base_entry": "41.20",
+        "latest_quote_ltp": "47.75",
+        "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+        "rc_result": "RC_NOT_REQUIRED",
+        "revised_entry": null
+      },
+      "instrument": "RELIANCE",
+      "output_value": {
+        "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+        "trigger_breach_timestamp": null
+      },
+      "parent_decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:contract",
+      "rejection_reason": null,
+      "rule_id": "GLOBAL.HISTORICAL.RECONSTRUCTION.ENTRY.001",
+      "stage": "ENTRY_ELIGIBILITY",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "TFIS authoritative timing matrix / accepted historical reconstruction rules"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "evaluated_contracts": [
+          {
+            "ask": "101.3",
+            "bid": "100.55",
+            "expiry": "2026-08-25",
+            "lot_size": 225,
+            "ltp": "101",
+            "oi": "166725",
+            "oi_quality": "AVAILABLE",
+            "oi_unit": "SOURCE_UNSPECIFIED",
+            "option_type": "CALL",
+            "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+            "quote_timestamp": null,
+            "source_quality": "LIVE_READ_OR_FIXTURE",
+            "strike": "2380",
+            "symbol": "NSE:TCS26AUG2380CE",
+            "tick_size": "0.05",
+            "underlying": "TCS"
+          }
+        ],
+        "plan_hash": "6f6f19cf1046c77ede6f24fe5ef30ec952a6d457c21052125c999619d7885435",
+        "rejected_candidates": []
+      },
+      "decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:contract",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Select the first qualifying actual listed option contract from the authoritative traversal.",
+      "input_values": {
+        "branch": "BEAR_CALL",
+        "candidate_count": 1,
+        "monthly_status": "BEAR_CF"
+      },
+      "instrument": "TCS",
+      "output_value": {
+        "selected_contract": "NSE:TCS26AUG2380CE",
+        "selected_expiry": "2026-08-25",
+        "selected_option_type": "CALL",
+        "selected_strike": "2380"
+      },
+      "parent_decision_id": null,
+      "rejection_reason": null,
+      "rule_id": "S22.CONTRACT_SELECTION.001",
+      "stage": "CONTRACT_SELECTION",
+      "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "AB6 OS!D137:M138, AB14!F45:BG45"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "rule_matrix_version": "s22_source_closure_accepted_v1",
+        "workbook_row_id": "S22D"
+      },
+      "decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:plan",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "FYERS_READ_ONLY_DAILY_HISTORY",
+      "formula_text": "OPT:PRV:2DLL - 10% / CE Entry - 60% / Min(CE Entry + 60%, OPT:PRV:3DHH + 10%) / Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation / 09:29:59 AM HH + 10%",
+      "input_values": {
+        "market_references": {
+          "2DHH": "2473.70",
+          "2DLL": "2383.00",
+          "3DHH": "2473.70",
+          "4DHH": "2495.00",
+          "4DLL": "2326.10"
+        },
+        "selected_option_references": {
+          "OPT_PRV_2DHH": "116.7000",
+          "OPT_PRV_2DLL": "71.1500",
+          "OPT_PRV_3DHH": "116.7000",
+          "OPT_PRV_3DLL": "46.7500",
+          "OPT_PRV_4DHH": "140.0000",
+          "OPT_PRV_4DLL": "46.7500"
+        }
+      },
+      "instrument": "TCS",
+      "output_value": {
+        "normalized_prices": {
+          "base_entry": "64.05",
+          "original_sl": "102.45",
+          "revised_entry": "71.15",
+          "revised_sl": "128.35",
+          "target": "25.60"
+        },
+        "raw_prices": {
+          "base_entry": "64.03500",
+          "original_sl": "102.456000",
+          "revised_entry": "71.1500",
+          "revised_sl": "128.37000",
+          "target": "25.614000"
+        }
+      },
+      "parent_decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:contract",
+      "rejection_reason": null,
+      "rule_id": "S22.ENTRY_ORPT_RC.001",
+      "stage": "PLAN_COMPOSITION",
+      "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "AB6 OS!D137:M138, AB14!F45:BG45"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "reconstruction": {
+          "block_reason": null,
+          "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+          "evidence_hash": "975a33117f53ab827656a4d6dd14f42b76fe5d979bf994da880327bf93a37452",
+          "invalid_runtime_classification": "HISTORICAL_RECONSTRUCTION_ALLOWED",
+          "normal_entry": {
+            "activation_time": "2026-08-04T09:24:59.400000+05:30",
+            "breach_source": null,
+            "breach_timestamp": null,
+            "current_quote_breached": false,
+            "details": {
+              "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+            },
+            "evidence_quality": "PARTIAL_BUT_DECISIVE",
+            "status": "NORMAL_ENTRY",
+            "still_valid": true,
+            "trigger_price": "64.05"
+          },
+          "opening_bar_timestamp": "2026-08-04T09:15:00+05:30",
+          "opening_price": "2463.1",
+          "option_evidence_quality": "PARTIAL_BUT_DECISIVE",
+          "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+          "rc_result": "RC_NOT_REQUIRED",
+          "revised_entry": null,
+          "selected_contract_authoritative": true,
+          "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+          "timing_policy": {
+            "market_open": "09:15:00",
+            "orpt_time": "09:24:59.400000",
+            "rc_time": "09:29:59.400000"
+          },
+          "underlying_evidence_quality": "PARTIAL_BUT_DECISIVE"
+        }
+      },
+      "decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:entry",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "PARTIAL_BUT_DECISIVE",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Reconstruct ORPT, RC, and current entry validity from authoritative timestamped option history without backdating action.",
+      "input_values": {
+        "base_entry": "64.05",
+        "latest_quote_ltp": "109.2",
+        "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+        "rc_result": "RC_NOT_REQUIRED",
+        "revised_entry": null
+      },
+      "instrument": "TCS",
+      "output_value": {
+        "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+        "trigger_breach_timestamp": null
+      },
+      "parent_decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:contract",
+      "rejection_reason": null,
+      "rule_id": "GLOBAL.HISTORICAL.RECONSTRUCTION.ENTRY.001",
+      "stage": "ENTRY_ELIGIBILITY",
+      "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "TFIS authoritative timing matrix / accepted historical reconstruction rules"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "client_order_id": "client-order:cc1b84428860c55cc1901dc1",
+        "warning": null
+      },
+      "decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:action",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Normalize raw executable price to tick size, keep external broker authority NONE, and process qualifying intents sequentially per account.",
+      "input_values": {
+        "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+        "normalized_entry_price": "31.25",
+        "raw_entry_price": "31.23000"
+      },
+      "instrument": "INFY",
+      "output_value": {
+        "decision": "PROCESSED_INTERNAL_PAPER",
+        "effective_available_margin": "1000000",
+        "final_state": "FILLED_INTERNAL",
+        "queue_position": 1,
+        "required_margin": "40000"
+      },
+      "parent_decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:entry",
+      "rejection_reason": null,
+      "rule_id": "GLOBAL.SEQUENTIAL.ACCOUNT.ACCEPTANCE.001",
+      "stage": "CURRENT_ACTION",
+      "strategy_instance_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "TFIS global sequential account acceptance rule / executable price normalization rule"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "client_order_id": "client-order:305ac5085ede3b13b96d5338",
+        "warning": null
+      },
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:action",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Normalize raw executable price to tick size, keep external broker authority NONE, and process qualifying intents sequentially per account.",
+      "input_values": {
+        "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+        "normalized_entry_price": "41.20",
+        "raw_entry_price": "41.17500"
+      },
+      "instrument": "RELIANCE",
+      "output_value": {
+        "decision": "PROCESSED_INTERNAL_PAPER",
+        "effective_available_margin": "1000000",
+        "final_state": "FILLED_INTERNAL",
+        "queue_position": 2,
+        "required_margin": "50000"
+      },
+      "parent_decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:entry",
+      "rejection_reason": null,
+      "rule_id": "GLOBAL.SEQUENTIAL.ACCOUNT.ACCEPTANCE.001",
+      "stage": "CURRENT_ACTION",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "TFIS global sequential account acceptance rule / executable price normalization rule"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "client_order_id": "client-order:3df46ccd2760c1113330a7cd",
+        "warning": null
+      },
+      "decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:action",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUCCESS",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Normalize raw executable price to tick size, keep external broker authority NONE, and process qualifying intents sequentially per account.",
+      "input_values": {
+        "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+        "normalized_entry_price": "64.05",
+        "raw_entry_price": "64.03500"
+      },
+      "instrument": "TCS",
+      "output_value": {
+        "decision": "PROCESSED_INTERNAL_PAPER",
+        "effective_available_margin": "1000000",
+        "final_state": "FILLED_INTERNAL",
+        "queue_position": 3,
+        "required_margin": "22500"
+      },
+      "parent_decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:entry",
+      "rejection_reason": null,
+      "rule_id": "GLOBAL.SEQUENTIAL.ACCOUNT.ACCEPTANCE.001",
+      "stage": "CURRENT_ACTION",
+      "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "TFIS global sequential account acceptance rule / executable price normalization rule"
+    }
+  ],
+  "orders": [
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "age": "00:00:00",
+      "contract": "NSE:INFY26AUG1140CE",
+      "execution_contract": "NSE:INFY26AUG1140CE",
+      "failure": "",
+      "filled_quantity": 400,
+      "generation": 1,
+      "instance": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+      "instrument": "INFY",
+      "latest_event": "INTERNAL_FULL_FILL",
+      "position_cycle": "client-order:cc1b84428860c55cc1901dc1",
+      "price": "31.25",
+      "purpose": "ENTRY",
+      "requested_quantity": 400,
+      "state": "FILLED_INTERNAL",
+      "strategy": "S22"
+    },
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "age": "00:00:00",
+      "contract": "NSE:RELIANCE26AUG1260CE",
+      "execution_contract": "NSE:RELIANCE26AUG1260CE",
+      "failure": "",
+      "filled_quantity": 500,
+      "generation": 1,
+      "instance": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "instrument": "RELIANCE",
+      "latest_event": "INTERNAL_FULL_FILL",
+      "position_cycle": "client-order:305ac5085ede3b13b96d5338",
+      "price": "41.20",
+      "purpose": "ENTRY",
+      "requested_quantity": 500,
+      "state": "FILLED_INTERNAL",
+      "strategy": "S22"
+    },
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "age": "00:00:00",
+      "contract": "NSE:TCS26AUG2380CE",
+      "execution_contract": "NSE:TCS26AUG2380CE",
+      "failure": "",
+      "filled_quantity": 225,
+      "generation": 1,
+      "instance": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+      "instrument": "TCS",
+      "latest_event": "INTERNAL_FULL_FILL",
+      "position_cycle": "client-order:3df46ccd2760c1113330a7cd",
+      "price": "64.05",
+      "purpose": "ENTRY",
+      "requested_quantity": 225,
+      "state": "FILLED_INTERNAL",
+      "strategy": "S22"
+    }
+  ],
+  "positions": [
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "active_sl": "49.95",
+      "average_entry": "31.25",
+      "contract": "NSE:INFY26AUG1140CE",
+      "exit_deadline": "15:00:00",
+      "fresh_or_carried": "FRESH",
+      "health": "OPEN_PROTECTED",
+      "instrument": "INFY",
+      "mark": "45.9",
+      "position_contract": "NSE:INFY26AUG1140CE",
+      "protection_status": "PROTECTED",
+      "quantity": 400,
+      "realized_pnl": "0.00",
+      "strategy": "S22",
+      "target": "12.50",
+      "unrealized_pnl": "-5860.00"
+    },
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "active_sl": "65.90",
+      "average_entry": "41.20",
+      "contract": "NSE:RELIANCE26AUG1260CE",
+      "exit_deadline": "15:00:00",
+      "fresh_or_carried": "FRESH",
+      "health": "OPEN_PROTECTED",
+      "instrument": "RELIANCE",
+      "mark": "47.75",
+      "position_contract": "NSE:RELIANCE26AUG1260CE",
+      "protection_status": "PROTECTED",
+      "quantity": 500,
+      "realized_pnl": "0.00",
+      "strategy": "S22",
+      "target": "16.45",
+      "unrealized_pnl": "-3275.00"
+    },
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "active_sl": "102.45",
+      "average_entry": "64.05",
+      "contract": "NSE:TCS26AUG2380CE",
+      "exit_deadline": "15:00:00",
+      "fresh_or_carried": "FRESH",
+      "health": "OPEN_PROTECTED",
+      "instrument": "TCS",
+      "mark": "109.2",
+      "position_contract": "NSE:TCS26AUG2380CE",
+      "protection_status": "PROTECTED",
+      "quantity": 225,
+      "realized_pnl": "0.00",
+      "strategy": "S22",
+      "target": "25.60",
+      "unrealized_pnl": "-10158.75"
+    }
+  ],
+  "projection_hash": "9d42f0d22b7ecf5ae71e5f90f2d71bf0d1e8fdc43e984f7735a3578259b7b457",
+  "schema_version": "tfis.fast_track.dashboard_projection.v2",
+  "strategies": [
+    {
+      "accounting": {
+        "realized_pnl": "0.00",
+        "selected_contract": "NSE:INFY26AUG1140CE",
+        "unrealized_pnl": "-5860.00"
+      },
+      "execution": {
+        "order_state": "FILLED_INTERNAL",
+        "selected_contract": "NSE:INFY26AUG1140CE"
+      },
+      "identity": {
+        "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+        "instance": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+        "instrument": "INFY",
+        "strategy": "S22"
+      },
+      "operations": {
+        "alerts": [
+          {
+            "code": "NO_ALERT",
+            "severity": "INFO"
+          }
+        ]
+      },
+      "plan": {
+        "base_entry": "31.25",
+        "block_reason": null,
+        "candidate_contract_count": 11,
+        "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "expiry_candidates": [
+          "2026-08-25"
+        ],
+        "market_references": {
+          "2DHH": "1180.00",
+          "2DLL": "1138.10",
+          "3DHH": "1180.00",
+          "4DHH": "1187.70",
+          "4DLL": "1107.20"
+        },
+        "oi": null,
+        "original_sl": "49.95",
+        "orpt": "09:24:59.400000",
+        "premium": "45.9",
+        "rc": "09:29:59.400000",
+        "selected_contract": "NSE:INFY26AUG1140CE",
+        "target": "12.50"
+      },
+      "position": {
+        "health": "OPEN_PROTECTED",
+        "selected_contract": "NSE:INFY26AUG1140CE"
+      },
+      "state": {
+        "branch": "BEAR_CALL",
+        "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "health": "HEALTHY",
+        "monthly_status": "BEAR",
+        "runtime_stage": "NORMAL_ENTRY_STILL_VALID"
+      }
+    },
+    {
+      "accounting": {
+        "realized_pnl": "0.00",
+        "selected_contract": "NSE:RELIANCE26AUG1260CE",
+        "unrealized_pnl": "-3275.00"
+      },
+      "execution": {
+        "order_state": "FILLED_INTERNAL",
+        "selected_contract": "NSE:RELIANCE26AUG1260CE"
+      },
+      "identity": {
+        "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+        "instance": "S22_RELIANCE_INTERNAL_PAPER_A",
+        "instrument": "RELIANCE",
+        "strategy": "S22"
+      },
+      "operations": {
+        "alerts": [
+          {
+            "code": "NO_ALERT",
+            "severity": "INFO"
+          }
+        ]
+      },
+      "plan": {
+        "base_entry": "41.20",
+        "block_reason": null,
+        "candidate_contract_count": 1,
+        "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "expiry_candidates": [
+          "2026-08-25"
+        ],
+        "market_references": {
+          "2DHH": "1319.00",
+          "2DLL": "1286.40",
+          "3DHH": "1319.00",
+          "4DHH": "1319.00",
+          "4DLL": "1275.30"
+        },
+        "oi": null,
+        "original_sl": "65.90",
+        "orpt": "09:24:59.400000",
+        "premium": "47.75",
+        "rc": "09:29:59.400000",
+        "selected_contract": "NSE:RELIANCE26AUG1260CE",
+        "target": "16.45"
+      },
+      "position": {
+        "health": "OPEN_PROTECTED",
+        "selected_contract": "NSE:RELIANCE26AUG1260CE"
+      },
+      "state": {
+        "branch": "BEAR_CALL",
+        "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "health": "HEALTHY",
+        "monthly_status": "BEAR_CF",
+        "runtime_stage": "NORMAL_ENTRY_STILL_VALID"
+      }
+    },
+    {
+      "accounting": {
+        "realized_pnl": "0.00",
+        "selected_contract": "NSE:TCS26AUG2380CE",
+        "unrealized_pnl": "-10158.75"
+      },
+      "execution": {
+        "order_state": "FILLED_INTERNAL",
+        "selected_contract": "NSE:TCS26AUG2380CE"
+      },
+      "identity": {
+        "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+        "instance": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+        "instrument": "TCS",
+        "strategy": "S22"
+      },
+      "operations": {
+        "alerts": [
+          {
+            "code": "NO_ALERT",
+            "severity": "INFO"
+          }
+        ]
+      },
+      "plan": {
+        "base_entry": "64.05",
+        "block_reason": null,
+        "candidate_contract_count": 1,
+        "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "expiry_candidates": [
+          "2026-08-25"
+        ],
+        "market_references": {
+          "2DHH": "2473.70",
+          "2DLL": "2383.00",
+          "3DHH": "2473.70",
+          "4DHH": "2495.00",
+          "4DLL": "2326.10"
+        },
+        "oi": null,
+        "original_sl": "102.45",
+        "orpt": "09:24:59.400000",
+        "premium": "109.2",
+        "rc": "09:29:59.400000",
+        "selected_contract": "NSE:TCS26AUG2380CE",
+        "target": "25.60"
+      },
+      "position": {
+        "health": "OPEN_PROTECTED",
+        "selected_contract": "NSE:TCS26AUG2380CE"
+      },
+      "state": {
+        "branch": "BEAR_CALL",
+        "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "health": "HEALTHY",
+        "monthly_status": "BEAR_CF",
+        "runtime_stage": "NORMAL_ENTRY_STILL_VALID"
+      }
+    }
+  ],
+  "system": {
+    "broker_order_authority": "NONE",
+    "generated_at": "2026-08-04T16:25:09.117672+05:30",
+    "session": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT"
+  }
+}

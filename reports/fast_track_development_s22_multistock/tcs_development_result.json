@@ -1,0 +1,180 @@
+{
+  "market_session_state": "POST_CLOSE",
+  "reconstruction": {
+    "block_reason": null,
+    "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+    "evidence_hash": "975a33117f53ab827656a4d6dd14f42b76fe5d979bf994da880327bf93a37452",
+    "invalid_runtime_classification": "HISTORICAL_RECONSTRUCTION_ALLOWED",
+    "normal_entry": {
+      "activation_time": "2026-08-04T09:24:59.400000+05:30",
+      "breach_source": null,
+      "breach_timestamp": null,
+      "current_quote_breached": false,
+      "details": {
+        "evaluation_rule": "LOW_LT_ENTRY_MEANS_TRIGGER_BREACHED_FOR_OPTION_SELLING"
+      },
+      "evidence_quality": "PARTIAL_BUT_DECISIVE",
+      "status": "NORMAL_ENTRY",
+      "still_valid": true,
+      "trigger_price": "64.05"
+    },
+    "opening_bar_timestamp": "2026-08-04T09:15:00+05:30",
+    "opening_price": "2463.1",
+    "option_evidence_quality": "PARTIAL_BUT_DECISIVE",
+    "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+    "rc_result": "RC_NOT_REQUIRED",
+    "revised_entry": null,
+    "selected_contract_authoritative": true,
+    "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+    "timing_policy": {
+      "market_open": "09:15:00",
+      "orpt_time": "09:24:59.400000",
+      "rc_time": "09:29:59.400000"
+    },
+    "underlying_evidence_quality": "PARTIAL_BUT_DECISIVE"
+  },
+  "selection": {
+    "candidate_count": 1,
+    "entry": "64.05",
+    "evidence": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+    "monthly_status": "BEAR_CF",
+    "option_history_status": "SUCCESS",
+    "original_sl": "102.45",
+    "plan_payload": {
+      "candidate_count": 1,
+      "contract_selection_rule_id": "S22.CONTRACT_SELECTION.001",
+      "current_eligibility": "PENDING_INTRADAY_RECONSTRUCTION",
+      "entry_rule_id": "S22.ENTRY_ORPT_RC.001",
+      "evaluated_contracts": [
+        {
+          "ask": "101.3",
+          "bid": "100.55",
+          "expiry": "2026-08-25",
+          "lot_size": 225,
+          "ltp": "101",
+          "oi": "166725",
+          "oi_quality": "AVAILABLE",
+          "oi_unit": "SOURCE_UNSPECIFIED",
+          "option_type": "CALL",
+          "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+          "quote_timestamp": null,
+          "source_quality": "LIVE_READ_OR_FIXTURE",
+          "strike": "2380",
+          "symbol": "NSE:TCS26AUG2380CE",
+          "tick_size": "0.05",
+          "underlying": "TCS"
+        }
+      ],
+      "evidence_origin": {
+        "contract_selection": "ACTUAL_LISTED_CHAIN_SELECTOR",
+        "current_quote": "FYERS_READ_ONLY_QUOTES",
+        "historical_reconstruction": "OPTION_INTRADAY_HISTORY_TO_BE_EVALUATED_SEPARATELY",
+        "selected_option_history": "FYERS_READ_ONLY_DAILY_HISTORY",
+        "underlying_history": "FYERS_READ_ONLY_DAILY_HISTORY"
+      },
+      "formula_catalog": {
+        "base_entry": "OPT:PRV:2DLL - 10%",
+        "original_sl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+        "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+        "revised_sl": "09:29:59 AM HH + 10%",
+        "target": "CE Entry - 60%"
+      },
+      "market_references": {
+        "2DHH": "2473.70",
+        "2DLL": "2383.00",
+        "3DHH": "2473.70",
+        "4DHH": "2495.00",
+        "4DLL": "2326.10"
+      },
+      "monthly_status": "BEAR_CF",
+      "monthly_status_rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+      "normalized_prices": {
+        "base_entry": "64.05",
+        "original_sl": "102.45",
+        "revised_entry": "71.15",
+        "revised_sl": "128.35",
+        "target": "25.60"
+      },
+      "orpt_time": "09:24:59.400000",
+      "plan_hash": "6f6f19cf1046c77ede6f24fe5ef30ec952a6d457c21052125c999619d7885435",
+      "quote": {
+        "ask": "110.4",
+        "bid": "108.2",
+        "ltp": "109.2",
+        "oi": null,
+        "receipt_timestamp": "2026-08-04T16:25:09.117672+05:30",
+        "source_timestamp": "2026-08-04T05:30:00+05:30",
+        "symbol": "NSE:TCS26AUG2380CE"
+      },
+      "raw_prices": {
+        "base_entry": "64.03500",
+        "original_sl": "102.456000",
+        "revised_entry": "71.1500",
+        "revised_sl": "128.37000",
+        "target": "25.614000"
+      },
+      "rc_time": "09:29:59.400000",
+      "rejected_candidates": [],
+      "rule_matrix_version": "s22_source_closure_accepted_v1",
+      "schema_version": "tfis.s22_stock_fast_track_plan.v1",
+      "selected_branch": "BEAR_CALL",
+      "selected_contract": {
+        "ask": "101.3",
+        "bid": "100.55",
+        "expiry": "2026-08-25",
+        "lot_size": 225,
+        "ltp": "101",
+        "oi": "166725",
+        "oi_quality": "AVAILABLE",
+        "oi_unit": "SOURCE_UNSPECIFIED",
+        "option_type": "CALL",
+        "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+        "quote_timestamp": null,
+        "source_quality": "LIVE_READ_OR_FIXTURE",
+        "strike": "2380",
+        "symbol": "NSE:TCS26AUG2380CE",
+        "tick_size": "0.05",
+        "underlying": "TCS"
+      },
+      "selected_option_references": {
+        "OPT_PRV_2DHH": "116.7000",
+        "OPT_PRV_2DLL": "71.1500",
+        "OPT_PRV_3DHH": "116.7000",
+        "OPT_PRV_3DLL": "46.7500",
+        "OPT_PRV_4DHH": "140.0000",
+        "OPT_PRV_4DLL": "46.7500"
+      },
+      "selection_report_path": "D:\\TradingEngineTFISRefactored\\reports\\contract_selection\\actual_strike_set_contract.json",
+      "selection_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "source_cells": [
+        "AB6 OS!D137:M138",
+        "AB14!F45:BG45"
+      ],
+      "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+      "symbol": "TCS",
+      "target_sl_rule_id": "S22.TARGET_SL.001",
+      "workbook_row_id": "S22D"
+    },
+    "quote": {
+      "ask": "110.4",
+      "bid": "108.2",
+      "ltp": "109.2",
+      "oi": null,
+      "receipt_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "source_timestamp": "2026-08-04T05:30:00+05:30",
+      "symbol": "NSE:TCS26AUG2380CE"
+    },
+    "recovery_mode": "HISTORICALLY_RECONSTRUCTED",
+    "rejected_candidates": [],
+    "selected_branch": "BEAR_CALL",
+    "selected_contract": "NSE:TCS26AUG2380CE",
+    "selected_expiry": "2026-08-25",
+    "selected_option_type": "CALL",
+    "selected_strike": "2380",
+    "status": "SELECTED_CONTRACT_RECONSTRUCTED",
+    "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+    "target": "25.60",
+    "unresolved_gap": null
+  }
+}

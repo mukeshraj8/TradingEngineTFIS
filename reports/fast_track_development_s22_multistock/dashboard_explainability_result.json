@@ -1,0 +1,9 @@
+{
+  "dashboard_projection_path": "dashboard_projection.json",
+  "explanation_fact_count": 12,
+  "frontend_formula_execution": false,
+  "immutable_runtime_fact_source": true,
+  "schema_version": "tfis.fast_track.dashboard_explainability_result.v1",
+  "status": "BACKEND_FACTS_READY_FOR_DASHBOARD_CONSUMPTION",
+  "strategy_count": 3
+}
