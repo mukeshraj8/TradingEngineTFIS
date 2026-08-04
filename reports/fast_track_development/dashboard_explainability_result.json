@@ -1,0 +1,8 @@
+{
+  "explanation_fact_count": 6,
+  "frontend_formula_execution": false,
+  "immutable_runtime_fact_source": true,
+  "schema_version": "tfis.fast_track.dashboard_explainability_result.v1",
+  "status": "BACKEND_FACTS_READY_FOR_DASHBOARD_CONSUMPTION",
+  "strategy_count": 3
+}

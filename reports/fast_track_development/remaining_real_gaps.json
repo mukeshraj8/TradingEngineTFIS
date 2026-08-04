@@ -1,0 +1,15 @@
+{
+  "gaps": [
+    {
+      "description": "TCS and INFY remain source-captured candidate stocks but do not yet have a source-closed current-time S22 execution-plan builder in the unified fast-track lane.",
+      "gap_id": "FAST_TRACK_GAP_001",
+      "status": "OPEN"
+    },
+    {
+      "description": "Dashboard frontend drill-down can now consume immutable explanation facts, but the interactive manual replay UI was not implemented in this slice.",
+      "gap_id": "FAST_TRACK_GAP_002",
+      "status": "OPEN"
+    }
+  ],
+  "schema_version": "tfis.fast_track.remaining_real_gaps.v1"
+}

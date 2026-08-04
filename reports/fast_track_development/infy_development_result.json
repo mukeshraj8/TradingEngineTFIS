@@ -1,0 +1,30 @@
+{
+  "captured_at": "2026-08-04T13:41:54.386081+05:30",
+  "external_broker_order_authority": "NONE",
+  "reason": "Candidate metadata and actual listed contract evidence exist, but this slice did not add a generic source-closed S22 multi-stock execution-plan builder.",
+  "recommendation": "APPROVED_KEEP_DISABLED_UNTIL_BASELINE_UNIFIED_CERTIFICATION",
+  "remaining_gap": [
+    "GENERIC_S22_MULTI_STOCK_EXECUTION_PLAN_PENDING"
+  ],
+  "schema_version": "tfis.fast_track.s22_candidate_development_result.v1",
+  "selected_contract": {
+    "ask": "51.25",
+    "bid": "51.05",
+    "expiry": "2026-08-25",
+    "lot_size": 400,
+    "ltp": "51",
+    "oi": "1306000",
+    "oi_quality": "AVAILABLE",
+    "oi_unit": "SOURCE_UNSPECIFIED",
+    "option_type": "CALL",
+    "quote_freshness": "MISSING_SOURCE_QUOTE_TIMESTAMP_MARKET_CLOSED_CAPTURE",
+    "quote_timestamp": null,
+    "source_quality": "LIVE_READ_OR_FIXTURE",
+    "strike": "1140",
+    "symbol": "NSE:INFY26AUG1140CE",
+    "tick_size": "0.05",
+    "underlying": "INFY"
+  },
+  "status": "DEVELOPMENT_READY_BUT_NOT_ACTIVATED",
+  "symbol": "INFY"
+}

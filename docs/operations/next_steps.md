@@ -6,6 +6,27 @@ way.
 
 ## Immediate Next Priorities
 
+0.67475. `USE_THE_VERIFIED_FAST_TRACK_REPORT_PATH_AS_THE_CURRENT_TIME_TRUTH_SURFACE`
+   The live FYERS read-only rerun at `13:41:54 IST` already closed the
+   generic executable-price normalization defect and now proves
+   `S21 = PROCESSED_INTERNAL_PAPER`, `S23 = PROCESSED_INTERNAL_PAPER`, and
+   `S22 RELIANCE = NO_ORDER` from truthful same-day reconstruction under
+   `reports/fast_track_development/`. Treat this report pack as the current
+   August 4, 2026 authoritative same-day action surface unless and until a
+   newer run supersedes it.
+
+0.6747. `RETAIN_RUN_FAST_TRACK_DEVELOPMENT_AS_THE_AUTHORIZED_SAME_DAY_RERUN_COMMAND`
+   Re-execute `scripts/run_fast_track_development.py` whenever the operator
+   needs a fresh same-day reconstruction plus current-time internal-paper
+   action assessment without requiring a before-open supervisor start.
+
+0.67465. `DECIDE_WHETHER_TO_GENERICIZE_S22_MULTI_STOCK_EXECUTION_PLAN_SUPPORT`
+   The new fast-track slice reports `TCS` and `INFY` as development-ready
+   candidates, but it does not yet activate them because the repo still lacks
+   a generic source-closed S22 multi-stock execution-plan builder outside the
+   RELIANCE trace path. The next decision is whether to build that reusable
+   S22 stock-plan capability now or keep the current boundary explicit.
+
 0.6746. `USE_AUGUST_4_HISTORICAL_RECONSTRUCTION_AS_THE_NEW_LATE_START_BASELINE`
    The old session-wide late-start assumption is no longer acceptable repo
    truth. Govern all restart and recovery work from

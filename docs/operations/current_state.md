@@ -6,6 +6,39 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Tuesday, August 4, 2026 at 13:42 IST, the
+  `CLOSE_GENERIC_EXECUTABLE_PRICE_NORMALIZATION_AND_RERUN_TODAYS_FAST_TRACK`
+  slice is `VERIFIED_ON_TODAYS_LIVE_READ_ONLY_RERUN`. A new shared helper
+  now normalizes executable `ExecutionIntent` prices to instrument tick size
+  with deterministic nearest-tick `ROUND_HALF_UP` semantics in
+  `src/tfis/execution_intent/pricing.py`, and the generic
+  `ExecutionIntentComposer` now applies that rule before idempotency and
+  action construction. The fast-track historical reconstruction lane also
+  records raw versus normalized entry price evidence in
+  `src/tfis/runtime/multi_strategy/fast_track_development.py`. Focused
+  validation now passes in `tests/unit/test_fast_track_development.py`
+  (`5 passed`). Most importantly, the live FYERS read-only rerun at
+  `13:41:54 IST` changed `S23_NIFTY_INTERNAL_PAPER_A` from
+  `VALIDATION_REJECTED` on `PRICE_TICK_SIZE` to
+  `PROCESSED_INTERNAL_PAPER` in `reports/fast_track_development/`, while
+  keeping external broker-order authority `NONE`.
+- as of Tuesday, August 4, 2026 at 13:35 IST, the
+  `FAST_TRACK_DEVELOPMENT_DIRECTIVE_COMPLETE_AND_TEST_TFIS_USING_LIVE_AND_HISTORICAL_FYERS_EVIDENCE`
+  lane now has a bounded implementation path in
+  `src/tfis/runtime/multi_strategy/fast_track_development.py` plus the runner
+  `scripts/run_fast_track_development.py`. This slice reuses the existing
+  authoritative historical contract-selection and entry-reconstruction lanes,
+  then routes only `NORMAL_ENTRY_STILL_VALID` / `RC_ENTRY_STILL_VALID`
+  strategies into the existing sequential internal-paper acceptance model at
+  current time with no backdating and external broker-order authority still
+  `NONE`. The same slice emits immutable explanation facts and a dedicated
+  evidence pack under `reports/fast_track_development/` for contract
+  selection, entry eligibility, candidate rejection audit, current entry
+  actions, and dashboard explainability readiness. Honest remaining boundary:
+  `TCS` and `INFY` are now reported as development-ready candidates with real
+  listed-contract evidence, but this slice does not yet introduce a generic
+  source-closed S22 multi-stock execution-plan builder, so they remain
+  non-activated in runtime despite their metadata readiness.
 - as of Tuesday, August 4, 2026 at 13:01 IST, the authoritative late-start
   reconstruction lane is `AUGUST4_BASELINE_RECOVERED`. The unified runtime no
   longer needs to treat supervisor uptime as business authority when FYERS

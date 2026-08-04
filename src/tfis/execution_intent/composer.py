@@ -16,6 +16,7 @@ from .models import (
     RequestedExecutionAction,
     SCHEMA_VERSION,
 )
+from .pricing import normalize_executable_price
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +60,8 @@ class IntentCompositionRequest:
 
 class ExecutionIntentComposer:
     def compose(self, request: IntentCompositionRequest) -> ExecutionIntent:
+        normalized_limit_price = normalize_executable_price(request.limit_price, request.instrument.tick_size)
+        normalized_trigger_price = normalize_executable_price(request.trigger_price, request.instrument.tick_size)
         idempotency_key = _idempotency_key(request)
         execution_intent_id = f"exec-intent:{canonical_hash({'idempotency_key': idempotency_key})[:24]}"
         evidence = ExecutionIntentEvidence(
@@ -80,8 +83,8 @@ class ExecutionIntentComposer:
             requested_quantity=request.requested_quantity,
             quantity_unit=request.quantity_unit,
             order_type=request.order_type,
-            limit_price=request.limit_price,
-            trigger_price=request.trigger_price,
+            limit_price=normalized_limit_price,
+            trigger_price=normalized_trigger_price,
             time_in_force=request.time_in_force,
             authorized_not_before=request.authorized_not_before,
             authorized_not_after=request.authorized_not_after,
@@ -110,6 +113,8 @@ class ExecutionIntentComposer:
 
 
 def _idempotency_key(request: IntentCompositionRequest) -> str:
+    normalized_limit_price = normalize_executable_price(request.limit_price, request.instrument.tick_size)
+    normalized_trigger_price = normalize_executable_price(request.trigger_price, request.instrument.tick_size)
     payload = {
         "broker_account_id": request.broker_account_id,
         "strategy_instance_id": request.strategy_instance_id,
@@ -120,7 +125,7 @@ def _idempotency_key(request: IntentCompositionRequest) -> str:
         "authorized_not_before": request.authorized_not_before.isoformat(),
         "authorized_not_after": request.authorized_not_after.isoformat() if request.authorized_not_after else None,
         "quantity": request.requested_quantity,
-        "limit_price": str(request.limit_price) if request.limit_price is not None else None,
-        "trigger_price": str(request.trigger_price) if request.trigger_price is not None else None,
+        "limit_price": str(normalized_limit_price) if normalized_limit_price is not None else None,
+        "trigger_price": str(normalized_trigger_price) if normalized_trigger_price is not None else None,
     }
     return f"phase4e:{canonical_hash(payload)}"

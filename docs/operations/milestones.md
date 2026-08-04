@@ -2,6 +2,32 @@
 
 ## Current Snapshot
 
+- as of Tuesday, August 4, 2026 at 13:42 IST, the
+  `CLOSE_GENERIC_EXECUTABLE_PRICE_NORMALIZATION_AND_RERUN_TODAYS_FAST_TRACK`
+  slice is `ACCEPTED`. The repo now contains a shared executable-price
+  normalization helper in `src/tfis/execution_intent/pricing.py`, the
+  generic `ExecutionIntentComposer` applies it before idempotency and action
+  creation, and the fast-track runner records raw-versus-normalized entry
+  evidence for same-day reconstruction output. Focused validation in
+  `tests/unit/test_fast_track_development.py` now passes as `5 passed`, and
+  the live FYERS read-only rerun at `13:41:54 IST` proved the operational
+  effect: `S23_NIFTY_INTERNAL_PAPER_A` no longer fails on
+  `PRICE_TICK_SIZE` and now processes through internal paper alongside `S21`,
+  while `S22/RELIANCE` truthfully remains `NO_ORDER`. External broker-order
+  authority remains `NONE`.
+- as of Tuesday, August 4, 2026 at 13:35 IST, the
+  `FAST_TRACK_DEVELOPMENT_DIRECTIVE_COMPLETE_AND_TEST_TFIS_USING_LIVE_AND_HISTORICAL_FYERS_EVIDENCE`
+  milestone is `CONDITIONAL_IN_PROGRESS`. The repo now contains a bounded
+  fast-track completion lane that reuses authoritative historical selection
+  and reconstruction, produces current-time internal-paper actions only for
+  still-valid entries through the existing sequential acceptance model, and
+  writes a dedicated explainability/report pack under
+  `reports/fast_track_development/`. Focused validation passed for the new
+  slice in `tests/unit/test_fast_track_development.py` (`5 passed`). Remaining
+  honest condition: the code now reports `TCS` and `INFY` as development-ready
+  candidates, but it does not yet activate them because no generic
+  source-closed S22 multi-stock execution-plan builder was added in this
+  patch. External broker-order authority remains `NONE`.
 - as of Tuesday, August 4, 2026 at 13:01 IST, the
   `URGENT_CORRECTION_AUTHORITATIVE_LATE_START_RECONSTRUCTION_FROM_FYERS_HISTORICAL_EVIDENCE`
   milestone is `CONDITIONAL_ACCEPTED`. The unified runtime now contains one
