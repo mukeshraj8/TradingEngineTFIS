@@ -6,6 +6,21 @@ way.
 
 ## Immediate Next Priorities
 
+0.19. `DONE` Resolve the August 4 FYERS valid-expiry startup failure and
+   rerun the paper engine for the current session. The scheduled startup
+   launched at `09:08:38` but both S21 and S23 failed because TFIS supplied
+   locally calculated FYERS option-chain expiry timestamps; FYERS requires the
+   exact timestamps exposed in its `expiryData` response. The FYERS adapter now
+   first discovers broker-owned expiry metadata, uses the matching broker
+   timestamp for requested current/next weekly or monthly expiries, surfaces
+   broker error payloads directly, and reports broker health only after a real
+   profile probe. The startup auth step now confirms broker runtime health
+   before launching strategy wrappers. After the fix, S21/S23 were rerun for
+   `2026-08-04`, both generated same-day 09:16/09:25/09:30 artifacts, the
+   dashboard was rebuilt, Orders Manager showed four current-session waiting
+   paper orders, runtime heartbeats were fresh, and runtime status was
+   `RUNNING`.
+
 0.18. `DONE` Resolve the August 3 morning startup failure, stale dashboard
    signal, and no-watcher ambiguity. The scheduled `TFIS Morning Startup`
    task did launch at `09:08:38` but exited with result `1` after S21 failed

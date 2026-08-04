@@ -127,6 +127,7 @@ if str(src_root) not in sys.path:
     sys.path.insert(0, str(src_root))
 
 from tfis.paper import (
+    connect_paper_broker_runtime,
     load_paper_broker_runtime,
     load_paper_lifecycle_supervisor_target_specs,
     prepare_paper_broker_runtime_environment,
@@ -138,15 +139,33 @@ prepared_providers = set()
 for spec in load_paper_lifecycle_supervisor_target_specs(targets_config, repo_root=repo_root):
     runtime = load_paper_broker_runtime(spec.config_path)
     provider = runtime.config.broker.provider.strip().lower()
-    if provider in prepared_providers:
-        continue
-    prepare_paper_broker_runtime_environment(
-        runtime.config,
-        tfis_root=tfis_root,
-        skip_refresh=False,
-    )
-    print('Prepared TFIS broker runtime auth for provider=' + provider)
-    prepared_providers.add(provider)
+    if provider not in prepared_providers:
+        prepare_paper_broker_runtime_environment(
+            runtime.config,
+            tfis_root=tfis_root,
+            skip_refresh=False,
+        )
+        print('Prepared TFIS broker runtime auth for provider=' + provider)
+        prepared_providers.add(provider)
+    try:
+        health = connect_paper_broker_runtime(
+            strategy_code=spec.strategy_code,
+            provider=runtime.config.broker.provider,
+            adapter=runtime.adapter,
+        )
+        print(
+            'Confirmed TFIS broker runtime health for strategy='
+            + spec.strategy_code
+            + ' provider='
+            + provider
+            + ' state='
+            + health.connection_state.value
+        )
+    finally:
+        try:
+            runtime.adapter.disconnect()
+        except Exception:
+            pass
 '@
     Write-Host "Preparing TFIS broker runtime auth once per configured provider."
     & $pythonExe -c $pythonCode $repoRoot $TfisRoot $targetsConfigPath

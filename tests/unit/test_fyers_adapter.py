@@ -10,6 +10,7 @@ import pytest
 from tfis.brokers import (
     BrokerConnectionState,
     BrokerCredentialsError,
+    BrokerNormalizationError,
     BrokerOrderPlacementBlockedError,
     FyersBrokerAdapter,
     FyersCredentials,
@@ -27,13 +28,30 @@ FIXTURE_PATH = (
 
 
 class _FakeFyersClient:
-    def __init__(self, payload: dict) -> None:
-        self.payload = payload
+    def __init__(
+        self,
+        payload: dict | list[dict],
+        *,
+        profile_payload: dict | None = None,
+        quote_payload: dict | None = None,
+    ) -> None:
+        self.payloads = list(payload) if isinstance(payload, list) else [payload]
+        self.profile_payload = profile_payload or {"s": "ok", "data": {"name": "Fixture"}}
+        self.quote_payload = quote_payload or self.payloads[0]
         self.optionchain_requests: list[dict] = []
+        self.quote_requests: list[dict] = []
+
+    def get_profile(self) -> dict:
+        return self.profile_payload
+
+    def quotes(self, request: dict) -> dict:
+        self.quote_requests.append(dict(request))
+        return self.quote_payload
 
     def optionchain(self, request: dict) -> dict:
         self.optionchain_requests.append(dict(request))
-        return self.payload
+        index = min(len(self.optionchain_requests) - 1, len(self.payloads) - 1)
+        return self.payloads[index]
 
 
 def test_fyers_adapter_normalizes_symbols_round_trip() -> None:
@@ -146,16 +164,106 @@ def test_fyers_adapter_requests_specific_expiry_and_configured_strike_count() ->
 
     adapter.get_option_chain("NIFTY", date(2026, 6, 30), session_date=date(2026, 6, 25))
 
-    expected_timestamp = int(
-        datetime(2026, 6, 30, 15, 30, tzinfo=ZoneInfo("Asia/Kolkata")).timestamp()
-    )
     assert client.optionchain_requests == [
         {
             "symbol": "NSE:NIFTY50-INDEX",
             "strikecount": 80,
-            "timestamp": expected_timestamp,
+            "timestamp": "",
         }
     ]
+
+
+def test_fyers_adapter_uses_broker_expiry_timestamp_for_non_current_expiry() -> None:
+    base_payload = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))["option_chain"]
+    first_payload = {
+        "s": "ok",
+        "code": 200,
+        "data": {
+            "expiryData": [
+                {"date": "04-08-2026", "expiry": "1785838200", "expiry_flag": "W"},
+                {"date": "11-08-2026", "expiry": "1786443000", "expiry_flag": "W"},
+            ],
+            "optionsChain": base_payload["optionsChain"],
+        },
+    }
+    second_payload = {
+        "s": "ok",
+        "code": 200,
+        "data": {
+            "expiryData": first_payload["data"]["expiryData"],
+            "optionsChain": base_payload["optionsChain"],
+        },
+    }
+    client = _FakeFyersClient([first_payload, second_payload])
+    adapter = FyersBrokerAdapter(
+        client=client,
+        source_timezone="Asia/Kolkata",
+        option_chain_strike_count=80,
+    )
+    adapter.connect()
+
+    adapter.get_option_chain("NIFTY", date(2026, 8, 11), session_date=date(2026, 8, 4))
+
+    assert client.optionchain_requests == [
+        {
+            "symbol": "NSE:NIFTY50-INDEX",
+            "strikecount": 80,
+            "timestamp": "",
+        },
+        {
+            "symbol": "NSE:NIFTY50-INDEX",
+            "strikecount": 80,
+            "timestamp": "1786443000",
+        },
+    ]
+
+
+def test_fyers_adapter_health_fails_when_profile_probe_returns_broker_error() -> None:
+    client = _FakeFyersClient(
+        {},
+        profile_payload={"s": "error", "code": -99, "message": "Bad request"},
+    )
+    adapter = FyersBrokerAdapter(client=client, source_timezone="Asia/Kolkata")
+    adapter.connect()
+
+    health = adapter.health()
+
+    assert health.connection_state is BrokerConnectionState.ERROR
+    assert health.is_connected is False
+    assert health.diagnostics == (
+        "FYERS profile request failed: s=error code=-99 message=Bad request",
+    )
+
+
+def test_fyers_adapter_surfaces_option_chain_broker_error_payload() -> None:
+    client = _FakeFyersClient({"s": "error", "code": -99, "message": "Bad request"})
+    adapter = FyersBrokerAdapter(client=client, source_timezone="Asia/Kolkata")
+    adapter.connect()
+
+    with pytest.raises(BrokerNormalizationError) as exc_info:
+        adapter.get_option_chain("NIFTY", date(2026, 8, 4), session_date=date(2026, 8, 4))
+
+    assert (
+        str(exc_info.value)
+        == "FYERS option-chain request failed: s=error code=-99 message=Bad request"
+    )
+
+
+def test_fyers_adapter_surfaces_quote_broker_error_payload() -> None:
+    client = _FakeFyersClient(
+        {},
+        quote_payload={"s": "error", "code": -99, "message": "Bad request"},
+    )
+    adapter = FyersBrokerAdapter(client=client, source_timezone="Asia/Kolkata")
+    adapter.connect()
+
+    with pytest.raises(BrokerNormalizationError) as exc_info:
+        adapter.get_underlying_quote("NIFTY", session_date=date(2026, 8, 4))
+
+    assert (
+        str(exc_info.value)
+        == "FYERS underlying quote request failed: s=error code=-99 message=Bad request"
+    )
 
 
 def test_fyers_adapter_skips_underlying_rows_in_option_chain(tmp_path: Path) -> None:

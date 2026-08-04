@@ -2,6 +2,16 @@
 
 ## Current Snapshot
 
+- as of Tuesday, August 4, 2026, TFIS no longer calculates FYERS option-chain
+  expiry timestamps locally: the FYERS adapter now discovers the broker's
+  `expiryData` rows and uses the exact broker-owned timestamp for requested
+  current/next weekly and monthly chains. This fixed the August 4 startup
+  failure where FYERS rejected S23 `2026-08-04` and S21 `2026-08-25` requests
+  as invalid expiries. Broker health now requires a real FYERS profile probe,
+  the app startup auth phase confirms broker runtime health before launching
+  strategy wrappers, and the corrected S21/S23 runners produced `2026-08-04`
+  artifacts with fresh supervisor heartbeats and four current-session waiting
+  paper orders visible in Orders Manager.
 - as of Monday, August 3, 2026, the scheduled `TFIS Morning Startup` task was
   confirmed to have launched at `09:08:38` but failed with result `1` because
   S21 treated the stale July monthly expiry anchor in `market.weekly_expiry`

@@ -6,6 +6,20 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Tuesday, August 4, 2026, the `TFIS Morning Startup` task did launch at
+  `09:08:38` but failed before writing same-day artifacts because TFIS
+  calculated FYERS option-chain expiry timestamps locally; FYERS rejected those
+  timestamps with `code=1 message=Please provide valid expiry` even though auth
+  and profile access were valid. The FYERS adapter now discovers broker-owned
+  expiry timestamps from `expiryData` and reuses those exact values for
+  requested current/next weekly and monthly option-chain snapshots. Broker
+  health now performs a real FYERS profile probe instead of reporting
+  connected merely after adapter construction, and startup auth preparation
+  confirms broker runtime health before launching S21/S23 wrappers. After the
+  fix, S23 and S21 were rerun for `2026-08-04`, both wrote 09:16/09:25/09:30
+  artifacts, the dashboard was rebuilt at `2026-08-04T13:29:37+05:30`, runtime
+  status reported broker health `PASS`, fresh S23/S21 supervisor heartbeats,
+  four current-session waiting paper orders, and restart recovery `RUNNING`.
 - as of Monday, August 3, 2026, the scheduled `TFIS Morning Startup` task did
   run at `09:08:38` but exited with result `1`: S21 failed before writing
   same-day artifacts because the shared FYERS snapshot collector treated the

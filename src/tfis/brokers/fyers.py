@@ -287,13 +287,35 @@ class FyersBrokerAdapter(BrokerAdapter):
         else:
             if self._client is None:
                 raise BrokerConnectionError("Fyers client is not connected.")
-            payload = self._client.optionchain(
-                {
-                    "symbol": raw_symbol,
-                    "strikecount": self._option_chain_strike_count,
-                    "timestamp": self._option_chain_expiry_timestamp(expiry),
-                }
+            base_request = {
+                "symbol": raw_symbol,
+                "strikecount": self._option_chain_strike_count,
+                "timestamp": "",
+            }
+            payload = self._client.optionchain(base_request)
+            self._raise_if_broker_error_payload(payload, "option-chain")
+            requested_expiry_timestamp = self._option_chain_expiry_timestamp_from_payload(
+                payload,
+                expiry,
             )
+            if requested_expiry_timestamp is not None:
+                current_expiry_timestamp = self._first_option_chain_expiry_timestamp(payload)
+                if requested_expiry_timestamp != current_expiry_timestamp:
+                    payload = self._client.optionchain(
+                        {
+                            "symbol": raw_symbol,
+                            "strikecount": self._option_chain_strike_count,
+                            "timestamp": requested_expiry_timestamp,
+                        }
+                    )
+            elif self._payload_has_option_chain_contracts(payload):
+                pass
+            else:
+                available = self._describe_option_chain_expiries(payload)
+                raise BrokerNormalizationError(
+                    "FYERS option-chain expiry "
+                    f"{expiry.isoformat()} is unavailable. Available expiries: {available}."
+                )
         return self._normalize_option_chain_payload(
             payload,
             raw_symbol=raw_symbol,
@@ -526,17 +548,57 @@ class FyersBrokerAdapter(BrokerAdapter):
         payload = self._payloads.get("health") if self._payloads else None
         as_of = self._now_provider()
         if payload is None:
+            if not self._connected:
+                return BrokerHealthEvent(
+                    broker_name=self.broker_name,
+                    as_of=as_of,
+                    connection_state=BrokerConnectionState.DISCONNECTED,
+                    source_id="fyers:health",
+                    is_connected=False,
+                    reconnect_attempts=self._reconnect_attempts,
+                )
+            if self._client is None:
+                try:
+                    self._client = self._build_default_client()
+                except Exception as exc:
+                    return BrokerHealthEvent(
+                        broker_name=self.broker_name,
+                        as_of=as_of,
+                        connection_state=BrokerConnectionState.ERROR,
+                        source_id="fyers:health",
+                        is_connected=False,
+                        reconnect_attempts=self._reconnect_attempts,
+                        diagnostics=(f"profile_probe_unavailable: {type(exc).__name__}: {exc}",),
+                    )
+            try:
+                profile = self._client.get_profile()
+            except Exception as exc:
+                return BrokerHealthEvent(
+                    broker_name=self.broker_name,
+                    as_of=as_of,
+                    connection_state=BrokerConnectionState.ERROR,
+                    source_id="fyers:health",
+                    is_connected=False,
+                    reconnect_attempts=self._reconnect_attempts,
+                    diagnostics=(f"profile_probe_exception: {type(exc).__name__}: {exc}",),
+                )
+            if isinstance(profile, dict) and profile.get("s") == "ok":
+                return BrokerHealthEvent(
+                    broker_name=self.broker_name,
+                    as_of=as_of,
+                    connection_state=BrokerConnectionState.CONNECTED,
+                    source_id="fyers:health:profile",
+                    is_connected=True,
+                    reconnect_attempts=self._reconnect_attempts,
+                )
             return BrokerHealthEvent(
                 broker_name=self.broker_name,
                 as_of=as_of,
-                connection_state=(
-                    BrokerConnectionState.CONNECTED
-                    if self._connected
-                    else BrokerConnectionState.DISCONNECTED
-                ),
-                source_id="fyers:health",
-                is_connected=self._connected,
+                connection_state=BrokerConnectionState.ERROR,
+                source_id="fyers:health:profile",
+                is_connected=False,
                 reconnect_attempts=self._reconnect_attempts,
+                diagnostics=(self._describe_broker_error_payload(profile, "profile"),),
             )
         return self._normalize_health_payload(payload)
 
@@ -602,6 +664,7 @@ class FyersBrokerAdapter(BrokerAdapter):
     ) -> UnderlyingQuoteEvent | SelectedContractQuoteEvent:
         if payload is None:
             raise BrokerNormalizationError(f"Missing FYERS {quote_kind} payload.")
+        self._raise_if_broker_error_payload(payload, f"{quote_kind} quote")
 
         record = self._extract_single_quote_record(payload, raw_symbol=raw_symbol)
         symbol = str(record.get("symbol") or record.get("n") or raw_symbol)
@@ -689,6 +752,7 @@ class FyersBrokerAdapter(BrokerAdapter):
     ) -> OptionChainSnapshotEvent:
         if payload is None:
             raise BrokerNormalizationError("Missing FYERS option-chain payload.")
+        self._raise_if_broker_error_payload(payload, "option-chain")
         chain = (
             payload.get("optionsChain")
             or payload.get("data", {}).get("optionsChain")
@@ -775,6 +839,66 @@ class FyersBrokerAdapter(BrokerAdapter):
     def _option_chain_expiry_timestamp(self, expiry: date) -> str:
         return str(int(datetime.combine(expiry, time(15, 30), tzinfo=self._tzinfo).timestamp()))
 
+    def _option_chain_expiry_timestamp_from_payload(
+        self,
+        payload: dict[str, Any],
+        expiry: date,
+    ) -> str | None:
+        expiry_rows = self._option_chain_expiry_rows(payload)
+        for row in expiry_rows:
+            if not isinstance(row, dict):
+                continue
+            row_date = self._parse_fyers_expiry_row_date(row.get("date"))
+            if row_date == expiry and row.get("expiry") not in (None, ""):
+                return str(row["expiry"])
+        return None
+
+    def _first_option_chain_expiry_timestamp(self, payload: dict[str, Any]) -> str | None:
+        for row in self._option_chain_expiry_rows(payload):
+            if isinstance(row, dict) and row.get("expiry") not in (None, ""):
+                return str(row["expiry"])
+        return None
+
+    @staticmethod
+    def _option_chain_expiry_rows(payload: dict[str, Any]) -> list[Any]:
+        data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+        rows = data.get("expiryData") if isinstance(data, dict) else None
+        return rows if isinstance(rows, list) else []
+
+    @classmethod
+    def _describe_option_chain_expiries(cls, payload: dict[str, Any]) -> str:
+        dates: list[str] = []
+        for row in cls._option_chain_expiry_rows(payload):
+            if not isinstance(row, dict):
+                continue
+            row_date = cls._parse_fyers_expiry_row_date(row.get("date"))
+            if row_date is not None:
+                dates.append(row_date.isoformat())
+        return ", ".join(dates) or "none"
+
+    @staticmethod
+    def _payload_has_option_chain_contracts(payload: dict[str, Any]) -> bool:
+        data = payload.get("data") if isinstance(payload.get("data"), dict) else {}
+        chain = (
+            payload.get("optionsChain")
+            or (data.get("optionsChain") if isinstance(data, dict) else None)
+            or (data.get("options_chain") if isinstance(data, dict) else None)
+            or payload.get("contracts")
+        )
+        return isinstance(chain, list) and bool(chain)
+
+    @staticmethod
+    def _parse_fyers_expiry_row_date(value: Any) -> date | None:
+        if value in (None, ""):
+            return None
+        text = str(value)
+        for fmt in ("%d-%m-%Y", "%Y-%m-%d"):
+            try:
+                return datetime.strptime(text, fmt).date()
+            except ValueError:
+                continue
+        return None
+
     def _normalize_selected_contract_bar_payload(
         self,
         payload: dict[str, Any],
@@ -824,6 +948,8 @@ class FyersBrokerAdapter(BrokerAdapter):
     ) -> tuple[UnderlyingHistoryBar, ...]:
         if payload is None:
             raise BrokerNormalizationError("Missing FYERS underlying history payload.")
+        if isinstance(payload, dict):
+            self._raise_if_broker_error_payload(payload, "underlying history")
         candles = self._extract_history_candles(payload)
         if not candles:
             raise BrokerNormalizationError("FYERS underlying history payload returned no candles.")
@@ -880,6 +1006,8 @@ class FyersBrokerAdapter(BrokerAdapter):
     ) -> tuple[SelectedContractBarEvent, ...]:
         if payload is None:
             raise BrokerNormalizationError("Missing FYERS option history payload.")
+        if isinstance(payload, dict):
+            self._raise_if_broker_error_payload(payload, "option history")
         candles = self._extract_history_candles(payload)
         if not candles:
             raise BrokerNormalizationError("FYERS option history payload returned no candles.")
@@ -1031,6 +1159,30 @@ class FyersBrokerAdapter(BrokerAdapter):
         if "data" in payload and isinstance(payload["data"], dict):
             return payload["data"]
         raise BrokerNormalizationError("FYERS quote payload does not contain a usable quote record.")
+
+    @staticmethod
+    def _describe_broker_error_payload(payload: Any, label: str) -> str:
+        if not isinstance(payload, dict):
+            return f"FYERS {label} request returned unexpected payload type {type(payload).__name__}."
+        status = payload.get("s")
+        code = payload.get("code")
+        message = payload.get("message")
+        details = []
+        if status not in (None, ""):
+            details.append(f"s={status}")
+        if code not in (None, ""):
+            details.append(f"code={code}")
+        if message not in (None, ""):
+            details.append(f"message={message}")
+        if not details:
+            details.append(f"keys={sorted(str(key) for key in payload.keys())}")
+        return f"FYERS {label} request failed: " + " ".join(details)
+
+    @classmethod
+    def _raise_if_broker_error_payload(cls, payload: dict[str, Any], label: str) -> None:
+        if str(payload.get("s", "")).strip().lower() != "error":
+            return
+        raise BrokerNormalizationError(cls._describe_broker_error_payload(payload, label))
 
     def _read_datetime(self, value: Any) -> datetime:
         if value in (None, ""):

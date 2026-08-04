@@ -84,6 +84,7 @@ def test_pause_and_resume_scripts_use_shared_operator_control_helper() -> None:
 
 
 def test_status_script_reads_shared_runtime_and_operator_control_state() -> None:
+    reset_script = _script_text("reset_tfis_dashboard_and_watchers.ps1")
     status_script = _script_text("show_tfis_runtime_status.ps1")
     guardrail_script = _script_text("show_paper_runtime_guardrail_status.py")
     broker_health_script = _script_text("show_paper_runtime_broker_health_status.py")
@@ -162,6 +163,8 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert "GuardrailStatus:" in guardrail_script
     assert "load_paper_runtime_broker_health_statuses" in broker_health_script
     assert "BrokerHealthStatus:" in broker_health_script
+    assert "connect_paper_broker_runtime" in reset_script
+    assert "Confirmed TFIS broker runtime health for strategy=" in reset_script
     assert "load_paper_runtime_heartbeat_statuses" in heartbeat_script
     assert "HeartbeatStatus:" in heartbeat_script
     assert "owner_id=" in heartbeat_script
