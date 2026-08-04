@@ -7,6 +7,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from tfis.runtime.multi_strategy.fast_track_development import (
+    build_development_dashboard_projection,
     build_current_entry_actions,
     build_explanation_facts,
     write_fast_track_reports,
@@ -114,11 +115,12 @@ def test_build_explanation_facts_preserves_candidate_rejections() -> None:
         trading_session_id="NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
     )
 
-    assert len(facts) == 2
+    assert len(facts) == 3
     assert facts[0]["stage"] == "CONTRACT_SELECTION"
     assert facts[0]["candidate_evidence"]["rejected_candidates"][0]["reason"] == "IDEAL_PREMIUM_NOT_MET"
-    assert facts[1]["stage"] == "ENTRY_ELIGIBILITY"
-    assert facts[1]["evidence_mode"] == "HISTORICALLY_RECONSTRUCTED"
+    assert facts[1]["stage"] == "PLAN_COMPOSITION"
+    assert facts[2]["stage"] == "ENTRY_ELIGIBILITY"
+    assert facts[2]["evidence_mode"] == "HISTORICALLY_RECONSTRUCTED"
 
 
 def test_write_fast_track_reports_writes_expected_files(tmp_path: Path) -> None:
@@ -129,22 +131,35 @@ def test_write_fast_track_reports_writes_expected_files(tmp_path: Path) -> None:
         trading_session_id="NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
         baseline_results={
             "S21_BANKNIFTY_INTERNAL_PAPER_A": {
-                "selection": {"selected_contract": "NSE:BANKNIFTY26AUG57000CE", "recovery_mode": "HISTORICALLY_RECONSTRUCTED"},
+                "selection": {
+                    "symbol": "BANKNIFTY",
+                    "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+                    "recovery_mode": "HISTORICALLY_RECONSTRUCTED",
+                },
                 "reconstruction": {"current_entry_state": "NORMAL_ENTRY_STILL_VALID"},
             },
         },
         current_entry_actions={
             "captured_at": now.isoformat(),
-            "outcomes": {"S21_BANKNIFTY_INTERNAL_PAPER_A": {"decision": "PROCESSED_INTERNAL_PAPER"}},
-            "explanation_facts": [{"decision_id": "x"}],
+            "outcomes": {"S21_BANKNIFTY_INTERNAL_PAPER_A": {"decision": "PROCESSED_INTERNAL_PAPER", "final_state": "FILLED_INTERNAL"}},
+            "explanation_facts": [{"decision_id": "x", "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"}],
         },
         tcs_result={"symbol": "TCS", "status": "DEVELOPMENT_READY_BUT_NOT_ACTIVATED"},
         infy_result={"symbol": "INFY", "status": "DEVELOPMENT_READY_BUT_NOT_ACTIVATED"},
+        registry_instances=(
+            _instance("S21_BANKNIFTY_INTERNAL_PAPER_A", "BANKNIFTY", 15),
+        ),
     )
 
     assert "current_entry_actions.json" in written
     payload = json.loads((tmp_path / "dashboard_explainability_result.json").read_text(encoding="utf-8"))
     assert payload["status"] == "BACKEND_FACTS_READY_FOR_DASHBOARD_CONSUMPTION"
+    assert (tmp_path / "dashboard_projection.json").exists()
+    isolated = json.loads((tmp_path / "s21_banknifty_internal_paper_a_isolated_result.json").read_text(encoding="utf-8"))
+    assert isolated["strategy_instance_id"] == "S21_BANKNIFTY_INTERNAL_PAPER_A"
+    assert isolated["selection"]["selected_contract"] == "NSE:BANKNIFTY26AUG57000CE"
+    assert isolated["action"]["decision"] == "PROCESSED_INTERNAL_PAPER"
+    assert isolated["decision_explanations"][0]["decision_id"] == "x"
 
 
 def test_normalize_executable_price_uses_nearest_tick_half_up() -> None:
@@ -191,3 +206,80 @@ def test_build_current_entry_actions_normalizes_raw_entry_to_tick_size() -> None
         if item["strategy_instance_id"] == "S23_NIFTY_INTERNAL_PAPER_A" and item["stage"] == "ENTRY_ELIGIBILITY"
     )
     assert entry_fact["input_values"]["base_entry"] == "127.23"
+    action_fact = next(
+        item
+        for item in result["explanation_facts"]
+        if item["strategy_instance_id"] == "S23_NIFTY_INTERNAL_PAPER_A" and item["stage"] == "CURRENT_ACTION"
+    )
+    assert action_fact["input_values"]["normalized_entry_price"] == "127.25"
+
+
+def test_build_development_dashboard_projection_exposes_decision_facts() -> None:
+    now = datetime(2026, 8, 4, 13, 24, tzinfo=IST)
+    reliance = _instance("S22_RELIANCE_INTERNAL_PAPER_A", "RELIANCE", 500)
+    actions = build_current_entry_actions(
+        registry_instances=(reliance,),
+        continuities={
+            "S22_RELIANCE_INTERNAL_PAPER_A": {
+                "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+                "recovery_mode": "HISTORICALLY_RECONSTRUCTED",
+                "selected_contract": "NSE:RELIANCE26AUG1260CE",
+                "selected_option_type": "CALL",
+                "selected_expiry": "2026-08-25",
+                "selected_strike": "1260",
+                "entry": "57.50",
+                "target": "23.00",
+                "original_sl": "92.00",
+                "evidence": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+                "orpt_result": "ORPT_ENTRY_NOT_MISSED",
+                "rc_result": "RC_NOT_REQUIRED",
+                "quote": {"ltp": "57.60", "oi": "632500"},
+                "plan_payload": {
+                    "plan_hash": "plan-hash",
+                    "source_cells": ["AB6 OS!D137:M138", "AB14!F45:BG45"],
+                    "market_references": {"2DLL": "1275.30"},
+                    "selected_option_references": {"OPT_PRV_2DLL": "63.8889", "OPT_PRV_3DHH": "84.00"},
+                    "raw_prices": {"base_entry": "57.50", "target": "23.00", "original_sl": "92.00"},
+                    "normalized_prices": {"base_entry": "57.50", "target": "23.00", "original_sl": "92.00"},
+                    "formula_catalog": {"base_entry": "OPT:PRV:2DLL - 10%"},
+                    "candidate_count": 1,
+                    "evaluated_contracts": [{"symbol": "NSE:RELIANCE26AUG1260CE"}],
+                },
+                "reconstruction": {"option_evidence_quality": "COMPLETE_REQUIRED_INTERVAL_BARS"},
+            },
+        },
+        now=now,
+        trading_session_id="NSE:2026-08-04:S22_MULTI_STOCK_DEVELOPMENT",
+    )
+    projection = build_development_dashboard_projection(
+        registry_instances=(reliance,),
+        baseline_results={
+            "S22_RELIANCE_INTERNAL_PAPER_A": {
+                "selection": {
+                    "selected_contract": "NSE:RELIANCE26AUG1260CE",
+                    "selected_branch": "BEAR_CALL",
+                    "selected_expiry": "2026-08-25",
+                    "entry": "57.50",
+                    "target": "23.00",
+                    "original_sl": "92.00",
+                    "monthly_status": "BEAR_CF",
+                    "evidence": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+                    "candidate_count": 1,
+                    "quote": {"ltp": "57.60", "oi": "632500"},
+                    "plan_payload": {
+                        "market_references": {"2DLL": "1275.30"},
+                        "orpt_time": "09:24:59.400000",
+                        "rc_time": "09:29:59.400000",
+                    },
+                },
+                "reconstruction": {"current_entry_state": "NORMAL_ENTRY_STILL_VALID"},
+            }
+        },
+        current_entry_actions=actions,
+        now=now,
+        trading_session_id="NSE:2026-08-04:S22_MULTI_STOCK_DEVELOPMENT",
+    )
+
+    assert projection["system"]["broker_order_authority"] == "NONE"
+    assert projection["decision_explanations"]
+    assert projection["analytics"]["decision_explanation_facts"] >= 4

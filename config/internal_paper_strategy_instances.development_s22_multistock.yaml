@@ -1,0 +1,99 @@
+schema_version: tfis.enabled_strategy_instances.v1
+session_scope:
+  trading_session_id: NSE:2026-08-04:S22_MULTI_STOCK_DEVELOPMENT_INTERNAL_PAPER
+  timezone: Asia/Calcutta
+  authority_mode: INTERNAL_PAPER_CONTROLLED
+  market_data_mode: LIVE_FYERS_READ_ONLY_CAPTURE_PLUS_HISTORICAL_RECONSTRUCTION
+accounts:
+  - account_reference: DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A
+    broker: INTERNAL_PAPER
+    max_new_entries_per_session: 3
+    max_concurrent_positions: 3
+    max_margin_usage_pct: 70
+    daily_loss_limit: 50000
+    account_halt: false
+    lifecycle_only: false
+risk:
+  maximum_new_entries_per_session: 3
+  maximum_concurrent_positions: 3
+  maximum_account_margin_usage_pct: 70
+  aggregate_option_selling_exposure: 3
+  duplicate_underlying_prevention: true
+  daily_loss_limit: 50000
+  global_halt: false
+instances:
+  - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
+    strategy_version: s22.multi_stock.development.v1
+    strategy_instance_id: S22_RELIANCE_INTERNAL_PAPER_A
+    account_reference: DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: RELIANCE
+      instrument_type: STOCK
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 500
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: LIVE_FYERS_READ_ONLY_CAPTURE
+    rule_config_hash: s22-source-closure-config-v1
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 20
+    operator_approval_status: APPROVED_DEVELOPMENT_INTERNAL_PAPER_ONLY
+    evidence_quality: LIVE_FYERS_READ_ONLY_CAPTURE
+    source_reports:
+      summary: reports/s22_multi_stock/s22_multi_stock_summary.md
+      dashboard_projection: reports/s22_multi_stock/multi_stock_registry.json
+    deterministic_projection: {}
+  - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
+    strategy_version: s22.multi_stock.development.v1
+    strategy_instance_id: S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A
+    account_reference: DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: TCS
+      instrument_type: STOCK
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 225
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: LIVE_FYERS_READ_ONLY_CAPTURE
+    rule_config_hash: s22-source-closure-config-v1
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 20
+    operator_approval_status: APPROVED_DEVELOPMENT_INTERNAL_PAPER_ONLY
+    evidence_quality: LIVE_FYERS_READ_ONLY_CAPTURE
+    source_reports:
+      summary: reports/s22_multi_stock/s22_multi_stock_summary.md
+      dashboard_projection: reports/s22_multi_stock/multi_stock_registry.json
+    deterministic_projection: {}
+  - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
+    strategy_version: s22.multi_stock.development.v1
+    strategy_instance_id: S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A
+    account_reference: DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: INFY
+      instrument_type: STOCK
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 400
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: LIVE_FYERS_READ_ONLY_CAPTURE
+    rule_config_hash: s22-source-closure-config-v1
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 20
+    operator_approval_status: APPROVED_DEVELOPMENT_INTERNAL_PAPER_ONLY
+    evidence_quality: LIVE_FYERS_READ_ONLY_CAPTURE
+    source_reports:
+      summary: reports/s22_multi_stock/s22_multi_stock_summary.md
+      dashboard_projection: reports/s22_multi_stock/multi_stock_registry.json
+    deterministic_projection: {}

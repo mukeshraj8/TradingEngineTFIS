@@ -166,4 +166,6 @@ def test_professional_dashboard_builds_static_projection_without_formula_logic(t
     manifest = json.loads(result.manifest_json.read_text(encoding="utf-8"))
     assert snapshot["projection_hash"] == projection["projection_hash"]
     assert manifest["frontend_formula_calculation"] is False
-    assert "Broker order authority" in result.index_html.read_text(encoding="utf-8")
+    html = result.index_html.read_text(encoding="utf-8")
+    assert "Broker order authority" in html
+    assert "Explainability" in html

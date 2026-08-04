@@ -167,6 +167,18 @@ def build_current_entry_actions(
             "reason": "NOT_QUALIFIED",
         })
 
+    for strategy_instance_id, outcome in sorted(outcomes_by_instance.items()):
+        continuity = continuities.get(strategy_instance_id) or {}
+        explanation_facts.append(
+            _action_explanation_fact(
+                instance=instances[strategy_instance_id],
+                continuity=continuity,
+                outcome=outcome,
+                now=now,
+                trading_session_id=trading_session_id,
+            )
+        )
+
     return {
         "schema_version": "tfis.fast_track.current_entry_actions.v1",
         "captured_at": now.isoformat(),
@@ -187,9 +199,13 @@ def build_explanation_facts(
     quote = continuity.get("quote") if isinstance(continuity.get("quote"), Mapping) else {}
     plan = continuity.get("plan_payload") if isinstance(continuity.get("plan_payload"), Mapping) else {}
     reconstruction = continuity.get("reconstruction") if isinstance(continuity.get("reconstruction"), Mapping) else {}
+    formulas = plan.get("formula_catalog") if isinstance(plan.get("formula_catalog"), Mapping) else {}
+    raw_prices = plan.get("raw_prices") if isinstance(plan.get("raw_prices"), Mapping) else {}
+    normalized_prices = plan.get("normalized_prices") if isinstance(plan.get("normalized_prices"), Mapping) else {}
     selected_contract = str(continuity.get("selected_contract") or "")
     evidence_mode = str(continuity.get("recovery_mode") or "LIVE_OBSERVED")
     selected_branch = str(continuity.get("selected_branch") or plan.get("selected_branch") or instance.deterministic_projection.get("branch") or "")
+    rejected_candidates = list(continuity.get("rejected_candidates") or plan.get("rejected_candidates") or ())
 
     decision_root = f"{instance.strategy_instance_id}:{canonical_hash({'contract': selected_contract, 'ts': now.isoformat()})[:12]}"
     facts: list[DecisionExplanationFact] = [
@@ -199,13 +215,13 @@ def build_explanation_facts(
             strategy_instance_id=instance.strategy_instance_id,
             instrument=instance.symbol,
             stage="CONTRACT_SELECTION",
-            rule_id="LIVE.ACTUAL_CHAIN.CONTRACT_SELECTION.001",
-            workbook_source="TFIS authoritative rule matrix / accepted selection policy",
+            rule_id=str(plan.get("contract_selection_rule_id") or "LIVE.ACTUAL_CHAIN.CONTRACT_SELECTION.001"),
+            workbook_source=", ".join(plan.get("source_cells") or ["TFIS authoritative rule matrix / accepted selection policy"]),
             formula_text="Select the first qualifying actual listed option contract from the authoritative traversal.",
             input_values={
                 "monthly_status": continuity.get("monthly_status"),
                 "branch": selected_branch,
-                "candidate_count": continuity.get("candidate_count"),
+                "candidate_count": continuity.get("candidate_count") or plan.get("candidate_count"),
             },
             output_value={
                 "selected_contract": selected_contract or None,
@@ -214,7 +230,8 @@ def build_explanation_facts(
                 "selected_strike": continuity.get("selected_strike"),
             },
             candidate_evidence={
-                "rejected_candidates": list(continuity.get("rejected_candidates") or ()),
+                "evaluated_contracts": list(plan.get("evaluated_contracts") or ()),
+                "rejected_candidates": rejected_candidates,
                 "plan_hash": plan.get("plan_hash"),
             },
             rejection_reason=None if selected_contract else str(continuity.get("unresolved_gap") or continuity.get("status") or "NO_QUALIFYING_CONTRACT"),
@@ -222,6 +239,44 @@ def build_explanation_facts(
             evidence_quality=str(continuity.get("option_history_status") or "UNKNOWN"),
             calculation_timestamp=now.isoformat(),
             evidence_mode=evidence_mode,
+        ),
+        DecisionExplanationFact(
+            decision_id=f"{decision_root}:plan",
+            trading_session_id=trading_session_id,
+            strategy_instance_id=instance.strategy_instance_id,
+            instrument=instance.symbol,
+            stage="PLAN_COMPOSITION",
+            rule_id=str(plan.get("entry_rule_id") or "S22.ENTRY_ORPT_RC.001"),
+            workbook_source=", ".join(plan.get("source_cells") or ["TFIS authoritative rule matrix"]),
+            formula_text=" / ".join(
+                item
+                for item in (
+                    formulas.get("base_entry"),
+                    formulas.get("target"),
+                    formulas.get("original_sl"),
+                    formulas.get("revised_entry"),
+                    formulas.get("revised_sl"),
+                )
+                if item
+            ) or "Plan formulas unavailable",
+            input_values={
+                "market_references": dict(plan.get("market_references") or {}),
+                "selected_option_references": dict(plan.get("selected_option_references") or {}),
+            },
+            output_value={
+                "raw_prices": dict(raw_prices),
+                "normalized_prices": dict(normalized_prices),
+            },
+            candidate_evidence={
+                "workbook_row_id": plan.get("workbook_row_id"),
+                "rule_matrix_version": plan.get("rule_matrix_version"),
+            },
+            rejection_reason=None,
+            evidence_source=str((plan.get("evidence_origin") or {}).get("selected_option_history") or continuity.get("evidence") or "UNKNOWN"),
+            evidence_quality=str(continuity.get("option_history_status") or "UNKNOWN"),
+            calculation_timestamp=now.isoformat(),
+            evidence_mode=evidence_mode,
+            parent_decision_id=f"{decision_root}:contract",
         ),
         DecisionExplanationFact(
             decision_id=f"{decision_root}:entry",
@@ -255,6 +310,211 @@ def build_explanation_facts(
     return [item.to_dict() for item in facts]
 
 
+def build_development_dashboard_projection(
+    *,
+    registry_instances: Iterable[EnabledStrategyInstance],
+    baseline_results: Mapping[str, Mapping[str, Any]],
+    current_entry_actions: Mapping[str, Any],
+    now: datetime,
+    trading_session_id: str,
+) -> dict[str, Any]:
+    instances = {item.strategy_instance_id: item for item in registry_instances}
+    outcomes = current_entry_actions.get("outcomes") if isinstance(current_entry_actions.get("outcomes"), Mapping) else {}
+    explanation_facts = list(current_entry_actions.get("explanation_facts") or ())
+    strategies: list[dict[str, Any]] = []
+    orders: list[dict[str, Any]] = []
+    positions: list[dict[str, Any]] = []
+    alerts: list[dict[str, Any]] = []
+    realized_total = Decimal("0")
+    unrealized_total = Decimal("0")
+    account_accepts: dict[str, list[str]] = {}
+    account_rejects: dict[str, list[str]] = {}
+
+    for strategy_instance_id in sorted(instances):
+        instance = instances[strategy_instance_id]
+        baseline = baseline_results.get(strategy_instance_id) or {}
+        selection = baseline.get("selection") if isinstance(baseline.get("selection"), Mapping) else {}
+        reconstruction = baseline.get("reconstruction") if isinstance(baseline.get("reconstruction"), Mapping) else {}
+        plan = selection.get("plan_payload") if isinstance(selection.get("plan_payload"), Mapping) else {}
+        selected_contract = str(selection.get("selected_contract") or "")
+        selected_quote = selection.get("quote") if isinstance(selection.get("quote"), Mapping) else {}
+        outcome = outcomes.get(strategy_instance_id) if isinstance(outcomes, Mapping) else {}
+        decision = str((outcome or {}).get("decision") or "NO_ORDER")
+        final_state = str((outcome or {}).get("final_state") or "")
+        health = "HEALTHY" if decision == "PROCESSED_INTERNAL_PAPER" else "DEGRADED_EVIDENCE"
+        raw_entry = Decimal(str(selection.get("entry") or "0"))
+        current_mark = Decimal(str(selected_quote.get("ltp") or selection.get("entry") or "0"))
+        quantity = int(instance.configured_quantity.get("lots", 0)) * int(instance.configured_quantity.get("lot_size", 0))
+        unrealized = Decimal("0")
+        if decision == "PROCESSED_INTERNAL_PAPER" and raw_entry > 0 and quantity > 0:
+            unrealized = (raw_entry - current_mark) * Decimal(quantity)
+        unrealized_total += unrealized
+        if decision == "PROCESSED_INTERNAL_PAPER":
+            account_accepts.setdefault(instance.account_reference, []).append(strategy_instance_id)
+        else:
+            account_rejects.setdefault(instance.account_reference, []).append(strategy_instance_id)
+
+        strategies.append(
+            {
+                "identity": {
+                    "strategy": instance.strategy_definition_id.split("_")[0],
+                    "instrument": instance.symbol,
+                    "account": instance.account_reference,
+                    "instance": strategy_instance_id,
+                },
+                "state": {
+                    "monthly_status": selection.get("monthly_status"),
+                    "branch": selection.get("selected_branch"),
+                    "runtime_stage": reconstruction.get("current_entry_state"),
+                    "health": health,
+                    "evidence_quality": selection.get("evidence"),
+                },
+                "plan": {
+                    "selected_contract": selected_contract,
+                    "candidate_contract_count": selection.get("candidate_count") or plan.get("candidate_count"),
+                    "expiry_candidates": [selection.get("selected_expiry")] if selection.get("selected_expiry") else [],
+                    "premium": selected_quote.get("ltp"),
+                    "oi": selected_quote.get("oi"),
+                    "base_entry": selection.get("entry"),
+                    "target": selection.get("target"),
+                    "original_sl": selection.get("original_sl"),
+                    "orpt": plan.get("orpt_time"),
+                    "rc": plan.get("rc_time"),
+                    "evidence_quality": selection.get("evidence"),
+                    "block_reason": (outcome or {}).get("reason"),
+                    "market_references": dict(plan.get("market_references") or {}),
+                },
+                "execution": {
+                    "order_state": final_state or decision,
+                    "selected_contract": selected_contract,
+                },
+                "position": {
+                    "health": "OPEN_PROTECTED" if decision == "PROCESSED_INTERNAL_PAPER" else "NOT_OPEN",
+                    "selected_contract": selected_contract,
+                },
+                "accounting": {
+                    "realized_pnl": f"{realized_total:.2f}",
+                    "unrealized_pnl": f"{unrealized:.2f}",
+                    "selected_contract": selected_contract,
+                },
+                "operations": {
+                    "alerts": [
+                        {
+                            "code": (outcome or {}).get("reason") or "NO_ALERT",
+                            "severity": "WARNING" if decision != "PROCESSED_INTERNAL_PAPER" else "INFO",
+                        }
+                    ],
+                },
+            }
+        )
+        if decision == "PROCESSED_INTERNAL_PAPER":
+            orders.append(
+                {
+                    "account": instance.account_reference,
+                    "strategy": instance.strategy_definition_id.split("_")[0],
+                    "instance": strategy_instance_id,
+                    "position_cycle": (outcome or {}).get("client_order_id") or "",
+                    "instrument": instance.symbol,
+                    "contract": selected_contract,
+                    "execution_contract": selected_contract,
+                    "purpose": "ENTRY",
+                    "generation": 1,
+                    "requested_quantity": quantity,
+                    "filled_quantity": quantity,
+                    "price": selection.get("entry"),
+                    "state": final_state or decision,
+                    "age": "00:00:00",
+                    "latest_event": "INTERNAL_FULL_FILL",
+                    "failure": "",
+                }
+            )
+            positions.append(
+                {
+                    "account": instance.account_reference,
+                    "strategy": instance.strategy_definition_id.split("_")[0],
+                    "instrument": instance.symbol,
+                    "contract": selected_contract,
+                    "position_contract": selected_contract,
+                    "fresh_or_carried": "FRESH",
+                    "quantity": quantity,
+                    "average_entry": selection.get("entry"),
+                    "mark": selected_quote.get("ltp"),
+                    "target": selection.get("target"),
+                    "active_sl": selection.get("original_sl"),
+                    "protection_status": "PROTECTED",
+                    "realized_pnl": "0.00",
+                    "unrealized_pnl": f"{unrealized:.2f}",
+                    "exit_deadline": "15:00:00",
+                    "health": "OPEN_PROTECTED",
+                }
+            )
+        if decision != "PROCESSED_INTERNAL_PAPER":
+            alerts.append(
+                {
+                    "severity": "WARNING",
+                    "code": (outcome or {}).get("reason") or "NO_ORDER",
+                    "strategy_instance_id": strategy_instance_id,
+                    "instrument": instance.symbol,
+                }
+            )
+
+    accounts = []
+    for account_reference in sorted({item.account_reference for item in instances.values()}):
+        accepted = account_accepts.get(account_reference, [])
+        rejected = account_rejects.get(account_reference, [])
+        accounts.append(
+            {
+                "account_reference": account_reference,
+                "status": "HEALTHY" if not rejected else "CONDITIONAL",
+                "limits": {"max_margin_usage_pct": 70, "max_new_entries_per_session": 3},
+                "usage": {"accepted_instances": len(accepted), "rejected_instances": len(rejected)},
+                "accepted_instances": accepted,
+                "rejected_instances": rejected,
+                "alerts": [],
+                "projection_hash": canonical_hash({"account": account_reference, "accepted": accepted, "rejected": rejected}),
+            }
+        )
+
+    projection = {
+        "schema_version": "tfis.fast_track.dashboard_projection.v2",
+        "system": {
+            "broker_order_authority": "NONE",
+            "session": trading_session_id,
+            "generated_at": now.isoformat(),
+        },
+        "command_centre": {
+            "active_orders": len(orders),
+            "blocked_instances": sum(1 for item in strategies if item["execution"]["order_state"] != "FILLED_INTERNAL"),
+            "broker_sessions": "READ_ONLY_INTERNAL_PAPER",
+            "critical_alerts": len(alerts),
+            "enabled_strategy_instances": len(strategies),
+            "margin_usage_pct": 0,
+            "market_state": "HISTORICAL_RECONSTRUCTION",
+            "open_positions": len(positions),
+            "plans_prepared": len(strategies),
+            "realized_pnl": f"{realized_total:.2f}",
+            "system_state": "HEALTHY" if not alerts else "CONDITIONAL",
+            "unprotected_positions": 0,
+            "unrealized_pnl": f"{unrealized_total:.2f}",
+        },
+        "strategies": strategies,
+        "accounts": accounts,
+        "orders": orders,
+        "positions": positions,
+        "analytics": {
+            "strategy_count": len(strategies),
+            "decision_explanation_facts": len(explanation_facts),
+            "processed_internal_paper": len(orders),
+            "no_order": len(strategies) - len(orders),
+        },
+        "alerts": alerts,
+        "audit": [],
+        "decision_explanations": explanation_facts,
+    }
+    projection["projection_hash"] = canonical_hash({k: v for k, v in projection.items() if k != "projection_hash"})
+    return projection
+
+
 def build_candidate_rejection_audit(
     *,
     continuities: Mapping[str, Mapping[str, Any]],
@@ -283,8 +543,17 @@ def write_fast_track_reports(
     current_entry_actions: Mapping[str, Any],
     tcs_result: Mapping[str, Any],
     infy_result: Mapping[str, Any],
+    registry_instances: Iterable[EnabledStrategyInstance] | None = None,
 ) -> dict[str, Path]:
     report_dir.mkdir(parents=True, exist_ok=True)
+    captured_at = datetime.fromisoformat(str(current_entry_actions["captured_at"]))
+    projection = build_development_dashboard_projection(
+        registry_instances=tuple(registry_instances or ()),
+        baseline_results=baseline_results,
+        current_entry_actions=current_entry_actions,
+        now=captured_at,
+        trading_session_id=trading_session_id,
+    ) if registry_instances is not None else None
     files: dict[str, Any] = {
         "historical_reconstruction_status.json": {
             "schema_version": "tfis.fast_track.historical_reconstruction_status.v1",
@@ -317,7 +586,7 @@ def write_fast_track_reports(
                 }
                 for key, value in baseline_results.items()
             },
-            now=datetime.fromisoformat(str(current_entry_actions["captured_at"])),
+            now=captured_at,
         ),
         "dashboard_explainability_result.json": {
             "schema_version": "tfis.fast_track.dashboard_explainability_result.v1",
@@ -326,6 +595,7 @@ def write_fast_track_reports(
             "immutable_runtime_fact_source": True,
             "frontend_formula_execution": False,
             "status": "BACKEND_FACTS_READY_FOR_DASHBOARD_CONSUMPTION",
+            "dashboard_projection_path": "dashboard_projection.json" if projection is not None else None,
         },
         "tcs_development_result.json": tcs_result,
         "infy_development_result.json": infy_result,
@@ -340,22 +610,126 @@ def write_fast_track_reports(
                 {
                     "gap_id": "FAST_TRACK_GAP_001",
                     "status": "OPEN",
-                    "description": "TCS and INFY remain source-captured candidate stocks but do not yet have a source-closed current-time S22 execution-plan builder in the unified fast-track lane.",
-                },
-                {
-                    "gap_id": "FAST_TRACK_GAP_002",
-                    "status": "OPEN",
-                    "description": "Dashboard frontend drill-down can now consume immutable explanation facts, but the interactive manual replay UI was not implemented in this slice.",
+                    "description": "This slice remains development-internal-paper only; TCS and INFY must stay disabled outside the dedicated development registry/profile.",
                 },
             ],
         },
     }
+    if projection is not None:
+        files["dashboard_projection.json"] = projection
+        files["dashboard_snapshot_summary.json"] = {
+            "schema_version": "tfis.fast_track.dashboard_snapshot_summary.v1",
+            "projection_hash": projection["projection_hash"],
+            "strategy_count": len(projection["strategies"]),
+            "decision_explanation_count": len(projection["decision_explanations"]),
+            "external_broker_order_authority": projection["system"]["broker_order_authority"],
+        }
+    for strategy_instance_id, payload in sorted(baseline_results.items()):
+        files[f"{strategy_instance_id.lower()}_isolated_result.json"] = _build_isolated_instance_report(
+            strategy_instance_id=strategy_instance_id,
+            baseline_payload=payload,
+            current_entry_actions=current_entry_actions,
+            projection=projection,
+            trading_session_id=trading_session_id,
+            captured_at=captured_at,
+        )
     written: dict[str, Path] = {}
     for name, payload in files.items():
         path = report_dir / name
         path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         written[name] = path
     return written
+
+
+def _build_isolated_instance_report(
+    *,
+    strategy_instance_id: str,
+    baseline_payload: Mapping[str, Any],
+    current_entry_actions: Mapping[str, Any],
+    projection: Mapping[str, Any] | None,
+    trading_session_id: str,
+    captured_at: datetime,
+) -> dict[str, Any]:
+    selection = baseline_payload.get("selection") if isinstance(baseline_payload.get("selection"), Mapping) else {}
+    reconstruction = baseline_payload.get("reconstruction") if isinstance(baseline_payload.get("reconstruction"), Mapping) else {}
+    action = (current_entry_actions.get("outcomes") or {}).get(strategy_instance_id, {})
+    explanation_facts = [
+        item
+        for item in current_entry_actions.get("explanation_facts") or ()
+        if isinstance(item, Mapping) and item.get("strategy_instance_id") == strategy_instance_id
+    ]
+    projection_strategy = {}
+    projection_position = {}
+    projection_orders: list[Mapping[str, Any]] = []
+    projection_account = {}
+    if projection is not None:
+        projection_strategy = next(
+            (
+                item
+                for item in projection.get("strategies") or ()
+                if isinstance(item, Mapping)
+                and isinstance(item.get("identity"), Mapping)
+                and item["identity"].get("instance") == strategy_instance_id
+            ),
+            {},
+        )
+        projection_instrument = (
+            projection_strategy.get("identity", {}).get("instrument")
+            if isinstance(projection_strategy.get("identity"), Mapping)
+            else selection.get("symbol")
+        )
+        projection_position = next(
+            (
+                item
+                for item in projection.get("positions") or ()
+                if isinstance(item, Mapping)
+                and item.get("instrument") == projection_instrument
+                and item.get("contract") == selection.get("selected_contract")
+            ),
+            {},
+        )
+        projection_orders = [
+            item
+            for item in projection.get("orders") or ()
+            if isinstance(item, Mapping) and item.get("instance") == strategy_instance_id
+        ]
+        account_reference = (
+            projection_strategy.get("identity", {}).get("account")
+            if isinstance(projection_strategy.get("identity"), Mapping)
+            else None
+        )
+        projection_account = next(
+            (
+                item
+                for item in projection.get("accounts") or ()
+                if isinstance(item, Mapping) and item.get("account_reference") == account_reference
+            ),
+            {},
+        )
+
+    return {
+        "schema_version": "tfis.fast_track.strategy_isolated_result.v1",
+        "captured_at": captured_at.isoformat(),
+        "trading_session_id": trading_session_id,
+        "strategy_instance_id": strategy_instance_id,
+        "identity": {
+            "strategy": projection_strategy.get("identity", {}).get("strategy"),
+            "instrument": projection_strategy.get("identity", {}).get("instrument") or selection.get("symbol"),
+            "account": projection_strategy.get("identity", {}).get("account"),
+        },
+        "selection": selection,
+        "reconstruction": reconstruction,
+        "action": action,
+        "position_cycle": {
+            "orders": projection_orders,
+            "position": projection_position,
+        },
+        "accounting": projection_strategy.get("accounting") if isinstance(projection_strategy.get("accounting"), Mapping) else {},
+        "dashboard_strategy": projection_strategy,
+        "dashboard_account": projection_account,
+        "decision_explanations": explanation_facts,
+        "external_broker_order_authority": "NONE",
+    }
 
 
 def _build_entry_intent(
@@ -520,3 +894,54 @@ def _breach_timestamp_from_reconstruction(reconstruction: Mapping[str, Any]) -> 
             if breach:
                 return str(breach)
     return None
+
+
+def _action_explanation_fact(
+    *,
+    instance: EnabledStrategyInstance,
+    continuity: Mapping[str, Any],
+    outcome: Mapping[str, Any],
+    now: datetime,
+    trading_session_id: str,
+) -> dict[str, Any]:
+    plan = continuity.get("plan_payload") if isinstance(continuity.get("plan_payload"), Mapping) else {}
+    raw_prices = plan.get("raw_prices") if isinstance(plan.get("raw_prices"), Mapping) else {}
+    normalized_prices = plan.get("normalized_prices") if isinstance(plan.get("normalized_prices"), Mapping) else {}
+    selected_contract = str(continuity.get("selected_contract") or "")
+    raw_entry = raw_prices.get("base_entry") or continuity.get("entry")
+    normalized_entry = normalized_prices.get("base_entry")
+    if normalized_entry in (None, "") and raw_entry not in (None, ""):
+        normalized_entry = str(normalize_executable_price(Decimal(str(raw_entry)), Decimal("0.05")))
+    decision_root = f"{instance.strategy_instance_id}:{canonical_hash({'contract': selected_contract, 'ts': now.isoformat()})[:12]}"
+    return DecisionExplanationFact(
+        decision_id=f"{decision_root}:action",
+        trading_session_id=trading_session_id,
+        strategy_instance_id=instance.strategy_instance_id,
+        instrument=instance.symbol,
+        stage="CURRENT_ACTION",
+        rule_id="GLOBAL.SEQUENTIAL.ACCOUNT.ACCEPTANCE.001",
+        workbook_source="TFIS global sequential account acceptance rule / executable price normalization rule",
+        formula_text="Normalize raw executable price to tick size, keep external broker authority NONE, and process qualifying intents sequentially per account.",
+        input_values={
+            "raw_entry_price": raw_entry,
+            "normalized_entry_price": normalized_entry,
+            "current_entry_state": continuity.get("current_entry_state"),
+        },
+        output_value={
+            "decision": outcome.get("decision"),
+            "final_state": outcome.get("final_state"),
+            "queue_position": outcome.get("queue_position"),
+            "required_margin": outcome.get("required_margin"),
+            "effective_available_margin": outcome.get("effective_available_margin"),
+        },
+        candidate_evidence={
+            "warning": outcome.get("warning"),
+            "client_order_id": outcome.get("client_order_id"),
+        },
+        rejection_reason=str(outcome.get("reason")) if outcome.get("reason") else None,
+        evidence_source=str(continuity.get("evidence") or "UNKNOWN"),
+        evidence_quality=str(continuity.get("option_history_status") or "UNKNOWN"),
+        calculation_timestamp=now.isoformat(),
+        evidence_mode=str(continuity.get("recovery_mode") or "LIVE_OBSERVED"),
+        parent_decision_id=f"{decision_root}:entry",
+    ).to_dict()

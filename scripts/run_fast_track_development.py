@@ -24,6 +24,7 @@ from tfis.runtime.multi_strategy.fast_track_development import (
 )
 from tfis.runtime.multi_strategy.live_contract_selection import build_authoritative_historical_selection
 from tfis.runtime.multi_strategy.registry import load_enabled_strategy_registry
+from tfis.runtime.multi_strategy.s22_stock_fast_track import build_s22_stock_historical_selection
 from tfis.runtime.multi_strategy.session_reconstruction import (
     MARKET_OPEN,
     StrategyTimingPolicy,
@@ -37,7 +38,9 @@ IST = ZoneInfo("Asia/Calcutta")
 UNDERLYING_SYMBOLS = {
     "BANKNIFTY": "NSE:NIFTYBANK-INDEX",
     "RELIANCE": "NSE:RELIANCE-EQ",
+    "TCS": "NSE:TCS-EQ",
     "NIFTY": "NSE:NIFTY50-INDEX",
+    "INFY": "NSE:INFY-EQ",
 }
 
 TIMING_SOURCES: dict[str, dict[str, Any]] = {
@@ -47,7 +50,15 @@ TIMING_SOURCES: dict[str, dict[str, Any]] = {
     },
     "S22_RELIANCE_INTERNAL_PAPER_A": {
         "policy": StrategyTimingPolicy(market_open=MARKET_OPEN, orpt_time=datetime.strptime("09:24:59.400000", "%H:%M:%S.%f").time(), rc_time=datetime.strptime("09:29:59.400000", "%H:%M:%S.%f").time()),
-        "revised_entry": "57.00",
+        "revised_entry": None,
+    },
+    "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A": {
+        "policy": StrategyTimingPolicy(market_open=MARKET_OPEN, orpt_time=datetime.strptime("09:24:59.400000", "%H:%M:%S.%f").time(), rc_time=datetime.strptime("09:29:59.400000", "%H:%M:%S.%f").time()),
+        "revised_entry": None,
+    },
+    "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A": {
+        "policy": StrategyTimingPolicy(market_open=MARKET_OPEN, orpt_time=datetime.strptime("09:24:59.400000", "%H:%M:%S.%f").time(), rc_time=datetime.strptime("09:29:59.400000", "%H:%M:%S.%f").time()),
+        "revised_entry": None,
     },
     "S23_NIFTY_INTERNAL_PAPER_A": {
         "policy": StrategyTimingPolicy(market_open=MARKET_OPEN, orpt_time=datetime.strptime("09:24:59.400000", "%H:%M:%S.%f").time(), rc_time=datetime.strptime("09:29:59.400000", "%H:%M:%S.%f").time()),
@@ -94,14 +105,23 @@ def main(argv: list[str] | None = None) -> int:
     continuities: dict[str, Any] = {}
 
     for instance in registry.enabled_instances:
-        selection = build_authoritative_historical_selection(
-            repo_root=REPO_ROOT,
-            instance=instance,
-            adapter=adapter,
-            instrument_records=instrument_records,
-            session_date=args.session_date,
-            now=now,
-        )
+        if instance.strategy_definition_id == "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D":
+            selection = build_s22_stock_historical_selection(
+                repo_root=REPO_ROOT,
+                instance=instance,
+                adapter=adapter,
+                session_date=args.session_date,
+                now=now,
+            )
+        else:
+            selection = build_authoritative_historical_selection(
+                repo_root=REPO_ROOT,
+                instance=instance,
+                adapter=adapter,
+                instrument_records=instrument_records,
+                session_date=args.session_date,
+                now=now,
+            )
         underlying_history = adapter.fetch_historical_candles(
             symbol=UNDERLYING_SYMBOLS.get(instance.symbol, f"NSE:{instance.symbol}-EQ"),
             resolution="1",
@@ -124,6 +144,10 @@ def main(argv: list[str] | None = None) -> int:
                 current_quote = current_quote_result.payload[0]
 
         timing_source = TIMING_SOURCES[instance.strategy_instance_id]
+        revised_entry = _resolve_revised_entry(
+            selection=selection.to_dict(),
+            option_history=option_history.payload.candles if option_history and option_history.status is FyersReadOnlyStatus.SUCCESS else (),
+        )
         reconstruction = reconstruct_option_selling_entry(
             strategy_instance_id=instance.strategy_instance_id,
             timing_policy=timing_source["policy"],
@@ -131,7 +155,7 @@ def main(argv: list[str] | None = None) -> int:
             invalid_runtime_classification="HISTORICAL_RECONSTRUCTION_ALLOWED",
             selected_contract_authoritative=bool(selection.selected_contract),
             base_entry=Decimal(str(selection.entry or instance.deterministic_projection.get("entry") or "0")),
-            revised_entry=Decimal(str(timing_source["revised_entry"])) if timing_source["revised_entry"] is not None else None,
+            revised_entry=revised_entry,
             underlying_bars=underlying_history.payload if underlying_history.status is FyersReadOnlyStatus.SUCCESS else None,
             option_bars=option_history.payload if option_history and option_history.status is FyersReadOnlyStatus.SUCCESS else None,
             current_quote=current_quote,
@@ -143,6 +167,7 @@ def main(argv: list[str] | None = None) -> int:
                 "orpt_result": reconstruction.orpt_result,
                 "rc_result": reconstruction.rc_result,
                 "reconstruction": reconstruction.to_dict(),
+                "revised_entry": str(revised_entry) if revised_entry is not None else None,
             },
         }
         baseline_results[instance.strategy_instance_id] = {
@@ -158,13 +183,13 @@ def main(argv: list[str] | None = None) -> int:
         trading_session_id=f"NSE:{args.session_date.isoformat()}:FAST_TRACK_DEVELOPMENT",
     )
 
-    tcs_result = _development_candidate_result(
+    tcs_result = baseline_results.get("S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A") or _development_candidate_result(
         symbol="TCS",
         decision_pack=_read_json(REPO_ROOT / "reports" / "s22_multi_stock" / "candidate_activation_decision_pack.json"),
         contract_selection=_read_json(REPO_ROOT / "reports" / "contract_selection" / "actual_strike_set_contract.json"),
         now=now,
     )
-    infy_result = _development_candidate_result(
+    infy_result = baseline_results.get("S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A") or _development_candidate_result(
         symbol="INFY",
         decision_pack=_read_json(REPO_ROOT / "reports" / "s22_multi_stock" / "candidate_activation_decision_pack.json"),
         contract_selection=_read_json(REPO_ROOT / "reports" / "contract_selection" / "infy_actual_chain_selection.json"),
@@ -179,6 +204,7 @@ def main(argv: list[str] | None = None) -> int:
         current_entry_actions=current_entry_actions,
         tcs_result=tcs_result,
         infy_result=infy_result,
+        registry_instances=registry.enabled_instances,
     )
     payload = {
         "verdict": "FAST_TRACK_DEVELOPMENT_REPORTS_WRITTEN",
@@ -225,6 +251,51 @@ def _read_json(path: Path) -> dict[str, Any]:
         return json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError:
         return {}
+
+
+def _resolve_revised_entry(
+    *,
+    selection: Mapping[str, Any],
+    option_history: Any,
+) -> Decimal | None:
+    plan_payload = selection.get("plan_payload") if isinstance(selection.get("plan_payload"), Mapping) else {}
+    branch = str(selection.get("selected_branch") or plan_payload.get("selected_branch") or "")
+    option_refs = plan_payload.get("selected_option_references") if isinstance(plan_payload.get("selected_option_references"), Mapping) else {}
+    if not branch or not option_refs or not option_history:
+        raw_value = plan_payload.get("raw_prices", {}).get("revised_entry") if isinstance(plan_payload.get("raw_prices"), Mapping) else None
+        return Decimal(str(raw_value)) if raw_value not in (None, "") else None
+    lows = [Decimal(str(bar.low)) for bar in option_history]
+    highs = [Decimal(str(bar.high)) for bar in option_history]
+    rc_ll = min(lows) if lows else None
+    rc_hh = max(highs) if highs else None
+    if rc_ll is None:
+        raw_value = plan_payload.get("raw_prices", {}).get("revised_entry") if isinstance(plan_payload.get("raw_prices"), Mapping) else None
+        return Decimal(str(raw_value)) if raw_value not in (None, "") else None
+    reference_alias = {
+        "BULL_CALL": "OPT_PRV_4DLL",
+        "BULL_PUT": "OPT_PRV_2DHH",
+        "BEAR_CALL": "OPT_PRV_2DLL",
+        "BEAR_PUT": "OPT_PRV_4DHH",
+    }.get(branch)
+    operator = {
+        "BULL_CALL": "MIN",
+        "BULL_PUT": "MAX",
+        "BEAR_CALL": "MIN",
+        "BEAR_PUT": "MAX",
+    }.get(branch)
+    if reference_alias is None or operator is None:
+        return None
+    reference_value = Decimal(str(option_refs.get(reference_alias)))
+    revised = min(reference_value, rc_ll) if operator == "MIN" else max(reference_value, rc_ll)
+    if isinstance(plan_payload.get("raw_prices"), Mapping):
+        plan_payload["raw_prices"]["revised_entry"] = str(revised)
+        if rc_hh is not None:
+            plan_payload["raw_prices"]["revised_sl"] = plan_payload["raw_prices"].get("revised_sl")
+    plan_payload["current_day_option_references"] = {
+        "rc_ll": str(rc_ll),
+        "rc_hh": str(rc_hh) if rc_hh is not None else None,
+    }
+    return revised
 
 
 if __name__ == "__main__":

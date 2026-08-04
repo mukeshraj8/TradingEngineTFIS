@@ -48,6 +48,13 @@ main { padding: 18px; display: grid; gap: 18px; }
 .table-wrap { overflow: auto; max-height: 560px; border: 1px solid var(--line); border-radius: 8px; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 980px; }
 th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; white-space: nowrap; }
+#explainabilityTable { min-width: 1680px; }
+#explainabilityTable td:nth-child(6),
+#explainabilityTable td:nth-child(7),
+#explainabilityTable td:nth-child(8),
+#explainabilityTable td:nth-child(9),
+#explainabilityTable td:nth-child(10),
+#explainabilityTable td:nth-child(11) { white-space: normal; min-width: 220px; }
 th { position: sticky; top: 0; background: var(--surface-2); color: var(--muted); font-size: 12px; text-transform: uppercase; cursor: pointer; }
 tr:hover td { background: rgba(15, 118, 110, .06); }
 .status { font-weight: 800; }

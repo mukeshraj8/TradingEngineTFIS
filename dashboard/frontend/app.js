@@ -5,6 +5,7 @@ const columns = {
   premarketTable: ["Strategy", "Metadata", "Market Structure", "Candidates", "Selected Contract", "Expiry", "Premium", "OI", "Entry", "Target", "SL", "ORPT", "RC", "Evidence", "Block Reason"],
   ordersTable: ["Account", "Strategy", "Instance", "PositionCycle", "Instrument", "Contract", "Purpose", "Generation", "Requested", "Filled", "Price", "State", "Age", "Latest Event", "Failure"],
   positionsTable: ["Account", "Strategy", "Instrument", "Contract", "Fresh/Carried", "Quantity", "Average Entry", "Mark", "Target", "Active SL", "Protection", "Realized", "Unrealized", "Exit Deadline", "Health"],
+  explainabilityTable: ["Strategy", "Instrument", "Stage", "Rule", "Workbook", "Formula", "Inputs", "Output", "Rejections", "Evidence", "Eligibility"],
   auditTable: ["Operator", "Timestamp", "Command", "Scope", "Reason", "Preview", "Result", "Previous", "New", "Evidence Hash"]
 };
 
@@ -27,6 +28,7 @@ function render() {
   renderTable("positionsTable", p.positions.map(o => [o.account, o.strategy, o.instrument, o.contract, o.fresh_or_carried, o.quantity, o.average_entry, o.mark, o.target, o.active_sl, o.protection_status, o.realized_pnl, o.unrealized_pnl, o.exit_deadline, o.health]));
   renderAccounts(p.accounts);
   renderMetrics("analyticsGrid", p.analytics);
+  renderExplainability(p.decision_explanations || []);
   renderAlerts(p.alerts);
   renderTable("auditTable", p.audit.map(a => [a.operator, a.timestamp, a.command, a.scope, a.reason, String(a.preview), a.result, a.previous_state, a.new_state, a.evidence_hash]));
   document.getElementById("settingsBlock").textContent = JSON.stringify({ system: p.system, projection_hash: p.projection_hash }, null, 2);
@@ -112,6 +114,26 @@ function renderAlerts(alerts) {
   alerts.forEach(alert => target.appendChild(panel(alert.code || "Alert", alert)));
 }
 
+function renderExplainability(facts) {
+  const term = document.getElementById("explainabilityFilter").value.toLowerCase();
+  const rows = facts
+    .filter(item => JSON.stringify(item).toLowerCase().includes(term))
+    .map(item => [
+      item.strategy_instance_id,
+      item.instrument,
+      item.stage,
+      item.rule_id,
+      item.workbook_source,
+      item.formula_text,
+      summarizeObject(item.input_values),
+      summarizeObject(item.output_value),
+      summarizeObject(item.candidate_evidence?.rejected_candidates || item.candidate_evidence || {}),
+      `${item.evidence_source} / ${item.evidence_quality} / ${item.evidence_mode}`,
+      item.rejection_reason || item.output_value?.current_entry_state || ""
+    ]);
+  renderTable("explainabilityTable", rows);
+}
+
 function renderTable(id, rows) {
   const table = document.getElementById(id);
   const head = columns[id].map((name, index) => `<th data-index="${index}">${name}</th>`).join("");
@@ -143,6 +165,16 @@ function display(value) {
   return String(value);
 }
 
+function summarizeObject(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value !== "object") return String(value);
+  if (Array.isArray(value)) {
+    if (!value.length) return "";
+    return value.map(item => typeof item === "object" ? JSON.stringify(item) : String(item)).join(" | ");
+  }
+  return Object.entries(value).map(([key, item]) => `${key}: ${display(item)}`).join(" | ");
+}
+
 function label(key) {
   return String(key).replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
 }
@@ -153,6 +185,7 @@ function escapeHtml(value) {
 
 document.getElementById("themeToggle").addEventListener("click", () => document.body.classList.toggle("dark"));
 document.getElementById("strategyFilter").addEventListener("input", () => renderStrategies(state.projection.strategies));
+document.getElementById("explainabilityFilter").addEventListener("input", () => renderExplainability(state.projection.decision_explanations || []));
 loadProjection().catch(error => {
   document.body.innerHTML = `<main class="section"><h1>Dashboard unavailable</h1><pre>${escapeHtml(error.message)}</pre></main>`;
 });
