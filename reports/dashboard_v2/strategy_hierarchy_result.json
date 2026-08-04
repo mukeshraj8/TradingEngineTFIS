@@ -1,0 +1,84 @@
+{
+  "schema_version": "tfis.dashboard_v2.strategy_hierarchy_result.v1",
+  "strategy_families": [
+    {
+      "active_positions": 3,
+      "blocked": 0,
+      "daily_pnl": "5550.00",
+      "evidence_quality": "Deterministic Timing Supplement, Fixture Backed",
+      "family": "Option Selling",
+      "health": "Evidence Limited",
+      "instrument_count": 3,
+      "no_trade": 0,
+      "open_positions": 3,
+      "scalability_demo": true,
+      "strategy_count": 3
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Option Buying",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Futures",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Equity",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Commodity",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Currency",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    }
+  ],
+  "strategy_instance_count": 3
+}

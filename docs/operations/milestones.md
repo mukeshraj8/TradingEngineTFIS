@@ -2,6 +2,71 @@
 
 ## Current Snapshot
 
+- as of Tuesday, August 4, 2026 at 22:40 IST, the
+  `NEXT_MAJOR_MILESTONE_TFIS_PROFESSIONAL_OPERATOR_EXPERIENCE_AND_DECISION_WORKBENCH`
+  slice is `CONDITIONAL_ACCEPTED`. The dashboard now ships a committed v3
+  product shape with an explicit `Operator` / `Engineering` mode split,
+  authoritative product architecture under
+  `docs/architecture/tfis_dashboard_product_architecture.md`, and a generated
+  v3 evidence pack under `reports/dashboard_v3/`. The runtime projection now
+  emits `tfis.operations.unified_read_model.v3`, the frontend remains
+  read-only with no strategy-formula evaluation in the browser, and the
+  primary operator pages are now separated cleanly from the deeper technical
+  review pages. Focused validation passed in
+  `tests/unit/test_multi_strategy_runtime_dashboard_v1.py` and
+  `tests/unit/test_fast_track_development.py` (`16 passed` total), and a
+  bounded local serve smoke confirmed `200` responses for `index.html`,
+  `/api/snapshot.json`, and `/api/health` on the rebuilt v3 bundle. Honest
+  remaining condition: the UX and navigation are now materially more
+  professional, but some business-stage explanation depth still depends on
+  future backend immutable fact emission rather than frontend work.
+- as of Tuesday, August 4, 2026 at 22:05 IST, the
+  `DASHBOARD_V2_OPERATOR_USABILITY_AND_INFORMATION_DENSITY_CORRECTION` slice
+  is `CONDITIONAL_ACCEPTED`. The unified operator projection now again emits
+  immutable `decision_explanations` in
+  `tfis.operations.unified_read_model.v2`, which restores the populated
+  Explainability/Decision review surfaces in the deterministic unified
+  dashboard. The frontend was also compacted for denser scanning with summary
+  strips above `Orders`, `Positions`, and `Historical Trades`, slimmer table
+  spacing, smaller KPI tiles, and a narrower side rail. Focused validation
+  passed in `tests/unit/test_multi_strategy_runtime_dashboard_v1.py` and
+  `tests/unit/test_fast_track_development.py` (`15 passed` total), and a
+  bounded local serve smoke proved `200` responses for `index.html` and
+  `/api/snapshot.json` with `18` decision facts present. Honest remaining
+  condition: information density is materially improved, but explanation depth
+  is still bounded by the runtime fact model currently emitted by the backend.
+- as of Tuesday, August 4, 2026 at 18:05 IST, the
+  `NEXT_MAJOR_MILESTONE_REDESIGN_TFIS_DASHBOARD_AS_A_PROFESSIONAL_MULTI_STRATEGY_OPERATIONS_PLATFORM`
+  slice is `CONDITIONAL_ACCEPTED`. The dashboard runtime projection now emits
+  `tfis.operations.unified_read_model.v2` with operator-readable state labels,
+  strategy-family hierarchy, account and risk surfaces, historical-trade
+  rows, and settings metadata. The frontend now exposes the exact primary
+  areas `Command Centre`, `Strategies`, `Orders`, `Positions`, `Accounts`,
+  `Risk`, `Explainability`, `Historical Trades`, `Alerts & Audit`, and
+  `Settings`, while preserving read-only operation and zero frontend formula
+  calculation. The runtime report writer now emits the v2 evidence pack under
+  `reports/dashboard_v2/`. Focused validation passed in
+  `tests/unit/test_multi_strategy_runtime_dashboard_v1.py` and
+  `tests/unit/test_fast_track_development.py` (`15 passed` total), and a
+  bounded local serve smoke confirmed `200` responses for both `index.html`
+  and `/api/snapshot.json` with the rebuilt v2 bundle. Honest remaining
+  condition: backend explainability depth is still only as complete as the
+  immutable facts currently emitted by the runtime; the dashboard does not
+  synthesize missing Monthly Status, branch-mapping, or protection formulas.
+  External broker-order authority remains `NONE`.
+- as of Tuesday, August 4, 2026 at 16:45 IST, the
+  `UNIFIED_DASHBOARD_OPERATOR_EXPLORER_REFRESH` slice is
+  `CONDITIONAL_ACCEPTED`. The dashboard frontend was reworked into a
+  professional operator flow with clear primary sections, a strategy
+  workbench, selected-strategy `Explain Decision` navigation, explicit
+  completeness warnings, readable candidate rejection tables, source-trace
+  views, and a local-only manual comparison panel. Focused validation passed
+  in `tests/unit/test_multi_strategy_runtime_dashboard_v1.py` and
+  `tests/unit/test_fast_track_development.py` (`14 passed` total in the
+  bounded dashboard/fast-track batch). Honest remaining condition: the new UX
+  now exposes where backend explainability is partial; it does not yet create
+  missing Monthly Status, branch-mapping, or protection-stage facts on its
+  own. External broker-order authority remains `NONE`.
 - as of Tuesday, August 4, 2026 at 13:42 IST, the
   `CLOSE_GENERIC_EXECUTABLE_PRICE_NORMALIZATION_AND_RERUN_TODAYS_FAST_TRACK`
   slice is `ACCEPTED`. The repo now contains a shared executable-price

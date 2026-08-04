@@ -1,0 +1,47 @@
+{
+  "allowed_write_scope": "INTERNAL_PAPER_LOCAL_ONLY",
+  "audit_required": true,
+  "credential_exposure": "PROHIBITED",
+  "sample_accounts": [
+    {
+      "accepted_instances": [
+        "S21_BANKNIFTY_INTERNAL_PAPER_A",
+        "S22_RELIANCE_INTERNAL_PAPER_A",
+        "S23_NIFTY_INTERNAL_PAPER_A"
+      ],
+      "account_reference": "INTERNAL_PAPER_ACCOUNT_A",
+      "alerts": [],
+      "limits": {
+        "aggregate_option_selling_exposure": 3,
+        "available_margin": 460000,
+        "broker": "INTERNAL_PAPER",
+        "daily_loss_limit": 50000,
+        "data_only_or_trading": "TRADING_SIMULATION",
+        "default_account": true,
+        "duplicate_underlying_prevention": true,
+        "environment": "INTERNAL_PAPER",
+        "global_halt": false,
+        "maximum_account_margin_usage_pct": 70,
+        "maximum_concurrent_positions": 3,
+        "maximum_new_entries_per_session": 3,
+        "read_only_or_order_authorised": "READ_ONLY_OR_INTERNAL_PAPER",
+        "reserved_margin": 0,
+        "simulated_balance": 1000000,
+        "starting_capital": 1000000
+      },
+      "projection_hash": "af05b87f722a5f217859dcaa72fc1e2ca0e3da3543c5343cdff30e5a865223cc",
+      "rejected_instances": [],
+      "status": "ACTIVE",
+      "usage": {
+        "active_orders": 3,
+        "aggregate_option_selling_exposure": 3,
+        "concurrent_positions": 3,
+        "margin_usage_pct": 54,
+        "new_entries": 3,
+        "used_margin": 540000
+      }
+    }
+  ],
+  "schema_version": "tfis.dashboard_v2.account_configuration_contract.v1",
+  "versioned_save_required": true
+}

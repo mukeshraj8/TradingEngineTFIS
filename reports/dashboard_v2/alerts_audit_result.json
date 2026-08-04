@@ -1,0 +1,24 @@
+{
+  "alerts": [
+    {
+      "code": "S22_LIVE_OPEN_ORPT_RC_PENDING",
+      "message": "S22 RELIANCE still requires real opening/ORPT/RC capture before complete live-evidence certification.",
+      "severity": "WARNING"
+    }
+  ],
+  "audit": [
+    {
+      "command": "BUILD_UNIFIED_INTERNAL_PAPER_PROJECTION",
+      "evidence_hash": "54322cc0a08bab451b7199616291fcfe626ee03e3b5be4dca8674b04936eac02",
+      "new_state": "UNIFIED_PROJECTION_READY",
+      "operator": "SYSTEM",
+      "preview": true,
+      "previous_state": "NO_UNIFIED_PROJECTION",
+      "reason": "deterministic certification",
+      "result": "SNAPSHOT_CREATED",
+      "scope": "S21,S22,S23",
+      "timestamp": "2026-08-04T16:45:00+05:30"
+    }
+  ],
+  "schema_version": "tfis.dashboard_v2.alerts_audit_result.v1"
+}

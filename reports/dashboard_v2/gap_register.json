@@ -1,0 +1,15 @@
+{
+  "gaps": [
+    {
+      "description": "Monthly Status, branch-mapping, and full stepwise explanation depth still depend on richer backend immutable facts for every strategy instance.",
+      "gap_id": "DASHBOARD_V2_GAP_001",
+      "status": "OPEN"
+    },
+    {
+      "description": "Account configuration writes are represented as a validated local-only contract, but not yet wired to a persisted editable service boundary.",
+      "gap_id": "DASHBOARD_V2_GAP_002",
+      "status": "OPEN"
+    }
+  ],
+  "schema_version": "tfis.dashboard_v2.gap_register.v1"
+}

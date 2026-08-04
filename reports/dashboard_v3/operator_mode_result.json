@@ -1,0 +1,43 @@
+{
+  "command_centre_panels": [
+    "system_state",
+    "market_state",
+    "broker_sessions",
+    "enabled_strategy_instances",
+    "enabled_instruments",
+    "plans_prepared",
+    "blocked_instances",
+    "active_orders",
+    "pending_orders",
+    "open_positions",
+    "unprotected_positions",
+    "realized_pnl",
+    "unrealized_pnl",
+    "daily_realized_pnl",
+    "daily_unrealized_pnl",
+    "margin_usage_pct",
+    "critical_alerts",
+    "broker_data_session",
+    "last_market_update",
+    "account_summary",
+    "critical_alert_rows",
+    "active_trades",
+    "pending_actions",
+    "strategy_health",
+    "market_session_timeline",
+    "recent_operational_events"
+  ],
+  "pages": [
+    "Command Centre",
+    "Strategies",
+    "Orders",
+    "Positions",
+    "Accounts",
+    "Risk",
+    "Historical Trades",
+    "Alerts",
+    "Audit",
+    "Settings"
+  ],
+  "schema_version": "tfis.dashboard_v3.operator_mode_result.v1"
+}

@@ -1,0 +1,7 @@
+{
+  "account_write_scope": "INTERNAL_PAPER_LOCAL_ONLY",
+  "credential_exposure": "PROHIBITED",
+  "external_broker_authority": "NONE",
+  "frontend_formula_calculation": false,
+  "schema_version": "tfis.dashboard_v2.security_and_write_boundary.v1"
+}

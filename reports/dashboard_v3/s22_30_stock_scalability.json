@@ -1,0 +1,289 @@
+{
+  "label": "SCALABILITY_FIXTURE",
+  "row_count": 31,
+  "rows": [
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "RELIANCE",
+      "mode": "LIVE_SHAPE_REFERENCE",
+      "row_index": 1,
+      "selected_contract": "NSE:RELIANCE26AUG1260CE",
+      "status": "Open and Protected"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_01",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 2,
+      "selected_contract": "NSE:S22_SIM_0126AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_02",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 3,
+      "selected_contract": "NSE:S22_SIM_0226AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_03",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 4,
+      "selected_contract": "NSE:S22_SIM_0326AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_04",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 5,
+      "selected_contract": "NSE:S22_SIM_0426AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_05",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 6,
+      "selected_contract": "NSE:S22_SIM_0526AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_06",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 7,
+      "selected_contract": "NSE:S22_SIM_0626AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_07",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 8,
+      "selected_contract": "NSE:S22_SIM_0726AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_08",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 9,
+      "selected_contract": "NSE:S22_SIM_0826AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_09",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 10,
+      "selected_contract": "NSE:S22_SIM_0926AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_10",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 11,
+      "selected_contract": "NSE:S22_SIM_1026AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_11",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 12,
+      "selected_contract": "NSE:S22_SIM_1126AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_12",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 13,
+      "selected_contract": "NSE:S22_SIM_1226AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_13",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 14,
+      "selected_contract": "NSE:S22_SIM_1326AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_14",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 15,
+      "selected_contract": "NSE:S22_SIM_1426AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_15",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 16,
+      "selected_contract": "NSE:S22_SIM_1526AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_16",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 17,
+      "selected_contract": "NSE:S22_SIM_1626AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_17",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 18,
+      "selected_contract": "NSE:S22_SIM_1726AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_18",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 19,
+      "selected_contract": "NSE:S22_SIM_1826AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_19",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 20,
+      "selected_contract": "NSE:S22_SIM_1926AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_20",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 21,
+      "selected_contract": "NSE:S22_SIM_2026AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_21",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 22,
+      "selected_contract": "NSE:S22_SIM_2126AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_22",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 23,
+      "selected_contract": "NSE:S22_SIM_2226AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_23",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 24,
+      "selected_contract": "NSE:S22_SIM_2326AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_24",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 25,
+      "selected_contract": "NSE:S22_SIM_2426AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_25",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 26,
+      "selected_contract": "NSE:S22_SIM_2526AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_26",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 27,
+      "selected_contract": "NSE:S22_SIM_2626AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_27",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 28,
+      "selected_contract": "NSE:S22_SIM_2726AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_28",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 29,
+      "selected_contract": "NSE:S22_SIM_2826AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_29",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 30,
+      "selected_contract": "NSE:S22_SIM_2926AUG1000CE",
+      "status": "Prepared - Simulated"
+    },
+    {
+      "group": "S22",
+      "health": "Healthy",
+      "instrument": "S22_SIM_30",
+      "mode": "SIMULATED_SCALABILITY_FIXTURE",
+      "row_index": 31,
+      "selected_contract": "NSE:S22_SIM_3026AUG1000CE",
+      "status": "Prepared - Simulated"
+    }
+  ],
+  "schema_version": "tfis.dashboard_v2.s22_30_stock_scalability.v1",
+  "simulated_fixture": true,
+  "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+  "supports_search_filter_sort_grouping_pagination": true
+}

@@ -6,6 +6,58 @@ way.
 
 ## Immediate Next Priorities
 
+0.67483. `DEEPEN_BACKEND_FACTS_BEHIND_DASHBOARD_V3`
+   The frontend product experience is now split into Operator and Engineering
+   modes and is good enough to expose the remaining truth gap honestly. The
+   next highest-value work is not more navigation or styling; it is richer
+   immutable backend fact emission for Monthly Status derivation, branch
+   mapping, contract-selection evaluation, and protection/lifecycle formulas
+   so the new v3 workbench can validate steps instead of only final outputs.
+
+0.674825. `USE_DASHBOARD_V3_AS_THE_PRIMARY_OPERATOR_AND_REVIEW_SURFACE`
+   The governing dashboard experience is now the v3 projection with the
+   explicit Operator/Engineering mode split. Use Operator mode for daily
+   supervision and Engineering mode for stepwise diagnosis and source-trace
+   review. Governing artifacts are now
+   `docs/architecture/tfis_dashboard_product_architecture.md`,
+   `reports/dashboard_v3/`, and the frontend under `dashboard/frontend/`.
+
+0.67482. `DEEPEN_BACKEND_FACTS_NOW_THAT_DASHBOARD_V2_IS_DENSER`
+   The dashboard now has better operator density and the unified v2
+   projection again emits `decision_explanations`, so the next honest
+   improvement is backend fact depth, not more frontend chrome. Prioritize
+   immutable fact emission for Monthly Status derivation, branch mapping,
+   contract-selection candidate evaluation, and protection-stage formulas so
+   the denser Explainability surface can show authoritative detail instead of
+   only projection-derived state.
+
+0.67481. `USE_THE_DASHBOARD_V2_PRIMARY_AREAS_AS_THE_OPERATOR_SURFACE`
+   The dashboard now has exact operator-facing primary areas for
+   `Command Centre`, `Strategies`, `Orders`, `Positions`, `Accounts`,
+   `Risk`, `Explainability`, `Historical Trades`, `Alerts & Audit`, and
+   `Settings`. Use those views for supervision and validation instead of the
+   old flat table wall. Governing frontend files remain
+   `dashboard/frontend/index.html`,
+   `dashboard/frontend/app.js`, and
+   `dashboard/frontend/styles.css`. Governing runtime/report outputs are now
+   under `reports/dashboard_v2/`.
+
+0.6748. `USE_THE_NEW_DECISION_EXPLORER_AS_THE_OPERATOR_REVIEW_SURFACE`
+   The dashboard frontend now has a strategy workbench plus a selected-
+   strategy decision explorer. Use that surface for human validation first,
+   not the old table wall. Its job is to make missing explanation stages
+   explicit instead of burying them. Governing frontend files are
+   `dashboard/frontend/index.html`,
+   `dashboard/frontend/app.js`, and
+   `dashboard/frontend/styles.css`.
+
+0.67479. `FILL_BACKEND_EXPLANATION_GAPS_EXPOSED_BY_THE_UI`
+   The new UI is now honest about partial explainability. The next backend
+   priority is to emit deeper immutable facts for Monthly Status, branch
+   mapping, market-structure derivation, and protection calculations so the
+   Decision Explorer can move more strategies from `limited` to `explained`
+   without frontend inference.
+
 0.67475. `USE_THE_VERIFIED_FAST_TRACK_REPORT_PATH_AS_THE_CURRENT_TIME_TRUTH_SURFACE`
    The live FYERS read-only rerun at `13:41:54 IST` already closed the
    generic executable-price normalization defect and now proves

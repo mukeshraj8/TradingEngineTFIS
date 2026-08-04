@@ -1,0 +1,33 @@
+{
+  "active_segments": [
+    {
+      "segment": "Index Options",
+      "status": "ACTIVE_IN_PROJECTION"
+    },
+    {
+      "segment": "Stock Options",
+      "status": "ACTIVE_IN_PROJECTION"
+    }
+  ],
+  "schema_version": "tfis.dashboard_v3.future_segment_compatibility.v1",
+  "ui_fixtures": [
+    {
+      "instrument": "NIFTY_FUT_UI_FIXTURE",
+      "segment": "Futures",
+      "status": "UI_COMPATIBILITY_FIXTURE",
+      "strategy_family": "Futures"
+    },
+    {
+      "instrument": "CRUDEOIL_UI_FIXTURE",
+      "segment": "Commodity",
+      "status": "UI_COMPATIBILITY_FIXTURE",
+      "strategy_family": "Commodity"
+    },
+    {
+      "instrument": "USDINR_UI_FIXTURE",
+      "segment": "Currency",
+      "status": "UI_COMPATIBILITY_FIXTURE",
+      "strategy_family": "Currency"
+    }
+  ]
+}

@@ -8,80 +8,401 @@
 </head>
 <body>
   <header class="topbar">
-    <div>
+    <div class="brand-block">
       <p class="eyebrow">TFIS Internal Paper</p>
-      <h1>Command Centre</h1>
+      <h1>Operations Command Centre</h1>
+      <p id="headerSummary" class="subtitle">Read-only trading supervision with stepwise decision validation.</p>
     </div>
     <div class="top-actions">
+      <div class="mode-toggle" aria-label="Dashboard mode">
+        <button id="modeOperator" type="button" class="mode-button is-active">Operator</button>
+        <button id="modeEngineering" type="button" class="mode-button">Engineering</button>
+      </div>
+      <span id="sessionBadge" class="badge badge-neutral">Session</span>
+      <span id="authorityBadge" class="badge badge-accent">Broker order authority: NONE</span>
       <button id="themeToggle" type="button" aria-label="Toggle theme">Theme</button>
-      <span id="authorityBadge" class="badge">Broker order authority: NONE</span>
     </div>
   </header>
-  <nav class="tabs" aria-label="Dashboard sections">
-    <a href="#command">Command Centre</a>
-    <a href="#strategies">Strategies</a>
-    <a href="#premarket">Pre-Market</a>
-    <a href="#orders">Orders</a>
-    <a href="#positions">Positions</a>
-    <a href="#accounts">Accounts</a>
-    <a href="#risk">Risk</a>
-    <a href="#analytics">Analytics</a>
-    <a href="#explainability">Explainability</a>
-    <a href="#alerts">Alerts</a>
-    <a href="#audit">Audit</a>
-    <a href="#settings">Settings</a>
-  </nav>
-  <main>
-    <section id="command" class="section">
-      <div id="statusGrid" class="metric-grid"></div>
-    </section>
-    <section id="strategies" class="section">
-      <div class="section-title">
-        <h2>Strategies</h2>
-        <input id="strategyFilter" type="search" placeholder="Filter strategy, instrument, stage">
-      </div>
-      <div class="table-wrap"><table id="strategyTable"></table></div>
-    </section>
-    <section id="premarket" class="section">
-      <div class="section-title"><h2>Pre-Market</h2></div>
-      <div class="table-wrap"><table id="premarketTable"></table></div>
-    </section>
-    <section id="orders" class="section">
-      <div class="section-title"><h2>Orders</h2></div>
-      <div class="table-wrap"><table id="ordersTable"></table></div>
-    </section>
-    <section id="positions" class="section">
-      <div class="section-title"><h2>Positions</h2></div>
-      <div class="table-wrap"><table id="positionsTable"></table></div>
-    </section>
-    <section id="accounts" class="section two-col">
-      <div><h2>Accounts</h2><div id="accountsPanel" class="panel-list"></div></div>
-      <div id="risk"><h2>Risk</h2><div id="riskPanel" class="panel-list"></div></div>
-    </section>
-    <section id="analytics" class="section">
-      <div class="section-title"><h2>Analytics</h2></div>
-      <div id="analyticsGrid" class="metric-grid"></div>
-    </section>
-    <section id="explainability" class="section">
-      <div class="section-title">
-        <h2>Explainability</h2>
-        <input id="explainabilityFilter" type="search" placeholder="Filter strategy, stage, rule, contract">
-      </div>
-      <div class="table-wrap"><table id="explainabilityTable"></table></div>
-    </section>
-    <section id="alerts" class="section">
-      <div class="section-title"><h2>Alerts</h2></div>
-      <div id="alertsPanel" class="panel-list"></div>
-    </section>
-    <section id="audit" class="section">
-      <div class="section-title"><h2>Audit</h2></div>
-      <div class="table-wrap"><table id="auditTable"></table></div>
-    </section>
-    <section id="settings" class="section">
-      <div class="section-title"><h2>Settings / Profiles</h2></div>
-      <pre id="settingsBlock"></pre>
-    </section>
-  </main>
+
+  <div class="shell">
+    <aside class="side-rail">
+      <section class="rail-panel">
+        <h2>Navigation</h2>
+        <div id="primaryTabs" class="stacked-nav" aria-label="Dashboard sections"></div>
+      </section>
+      <section class="rail-panel">
+        <div class="rail-title">
+          <h2>Strategies</h2>
+          <span id="strategyCount" class="mini-badge">0</span>
+        </div>
+        <p class="rail-copy">Pick one strategy to inspect its inputs, rule path, contract selection, entry state, and protection.</p>
+        <div id="strategyRail" class="strategy-rail"></div>
+      </section>
+      <section class="rail-panel">
+        <h2>How To Read This</h2>
+        <div id="workflowGuide" class="guide-list"></div>
+      </section>
+    </aside>
+
+    <main class="workspace">
+      <section id="tab-command-centre" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">System Health</p>
+            <h2>Command Centre</h2>
+          </div>
+        </div>
+        <div id="statusGrid" class="metric-grid"></div>
+        <div class="layout-two">
+          <article class="surface-panel">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Operator Focus</p>
+                <h3>Today At A Glance</h3>
+              </div>
+            </div>
+            <div id="overviewNarrative" class="narrative-list"></div>
+          </article>
+          <article class="surface-panel">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Run Boundaries</p>
+                <h3>Authority And Safety</h3>
+              </div>
+            </div>
+            <div id="authoritySummary" class="key-value-grid"></div>
+          </article>
+        </div>
+        <div class="layout-two">
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Critical Alerts</h3></div>
+            <div id="commandCentreAlerts" class="panel-list"></div>
+          </article>
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Recent Operational Events</h3></div>
+            <div id="commandCentreEvents" class="panel-list"></div>
+          </article>
+        </div>
+        <div class="layout-two">
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Active Trades</h3></div>
+            <div id="commandCentreTrades" class="panel-list"></div>
+          </article>
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Pending Actions</h3></div>
+            <div id="commandCentreActions" class="panel-list"></div>
+          </article>
+        </div>
+        <div class="layout-two">
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Strategy Health</h3></div>
+            <div id="commandCentreStrategyHealth" class="panel-list"></div>
+          </article>
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Session Timeline</h3></div>
+            <div id="commandCentreTimeline" class="panel-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-strategies" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Hierarchy And Workbench</p>
+            <h2>Strategies</h2>
+          </div>
+          <div id="selectedStrategyBadge" class="selection-badge"></div>
+          <input id="strategyFilter" type="search" placeholder="Filter strategy, instrument, branch, status">
+        </div>
+        <div class="surface-panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Strategy Families</p>
+              <h3>Family Summary</h3>
+            </div>
+          </div>
+          <div id="strategyFamilyGrid" class="strategy-grid"></div>
+        </div>
+        <div id="strategyWorkbenchSummary" class="inline-summary"></div>
+        <div id="strategyWorkbench" class="strategy-grid"></div>
+        <div class="surface-panel hero-panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Validation Path</p>
+              <h3 id="explorerTitle">Select a strategy</h3>
+            </div>
+            <div id="explorerHealth" class="badge badge-neutral">Awaiting selection</div>
+          </div>
+          <div class="layout-two compact-layout">
+            <div id="selectedStrategyContext" class="key-value-grid"></div>
+            <div id="selectedStrategyChecklist" class="panel-list"></div>
+          </div>
+          <div id="selectedStrategySummary" class="summary-grid"></div>
+          <div id="selectedStrategyFlow" class="flow-strip"></div>
+        </div>
+
+        <div class="surface-panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Stepwise Review</p>
+              <h3>Explanation Tabs</h3>
+            </div>
+          </div>
+          <div id="explainTabs" class="subtabs" aria-label="Strategy explanation sections"></div>
+          <div id="explainPanel" class="explain-panel"></div>
+        </div>
+      </section>
+
+      <section id="tab-orders" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Execution State</p>
+            <h2>Orders</h2>
+          </div>
+        </div>
+        <div id="ordersSummary" class="inline-summary"></div>
+        <div class="table-wrap"><table id="ordersTable"></table></div>
+      </section>
+
+      <section id="tab-positions" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Open And Carried Exposure</p>
+            <h2>Positions</h2>
+          </div>
+        </div>
+        <div id="positionsSummary" class="inline-summary"></div>
+        <div class="table-wrap"><table id="positionsTable"></table></div>
+      </section>
+
+      <section id="tab-accounts" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Configuration And Summary</p>
+            <h2>Accounts</h2>
+          </div>
+        </div>
+        <div class="layout-two">
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Account Summary</h3></div>
+            <div id="accountsPanel" class="panel-list"></div>
+          </article>
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Internal-Paper Account Configuration</h3></div>
+            <div id="accountConfigPanel" class="panel-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-risk" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Monitoring</p>
+            <h2>Risk</h2>
+          </div>
+        </div>
+        <div class="layout-two">
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Risk Summary</h3></div>
+            <div id="riskPanel" class="panel-list"></div>
+          </article>
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Worst Position</h3></div>
+            <div id="worstPositionPanel" class="panel-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-explainability" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Immutable Backend Facts</p>
+            <h2>Explainability</h2>
+          </div>
+          <input id="explainabilityFilter" type="search" placeholder="Filter strategy, stage, rule, source, rejection">
+        </div>
+        <div id="explainabilitySummary" class="inline-summary"></div>
+        <div class="table-wrap"><table id="explainabilityTable"></table></div>
+      </section>
+
+      <section id="tab-historical-trades" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Closed And Open Trade Story</p>
+            <h2>Historical Trades</h2>
+          </div>
+        </div>
+        <div id="historicalSummary" class="inline-summary"></div>
+        <div class="table-wrap"><table id="historicalTradesTable"></table></div>
+      </section>
+
+      <section id="tab-alerts" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Exceptions And Attention</p>
+            <h2>Alerts</h2>
+          </div>
+        </div>
+        <div id="alertsSummary" class="inline-summary"></div>
+        <div class="surface-panel">
+          <div class="panel-head"><h3>Current Alerts</h3></div>
+          <div id="alertsPanel" class="panel-list"></div>
+        </div>
+      </section>
+
+      <section id="tab-audit" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">History And Controls</p>
+            <h2>Audit</h2>
+          </div>
+        </div>
+        <div id="auditSummary" class="inline-summary"></div>
+        <div class="table-wrap"><table id="auditTable"></table></div>
+      </section>
+
+      <section id="tab-settings" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Runtime Metadata</p>
+            <h2>Settings And Snapshot</h2>
+          </div>
+        </div>
+        <div class="layout-two">
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Projection Metadata</h3></div>
+            <div id="settingsSummary" class="key-value-grid"></div>
+          </article>
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Raw Snapshot</h3></div>
+            <pre id="settingsBlock"></pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-decision-explorer" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering Review</p>
+            <h2>Decision Explorer</h2>
+          </div>
+        </div>
+        <div class="surface-panel hero-panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Selected Strategy</p>
+              <h3 id="engineeringExplorerTitle">Select a strategy</h3>
+            </div>
+            <div id="engineeringExplorerHealth" class="badge badge-neutral">Awaiting selection</div>
+          </div>
+          <div id="engineeringExplorerSummary" class="summary-grid"></div>
+          <div id="engineeringExplorerFlow" class="flow-strip"></div>
+        </div>
+        <div class="surface-panel">
+          <div class="panel-head"><h3>Engineering Review Tabs</h3></div>
+          <div id="engineeringTabs" class="subtabs" aria-label="Engineering review sections"></div>
+          <div id="engineeringPanel" class="explain-panel"></div>
+        </div>
+      </section>
+
+      <section id="tab-monthly-status-review" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering Review</p>
+            <h2>Monthly Status</h2>
+          </div>
+        </div>
+        <div class="surface-panel">
+          <div class="panel-head"><h3>Monthly Status Review</h3></div>
+          <div id="monthlyStatusReviewPanel" class="explain-panel"></div>
+        </div>
+      </section>
+
+      <section id="tab-contract-selection-audit" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering Review</p>
+            <h2>Contract Selection</h2>
+          </div>
+        </div>
+        <div class="surface-panel">
+          <div class="panel-head"><h3>Candidate Selection Audit</h3></div>
+          <div id="contractSelectionAuditPanel" class="explain-panel"></div>
+        </div>
+      </section>
+
+      <section id="tab-manual-validation" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering Review</p>
+            <h2>Manual Validation</h2>
+          </div>
+        </div>
+        <div class="surface-panel">
+          <div class="panel-head"><h3>Manual Validation Workspace</h3></div>
+          <div id="manualValidationPanel" class="explain-panel"></div>
+        </div>
+      </section>
+
+      <section id="tab-replay" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering Review</p>
+            <h2>Replay</h2>
+          </div>
+        </div>
+        <div class="surface-panel">
+          <div class="panel-head"><h3>Replay And Reconstruction</h3></div>
+          <div id="replayPanel" class="panel-list"></div>
+        </div>
+      </section>
+
+      <section id="tab-explanation-library" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering Review</p>
+            <h2>Explanation Library</h2>
+          </div>
+          <input id="engineeringExplainabilityFilter" type="search" placeholder="Filter strategy, stage, rule, source, rejection">
+        </div>
+        <div id="engineeringExplainabilitySummary" class="inline-summary"></div>
+        <div class="table-wrap"><table id="engineeringExplainabilityTable"></table></div>
+      </section>
+
+      <section id="tab-diagnostics" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering Review</p>
+            <h2>Diagnostics</h2>
+          </div>
+        </div>
+        <div class="layout-two">
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Runtime Diagnostics</h3></div>
+            <div id="diagnosticsPanel" class="panel-list"></div>
+          </article>
+          <article class="surface-panel">
+            <div class="panel-head"><h3>Raw Technical Snapshot</h3></div>
+            <pre id="diagnosticsBlock"></pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-source-trace" class="workspace-tab">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Engineering Review</p>
+            <h2>Source Trace</h2>
+          </div>
+        </div>
+        <div class="surface-panel">
+          <div class="panel-head"><h3>Selected Strategy Source Trace</h3></div>
+          <div id="sourceTracePanel" class="explain-panel"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>

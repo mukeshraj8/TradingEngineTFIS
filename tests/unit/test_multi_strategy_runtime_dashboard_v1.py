@@ -9,7 +9,11 @@ from tfis.dashboard.api import DashboardApiRouter
 from tfis.dashboard.commands import audit_dashboard_command
 from tfis.dashboard.events import build_sse_event_stream
 from tfis.dashboard.professional import build_professional_dashboard
-from tfis.runtime.multi_strategy import MultiStrategyRuntimeCoordinator, load_enabled_strategy_registry
+from tfis.runtime.multi_strategy import (
+    MultiStrategyRuntimeCoordinator,
+    build_unified_runtime_reports,
+    load_enabled_strategy_registry,
+)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -35,6 +39,8 @@ def test_unified_runtime_runs_all_three_and_preserves_s22_evidence_limitation() 
     projection = result["dashboard_projection"]
     assert projection["command_centre"]["enabled_strategy_instances"] == 3
     assert projection["system"]["broker_order_authority"] == "NONE"
+    assert len(projection["decision_explanations"]) == 18
+    assert projection["decision_explanations"][0]["stage"] == "MONTHLY_STATUS"
     s22 = next(item for item in projection["strategies"] if item["identity"]["instrument"] == "RELIANCE")
     assert s22["state"]["evidence_quality"] == "DETERMINISTIC_TIMING_SUPPLEMENT"
     assert s22["operations"]["alerts"][0]["code"] == "S22_LIVE_OPEN_ORPT_RC_PENDING"
@@ -168,4 +174,77 @@ def test_professional_dashboard_builds_static_projection_without_formula_logic(t
     assert manifest["frontend_formula_calculation"] is False
     html = result.index_html.read_text(encoding="utf-8")
     assert "Broker order authority" in html
-    assert "Explainability" in html
+    assert "Command Centre" in html
+    assert "Strategies" in html
+    assert "Orders" in html
+    assert "Positions" in html
+    assert "Accounts" in html
+    assert "Risk" in html
+    assert "Historical Trades" in html
+    assert "Alerts" in html
+    assert "Audit" in html
+    assert "Decision Explorer" in html
+    assert "Diagnostics" in html
+    assert "How To Read This" in html
+
+
+def test_runtime_reports_emit_dashboard_v2_projection_contract(tmp_path: Path) -> None:
+    reports = build_unified_runtime_reports(REGISTRY_PATH, tmp_path / "dashboard_v1")
+
+    assert "dashboard_summary.md" in reports
+
+    v2_dir = tmp_path / "dashboard_v2"
+    info_architecture = json.loads((v2_dir / "dashboard_information_architecture.json").read_text(encoding="utf-8"))
+    strategy_hierarchy = json.loads((v2_dir / "strategy_hierarchy_result.json").read_text(encoding="utf-8"))
+    risk_dashboard = json.loads((v2_dir / "risk_dashboard_result.json").read_text(encoding="utf-8"))
+    history = json.loads((v2_dir / "historical_trade_result.json").read_text(encoding="utf-8"))
+    security = json.loads((v2_dir / "security_and_write_boundary.json").read_text(encoding="utf-8"))
+    summary = (v2_dir / "dashboard_v2_summary.md").read_text(encoding="utf-8")
+
+    assert info_architecture["principal_areas"] == [
+        "Command Centre",
+        "Strategies",
+        "Orders",
+        "Positions",
+        "Accounts",
+        "Risk",
+        "Explainability",
+        "Historical Trades",
+        "Alerts & Audit",
+        "Settings",
+    ]
+    assert strategy_hierarchy["strategy_instance_count"] == 3
+    assert risk_dashboard["aggregate"]["risk_state"] in {"Active", "Degraded"}
+    assert history["trade_count"] == 3
+    assert security["external_broker_authority"] == "NONE"
+    assert "Dashboard V2 Summary" in summary
+
+
+def test_runtime_reports_emit_dashboard_v3_projection_contract(tmp_path: Path) -> None:
+    build_unified_runtime_reports(REGISTRY_PATH, tmp_path / "dashboard_v1")
+
+    v3_dir = tmp_path / "dashboard_v3"
+    navigation = json.loads((v3_dir / "navigation_map.json").read_text(encoding="utf-8"))
+    operator_mode = json.loads((v3_dir / "operator_mode_result.json").read_text(encoding="utf-8"))
+    engineering_mode = json.loads((v3_dir / "engineering_mode_result.json").read_text(encoding="utf-8"))
+    future_segments = json.loads((v3_dir / "future_segment_compatibility.json").read_text(encoding="utf-8"))
+    logic_audit = json.loads((v3_dir / "frontend_business_logic_audit.json").read_text(encoding="utf-8"))
+    summary = (v3_dir / "dashboard_v3_summary.md").read_text(encoding="utf-8")
+
+    assert navigation["operator_mode"] == [
+        "Command Centre",
+        "Strategies",
+        "Orders",
+        "Positions",
+        "Accounts",
+        "Risk",
+        "Historical Trades",
+        "Alerts",
+        "Audit",
+        "Settings",
+    ]
+    assert "Decision Explorer" in engineering_mode["pages"]
+    assert "Command Centre" in operator_mode["pages"]
+    assert any(item["status"] == "UI_COMPATIBILITY_FIXTURE" for item in future_segments["ui_fixtures"])
+    assert logic_audit["frontend_calculates_strategy_rules"] is False
+    assert "Dashboard V3 Summary" in summary

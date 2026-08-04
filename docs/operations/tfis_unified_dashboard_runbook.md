@@ -7,13 +7,45 @@ unified S21/BANKNIFTY, S22/RELIANCE, and S23/NIFTY internal-paper projection.
 
 External broker-order authority remains `NONE`.
 
+The current dashboard UX is organized around the exact primary operator areas:
+
+- `Command Centre`: system state, safety, alerts, and recent operational events
+- `Strategies`: family hierarchy, workbench, and one selected-strategy decision review
+- `Orders`: operator-facing order list with warnings and technical detail
+- `Positions`: lifecycle, protection, carried/fresh status, and P&L
+- `Accounts`: account summary and internal-paper configuration contract
+- `Risk`: aggregate margin, exposure, warnings, and worst-position surfacing
+- `Historical Trades`: trade story, exit reason, and explanation completeness
+- `Alerts`: warning and operator-attention review
+- `Audit`: command and control history review
+- `Settings`: projection metadata and raw snapshot
+
+The dashboard also now exposes a separate `Engineering` mode for deeper review:
+
+- `Decision Explorer`
+- `Monthly Status`
+- `Contract Selection`
+- `Manual Validation`
+- `Replay`
+- `Explanation Library`
+- `Diagnostics`
+- `Source Trace`
+
+The `Strategies` page remains the primary operator surface for validating one
+trade step by step. It does not calculate business values in the browser. It
+renders backend snapshot fields plus immutable explainability facts where
+available, and it visibly marks missing or partial explanation stages instead
+of hiding them.
+
 ## Build Certification Reports
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\run_tfis_internal_paper.py
 ```
 
-Outputs are written under `reports/dashboard_v1/`.
+Outputs are written under `reports/dashboard_v1/`, and the coordinated
+dashboard-v2/v3 artifact packs are also refreshed under `reports/dashboard_v2/`
+and `reports/dashboard_v3/`.
 
 ## Build Dashboard
 
@@ -22,6 +54,13 @@ Outputs are written under `reports/dashboard_v1/`.
 ```
 
 The static dashboard is written to `tmp/tfis_dashboard_v1/index.html`.
+
+To build the dashboard from the newer Tuesday, August 4, 2026 fast-track
+explainability projection instead of the deterministic baseline projection:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_tfis_dashboard.py --projection reports/fast_track_development_s22_multistock/dashboard_projection.json --output-root tmp/tfis_dashboard_decision_explainability
+```
 
 To serve the dashboard and read-only backend APIs locally:
 

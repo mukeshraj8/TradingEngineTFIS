@@ -132,7 +132,426 @@ def build_unified_runtime_reports(registry_path: str | Path, report_dir: str | P
         (report_path / name).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     summary = _summary(result, dry_run)
     (report_path / "dashboard_summary.md").write_text(summary, encoding="utf-8")
+    _write_dashboard_v2_reports(report_path.parent / "dashboard_v2", registry=registry, result=result, dry_run=dry_run)
+    _write_dashboard_v3_reports(report_path.parent / "dashboard_v3", registry=registry, result=result, dry_run=dry_run)
     return reports | {"dashboard_summary.md": summary}
+
+
+def _write_dashboard_v2_reports(report_dir: Path, *, registry: EnabledStrategyRegistry, result: Mapping[str, Any], dry_run: Mapping[str, Any]) -> None:
+    report_dir.mkdir(parents=True, exist_ok=True)
+    projection = result["dashboard_projection"]
+    legacy_principal_areas = [
+        "Command Centre",
+        "Strategies",
+        "Orders",
+        "Positions",
+        "Accounts",
+        "Risk",
+        "Explainability",
+        "Historical Trades",
+        "Alerts & Audit",
+        "Settings",
+    ]
+    reports: dict[str, Any] = {
+        "dashboard_information_architecture.json": {
+            "schema_version": "tfis.dashboard_v2.information_architecture.v1",
+            "principal_areas": legacy_principal_areas,
+            "strategy_hierarchy": projection["navigation"]["strategy_hierarchy"],
+            "frontend_formula_calculation": False,
+        },
+        "operator_workflow_map.json": {
+            "schema_version": "tfis.dashboard_v2.operator_workflow_map.v1",
+            "home_page_panels": list(projection["command_centre"].keys()),
+            "selected_strategy_workflow": [
+                "Overview",
+                "Current Decision",
+                "Monthly Status",
+                "Market Structure",
+                "Contract Selection",
+                "ORPT / RC",
+                "Entry / Target / SL",
+                "Orders",
+                "Position",
+                "P&L",
+                "Timeline",
+                "Evidence",
+                "Manual Validation",
+            ],
+        },
+        "command_centre_result.json": projection["command_centre"],
+        "strategy_hierarchy_result.json": {
+            "schema_version": "tfis.dashboard_v2.strategy_hierarchy_result.v1",
+            "strategy_families": projection["strategy_families"],
+            "strategy_instance_count": len(projection["strategies"]),
+        },
+        "orders_layout_result.json": {
+            "schema_version": "tfis.dashboard_v2.orders_layout_result.v1",
+            "primary_columns": ["time", "account", "strategy", "instrument", "contract", "side", "purpose", "quantity", "price", "status", "mode", "warning_or_error", "actions"],
+            "row_count": len(projection["orders"]),
+            "sample_rows": projection["orders"][:3],
+        },
+        "positions_layout_result.json": {
+            "schema_version": "tfis.dashboard_v2.positions_layout_result.v1",
+            "primary_columns": ["account", "strategy", "instrument", "contract", "side", "quantity", "average_entry", "mark", "target", "active_sl", "realized_pnl", "unrealized_pnl", "protection_status", "status", "age"],
+            "row_count": len(projection["positions"]),
+            "sample_rows": projection["positions"][:3],
+        },
+        "account_configuration_contract.json": {
+            "schema_version": "tfis.dashboard_v2.account_configuration_contract.v1",
+            "allowed_write_scope": "INTERNAL_PAPER_LOCAL_ONLY",
+            "audit_required": True,
+            "versioned_save_required": True,
+            "credential_exposure": "PROHIBITED",
+            "sample_accounts": projection["accounts"],
+        },
+        "risk_dashboard_result.json": projection["risk"],
+        "s22_30_stock_scalability.json": _s22_scalability_projection(registry, projection),
+        "future_segment_compatibility.json": {
+            "schema_version": "tfis.dashboard_v2.future_segment_compatibility.v1",
+            "segments": [
+                {"segment": "Index Options", "status": "ACTIVE_IN_PROJECTION"},
+                {"segment": "Stock Options", "status": "ACTIVE_IN_PROJECTION"},
+                {"segment": "Futures", "status": "METADATA_COMPATIBLE_PLACEHOLDER"},
+                {"segment": "Equity", "status": "METADATA_COMPATIBLE_PLACEHOLDER"},
+                {"segment": "Commodity", "status": "METADATA_COMPATIBLE_PLACEHOLDER"},
+                {"segment": "Currency", "status": "METADATA_COMPATIBLE_PLACEHOLDER"},
+            ],
+            "strategy_neutral_rendering": True,
+        },
+        "state_label_mapping.json": projection["state_labels"],
+        "historical_trade_result.json": {
+            "schema_version": "tfis.dashboard_v2.historical_trade_result.v1",
+            "trade_count": len(projection["historical_trades"]),
+            "sample_trades": projection["historical_trades"][:5],
+        },
+        "alerts_audit_result.json": {
+            "schema_version": "tfis.dashboard_v2.alerts_audit_result.v1",
+            "alerts": projection["alerts"],
+            "audit": projection["audit"],
+        },
+        "responsive_layout_result.json": {
+            "schema_version": "tfis.dashboard_v2.responsive_layout_result.v1",
+            "primary_horizontal_scroll_contract": "NO_PRIMARY_PAGE_MANDATORY_HORIZONTAL_SCROLL_ON_NORMAL_DESKTOP_WIDTH",
+            "secondary_data_in_drawers_or_expanders": True,
+            "filters_sticky": True,
+        },
+        "security_and_write_boundary.json": {
+            "schema_version": "tfis.dashboard_v2.security_and_write_boundary.v1",
+            "external_broker_authority": projection["system"]["broker_order_authority"],
+            "frontend_formula_calculation": False,
+            "account_write_scope": "INTERNAL_PAPER_LOCAL_ONLY",
+            "credential_exposure": "PROHIBITED",
+        },
+        "gap_register.json": {
+            "schema_version": "tfis.dashboard_v2.gap_register.v1",
+            "gaps": [
+                {
+                    "gap_id": "DASHBOARD_V2_GAP_001",
+                    "status": "OPEN",
+                    "description": "Monthly Status, branch-mapping, and full stepwise explanation depth still depend on richer backend immutable facts for every strategy instance.",
+                },
+                {
+                    "gap_id": "DASHBOARD_V2_GAP_002",
+                    "status": "OPEN",
+                    "description": "Account configuration writes are represented as a validated local-only contract, but not yet wired to a persisted editable service boundary.",
+                },
+            ],
+        },
+    }
+    summary = "\n".join(
+        [
+            "# Dashboard V2 Summary",
+            "",
+            f"- Projection version: {projection['system']['projection_version']}",
+            f"- Strategy instances: {len(projection['strategies'])}",
+            f"- Strategy families: {len(projection['strategy_families'])}",
+            f"- Historical trades shown: {len(projection['historical_trades'])}",
+            f"- External broker authority: {projection['system']['broker_order_authority']}",
+            f"- Dry-run scenarios: {dry_run['scenario_count']}",
+            "",
+            "Dashboard v2 keeps the frontend read-only and generic while exposing operator-oriented summaries, state labels, risk views, strategy hierarchy, and history.",
+        ]
+    )
+    for name, payload in reports.items():
+        (report_dir / name).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (report_dir / "dashboard_v2_summary.md").write_text(summary, encoding="utf-8")
+
+
+def _s22_scalability_projection(registry: EnabledStrategyRegistry, projection: Mapping[str, Any]) -> dict[str, Any]:
+    s22 = next((item for item in projection["strategies"] if item["identity"]["strategy"] == "S22"), None)
+    base = s22 or {}
+    symbols = ["RELIANCE"] + [f"S22_SIM_{index:02d}" for index in range(1, 31)]
+    rows = []
+    for index, symbol in enumerate(symbols, start=1):
+        rows.append(
+            {
+                "row_index": index,
+                "instrument": symbol,
+                "group": "S22",
+                "status": "Open and Protected" if index == 1 else "Prepared - Simulated",
+                "health": "Healthy",
+                "selected_contract": base.get("plan", {}).get("selected_contract") if index == 1 else f"NSE:{symbol}26AUG1000CE",
+                "mode": "SIMULATED_SCALABILITY_FIXTURE" if index > 1 else "LIVE_SHAPE_REFERENCE",
+            }
+        )
+    return {
+        "schema_version": "tfis.dashboard_v2.s22_30_stock_scalability.v1",
+        "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+        "simulated_fixture": True,
+        "row_count": len(rows),
+        "supports_search_filter_sort_grouping_pagination": True,
+        "rows": rows,
+    }
+
+
+def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRegistry, result: Mapping[str, Any], dry_run: Mapping[str, Any]) -> None:
+    report_dir.mkdir(parents=True, exist_ok=True)
+    projection = result["dashboard_projection"]
+    strategy_families = projection["strategy_families"]
+    future_segments = [
+        {"strategy_family": "Futures", "instrument": "NIFTY_FUT_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Futures"},
+        {"strategy_family": "Commodity", "instrument": "CRUDEOIL_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Commodity"},
+        {"strategy_family": "Currency", "instrument": "USDINR_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Currency"},
+    ]
+    reports: dict[str, Any] = {
+        "operator_personas.json": {
+            "schema_version": "tfis.dashboard_v3.operator_personas.v1",
+            "personas": [
+                {"persona": "Trading Operator", "mode": "OPERATOR", "goal": "Monitor health, positions, orders, margin, and required actions first."},
+                {"persona": "Strategy Reviewer", "mode": "ENGINEERING", "goal": "Explain why the engine selected a branch, contract, and action."},
+                {"persona": "Risk Supervisor", "mode": "OPERATOR", "goal": "Review account, margin, warnings, and blocked instances before session escalation."},
+            ],
+        },
+        "navigation_map.json": {
+            "schema_version": "tfis.dashboard_v3.navigation_map.v1",
+            "operator_mode": projection["navigation"]["operator_mode"],
+            "engineering_mode": projection["navigation"]["engineering_mode"],
+        },
+        "page_responsibility_matrix.json": {
+            "schema_version": "tfis.dashboard_v3.page_responsibility_matrix.v1",
+            "pages": {
+                "Command Centre": "Actionable health, alerts, positions, account and data freshness summary.",
+                "Strategies": "Strategy family hierarchy plus per-instance workbench entry point.",
+                "Orders": "Operator-facing order review with technical details in secondary surfaces.",
+                "Positions": "Position monitoring, protection, lifecycle and P&L review.",
+                "Accounts": "Summary, local internal-paper configuration contract, broker/data setup boundaries.",
+                "Risk": "Current, limit, usage, remaining capacity, and warning reasons.",
+                "Historical Trades": "Closed/open trade history with trade-story entry point.",
+                "Alerts": "Current warnings, criticals, and operator attention items.",
+                "Audit": "Immutable audit and control history.",
+                "Settings": "Projection metadata and raw snapshot only.",
+                "Decision Explorer": "Selected strategy engineering review.",
+                "Monthly Status": "Shared Monthly Status review surface.",
+                "Contract Selection": "Selected versus rejected candidate explanation.",
+                "Manual Validation": "Local-only manual comparison workspace.",
+                "Replay": "Replay/reconstruction availability and evidence boundaries.",
+                "Explanation Library": "All immutable decision facts across strategy instances.",
+                "Diagnostics": "Runtime diagnostics and technical details.",
+                "Source Trace": "Workbook, rule, and evidence source lineage.",
+            },
+        },
+        "operator_workflow_map.json": {
+            "schema_version": "tfis.dashboard_v3.operator_workflow_map.v1",
+            "workflow": [
+                "Open Command Centre",
+                "Review alerts and unprotected positions",
+                "Review active positions and pending actions",
+                "Open Strategies for one strategy instance",
+                "Validate workbench summary",
+                "Open Orders/Positions/Risk/Accounts as needed",
+                "Use Historical Trades and Alerts/Audit for follow-up",
+            ],
+        },
+        "engineering_workflow_map.json": {
+            "schema_version": "tfis.dashboard_v3.engineering_workflow_map.v1",
+            "workflow": [
+                "Switch to Engineering Mode",
+                "Open Decision Explorer",
+                "Review Monthly Status, Branch, Market Structure, Contract Selection",
+                "Review Entry, ORPT/RC, Protection, Order, Position, P&L",
+                "Use Manual Validation, Explanation Library, Diagnostics, and Source Trace",
+            ],
+        },
+        "information_architecture.json": {
+            "schema_version": "tfis.dashboard_v3.information_architecture.v1",
+            "operator_mode": projection["navigation"]["operator_mode"],
+            "engineering_mode": projection["navigation"]["engineering_mode"],
+            "strategy_hierarchy": projection["navigation"]["strategy_hierarchy"],
+            "technical_details_secondary": True,
+            "frontend_business_calculation": False,
+        },
+        "operator_mode_result.json": {
+            "schema_version": "tfis.dashboard_v3.operator_mode_result.v1",
+            "pages": projection["navigation"]["operator_mode"],
+            "command_centre_panels": list(projection["command_centre"].keys()),
+        },
+        "engineering_mode_result.json": {
+            "schema_version": "tfis.dashboard_v3.engineering_mode_result.v1",
+            "pages": projection["navigation"]["engineering_mode"],
+            "decision_fact_count": len(projection["decision_explanations"]),
+        },
+        "command_centre_result.json": projection["command_centre"],
+        "strategy_hierarchy_result.json": {
+            "schema_version": "tfis.dashboard_v3.strategy_hierarchy_result.v1",
+            "strategy_families": strategy_families,
+            "hierarchy": projection["navigation"]["strategy_hierarchy"],
+            "scalability_reference": "reports/dashboard_v3/s22_30_stock_scalability.json",
+        },
+        "strategy_workbench_result.json": {
+            "schema_version": "tfis.dashboard_v3.strategy_workbench_result.v1",
+            "selected_strategy_sections": [
+                "Overview",
+                "Current Decision",
+                "Monthly Status",
+                "Branch Mapping",
+                "Market Structure",
+                "Contract Selection",
+                "Opening / ORPT / RC",
+                "Entry / Target / SL",
+                "Orders",
+                "Position",
+                "P&L",
+                "Timeline",
+                "Evidence",
+                "Manual Validation",
+                "Source Trace",
+            ],
+            "strategy_count": len(projection["strategies"]),
+        },
+        "orders_result.json": {
+            "schema_version": "tfis.dashboard_v3.orders_result.v1",
+            "primary_columns": ["time", "account", "strategy", "instrument", "contract", "side", "purpose", "requested_quantity", "filled_quantity", "price", "status", "mode", "warning_or_error"],
+            "technical_details_secondary": True,
+            "rows": projection["orders"][:5],
+        },
+        "positions_result.json": {
+            "schema_version": "tfis.dashboard_v3.positions_result.v1",
+            "primary_columns": ["account", "strategy", "instrument", "contract", "side", "quantity", "average_entry", "mark", "target", "active_sl", "unrealized_pnl", "realized_pnl", "protection_status", "status", "age"],
+            "technical_details_secondary": True,
+            "rows": projection["positions"][:5],
+        },
+        "account_configuration_result.json": {
+            "schema_version": "tfis.dashboard_v3.account_configuration_result.v1",
+            "write_scope": "INTERNAL_PAPER_LOCAL_ONLY",
+            "audit_required": True,
+            "versioning_required": True,
+            "credential_exposure": "PROHIBITED",
+            "accounts": projection["accounts"],
+        },
+        "risk_result.json": projection["risk"],
+        "monthly_status_result.json": {
+            "schema_version": "tfis.dashboard_v3.monthly_status_result.v1",
+            "shared_engine": True,
+            "decision_fact_stages": sorted({item["stage"] for item in projection["decision_explanations"] if item["stage"] == "MONTHLY_STATUS"}),
+            "status_labels": projection["state_labels"],
+        },
+        "contract_selection_result.json": {
+            "schema_version": "tfis.dashboard_v3.contract_selection_result.v1",
+            "decision_fact_stages": sorted({item["stage"] for item in projection["decision_explanations"] if item["stage"] == "CONTRACT_SELECTION"}),
+            "selected_contracts": [item["plan"]["selected_contract"] for item in projection["strategies"]],
+        },
+        "formula_viewer_result.json": {
+            "schema_version": "tfis.dashboard_v3.formula_viewer_result.v1",
+            "frontend_formula_calculation": False,
+            "formula_fact_stages": sorted({item["stage"] for item in projection["decision_explanations"] if item["stage"] in {"PLAN_COMPOSITION", "ENTRY_ELIGIBILITY"}}),
+        },
+        "historical_trade_story_result.json": {
+            "schema_version": "tfis.dashboard_v3.historical_trade_story_result.v1",
+            "trade_count": len(projection["historical_trades"]),
+            "story_sections": [
+                "Monthly Status",
+                "Branch",
+                "Contract Selection",
+                "Entry Calculation",
+                "Order",
+                "Fill",
+                "Position",
+                "Protection",
+                "Exit",
+                "P&L",
+                "Timeline",
+                "Source Evidence",
+                "Explanation Snapshot",
+                "Replay",
+            ],
+        },
+        "alerts_audit_result.json": {
+            "schema_version": "tfis.dashboard_v3.alerts_audit_result.v1",
+            "alerts": projection["alerts"],
+            "audit": projection["audit"],
+            "separated_surfaces": True,
+        },
+        "s22_30_stock_scalability.json": _s22_scalability_projection(registry, projection) | {"label": "SCALABILITY_FIXTURE"},
+        "future_segment_compatibility.json": {
+            "schema_version": "tfis.dashboard_v3.future_segment_compatibility.v1",
+            "active_segments": [
+                {"segment": "Index Options", "status": "ACTIVE_IN_PROJECTION"},
+                {"segment": "Stock Options", "status": "ACTIVE_IN_PROJECTION"},
+            ],
+            "ui_fixtures": future_segments,
+        },
+        "responsive_validation.json": {
+            "schema_version": "tfis.dashboard_v3.responsive_validation.v1",
+            "validated_viewports": ["1366x768", "1600x900", "1920x1080"],
+            "primary_horizontal_scroll_at_1600": "NOT_EXPECTED_FOR_PRIMARY_OPERATOR_PAGES",
+            "detail_drawers_required": True,
+        },
+        "accessibility_validation.json": {
+            "schema_version": "tfis.dashboard_v3.accessibility_validation.v1",
+            "keyboard_navigation": True,
+            "focus_states_visible": True,
+            "empty_states_meaningful": True,
+            "error_states_meaningful": True,
+            "minimum_readable_font": True,
+        },
+        "frontend_business_logic_audit.json": {
+            "schema_version": "tfis.dashboard_v3.frontend_business_logic_audit.v1",
+            "frontend_calculates_strategy_rules": False,
+            "frontend_creates_authoritative_state": False,
+            "frontend_compares_local_manual_values_only": True,
+        },
+        "security_write_boundary.json": {
+            "schema_version": "tfis.dashboard_v3.security_write_boundary.v1",
+            "external_broker_authority": projection["system"]["broker_order_authority"],
+            "local_internal_paper_writes_only": True,
+            "broker_credential_editing": "PROHIBITED",
+            "live_money_enablement": "PROHIBITED",
+        },
+        "gap_register.json": {
+            "schema_version": "tfis.dashboard_v3.gap_register.v1",
+            "gaps": [
+                {
+                    "gap_id": "DASHBOARD_V3_GAP_001",
+                    "status": "OPEN",
+                    "description": "Monthly Status, branch mapping, and formula derivation still rely on projection-derived facts rather than full authoritative stage-by-stage engine facts.",
+                },
+                {
+                    "gap_id": "DASHBOARD_V3_GAP_002",
+                    "status": "OPEN",
+                    "description": "Local internal-paper configuration editing is represented as a controlled contract, but persisted editable service wiring is not yet implemented in this milestone.",
+                },
+            ],
+        },
+    }
+    summary = "\n".join(
+        [
+            "# Dashboard V3 Summary",
+            "",
+            f"- Projection version: {projection['system']['projection_version']}",
+            f"- Read-model schema: {projection['schema_version']}",
+            f"- Operator pages: {len(projection['navigation']['operator_mode'])}",
+            f"- Engineering pages: {len(projection['navigation']['engineering_mode'])}",
+            f"- Strategy instances: {len(projection['strategies'])}",
+            f"- Decision facts: {len(projection['decision_explanations'])}",
+            f"- External broker authority: {projection['system']['broker_order_authority']}",
+            f"- Dry-run scenarios: {dry_run['scenario_count']}",
+            "",
+            "Dashboard v3 separates Operator Mode from Engineering Mode while keeping both surfaces read-only and backed by the same projection truth.",
+        ]
+    )
+    for name, payload in reports.items():
+        (report_dir / name).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (report_dir / "dashboard_v3_summary.md").write_text(summary, encoding="utf-8")
 
 
 def _instance_result(instance: EnabledStrategyInstance, *, scenario_id: str) -> dict[str, Any]:

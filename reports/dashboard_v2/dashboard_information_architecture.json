@@ -1,0 +1,24 @@
+{
+  "frontend_formula_calculation": false,
+  "principal_areas": [
+    "Command Centre",
+    "Strategies",
+    "Orders",
+    "Positions",
+    "Accounts",
+    "Risk",
+    "Explainability",
+    "Historical Trades",
+    "Alerts & Audit",
+    "Settings"
+  ],
+  "schema_version": "tfis.dashboard_v2.information_architecture.v1",
+  "strategy_hierarchy": [
+    "Strategy Family",
+    "Strategy Definition",
+    "Strategy Instance",
+    "Instrument",
+    "Contract",
+    "Trade/Position"
+  ]
+}

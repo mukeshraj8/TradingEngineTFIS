@@ -10,14 +10,23 @@
       "alerts": [],
       "limits": {
         "aggregate_option_selling_exposure": 3,
+        "available_margin": 460000,
+        "broker": "INTERNAL_PAPER",
         "daily_loss_limit": 50000,
+        "data_only_or_trading": "TRADING_SIMULATION",
+        "default_account": true,
         "duplicate_underlying_prevention": true,
+        "environment": "INTERNAL_PAPER",
         "global_halt": false,
         "maximum_account_margin_usage_pct": 70,
         "maximum_concurrent_positions": 3,
-        "maximum_new_entries_per_session": 3
+        "maximum_new_entries_per_session": 3,
+        "read_only_or_order_authorised": "READ_ONLY_OR_INTERNAL_PAPER",
+        "reserved_margin": 0,
+        "simulated_balance": 1000000,
+        "starting_capital": 1000000
       },
-      "projection_hash": "6e11b65b098c7b0925520ba2591eb39da11887e27caf76784fd1a69eb9b71a63",
+      "projection_hash": "af05b87f722a5f217859dcaa72fc1e2ca0e3da3543c5343cdff30e5a865223cc",
       "rejected_instances": [],
       "status": "ACTIVE",
       "usage": {
@@ -25,7 +34,8 @@
         "aggregate_option_selling_exposure": 3,
         "concurrent_positions": 3,
         "margin_usage_pct": 54,
-        "new_entries": 3
+        "new_entries": 3,
+        "used_margin": 540000
       }
     }
   ],
@@ -109,27 +119,802 @@
       "reason": "deterministic certification",
       "result": "SNAPSHOT_CREATED",
       "scope": "S21,S22,S23",
-      "timestamp": "2026-08-03T08:45:00+05:30"
+      "timestamp": "2026-08-04T16:45:00+05:30"
     }
   ],
   "command_centre": {
+    "account_summary": {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "available_margin": 460000,
+      "reserved_margin": 0,
+      "risk_state": "Active",
+      "used_margin": 540000
+    },
     "active_orders": 3,
+    "active_trades": [
+      {
+        "contract": "BANKNIFTY24JAN47000CE",
+        "instrument": "BANKNIFTY",
+        "pnl": "6250.00",
+        "protection": "Protected",
+        "status": "Open and Protected",
+        "strategy": "S21"
+      },
+      {
+        "contract": "NSE:RELIANCE26AUG1260CE",
+        "instrument": "RELIANCE",
+        "pnl": "-2500.00",
+        "protection": "Protected",
+        "status": "Open and Protected",
+        "strategy": "S22"
+      },
+      {
+        "contract": "NIFTY_PHASE5C_PUT_FIXTURE",
+        "instrument": "NIFTY",
+        "pnl": "1800.00",
+        "protection": "Protected",
+        "status": "Open and Protected",
+        "strategy": "S23"
+      }
+    ],
     "blocked_instances": 0,
+    "broker_data_session": "Read-only / Internal Paper",
     "broker_sessions": "READ_ONLY_OR_INTERNAL",
+    "critical_alert_rows": [],
     "critical_alerts": 0,
+    "daily_realized_pnl": "3750.00",
+    "daily_unrealized_pnl": "1800.00",
+    "enabled_instruments": 3,
     "enabled_strategy_instances": 3,
+    "last_market_update": "2026-08-03T09:30:00+05:30",
     "margin_usage_pct": 54,
+    "market_session_timeline": [
+      {
+        "event": "Market Open",
+        "status": "Observed",
+        "time": "09:15"
+      },
+      {
+        "event": "ORPT Window",
+        "status": "Evaluated",
+        "time": "09:25"
+      },
+      {
+        "event": "RC Window",
+        "status": "Evaluated",
+        "time": "09:30"
+      },
+      {
+        "event": "EOD Decision",
+        "status": "Pending or completed by lifecycle",
+        "time": "15:00"
+      }
+    ],
     "market_state": "DETERMINISTIC_SESSION",
     "open_positions": 3,
+    "pending_actions": [
+      {
+        "action": "S22_LIVE_OPEN_ORPT_RC_PENDING",
+        "instrument": "RELIANCE",
+        "reason": "S22 RELIANCE still requires real opening/ORPT/RC capture before complete live-evidence certification.",
+        "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A"
+      }
+    ],
+    "pending_orders": 3,
     "plans_prepared": 3,
     "realized_pnl": "3750.00",
+    "recent_operational_events": [
+      {
+        "event": "INTERNAL_FULL_FILL",
+        "instrument": "BANKNIFTY",
+        "time": "2026-08-03T09:30:00+05:30"
+      },
+      {
+        "event": "INTERNAL_FULL_FILL",
+        "instrument": "RELIANCE",
+        "time": "2026-08-03T09:30:00+05:30"
+      },
+      {
+        "event": "INTERNAL_FULL_FILL",
+        "instrument": "NIFTY",
+        "time": "2026-08-03T09:30:00+05:30"
+      }
+    ],
+    "strategy_health": [
+      {
+        "current_action": "Filled - Internal Paper",
+        "evidence": "Fixture Backed",
+        "health": "Healthy",
+        "instrument": "BANKNIFTY",
+        "strategy": "S21",
+        "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"
+      },
+      {
+        "current_action": "Filled - Internal Paper",
+        "evidence": "Deterministic Timing Supplement",
+        "health": "Evidence Limited",
+        "instrument": "RELIANCE",
+        "strategy": "S22",
+        "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A"
+      },
+      {
+        "current_action": "Filled - Internal Paper",
+        "evidence": "Fixture Backed",
+        "health": "Healthy",
+        "instrument": "NIFTY",
+        "strategy": "S23",
+        "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A"
+      }
+    ],
     "system_state": "HEALTHY",
     "unprotected_positions": 0,
     "unrealized_pnl": "1800.00"
   },
+  "decision_explanations": [
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S21_BANKNIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Monthly Status emitted by backend runtime projection; no frontend calculation.",
+      "input_values": {
+        "instrument": "BANKNIFTY",
+        "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"
+      },
+      "instrument": "BANKNIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "monthly_status": "BULL_CF",
+        "monthly_status_label": "Bull Cf"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_MONTHLY_STATUS",
+      "stage": "MONTHLY_STATUS",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S21_BANKNIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Strategy branch emitted by backend runtime projection; no frontend branch derivation.",
+      "input_values": {
+        "monthly_status": "BULL_CF"
+      },
+      "instrument": "BANKNIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "branch": "BULL_CALL",
+        "branch_label": "Bull Call"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_BRANCH_SELECTION",
+      "stage": "BRANCH",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {
+        "evaluated_contracts": [],
+        "rejected_candidates": []
+      },
+      "decision_id": "S21_BANKNIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Selected contract and candidate-set summary emitted by backend runtime projection.",
+      "input_values": {
+        "branch": "BULL_CALL",
+        "expiry_candidates": [
+          "2024-01-25",
+          "2024-02-29"
+        ]
+      },
+      "instrument": "BANKNIFTY",
+      "intermediate_values": {
+        "market_references": {
+          "2DHH": "47200.00",
+          "2DLL": "46500.00",
+          "3DHH": "47400.00",
+          "3DLL": "46200.00"
+        }
+      },
+      "output_value": {
+        "oi": "100 lots minimum satisfied",
+        "premium": "925.00",
+        "selected_contract": "BANKNIFTY24JAN47000CE"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_SELECTED_CONTRACT",
+      "stage": "CONTRACT_SELECTION",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S21_BANKNIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Entry, target, and stop-loss values emitted by backend runtime projection.",
+      "input_values": {
+        "market_references": {
+          "2DHH": "47200.00",
+          "2DLL": "46500.00",
+          "3DHH": "47400.00",
+          "3DLL": "46200.00"
+        },
+        "selected_contract": "BANKNIFTY24JAN47000CE"
+      },
+      "instrument": "BANKNIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "base_entry": "925.00",
+        "normalized_prices": {},
+        "original_sl": "1337.50",
+        "raw_prices": {},
+        "target": "370.00"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_PLAN_VALUES",
+      "stage": "PLAN_COMPOSITION",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {
+        "reconstruction": {
+          "current_entry_state": "INTERNAL_PAPER_POSITION_OPEN",
+          "orpt_result": "AVAILABLE",
+          "rc_result": "AVAILABLE"
+        }
+      },
+      "decision_id": "S21_BANKNIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "ORPT, RC, and runtime entry-eligibility state emitted by backend runtime projection.",
+      "input_values": {
+        "orpt": "09:24:59.400000",
+        "rc": "09:29:59.400000"
+      },
+      "instrument": "BANKNIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "current_entry_state": "INTERNAL_PAPER_POSITION_OPEN",
+        "orpt_state": "AVAILABLE",
+        "rc_state": "AVAILABLE"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_ENTRY_STATE",
+      "stage": "ENTRY_ELIGIBILITY",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S21_BANKNIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Order and PositionCycle state emitted by backend runtime projection.",
+      "input_values": {
+        "order_state": "FILLED_INTERNAL",
+        "position_health": "OPEN_PROTECTED"
+      },
+      "instrument": "BANKNIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "current_action_state": "FILLED_INTERNAL",
+        "fill_state": "FILLED_INTERNAL",
+        "latest_event": "INTERNAL_FULL_FILL",
+        "position_health": "OPEN_PROTECTED"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_ORDER_POSITION_STATE",
+      "stage": "CURRENT_ACTION",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Monthly Status emitted by backend runtime projection; no frontend calculation.",
+      "input_values": {
+        "instrument": "RELIANCE",
+        "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A"
+      },
+      "instrument": "RELIANCE",
+      "intermediate_values": {},
+      "output_value": {
+        "monthly_status": "BEAR_CF",
+        "monthly_status_label": "Bear Cf"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_MONTHLY_STATUS",
+      "stage": "MONTHLY_STATUS",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Strategy branch emitted by backend runtime projection; no frontend branch derivation.",
+      "input_values": {
+        "monthly_status": "BEAR_CF"
+      },
+      "instrument": "RELIANCE",
+      "intermediate_values": {},
+      "output_value": {
+        "branch": "BEAR_CALL",
+        "branch_label": "Bear Call"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_BRANCH_SELECTION",
+      "stage": "BRANCH",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {
+        "evaluated_contracts": [],
+        "rejected_candidates": []
+      },
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Selected contract and candidate-set summary emitted by backend runtime projection.",
+      "input_values": {
+        "branch": "BEAR_CALL",
+        "expiry_candidates": [
+          "2026-08-27",
+          "2026-09-24"
+        ]
+      },
+      "instrument": "RELIANCE",
+      "intermediate_values": {
+        "market_references": {
+          "2DHH": "1309.70",
+          "2DLL": "1275.30",
+          "4DHH": "1309.70",
+          "4DLL": "1265.90"
+        }
+      },
+      "output_value": {
+        "oi": "100 lots minimum satisfied",
+        "premium": "57.50",
+        "selected_contract": "NSE:RELIANCE26AUG1260CE"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_SELECTED_CONTRACT",
+      "stage": "CONTRACT_SELECTION",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Entry, target, and stop-loss values emitted by backend runtime projection.",
+      "input_values": {
+        "market_references": {
+          "2DHH": "1309.70",
+          "2DLL": "1275.30",
+          "4DHH": "1309.70",
+          "4DLL": "1265.90"
+        },
+        "selected_contract": "NSE:RELIANCE26AUG1260CE"
+      },
+      "instrument": "RELIANCE",
+      "intermediate_values": {},
+      "output_value": {
+        "base_entry": "57.50",
+        "normalized_prices": {},
+        "original_sl": "92.00",
+        "raw_prices": {},
+        "target": "23.00"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_PLAN_VALUES",
+      "stage": "PLAN_COMPOSITION",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {
+        "reconstruction": {
+          "current_entry_state": "INTERNAL_PAPER_POSITION_OPEN",
+          "orpt_result": "DETERMINISTIC_TIMING_SUPPLEMENT",
+          "rc_result": "DETERMINISTIC_TIMING_SUPPLEMENT"
+        }
+      },
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "ORPT, RC, and runtime entry-eligibility state emitted by backend runtime projection.",
+      "input_values": {
+        "orpt": "09:24:59.400000",
+        "rc": "09:29:59.400000"
+      },
+      "instrument": "RELIANCE",
+      "intermediate_values": {},
+      "output_value": {
+        "current_entry_state": "INTERNAL_PAPER_POSITION_OPEN",
+        "orpt_state": "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "rc_state": "DETERMINISTIC_TIMING_SUPPLEMENT"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_ENTRY_STATE",
+      "stage": "ENTRY_ELIGIBILITY",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Order and PositionCycle state emitted by backend runtime projection.",
+      "input_values": {
+        "order_state": "FILLED_INTERNAL",
+        "position_health": "OPEN_PROTECTED"
+      },
+      "instrument": "RELIANCE",
+      "intermediate_values": {},
+      "output_value": {
+        "current_action_state": "FILLED_INTERNAL",
+        "fill_state": "FILLED_INTERNAL",
+        "latest_event": "INTERNAL_FULL_FILL",
+        "position_health": "OPEN_PROTECTED"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_ORDER_POSITION_STATE",
+      "stage": "CURRENT_ACTION",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S23_NIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Monthly Status emitted by backend runtime projection; no frontend calculation.",
+      "input_values": {
+        "instrument": "NIFTY",
+        "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A"
+      },
+      "instrument": "NIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "monthly_status": "BULL_CF",
+        "monthly_status_label": "Bull Cf"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_MONTHLY_STATUS",
+      "stage": "MONTHLY_STATUS",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S23_NIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Strategy branch emitted by backend runtime projection; no frontend branch derivation.",
+      "input_values": {
+        "monthly_status": "BULL_CF"
+      },
+      "instrument": "NIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "branch": "BULL_PUT",
+        "branch_label": "Bull Put"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_BRANCH_SELECTION",
+      "stage": "BRANCH",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {
+        "evaluated_contracts": [],
+        "rejected_candidates": []
+      },
+      "decision_id": "S23_NIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Selected contract and candidate-set summary emitted by backend runtime projection.",
+      "input_values": {
+        "branch": "BULL_PUT",
+        "expiry_candidates": [
+          "2026-06-11",
+          "2026-06-18"
+        ]
+      },
+      "instrument": "NIFTY",
+      "intermediate_values": {
+        "market_references": {
+          "2DHH": "22500.00",
+          "2DLL": "21900.00",
+          "3DHH": "22600.00",
+          "3DLL": "22000.00"
+        }
+      },
+      "output_value": {
+        "oi": "100 lots minimum satisfied",
+        "premium": "194.25",
+        "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_SELECTED_CONTRACT",
+      "stage": "CONTRACT_SELECTION",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S23_NIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Entry, target, and stop-loss values emitted by backend runtime projection.",
+      "input_values": {
+        "market_references": {
+          "2DHH": "22500.00",
+          "2DLL": "21900.00",
+          "3DHH": "22600.00",
+          "3DLL": "22000.00"
+        },
+        "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE"
+      },
+      "instrument": "NIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "base_entry": "194.25",
+        "normalized_prices": {},
+        "original_sl": "310.80",
+        "raw_prices": {},
+        "target": "77.70"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_PLAN_VALUES",
+      "stage": "PLAN_COMPOSITION",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {
+        "reconstruction": {
+          "current_entry_state": "INTERNAL_PAPER_POSITION_OPEN",
+          "orpt_result": "AVAILABLE",
+          "rc_result": "AVAILABLE"
+        }
+      },
+      "decision_id": "S23_NIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "ORPT, RC, and runtime entry-eligibility state emitted by backend runtime projection.",
+      "input_values": {
+        "orpt": "09:24:59.400000",
+        "rc": "09:29:59.400000"
+      },
+      "instrument": "NIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "current_entry_state": "INTERNAL_PAPER_POSITION_OPEN",
+        "orpt_state": "AVAILABLE",
+        "rc_state": "AVAILABLE"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_ENTRY_STATE",
+      "stage": "ENTRY_ELIGIBILITY",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    },
+    {
+      "calculation_timestamp": "2026-08-03T09:30:00+05:30",
+      "candidate_evidence": {},
+      "decision_id": "S23_NIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
+      "evidence_mode": "READ_MODEL_DERIVED",
+      "evidence_quality": "FIXTURE_BACKED",
+      "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
+      "formula_text": "Order and PositionCycle state emitted by backend runtime projection.",
+      "input_values": {
+        "order_state": "FILLED_INTERNAL",
+        "position_health": "OPEN_PROTECTED"
+      },
+      "instrument": "NIFTY",
+      "intermediate_values": {},
+      "output_value": {
+        "current_action_state": "FILLED_INTERNAL",
+        "fill_state": "FILLED_INTERNAL",
+        "latest_event": "INTERNAL_FULL_FILL",
+        "position_health": "OPEN_PROTECTED"
+      },
+      "rejection_reason": null,
+      "rule_id": "READ_MODEL_ORDER_POSITION_STATE",
+      "stage": "CURRENT_ACTION",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+    }
+  ],
+  "historical_trades": [
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "charges": "PROVISIONAL_INTERNAL_PAPER",
+      "contract": "BANKNIFTY24JAN47000CE",
+      "entry_price": "925.00",
+      "entry_time": "2026-08-03T09:30:00+05:30",
+      "evidence_quality": "Fixture Backed",
+      "exit_price": null,
+      "exit_reason": "OPEN",
+      "exit_time": null,
+      "explanation_completeness": "Available",
+      "gross_pnl": "6250.00",
+      "instrument": "BANKNIFTY",
+      "net_pnl": "6250.00",
+      "quantity": 15,
+      "side": "CALL SELL",
+      "strategy": "S21",
+      "trade_story": {
+        "accounting": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
+        "decision_reason": "Bull Call",
+        "entry": "925.00",
+        "evidence": "Fixture Backed",
+        "exit": "OPEN",
+        "explanation_snapshot": "d0bc45048939a1fe16e42bb451d98ccf6992c52bbc392e3f864f48ff6fa6407e",
+        "fills": 15,
+        "protection": "Protected",
+        "selected_contract": "BANKNIFTY24JAN47000CE",
+        "timeline_anchor": "2026-08-03T09:30:00+05:30"
+      }
+    },
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "charges": "PROVISIONAL_INTERNAL_PAPER",
+      "contract": "NSE:RELIANCE26AUG1260CE",
+      "entry_price": "57.50",
+      "entry_time": "2026-08-03T09:30:00+05:30",
+      "evidence_quality": "Deterministic Timing Supplement",
+      "exit_price": null,
+      "exit_reason": "OPEN",
+      "exit_time": null,
+      "explanation_completeness": "Limited",
+      "gross_pnl": "-2500.00",
+      "instrument": "RELIANCE",
+      "net_pnl": "-2500.00",
+      "quantity": 500,
+      "side": "CALL SELL",
+      "strategy": "S22",
+      "trade_story": {
+        "accounting": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
+        "decision_reason": "Bear Call",
+        "entry": "57.50",
+        "evidence": "Deterministic Timing Supplement",
+        "exit": "OPEN",
+        "explanation_snapshot": "63cb0492eb6fd848b4bb49fb1c2797e737bd974a5f6206612845a43adf15f21e",
+        "fills": 500,
+        "protection": "Protected",
+        "selected_contract": "NSE:RELIANCE26AUG1260CE",
+        "timeline_anchor": "2026-08-03T09:30:00+05:30"
+      }
+    },
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "charges": "PROVISIONAL_INTERNAL_PAPER",
+      "contract": "NIFTY_PHASE5C_PUT_FIXTURE",
+      "entry_price": "194.25",
+      "entry_time": "2026-08-03T09:30:00+05:30",
+      "evidence_quality": "Fixture Backed",
+      "exit_price": null,
+      "exit_reason": "OPEN",
+      "exit_time": null,
+      "explanation_completeness": "Available",
+      "gross_pnl": "1800.00",
+      "instrument": "NIFTY",
+      "net_pnl": "1800.00",
+      "quantity": 50,
+      "side": "PUT SELL",
+      "strategy": "S23",
+      "trade_story": {
+        "accounting": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
+        "decision_reason": "Bull Put",
+        "entry": "194.25",
+        "evidence": "Fixture Backed",
+        "exit": "OPEN",
+        "explanation_snapshot": "c2d826a56dfab4b862f3b51444c4580e43927e5ccf40be789892993ffe6bb018",
+        "fills": 50,
+        "protection": "Protected",
+        "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE",
+        "timeline_anchor": "2026-08-03T09:30:00+05:30"
+      }
+    }
+  ],
+  "navigation": {
+    "engineering_mode": [
+      "Decision Explorer",
+      "Monthly Status",
+      "Contract Selection",
+      "Manual Validation",
+      "Replay",
+      "Explanation Library",
+      "Diagnostics",
+      "Source Trace"
+    ],
+    "operator_mode": [
+      "Command Centre",
+      "Strategies",
+      "Orders",
+      "Positions",
+      "Accounts",
+      "Risk",
+      "Historical Trades",
+      "Alerts",
+      "Audit",
+      "Settings"
+    ],
+    "principal_areas": [
+      "Command Centre",
+      "Strategies",
+      "Orders",
+      "Positions",
+      "Accounts",
+      "Risk",
+      "Historical Trades",
+      "Alerts",
+      "Audit",
+      "Settings"
+    ],
+    "product_modes_share_backend_truth": true,
+    "strategy_hierarchy": [
+      "Strategy Family",
+      "Strategy Definition",
+      "Strategy Instance",
+      "Instrument",
+      "Contract",
+      "Trade/Position"
+    ]
+  },
   "orders": [
     {
       "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "actions": "Explain Decision",
       "age": "00:00:01",
       "contract": "BANKNIFTY24JAN47000CE",
       "execution_contract": "BANKNIFTY24JAN47000CE",
@@ -139,15 +924,34 @@
       "instance": "S21_BANKNIFTY_INTERNAL_PAPER_A",
       "instrument": "BANKNIFTY",
       "latest_event": "INTERNAL_FULL_FILL",
+      "mode": "Internal Paper Controlled",
       "position_cycle": "pc:2c6d07fefa060723",
       "price": "925.00",
       "purpose": "ENTRY",
+      "quantity": 15,
       "requested_quantity": 15,
+      "side": "CALL SELL",
       "state": "FILLED_INTERNAL",
-      "strategy": "S21"
+      "status": "FILLED_INTERNAL",
+      "status_label": "Filled - Internal Paper",
+      "strategy": "S21",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "technical_details": {
+        "client_order_id": "client-order:2c6d07fefa06072371a2280d",
+        "failure": null,
+        "generation": 1,
+        "internal_response": "INTERNAL_FULL_FILL",
+        "margin_reservation": "SIMULATED_ONLY",
+        "position_cycle_id": "pc:2c6d07fefa060723",
+        "raw_state": "FILLED_INTERNAL",
+        "validation_trace": "VALIDATED_NOT_SUBMITTABLE"
+      },
+      "time": "2026-08-03T09:30:00+05:30",
+      "warning_or_error": null
     },
     {
       "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "actions": "Explain Decision",
       "age": "00:00:01",
       "contract": "NSE:RELIANCE26AUG1260CE",
       "execution_contract": "NSE:RELIANCE26AUG1260CE",
@@ -157,15 +961,34 @@
       "instance": "S22_RELIANCE_INTERNAL_PAPER_A",
       "instrument": "RELIANCE",
       "latest_event": "INTERNAL_FULL_FILL",
+      "mode": "Internal Paper Controlled",
       "position_cycle": "pc:354e0dc92d807b7b",
       "price": "57.50",
       "purpose": "ENTRY",
+      "quantity": 500,
       "requested_quantity": 500,
+      "side": "CALL SELL",
       "state": "FILLED_INTERNAL",
-      "strategy": "S22"
+      "status": "FILLED_INTERNAL",
+      "status_label": "Filled - Internal Paper",
+      "strategy": "S22",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "technical_details": {
+        "client_order_id": "client-order:354e0dc92d807b7bb5c01210",
+        "failure": null,
+        "generation": 1,
+        "internal_response": "INTERNAL_FULL_FILL",
+        "margin_reservation": "SIMULATED_ONLY",
+        "position_cycle_id": "pc:354e0dc92d807b7b",
+        "raw_state": "FILLED_INTERNAL",
+        "validation_trace": "VALIDATED_NOT_SUBMITTABLE"
+      },
+      "time": "2026-08-03T09:30:00+05:30",
+      "warning_or_error": "S22_LIVE_OPEN_ORPT_RC_PENDING"
     },
     {
       "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "actions": "Explain Decision",
       "age": "00:00:01",
       "contract": "NIFTY_PHASE5C_PUT_FIXTURE",
       "execution_contract": "NIFTY_PHASE5C_PUT_FIXTURE",
@@ -175,115 +998,361 @@
       "instance": "S23_NIFTY_INTERNAL_PAPER_A",
       "instrument": "NIFTY",
       "latest_event": "INTERNAL_FULL_FILL",
+      "mode": "Internal Paper Controlled",
       "position_cycle": "pc:a00135c2f19126bd",
       "price": "194.25",
       "purpose": "ENTRY",
+      "quantity": 50,
       "requested_quantity": 50,
+      "side": "PUT SELL",
       "state": "FILLED_INTERNAL",
-      "strategy": "S23"
+      "status": "FILLED_INTERNAL",
+      "status_label": "Filled - Internal Paper",
+      "strategy": "S23",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "technical_details": {
+        "client_order_id": "client-order:a00135c2f19126bd063bcf1d",
+        "failure": null,
+        "generation": 1,
+        "internal_response": "INTERNAL_FULL_FILL",
+        "margin_reservation": "SIMULATED_ONLY",
+        "position_cycle_id": "pc:a00135c2f19126bd",
+        "raw_state": "FILLED_INTERNAL",
+        "validation_trace": "VALIDATED_NOT_SUBMITTABLE"
+      },
+      "time": "2026-08-03T09:30:00+05:30",
+      "warning_or_error": null
     }
   ],
   "positions": [
     {
       "account": "INTERNAL_PAPER_ACCOUNT_A",
       "active_sl": "1337.50",
+      "age": "1d",
       "average_entry": "925.00",
       "contract": "BANKNIFTY24JAN47000CE",
       "exit_deadline": "15:00:00",
       "fresh_or_carried": "FRESH",
+      "fresh_or_carried_label": "Fresh",
       "health": "OPEN_PROTECTED",
+      "health_label": "Open and Protected",
       "instrument": "BANKNIFTY",
       "mark": "925.00",
       "position_contract": "BANKNIFTY24JAN47000CE",
+      "protection_label": "Protected",
       "protection_status": "PROTECTED",
       "quantity": 15,
       "realized_pnl": "6250.00",
+      "side": "CALL SELL",
+      "status": "OPEN_PROTECTED",
+      "status_label": "Open and Protected",
       "strategy": "S21",
       "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
       "target": "370.00",
+      "technical_details": {
+        "accounting_detail": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
+        "carry_status": "NOT_CARRIED",
+        "eod_action": "OPEN",
+        "evidence_quality": "FIXTURE_BACKED",
+        "fills": {
+          "fill_state": "FILLED_INTERNAL",
+          "filled_quantity": 15,
+          "latest_event": "INTERNAL_FULL_FILL"
+        },
+        "mark_source": "FIXTURE_BACKED",
+        "position_cycle_id": "pc:2c6d07fefa060723",
+        "protection_generations": 1,
+        "target_sl_timeline": "INTERNAL_FULL_FILL"
+      },
       "unrealized_pnl": "0.00"
     },
     {
       "account": "INTERNAL_PAPER_ACCOUNT_A",
       "active_sl": "92.00",
+      "age": "1d",
       "average_entry": "57.50",
       "contract": "NSE:RELIANCE26AUG1260CE",
       "exit_deadline": "15:00:00",
       "fresh_or_carried": "FRESH",
+      "fresh_or_carried_label": "Fresh",
       "health": "OPEN_PROTECTED",
+      "health_label": "Open and Protected",
       "instrument": "RELIANCE",
       "mark": "57.50",
       "position_contract": "NSE:RELIANCE26AUG1260CE",
+      "protection_label": "Protected",
       "protection_status": "PROTECTED",
       "quantity": 500,
       "realized_pnl": "-2500.00",
+      "side": "CALL SELL",
+      "status": "OPEN_PROTECTED",
+      "status_label": "Open and Protected",
       "strategy": "S22",
       "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
       "target": "23.00",
+      "technical_details": {
+        "accounting_detail": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
+        "carry_status": "NOT_CARRIED",
+        "eod_action": "OPEN",
+        "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "fills": {
+          "fill_state": "FILLED_INTERNAL",
+          "filled_quantity": 500,
+          "latest_event": "INTERNAL_FULL_FILL"
+        },
+        "mark_source": "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "position_cycle_id": "pc:354e0dc92d807b7b",
+        "protection_generations": 1,
+        "target_sl_timeline": "INTERNAL_FULL_FILL"
+      },
       "unrealized_pnl": "0.00"
     },
     {
       "account": "INTERNAL_PAPER_ACCOUNT_A",
       "active_sl": "310.80",
+      "age": "1d",
       "average_entry": "194.25",
       "contract": "NIFTY_PHASE5C_PUT_FIXTURE",
       "exit_deadline": "15:00:00",
       "fresh_or_carried": "FRESH",
+      "fresh_or_carried_label": "Fresh",
       "health": "OPEN_PROTECTED",
+      "health_label": "Open and Protected",
       "instrument": "NIFTY",
       "mark": "194.25",
       "position_contract": "NIFTY_PHASE5C_PUT_FIXTURE",
+      "protection_label": "Protected",
       "protection_status": "PROTECTED",
       "quantity": 50,
       "realized_pnl": "0.00",
+      "side": "PUT SELL",
+      "status": "OPEN_PROTECTED",
+      "status_label": "Open and Protected",
       "strategy": "S23",
       "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
       "target": "77.70",
+      "technical_details": {
+        "accounting_detail": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
+        "carry_status": "NOT_CARRIED",
+        "eod_action": "OPEN",
+        "evidence_quality": "FIXTURE_BACKED",
+        "fills": {
+          "fill_state": "FILLED_INTERNAL",
+          "filled_quantity": 50,
+          "latest_event": "INTERNAL_FULL_FILL"
+        },
+        "mark_source": "FIXTURE_BACKED",
+        "position_cycle_id": "pc:a00135c2f19126bd",
+        "protection_generations": 1,
+        "target_sl_timeline": "INTERNAL_FULL_FILL"
+      },
       "unrealized_pnl": "1800.00"
     }
   ],
-  "projection_hash": "6ee9b3eb055b9e9dce122eddc2cf4e70d9c300daea7d0695455847ff2cfdc63e",
-  "schema_version": "tfis.operations.unified_read_model.v1",
+  "projection_hash": "8b7a5633fcefec650ca24bc52c0993fbb02ff88b18f80fa4e6a6121c36c01e13",
+  "risk": {
+    "aggregate": {
+      "available_margin": 460000,
+      "daily_loss_limit": 50000,
+      "margin_usage_pct": 54,
+      "open_positions": 3,
+      "pending_orders": 3,
+      "rejected_intents": 0,
+      "reserved_margin": 0,
+      "risk_state": "Active",
+      "unprotected_positions": 0,
+      "used_margin": 540000
+    },
+    "per_account": [
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT_A",
+        "available_margin": 460000,
+        "daily_loss_limit": 50000,
+        "margin_usage_pct": 54,
+        "remaining_capacity": 46,
+        "reserved_margin": 0,
+        "status": "Active",
+        "used_margin": 540000,
+        "warnings": [
+          "S22_LIVE_OPEN_ORPT_RC_PENDING"
+        ]
+      }
+    ],
+    "worst_position": {
+      "contract": "NSE:RELIANCE26AUG1260CE",
+      "instrument": "RELIANCE",
+      "pnl": "-2500.00"
+    }
+  },
+  "schema_version": "tfis.operations.unified_read_model.v3",
+  "settings": {
+    "accounts": {
+      "audit_required": true,
+      "credential_exposure": "PROHIBITED",
+      "editable_mode": "INTERNAL_PAPER_LOCAL_ONLY",
+      "versioned_write_required": true
+    },
+    "brokers": {
+      "external_order_authority": "NONE",
+      "read_only_sessions": true
+    },
+    "dashboard_preferences": {
+      "saved_filters": "NOT_IMPLEMENTED",
+      "theme_toggle": true
+    },
+    "strategies": {
+      "families_supported": [
+        "Option Selling",
+        "Option Buying",
+        "Futures",
+        "Equity",
+        "Commodity",
+        "Currency"
+      ],
+      "frontend_business_calculation": false
+    }
+  },
+  "state_labels": {
+    "ACCEPTED": {
+      "label": "Accepted"
+    },
+    "ACTIVE": {
+      "label": "Active"
+    },
+    "AVAILABLE": {
+      "label": "Available"
+    },
+    "CARRIED": {
+      "label": "Carried"
+    },
+    "CRITICAL": {
+      "label": "Critical"
+    },
+    "DEGRADED": {
+      "label": "Degraded"
+    },
+    "DEGRADED_EVIDENCE": {
+      "label": "Evidence Limited"
+    },
+    "DETERMINISTIC_TIMING_SUPPLEMENT": {
+      "label": "Deterministic Timing Supplement"
+    },
+    "FILLED_INTERNAL": {
+      "label": "Filled - Internal Paper"
+    },
+    "FIXTURE_BACKED": {
+      "label": "Fixture Backed"
+    },
+    "FRESH": {
+      "label": "Fresh"
+    },
+    "HEALTHY": {
+      "label": "Healthy"
+    },
+    "HISTORICAL_RECONSTRUCTION": {
+      "label": "Reconstructed from Market History"
+    },
+    "INTERNAL_PAPER_CONTROLLED": {
+      "label": "Internal Paper Controlled"
+    },
+    "MISSING_PROTECTION": {
+      "label": "Protection Missing"
+    },
+    "NORMAL_ENTRY_STILL_VALID": {
+      "label": "Entry Available"
+    },
+    "NO_ORDER": {
+      "label": "No Order"
+    },
+    "NO_POSITION": {
+      "label": "No Position"
+    },
+    "OPEN_PROTECTED": {
+      "label": "Open and Protected"
+    },
+    "OPEN_UNPROTECTED": {
+      "label": "Open and Unprotected"
+    },
+    "PROCESSED_INTERNAL_PAPER": {
+      "label": "Internal Paper Order Processed"
+    },
+    "PROTECTED": {
+      "label": "Protected"
+    },
+    "RC_ENTRY_STILL_VALID": {
+      "label": "RC Entry Available"
+    },
+    "RC_WAITING": {
+      "label": "Waiting For RC"
+    },
+    "READ_ONLY_OR_INTERNAL": {
+      "label": "Read Only / Internal"
+    },
+    "REJECTED": {
+      "label": "Rejected"
+    },
+    "VALIDATION_REJECTED": {
+      "label": "Validation Blocked"
+    },
+    "WARNING": {
+      "label": "Warning"
+    }
+  },
   "strategies": [
     {
       "accounting": {
         "accounting_quality": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
         "charges_quality": "PROVISIONAL_INTERNAL_PAPER",
         "realized_pnl": "6250.00",
+        "realized_pnl_tone": "POSITIVE",
         "selected_contract": "BANKNIFTY24JAN47000CE",
         "trade_classification": "WIN",
-        "unrealized_pnl": "0.00"
+        "unrealized_pnl": "0.00",
+        "unrealized_pnl_tone": "FLAT"
       },
       "execution": {
         "effective_entry": "925.00",
         "execution_intent": "VALIDATED_NOT_SUBMITTABLE",
         "failure": null,
         "fill_state": "FILLED_INTERNAL",
+        "fill_state_label": "Filled - Internal Paper",
         "filled_quantity": 15,
         "latest_event": "INTERNAL_FULL_FILL",
+        "mode_label": "Internal Paper Controlled",
         "opening_context": "FIXTURE_BACKED",
+        "opening_context_label": "Fixture Backed",
         "order_age": "00:00:01",
         "order_purpose": "ENTRY",
         "order_state": "FILLED_INTERNAL",
+        "order_state_label": "Filled - Internal Paper",
         "orpt_state": "AVAILABLE",
         "protection_generation": 1,
         "rc_state": "AVAILABLE",
         "risk_result": "ACCEPTED",
+        "risk_result_label": "Accepted",
         "selected_contract": "BANKNIFTY24JAN47000CE"
       },
       "identity": {
         "account": "INTERNAL_PAPER_ACCOUNT_A",
+        "broker": "Internal Fixture",
+        "exchange": "NSE",
         "instance": "S21_BANKNIFTY_INTERNAL_PAPER_A",
         "instrument": "BANKNIFTY",
         "product": "OPTION_SELLING",
+        "product_label": "Option Selling",
+        "segment": "INDEX",
+        "segment_label": "Index Options",
         "session": "NSE:2026-08-03:INTERNAL_PAPER",
         "strategy": "S21",
+        "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
         "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
         "version": "s21.phase5d.complete.v1"
       },
       "operations": {
+        "alert_count": 0,
         "alerts": [],
         "authority_mode": "INTERNAL_PAPER_CONTROLLED",
+        "authority_mode_label": "Internal Paper Controlled",
         "broker_data_health": "READ_ONLY_NOT_REQUIRED_FOR_FIXTURE",
         "checkpoint": "all_three_qualify:S21_BANKNIFTY_INTERNAL_PAPER_A:checkpoint",
         "reconciliation": "INTERNAL_MATCHED"
@@ -291,12 +1360,15 @@
       "plan": {
         "base_entry": "925.00",
         "block_reason": null,
+        "block_reason_label": "",
         "branch": "BULL_CALL",
         "evidence_quality": "FIXTURE_BACKED",
+        "evidence_quality_label": "Fixture Backed",
         "expiry_candidates": [
           "2024-01-25",
           "2024-02-29"
         ],
+        "family": "Option Selling",
         "market_references": {
           "2DHH": "47200.00",
           "2DLL": "46500.00",
@@ -309,8 +1381,10 @@
         "orpt": "09:24:59.400000",
         "plan_hash": "7507dc8c1c00d8904d09a24e1edc5a4bd87f7b065438ce69aa06e3020be9ef68",
         "plan_status": "PREPARED",
+        "plan_status_label": "Prepared",
         "premium": "925.00",
         "rc": "09:29:59.400000",
+        "segment": "Index Options",
         "selected_contract": "BANKNIFTY24JAN47000CE",
         "target": "370.00"
       },
@@ -321,24 +1395,38 @@
         "exit_deadline": "15:00:00",
         "exit_reason": "OPEN",
         "fresh_or_carried": "FRESH",
+        "fresh_or_carried_label": "Fresh",
         "health": "OPEN_PROTECTED",
+        "health_label": "Open and Protected",
         "mark": "925.00",
         "position_cycle": "pc:2c6d07fefa060723",
         "protection_status": "PROTECTED",
+        "protection_status_label": "Protected",
         "quantity": 15,
         "remaining_quantity": 15,
         "selected_contract": "BANKNIFTY24JAN47000CE",
+        "side": "CALL SELL",
         "target": "370.00"
       },
-      "read_model_hash": "600e83a98b5687d2c3f41c95dbef78f10488059dfe11e5499e5181063ffffefa",
+      "read_model_hash": "d0bc45048939a1fe16e42bb451d98ccf6992c52bbc392e3f864f48ff6fa6407e",
       "state": {
         "branch": "BULL_CALL",
+        "branch_label": "Bull Call",
+        "current_action": "FILLED_INTERNAL",
+        "current_action_label": "Filled - Internal Paper",
         "enabled": true,
+        "enabled_label": "Enabled",
+        "entry_eligibility": "INTERNAL_PAPER_POSITION_OPEN",
+        "entry_eligibility_label": "Internal Paper Position Open",
         "evidence_quality": "FIXTURE_BACKED",
+        "evidence_quality_label": "Fixture Backed",
         "health": "HEALTHY",
+        "health_label": "Healthy",
         "last_update": "2026-08-03T09:30:00+05:30",
         "monthly_status": "BULL_CF",
-        "runtime_stage": "INTERNAL_PAPER_POSITION_OPEN"
+        "monthly_status_label": "Bull Cf",
+        "runtime_stage": "INTERNAL_PAPER_POSITION_OPEN",
+        "runtime_stage_label": "Internal Paper Position Open"
       }
     },
     {
@@ -346,38 +1434,52 @@
         "accounting_quality": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
         "charges_quality": "PROVISIONAL_INTERNAL_PAPER",
         "realized_pnl": "-2500.00",
+        "realized_pnl_tone": "NEGATIVE",
         "selected_contract": "NSE:RELIANCE26AUG1260CE",
         "trade_classification": "LOSS",
-        "unrealized_pnl": "0.00"
+        "unrealized_pnl": "0.00",
+        "unrealized_pnl_tone": "FLAT"
       },
       "execution": {
         "effective_entry": "57.50",
         "execution_intent": "VALIDATED_NOT_SUBMITTABLE",
         "failure": null,
         "fill_state": "FILLED_INTERNAL",
+        "fill_state_label": "Filled - Internal Paper",
         "filled_quantity": 500,
         "latest_event": "INTERNAL_FULL_FILL",
+        "mode_label": "Internal Paper Controlled",
         "opening_context": "CAPTURED_STATIC_DATA",
+        "opening_context_label": "Captured Static Data",
         "order_age": "00:00:01",
         "order_purpose": "ENTRY",
         "order_state": "FILLED_INTERNAL",
+        "order_state_label": "Filled - Internal Paper",
         "orpt_state": "DETERMINISTIC_TIMING_SUPPLEMENT",
         "protection_generation": 1,
         "rc_state": "DETERMINISTIC_TIMING_SUPPLEMENT",
         "risk_result": "ACCEPTED",
+        "risk_result_label": "Accepted",
         "selected_contract": "NSE:RELIANCE26AUG1260CE"
       },
       "identity": {
         "account": "INTERNAL_PAPER_ACCOUNT_A",
+        "broker": "FYERS",
+        "exchange": "NSE",
         "instance": "S22_RELIANCE_INTERNAL_PAPER_A",
         "instrument": "RELIANCE",
         "product": "OPTION_SELLING",
+        "product_label": "Option Selling",
+        "segment": "STOCK",
+        "segment_label": "Stock Options",
         "session": "NSE:2026-08-03:INTERNAL_PAPER",
         "strategy": "S22",
+        "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
         "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
         "version": "s22.reliance.stage1.v1"
       },
       "operations": {
+        "alert_count": 1,
         "alerts": [
           {
             "code": "S22_LIVE_OPEN_ORPT_RC_PENDING",
@@ -386,6 +1488,7 @@
           }
         ],
         "authority_mode": "INTERNAL_PAPER_CONTROLLED",
+        "authority_mode_label": "Internal Paper Controlled",
         "broker_data_health": "S22_LIVE_OPEN_ORPT_RC_PENDING",
         "checkpoint": "all_three_qualify:S22_RELIANCE_INTERNAL_PAPER_A:checkpoint",
         "reconciliation": "INTERNAL_MATCHED"
@@ -393,12 +1496,15 @@
       "plan": {
         "base_entry": "57.50",
         "block_reason": null,
+        "block_reason_label": "",
         "branch": "BEAR_CALL",
         "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "evidence_quality_label": "Deterministic Timing Supplement",
         "expiry_candidates": [
           "2026-08-27",
           "2026-09-24"
         ],
+        "family": "Option Selling",
         "market_references": {
           "2DHH": "1309.70",
           "2DLL": "1275.30",
@@ -411,8 +1517,10 @@
         "orpt": "09:24:59.400000",
         "plan_hash": "f193b772df5c5f2910d08ee361b443336813220fccac0df233b803d6c8304527",
         "plan_status": "PREPARED",
+        "plan_status_label": "Prepared",
         "premium": "57.50",
         "rc": "09:29:59.400000",
+        "segment": "Stock Options",
         "selected_contract": "NSE:RELIANCE26AUG1260CE",
         "target": "23.00"
       },
@@ -423,24 +1531,38 @@
         "exit_deadline": "15:00:00",
         "exit_reason": "OPEN",
         "fresh_or_carried": "FRESH",
+        "fresh_or_carried_label": "Fresh",
         "health": "OPEN_PROTECTED",
+        "health_label": "Open and Protected",
         "mark": "57.50",
         "position_cycle": "pc:354e0dc92d807b7b",
         "protection_status": "PROTECTED",
+        "protection_status_label": "Protected",
         "quantity": 500,
         "remaining_quantity": 500,
         "selected_contract": "NSE:RELIANCE26AUG1260CE",
+        "side": "CALL SELL",
         "target": "23.00"
       },
-      "read_model_hash": "492c40512a720a1f036a5e0dd6cabdab2ff6f59fbb33c3e70e73780922f6729b",
+      "read_model_hash": "63cb0492eb6fd848b4bb49fb1c2797e737bd974a5f6206612845a43adf15f21e",
       "state": {
         "branch": "BEAR_CALL",
+        "branch_label": "Bear Call",
+        "current_action": "FILLED_INTERNAL",
+        "current_action_label": "Filled - Internal Paper",
         "enabled": true,
+        "enabled_label": "Enabled",
+        "entry_eligibility": "INTERNAL_PAPER_POSITION_OPEN",
+        "entry_eligibility_label": "Internal Paper Position Open",
         "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
+        "evidence_quality_label": "Deterministic Timing Supplement",
         "health": "DEGRADED_EVIDENCE",
+        "health_label": "Evidence Limited",
         "last_update": "2026-08-03T09:30:00+05:30",
         "monthly_status": "BEAR_CF",
-        "runtime_stage": "INTERNAL_PAPER_POSITION_OPEN"
+        "monthly_status_label": "Bear Cf",
+        "runtime_stage": "INTERNAL_PAPER_POSITION_OPEN",
+        "runtime_stage_label": "Internal Paper Position Open"
       }
     },
     {
@@ -448,40 +1570,55 @@
         "accounting_quality": "INTERNAL_PAPER_DERIVED_FROM_SIMULATED_FILLS",
         "charges_quality": "PROVISIONAL_INTERNAL_PAPER",
         "realized_pnl": "0.00",
+        "realized_pnl_tone": "FLAT",
         "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE",
         "trade_classification": "OPEN",
-        "unrealized_pnl": "1800.00"
+        "unrealized_pnl": "1800.00",
+        "unrealized_pnl_tone": "POSITIVE"
       },
       "execution": {
         "effective_entry": "194.25",
         "execution_intent": "VALIDATED_NOT_SUBMITTABLE",
         "failure": null,
         "fill_state": "FILLED_INTERNAL",
+        "fill_state_label": "Filled - Internal Paper",
         "filled_quantity": 50,
         "latest_event": "INTERNAL_FULL_FILL",
+        "mode_label": "Internal Paper Controlled",
         "opening_context": "FIXTURE_BACKED",
+        "opening_context_label": "Fixture Backed",
         "order_age": "00:00:01",
         "order_purpose": "ENTRY",
         "order_state": "FILLED_INTERNAL",
+        "order_state_label": "Filled - Internal Paper",
         "orpt_state": "AVAILABLE",
         "protection_generation": 1,
         "rc_state": "AVAILABLE",
         "risk_result": "ACCEPTED",
+        "risk_result_label": "Accepted",
         "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE"
       },
       "identity": {
         "account": "INTERNAL_PAPER_ACCOUNT_A",
+        "broker": "Internal Fixture",
+        "exchange": "NSE",
         "instance": "S23_NIFTY_INTERNAL_PAPER_A",
         "instrument": "NIFTY",
         "product": "OPTION_SELLING",
+        "product_label": "Option Selling",
+        "segment": "INDEX",
+        "segment_label": "Index Options",
         "session": "NSE:2026-08-03:INTERNAL_PAPER",
         "strategy": "S23",
+        "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
         "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
         "version": "s23.phase5c.complete.v1"
       },
       "operations": {
+        "alert_count": 0,
         "alerts": [],
         "authority_mode": "INTERNAL_PAPER_CONTROLLED",
+        "authority_mode_label": "Internal Paper Controlled",
         "broker_data_health": "READ_ONLY_NOT_REQUIRED_FOR_FIXTURE",
         "checkpoint": "all_three_qualify:S23_NIFTY_INTERNAL_PAPER_A:checkpoint",
         "reconciliation": "INTERNAL_MATCHED"
@@ -489,12 +1626,15 @@
       "plan": {
         "base_entry": "194.25",
         "block_reason": null,
+        "block_reason_label": "",
         "branch": "BULL_PUT",
         "evidence_quality": "FIXTURE_BACKED",
+        "evidence_quality_label": "Fixture Backed",
         "expiry_candidates": [
           "2026-06-11",
           "2026-06-18"
         ],
+        "family": "Option Selling",
         "market_references": {
           "2DHH": "22500.00",
           "2DLL": "21900.00",
@@ -507,8 +1647,10 @@
         "orpt": "09:24:59.400000",
         "plan_hash": "1f906ff9a48341151150e172994ff9098a4b7d6a0ff01215b265deb650346e29",
         "plan_status": "PREPARED",
+        "plan_status_label": "Prepared",
         "premium": "194.25",
         "rc": "09:29:59.400000",
+        "segment": "Index Options",
         "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE",
         "target": "77.70"
       },
@@ -519,34 +1661,133 @@
         "exit_deadline": "15:00:00",
         "exit_reason": "OPEN",
         "fresh_or_carried": "FRESH",
+        "fresh_or_carried_label": "Fresh",
         "health": "OPEN_PROTECTED",
+        "health_label": "Open and Protected",
         "mark": "194.25",
         "position_cycle": "pc:a00135c2f19126bd",
         "protection_status": "PROTECTED",
+        "protection_status_label": "Protected",
         "quantity": 50,
         "remaining_quantity": 50,
         "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE",
+        "side": "PUT SELL",
         "target": "77.70"
       },
-      "read_model_hash": "5390462a76f4866669adf39b27730aa1c5dd6d620fae6f41e224ba482760f5da",
+      "read_model_hash": "c2d826a56dfab4b862f3b51444c4580e43927e5ccf40be789892993ffe6bb018",
       "state": {
         "branch": "BULL_PUT",
+        "branch_label": "Bull Put",
+        "current_action": "FILLED_INTERNAL",
+        "current_action_label": "Filled - Internal Paper",
         "enabled": true,
+        "enabled_label": "Enabled",
+        "entry_eligibility": "INTERNAL_PAPER_POSITION_OPEN",
+        "entry_eligibility_label": "Internal Paper Position Open",
         "evidence_quality": "FIXTURE_BACKED",
+        "evidence_quality_label": "Fixture Backed",
         "health": "HEALTHY",
+        "health_label": "Healthy",
         "last_update": "2026-08-03T09:30:00+05:30",
         "monthly_status": "BULL_CF",
-        "runtime_stage": "INTERNAL_PAPER_POSITION_OPEN"
+        "monthly_status_label": "Bull Cf",
+        "runtime_stage": "INTERNAL_PAPER_POSITION_OPEN",
+        "runtime_stage_label": "Internal Paper Position Open"
       }
+    }
+  ],
+  "strategy_families": [
+    {
+      "active_positions": 3,
+      "blocked": 0,
+      "daily_pnl": "5550.00",
+      "evidence_quality": "Deterministic Timing Supplement, Fixture Backed",
+      "family": "Option Selling",
+      "health": "Evidence Limited",
+      "instrument_count": 3,
+      "no_trade": 0,
+      "open_positions": 3,
+      "scalability_demo": true,
+      "strategy_count": 3
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Option Buying",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Futures",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Equity",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Commodity",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
+    },
+    {
+      "active_positions": 0,
+      "blocked": 0,
+      "daily_pnl": "0",
+      "evidence_quality": "Not enabled",
+      "family": "Currency",
+      "health": "Healthy",
+      "instrument_count": 0,
+      "no_trade": 0,
+      "open_positions": 0,
+      "scalability_demo": false,
+      "strategy_count": 0
     }
   ],
   "system": {
     "authority_mode": "INTERNAL_PAPER_CONTROLLED",
     "broker_order_authority": "NONE",
     "dashboard_failure_financial_action": "IMPOSSIBLE_READ_ONLY_PROJECTION",
+    "generated_at": "2026-08-04T16:45:00+05:30",
     "market_state": "DETERMINISTIC_SESSION",
+    "projection_mode": "READ_ONLY_OPERATOR_PLATFORM",
+    "projection_version": "dashboard_v3",
     "registry_hash": "0cb84e07d2b92a0cc8dbb9cb77c34d7a4501d67c0031a9ea11b07e7dbe3ea221",
     "runtime": "UNIFIED_S21_S22_S23_INTERNAL_PAPER",
-    "scenario_id": "all_three_qualify"
+    "scenario_id": "all_three_qualify",
+    "session": "NSE:2026-08-03:INTERNAL_PAPER",
+    "trading_date": "2026-08-04"
   }
 }
