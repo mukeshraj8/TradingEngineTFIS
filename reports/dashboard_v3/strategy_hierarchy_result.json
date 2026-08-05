@@ -7,7 +7,7 @@
     "Contract",
     "Trade/Position"
   ],
-  "scalability_reference": "reports/dashboard_v3/s22_30_stock_scalability.json",
+  "scalability_reference": "reports/dashboard_v3/s22_30_stock_instance_list.json",
   "schema_version": "tfis.dashboard_v3.strategy_hierarchy_result.v1",
   "strategy_families": [
     {

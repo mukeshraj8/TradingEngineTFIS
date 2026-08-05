@@ -16,6 +16,9 @@
     "daily_realized_pnl",
     "daily_unrealized_pnl",
     "margin_usage_pct",
+    "entry_available_instances",
+    "carried_positions",
+    "no_trade_instances",
     "critical_alerts",
     "broker_data_session",
     "last_market_update",
@@ -23,6 +26,7 @@
     "critical_alert_rows",
     "active_trades",
     "pending_actions",
+    "strategy_definition_summaries",
     "strategy_health",
     "market_session_timeline",
     "recent_operational_events"

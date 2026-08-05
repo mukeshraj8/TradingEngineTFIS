@@ -56,7 +56,7 @@
         "external_position_mutation": "NONE",
         "live_submission": "NONE"
       },
-      "instance_hash": "5beb6fbf8026e7981ebc35e2cd0c5cceca13ce949cd4de3429a8a59c27768690",
+      "instance_hash": "3f5e04f34c59b4b1799bc522519450a46ab42958f99cf244cc1e517537728351",
       "market_data_source": "CERTIFICATION_FIXTURE",
       "operator_approval_status": "APPROVED_INTERNAL_PAPER",
       "product": "OPTION_SELLING",
@@ -67,7 +67,9 @@
       "rule_config_hash": "s21-source-closure-config-v1",
       "source_reports": {
         "dashboard_projection": "reports/s21_complete/s21_complete_trace.json",
-        "summary": "reports/s21_complete/s21_summary.md"
+        "display_name": "S21 Monthly Option Selling",
+        "summary": "reports/s21_complete/s21_summary.md",
+        "supported_instruments_count": 1
       },
       "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
       "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
@@ -130,7 +132,7 @@
         "external_position_mutation": "NONE",
         "live_submission": "NONE"
       },
-      "instance_hash": "a610865cb00589f7ff84cd49c871fcf747c9d8035205220c4922e6043ea96d4b",
+      "instance_hash": "7bc2844e17874a51ddad3a976464f299c2bac28051e1b14079bdec58b19e6796",
       "market_data_source": "FYERS_READ_ONLY_FIXTURE",
       "operator_approval_status": "APPROVED_INTERNAL_PAPER",
       "product": "OPTION_SELLING",
@@ -141,7 +143,9 @@
       "rule_config_hash": "s22-source-closure-config-v1",
       "source_reports": {
         "dashboard_projection": "reports/s22_reliance/s22_reliance_dashboard_projection.json",
-        "summary": "reports/s22_reliance/s22_reliance_summary.md"
+        "display_name": "S22 Stock Option Selling",
+        "summary": "reports/s22_reliance/s22_reliance_summary.md",
+        "supported_instruments_count": 188
       },
       "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
       "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
@@ -194,7 +198,7 @@
         "external_position_mutation": "NONE",
         "live_submission": "NONE"
       },
-      "instance_hash": "09b93a2a9b05c1ed97f2f2d8641e9e3364cedbe0d89dd73f244ec6b43d310b09",
+      "instance_hash": "485eda0c7eaa6f40d81963acbee9447292f487076224ef899b2d678d12ea931a",
       "market_data_source": "CERTIFICATION_FIXTURE",
       "operator_approval_status": "APPROVED_INTERNAL_PAPER",
       "product": "OPTION_SELLING",
@@ -205,7 +209,9 @@
       "rule_config_hash": "s23-phase5c-four-branch-config-v1",
       "source_reports": {
         "dashboard_projection": "reports/phase5c/phase5c_session_results.json",
-        "summary": "reports/phase5c/phase5c_summary.md"
+        "display_name": "S23 Weekly Option Selling",
+        "summary": "reports/phase5c/phase5c_summary.md",
+        "supported_instruments_count": 1
       },
       "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
       "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
@@ -217,7 +223,7 @@
       }
     }
   ],
-  "registry_hash": "0cb84e07d2b92a0cc8dbb9cb77c34d7a4501d67c0031a9ea11b07e7dbe3ea221",
+  "registry_hash": "b411da7f0a6b9a90574bbc9fd314d9e7ddcc008aad5457d2241bc5fdda159d7d",
   "risk": {
     "aggregate_option_selling_exposure": 3,
     "daily_loss_limit": 50000,

@@ -1,0 +1,267 @@
+schema_version: tfis.enabled_strategy_instances.v1
+session_scope:
+  trading_session_id: NSE:2026-08-05:LIVE_MARKET_INTERNAL_PAPER
+  timezone: Asia/Calcutta
+  authority_mode: INTERNAL_PAPER_CONTROLLED
+  market_data_mode: LIVE_FYERS_READ_ONLY_PLUS_HISTORICAL_RECONSTRUCTION
+accounts:
+  - account_reference: INTERNAL_PAPER_ACCOUNT_A
+    display_name: FYERS Read-Only Internal Paper Account
+    broker: INTERNAL_PAPER
+    max_new_entries_per_session: 5
+    max_concurrent_positions: 5
+    max_margin_usage_pct: 70
+    daily_loss_limit: 50000
+    account_halt: false
+    lifecycle_only: false
+risk:
+  maximum_new_entries_per_session: 5
+  maximum_concurrent_positions: 5
+  maximum_account_margin_usage_pct: 70
+  aggregate_option_selling_exposure: 5
+  duplicate_underlying_prevention: true
+  daily_loss_limit: 50000
+  global_halt: false
+instances:
+  - strategy_definition_id: S21_BANKNIFTY_OP_SELL_MONTHLY
+    strategy_version: s21.phase5d.complete.v1
+    strategy_instance_id: S21_BANKNIFTY_INTERNAL_PAPER_A
+    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: BANKNIFTY
+      instrument_type: INDEX
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 15
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: LIVE_FYERS_READ_ONLY_CAPTURE
+    rule_config_hash: s21-source-closure-config-v1
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 20
+    operator_approval_status: APPROVED_INTERNAL_PAPER
+    evidence_quality: LIVE_READ_ONLY_RUNTIME_SELECTION
+    source_reports:
+      display_name: S21 Monthly Option Selling
+      supported_instruments_count: 1
+      summary: reports/s21_complete/s21_summary.md
+      dashboard_projection: reports/live_contract_selection/next_baseline_readiness.json
+    deterministic_projection:
+      branch: BULL_CALL
+      selected_contract: NSE:BANKNIFTY26AUG57000CE
+      entry: "774.60"
+      target: "309.85"
+      original_sl: "1239.35"
+      monthly_status: BULL_CF
+      opening_context: LIVE_SELECTION_PENDING
+      orpt_state: RECONSTRUCT_OR_OBSERVE
+      rc_state: RECONSTRUCT_OR_OBSERVE
+      broker_data_health: READ_ONLY_REQUIRED
+      realized_pnl: "0.00"
+      unrealized_pnl: "0.00"
+      trade_classification: PREPARED
+      scenario_flags:
+        carried_position_candidate: false
+      market_references:
+        2DHH: "58247.95"
+        2DLL: "57139.60"
+        3DHH: "58247.95"
+        3DLL: "56768.60"
+      expiry_candidates:
+        - "2026-08-25"
+  - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
+    strategy_version: s22.reliance.stage1.v1
+    strategy_instance_id: S22_RELIANCE_INTERNAL_PAPER_A
+    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: RELIANCE
+      instrument_type: STOCK
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 500
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: LIVE_FYERS_READ_ONLY_CAPTURE
+    rule_config_hash: s22-source-closure-config-v1
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 15
+    operator_approval_status: APPROVED_INTERNAL_PAPER
+    evidence_quality: ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY
+    source_reports:
+      display_name: S22 Stock Option Selling
+      supported_instruments_count: 188
+      summary: reports/s22_reliance/s22_reliance_summary.md
+      dashboard_projection: reports/fast_track_development_s22_multistock/dashboard_projection.json
+    deterministic_projection:
+      branch: BEAR_CALL
+      selected_contract: NSE:RELIANCE26AUG1260CE
+      entry: "57.50"
+      target: "23.00"
+      original_sl: "92.00"
+      monthly_status: BEAR_CF
+      opening_context: LIVE_SELECTION_PENDING
+      orpt_state: RECONSTRUCT_OR_OBSERVE
+      rc_state: RECONSTRUCT_OR_OBSERVE
+      broker_data_health: READ_ONLY_REQUIRED
+      realized_pnl: "0.00"
+      unrealized_pnl: "0.00"
+      trade_classification: PREPARED
+      scenario_flags: {}
+      market_references:
+        2DHH: "1309.70"
+        2DLL: "1275.30"
+        4DHH: "1309.70"
+        4DLL: "1265.90"
+      expiry_candidates:
+        - "2026-08-27"
+        - "2026-09-24"
+  - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
+    strategy_version: s22.multi_stock.foundation.v1
+    strategy_instance_id: S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A
+    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: TCS
+      instrument_type: STOCK
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 225
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: LIVE_FYERS_READ_ONLY_CAPTURE
+    rule_config_hash: s22-source-closure-config-v1
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 15
+    operator_approval_status: APPROVED_INTERNAL_PAPER
+    evidence_quality: ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY
+    source_reports:
+      display_name: S22 Stock Option Selling
+      supported_instruments_count: 188
+      summary: reports/fast_track_development_s22_multistock/tcs_development_result.json
+      dashboard_projection: reports/fast_track_development_s22_multistock/dashboard_projection.json
+    deterministic_projection:
+      branch: BEAR_CALL
+      selected_contract: NSE:TCS26AUG2380CE
+      entry: "64.05"
+      target: "25.60"
+      original_sl: "102.45"
+      monthly_status: BEAR_CF
+      opening_context: LIVE_SELECTION_PENDING
+      orpt_state: RECONSTRUCT_OR_OBSERVE
+      rc_state: RECONSTRUCT_OR_OBSERVE
+      broker_data_health: READ_ONLY_REQUIRED
+      realized_pnl: "0.00"
+      unrealized_pnl: "0.00"
+      trade_classification: PREPARED
+      scenario_flags: {}
+      market_references:
+        2DHH: "2473.70"
+        2DLL: "2383.00"
+        4DHH: "2495.00"
+        4DLL: "2326.10"
+      expiry_candidates:
+        - "2026-08-25"
+  - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
+    strategy_version: s22.multi_stock.foundation.v1
+    strategy_instance_id: S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A
+    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: INFY
+      instrument_type: STOCK
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 400
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: LIVE_FYERS_READ_ONLY_CAPTURE
+    rule_config_hash: s22-source-closure-config-v1
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 15
+    operator_approval_status: APPROVED_INTERNAL_PAPER
+    evidence_quality: ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY
+    source_reports:
+      display_name: S22 Stock Option Selling
+      supported_instruments_count: 188
+      summary: reports/fast_track_development_s22_multistock/infy_development_result.json
+      dashboard_projection: reports/fast_track_development_s22_multistock/dashboard_projection.json
+    deterministic_projection:
+      branch: BEAR_CALL
+      selected_contract: NSE:INFY26AUG1140CE
+      entry: "31.25"
+      target: "12.50"
+      original_sl: "49.95"
+      monthly_status: BEAR
+      opening_context: LIVE_SELECTION_PENDING
+      orpt_state: RECONSTRUCT_OR_OBSERVE
+      rc_state: RECONSTRUCT_OR_OBSERVE
+      broker_data_health: READ_ONLY_REQUIRED
+      realized_pnl: "0.00"
+      unrealized_pnl: "0.00"
+      trade_classification: PREPARED
+      scenario_flags: {}
+      market_references:
+        2DHH: "1180.00"
+        2DLL: "1138.10"
+        4DHH: "1187.70"
+        4DLL: "1107.20"
+      expiry_candidates:
+        - "2026-08-25"
+  - strategy_definition_id: S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH
+    strategy_version: s23.phase5c.complete.v1
+    strategy_instance_id: S23_NIFTY_INTERNAL_PAPER_A
+    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: NIFTY
+      instrument_type: INDEX
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 50
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: LIVE_FYERS_READ_ONLY_CAPTURE
+    rule_config_hash: s23-phase5c-four-branch-config-v1
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 20
+    operator_approval_status: APPROVED_INTERNAL_PAPER
+    evidence_quality: LIVE_READ_ONLY_RUNTIME_SELECTION
+    source_reports:
+      display_name: S23 Weekly Option Selling
+      supported_instruments_count: 1
+      summary: reports/phase5c/phase5c_summary.md
+      dashboard_projection: reports/live_contract_selection/next_baseline_readiness.json
+    deterministic_projection:
+      branch: BULL_CALL
+      selected_contract: NSE:NIFTY2680424150CE
+      entry: "127.23"
+      target: "50.90"
+      original_sl: "203.57"
+      monthly_status: BULL
+      opening_context: LIVE_SELECTION_PENDING
+      orpt_state: RECONSTRUCT_OR_OBSERVE
+      rc_state: RECONSTRUCT_OR_OBSERVE
+      broker_data_health: READ_ONLY_REQUIRED
+      realized_pnl: "0.00"
+      unrealized_pnl: "0.00"
+      trade_classification: PREPARED
+      scenario_flags: {}
+      market_references:
+        2DHH: "24774.30"
+        2DLL: "24299.70"
+        3DHH: "24774.30"
+        3DLL: "24187.10"
+      expiry_candidates:
+        - "2026-08-04"

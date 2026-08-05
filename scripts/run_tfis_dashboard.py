@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import http.server
 import json
 import socketserver
@@ -95,14 +96,19 @@ def main(argv: list[str] | None = None) -> int:
         handler.dashboard_root = result.output_root.resolve()
         handler.projection = dict(projection)
         handler.router = DashboardApiRouter(projection)
-        with ReusableTcpServer(("127.0.0.1", args.port), handler) as httpd:
+        httpd = ReusableTcpServer(("127.0.0.1", args.port), handler)
+        try:
             print(f"URL: http://127.0.0.1:{args.port}/index.html")
             print(f"API health: http://127.0.0.1:{args.port}/api/health")
-            try:
-                httpd.serve_forever()
-            except KeyboardInterrupt:
-                print("\nStopping TFIS professional dashboard server.")
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\nStopping TFIS professional dashboard server.")
+        finally:
+            with contextlib.suppress(BaseException):
                 httpd.shutdown()
+            with contextlib.suppress(BaseException):
+                httpd.server_close()
+        return 0
     return 0
 
 

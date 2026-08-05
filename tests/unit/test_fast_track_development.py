@@ -115,12 +115,15 @@ def test_build_explanation_facts_preserves_candidate_rejections() -> None:
         trading_session_id="NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
     )
 
-    assert len(facts) == 3
-    assert facts[0]["stage"] == "CONTRACT_SELECTION"
-    assert facts[0]["candidate_evidence"]["rejected_candidates"][0]["reason"] == "IDEAL_PREMIUM_NOT_MET"
-    assert facts[1]["stage"] == "PLAN_COMPOSITION"
-    assert facts[2]["stage"] == "ENTRY_ELIGIBILITY"
-    assert facts[2]["evidence_mode"] == "HISTORICALLY_RECONSTRUCTED"
+    assert len(facts) == 4
+    assert facts[0]["stage"] == "MONTHLY_STATUS"
+    assert facts[0]["output_value"]["monthly_status"] is None
+    assert facts[0]["candidate_evidence"]["derivation"]["available"] is False
+    assert facts[1]["stage"] == "CONTRACT_SELECTION"
+    assert facts[1]["candidate_evidence"]["rejected_candidates"][0]["reason"] == "IDEAL_PREMIUM_NOT_MET"
+    assert facts[2]["stage"] == "PLAN_COMPOSITION"
+    assert facts[3]["stage"] == "ENTRY_ELIGIBILITY"
+    assert facts[3]["evidence_mode"] == "HISTORICALLY_RECONSTRUCTED"
 
 
 def test_write_fast_track_reports_writes_expected_files(tmp_path: Path) -> None:
@@ -281,5 +284,19 @@ def test_build_development_dashboard_projection_exposes_decision_facts() -> None
     )
 
     assert projection["system"]["broker_order_authority"] == "NONE"
+    assert projection["schema_version"] == "tfis.fast_track.dashboard_projection.v3"
     assert projection["decision_explanations"]
     assert projection["analytics"]["decision_explanation_facts"] >= 4
+    assert projection["strategy_definitions"]
+    assert projection["strategy_instances"]
+    assert projection["navigation"]["strategy_groups"]
+    assert projection["strategy_status_counts"]["global"]["all"] == 1
+    assert projection["strategy_filter_options"]["definitions"][0]["strategy_code"] == "S22"
+    contract_fact = next(item for item in projection["decision_explanations"] if item["stage"] == "CONTRACT_SELECTION")
+    assert contract_fact["rule_id"] == "LIVE.ACTUAL_CHAIN.CONTRACT_SELECTION.001"
+    assert contract_fact["candidate_evidence"]["source_cells"] == ["AB6 OS!D137:M138", "AB14!F45:BG45"]
+    assert contract_fact["candidate_evidence"]["evaluated_contracts"][0]["symbol"] == "NSE:RELIANCE26AUG1260CE"
+    plan_fact = next(item for item in projection["decision_explanations"] if item["stage"] == "PLAN_COMPOSITION")
+    assert plan_fact["candidate_evidence"]["formula_catalog"]["base_entry"] == "OPT:PRV:2DLL - 10%"
+    assert plan_fact["output_value"]["raw_prices"]["base_entry"] == "57.50"
+    assert plan_fact["output_value"]["normalized_prices"]["original_sl"] == "92.00"

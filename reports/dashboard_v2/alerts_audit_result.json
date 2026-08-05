@@ -9,7 +9,7 @@
   "audit": [
     {
       "command": "BUILD_UNIFIED_INTERNAL_PAPER_PROJECTION",
-      "evidence_hash": "54322cc0a08bab451b7199616291fcfe626ee03e3b5be4dca8674b04936eac02",
+      "evidence_hash": "34f50c83da789cddb93191c8e6bd0ce0382f619266298940c121ece33a4797db",
       "new_state": "UNIFIED_PROJECTION_READY",
       "operator": "SYSTEM",
       "preview": true,

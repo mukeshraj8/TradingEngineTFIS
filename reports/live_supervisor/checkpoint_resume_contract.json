@@ -1,8 +1,8 @@
 {
-  "checkpoint_path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\NSE_2026-08-04_UNIFIED_INTERNAL_PAPER.checkpoint.json",
+  "checkpoint_path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\NSE_2026-08-05_UNIFIED_INTERNAL_PAPER.checkpoint.json",
   "db_path": "D:\\TradingEngineTFISRefactored\\data\\internal_paper\\unified_supervisor.sqlite",
   "heartbeat_path": "D:\\TradingEngineTFISRefactored\\tmp\\tfis_supervisor_state\\heartbeat.json",
-  "late_start_mode": true,
+  "late_start_mode": false,
   "resume_policy": "NO_NEW_ENTRY_UNTIL_TIMING_AND_SELECTION_REVALIDATED",
   "schema_version": "tfis.live_supervisor.checkpoint_resume_contract.v1"
 }

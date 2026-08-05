@@ -38,6 +38,7 @@ class StrategyInstanceReadModel:
 @dataclass(frozen=True, slots=True)
 class AccountRiskProjection:
     account_reference: str
+    display_name: str
     status: str
     limits: Mapping[str, Any]
     usage: Mapping[str, Any]
@@ -55,6 +56,7 @@ class AccountRiskProjection:
     def to_dict(self, *, include_hash: bool = True) -> dict[str, Any]:
         payload = {
             "account_reference": self.account_reference,
+            "display_name": self.display_name,
             "status": self.status,
             "limits": dict(self.limits),
             "usage": dict(self.usage),
@@ -74,6 +76,10 @@ class OperationalReadModel:
     navigation: Mapping[str, Any]
     command_centre: Mapping[str, Any]
     strategy_families: tuple[Mapping[str, Any], ...]
+    strategy_definitions: tuple[Mapping[str, Any], ...]
+    strategy_instances: tuple[Mapping[str, Any], ...]
+    strategy_status_counts: Mapping[str, Any]
+    strategy_filter_options: Mapping[str, Any]
     strategies: tuple[StrategyInstanceReadModel, ...]
     accounts: tuple[AccountRiskProjection, ...]
     risk: Mapping[str, Any]
@@ -90,6 +96,8 @@ class OperationalReadModel:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "strategy_families", tuple(dict(item) for item in self.strategy_families))
+        object.__setattr__(self, "strategy_definitions", tuple(dict(item) for item in self.strategy_definitions))
+        object.__setattr__(self, "strategy_instances", tuple(dict(item) for item in self.strategy_instances))
         object.__setattr__(self, "strategies", tuple(self.strategies))
         object.__setattr__(self, "accounts", tuple(self.accounts))
         object.__setattr__(self, "orders", tuple(dict(item) for item in self.orders))
@@ -107,6 +115,10 @@ class OperationalReadModel:
             "navigation": dict(self.navigation),
             "command_centre": dict(self.command_centre),
             "strategy_families": [dict(item) for item in self.strategy_families],
+            "strategy_definitions": [dict(item) for item in self.strategy_definitions],
+            "strategy_instances": [dict(item) for item in self.strategy_instances],
+            "strategy_status_counts": dict(self.strategy_status_counts),
+            "strategy_filter_options": dict(self.strategy_filter_options),
             "strategies": [item.to_dict() for item in self.strategies],
             "accounts": [item.to_dict() for item in self.accounts],
             "risk": dict(self.risk),

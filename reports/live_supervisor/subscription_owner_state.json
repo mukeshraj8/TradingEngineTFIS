@@ -1,12 +1,17 @@
 {
-  "captured_at": "2026-08-04T12:15:20.327502+05:30",
+  "captured_at": "2026-08-05T17:02:05.850789+05:30",
   "contracts": {
-    "BANKNIFTY24JAN47000CE": {
+    "NSE:BANKNIFTY26AUG57500CE": {
       "S21_BANKNIFTY_INTERNAL_PAPER_A": [
         "SELECTED_CONTRACT_PINNED"
       ]
     },
-    "NIFTY_PHASE5C_PUT_FIXTURE": {
+    "NSE:INFY26AUG1140CE": {
+      "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A": [
+        "SELECTED_CONTRACT_PINNED"
+      ]
+    },
+    "NSE:NIFTY2681824400CE": {
       "S23_NIFTY_INTERNAL_PAPER_A": [
         "SELECTED_CONTRACT_PINNED"
       ]
@@ -15,25 +20,39 @@
       "S22_RELIANCE_INTERNAL_PAPER_A": [
         "SELECTED_CONTRACT_PINNED"
       ]
+    },
+    "NSE:TCS26AUG2380CE": {
+      "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A": [
+        "SELECTED_CONTRACT_PINNED"
+      ]
     }
   },
   "duplicate_provider_subscriptions": false,
   "runtime_subscription_snapshot": {
     "contract_to_position_cycles": {},
     "contract_to_strategy_instances": {
-      "BANKNIFTY24JAN47000CE": [
+      "NSE:BANKNIFTY26AUG57500CE": [
         "S21_BANKNIFTY_INTERNAL_PAPER_A"
       ],
-      "NIFTY_PHASE5C_PUT_FIXTURE": [
+      "NSE:INFY26AUG1140CE": [
+        "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A"
+      ],
+      "NSE:NIFTY2681824400CE": [
         "S23_NIFTY_INTERNAL_PAPER_A"
       ],
       "NSE:RELIANCE26AUG1260CE": [
         "S22_RELIANCE_INTERNAL_PAPER_A"
+      ],
+      "NSE:TCS26AUG2380CE": [
+        "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A"
       ]
     },
-    "subscription_hash": "341259552ffd5104d31a21148bce1c679b21999986af45f0f39716f3bdf3bcba",
+    "subscription_hash": "ad796c711881de0c20e8f3ec97c1ffda73c396853e41790e04234d8ce09cbfbe",
     "underlying_to_position_cycles": {},
     "underlying_to_strategy_instances": {
+      "NSE:INFY-EQ": [
+        "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A"
+      ],
       "NSE:NIFTY50-INDEX": [
         "S23_NIFTY_INTERNAL_PAPER_A"
       ],
@@ -42,12 +61,20 @@
       ],
       "NSE:RELIANCE-EQ": [
         "S22_RELIANCE_INTERNAL_PAPER_A"
+      ],
+      "NSE:TCS-EQ": [
+        "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A"
       ]
     }
   },
   "schema_version": "tfis.live_supervisor.subscription_owner_state.v1",
-  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER",
+  "session_id": "NSE:2026-08-05:UNIFIED_INTERNAL_PAPER",
   "underlyings": {
+    "NSE:INFY-EQ": {
+      "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A": [
+        "UNDERLYING_OBSERVATION"
+      ]
+    },
     "NSE:NIFTY50-INDEX": {
       "S23_NIFTY_INTERNAL_PAPER_A": [
         "UNDERLYING_OBSERVATION"
@@ -60,6 +87,11 @@
     },
     "NSE:RELIANCE-EQ": {
       "S22_RELIANCE_INTERNAL_PAPER_A": [
+        "UNDERLYING_OBSERVATION"
+      ]
+    },
+    "NSE:TCS-EQ": {
+      "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A": [
         "UNDERLYING_OBSERVATION"
       ]
     }

@@ -6,6 +6,95 @@ way.
 
 ## Immediate Next Priorities
 
+0.6748397. `REBUILD_RESTART_AND_OPERATOR_SCREENS_FROM_AUTHORITATIVE_LEDGER_TRUTH`
+   The supervisor now writes accepted internal-paper client orders, later
+   fills, entry `PositionCycle` transitions, and open-trade accounting facts
+   into the SQLite ledger. The next production step is to use that ledger as
+   the rebuild source after restart so `Orders`, `Open Positions`, history,
+   and recovery views no longer depend primarily on checkpoint state.
+
+0.6748396. `CLOSE_THE_AUTHORITATIVE_INTERNAL_PAPER_LEDGER_GAP`
+   The operator-facing ledger is now clearer: account labels are readable and
+   the `Orders` / `Open Positions` rows carry trader-usable fields such as
+   side, lots, target, SL, and entry time. The next production-grade blocker
+   is not cosmetic. The live supervisor still projects internal-paper order
+   and position state without persisting the full authoritative
+   order/fill/position/accounting ledger into SQLite. Close that gap so
+   restart recovery, dashboard history, and persisted truth remain aligned for
+   multiday operation.
+
+0.6748395. `RESTART_THE_PATCHED_RUNTIME_BEFORE_JUDGING_ORDER_AND_POSITION_MOVEMENT`
+   The unified read model now separates working orders from open positions and
+   preserves entry-time / lot / target / SL fields for operator review. The
+   next check is on a patched runtime session, not on an older already-running
+   snapshot. If the active dashboard/supervisor process predates this patch,
+   restart that process before judging whether filled paper orders are moving
+   into `Open Positions` and whether only unfilled orders remain in
+   `Orders`.
+
+0.674839. `CLOSE_THE_LIVE_MARKET_INTERNAL_PAPER_RUNTIME_GAPS_BEFORE_RESUMING_DASHBOARD_WORK`
+   Dashboard redesign is intentionally paused. The governing path is now the
+   Wednesday, August 5, 2026 live-market internal-paper bundle under
+   `reports/live_market_internal_paper/` plus the new launcher
+   `scripts/run_live_market_internal_paper.py`. The next exact backend work is
+   to remove the live hot-path blocker from
+   `provider_symbol_master_nsefo` inside the unified supervisor and to close
+   the stale dashboard analytics account-risk mismatch for `S21` and `S23`
+   so the live snapshot tells one internally consistent story.
+
+0.6748385. `USE_THE_SINGLE_PREPARE_COMMAND_AS_THE_OPERATOR_ENTRY_POINT`
+   For the live-market internal-paper lane, stop using a hand-built series of
+   separate commands as the primary operator surface. Use:
+   `.\.venv\Scripts\python.exe scripts\run_live_market_internal_paper.py --mode live-market-internal-paper --enabled-profile baseline --dashboard-port 8766 --poll-seconds 5 --session-date 2026-08-05 --reconstruct-if-late prepare`
+   This keeps FYERS authentication, diagnostics, preflight, and live-market
+   report export aligned to one command while broker order authority remains
+   `NONE`.
+
+0.674838. `CLOSE_THE_REMAINING_DECISION_FACT_DEPTH_GAPS_NOW_THAT_QUEUE_AND_WORKBENCH_ARE_SEPARATE`
+   The dashboard routing defect is corrected: `Opportunity Queue` and
+   `Decision Workbench` now use distinct operator hashes and selected-instance
+   state, and the fast-track development snapshot now emits the queue
+   projection structures it previously lacked. The next dashboard work should
+   therefore focus on deeper immutable backend fact emission for Monthly
+   Status derivation, branch mapping, formula arithmetic, and ORPT/RC
+   comparison detail instead of more route or shell changes.
+
+0.674837. `CONTINUE_DASHBOARD_WORK_AS_OPERATOR_WORKFLOWS_NOT_PAGE_ACCUMULATION`
+   The next dashboard improvements should now optimize for the six operator
+   workflows: monitor the system, review opportunities, validate one
+   decision, manage positions, review history, and configure the platform.
+   Prioritize explanation quality, information prioritization, state honesty,
+   and cleaner operator wording over adding more independent surfaces.
+
+0.674836. `RUN_THE_WEDNESDAY_AUGUST_5_2026_S22_MULTI_STOCK_DEVELOPMENT_PROFILE_FROM_THE_PREPARED_PLAN`
+   The controlled S22 multi-stock development registry now has `RELIANCE`,
+   `TCS`, and `INFY` enabled together using August 4, 2026 post-close
+   read-only evidence as the tomorrow pre-market plan basis. Use
+   `config/s22_multi_stock_registry.yaml`,
+   `reports/fast_track_development_s22_multistock/tomorrow_s22_premarket_plan_2026-08-05.json`,
+   and `tmp/tfis_dashboard_s22_multistock_tomorrow/` as the operator review
+   surface for the Wednesday, August 5, 2026 controlled development-only
+   session. Keep this scoped to development internal paper; do not treat it as
+   the main unified baseline registry.
+
+0.674835. `DEEPEN_BACKEND_FACTS_BEHIND_THE_NEW_SCALABLE_STRATEGIES_SURFACE`
+   The `Strategies` page now scales through strategy-definition summaries,
+   compact instance lists, preserved list context, and selected-instance
+   workbench review. The next highest-value improvement is deeper immutable
+   backend fact emission for Monthly Status derivation, branch mapping,
+   contract-selection evaluation, and protection/lifecycle formulas so the
+   scalable workbench can explain steps rather than mainly final outputs.
+
+0.674834. `USE_THE_V3_STRATEGY_DEFINITION_AND_INSTANCE_LIST_SURFACE_AS_THE_OPERATOR_DEFAULT`
+   The governing `Strategies` experience is now the scalable v3 layout:
+   strategy-definition summary -> compact instance list -> selected-instance
+   workbench. Use that path, not the old flat per-instance card pattern, when
+   reviewing S21/S22/S23 and future multi-stock strategy families. Governing
+   artifacts are now the frontend under `dashboard/frontend/` plus
+   `reports/dashboard_v3/strategy_definition_summary.json`,
+   `reports/dashboard_v3/s22_30_stock_instance_list.json`, and
+   `reports/dashboard_v3/strategy_navigation_result.json`.
+
 0.67483. `DEEPEN_BACKEND_FACTS_BEHIND_DASHBOARD_V3`
    The frontend product experience is now split into Operator and Engineering
    modes and is good enough to expose the remaining truth gap honestly. The

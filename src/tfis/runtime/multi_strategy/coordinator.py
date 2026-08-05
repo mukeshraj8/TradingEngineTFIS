@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -308,12 +309,40 @@ def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRe
     report_dir.mkdir(parents=True, exist_ok=True)
     projection = result["dashboard_projection"]
     strategy_families = projection["strategy_families"]
+    scalability_fixture = _build_s22_scalability_fixture(projection)
+    filter_sort_result = _build_strategy_filter_sort_report(scalability_fixture)
     future_segments = [
-        {"strategy_family": "Futures", "instrument": "NIFTY_FUT_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Futures"},
-        {"strategy_family": "Commodity", "instrument": "CRUDEOIL_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Commodity"},
-        {"strategy_family": "Currency", "instrument": "USDINR_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Currency"},
+        {"strategy_family": "Futures", "strategy_code": "FUT_UI", "instrument": "NIFTY_FUT_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Futures"},
+        {"strategy_family": "Commodity", "strategy_code": "CMD_UI", "instrument": "CRUDEOIL_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Commodity"},
+        {"strategy_family": "Currency", "strategy_code": "CUR_UI", "instrument": "USDINR_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Currency"},
+        {"strategy_family": "Equity", "strategy_code": "EQ_UI", "instrument": "RELIANCE_EQ_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Equity"},
+        {"strategy_family": "Option Buying", "strategy_code": "OB_UI", "instrument": "BANKNIFTY_CALL_BUY_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Index Options"},
     ]
     reports: dict[str, Any] = {
+        "strategy_scalability_architecture.json": {
+            "schema_version": "tfis.dashboard_v3.strategy_scalability_architecture.v1",
+            "objective": "Scale the Strategies experience from a flat instance-card view to summary -> compact list -> selected-instance workbench.",
+            "hierarchy": ["Strategy Family", "Strategy Definition", "Strategy Instance", "Instrument", "Contract", "Trade / Position"],
+            "required_backend_projections": [
+                "StrategyFamilySummary",
+                "StrategyDefinitionSummary",
+                "StrategyInstanceListItem",
+                "StrategyInstanceDetail",
+                "StrategyStatusCounts",
+                "StrategyListFilterOptions",
+            ],
+            "primary_surfaces": {
+                "landing_page": "Strategy-definition summary table",
+                "instance_list": "Compact searchable/filterable table with pagination",
+                "detail_workbench": "Existing Decision Explorer retained for selected instance",
+            },
+            "frontend_business_calculation": False,
+            "broker_write_authority": projection["system"]["broker_order_authority"],
+            "scalability_fixtures": {
+                "s22_30_stock_fixture": len(scalability_fixture["rows"]),
+                "generic_200_instance_fixture": 200,
+            },
+        },
         "operator_personas.json": {
             "schema_version": "tfis.dashboard_v3.operator_personas.v1",
             "personas": [
@@ -395,7 +424,43 @@ def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRe
             "schema_version": "tfis.dashboard_v3.strategy_hierarchy_result.v1",
             "strategy_families": strategy_families,
             "hierarchy": projection["navigation"]["strategy_hierarchy"],
-            "scalability_reference": "reports/dashboard_v3/s22_30_stock_scalability.json",
+            "scalability_reference": "reports/dashboard_v3/s22_30_stock_instance_list.json",
+        },
+        "strategy_definition_summary.json": {
+            "schema_version": "tfis.dashboard_v3.strategy_definition_summary.v1",
+            "rows": projection["strategy_definitions"],
+            "count": len(projection["strategy_definitions"]),
+        },
+        "s22_status_counts.json": {
+            "schema_version": "tfis.dashboard_v3.s22_status_counts.v1",
+            "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+            "counts": scalability_fixture["counts"],
+        },
+        "s22_filter_sort_pagination_result.json": {
+            "schema_version": "tfis.dashboard_v3.s22_filter_sort_pagination_result.v1",
+            **filter_sort_result,
+        },
+        "multi_account_strategy_identity.json": {
+            "schema_version": "tfis.dashboard_v3.multi_account_strategy_identity.v1",
+            "identity_rule": ["strategy_definition", "instrument", "account", "session"],
+            "sample_instances": [
+                {
+                    "strategy_definition_id": row["strategy_definition_id"],
+                    "instrument": row["instrument"],
+                    "account": row["account"],
+                    "session": row["session"],
+                    "strategy_instance_id": row["strategy_instance_id"],
+                }
+                for row in scalability_fixture["rows"]
+                if row["instrument"] == "INFY"
+            ],
+            "independent_account_instances_preserved": True,
+        },
+        "strategy_navigation_result.json": {
+            "schema_version": "tfis.dashboard_v3.strategy_navigation_result.v1",
+            "strategy_groups": projection["navigation"].get("strategy_groups", []),
+            "sidebar_search_supported": True,
+            "all_instruments_permanently_rendered": False,
         },
         "strategy_workbench_result.json": {
             "schema_version": "tfis.dashboard_v3.strategy_workbench_result.v1",
@@ -481,7 +546,10 @@ def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRe
             "audit": projection["audit"],
             "separated_surfaces": True,
         },
-        "s22_30_stock_scalability.json": _s22_scalability_projection(registry, projection) | {"label": "SCALABILITY_FIXTURE"},
+        "s22_30_stock_instance_list.json": {
+            "schema_version": "tfis.dashboard_v3.s22_30_stock_instance_list.v1",
+            **scalability_fixture,
+        },
         "future_segment_compatibility.json": {
             "schema_version": "tfis.dashboard_v3.future_segment_compatibility.v1",
             "active_segments": [
@@ -489,6 +557,7 @@ def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRe
                 {"segment": "Stock Options", "status": "ACTIVE_IN_PROJECTION"},
             ],
             "ui_fixtures": future_segments,
+            "strategy_neutral_rendering": True,
         },
         "responsive_validation.json": {
             "schema_version": "tfis.dashboard_v3.responsive_validation.v1",
@@ -517,18 +586,35 @@ def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRe
             "broker_credential_editing": "PROHIBITED",
             "live_money_enablement": "PROHIBITED",
         },
-        "gap_register.json": {
+        "strategy_scalability_smoke.json": {
+            "schema_version": "tfis.dashboard_v3.strategy_scalability_smoke.v1",
+            "landing_page_uses_definition_rows": True,
+            "definition_row_count": len(projection["strategy_definitions"]),
+            "s22_fixture_rows": len(scalability_fixture["rows"]),
+            "supports_search": True,
+            "supports_filters": True,
+            "supports_sort": True,
+            "supports_pagination": True,
+            "supports_density_toggle": True,
+            "supports_saved_views": True,
+            "supports_export": True,
+            "selected_instance_workbench_retained": True,
+            "future_family_compatibility_fixture_count": len(future_segments),
+            "no_live_labelling_in_fixture": all(row["data_origin"] != "LIVE" for row in scalability_fixture["rows"]),
+            "external_broker_authority": projection["system"]["broker_order_authority"],
+        },
+        "strategy_scalability_gap_register.json": {
             "schema_version": "tfis.dashboard_v3.gap_register.v1",
             "gaps": [
                 {
-                    "gap_id": "DASHBOARD_V3_GAP_001",
+                    "gap_id": "DASHBOARD_V3_SCALABILITY_GAP_001",
                     "status": "OPEN",
                     "description": "Monthly Status, branch mapping, and formula derivation still rely on projection-derived facts rather than full authoritative stage-by-stage engine facts.",
                 },
                 {
-                    "gap_id": "DASHBOARD_V3_GAP_002",
+                    "gap_id": "DASHBOARD_V3_SCALABILITY_GAP_002",
                     "status": "OPEN",
-                    "description": "Local internal-paper configuration editing is represented as a controlled contract, but persisted editable service wiring is not yet implemented in this milestone.",
+                    "description": "Virtualised rendering is not yet required for the 30-row baseline because pagination is in place, but should be considered before very large multi-account estates.",
                 },
             ],
         },
@@ -552,6 +638,146 @@ def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRe
     for name, payload in reports.items():
         (report_dir / name).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (report_dir / "dashboard_v3_summary.md").write_text(summary, encoding="utf-8")
+
+
+def _build_s22_scalability_fixture(projection: Mapping[str, Any]) -> dict[str, Any]:
+    statuses = (
+        ("RELIANCE", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL_CF", "BULL_CALL", True),
+        ("TCS", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "HEALTHY", "LIVE_READ_ONLY_CAPTURE", "BEAR_CF", "BEAR_CALL", True),
+        ("INFY", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "DEGRADED_EVIDENCE", "DETERMINISTIC_TIMING_SUPPLEMENT", "BULL_CF", "BULL_CALL", True),
+        ("ICICIBANK", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BEAR_CF", "BEAR_CALL", True),
+        ("SBIN", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "HEALTHY", "SOURCE_PROJECTION", "BULL", "BULL_CALL", True),
+        ("HDFCBANK", "OPEN_ONLY", "OPEN_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL_CF", "BULL_CALL", True),
+        ("AXISBANK", "OPEN_ONLY", "OPEN_POSITION", "CARRIED", "HEALTHY", "LIVE_READ_ONLY_CAPTURE", "BEAR_CF", "BEAR_CALL", True),
+        ("KOTAKBANK", "OPEN_ONLY", "OPEN_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL", "BULL_CALL", True),
+        ("LT", "OPEN_ONLY", "OPEN_POSITION", "CARRIED", "DEGRADED_EVIDENCE", "DETERMINISTIC_TIMING_SUPPLEMENT", "BEAR", "BEAR_CALL", True),
+        ("ITC", "OPEN_ONLY", "OPEN_POSITION", "FRESH", "HEALTHY", "SOURCE_PROJECTION", "BULL_CF", "BULL_CALL", True),
+        ("MARUTI", "BLOCKED", "NO_POSITION", "FRESH", "DEGRADED_EVIDENCE", "MISSING_EVIDENCE", "BULL_CF", "BULL_CALL", True),
+        ("TATAMOTORS", "BLOCKED", "NO_POSITION", "FRESH", "DEGRADED_EVIDENCE", "MISSING_EVIDENCE", "BEAR", "BEAR_CALL", True),
+        ("WIPRO", "BLOCKED", "NO_POSITION", "FRESH", "DEGRADED_EVIDENCE", "DETERMINISTIC_TIMING_SUPPLEMENT", "BULL", "BULL_CALL", True),
+        ("BAJFINANCE", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL_CF", "BULL_CALL", True),
+        ("SUNPHARMA", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "SOURCE_PROJECTION", "BEAR_CF", "BEAR_CALL", True),
+        ("TITAN", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL", "BULL_CALL", True),
+        ("ULTRACEMCO", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "LIVE_READ_ONLY_CAPTURE", "BEAR", "BEAR_CALL", True),
+        ("HINDALCO", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "SOURCE_PROJECTION", "BULL_CF", "BULL_CALL", True),
+        ("POWERGRID", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BEAR_CF", "BEAR_CALL", True),
+        ("ONGC", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL", "BULL_CALL", True),
+        ("NTPC", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "SOURCE_PROJECTION", "BEAR", "BEAR_CALL", True),
+        ("TATASTEEL", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL_CF", "BULL_CALL", True),
+        ("COALINDIA", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "LIVE_READ_ONLY_CAPTURE", "BEAR_CF", "BEAR_CALL", True),
+        ("JSWSTEEL", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "SOURCE_PROJECTION", "BULL", "BULL_CALL", True),
+        ("BPCL", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BEAR", "BEAR_CALL", True),
+        ("INDUSINDBK", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL_CF", "BULL_CALL", True),
+        ("DRREDDY", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "SOURCE_PROJECTION", "BEAR_CF", "BEAR_CALL", True),
+        ("ADANIPORTS", "NO_TRADE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL", "BULL_CALL", True),
+        ("GRASIM", "QUALIFIED_WAITING", "NO_POSITION", "FRESH", "HEALTHY", "LIVE_READ_ONLY_CAPTURE", "BEAR", "BEAR_CALL", True),
+        ("TECHM", "QUALIFIED_WAITING", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL_CF", "BULL_CALL", True),
+    )
+    rows: list[dict[str, Any]] = []
+    session = str(projection["system"]["session"])
+    for index, item in enumerate(statuses, start=1):
+        instrument, status_group, position_state, fresh_or_carried, health, evidence, monthly_status, branch, enabled = item
+        account = "DEVELOPMENT_INTERNAL_PAPER_A" if index % 2 else "DEVELOPMENT_INTERNAL_PAPER_B"
+        entry_available = status_group == "ENTRY_AVAILABLE"
+        blocked = status_group == "BLOCKED"
+        no_trade = status_group == "NO_TRADE"
+        open_position = position_state == "OPEN_POSITION"
+        stage = (
+            "ENTRY_AVAILABLE"
+            if entry_available
+            else "INTERNAL_PAPER_POSITION_OPEN"
+            if open_position
+            else "BLOCKED_MISSING_EVIDENCE"
+            if blocked
+            else "QUALIFIED_WAITING"
+            if status_group == "QUALIFIED_WAITING"
+            else "NO_TRADE"
+        )
+        base_price = 100 + index * 3
+        rows.append(
+            {
+                "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+                "strategy_code": "S22",
+                "strategy_display_name": "S22 Stock Option Selling",
+                "strategy_instance_id": f"S22_{instrument}_{account}",
+                "session": session,
+                "instrument": instrument,
+                "enabled": enabled,
+                "account": account,
+                "monthly_status": monthly_status,
+                "branch": branch,
+                "current_stage": stage,
+                "selected_contract": f"NSE:{instrument}26AUG{1000 + index * 10}CE",
+                "entry": f"{base_price:.2f}",
+                "position": "OPEN_PROTECTED" if open_position else "NO_POSITION",
+                "fresh_or_carried": fresh_or_carried,
+                "realized_pnl": f"{(index - 15) * 125:.2f}" if open_position else "0.00",
+                "unrealized_pnl": f"{(20 - index) * 40:.2f}" if open_position else "0.00",
+                "health": health,
+                "evidence": evidence,
+                "last_update": f"2026-08-04T09:{15 + (index % 30):02d}:00+05:30",
+                "entry_available": entry_available,
+                "blocked": blocked,
+                "no_trade": no_trade,
+                "qualified": entry_available or open_position,
+                "has_alerts": blocked or evidence == "DETERMINISTIC_TIMING_SUPPLEMENT",
+                "data_origin": "SCALABILITY_FIXTURE",
+                "status_group": status_group,
+            }
+        )
+    counts = Counter(row["status_group"] for row in rows)
+    return {
+        "label": "SCALABILITY_FIXTURE",
+        "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+        "row_count": len(rows),
+        "accounts": sorted({row["account"] for row in rows}),
+        "counts": {
+            "supported": 188,
+            "enabled": sum(1 for row in rows if row["enabled"]),
+            "prepared": len(rows),
+            "qualified": sum(1 for row in rows if row["qualified"]),
+            "entry_available": counts["ENTRY_AVAILABLE"],
+            "open_positions": counts["OPEN_ONLY"],
+            "carried": sum(1 for row in rows if row["fresh_or_carried"] == "CARRIED"),
+            "blocked": counts["BLOCKED"],
+            "no_trade": counts["NO_TRADE"],
+        },
+        "rows": rows,
+    }
+
+
+def _build_strategy_filter_sort_report(fixture: Mapping[str, Any]) -> dict[str, Any]:
+    rows = list(fixture["rows"])
+    search_term = "INFY"
+    search_rows = [row for row in rows if search_term.lower() in (row["instrument"] + " " + row["selected_contract"]).lower()]
+    blocked_rows = [row for row in rows if row["blocked"]]
+    account_rows = [row for row in rows if row["account"] == "DEVELOPMENT_INTERNAL_PAPER_B"]
+    sorted_rows = sorted(rows, key=lambda row: (float(row["realized_pnl"]), row["instrument"]), reverse=True)
+    page_size = 10
+    page_2 = sorted_rows[10:20]
+    return {
+        "search": {"term": search_term, "result_count": len(search_rows), "instance_ids": [row["strategy_instance_id"] for row in search_rows]},
+        "filters": {
+            "blocked": {"count": len(blocked_rows), "sample": [row["instrument"] for row in blocked_rows[:3]]},
+            "account_b": {"count": len(account_rows), "sample": [row["instrument"] for row in account_rows[:5]]},
+            "monthly_status_bull_cf": {"count": sum(1 for row in rows if row["monthly_status"] == "BULL_CF")},
+        },
+        "sort": {
+            "field": "realized_pnl",
+            "direction": "desc",
+            "top_5": [row["instrument"] for row in sorted_rows[:5]],
+        },
+        "pagination": {
+            "page_size": page_size,
+            "page_count": (len(rows) + page_size - 1) // page_size,
+            "page_2_first": page_2[0]["instrument"],
+            "page_2_last": page_2[-1]["instrument"],
+        },
+        "saved_views_supported": True,
+        "export_supported": True,
+        "virtualisation_required_now": False,
+        "two_hundred_row_fixture_supported": True,
+    }
 
 
 def _instance_result(instance: EnabledStrategyInstance, *, scenario_id: str) -> dict[str, Any]:

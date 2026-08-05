@@ -1,62 +1,65 @@
 {
-  "consecutive_overruns": 0,
+  "consecutive_overruns": 1,
   "current_cycle": {
-    "captured_at": "2026-08-04T12:15:20.327502+05:30",
-    "consecutive_overruns": 0,
-    "cycle_duration_ms": 520.448,
-    "final_state": "LATE_START_NO_NEW_ENTRY",
-    "iteration": 2727,
-    "overrun_ms": 0.0,
+    "captured_at": "2026-08-05T17:02:05.850789+05:30",
+    "consecutive_overruns": 1,
+    "cycle_duration_ms": 15024.912,
+    "final_state": "STOPPED",
+    "iteration": 1,
+    "overrun_ms": 10024.912,
     "poll_seconds": 5.0,
     "stage_metrics": [
       {
         "details": {},
         "duration_ms": 0.0,
-        "ended_at": "2026-08-04T12:15:20.327502+05:30",
+        "ended_at": "2026-08-05T17:02:05.850789+05:30",
         "scope": "SESSION",
         "stage": "cycle_start",
-        "started_at": "2026-08-04T12:15:20.327502+05:30",
+        "started_at": "2026-08-05T17:02:05.850789+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {
+          "refresh_recovered": false,
+          "status": "AUTHENTICATED"
+        },
+        "duration_ms": 819.796,
+        "ended_at": "2026-08-05T17:02:06.671593+05:30",
+        "scope": "SESSION",
+        "stage": "broker_authentication",
+        "started_at": "2026-08-05T17:02:05.851797+05:30",
         "status": "EXECUTED"
       },
       {
         "details": {},
-        "duration_ms": 0.0,
-        "ended_at": "2026-08-04T12:15:20.327502+05:30",
-        "scope": "SESSION",
-        "stage": "broker_authentication",
-        "started_at": "2026-08-04T12:15:20.327502+05:30",
-        "status": "CACHED"
-      },
-      {
-        "details": {},
-        "duration_ms": 0.0,
-        "ended_at": "2026-08-04T12:15:20.327502+05:30",
+        "duration_ms": 3802.298,
+        "ended_at": "2026-08-05T17:02:10.506900+05:30",
         "scope": "SESSION",
         "stage": "recovery_snapshot",
-        "started_at": "2026-08-04T12:15:20.327502+05:30",
-        "status": "CACHED"
+        "started_at": "2026-08-05T17:02:06.704602+05:30",
+        "status": "EXECUTED"
       },
       {
         "details": {
           "status": "SUCCESS",
-          "symbol_count": 3
+          "symbol_count": 34
         },
-        "duration_ms": 127.051,
-        "ended_at": "2026-08-04T12:15:20.495429+05:30",
+        "duration_ms": 449.352,
+        "ended_at": "2026-08-05T17:02:10.956336+05:30",
         "scope": "SESSION",
         "stage": "provider_underlying_quotes",
-        "started_at": "2026-08-04T12:15:20.368378+05:30",
+        "started_at": "2026-08-05T17:02:10.506984+05:30",
         "status": "EXECUTED"
       },
       {
         "details": {
-          "record_count": 75161
+          "record_count": 75513
         },
         "duration_ms": 0.0,
-        "ended_at": "2026-08-04T12:15:20.327502+05:30",
+        "ended_at": "2026-08-05T17:02:05.850789+05:30",
         "scope": "SESSION",
         "stage": "provider_symbol_master_nsefo",
-        "started_at": "2026-08-04T12:15:20.327502+05:30",
+        "started_at": "2026-08-05T17:02:05.850789+05:30",
         "status": "CACHED"
       },
       {
@@ -64,87 +67,112 @@
           "status": "SUCCESS",
           "symbol": "NSE:RELIANCE26AUG1260CE"
         },
-        "duration_ms": 205.645,
-        "ended_at": "2026-08-04T12:15:20.701989+05:30",
+        "duration_ms": 93.723,
+        "ended_at": "2026-08-05T17:02:14.614368+05:30",
         "scope": "S22_RELIANCE_INTERNAL_PAPER_A",
         "stage": "provider_selected_contract_quote",
-        "started_at": "2026-08-04T12:15:20.496344+05:30",
+        "started_at": "2026-08-05T17:02:14.520645+05:30",
         "status": "EXECUTED"
       },
       {
         "details": {
+          "status": "SUCCESS",
           "underlying": "RELIANCE"
         },
-        "duration_ms": 0.0,
-        "ended_at": "2026-08-04T12:15:20.327502+05:30",
+        "duration_ms": 119.269,
+        "ended_at": "2026-08-05T17:02:14.741498+05:30",
         "scope": "S22_RELIANCE_INTERNAL_PAPER_A",
         "stage": "provider_option_chain",
-        "started_at": "2026-08-04T12:15:20.327502+05:30",
-        "status": "CACHED"
-      },
-      {
-        "details": {},
-        "duration_ms": 12.367,
-        "ended_at": "2026-08-04T12:15:20.741966+05:30",
-        "scope": "SESSION",
-        "stage": "dashboard_projection_build",
-        "started_at": "2026-08-04T12:15:20.729599+05:30",
-        "status": "EXECUTED"
-      },
-      {
-        "details": {},
-        "duration_ms": 1.119,
-        "ended_at": "2026-08-04T12:15:20.743806+05:30",
-        "scope": "SESSION",
-        "stage": "dashboard_snapshot_write",
-        "started_at": "2026-08-04T12:15:20.742687+05:30",
-        "status": "EXECUTED"
-      },
-      {
-        "details": {},
-        "duration_ms": 1.516,
-        "ended_at": "2026-08-04T12:15:20.759878+05:30",
-        "scope": "SESSION",
-        "stage": "checkpoint_write",
-        "started_at": "2026-08-04T12:15:20.758362+05:30",
-        "status": "EXECUTED"
-      },
-      {
-        "details": {},
-        "duration_ms": 88.068,
-        "ended_at": "2026-08-04T12:15:20.847998+05:30",
-        "scope": "SESSION",
-        "stage": "sqlite_runtime_persistence",
-        "started_at": "2026-08-04T12:15:20.759930+05:30",
+        "started_at": "2026-08-05T17:02:14.622229+05:30",
         "status": "EXECUTED"
       },
       {
         "details": {
-          "cycle_duration_ms": 520.448,
+          "status": "SUCCESS",
+          "symbol": "NSE:TCS26AUG2380CE"
+        },
+        "duration_ms": 293.225,
+        "ended_at": "2026-08-05T17:02:15.426739+05:30",
+        "scope": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+        "stage": "provider_selected_contract_quote",
+        "started_at": "2026-08-05T17:02:15.133514+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {
+          "status": "SUCCESS",
+          "symbol": "NSE:INFY26AUG1140CE"
+        },
+        "duration_ms": 113.484,
+        "ended_at": "2026-08-05T17:02:16.013819+05:30",
+        "scope": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+        "stage": "provider_selected_contract_quote",
+        "started_at": "2026-08-05T17:02:15.900335+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {},
+        "duration_ms": 1655.544,
+        "ended_at": "2026-08-05T17:02:19.629261+05:30",
+        "scope": "SESSION",
+        "stage": "dashboard_projection_build",
+        "started_at": "2026-08-05T17:02:17.973717+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {},
+        "duration_ms": 4.147,
+        "ended_at": "2026-08-05T17:02:19.634437+05:30",
+        "scope": "SESSION",
+        "stage": "dashboard_snapshot_write",
+        "started_at": "2026-08-05T17:02:19.630290+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {},
+        "duration_ms": 13.482,
+        "ended_at": "2026-08-05T17:02:19.835110+05:30",
+        "scope": "SESSION",
+        "stage": "checkpoint_write",
+        "started_at": "2026-08-05T17:02:19.821628+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {},
+        "duration_ms": 1040.734,
+        "ended_at": "2026-08-05T17:02:20.875903+05:30",
+        "scope": "SESSION",
+        "stage": "sqlite_runtime_persistence",
+        "started_at": "2026-08-05T17:02:19.835169+05:30",
+        "status": "EXECUTED"
+      },
+      {
+        "details": {
+          "cycle_duration_ms": 15024.912,
           "poll_interval_seconds": 5.0
         },
-        "duration_ms": 520.587,
-        "ended_at": "2026-08-04T12:15:20.848089+05:30",
+        "duration_ms": 15025.193,
+        "ended_at": "2026-08-05T17:02:20.875982+05:30",
         "scope": "SESSION",
         "stage": "cycle_total",
-        "started_at": "2026-08-04T12:15:20.327502+05:30",
+        "started_at": "2026-08-05T17:02:05.850789+05:30",
         "status": "EXECUTED"
       }
     ]
   },
   "cycle_duration_ms": {
-    "maximum": 3529.865,
-    "median": 461.223,
-    "minimum": 314.378,
-    "p90": 881.818,
-    "p95": 2951.893
+    "maximum": 15024.912,
+    "median": 15024.912,
+    "minimum": 15024.912,
+    "p90": 15024.912,
+    "p95": 15024.912
   },
   "event_count": 3,
-  "iterations": 2727,
-  "overrun_count": 0,
+  "iterations": 1,
+  "overrun_count": 1,
   "poll_seconds": 5.0,
   "production_scale_claimed": false,
-  "projection_hash": "18765958761714e75ff621d24141afcd2d72179b2b973c44c6ca1aadbe9c0c15",
-  "sample_count": 241,
+  "projection_hash": "6f1d80e5fc8fe6e4a19ec1a636c1953582de9c28a81261660ce77c71c9cc4fd5",
+  "sample_count": 1,
   "schema_version": "tfis.live_supervisor.performance_metrics.v2"
 }

@@ -1,11 +1,9 @@
 {
-  "auth_status": "AUTHENTICATED",
-  "captured_at": "2026-08-04T12:24:22.450405+05:30",
-  "db_integrity_status": "PASS",
+  "captured_at": "2026-08-05T17:01:36.470412+05:30",
   "reasons": [],
-  "recovery_status": "RECONCILIATION_REQUIRED",
-  "registry_hash": "0cb84e07d2b92a0cc8dbb9cb77c34d7a4501d67c0031a9ea11b07e7dbe3ea221",
+  "reported_at": "2026-08-05T17:02:05.850789+05:30",
   "schema_version": "tfis.live_supervisor.complete_session_preflight.v1",
-  "session_date": "2026-08-04",
+  "session_id": "NSE:2026-08-05:UNIFIED_INTERNAL_PAPER",
+  "source": "STORED_EXPLICIT_PREFLIGHT_REPORT",
   "verdict": "READY_FOR_COMPLETE_UNIFIED_SESSION"
 }

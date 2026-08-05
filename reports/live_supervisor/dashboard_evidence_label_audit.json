@@ -1,18 +1,17 @@
 {
   "capture_classification_present": true,
-  "captured_at": "2026-08-04T12:15:20.327502+05:30",
-  "meets_required_labels": true,
+  "captured_at": "2026-08-05T17:02:05.850789+05:30",
+  "meets_required_labels": false,
   "misrepresents_fixture_as_live": false,
   "projection_labels": [
-    "DETERMINISTIC_TIMING_SUPPLEMENT",
-    "FIXTURE_BACKED",
+    "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+    "COMPLETE_CAPTURE",
     "FYERS_METADATA_CAPTURED",
     "INTERNAL_PAPER_SIMULATED",
     "LIVE_FYERS_READ_ONLY_CAPTURE",
+    "LIVE_READ_ONLY_RUNTIME_SELECTION",
     "LIVE_SUPERVISOR_OBSERVED",
-    "MISSED_BEFORE_SUPERVISOR_START",
-    "NO_EXTERNAL_ORDER_AUTHORITY",
-    "PARTIAL_CAPTURE"
+    "NO_EXTERNAL_ORDER_AUTHORITY"
   ],
   "required_capture_classification_any_of": [
     "PARTIAL_CAPTURE",
@@ -29,5 +28,5 @@
     "NO_EXTERNAL_ORDER_AUTHORITY"
   ],
   "schema_version": "tfis.live_supervisor.dashboard_evidence_label_audit.v1",
-  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER"
+  "session_id": "NSE:2026-08-05:UNIFIED_INTERNAL_PAPER"
 }

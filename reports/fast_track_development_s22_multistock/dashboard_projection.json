@@ -23,7 +23,7 @@
   ],
   "alerts": [],
   "analytics": {
-    "decision_explanation_facts": 12,
+    "decision_explanation_facts": 15,
     "no_order": 0,
     "processed_internal_paper": 3,
     "strategy_count": 3
@@ -40,11 +40,99 @@
     "open_positions": 3,
     "plans_prepared": 3,
     "realized_pnl": "0.00",
+    "strategy_definition_summaries": [
+      {
+        "blocked_count": 0,
+        "carried_count": 0,
+        "display_name": "S22",
+        "enabled_count": 3,
+        "entry_available_count": 3,
+        "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "family": "Unknown",
+        "health": "HEALTHY",
+        "last_update": "",
+        "margin_usage_pct": 54,
+        "no_trade_count": 0,
+        "open_count": 3,
+        "prepared_count": 3,
+        "qualified_count": 3,
+        "realized_pnl": "0.00",
+        "segment": "Unknown",
+        "strategy_code": "S22",
+        "strategy_definition_id": "S22",
+        "supported_count": 3,
+        "unrealized_pnl": "-19293.75"
+      }
+    ],
     "system_state": "HEALTHY",
     "unprotected_positions": 0,
     "unrealized_pnl": "-19293.75"
   },
   "decision_explanations": [
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
+        "derivation": {
+          "available": false,
+          "borrowed_window_status": null,
+          "checked_lookback_windows": null,
+          "current_window_direct_status": null,
+          "evaluation_timestamp": null,
+          "formula_text": "Monthly Status came from the generic monthly-status engine, but this snapshot does not include the full monthly reference packet for this instrument.",
+          "lookback_used": null,
+          "reason": "Final Monthly Status is BEAR, but the step-by-step monthly reference packet was not persisted for this instrument in the current fast-track snapshot.",
+          "references": {},
+          "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+          "source_path": null,
+          "steps": [
+            {
+              "detail": "This fast-track snapshot preserved the final Monthly Status value but did not persist the full monthly reference packet for this instrument.",
+              "result": "BEAR",
+              "step": 1,
+              "title": "Read the final Monthly Status from the generic engine output",
+              "values": {
+                "instrument": "INFY",
+                "monthly_status": "BEAR"
+              }
+            },
+            {
+              "detail": "TFIS uses Monthly Status first. Only after that does the strategy continue to branch mapping and contract selection.",
+              "result": "BEAR_CALL",
+              "step": 2,
+              "title": "Use that status as the first gate before branch selection",
+              "values": {
+                "selected_branch": "BEAR_CALL"
+              }
+            }
+          ],
+          "threshold_value": null,
+          "trigger_name": null,
+          "workbook_source": "MONTHLY_STATUS_ENGINE_SUMMARY_ONLY"
+        }
+      },
+      "decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:monthly",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUMMARY_ONLY",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Monthly Status came from the generic monthly-status engine, but this snapshot does not include the full monthly reference packet for this instrument.",
+      "input_values": {
+        "evaluation_timestamp": null,
+        "instrument": "INFY",
+        "monthly_references": {}
+      },
+      "instrument": "INFY",
+      "output_value": {
+        "derivation_summary": "Final Monthly Status is BEAR, but the step-by-step monthly reference packet was not persisted for this instrument in the current fast-track snapshot.",
+        "monthly_status": "BEAR"
+      },
+      "parent_decision_id": null,
+      "rejection_reason": null,
+      "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+      "stage": "MONTHLY_STATUS",
+      "strategy_instance_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "MONTHLY_STATUS_ENGINE_SUMMARY_ONLY"
+    },
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
@@ -68,7 +156,30 @@
             "underlying": "INFY"
           }
         ],
+        "evidence_origin": {
+          "contract_selection": "ACTUAL_LISTED_CHAIN_SELECTOR",
+          "current_quote": "FYERS_READ_ONLY_QUOTES",
+          "historical_reconstruction": "OPTION_INTRADAY_HISTORY_TO_BE_EVALUATED_SEPARATELY",
+          "selected_option_history": "FYERS_READ_ONLY_DAILY_HISTORY",
+          "underlying_history": "FYERS_READ_ONLY_DAILY_HISTORY"
+        },
+        "formula_catalog": {
+          "base_entry": "OPT:PRV:2DLL - 10%",
+          "original_sl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+          "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+          "revised_sl": "09:29:59 AM HH + 10%",
+          "target": "CE Entry - 60%"
+        },
         "plan_hash": "fabf3a14e6f856a928c2486fd26370ad2b750f89261c9a75c37247880ccfffb7",
+        "quote": {
+          "ask": "46.3",
+          "bid": "46",
+          "ltp": "45.9",
+          "oi": null,
+          "receipt_timestamp": "2026-08-04T16:25:09.117672+05:30",
+          "source_timestamp": "2026-08-04T05:30:00+05:30",
+          "symbol": "NSE:INFY26AUG1140CE"
+        },
         "rejected_candidates": [
           {
             "expiry": "2026-08-25",
@@ -2263,26 +2374,54 @@
             "reason": "EXPIRY_MISMATCH",
             "strike": "1640"
           }
-        ]
+        ],
+        "selected_option_references": {
+          "OPT_PRV_2DHH": "61.5500",
+          "OPT_PRV_2DLL": "34.7000",
+          "OPT_PRV_3DHH": "61.5500",
+          "OPT_PRV_3DLL": "21.6000",
+          "OPT_PRV_4DHH": "67.8000",
+          "OPT_PRV_4DLL": "21.6000"
+        },
+        "selection_report_path": "D:\\TradingEngineTFISRefactored\\reports\\contract_selection\\actual_strike_set_contract.json",
+        "selection_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ],
+        "workbook_row_id": "S22D"
       },
       "decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:contract",
       "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
       "evidence_quality": "SUCCESS",
       "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
-      "formula_text": "Select the first qualifying actual listed option contract from the authoritative traversal.",
+      "formula_text": "Scan actual listed contracts for the approved expiry set, then keep only the contracts that satisfy branch, option side, strike search path, OI, and premium rules before freezing one final selected contract.",
       "input_values": {
         "branch": "BEAR_CALL",
         "candidate_count": 11,
-        "monthly_status": "BEAR"
+        "market_references": {
+          "2DHH": "1180.00",
+          "2DLL": "1138.10",
+          "3DHH": "1180.00",
+          "4DHH": "1187.70",
+          "4DLL": "1107.20"
+        },
+        "monthly_status": "BEAR",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ]
       },
       "instrument": "INFY",
       "output_value": {
+        "oi": "1306000",
+        "premium": "45.9",
         "selected_contract": "NSE:INFY26AUG1140CE",
         "selected_expiry": "2026-08-25",
         "selected_option_type": "CALL",
         "selected_strike": "1140"
       },
-      "parent_decision_id": null,
+      "parent_decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:monthly",
       "rejection_reason": null,
       "rule_id": "S22.CONTRACT_SELECTION.001",
       "stage": "CONTRACT_SELECTION",
@@ -2293,7 +2432,18 @@
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
+        "formula_catalog": {
+          "base_entry": "OPT:PRV:2DLL - 10%",
+          "original_sl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+          "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+          "revised_sl": "09:29:59 AM HH + 10%",
+          "target": "CE Entry - 60%"
+        },
         "rule_matrix_version": "s22_source_closure_accepted_v1",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ],
         "workbook_row_id": "S22D"
       },
       "decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:plan",
@@ -2320,6 +2470,7 @@
       },
       "instrument": "INFY",
       "output_value": {
+        "base_entry": "31.25",
         "normalized_prices": {
           "base_entry": "31.25",
           "original_sl": "49.95",
@@ -2327,13 +2478,15 @@
           "revised_sl": "67.70",
           "target": "12.50"
         },
+        "original_sl": "49.95",
         "raw_prices": {
           "base_entry": "31.23000",
           "original_sl": "49.968000",
           "revised_entry": "34.7000",
           "revised_sl": "67.70500",
           "target": "12.492000"
-        }
+        },
+        "target": "12.50"
       },
       "parent_decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:contract",
       "rejection_reason": null,
@@ -2408,6 +2561,135 @@
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
+        "derivation": {
+          "available": true,
+          "borrowed_window_status": "BEAR_CF",
+          "checked_lookback_windows": 1,
+          "current_window_direct_status": "UNKNOWN",
+          "evaluation_timestamp": "2026-07-31T15:29:59+05:30",
+          "formula_text": "Monthly Status is derived by the generic monthly-status engine from monthly and weekly reference levels, then resolved through direct classification or lookback continuation logic.",
+          "lookback_used": true,
+          "reason": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+          "references": {
+            "CMH": 1345.9,
+            "CML": 1249.8,
+            "CWH": 1309.7,
+            "CWL": 1265.9,
+            "PMH": 1344.9,
+            "PML": 1253.2,
+            "PWH": 1345.9,
+            "PWL": 1249.8,
+            "current_price": 1307.8
+          },
+          "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+          "source_path": "reports/s22_reliance/s22_reliance_monthly_status.json",
+          "steps": [
+            {
+              "detail": "TFIS loaded the previous-month, current-month, previous-week, current-week, and current-price levels needed by the generic monthly-status engine.",
+              "result": "Reference levels loaded",
+              "step": 1,
+              "title": "Load monthly and weekly reference levels",
+              "values": {
+                "CMH": 1345.9,
+                "CML": 1249.8,
+                "CWH": 1309.7,
+                "CWL": 1265.9,
+                "PMH": 1344.9,
+                "PML": 1253.2,
+                "PWH": 1345.9,
+                "PWL": 1249.8,
+                "current_price": 1307.8
+              }
+            },
+            {
+              "detail": "The engine first asks whether the current month directly proves a bullish or bearish monthly state.",
+              "result": "UNKNOWN",
+              "step": 2,
+              "title": "Check whether the current month alone is decisive",
+              "values": {
+                "current_window_direct_status": "UNKNOWN",
+                "evaluation_timestamp": "2026-07-31T15:29:59+05:30"
+              }
+            },
+            {
+              "detail": "Current month did not decisively breach the previous month's bullish or bearish monthly thresholds.",
+              "result": "UNKNOWN",
+              "step": 3,
+              "title": "Evaluate current",
+              "values": {
+                "context_month": "2026-07",
+                "context_week": "2026-W31",
+                "threshold_value": null,
+                "trigger_name": "NO_MONTHLY_TRIGGER",
+                "used_for_resolution": false
+              }
+            },
+            {
+              "detail": "Current month low breached the bearish confirmation threshold derived from PML minus a-percent and the second b-percent contraction.",
+              "result": "BEAR_CF",
+              "step": 4,
+              "title": "Evaluate lookback 1",
+              "values": {
+                "context_month": "2026-06",
+                "context_week": "2026-W27",
+                "threshold_value": 1254.1892999999998,
+                "trigger_name": "BEAR_CF_B_THRESHOLD",
+                "used_for_resolution": true
+              }
+            },
+            {
+              "detail": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+              "result": "BEAR_CF",
+              "step": 5,
+              "title": "Lock the final Monthly Status",
+              "values": {
+                "lookback_used": true,
+                "threshold_value": 1197.4326,
+                "trigger_name": "LOOKBACK::BEAR_CF_CONTINUES"
+              }
+            }
+          ],
+          "threshold_value": 1197.4326,
+          "trigger_name": "LOOKBACK::BEAR_CF_CONTINUES",
+          "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET"
+        }
+      },
+      "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:monthly",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "DERIVATION_PACKET_AVAILABLE",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Monthly Status is derived by the generic monthly-status engine from monthly and weekly reference levels, then resolved through direct classification or lookback continuation logic.",
+      "input_values": {
+        "evaluation_timestamp": "2026-07-31T15:29:59+05:30",
+        "instrument": "RELIANCE",
+        "monthly_references": {
+          "CMH": 1345.9,
+          "CML": 1249.8,
+          "CWH": 1309.7,
+          "CWL": 1265.9,
+          "PMH": 1344.9,
+          "PML": 1253.2,
+          "PWH": 1345.9,
+          "PWL": 1249.8,
+          "current_price": 1307.8
+        }
+      },
+      "instrument": "RELIANCE",
+      "output_value": {
+        "derivation_summary": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+        "monthly_status": "BEAR_CF"
+      },
+      "parent_decision_id": null,
+      "rejection_reason": null,
+      "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+      "stage": "MONTHLY_STATUS",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
         "evaluated_contracts": [
           {
             "ask": "58.05",
@@ -2428,27 +2710,78 @@
             "underlying": "RELIANCE"
           }
         ],
+        "evidence_origin": {
+          "contract_selection": "ACTUAL_LISTED_CHAIN_SELECTOR",
+          "current_quote": "FYERS_READ_ONLY_QUOTES",
+          "historical_reconstruction": "OPTION_INTRADAY_HISTORY_TO_BE_EVALUATED_SEPARATELY",
+          "selected_option_history": "FYERS_READ_ONLY_DAILY_HISTORY",
+          "underlying_history": "FYERS_READ_ONLY_DAILY_HISTORY"
+        },
+        "formula_catalog": {
+          "base_entry": "OPT:PRV:2DLL - 10%",
+          "original_sl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+          "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+          "revised_sl": "09:29:59 AM HH + 10%",
+          "target": "CE Entry - 60%"
+        },
         "plan_hash": "f7e039b273ff8917e80bbc737dd2d3c35c8c2d568dfffc742d9f56b8fc6a9910",
-        "rejected_candidates": []
+        "quote": {
+          "ask": "48.1",
+          "bid": "47.6",
+          "ltp": "47.75",
+          "oi": null,
+          "receipt_timestamp": "2026-08-04T16:25:09.117672+05:30",
+          "source_timestamp": "2026-08-04T05:30:00+05:30",
+          "symbol": "NSE:RELIANCE26AUG1260CE"
+        },
+        "rejected_candidates": [],
+        "selected_option_references": {
+          "OPT_PRV_2DHH": "65.0000",
+          "OPT_PRV_2DLL": "45.7500",
+          "OPT_PRV_3DHH": "65.0000",
+          "OPT_PRV_3DLL": "45.7500",
+          "OPT_PRV_4DHH": "65.0000",
+          "OPT_PRV_4DLL": "41.2500"
+        },
+        "selection_report_path": "D:\\TradingEngineTFISRefactored\\reports\\contract_selection\\actual_strike_set_contract.json",
+        "selection_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ],
+        "workbook_row_id": "S22D"
       },
       "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:contract",
       "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
       "evidence_quality": "SUCCESS",
       "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
-      "formula_text": "Select the first qualifying actual listed option contract from the authoritative traversal.",
+      "formula_text": "Scan actual listed contracts for the approved expiry set, then keep only the contracts that satisfy branch, option side, strike search path, OI, and premium rules before freezing one final selected contract.",
       "input_values": {
         "branch": "BEAR_CALL",
         "candidate_count": 1,
-        "monthly_status": "BEAR_CF"
+        "market_references": {
+          "2DHH": "1319.00",
+          "2DLL": "1286.40",
+          "3DHH": "1319.00",
+          "4DHH": "1319.00",
+          "4DLL": "1275.30"
+        },
+        "monthly_status": "BEAR_CF",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ]
       },
       "instrument": "RELIANCE",
       "output_value": {
+        "oi": "632500",
+        "premium": "47.75",
         "selected_contract": "NSE:RELIANCE26AUG1260CE",
         "selected_expiry": "2026-08-25",
         "selected_option_type": "CALL",
         "selected_strike": "1260"
       },
-      "parent_decision_id": null,
+      "parent_decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:monthly",
       "rejection_reason": null,
       "rule_id": "S22.CONTRACT_SELECTION.001",
       "stage": "CONTRACT_SELECTION",
@@ -2459,7 +2792,18 @@
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
+        "formula_catalog": {
+          "base_entry": "OPT:PRV:2DLL - 10%",
+          "original_sl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+          "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+          "revised_sl": "09:29:59 AM HH + 10%",
+          "target": "CE Entry - 60%"
+        },
         "rule_matrix_version": "s22_source_closure_accepted_v1",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ],
         "workbook_row_id": "S22D"
       },
       "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:plan",
@@ -2486,6 +2830,7 @@
       },
       "instrument": "RELIANCE",
       "output_value": {
+        "base_entry": "41.20",
         "normalized_prices": {
           "base_entry": "41.20",
           "original_sl": "65.90",
@@ -2493,13 +2838,15 @@
           "revised_sl": "71.50",
           "target": "16.45"
         },
+        "original_sl": "65.90",
         "raw_prices": {
           "base_entry": "41.17500",
           "original_sl": "65.880000",
           "revised_entry": "45.7500",
           "revised_sl": "71.50000",
           "target": "16.470000"
-        }
+        },
+        "target": "16.45"
       },
       "parent_decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:contract",
       "rejection_reason": null,
@@ -2574,6 +2921,70 @@
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
+        "derivation": {
+          "available": false,
+          "borrowed_window_status": null,
+          "checked_lookback_windows": null,
+          "current_window_direct_status": null,
+          "evaluation_timestamp": null,
+          "formula_text": "Monthly Status came from the generic monthly-status engine, but this snapshot does not include the full monthly reference packet for this instrument.",
+          "lookback_used": null,
+          "reason": "Final Monthly Status is BEAR_CF, but the step-by-step monthly reference packet was not persisted for this instrument in the current fast-track snapshot.",
+          "references": {},
+          "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+          "source_path": null,
+          "steps": [
+            {
+              "detail": "This fast-track snapshot preserved the final Monthly Status value but did not persist the full monthly reference packet for this instrument.",
+              "result": "BEAR_CF",
+              "step": 1,
+              "title": "Read the final Monthly Status from the generic engine output",
+              "values": {
+                "instrument": "TCS",
+                "monthly_status": "BEAR_CF"
+              }
+            },
+            {
+              "detail": "TFIS uses Monthly Status first. Only after that does the strategy continue to branch mapping and contract selection.",
+              "result": "BEAR_CALL",
+              "step": 2,
+              "title": "Use that status as the first gate before branch selection",
+              "values": {
+                "selected_branch": "BEAR_CALL"
+              }
+            }
+          ],
+          "threshold_value": null,
+          "trigger_name": null,
+          "workbook_source": "MONTHLY_STATUS_ENGINE_SUMMARY_ONLY"
+        }
+      },
+      "decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:monthly",
+      "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
+      "evidence_quality": "SUMMARY_ONLY",
+      "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "formula_text": "Monthly Status came from the generic monthly-status engine, but this snapshot does not include the full monthly reference packet for this instrument.",
+      "input_values": {
+        "evaluation_timestamp": null,
+        "instrument": "TCS",
+        "monthly_references": {}
+      },
+      "instrument": "TCS",
+      "output_value": {
+        "derivation_summary": "Final Monthly Status is BEAR_CF, but the step-by-step monthly reference packet was not persisted for this instrument in the current fast-track snapshot.",
+        "monthly_status": "BEAR_CF"
+      },
+      "parent_decision_id": null,
+      "rejection_reason": null,
+      "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+      "stage": "MONTHLY_STATUS",
+      "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+      "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT",
+      "workbook_source": "MONTHLY_STATUS_ENGINE_SUMMARY_ONLY"
+    },
+    {
+      "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
+      "candidate_evidence": {
         "evaluated_contracts": [
           {
             "ask": "101.3",
@@ -2594,27 +3005,78 @@
             "underlying": "TCS"
           }
         ],
+        "evidence_origin": {
+          "contract_selection": "ACTUAL_LISTED_CHAIN_SELECTOR",
+          "current_quote": "FYERS_READ_ONLY_QUOTES",
+          "historical_reconstruction": "OPTION_INTRADAY_HISTORY_TO_BE_EVALUATED_SEPARATELY",
+          "selected_option_history": "FYERS_READ_ONLY_DAILY_HISTORY",
+          "underlying_history": "FYERS_READ_ONLY_DAILY_HISTORY"
+        },
+        "formula_catalog": {
+          "base_entry": "OPT:PRV:2DLL - 10%",
+          "original_sl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+          "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+          "revised_sl": "09:29:59 AM HH + 10%",
+          "target": "CE Entry - 60%"
+        },
         "plan_hash": "6f6f19cf1046c77ede6f24fe5ef30ec952a6d457c21052125c999619d7885435",
-        "rejected_candidates": []
+        "quote": {
+          "ask": "110.4",
+          "bid": "108.2",
+          "ltp": "109.2",
+          "oi": null,
+          "receipt_timestamp": "2026-08-04T16:25:09.117672+05:30",
+          "source_timestamp": "2026-08-04T05:30:00+05:30",
+          "symbol": "NSE:TCS26AUG2380CE"
+        },
+        "rejected_candidates": [],
+        "selected_option_references": {
+          "OPT_PRV_2DHH": "116.7000",
+          "OPT_PRV_2DLL": "71.1500",
+          "OPT_PRV_3DHH": "116.7000",
+          "OPT_PRV_3DLL": "46.7500",
+          "OPT_PRV_4DHH": "140.0000",
+          "OPT_PRV_4DLL": "46.7500"
+        },
+        "selection_report_path": "D:\\TradingEngineTFISRefactored\\reports\\contract_selection\\actual_strike_set_contract.json",
+        "selection_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ],
+        "workbook_row_id": "S22D"
       },
       "decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:contract",
       "evidence_mode": "HISTORICALLY_RECONSTRUCTED",
       "evidence_quality": "SUCCESS",
       "evidence_source": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
-      "formula_text": "Select the first qualifying actual listed option contract from the authoritative traversal.",
+      "formula_text": "Scan actual listed contracts for the approved expiry set, then keep only the contracts that satisfy branch, option side, strike search path, OI, and premium rules before freezing one final selected contract.",
       "input_values": {
         "branch": "BEAR_CALL",
         "candidate_count": 1,
-        "monthly_status": "BEAR_CF"
+        "market_references": {
+          "2DHH": "2473.70",
+          "2DLL": "2383.00",
+          "3DHH": "2473.70",
+          "4DHH": "2495.00",
+          "4DLL": "2326.10"
+        },
+        "monthly_status": "BEAR_CF",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ]
       },
       "instrument": "TCS",
       "output_value": {
+        "oi": "166725",
+        "premium": "109.2",
         "selected_contract": "NSE:TCS26AUG2380CE",
         "selected_expiry": "2026-08-25",
         "selected_option_type": "CALL",
         "selected_strike": "2380"
       },
-      "parent_decision_id": null,
+      "parent_decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:monthly",
       "rejection_reason": null,
       "rule_id": "S22.CONTRACT_SELECTION.001",
       "stage": "CONTRACT_SELECTION",
@@ -2625,7 +3087,18 @@
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
+        "formula_catalog": {
+          "base_entry": "OPT:PRV:2DLL - 10%",
+          "original_sl": "Min(CE Entry + 60%, OPT:PRV:3DHH + 10%)",
+          "revised_entry": "Min(SPT:PRV:2DLL, 09:29:59 AM LL) with branch strike/premium/entry recalculation",
+          "revised_sl": "09:29:59 AM HH + 10%",
+          "target": "CE Entry - 60%"
+        },
         "rule_matrix_version": "s22_source_closure_accepted_v1",
+        "source_cells": [
+          "AB6 OS!D137:M138",
+          "AB14!F45:BG45"
+        ],
         "workbook_row_id": "S22D"
       },
       "decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:plan",
@@ -2652,6 +3125,7 @@
       },
       "instrument": "TCS",
       "output_value": {
+        "base_entry": "64.05",
         "normalized_prices": {
           "base_entry": "64.05",
           "original_sl": "102.45",
@@ -2659,13 +3133,15 @@
           "revised_sl": "128.35",
           "target": "25.60"
         },
+        "original_sl": "102.45",
         "raw_prices": {
           "base_entry": "64.03500",
           "original_sl": "102.456000",
           "revised_entry": "71.1500",
           "revised_sl": "128.37000",
           "target": "25.614000"
-        }
+        },
+        "target": "25.60"
       },
       "parent_decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:contract",
       "rejection_reason": null,
@@ -2740,7 +3216,7 @@
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
-        "client_order_id": "client-order:cc1b84428860c55cc1901dc1",
+        "client_order_id": "client-order:6319b4a21cbf5e29da2d16c2",
         "warning": null
       },
       "decision_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A:0b4dcdd6c7cd:action",
@@ -2772,7 +3248,7 @@
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
-        "client_order_id": "client-order:305ac5085ede3b13b96d5338",
+        "client_order_id": "client-order:9c2c3ab4833ed30316c66687",
         "warning": null
       },
       "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:7926307a1c63:action",
@@ -2804,7 +3280,7 @@
     {
       "calculation_timestamp": "2026-08-04T16:25:09.117672+05:30",
       "candidate_evidence": {
-        "client_order_id": "client-order:3df46ccd2760c1113330a7cd",
+        "client_order_id": "client-order:278d8b9cf072fadb99bef54b",
         "warning": null
       },
       "decision_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A:a81f2a171e15:action",
@@ -2834,6 +3310,56 @@
       "workbook_source": "TFIS global sequential account acceptance rule / executable price normalization rule"
     }
   ],
+  "navigation": {
+    "engineering_mode": [
+      "Decision Explorer",
+      "Monthly Status",
+      "Contract Selection",
+      "Manual Validation",
+      "Replay",
+      "Explanation Library",
+      "Diagnostics",
+      "Source Trace"
+    ],
+    "operator_mode": [
+      "Command Centre",
+      "Strategies",
+      "Orders",
+      "Positions",
+      "Accounts",
+      "Risk",
+      "Historical Trades",
+      "Alerts",
+      "Audit",
+      "Settings"
+    ],
+    "product_modes_share_backend_truth": true,
+    "strategy_groups": [
+      {
+        "definitions": [
+          {
+            "display_name": "S22",
+            "enabled_count": 3,
+            "status_counts": {
+              "alerts": 3,
+              "all": 3,
+              "blocked": 0,
+              "carried": 0,
+              "enabled": 3,
+              "entry_available": 3,
+              "missing_evidence": 0,
+              "no_trade": 0,
+              "open_positions": 3
+            },
+            "strategy_code": "S22",
+            "strategy_definition_id": "S22",
+            "supported_count": 3
+          }
+        ],
+        "family": "Unknown"
+      }
+    ]
+  },
   "orders": [
     {
       "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
@@ -2846,7 +3372,7 @@
       "instance": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
       "instrument": "INFY",
       "latest_event": "INTERNAL_FULL_FILL",
-      "position_cycle": "client-order:cc1b84428860c55cc1901dc1",
+      "position_cycle": "client-order:6319b4a21cbf5e29da2d16c2",
       "price": "31.25",
       "purpose": "ENTRY",
       "requested_quantity": 400,
@@ -2864,7 +3390,7 @@
       "instance": "S22_RELIANCE_INTERNAL_PAPER_A",
       "instrument": "RELIANCE",
       "latest_event": "INTERNAL_FULL_FILL",
-      "position_cycle": "client-order:305ac5085ede3b13b96d5338",
+      "position_cycle": "client-order:9c2c3ab4833ed30316c66687",
       "price": "41.20",
       "purpose": "ENTRY",
       "requested_quantity": 500,
@@ -2882,7 +3408,7 @@
       "instance": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
       "instrument": "TCS",
       "latest_event": "INTERNAL_FULL_FILL",
-      "position_cycle": "client-order:3df46ccd2760c1113330a7cd",
+      "position_cycle": "client-order:278d8b9cf072fadb99bef54b",
       "price": "64.05",
       "purpose": "ENTRY",
       "requested_quantity": 225,
@@ -2946,8 +3472,8 @@
       "unrealized_pnl": "-10158.75"
     }
   ],
-  "projection_hash": "9d42f0d22b7ecf5ae71e5f90f2d71bf0d1e8fdc43e984f7735a3578259b7b457",
-  "schema_version": "tfis.fast_track.dashboard_projection.v2",
+  "projection_hash": "63ff34782d13354858cc883f67752b31b991df62a619a97a169abfd066429aac",
+  "schema_version": "tfis.fast_track.dashboard_projection.v3",
   "strategies": [
     {
       "accounting": {
@@ -3127,9 +3653,245 @@
       }
     }
   ],
+  "strategy_definitions": [
+    {
+      "blocked_count": 0,
+      "carried_count": 0,
+      "display_name": "S22",
+      "enabled_count": 3,
+      "entry_available_count": 3,
+      "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "family": "Unknown",
+      "health": "HEALTHY",
+      "last_update": "",
+      "margin_usage_pct": 54,
+      "no_trade_count": 0,
+      "open_count": 3,
+      "prepared_count": 3,
+      "qualified_count": 3,
+      "realized_pnl": "0.00",
+      "segment": "Unknown",
+      "strategy_code": "S22",
+      "strategy_definition_id": "S22",
+      "supported_count": 3,
+      "unrealized_pnl": "-19293.75"
+    }
+  ],
+  "strategy_families": [
+    {
+      "active_positions": 3,
+      "blocked": 0,
+      "daily_pnl": "-19293.75",
+      "evidence_quality": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "family": "Unknown",
+      "health": "HEALTHY",
+      "instrument_count": 3,
+      "no_trade": 0,
+      "scalability_demo": false,
+      "strategy_count": 1
+    }
+  ],
+  "strategy_filter_options": {
+    "accounts": [
+      "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A"
+    ],
+    "branches": [
+      "BEAR_CALL"
+    ],
+    "definitions": [
+      {
+        "display_name": "S22",
+        "strategy_code": "S22",
+        "strategy_definition_id": "S22"
+      }
+    ],
+    "evidence": [
+      "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY"
+    ],
+    "health": [
+      "HEALTHY"
+    ],
+    "monthly_statuses": [
+      "BEAR",
+      "BEAR_CF"
+    ],
+    "page_sizes": [
+      10,
+      20,
+      50
+    ],
+    "sort_fields": [
+      {
+        "key": "realized_pnl",
+        "label": "Realized P&L"
+      },
+      {
+        "key": "unrealized_pnl",
+        "label": "Unrealized P&L"
+      },
+      {
+        "key": "current_stage",
+        "label": "Current Stage"
+      },
+      {
+        "key": "last_update",
+        "label": "Last Update"
+      },
+      {
+        "key": "instrument",
+        "label": "Instrument"
+      }
+    ],
+    "stages": [
+      "NORMAL_ENTRY_STILL_VALID"
+    ]
+  },
+  "strategy_instances": [
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "alerts": [
+        {
+          "code": "NO_ALERT",
+          "severity": "INFO"
+        }
+      ],
+      "blocked": false,
+      "branch": "BEAR_CALL",
+      "current_stage": "NORMAL_ENTRY_STILL_VALID",
+      "enabled": true,
+      "enabled_label": "Enabled",
+      "entry": "31.25",
+      "entry_available": true,
+      "evidence": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "evidence_label": "Actual Chain Report Plus Fyers History",
+      "family": "Unknown",
+      "fresh_or_carried": "FRESH",
+      "has_alerts": true,
+      "health": "HEALTHY",
+      "health_label": "Healthy",
+      "instrument": "INFY",
+      "last_update": null,
+      "monthly_status": "BEAR",
+      "no_trade": false,
+      "position": "OPEN_PROTECTED",
+      "position_label": "Open Protected",
+      "qualified": true,
+      "realized_pnl": "0.00",
+      "segment": "Unknown",
+      "selected_contract": "NSE:INFY26AUG1140CE",
+      "strategy_code": "S22",
+      "strategy_definition_id": "S22",
+      "strategy_display_name": "S22",
+      "strategy_instance_id": "S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A",
+      "unrealized_pnl": "-5860.00"
+    },
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "alerts": [
+        {
+          "code": "NO_ALERT",
+          "severity": "INFO"
+        }
+      ],
+      "blocked": false,
+      "branch": "BEAR_CALL",
+      "current_stage": "NORMAL_ENTRY_STILL_VALID",
+      "enabled": true,
+      "enabled_label": "Enabled",
+      "entry": "41.20",
+      "entry_available": true,
+      "evidence": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "evidence_label": "Actual Chain Report Plus Fyers History",
+      "family": "Unknown",
+      "fresh_or_carried": "FRESH",
+      "has_alerts": true,
+      "health": "HEALTHY",
+      "health_label": "Healthy",
+      "instrument": "RELIANCE",
+      "last_update": null,
+      "monthly_status": "BEAR_CF",
+      "no_trade": false,
+      "position": "OPEN_PROTECTED",
+      "position_label": "Open Protected",
+      "qualified": true,
+      "realized_pnl": "0.00",
+      "segment": "Unknown",
+      "selected_contract": "NSE:RELIANCE26AUG1260CE",
+      "strategy_code": "S22",
+      "strategy_definition_id": "S22",
+      "strategy_display_name": "S22",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "unrealized_pnl": "-3275.00"
+    },
+    {
+      "account": "DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A",
+      "alerts": [
+        {
+          "code": "NO_ALERT",
+          "severity": "INFO"
+        }
+      ],
+      "blocked": false,
+      "branch": "BEAR_CALL",
+      "current_stage": "NORMAL_ENTRY_STILL_VALID",
+      "enabled": true,
+      "enabled_label": "Enabled",
+      "entry": "64.05",
+      "entry_available": true,
+      "evidence": "ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY",
+      "evidence_label": "Actual Chain Report Plus Fyers History",
+      "family": "Unknown",
+      "fresh_or_carried": "FRESH",
+      "has_alerts": true,
+      "health": "HEALTHY",
+      "health_label": "Healthy",
+      "instrument": "TCS",
+      "last_update": null,
+      "monthly_status": "BEAR_CF",
+      "no_trade": false,
+      "position": "OPEN_PROTECTED",
+      "position_label": "Open Protected",
+      "qualified": true,
+      "realized_pnl": "0.00",
+      "segment": "Unknown",
+      "selected_contract": "NSE:TCS26AUG2380CE",
+      "strategy_code": "S22",
+      "strategy_definition_id": "S22",
+      "strategy_display_name": "S22",
+      "strategy_instance_id": "S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A",
+      "unrealized_pnl": "-10158.75"
+    }
+  ],
+  "strategy_status_counts": {
+    "by_definition": {
+      "S22": {
+        "alerts": 3,
+        "all": 3,
+        "blocked": 0,
+        "carried": 0,
+        "enabled": 3,
+        "entry_available": 3,
+        "missing_evidence": 0,
+        "no_trade": 0,
+        "open_positions": 3
+      }
+    },
+    "global": {
+      "alerts": 3,
+      "all": 3,
+      "blocked": 0,
+      "carried": 0,
+      "enabled": 3,
+      "entry_available": 3,
+      "missing_evidence": 0,
+      "no_trade": 0,
+      "open_positions": 3
+    }
+  },
   "system": {
     "broker_order_authority": "NONE",
     "generated_at": "2026-08-04T16:25:09.117672+05:30",
+    "projection_version": "dashboard_v3",
     "session": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT"
   }
 }

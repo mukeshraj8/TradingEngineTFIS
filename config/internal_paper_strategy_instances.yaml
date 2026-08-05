@@ -6,6 +6,7 @@ session_scope:
   market_data_mode: DETERMINISTIC_FIXTURE_AND_READ_ONLY_CAPTURE
 accounts:
   - account_reference: INTERNAL_PAPER_ACCOUNT_A
+    display_name: FYERS Read-Only Internal Paper Account
     broker: INTERNAL_PAPER
     max_new_entries_per_session: 3
     max_concurrent_positions: 3
@@ -44,6 +45,8 @@ instances:
     operator_approval_status: APPROVED_INTERNAL_PAPER
     evidence_quality: FIXTURE_BACKED
     source_reports:
+      display_name: S21 Monthly Option Selling
+      supported_instruments_count: 1
       summary: reports/s21_complete/s21_summary.md
       dashboard_projection: reports/s21_complete/s21_complete_trace.json
     deterministic_projection:
@@ -92,6 +95,8 @@ instances:
     operator_approval_status: APPROVED_INTERNAL_PAPER
     evidence_quality: DETERMINISTIC_TIMING_SUPPLEMENT
     source_reports:
+      display_name: S22 Stock Option Selling
+      supported_instruments_count: 188
       summary: reports/s22_reliance/s22_reliance_summary.md
       dashboard_projection: reports/s22_reliance/s22_reliance_dashboard_projection.json
     deterministic_projection:
@@ -145,6 +150,8 @@ instances:
     operator_approval_status: APPROVED_INTERNAL_PAPER
     evidence_quality: FIXTURE_BACKED
     source_reports:
+      display_name: S23 Weekly Option Selling
+      supported_instruments_count: 1
       summary: reports/phase5c/phase5c_summary.md
       dashboard_projection: reports/phase5c/phase5c_session_results.json
     deterministic_projection:

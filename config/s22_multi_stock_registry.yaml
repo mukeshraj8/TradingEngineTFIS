@@ -5,7 +5,8 @@ session_scope:
   authority_mode: INTERNAL_PAPER_CONTROLLED
   market_data_mode: DETERMINISTIC_FIXTURE_AND_READ_ONLY_CAPTURE
 accounts:
-  - account_reference: INTERNAL_PAPER_ACCOUNT_A
+  - account_reference: DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A
+    display_name: FYERS Read-Only Development Internal Paper Account
     broker: INTERNAL_PAPER
     max_new_entries_per_session: 3
     max_concurrent_positions: 3
@@ -25,7 +26,7 @@ instances:
   - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
     strategy_version: s22.reliance.stage1.v1
     strategy_instance_id: S22_RELIANCE_INTERNAL_PAPER_A
-    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    account_reference: DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A
     underlying:
       exchange: NSE
       symbol: RELIANCE
@@ -77,14 +78,14 @@ instances:
         - "2026-09-24"
   - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
     strategy_version: s22.multi_stock.foundation.v1
-    strategy_instance_id: S22_TCS_INTERNAL_PAPER_DISABLED
-    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    strategy_instance_id: S22_TCS_DEVELOPMENT_INTERNAL_PAPER_A
+    account_reference: DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A
     underlying:
       exchange: NSE
       symbol: TCS
       instrument_type: STOCK
     product: OPTION_SELLING
-    enabled: false
+    enabled: true
     configured_quantity:
       lots: 1
       lot_size: 225
@@ -94,22 +95,45 @@ instances:
     risk_allocation:
       max_positions: 1
       max_margin_usage_pct: 20
-    operator_approval_status: APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION
-    evidence_quality: LIVE_FYERS_READ_ONLY_CAPTURE
+    operator_approval_status: APPROVED_INTERNAL_PAPER
+    evidence_quality: ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY
     source_reports:
-      summary: reports/s22_multi_stock/s22_multi_stock_summary.md
-      dashboard_projection: reports/s22_multi_stock/multi_stock_registry.json
-    deterministic_projection: {}
+      display_name: S22 Stock Option Selling
+      supported_instruments_count: 188
+      summary: reports/fast_track_development_s22_multistock/tcs_development_result.json
+      dashboard_projection: reports/fast_track_development_s22_multistock/dashboard_projection.json
+    deterministic_projection:
+      branch: BEAR_CALL
+      selected_contract: NSE:TCS26AUG2380CE
+      entry: "64.05"
+      target: "25.60"
+      original_sl: "102.45"
+      monthly_status: BEAR_CF
+      opening_context: PRE_MARKET_PREPARED_FROM_2026_08_04_CLOSE
+      orpt_state: PENDING_2026_08_05_OPEN
+      rc_state: PENDING_2026_08_05_OPEN
+      broker_data_health: READ_ONLY_REQUIRED_AT_MARKET_OPEN
+      realized_pnl: "0.00"
+      unrealized_pnl: "0.00"
+      trade_classification: PREPARED
+      scenario_flags: {}
+      market_references:
+        2DHH: "2473.70"
+        2DLL: "2383.00"
+        4DHH: "2495.00"
+        4DLL: "2326.10"
+      expiry_candidates:
+        - "2026-08-25"
   - strategy_definition_id: S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D
     strategy_version: s22.multi_stock.foundation.v1
-    strategy_instance_id: S22_INFY_INTERNAL_PAPER_DISABLED
-    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    strategy_instance_id: S22_INFY_DEVELOPMENT_INTERNAL_PAPER_A
+    account_reference: DEVELOPMENT_INTERNAL_PAPER_ACCOUNT_A
     underlying:
       exchange: NSE
       symbol: INFY
       instrument_type: STOCK
     product: OPTION_SELLING
-    enabled: false
+    enabled: true
     configured_quantity:
       lots: 1
       lot_size: 400
@@ -119,9 +143,32 @@ instances:
     risk_allocation:
       max_positions: 1
       max_margin_usage_pct: 20
-    operator_approval_status: APPROVED_PENDING_BASELINE_UNIFIED_CERTIFICATION
-    evidence_quality: LIVE_FYERS_READ_ONLY_CAPTURE
+    operator_approval_status: APPROVED_INTERNAL_PAPER
+    evidence_quality: ACTUAL_CHAIN_REPORT_PLUS_FYERS_HISTORY
     source_reports:
-      summary: reports/s22_multi_stock/s22_multi_stock_summary.md
-      dashboard_projection: reports/s22_multi_stock/multi_stock_registry.json
-    deterministic_projection: {}
+      display_name: S22 Stock Option Selling
+      supported_instruments_count: 188
+      summary: reports/fast_track_development_s22_multistock/infy_development_result.json
+      dashboard_projection: reports/fast_track_development_s22_multistock/dashboard_projection.json
+    deterministic_projection:
+      branch: BEAR_CALL
+      selected_contract: NSE:INFY26AUG1140CE
+      entry: "31.25"
+      target: "12.50"
+      original_sl: "49.95"
+      monthly_status: BEAR
+      opening_context: PRE_MARKET_PREPARED_FROM_2026_08_04_CLOSE
+      orpt_state: PENDING_2026_08_05_OPEN
+      rc_state: PENDING_2026_08_05_OPEN
+      broker_data_health: READ_ONLY_REQUIRED_AT_MARKET_OPEN
+      realized_pnl: "0.00"
+      unrealized_pnl: "0.00"
+      trade_classification: PREPARED
+      scenario_flags: {}
+      market_references:
+        2DHH: "1180.00"
+        2DLL: "1138.10"
+        4DHH: "1187.70"
+        4DLL: "1107.20"
+      expiry_candidates:
+        - "2026-08-25"

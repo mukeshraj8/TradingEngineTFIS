@@ -159,6 +159,65 @@ Families:
 - Commodity
 - Currency
 
+## Strategies Experience At Scale
+
+The `Strategies` surface must scale to one strategy family with many enabled
+instrument instances, including S22 with 30 or more stocks and future
+multi-account portfolios.
+
+The required operator flow is three-level:
+
+1. Strategy-definition summary
+2. Compact instance list
+3. Selected-instance workbench
+
+### Strategy-definition summary
+
+The landing view must summarize one row per strategy definition rather than one
+large card per instance. Aggregates such as `Enabled`, `Prepared`,
+`Entry Available`, `Open Positions`, `Blocked`, `No Trade`, `Daily Realized
+P&L`, `Daily Unrealized P&L`, and `Margin Usage` must come from backend
+projection fields, not browser-side derivation from table text.
+
+### Compact instance list
+
+When a definition is opened, the operator should see a compact, searchable,
+filterable instrument-instance list with pagination and density controls.
+Primary list behavior:
+
+- search by instrument or selected contract
+- filter by enabled state
+- filter by runtime stage
+- filter by Monthly Status
+- filter by branch
+- filter by health
+- filter by evidence type
+- filter by account
+- sort by P&L, stage, and last update
+- preserve saved views and current list context
+
+This list must remain generic for:
+
+- Option Selling
+- Option Buying
+- Futures
+- Equity
+- Commodity
+- Currency
+
+### Selected-instance workbench
+
+The detailed workbench remains the place for step-by-step review of one
+selected instance. It must preserve the parent list context and support:
+
+- previous / next instance
+- back to list
+- retained search and filter state
+- selected instrument clarity
+
+The browser must not calculate business truth. It may only render backend
+projection fields and immutable explainability facts.
+
 ## Account Hierarchy
 
 Account

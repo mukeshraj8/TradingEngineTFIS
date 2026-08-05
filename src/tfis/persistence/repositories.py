@@ -941,6 +941,101 @@ class PersistenceRepositories:
         )
         return str(order["client_order_id"])
 
+    def put_internal_paper_client_order(
+        self,
+        *,
+        grant: object,
+        client_order: object,
+        creation_event: object,
+        account_snapshot: object,
+        expected_account_projection_version: int | None,
+    ) -> str:
+        grant_dict = grant.to_dict()  # type: ignore[attr-defined]
+        order = client_order.to_dict()  # type: ignore[attr-defined]
+        event = creation_event.to_dict()  # type: ignore[attr-defined]
+        snapshot = account_snapshot.to_dict() if hasattr(account_snapshot, "to_dict") else dict(account_snapshot)
+        grant_id = self.put_internal_paper_authority_grant(grant=grant)
+        order_row = self.connection.execute(
+            "SELECT order_hash FROM internal_client_order_records WHERE client_order_id = ?",
+            (order["client_order_id"],),
+        ).fetchone()
+        if order_row:
+            if order_row["order_hash"] != order["order_hash"]:
+                raise ArtifactConflictError(f"Internal client order conflict: {order['client_order_id']}")
+        else:
+            self.connection.execute(
+                """
+                INSERT INTO internal_client_order_records(
+                    client_order_id, execution_intent_id, account_coordinator_id, broker_account_id,
+                    strategy_instance_id, trading_session_id, position_cycle_id, idempotency_key,
+                    order_hash, order_purpose, current_state, authority_source, payload_json,
+                    created_timestamp, updated_timestamp
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    order["client_order_id"],
+                    order["execution_intent_id"],
+                    order["account_coordinator_id"],
+                    order["broker_account_id"],
+                    order["strategy_instance_id"],
+                    order["trading_session_id"],
+                    order["position_cycle_id"],
+                    order["idempotency_key"],
+                    order["order_hash"],
+                    order["order_purpose"],
+                    event["new_state"],
+                    "INTERNAL_PAPER_SIMULATION",
+                    canonical_json(order),
+                    _now(),
+                    _now(),
+                ),
+            )
+        self._put_internal_paper_event(event)
+        self.connection.execute(
+            "UPDATE internal_client_order_records SET current_state = ?, updated_timestamp = ? WHERE client_order_id = ?",
+            (event["new_state"], _now(), order["client_order_id"]),
+        )
+        self._upsert_internal_client_order_projection(
+            client_order_id=order["client_order_id"],
+            broker_account_id=order["broker_account_id"],
+            current_state=event["new_state"],
+            cumulative_filled_quantity=int(event["cumulative_filled_quantity"]),
+            latest_event_id=event["event_id"],
+            order_hash=order["order_hash"],
+        )
+        self._upsert_internal_paper_account_projection(
+            account_coordinator_id=order["account_coordinator_id"],
+            broker_account_id=order["broker_account_id"],
+            trading_session_id=order["trading_session_id"],
+            snapshot=snapshot,
+            expected_version=expected_account_projection_version,
+        )
+        self.connection.execute(
+            """
+            INSERT INTO immutable_artifacts(
+                artifact_id, artifact_type, schema_version, trading_date, strategy_instance_id, position_cycle_id,
+                content_hash, payload_json, provenance_json, configuration_hash, rule_matrix_version, source_timestamp, created_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(artifact_id) DO NOTHING
+            """,
+            (
+                f"{order['client_order_id']}:creation",
+                "internal_paper_client_order",
+                "tfis.internal_paper.client_order.v1",
+                None,
+                order["strategy_instance_id"],
+                order["position_cycle_id"],
+                canonical_hash({"client_order_id": order["client_order_id"], "event_id": event["event_id"], "grant_id": grant_id}),
+                canonical_json({"client_order": order, "creation_event": event, "grant_id": grant_id}),
+                canonical_json({"source": "put_internal_paper_client_order"}),
+                grant_dict["configuration_hash"],
+                grant_dict["rule_version"],
+                event["event_timestamp"],
+                _now(),
+            ),
+        )
+        return str(order["client_order_id"])
+
     def _put_internal_paper_event(self, event: Mapping[str, Any]) -> None:
         row = self.connection.execute(
             "SELECT event_hash FROM internal_paper_order_events WHERE event_id = ?",

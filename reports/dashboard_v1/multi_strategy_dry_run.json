@@ -1,5 +1,5 @@
 {
-  "certification_hash": "b2e0ac63ebffbfc89ef9749edb52aa1c3aa98b68420f6ed66ec71689e2bb1037",
+  "certification_hash": "779cade9a1e7ea17b31917dfe8d571c001d6db5225672063e4f6fd0c60956f70",
   "external_authority": {
     "broker_sandbox_submission": "NONE",
     "external_broker_submission": "NONE",
@@ -10,59 +10,59 @@
   "scenario_count": 14,
   "scenarios": {
     "account_risk_accepts_all": {
-      "result_hash": "df9ca6a41f379f34056ba25a70790e04697acb74922f53fab9b77f03826b580e",
+      "result_hash": "78db4478245d99746efde7e350c7c227e83e6e628c2503859453bd313711e7ac",
       "status": "PASSED"
     },
     "account_risk_accepts_some": {
-      "result_hash": "a06b0fd0babb0efd0ab6a7bfe6d462d73610f176965a9dd204840b9777ae425b",
+      "result_hash": "42a44dda45340a3376495de73669cbee733d57f284e18c7fe1caa6e512b4546a",
       "status": "PASSED"
     },
     "all_prepare_successfully": {
-      "result_hash": "0373d6bc8e3c8ab1860f290b754a252686af3fbac78182053642e912d7a31fe5",
+      "result_hash": "0cb3c8b0964222a21e2120792d44d83777baf0de702ae60829c4713fe29c5ed9",
       "status": "PASSED"
     },
     "all_three_qualify": {
-      "result_hash": "214353ef673cc95230decc290efa09be9c5eb53dd53b784b54814c87d340f90a",
+      "result_hash": "c5c2997c486f20bac33971f5bbed0d63d8fd2845e625d4c4a1e871a9ac57595f",
       "status": "PASSED"
     },
     "dashboard_reflects_transitions": {
-      "result_hash": "f4881f5b6107da052c70a495ee38bc2481d546b6bfbd9776ea8487e2d0da7bbb",
+      "result_hash": "43ab868533f7e546f3ff00a55751263acce5e633634b7259355238cea612a828",
       "status": "PASSED"
     },
     "no_duplicate_financial_action": {
-      "result_hash": "c16eb3fbaedd67a1ebc9b48d96f6f4f29879dbebd18cf039b8a4ad0ae7ad9e9f",
+      "result_hash": "d2134809fd60d24475da2341787aa4ebcc3ba166ca5cd2e8ddd25829dac5c0d8",
       "status": "PASSED"
     },
     "one_order_rejected_without_contamination": {
-      "result_hash": "0e1c1fd251fb6b97ff42f69861bac329b8542f354c8e10d50187d55619b4c262",
+      "result_hash": "d9723bf3a88a93f45c4cb52a68b584721e28d7bb12c7792abd8b448394322d09",
       "status": "PASSED"
     },
     "one_position_carried": {
-      "result_hash": "c788fb5d2147b81f5cf1c82508cf898b741ed966d6e36758d8bf3d4b9373fb1b",
+      "result_hash": "bd8c0afce894b66e0efdfbd846f1da0c0d51bec834dd809f155826bea97f5d4f",
       "status": "PASSED"
     },
     "one_position_loses_protection_alert": {
-      "result_hash": "5f6f3a6fcc16a36097968f5cd1ea13fc141b2da2e97ab1a3fd276e3545a3e499",
+      "result_hash": "2858c0964d102d4a0c4942f4bb43d52c0ab17379ebf43340c1270d7b63613b79",
       "status": "PASSED"
     },
     "one_strategy_blocked_two_continue": {
-      "result_hash": "90310c16ca82cf28a8e8d8c3ec29eaed52166d181deef93ec6bb40a36df13d46",
+      "result_hash": "0bb9fae4a9b5b3e613e81c2612e5d8070eb713bf059961361ad8b6aef600592e",
       "status": "PASSED"
     },
     "one_waits_for_rc_another_opens_normally": {
-      "result_hash": "ebb980bc2c6c6ea17d276ab06bf77054c91b2a04f1f73ebcbdb5366f4792d768",
+      "result_hash": "d0d74773b5821c0a301f877b438933fd648010b7df5b29cc4df29bd8e37a7696",
       "status": "PASSED"
     },
     "pnl_separated_by_strategy_account_instrument": {
-      "result_hash": "cb867ba5d8164a44a4ecfaa2d1b39579c36b6801b96b343166ce489ec29e9837",
+      "result_hash": "88a93e24f72f081a11b5dfeccc15c34feb4dca066e08dbba878ccc5773d4bcfa",
       "status": "PASSED"
     },
     "restart_restores_independent_states": {
-      "result_hash": "e0e9572dbb545ca8be57e362ceb2790ab486857af6722b89b6ebacb5126e4fd7",
+      "result_hash": "f5d0d3f43e0593eb3bdf05a1ff3c8dd502066f3530b6d8c5f98dc76bb25b931b",
       "status": "PASSED"
     },
     "s21_s23_qualify_simultaneously": {
-      "result_hash": "b5671201d248bd2c5e23eae7bcf8dfdbb6a4bf7d346a0cd2d7025fff3ddc93c9",
+      "result_hash": "2908659a9d935297f05bc775c0c60312e1f1f5290b6faa295af109530878bb57",
       "status": "PASSED"
     }
   },

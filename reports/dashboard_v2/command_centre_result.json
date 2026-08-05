@@ -36,12 +36,14 @@
   "blocked_instances": 0,
   "broker_data_session": "Read-only / Internal Paper",
   "broker_sessions": "READ_ONLY_OR_INTERNAL",
+  "carried_positions": 0,
   "critical_alert_rows": [],
   "critical_alerts": 0,
   "daily_realized_pnl": "3750.00",
   "daily_unrealized_pnl": "1800.00",
   "enabled_instruments": 3,
   "enabled_strategy_instances": 3,
+  "entry_available_instances": 0,
   "last_market_update": "2026-08-03T09:30:00+05:30",
   "margin_usage_pct": 54,
   "market_session_timeline": [
@@ -67,6 +69,7 @@
     }
   ],
   "market_state": "DETERMINISTIC_SESSION",
+  "no_trade_instances": 0,
   "open_positions": 3,
   "pending_actions": [
     {
@@ -94,6 +97,104 @@
       "event": "INTERNAL_FULL_FILL",
       "instrument": "NIFTY",
       "time": "2026-08-03T09:30:00+05:30"
+    }
+  ],
+  "strategy_definition_summaries": [
+    {
+      "accounts": [
+        "INTERNAL_PAPER_ACCOUNT_A"
+      ],
+      "blocked_count": 0,
+      "carried_count": 0,
+      "display_name": "S21 Monthly Option Selling",
+      "enabled_count": 1,
+      "entry_available_count": 0,
+      "evidence_quality": "Fixture Backed",
+      "family": "Option Selling",
+      "health": "Healthy",
+      "instance_ids": [
+        "S21_BANKNIFTY_INTERNAL_PAPER_A"
+      ],
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "margin_usage_pct": 18,
+      "margin_used": 18,
+      "no_trade_count": 0,
+      "open_count": 1,
+      "prepared_count": 1,
+      "qualified_count": 1,
+      "realized_pnl": "6250.00",
+      "segment": "Index Options",
+      "strategy_code": "S21",
+      "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "supported_count": 1,
+      "supported_instruments": [
+        "BANKNIFTY"
+      ],
+      "unrealized_pnl": "0.00"
+    },
+    {
+      "accounts": [
+        "INTERNAL_PAPER_ACCOUNT_A"
+      ],
+      "blocked_count": 0,
+      "carried_count": 0,
+      "display_name": "S22 Stock Option Selling",
+      "enabled_count": 1,
+      "entry_available_count": 0,
+      "evidence_quality": "Deterministic Timing Supplement",
+      "family": "Option Selling",
+      "health": "Needs review",
+      "instance_ids": [
+        "S22_RELIANCE_INTERNAL_PAPER_A"
+      ],
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "margin_usage_pct": 18,
+      "margin_used": 18,
+      "no_trade_count": 0,
+      "open_count": 1,
+      "prepared_count": 1,
+      "qualified_count": 1,
+      "realized_pnl": "-2500.00",
+      "segment": "Stock Options",
+      "strategy_code": "S22",
+      "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "supported_count": 188,
+      "supported_instruments": [
+        "RELIANCE"
+      ],
+      "unrealized_pnl": "0.00"
+    },
+    {
+      "accounts": [
+        "INTERNAL_PAPER_ACCOUNT_A"
+      ],
+      "blocked_count": 0,
+      "carried_count": 0,
+      "display_name": "S23 Weekly Option Selling",
+      "enabled_count": 1,
+      "entry_available_count": 0,
+      "evidence_quality": "Fixture Backed",
+      "family": "Option Selling",
+      "health": "Healthy",
+      "instance_ids": [
+        "S23_NIFTY_INTERNAL_PAPER_A"
+      ],
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "margin_usage_pct": 18,
+      "margin_used": 18,
+      "no_trade_count": 0,
+      "open_count": 1,
+      "prepared_count": 1,
+      "qualified_count": 1,
+      "realized_pnl": "0.00",
+      "segment": "Index Options",
+      "strategy_code": "S23",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+      "supported_count": 1,
+      "supported_instruments": [
+        "NIFTY"
+      ],
+      "unrealized_pnl": "1800.00"
     }
   ],
   "strategy_health": [

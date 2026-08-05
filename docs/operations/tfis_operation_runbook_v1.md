@@ -4,9 +4,9 @@
 
 This runbook explains:
 
-- how to use the current TFIS system today, Monday, August 3, 2026;
-- what will happen if we run the current system before market open on Tuesday,
-  August 4, 2026;
+- how to use the current TFIS system today, Wednesday, August 5, 2026;
+- what will happen if we run the current system before market open on a fresh
+  next session;
 - what will and will not happen automatically when the NSE market opens.
 
 This is an operator runbook for the current accepted repository state.
@@ -19,6 +19,8 @@ The current accepted stack is:
 
 - unified internal-paper certification runner:
   `scripts/run_tfis_internal_paper.py`
+- unified live-market internal-paper operator launcher:
+  `scripts/run_live_market_internal_paper.py`
 - unified professional dashboard builder/server:
   `scripts/run_tfis_dashboard.py`
 - FYERS read-only diagnostics:
@@ -28,6 +30,8 @@ The current accepted stack is:
 
 Important current truth:
 
+- the live-market internal-paper operator entry point is now:
+  `.\.venv\Scripts\python.exe scripts\run_live_market_internal_paper.py --mode live-market-internal-paper --enabled-profile baseline --dashboard-port 8766 --poll-seconds 5 --session-date 2026-08-05 --reconstruct-if-late prepare`;
 - deterministic dashboard/runtime certification is green, but the governing
   next-session operator gate is now the authoritative readiness projection at
   `reports/unified_readiness/authoritative_readiness_projection.json`;
@@ -36,16 +40,34 @@ Important current truth:
   `scripts/run_tfis_internal_paper.py --continuous-supervisor`, but its
   current accepted use is still tightly controlled and read-only at the broker
   boundary;
+- a dedicated live-market registry now exists at
+  `config/live_market_internal_paper_strategy_instances.yaml` and includes
+  `S21/BANKNIFTY`, `S22/RELIANCE`, `S22/TCS`, `S22/INFY`, and `S23/NIFTY`;
 - no broker order placement, modification, cancellation, square-off, or live
   position mutation is allowed;
-- the current enabled registry is deterministic and pinned to
-  `NSE:2026-08-03:INTERNAL_PAPER` in
-  `config/internal_paper_strategy_instances.yaml`;
-- S21 and S23 are fixture-backed projections;
-- S22 RELIANCE still has a known evidence gap: real opening, ORPT, and RC
-  capture for the next eligible session.
-- TCS and INFY now have live FYERS read-only metadata captures plus sanitized
-  fixtures, but both remain disabled until explicit operator approval.
+- the old deterministic registry at
+  `config/internal_paper_strategy_instances.yaml` still exists for bounded
+  non-live certification only;
+- the fresh live-market prepare evidence is now emitted under
+  `reports/live_market_internal_paper/`;
+- honest remaining live blockers are the supervisor hot-path overrun and the
+  stale dashboard analytics `BLOCKED_ACCOUNT` mismatch for `S21` and `S23`.
+
+## Fastest Safe Command Today
+
+Use this first:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_live_market_internal_paper.py --mode live-market-internal-paper --enabled-profile baseline --dashboard-port 8766 --poll-seconds 5 --session-date 2026-08-05 --reconstruct-if-late prepare
+```
+
+What this does:
+
+- reuses the canonical FYERS token flow;
+- runs read-only broker diagnostics;
+- runs complete-session preflight;
+- writes fresh live-market internal-paper reports;
+- keeps external broker-order authority at `NONE`.
 
 ## Monday, August 3, 2026 Live Status Addendum
 

@@ -6,6 +6,143 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Wednesday, August 5, 2026 at 12:55 IST, the
+  `AUTHORITATIVE_INTERNAL_PAPER_TRADING_LEDGER`
+  slice is `CONDITIONAL_ACCEPTED`. The unified supervisor now persists
+  accepted internal-paper client orders into the authoritative SQLite ledger
+  before fill, then persists the later internal-paper fill result, entry
+  `PositionCycle` transition, and open-trade accounting facts when the quote
+  actually triggers entry. This closes the earlier defect where the runtime
+  checkpoint and dashboard could claim an order or open position existed while
+  the financial ledger tables remained empty. Focused validation passed in
+  `tests/unit/test_multi_strategy_continuous_supervisor.py` (`24 passed`) and
+  adjacent dashboard/runtime checks also stayed green in
+  `tests/unit/test_multi_strategy_runtime_dashboard_v1.py` and
+  `tests/unit/test_live_market_internal_paper_runtime_fixes.py`
+  (`17 passed`). Honest remaining gap: restart/recovery still needs to prefer
+  authoritative ledger playback over checkpoint-only reconstruction so the
+  operator screens can be rebuilt directly from ledger truth.
+- as of Wednesday, August 5, 2026 at 12:05 IST, the
+  `OPERATOR_LEDGER_CLARITY_AND_ACCOUNT_LABELING`
+  slice is `CONDITIONAL_ACCEPTED`. The unified operations read model now
+  exposes operator-facing account display names instead of only internal
+  account keys, and the order/position ledger rows now carry trader-usable
+  fields such as order name, position name, side, lot and lot-size context,
+  entry timestamp, target, and active stop-loss. The command-centre account
+  summary now also shows the operator label first and preserves the internal
+  account reference as secondary context. Focused validation passed in
+  `tests/unit/test_multi_strategy_runtime_dashboard_v1.py` and
+  `tests/unit/test_live_market_internal_paper_runtime_fixes.py` (`17 passed`).
+  Honest remaining blocker: the live supervisor still needs a fully
+  authoritative persisted internal-paper order/fill/position ledger so restart
+  recovery, dashboard history, and SQLite truth all tell the same story.
+- as of Wednesday, August 5, 2026 at 11:05 IST, the
+  `LIVE_INTERNAL_PAPER_ORDER_AND_OPEN_POSITION_SCREEN_INTEGRATION`
+  slice is `CONDITIONAL_ACCEPTED`. The unified operations read model now
+  separates working orders from open positions instead of publishing every
+  strategy instance into both tables. `Orders` now keeps only working
+  internal-paper order rows, while `Positions` now keeps only open positions.
+  Both projections now preserve operator-facing trade fields including
+  contract, lots, lot size, target, active SL, and usable entry timestamps.
+  This closes the dashboard/operator confusion where `NO_ORDER` /
+  `NO_POSITION` placeholders looked like runtime failures and where filled
+  internal-paper entries were still shown as if they were pending orders.
+  Focused validation passed in
+  `tests/unit/test_multi_strategy_runtime_dashboard_v1.py`,
+  `tests/unit/test_live_market_internal_paper_runtime_fixes.py`, and
+  `tests/unit/test_live_market_internal_paper_reporting.py` (`17 passed`).
+  External broker-order authority remains `NONE`.
+- as of Wednesday, August 5, 2026 at 08:42 IST, the
+  `URGENT_PRIMARY_MILESTONE_COMPLETE_LIVE_MARKET_UNIFIED_INTERNAL_PAPER_TRADING_FOR_S21_S22_AND_S23`
+  slice is `CONDITIONAL`. The repo now has a dedicated live-market registry at
+  `config/live_market_internal_paper_strategy_instances.yaml`, a single
+  operator launcher at `scripts/run_live_market_internal_paper.py`, and a new
+  live-market evidence exporter at
+  `src/tfis/runtime/multi_strategy/live_market_internal_paper.py`. The
+  canonical `prepare` command now refreshes FYERS read-only authentication,
+  runs broker diagnostics, runs complete-session preflight, and emits the new
+  report pack under `reports/live_market_internal_paper/`. A bounded
+  Wednesday, August 5, 2026 supervisor proof already reaches the real
+  five-instance live scope
+  (`S21/BANKNIFTY`, `S22/RELIANCE`, `S22/TCS`, `S22/INFY`, `S23/NIFTY`)
+  inside `tmp/tfis_dashboard_v1/api/snapshot.json` with
+  `broker_order_authority = NONE` and `WAITING_FOR_MARKET` before the
+  opening windows. Honest remaining runtime gaps are now explicit instead of
+  hidden: the hot path still overruns because `provider_symbol_master_nsefo`
+  consumed about `65s` in the captured cycle, and the dashboard analytics
+  projection still shows stale `BLOCKED_ACCOUNT` rows for `S21` and `S23`
+  even though the live execution state is `ACCEPTED`. External broker-order
+  authority remains `NONE`.
+- as of Wednesday, August 5, 2026 at 01:10 IST, the
+  `DASHBOARD_ROUTE_AND_PROJECTION_INTEGRATION_DEFECT` slice is
+  `CONDITIONAL_ACCEPTED`. The operator dashboard no longer treats
+  `Opportunity Queue` and `Decision Workbench` as the same route key. The
+  frontend now uses distinct operator hashes and selection state for
+  `system-monitor`, `attention-queue`, `opportunity-queue`,
+  `decision-workbench`, `open-positions`, `order-state`,
+  `exposure-limits`, `trade-history`, `audit-trail`, `accounts-controls`,
+  and `platform-settings`, while still mapping `Opportunity Queue` and
+  `Decision Workbench` into the shared `Strategies` workspace through
+  explicit subview state. The fast-track multi-stock development dashboard
+  projection now also emits `strategy_definitions`, `strategy_instances`,
+  `strategy_status_counts`, `strategy_filter_options`, and
+  `navigation.strategy_groups`, so the operator queue no longer collapses to
+  false zero rows when three strategies clearly exist. The frontend now
+  shows a degraded projection warning if those structures are absent and only
+  derives queue summaries as an explicit compatibility fallback. Evidence for
+  the fix is recorded under `reports/dashboard_navigation_fix/`. External
+  broker-order authority remains `NONE`.
+- as of Wednesday, August 5, 2026 at 00:05 IST, the
+  `DASHBOARD_OPERATOR_WORKFLOW_REFRAME` slice is `IN_PROGRESS`. The frontend
+  operator shell is being reoriented away from page-first navigation and
+  toward six explicit operator workflows: monitor the system, review
+  opportunities, validate one decision, manage positions, review history, and
+  configure the platform. The current patch reshapes the operator rail,
+  workflow guidance, header copy, and section headings so the UI answers
+  operator questions first and page names second while preserving the same
+  underlying read-model truth and Decision Explorer depth. External
+  broker-order authority remains `NONE`.
+- as of Tuesday, August 4, 2026 at 23:45 IST, the controlled
+  `S22_MULTI_STOCK_DEVELOPMENT_ENABLEMENT_FOR_WEDNESDAY_AUGUST_5_2026`
+  slice is `PREPARED`. The separate `config/s22_multi_stock_registry.yaml`
+  development-only internal-paper profile now enables `RELIANCE`, `TCS`, and
+  `INFY` together with explicit pre-market plan values derived from the
+  August 4, 2026 post-close FYERS read-only evidence pack. `TCS` is prepared
+  with Monthly Status `BEAR_CF`, branch `BEAR_CALL`, contract
+  `NSE:TCS26AUG2380CE`, entry `64.05`, target `25.60`, and Original SL
+  `102.45`. `INFY` is prepared with Monthly Status `BEAR`, branch
+  `BEAR_CALL`, contract `NSE:INFY26AUG1140CE`, entry `31.25`, target `12.50`,
+  and Original SL `49.95`. A tomorrow pre-market operator artifact now exists
+  at `reports/fast_track_development_s22_multistock/tomorrow_s22_premarket_plan_2026-08-05.json`,
+  and the corresponding dashboard preview bundle was rebuilt at
+  `tmp/tfis_dashboard_s22_multistock_tomorrow/`. This enablement is scoped to
+  the controlled S22 development profile only; the main unified baseline
+  registry remains a separate surface. External broker-order authority remains
+  `NONE`.
+- as of Tuesday, August 4, 2026 at 23:20 IST, the
+  `NEXT_CORRECTION_MAKE_THE_STRATEGIES_EXPERIENCE_SCALE_TO_30_PLUS_STOCKS_AND_FUTURE_STRATEGY_FAMILIES`
+  slice is `CONDITIONAL_ACCEPTED`. The unified `dashboard_v3` projection now
+  emits backend strategy-definition summaries, compact strategy-instance list
+  rows, strategy status counts, and list-filter metadata instead of relying on
+  a flat large-card per-instance presentation. The dashboard frontend now uses
+  a three-level strategy experience: strategy family/definition summary,
+  compact instance list, and selected-instance workbench. The repo also now
+  emits the new strategy-scalability artifact pack under
+  `reports/dashboard_v3/`, including
+  `strategy_scalability_architecture.json`,
+  `strategy_definition_summary.json`,
+  `s22_30_stock_instance_list.json`,
+  `s22_status_counts.json`,
+  `s22_filter_sort_pagination_result.json`,
+  `multi_account_strategy_identity.json`,
+  `future_strategy_family_compatibility.json`,
+  `strategy_navigation_result.json`,
+  `strategy_scalability_smoke.json`, and
+  `strategy_scalability_gap_register.json`. Focused validation now passes in
+  `tests/unit/test_multi_strategy_runtime_dashboard_v1.py` (`10 passed`).
+  Honest remaining limitation: the scalable strategies experience is now in
+  place, but some business-stage explanation depth still depends on richer
+  immutable backend facts rather than deeper stage-level engine outputs.
 - as of Tuesday, August 4, 2026 at 22:40 IST, the
   `TFIS_PROFESSIONAL_OPERATOR_EXPERIENCE_AND_DECISION_WORKBENCH` slice is
   `CONDITIONAL_ACCEPTED`. The unified dashboard projection now emits

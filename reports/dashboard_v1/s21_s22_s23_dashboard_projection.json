@@ -111,7 +111,7 @@
   "audit": [
     {
       "command": "BUILD_UNIFIED_INTERNAL_PAPER_PROJECTION",
-      "evidence_hash": "54322cc0a08bab451b7199616291fcfe626ee03e3b5be4dca8674b04936eac02",
+      "evidence_hash": "34f50c83da789cddb93191c8e6bd0ce0382f619266298940c121ece33a4797db",
       "new_state": "UNIFIED_PROJECTION_READY",
       "operator": "SYSTEM",
       "preview": true,
@@ -160,12 +160,14 @@
     "blocked_instances": 0,
     "broker_data_session": "Read-only / Internal Paper",
     "broker_sessions": "READ_ONLY_OR_INTERNAL",
+    "carried_positions": 0,
     "critical_alert_rows": [],
     "critical_alerts": 0,
     "daily_realized_pnl": "3750.00",
     "daily_unrealized_pnl": "1800.00",
     "enabled_instruments": 3,
     "enabled_strategy_instances": 3,
+    "entry_available_instances": 0,
     "last_market_update": "2026-08-03T09:30:00+05:30",
     "margin_usage_pct": 54,
     "market_session_timeline": [
@@ -191,6 +193,7 @@
       }
     ],
     "market_state": "DETERMINISTIC_SESSION",
+    "no_trade_instances": 0,
     "open_positions": 3,
     "pending_actions": [
       {
@@ -218,6 +221,104 @@
         "event": "INTERNAL_FULL_FILL",
         "instrument": "NIFTY",
         "time": "2026-08-03T09:30:00+05:30"
+      }
+    ],
+    "strategy_definition_summaries": [
+      {
+        "accounts": [
+          "INTERNAL_PAPER_ACCOUNT_A"
+        ],
+        "blocked_count": 0,
+        "carried_count": 0,
+        "display_name": "S21 Monthly Option Selling",
+        "enabled_count": 1,
+        "entry_available_count": 0,
+        "evidence_quality": "Fixture Backed",
+        "family": "Option Selling",
+        "health": "Healthy",
+        "instance_ids": [
+          "S21_BANKNIFTY_INTERNAL_PAPER_A"
+        ],
+        "last_update": "2026-08-03T09:30:00+05:30",
+        "margin_usage_pct": 18,
+        "margin_used": 18,
+        "no_trade_count": 0,
+        "open_count": 1,
+        "prepared_count": 1,
+        "qualified_count": 1,
+        "realized_pnl": "6250.00",
+        "segment": "Index Options",
+        "strategy_code": "S21",
+        "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+        "supported_count": 1,
+        "supported_instruments": [
+          "BANKNIFTY"
+        ],
+        "unrealized_pnl": "0.00"
+      },
+      {
+        "accounts": [
+          "INTERNAL_PAPER_ACCOUNT_A"
+        ],
+        "blocked_count": 0,
+        "carried_count": 0,
+        "display_name": "S22 Stock Option Selling",
+        "enabled_count": 1,
+        "entry_available_count": 0,
+        "evidence_quality": "Deterministic Timing Supplement",
+        "family": "Option Selling",
+        "health": "Needs review",
+        "instance_ids": [
+          "S22_RELIANCE_INTERNAL_PAPER_A"
+        ],
+        "last_update": "2026-08-03T09:30:00+05:30",
+        "margin_usage_pct": 18,
+        "margin_used": 18,
+        "no_trade_count": 0,
+        "open_count": 1,
+        "prepared_count": 1,
+        "qualified_count": 1,
+        "realized_pnl": "-2500.00",
+        "segment": "Stock Options",
+        "strategy_code": "S22",
+        "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+        "supported_count": 188,
+        "supported_instruments": [
+          "RELIANCE"
+        ],
+        "unrealized_pnl": "0.00"
+      },
+      {
+        "accounts": [
+          "INTERNAL_PAPER_ACCOUNT_A"
+        ],
+        "blocked_count": 0,
+        "carried_count": 0,
+        "display_name": "S23 Weekly Option Selling",
+        "enabled_count": 1,
+        "entry_available_count": 0,
+        "evidence_quality": "Fixture Backed",
+        "family": "Option Selling",
+        "health": "Healthy",
+        "instance_ids": [
+          "S23_NIFTY_INTERNAL_PAPER_A"
+        ],
+        "last_update": "2026-08-03T09:30:00+05:30",
+        "margin_usage_pct": 18,
+        "margin_used": 18,
+        "no_trade_count": 0,
+        "open_count": 1,
+        "prepared_count": 1,
+        "qualified_count": 1,
+        "realized_pnl": "0.00",
+        "segment": "Index Options",
+        "strategy_code": "S23",
+        "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+        "supported_count": 1,
+        "supported_instruments": [
+          "NIFTY"
+        ],
+        "unrealized_pnl": "1800.00"
       }
     ],
     "strategy_health": [
@@ -253,27 +354,193 @@
   "decision_explanations": [
     {
       "calculation_timestamp": "2026-08-03T09:30:00+05:30",
-      "candidate_evidence": {},
+      "candidate_evidence": {
+        "derivation": {
+          "available": true,
+          "borrowed_window_status": "BULL_CF",
+          "checked_lookback_windows": 2,
+          "current_window_direct_status": "UNKNOWN",
+          "evaluation_timestamp": "2026-08-03T15:29:59+05:30",
+          "formula_text": "Monthly Status is determined by the generic monthly-status engine using monthly and weekly reference levels, then applying continuation or transition rules to reach one final status.",
+          "lookback_used": true,
+          "reason": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+          "references": {
+            "CMH": 58247.95,
+            "CML": 57465.95,
+            "CWH": 58247.95,
+            "CWL": 57465.95,
+            "PMH": 58596.85,
+            "PML": 56023.6,
+            "PWH": 57411.25,
+            "PWL": 56672.4,
+            "current_price": 58247.95
+          },
+          "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+          "source": "report_fallback",
+          "source_path": "reports/fast_track_development/today_s21_result.json",
+          "steps": [
+            {
+              "detail": "TFIS starts by loading the current-month and prior-period levels used by the generic Monthly Status engine.",
+              "result": "Reference levels loaded",
+              "step": 1,
+              "title": "Collect the monthly and weekly reference levels",
+              "values": {
+                "CMH": 58247.95,
+                "CML": 57465.95,
+                "CWH": 58247.95,
+                "CWL": 57465.95,
+                "PMH": 58596.85,
+                "PML": 56023.6,
+                "PWH": 57411.25,
+                "PWL": 56672.4,
+                "current_price": 58247.95
+              }
+            },
+            {
+              "detail": "The engine first tries to classify the current month directly from the current month and week structure.",
+              "result": "Unknown",
+              "step": 2,
+              "title": "Check the current month first",
+              "values": {
+                "current_window_direct_status": "UNKNOWN"
+              }
+            },
+            {
+              "detail": "Because the current month did not classify cleanly, TFIS borrowed the last usable monthly status from an earlier month/week context.",
+              "result": "Bull Cf",
+              "step": 3,
+              "title": "Walk back to the last usable historical context",
+              "values": {
+                "borrowed_window_status": "BULL_CF",
+                "checked_lookback_windows": 2
+              }
+            },
+            {
+              "detail": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+              "result": "Bull Cf",
+              "step": 4,
+              "title": "Apply the transition or continuation rule",
+              "values": {
+                "lookback_used": true,
+                "threshold_value": 59479.098822812506,
+                "trigger_name": "LOOKBACK::BULL_CF_CONTINUES"
+              }
+            },
+            {
+              "detail": "This final status is then passed to the strategy so TFIS can decide which branch is even eligible to trade.",
+              "result": "Bull Cf",
+              "step": 5,
+              "title": "Emit the final Monthly Status for strategy use",
+              "values": {
+                "monthly_status": "BULL_CF",
+                "reason": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN."
+              }
+            }
+          ],
+          "threshold_value": 59479.098822812506,
+          "trigger_name": "LOOKBACK::BULL_CF_CONTINUES",
+          "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET"
+        }
+      },
       "decision_id": "S21_BANKNIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
       "evidence_mode": "READ_MODEL_DERIVED",
       "evidence_quality": "FIXTURE_BACKED",
       "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
-      "formula_text": "Monthly Status emitted by backend runtime projection; no frontend calculation.",
+      "formula_text": "Monthly Status is determined by the generic monthly-status engine using monthly and weekly reference levels, then applying continuation or transition rules to reach one final status.",
       "input_values": {
+        "evaluation_timestamp": "2026-08-03T15:29:59+05:30",
         "instrument": "BANKNIFTY",
+        "monthly_references": {
+          "CMH": 58247.95,
+          "CML": 57465.95,
+          "CWH": 58247.95,
+          "CWL": 57465.95,
+          "PMH": 58596.85,
+          "PML": 56023.6,
+          "PWH": 57411.25,
+          "PWL": 56672.4,
+          "current_price": 58247.95
+        },
         "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"
       },
       "instrument": "BANKNIFTY",
-      "intermediate_values": {},
+      "intermediate_values": {
+        "borrowed_window_status": "BULL_CF",
+        "checked_lookback_windows": 2,
+        "current_window_direct_status": "UNKNOWN",
+        "derivation_steps": [
+          {
+            "detail": "TFIS starts by loading the current-month and prior-period levels used by the generic Monthly Status engine.",
+            "result": "Reference levels loaded",
+            "step": 1,
+            "title": "Collect the monthly and weekly reference levels",
+            "values": {
+              "CMH": 58247.95,
+              "CML": 57465.95,
+              "CWH": 58247.95,
+              "CWL": 57465.95,
+              "PMH": 58596.85,
+              "PML": 56023.6,
+              "PWH": 57411.25,
+              "PWL": 56672.4,
+              "current_price": 58247.95
+            }
+          },
+          {
+            "detail": "The engine first tries to classify the current month directly from the current month and week structure.",
+            "result": "Unknown",
+            "step": 2,
+            "title": "Check the current month first",
+            "values": {
+              "current_window_direct_status": "UNKNOWN"
+            }
+          },
+          {
+            "detail": "Because the current month did not classify cleanly, TFIS borrowed the last usable monthly status from an earlier month/week context.",
+            "result": "Bull Cf",
+            "step": 3,
+            "title": "Walk back to the last usable historical context",
+            "values": {
+              "borrowed_window_status": "BULL_CF",
+              "checked_lookback_windows": 2
+            }
+          },
+          {
+            "detail": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+            "result": "Bull Cf",
+            "step": 4,
+            "title": "Apply the transition or continuation rule",
+            "values": {
+              "lookback_used": true,
+              "threshold_value": 59479.098822812506,
+              "trigger_name": "LOOKBACK::BULL_CF_CONTINUES"
+            }
+          },
+          {
+            "detail": "This final status is then passed to the strategy so TFIS can decide which branch is even eligible to trade.",
+            "result": "Bull Cf",
+            "step": 5,
+            "title": "Emit the final Monthly Status for strategy use",
+            "values": {
+              "monthly_status": "BULL_CF",
+              "reason": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN."
+            }
+          }
+        ],
+        "lookback_used": true,
+        "threshold_value": 59479.098822812506,
+        "trigger_name": "LOOKBACK::BULL_CF_CONTINUES"
+      },
       "output_value": {
+        "derivation_summary": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
         "monthly_status": "BULL_CF",
         "monthly_status_label": "Bull Cf"
       },
       "rejection_reason": null,
-      "rule_id": "READ_MODEL_MONTHLY_STATUS",
+      "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
       "stage": "MONTHLY_STATUS",
       "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
-      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+      "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET"
     },
     {
       "calculation_timestamp": "2026-08-03T09:30:00+05:30",
@@ -427,27 +694,225 @@
     },
     {
       "calculation_timestamp": "2026-08-03T09:30:00+05:30",
-      "candidate_evidence": {},
+      "candidate_evidence": {
+        "derivation": {
+          "available": true,
+          "borrowed_window_status": "BEAR_CF",
+          "checked_lookback_windows": 1,
+          "current_window_direct_status": "UNKNOWN",
+          "evaluation_timestamp": "2026-07-31T15:29:59+05:30",
+          "formula_text": "Monthly Status is determined by the generic monthly-status engine using monthly and weekly reference levels, then applying continuation or transition rules to reach one final status.",
+          "lookback_used": true,
+          "reason": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+          "references": {
+            "CMH": 1345.9,
+            "CML": 1249.8,
+            "CWH": 1309.7,
+            "CWL": 1265.9,
+            "PMH": 1344.9,
+            "PML": 1253.2,
+            "PWH": 1345.9,
+            "PWL": 1249.8,
+            "current_price": 1307.8
+          },
+          "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+          "source": "report_fallback",
+          "source_path": "reports/s22_reliance/s22_reliance_monthly_status.json",
+          "steps": [
+            {
+              "detail": "TFIS starts by loading the current-month and prior-period levels used by the generic Monthly Status engine.",
+              "result": "Reference levels loaded",
+              "step": 1,
+              "title": "Collect the monthly and weekly reference levels",
+              "values": {
+                "CMH": 1345.9,
+                "CML": 1249.8,
+                "CWH": 1309.7,
+                "CWL": 1265.9,
+                "PMH": 1344.9,
+                "PML": 1253.2,
+                "PWH": 1345.9,
+                "PWL": 1249.8,
+                "current_price": 1307.8
+              }
+            },
+            {
+              "detail": "The engine first tries to classify the current month directly from the current month and week structure.",
+              "result": "Unknown",
+              "step": 2,
+              "title": "Check the current month first",
+              "values": {
+                "current_window_direct_status": "UNKNOWN"
+              }
+            },
+            {
+              "detail": "Current month did not decisively breach the previous month's bullish or bearish monthly thresholds.",
+              "result": "Unknown",
+              "step": 3,
+              "title": "Evaluate current context",
+              "values": {
+                "context_month": "2026-07",
+                "context_week": "2026-W31",
+                "threshold_value": null,
+                "trigger_name": "NO_MONTHLY_TRIGGER",
+                "used_for_resolution": false
+              }
+            },
+            {
+              "detail": "Current month low breached the bearish confirmation threshold derived from PML minus a-percent and the second b-percent contraction.",
+              "result": "Bear Cf",
+              "step": 4,
+              "title": "Evaluate lookback 1 context",
+              "values": {
+                "context_month": "2026-06",
+                "context_week": "2026-W27",
+                "threshold_value": 1254.1892999999998,
+                "trigger_name": "BEAR_CF_B_THRESHOLD",
+                "used_for_resolution": true
+              }
+            },
+            {
+              "detail": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+              "result": "Bear Cf",
+              "step": 5,
+              "title": "Apply the transition or continuation rule",
+              "values": {
+                "lookback_used": true,
+                "threshold_value": 1197.4326,
+                "trigger_name": "LOOKBACK::BEAR_CF_CONTINUES"
+              }
+            },
+            {
+              "detail": "This final status is then passed to the strategy so TFIS can decide which branch is even eligible to trade.",
+              "result": "Bear Cf",
+              "step": 6,
+              "title": "Emit the final Monthly Status for strategy use",
+              "values": {
+                "monthly_status": "BEAR_CF",
+                "reason": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN."
+              }
+            }
+          ],
+          "threshold_value": 1197.4326,
+          "trigger_name": "LOOKBACK::BEAR_CF_CONTINUES",
+          "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET"
+        }
+      },
       "decision_id": "S22_RELIANCE_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
       "evidence_mode": "READ_MODEL_DERIVED",
       "evidence_quality": "DETERMINISTIC_TIMING_SUPPLEMENT",
       "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
-      "formula_text": "Monthly Status emitted by backend runtime projection; no frontend calculation.",
+      "formula_text": "Monthly Status is determined by the generic monthly-status engine using monthly and weekly reference levels, then applying continuation or transition rules to reach one final status.",
       "input_values": {
+        "evaluation_timestamp": "2026-07-31T15:29:59+05:30",
         "instrument": "RELIANCE",
+        "monthly_references": {
+          "CMH": 1345.9,
+          "CML": 1249.8,
+          "CWH": 1309.7,
+          "CWL": 1265.9,
+          "PMH": 1344.9,
+          "PML": 1253.2,
+          "PWH": 1345.9,
+          "PWL": 1249.8,
+          "current_price": 1307.8
+        },
         "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A"
       },
       "instrument": "RELIANCE",
-      "intermediate_values": {},
+      "intermediate_values": {
+        "borrowed_window_status": "BEAR_CF",
+        "checked_lookback_windows": 1,
+        "current_window_direct_status": "UNKNOWN",
+        "derivation_steps": [
+          {
+            "detail": "TFIS starts by loading the current-month and prior-period levels used by the generic Monthly Status engine.",
+            "result": "Reference levels loaded",
+            "step": 1,
+            "title": "Collect the monthly and weekly reference levels",
+            "values": {
+              "CMH": 1345.9,
+              "CML": 1249.8,
+              "CWH": 1309.7,
+              "CWL": 1265.9,
+              "PMH": 1344.9,
+              "PML": 1253.2,
+              "PWH": 1345.9,
+              "PWL": 1249.8,
+              "current_price": 1307.8
+            }
+          },
+          {
+            "detail": "The engine first tries to classify the current month directly from the current month and week structure.",
+            "result": "Unknown",
+            "step": 2,
+            "title": "Check the current month first",
+            "values": {
+              "current_window_direct_status": "UNKNOWN"
+            }
+          },
+          {
+            "detail": "Current month did not decisively breach the previous month's bullish or bearish monthly thresholds.",
+            "result": "Unknown",
+            "step": 3,
+            "title": "Evaluate current context",
+            "values": {
+              "context_month": "2026-07",
+              "context_week": "2026-W31",
+              "threshold_value": null,
+              "trigger_name": "NO_MONTHLY_TRIGGER",
+              "used_for_resolution": false
+            }
+          },
+          {
+            "detail": "Current month low breached the bearish confirmation threshold derived from PML minus a-percent and the second b-percent contraction.",
+            "result": "Bear Cf",
+            "step": 4,
+            "title": "Evaluate lookback 1 context",
+            "values": {
+              "context_month": "2026-06",
+              "context_week": "2026-W27",
+              "threshold_value": 1254.1892999999998,
+              "trigger_name": "BEAR_CF_B_THRESHOLD",
+              "used_for_resolution": true
+            }
+          },
+          {
+            "detail": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
+            "result": "Bear Cf",
+            "step": 5,
+            "title": "Apply the transition or continuation rule",
+            "values": {
+              "lookback_used": true,
+              "threshold_value": 1197.4326,
+              "trigger_name": "LOOKBACK::BEAR_CF_CONTINUES"
+            }
+          },
+          {
+            "detail": "This final status is then passed to the strategy so TFIS can decide which branch is even eligible to trade.",
+            "result": "Bear Cf",
+            "step": 6,
+            "title": "Emit the final Monthly Status for strategy use",
+            "values": {
+              "monthly_status": "BEAR_CF",
+              "reason": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN."
+            }
+          }
+        ],
+        "lookback_used": true,
+        "threshold_value": 1197.4326,
+        "trigger_name": "LOOKBACK::BEAR_CF_CONTINUES"
+      },
       "output_value": {
+        "derivation_summary": "Resolved from prior month/week context because the current month's direct monthly structure was UNKNOWN.",
         "monthly_status": "BEAR_CF",
         "monthly_status_label": "Bear Cf"
       },
       "rejection_reason": null,
-      "rule_id": "READ_MODEL_MONTHLY_STATUS",
+      "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
       "stage": "MONTHLY_STATUS",
       "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
-      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+      "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET"
     },
     {
       "calculation_timestamp": "2026-08-03T09:30:00+05:30",
@@ -601,27 +1066,173 @@
     },
     {
       "calculation_timestamp": "2026-08-03T09:30:00+05:30",
-      "candidate_evidence": {},
+      "candidate_evidence": {
+        "derivation": {
+          "available": true,
+          "borrowed_window_status": null,
+          "checked_lookback_windows": 0,
+          "current_window_direct_status": "BULL",
+          "evaluation_timestamp": "2026-08-03T15:29:59+05:30",
+          "formula_text": "Monthly Status is determined by the generic monthly-status engine using monthly and weekly reference levels, then applying continuation or transition rules to reach one final status.",
+          "lookback_used": false,
+          "reason": "Current month resolved directly from monthly structure rules.",
+          "references": {
+            "CMH": 24774.3,
+            "CML": 24515.15,
+            "CWH": 24774.3,
+            "CWL": 24515.15,
+            "PMH": 24530.9,
+            "PML": 23606.3,
+            "PWH": 24429.4,
+            "PWL": 23891.55,
+            "current_price": 24774.3
+          },
+          "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
+          "source": "report_fallback",
+          "source_path": "reports/fast_track_development/today_s23_result.json",
+          "steps": [
+            {
+              "detail": "TFIS starts by loading the current-month and prior-period levels used by the generic Monthly Status engine.",
+              "result": "Reference levels loaded",
+              "step": 1,
+              "title": "Collect the monthly and weekly reference levels",
+              "values": {
+                "CMH": 24774.3,
+                "CML": 24515.15,
+                "CWH": 24774.3,
+                "CWL": 24515.15,
+                "PMH": 24530.9,
+                "PML": 23606.3,
+                "PWH": 24429.4,
+                "PWL": 23891.55,
+                "current_price": 24774.3
+              }
+            },
+            {
+              "detail": "The engine first tries to classify the current month directly from the current month and week structure.",
+              "result": "Bull",
+              "step": 2,
+              "title": "Check the current month first",
+              "values": {
+                "current_window_direct_status": "BULL"
+              }
+            },
+            {
+              "detail": "Current month resolved directly from monthly structure rules.",
+              "result": "Bull",
+              "step": 3,
+              "title": "Apply the transition or continuation rule",
+              "values": {
+                "lookback_used": false,
+                "threshold_value": 24714.881750000004,
+                "trigger_name": "BULL_CONTINUES"
+              }
+            },
+            {
+              "detail": "This final status is then passed to the strategy so TFIS can decide which branch is even eligible to trade.",
+              "result": "Bull",
+              "step": 4,
+              "title": "Emit the final Monthly Status for strategy use",
+              "values": {
+                "monthly_status": "BULL",
+                "reason": "Current month resolved directly from monthly structure rules."
+              }
+            }
+          ],
+          "threshold_value": 24714.881750000004,
+          "trigger_name": "BULL_CONTINUES",
+          "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET"
+        }
+      },
       "decision_id": "S23_NIFTY_INTERNAL_PAPER_A:2026-08-03T09:30:00+05:30",
       "evidence_mode": "READ_MODEL_DERIVED",
       "evidence_quality": "FIXTURE_BACKED",
       "evidence_source": "UNIFIED_RUNTIME_PROJECTION",
-      "formula_text": "Monthly Status emitted by backend runtime projection; no frontend calculation.",
+      "formula_text": "Monthly Status is determined by the generic monthly-status engine using monthly and weekly reference levels, then applying continuation or transition rules to reach one final status.",
       "input_values": {
+        "evaluation_timestamp": "2026-08-03T15:29:59+05:30",
         "instrument": "NIFTY",
+        "monthly_references": {
+          "CMH": 24774.3,
+          "CML": 24515.15,
+          "CWH": 24774.3,
+          "CWL": 24515.15,
+          "PMH": 24530.9,
+          "PML": 23606.3,
+          "PWH": 24429.4,
+          "PWL": 23891.55,
+          "current_price": 24774.3
+        },
         "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A"
       },
       "instrument": "NIFTY",
-      "intermediate_values": {},
+      "intermediate_values": {
+        "borrowed_window_status": null,
+        "checked_lookback_windows": 0,
+        "current_window_direct_status": "BULL",
+        "derivation_steps": [
+          {
+            "detail": "TFIS starts by loading the current-month and prior-period levels used by the generic Monthly Status engine.",
+            "result": "Reference levels loaded",
+            "step": 1,
+            "title": "Collect the monthly and weekly reference levels",
+            "values": {
+              "CMH": 24774.3,
+              "CML": 24515.15,
+              "CWH": 24774.3,
+              "CWL": 24515.15,
+              "PMH": 24530.9,
+              "PML": 23606.3,
+              "PWH": 24429.4,
+              "PWL": 23891.55,
+              "current_price": 24774.3
+            }
+          },
+          {
+            "detail": "The engine first tries to classify the current month directly from the current month and week structure.",
+            "result": "Bull",
+            "step": 2,
+            "title": "Check the current month first",
+            "values": {
+              "current_window_direct_status": "BULL"
+            }
+          },
+          {
+            "detail": "Current month resolved directly from monthly structure rules.",
+            "result": "Bull",
+            "step": 3,
+            "title": "Apply the transition or continuation rule",
+            "values": {
+              "lookback_used": false,
+              "threshold_value": 24714.881750000004,
+              "trigger_name": "BULL_CONTINUES"
+            }
+          },
+          {
+            "detail": "This final status is then passed to the strategy so TFIS can decide which branch is even eligible to trade.",
+            "result": "Bull",
+            "step": 4,
+            "title": "Emit the final Monthly Status for strategy use",
+            "values": {
+              "monthly_status": "BULL",
+              "reason": "Current month resolved directly from monthly structure rules."
+            }
+          }
+        ],
+        "lookback_used": false,
+        "threshold_value": 24714.881750000004,
+        "trigger_name": "BULL_CONTINUES"
+      },
       "output_value": {
+        "derivation_summary": "Current month resolved directly from monthly structure rules.",
         "monthly_status": "BULL_CF",
         "monthly_status_label": "Bull Cf"
       },
       "rejection_reason": null,
-      "rule_id": "READ_MODEL_MONTHLY_STATUS",
+      "rule_id": "MONTHLY_STATUS.GENERIC.ENGINE.001",
       "stage": "MONTHLY_STATUS",
       "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
-      "workbook_source": "READ_MODEL_DERIVED_RUNTIME_PROJECTION"
+      "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET"
     },
     {
       "calculation_timestamp": "2026-08-03T09:30:00+05:30",
@@ -798,7 +1409,7 @@
         "entry": "925.00",
         "evidence": "Fixture Backed",
         "exit": "OPEN",
-        "explanation_snapshot": "d0bc45048939a1fe16e42bb451d98ccf6992c52bbc392e3f864f48ff6fa6407e",
+        "explanation_snapshot": "ff7338d354669c025c7a049f6d26818997694ca76da815b214cfae128f720822",
         "fills": 15,
         "protection": "Protected",
         "selected_contract": "BANKNIFTY24JAN47000CE",
@@ -828,7 +1439,7 @@
         "entry": "57.50",
         "evidence": "Deterministic Timing Supplement",
         "exit": "OPEN",
-        "explanation_snapshot": "63cb0492eb6fd848b4bb49fb1c2797e737bd974a5f6206612845a43adf15f21e",
+        "explanation_snapshot": "25ea27aa8d0d1d1a92d4d5dc8a514774d034ef5ff7291121a6f5e179d8543ee3",
         "fills": 500,
         "protection": "Protected",
         "selected_contract": "NSE:RELIANCE26AUG1260CE",
@@ -858,7 +1469,7 @@
         "entry": "194.25",
         "evidence": "Fixture Backed",
         "exit": "OPEN",
-        "explanation_snapshot": "c2d826a56dfab4b862f3b51444c4580e43927e5ccf40be789892993ffe6bb018",
+        "explanation_snapshot": "4b3cee9e3d67e595c754b6c7ed570596be97923a3e5525fa9986a8993eb59fe3",
         "fills": 50,
         "protection": "Protected",
         "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE",
@@ -902,6 +1513,67 @@
       "Settings"
     ],
     "product_modes_share_backend_truth": true,
+    "strategy_groups": [
+      {
+        "definitions": [
+          {
+            "display_name": "S21 Monthly Option Selling",
+            "enabled_count": 1,
+            "status_counts": {
+              "alerts": 0,
+              "all": 1,
+              "blocked": 0,
+              "carried": 0,
+              "enabled": 1,
+              "entry_available": 0,
+              "missing_evidence": 0,
+              "no_trade": 0,
+              "open_positions": 1
+            },
+            "strategy_code": "S21",
+            "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+            "supported_count": 1
+          },
+          {
+            "display_name": "S22 Stock Option Selling",
+            "enabled_count": 1,
+            "status_counts": {
+              "alerts": 1,
+              "all": 1,
+              "blocked": 0,
+              "carried": 0,
+              "enabled": 1,
+              "entry_available": 0,
+              "missing_evidence": 1,
+              "no_trade": 0,
+              "open_positions": 1
+            },
+            "strategy_code": "S22",
+            "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+            "supported_count": 188
+          },
+          {
+            "display_name": "S23 Weekly Option Selling",
+            "enabled_count": 1,
+            "status_counts": {
+              "alerts": 0,
+              "all": 1,
+              "blocked": 0,
+              "carried": 0,
+              "enabled": 1,
+              "entry_available": 0,
+              "missing_evidence": 0,
+              "no_trade": 0,
+              "open_positions": 1
+            },
+            "strategy_code": "S23",
+            "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+            "supported_count": 1
+          }
+        ],
+        "family": "Option Selling"
+      }
+    ],
     "strategy_hierarchy": [
       "Strategy Family",
       "Strategy Definition",
@@ -1149,7 +1821,7 @@
       "unrealized_pnl": "1800.00"
     }
   ],
-  "projection_hash": "8b7a5633fcefec650ca24bc52c0993fbb02ff88b18f80fa4e6a6121c36c01e13",
+  "projection_hash": "043c0ee6df16311df2fb27b7e02c52f4f89e00bfdea3f205b47fda252145a000",
   "risk": {
     "aggregate": {
       "available_margin": 460000,
@@ -1335,9 +2007,12 @@
       "identity": {
         "account": "INTERNAL_PAPER_ACCOUNT_A",
         "broker": "Internal Fixture",
+        "configured_lots": 1,
         "exchange": "NSE",
         "instance": "S21_BANKNIFTY_INTERNAL_PAPER_A",
         "instrument": "BANKNIFTY",
+        "lot_size": 15,
+        "margin_limit_pct": 25,
         "product": "OPTION_SELLING",
         "product_label": "Option Selling",
         "segment": "INDEX",
@@ -1345,7 +2020,9 @@
         "session": "NSE:2026-08-03:INTERNAL_PAPER",
         "strategy": "S21",
         "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+        "strategy_display_name": "S21 Monthly Option Selling",
         "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+        "supported_instruments_count": 1,
         "version": "s21.phase5d.complete.v1"
       },
       "operations": {
@@ -1408,7 +2085,7 @@
         "side": "CALL SELL",
         "target": "370.00"
       },
-      "read_model_hash": "d0bc45048939a1fe16e42bb451d98ccf6992c52bbc392e3f864f48ff6fa6407e",
+      "read_model_hash": "ff7338d354669c025c7a049f6d26818997694ca76da815b214cfae128f720822",
       "state": {
         "branch": "BULL_CALL",
         "branch_label": "Bull Call",
@@ -1465,9 +2142,12 @@
       "identity": {
         "account": "INTERNAL_PAPER_ACCOUNT_A",
         "broker": "FYERS",
+        "configured_lots": 1,
         "exchange": "NSE",
         "instance": "S22_RELIANCE_INTERNAL_PAPER_A",
         "instrument": "RELIANCE",
+        "lot_size": 500,
+        "margin_limit_pct": 20,
         "product": "OPTION_SELLING",
         "product_label": "Option Selling",
         "segment": "STOCK",
@@ -1475,7 +2155,9 @@
         "session": "NSE:2026-08-03:INTERNAL_PAPER",
         "strategy": "S22",
         "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+        "strategy_display_name": "S22 Stock Option Selling",
         "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+        "supported_instruments_count": 188,
         "version": "s22.reliance.stage1.v1"
       },
       "operations": {
@@ -1544,7 +2226,7 @@
         "side": "CALL SELL",
         "target": "23.00"
       },
-      "read_model_hash": "63cb0492eb6fd848b4bb49fb1c2797e737bd974a5f6206612845a43adf15f21e",
+      "read_model_hash": "25ea27aa8d0d1d1a92d4d5dc8a514774d034ef5ff7291121a6f5e179d8543ee3",
       "state": {
         "branch": "BEAR_CALL",
         "branch_label": "Bear Call",
@@ -1601,9 +2283,12 @@
       "identity": {
         "account": "INTERNAL_PAPER_ACCOUNT_A",
         "broker": "Internal Fixture",
+        "configured_lots": 1,
         "exchange": "NSE",
         "instance": "S23_NIFTY_INTERNAL_PAPER_A",
         "instrument": "NIFTY",
+        "lot_size": 50,
+        "margin_limit_pct": 25,
         "product": "OPTION_SELLING",
         "product_label": "Option Selling",
         "segment": "INDEX",
@@ -1611,7 +2296,9 @@
         "session": "NSE:2026-08-03:INTERNAL_PAPER",
         "strategy": "S23",
         "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+        "strategy_display_name": "S23 Weekly Option Selling",
         "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+        "supported_instruments_count": 1,
         "version": "s23.phase5c.complete.v1"
       },
       "operations": {
@@ -1674,7 +2361,7 @@
         "side": "PUT SELL",
         "target": "77.70"
       },
-      "read_model_hash": "c2d826a56dfab4b862f3b51444c4580e43927e5ccf40be789892993ffe6bb018",
+      "read_model_hash": "4b3cee9e3d67e595c754b6c7ed570596be97923a3e5525fa9986a8993eb59fe3",
       "state": {
         "branch": "BULL_PUT",
         "branch_label": "Bull Put",
@@ -1694,6 +2381,104 @@
         "runtime_stage": "INTERNAL_PAPER_POSITION_OPEN",
         "runtime_stage_label": "Internal Paper Position Open"
       }
+    }
+  ],
+  "strategy_definitions": [
+    {
+      "accounts": [
+        "INTERNAL_PAPER_ACCOUNT_A"
+      ],
+      "blocked_count": 0,
+      "carried_count": 0,
+      "display_name": "S21 Monthly Option Selling",
+      "enabled_count": 1,
+      "entry_available_count": 0,
+      "evidence_quality": "Fixture Backed",
+      "family": "Option Selling",
+      "health": "Healthy",
+      "instance_ids": [
+        "S21_BANKNIFTY_INTERNAL_PAPER_A"
+      ],
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "margin_usage_pct": 18,
+      "margin_used": 18,
+      "no_trade_count": 0,
+      "open_count": 1,
+      "prepared_count": 1,
+      "qualified_count": 1,
+      "realized_pnl": "6250.00",
+      "segment": "Index Options",
+      "strategy_code": "S21",
+      "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "supported_count": 1,
+      "supported_instruments": [
+        "BANKNIFTY"
+      ],
+      "unrealized_pnl": "0.00"
+    },
+    {
+      "accounts": [
+        "INTERNAL_PAPER_ACCOUNT_A"
+      ],
+      "blocked_count": 0,
+      "carried_count": 0,
+      "display_name": "S22 Stock Option Selling",
+      "enabled_count": 1,
+      "entry_available_count": 0,
+      "evidence_quality": "Deterministic Timing Supplement",
+      "family": "Option Selling",
+      "health": "Needs review",
+      "instance_ids": [
+        "S22_RELIANCE_INTERNAL_PAPER_A"
+      ],
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "margin_usage_pct": 18,
+      "margin_used": 18,
+      "no_trade_count": 0,
+      "open_count": 1,
+      "prepared_count": 1,
+      "qualified_count": 1,
+      "realized_pnl": "-2500.00",
+      "segment": "Stock Options",
+      "strategy_code": "S22",
+      "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "supported_count": 188,
+      "supported_instruments": [
+        "RELIANCE"
+      ],
+      "unrealized_pnl": "0.00"
+    },
+    {
+      "accounts": [
+        "INTERNAL_PAPER_ACCOUNT_A"
+      ],
+      "blocked_count": 0,
+      "carried_count": 0,
+      "display_name": "S23 Weekly Option Selling",
+      "enabled_count": 1,
+      "entry_available_count": 0,
+      "evidence_quality": "Fixture Backed",
+      "family": "Option Selling",
+      "health": "Healthy",
+      "instance_ids": [
+        "S23_NIFTY_INTERNAL_PAPER_A"
+      ],
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "margin_usage_pct": 18,
+      "margin_used": 18,
+      "no_trade_count": 0,
+      "open_count": 1,
+      "prepared_count": 1,
+      "qualified_count": 1,
+      "realized_pnl": "0.00",
+      "segment": "Index Options",
+      "strategy_code": "S23",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+      "supported_count": 1,
+      "supported_instruments": [
+        "NIFTY"
+      ],
+      "unrealized_pnl": "1800.00"
     }
   ],
   "strategy_families": [
@@ -1776,15 +2561,283 @@
       "strategy_count": 0
     }
   ],
+  "strategy_filter_options": {
+    "accounts": [
+      "INTERNAL_PAPER_ACCOUNT_A"
+    ],
+    "branches": [
+      "BEAR_CALL",
+      "BULL_CALL",
+      "BULL_PUT"
+    ],
+    "definitions": [
+      {
+        "display_name": "S21 Monthly Option Selling",
+        "strategy_code": "S21",
+        "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY"
+      },
+      {
+        "display_name": "S22 Stock Option Selling",
+        "strategy_code": "S22",
+        "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D"
+      },
+      {
+        "display_name": "S23 Weekly Option Selling",
+        "strategy_code": "S23",
+        "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH"
+      }
+    ],
+    "densities": [
+      "compact",
+      "detailed"
+    ],
+    "evidence": [
+      "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "FIXTURE_BACKED"
+    ],
+    "export_supported": true,
+    "health": [
+      "DEGRADED_EVIDENCE",
+      "HEALTHY"
+    ],
+    "monthly_statuses": [
+      "BEAR_CF",
+      "BULL_CF"
+    ],
+    "page_sizes": [
+      10,
+      20,
+      50
+    ],
+    "saved_views_supported": true,
+    "sort_fields": [
+      {
+        "key": "realized_pnl",
+        "label": "Realized P&L"
+      },
+      {
+        "key": "unrealized_pnl",
+        "label": "Unrealized P&L"
+      },
+      {
+        "key": "current_stage",
+        "label": "Current Stage"
+      },
+      {
+        "key": "last_update",
+        "label": "Last Update"
+      },
+      {
+        "key": "instrument",
+        "label": "Instrument"
+      }
+    ],
+    "stages": [
+      "INTERNAL_PAPER_POSITION_OPEN"
+    ],
+    "status_groups": [
+      {
+        "key": "all",
+        "label": "All"
+      },
+      {
+        "key": "enabled",
+        "label": "Enabled"
+      },
+      {
+        "key": "entry_available",
+        "label": "Entry Available"
+      },
+      {
+        "key": "open_positions",
+        "label": "Open Positions"
+      },
+      {
+        "key": "carried",
+        "label": "Carried"
+      },
+      {
+        "key": "blocked",
+        "label": "Blocked"
+      },
+      {
+        "key": "no_trade",
+        "label": "No Trade"
+      },
+      {
+        "key": "missing_evidence",
+        "label": "Missing Evidence"
+      },
+      {
+        "key": "alerts",
+        "label": "Alerts"
+      }
+    ]
+  },
+  "strategy_instances": [
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "alerts": [],
+      "blocked": false,
+      "branch": "BULL_CALL",
+      "current_stage": "INTERNAL_PAPER_POSITION_OPEN",
+      "enabled": true,
+      "enabled_label": "Enabled",
+      "entry": "925.00",
+      "entry_available": false,
+      "evidence": "FIXTURE_BACKED",
+      "evidence_label": "Fixture Backed",
+      "family": "Option Selling",
+      "fresh_or_carried": "FRESH",
+      "has_alerts": false,
+      "health": "HEALTHY",
+      "health_label": "Healthy",
+      "instrument": "BANKNIFTY",
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "monthly_status": "BULL_CF",
+      "no_trade": false,
+      "position": "OPEN_PROTECTED",
+      "position_label": "Open and Protected",
+      "qualified": true,
+      "realized_pnl": "6250.00",
+      "segment": "Index Options",
+      "selected_contract": "BANKNIFTY24JAN47000CE",
+      "strategy_code": "S21",
+      "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+      "strategy_display_name": "S21 Monthly Option Selling",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "unrealized_pnl": "0.00"
+    },
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "alerts": [
+        {
+          "code": "S22_LIVE_OPEN_ORPT_RC_PENDING",
+          "message": "S22 RELIANCE still requires real opening/ORPT/RC capture before complete live-evidence certification.",
+          "severity": "WARNING"
+        }
+      ],
+      "blocked": false,
+      "branch": "BEAR_CALL",
+      "current_stage": "INTERNAL_PAPER_POSITION_OPEN",
+      "enabled": true,
+      "enabled_label": "Enabled",
+      "entry": "57.50",
+      "entry_available": false,
+      "evidence": "DETERMINISTIC_TIMING_SUPPLEMENT",
+      "evidence_label": "Deterministic Timing Supplement",
+      "family": "Option Selling",
+      "fresh_or_carried": "FRESH",
+      "has_alerts": true,
+      "health": "DEGRADED_EVIDENCE",
+      "health_label": "Evidence Limited",
+      "instrument": "RELIANCE",
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "monthly_status": "BEAR_CF",
+      "no_trade": false,
+      "position": "OPEN_PROTECTED",
+      "position_label": "Open and Protected",
+      "qualified": true,
+      "realized_pnl": "-2500.00",
+      "segment": "Stock Options",
+      "selected_contract": "NSE:RELIANCE26AUG1260CE",
+      "strategy_code": "S22",
+      "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+      "strategy_display_name": "S22 Stock Option Selling",
+      "strategy_instance_id": "S22_RELIANCE_INTERNAL_PAPER_A",
+      "unrealized_pnl": "0.00"
+    },
+    {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "alerts": [],
+      "blocked": false,
+      "branch": "BULL_PUT",
+      "current_stage": "INTERNAL_PAPER_POSITION_OPEN",
+      "enabled": true,
+      "enabled_label": "Enabled",
+      "entry": "194.25",
+      "entry_available": false,
+      "evidence": "FIXTURE_BACKED",
+      "evidence_label": "Fixture Backed",
+      "family": "Option Selling",
+      "fresh_or_carried": "FRESH",
+      "has_alerts": false,
+      "health": "HEALTHY",
+      "health_label": "Healthy",
+      "instrument": "NIFTY",
+      "last_update": "2026-08-03T09:30:00+05:30",
+      "monthly_status": "BULL_CF",
+      "no_trade": false,
+      "position": "OPEN_PROTECTED",
+      "position_label": "Open and Protected",
+      "qualified": true,
+      "realized_pnl": "0.00",
+      "segment": "Index Options",
+      "selected_contract": "NIFTY_PHASE5C_PUT_FIXTURE",
+      "strategy_code": "S23",
+      "strategy_definition_id": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH",
+      "strategy_display_name": "S23 Weekly Option Selling",
+      "strategy_instance_id": "S23_NIFTY_INTERNAL_PAPER_A",
+      "unrealized_pnl": "1800.00"
+    }
+  ],
+  "strategy_status_counts": {
+    "by_definition": {
+      "S21_BANKNIFTY_OP_SELL_MONTHLY": {
+        "alerts": 0,
+        "all": 1,
+        "blocked": 0,
+        "carried": 0,
+        "enabled": 1,
+        "entry_available": 0,
+        "missing_evidence": 0,
+        "no_trade": 0,
+        "open_positions": 1
+      },
+      "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D": {
+        "alerts": 1,
+        "all": 1,
+        "blocked": 0,
+        "carried": 0,
+        "enabled": 1,
+        "entry_available": 0,
+        "missing_evidence": 1,
+        "no_trade": 0,
+        "open_positions": 1
+      },
+      "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D_FOUR_BRANCH": {
+        "alerts": 0,
+        "all": 1,
+        "blocked": 0,
+        "carried": 0,
+        "enabled": 1,
+        "entry_available": 0,
+        "missing_evidence": 0,
+        "no_trade": 0,
+        "open_positions": 1
+      }
+    },
+    "global": {
+      "alerts": 1,
+      "all": 3,
+      "blocked": 0,
+      "carried": 0,
+      "enabled": 3,
+      "entry_available": 0,
+      "missing_evidence": 1,
+      "no_trade": 0,
+      "open_positions": 3
+    }
+  },
   "system": {
     "authority_mode": "INTERNAL_PAPER_CONTROLLED",
     "broker_order_authority": "NONE",
     "dashboard_failure_financial_action": "IMPOSSIBLE_READ_ONLY_PROJECTION",
-    "generated_at": "2026-08-04T16:45:00+05:30",
+    "generated_at": "2026-08-04T23:20:00+05:30",
     "market_state": "DETERMINISTIC_SESSION",
     "projection_mode": "READ_ONLY_OPERATOR_PLATFORM",
     "projection_version": "dashboard_v3",
-    "registry_hash": "0cb84e07d2b92a0cc8dbb9cb77c34d7a4501d67c0031a9ea11b07e7dbe3ea221",
+    "registry_hash": "b411da7f0a6b9a90574bbc9fd314d9e7ddcc008aad5457d2241bc5fdda159d7d",
     "runtime": "UNIFIED_S21_S22_S23_INTERNAL_PAPER",
     "scenario_id": "all_three_qualify",
     "session": "NSE:2026-08-03:INTERNAL_PAPER",

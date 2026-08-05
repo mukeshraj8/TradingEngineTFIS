@@ -133,6 +133,24 @@ class AccountCoordinator:
         self._states[event.client_order_id] = event.new_state
         return event
 
+    def restore_client_order(
+        self,
+        client_order: ClientOrder,
+        *,
+        state: InternalPaperOrderState = InternalPaperOrderState.CREATED,
+    ) -> ClientOrder:
+        if client_order.broker_account_id != self.identity.broker_account_id:
+            raise AccountCoordinatorError("Account snapshot does not match restored client order.")
+        existing = self._orders.get(client_order.client_order_id)
+        if existing is not None:
+            if existing.order_hash != client_order.order_hash:
+                raise AccountCoordinatorError("Conflicting restored client order.")
+            return existing
+        self._orders[client_order.client_order_id] = client_order
+        self._intent_to_order[client_order.execution_intent_id] = client_order.client_order_id
+        self._states[client_order.client_order_id] = state
+        return client_order
+
     def apply_result(self, result: InternalPaperAdapterResult) -> InternalPaperAdapterResult:
         for event in result.events:
             self.record_event(event)

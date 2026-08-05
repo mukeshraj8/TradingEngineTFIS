@@ -6,7 +6,7 @@ Implemented a configuration-driven unified internal-paper projection for S21/BAN
 
 Dry-run scenarios: 14 passed.
 
-Projection hash: 8b7a5633fcefec650ca24bc52c0993fbb02ff88b18f80fa4e6a6121c36c01e13
+Projection hash: 043c0ee6df16311df2fb27b7e02c52f4f89e00bfdea3f205b47fda252145a000
 
 Safe dashboard smoke test: PASSED, with cleanup proof recorded in `dashboard_smoke_test.json` and `dashboard_process_cleanup.json`.
 

@@ -14,7 +14,32 @@ import yaml
 
 from tfis.broker.authentication import BrokerAuthenticationResult, BrokerSessionStatus
 from tfis.broker.authentication.fyers import FyersAuthenticationAdapter
-from tfis.fyers_read_only import FyersReadOnlyAdapter, FyersReadOnlyStatus, classify_monthly_expiries
+from tfis.accounting import (
+    AccountingQuality,
+    ChargeEvidence,
+    InstrumentDimensions,
+    MarkSnapshot,
+    PnLFactBuilder,
+    TradeFactBuilder,
+    build_accounting_result,
+)
+from tfis.execution_intent import IntentValidationDecision
+from tfis.execution_intent.reports import build_validation_input
+from tfis.execution_intent.validation import ExecutionIntentValidator
+from tfis.fyers_read_only import FyersReadOnlyAdapter, FyersReadOnlyStatus, classify_monthly_expiries, normalize_symbol_master_rows
+from tfis.internal_paper import (
+    AccountCoordinator,
+    ClientOrder,
+    DeterministicExecutionScenarioDefinition,
+    DeterministicInternalPaperAdapter,
+    DeterministicMarketEvidence,
+    InternalPaperExecutionScenario,
+    InternalPaperOrderState,
+    SimulatedPaperAccountSnapshot,
+    create_creation_event,
+    margin_after_reservation,
+)
+from tfis.internal_position import PositionCycleCoordinator
 from tfis.persistence import (
     PersistenceDatabase,
     UnitOfWork,
@@ -23,7 +48,8 @@ from tfis.persistence import (
     canonical_hash,
     run_integrity_scan,
 )
-from tfis.read_models.operations import OperationalReadModel, build_unified_dashboard_projection
+from tfis.read_models.operations.models import OperationalReadModel
+from tfis.read_models.operations.projection import build_unified_dashboard_projection
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 from tfis.runtime.process_lock import _process_exists, _process_matches_payload, _read_lock_payload
 from tfis.runtime.coordination import RuntimeSubscriptionIndex
@@ -33,8 +59,16 @@ from .live_contract_selection import (
     build_authoritative_live_selection,
     supports_authoritative_live_selection,
 )
+from .fast_track_development import (
+    _action_explanation_fact,
+    _build_account_snapshot,
+    _build_entry_intent,
+    _build_internal_paper_grant,
+    build_explanation_facts,
+)
 from .registry import EnabledStrategyInstance, EnabledStrategyRegistry, load_enabled_strategy_registry
 from .session_reconstruction import StrategyTimingPolicy, reconstruct_option_selling_entry, selected_contract_is_authoritative
+from .s22_stock_fast_track import build_s22_stock_historical_selection
 
 
 IST = ZoneInfo("Asia/Calcutta")
@@ -52,6 +86,7 @@ DEFAULT_SNAPSHOT_WRITE_INTERVAL_SECONDS = 15.0
 DEFAULT_CHECKPOINT_WRITE_INTERVAL_SECONDS = 30.0
 DEFAULT_REPORT_WRITE_INTERVAL_SECONDS = 300.0
 DEFAULT_PERFORMANCE_RETENTION_CYCLES = 240
+SYMBOL_MASTER_CACHE_FILENAME = "nsefo_symbol_master_cache.json"
 REQUIRED_SUPERVISOR_STATES = (
     "CREATED",
     "PREFLIGHT",
@@ -236,12 +271,14 @@ class UnifiedInternalPaperSupervisor:
         self._heartbeat_path = self.config.state_root / "heartbeat.json"
         self._pid_metadata_path = self.config.state_root / "continuous_unified_supervisor.pid.json"
         self._stop_signal_path = self.config.state_root / "continuous_unified_supervisor.stop"
+        self._symbol_master_cache_path = self.config.state_root / SYMBOL_MASTER_CACHE_FILENAME
+        self._underlying_symbols = _load_underlying_symbols(self.config.repo_root)
         self._timeline: list[dict[str, Any]] = []
         self._late_start_mode = False
         self._latest_auth: BrokerAuthenticationResult | None = None
         self._latest_auth_checked_at: datetime | None = None
         self._last_projection_hash = ""
-        self._cached_nsefo_records: tuple[Any, ...] = ()
+        self._cached_nsefo_records: tuple[Any, ...] = _read_symbol_master_cache(self._symbol_master_cache_path)
         self._cached_option_chain_by_underlying: dict[str, dict[str, Any]] = {}
         self._cached_recovery_snapshot_value: dict[str, Any] | None = None
         self._cached_recovery_snapshot_at: datetime | None = None
@@ -254,6 +291,8 @@ class UnifiedInternalPaperSupervisor:
         self._last_report_write_at: datetime | None = None
         self._last_report_state: str | None = None
         self._selected_contract_history: dict[str, list[dict[str, Any]]] = {}
+        self._paper_execution_state: dict[str, dict[str, Any]] = {}
+        self._paper_account_snapshots: dict[str, dict[str, Any]] = {}
 
     def run(self) -> ContinuousSupervisorRunResult:
         self._acquire_process_lock()
@@ -443,6 +482,13 @@ class UnifiedInternalPaperSupervisor:
             if nsefo_master.status is FyersReadOnlyStatus.SUCCESS:
                 records = tuple(nsefo_master.payload)
                 self._cached_nsefo_records = records
+                _write_symbol_master_cache(
+                    self._symbol_master_cache_path,
+                    exchange="NSEFO",
+                    source_version=str(getattr(records[0], "source_version", "FYERS_READ_ONLY_CACHE")) if records else "FYERS_READ_ONLY_CACHE",
+                    downloaded_at=getattr(records[0], "downloaded_at", self.now_provider()) if records else self.now_provider(),
+                    records=records,
+                )
             else:
                 records = self._cached_nsefo_records
 
@@ -480,14 +526,23 @@ class UnifiedInternalPaperSupervisor:
         stage_metrics: list[StageMetric],
     ) -> dict[str, Any]:
         if self._late_start_mode:
-            reconstruction = build_authoritative_historical_selection(
-                repo_root=self.config.repo_root,
-                instance=instance,
-                adapter=adapter,
-                instrument_records=instrument_records,
-                session_date=self.session_date,
-                now=now,
-            )
+            if instance.strategy_definition_id == "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D":
+                reconstruction = build_s22_stock_historical_selection(
+                    repo_root=self.config.repo_root,
+                    instance=instance,
+                    adapter=adapter,
+                    session_date=self.session_date,
+                    now=now,
+                )
+            else:
+                reconstruction = build_authoritative_historical_selection(
+                    repo_root=self.config.repo_root,
+                    instance=instance,
+                    adapter=adapter,
+                    instrument_records=instrument_records,
+                    session_date=self.session_date,
+                    now=now,
+                )
             continuity = {
                 "status": reconstruction.status,
                 "selected_contract": reconstruction.selected_contract,
@@ -515,6 +570,7 @@ class UnifiedInternalPaperSupervisor:
                         now=now,
                         adapter=adapter,
                         selected_contract=reconstruction.selected_contract,
+                        continuity=continuity,
                     )
                 )
             self._append_selected_contract_history(
@@ -556,6 +612,16 @@ class UnifiedInternalPaperSupervisor:
                 "live_plan": result.plan_payload,
                 "option_history_status": result.option_history_status,
             }
+            if result.selected_contract and now.timetz().replace(tzinfo=None) >= ORPT_TIME:
+                continuity.update(
+                    self._reconstructed_entry_context(
+                        instance=instance,
+                        now=now,
+                        adapter=adapter,
+                        selected_contract=result.selected_contract,
+                        continuity=continuity,
+                    )
+                )
             self._append_selected_contract_history(
                 instance.strategy_instance_id,
                 result.quote,
@@ -624,6 +690,21 @@ class UnifiedInternalPaperSupervisor:
                 "evidence": "LIVE_FYERS_READ_ONLY_CAPTURE",
                 "selected_contract_quote": quote_result.to_dict(),
                 "option_chain_status": option_chain.to_dict() if option_chain is not None else {"status": "UNAVAILABLE"},
+                **(
+                    self._reconstructed_entry_context(
+                        instance=instance,
+                        now=now,
+                        adapter=adapter,
+                        selected_contract=selected_contract,
+                        continuity={
+                            "status": "IDENTIFIABLE",
+                            "selected_contract": selected_contract,
+                            "evidence": "LIVE_FYERS_READ_ONLY_CAPTURE",
+                        },
+                    )
+                    if now.timetz().replace(tzinfo=None) >= ORPT_TIME
+                    else {}
+                ),
             }
 
         call_started_at = self.now_provider()
@@ -645,12 +726,23 @@ class UnifiedInternalPaperSupervisor:
                 "receipt_timestamp": now.isoformat(),
             },
         )
-        return {
+        continuity = {
             "status": "PREMARKET_SELECTED_CONTRACT_PINNED" if not self._late_start_mode else "IDENTIFIABLE",
             "selected_contract": selected_contract,
             "evidence": "FIXTURE_BACKED" if instance.evidence_quality == "FIXTURE_BACKED" else instance.evidence_quality,
             "selected_contract_quote": quote_result.to_dict(),
         }
+        if now.timetz().replace(tzinfo=None) >= ORPT_TIME:
+            continuity.update(
+                self._reconstructed_entry_context(
+                    instance=instance,
+                    now=now,
+                    adapter=adapter,
+                    selected_contract=selected_contract,
+                    continuity=continuity,
+                )
+            )
+        return continuity
 
     def _reconstructed_entry_context(
         self,
@@ -659,6 +751,7 @@ class UnifiedInternalPaperSupervisor:
         now: datetime,
         adapter: FyersReadOnlyAdapter,
         selected_contract: str,
+        continuity: Mapping[str, Any],
     ) -> dict[str, Any]:
         underlying_symbol = _resolve_underlying_symbol(instance.symbol, self._underlying_symbols)
         underlying_history = adapter.fetch_historical_candles(
@@ -690,7 +783,7 @@ class UnifiedInternalPaperSupervisor:
             invalid_runtime_classification="INVALID_RUNTIME_CLASSIFICATION",
             selected_contract_authoritative=selected_contract_is_authoritative(selected_contract),
             base_entry=Decimal(str(instance.deterministic_projection.get("entry") or "0")),
-            revised_entry=_revised_entry_for_instance(instance),
+            revised_entry=_revised_entry_for_instance(instance, continuity=continuity),
             underlying_bars=underlying_history.payload if underlying_history.status is FyersReadOnlyStatus.SUCCESS else None,
             option_bars=option_history.payload if option_history.status is FyersReadOnlyStatus.SUCCESS else None,
             current_quote=current_quote,
@@ -722,7 +815,562 @@ class UnifiedInternalPaperSupervisor:
         if len(history) > 240:
             del history[:-240]
 
+    def _evaluate_internal_paper_actions(
+        self,
+        *,
+        now: datetime,
+        live_context: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        account_snapshots = {
+            account_reference: _account_snapshot_from_dict(snapshot)
+            for account_reference, snapshot in self._paper_account_snapshots.items()
+        }
+        execution_state = {strategy_instance_id: dict(state) for strategy_instance_id, state in self._paper_execution_state.items()}
+        outcomes: dict[str, dict[str, Any]] = {}
+        explanation_facts: list[dict[str, Any]] = []
+        adapter = DeterministicInternalPaperAdapter()
+        instances = {item.strategy_instance_id: item for item in self.registry.enabled_instances}
+
+        for sequence, strategy_instance_id in enumerate(sorted(instances), start=1):
+            instance = instances[strategy_instance_id]
+            continuity = _action_ready_continuity(live_context["continuity"].get(strategy_instance_id) or {})
+            current_state = dict(execution_state.get(strategy_instance_id) or {})
+            explanation_facts.extend(
+                build_explanation_facts(
+                    instance=instance,
+                    continuity=continuity,
+                    now=now,
+                    trading_session_id=self.session_id,
+                )
+            )
+            outcome = self._evaluate_single_internal_paper_action(
+                now=now,
+                instance=instance,
+                continuity=continuity,
+                current_state=current_state,
+                account_snapshots=account_snapshots,
+                adapter=adapter,
+                sequence=sequence,
+            )
+            execution_state[strategy_instance_id] = dict(outcome["state"])
+            outcomes[strategy_instance_id] = dict(outcome["outcome"])
+            explanation_facts.append(
+                _action_explanation_fact(
+                    instance=instance,
+                    continuity=continuity,
+                    outcome=outcome["outcome"],
+                    now=now,
+                    trading_session_id=self.session_id,
+                )
+            )
+
+        self._paper_execution_state = execution_state
+        self._paper_account_snapshots = {
+            account_reference: snapshot.to_dict()
+            for account_reference, snapshot in account_snapshots.items()
+        }
+        return {
+            "outcomes": outcomes,
+            "states": execution_state,
+            "explanation_facts": explanation_facts,
+        }
+
+    def _evaluate_single_internal_paper_action(
+        self,
+        *,
+        now: datetime,
+        instance: EnabledStrategyInstance,
+        continuity: Mapping[str, Any],
+        current_state: Mapping[str, Any],
+        account_snapshots: dict[str, SimulatedPaperAccountSnapshot],
+        adapter: DeterministicInternalPaperAdapter,
+        sequence: int,
+    ) -> dict[str, Any]:
+        current_entry_state = str(continuity.get("current_entry_state") or "")
+        selected_contract = str(continuity.get("selected_contract") or "")
+        evidence_mode = str(continuity.get("recovery_mode") or "LIVE_OBSERVED")
+        filled_state = str(current_state.get("final_state") or "")
+        if filled_state == "FILLED_INTERNAL":
+            refreshed = _refresh_open_position_state(current_state=current_state, continuity=continuity, now=now)
+            return {
+                "state": refreshed,
+                "outcome": _outcome_from_state(instance=instance, state=refreshed, decision="PROCESSED_INTERNAL_PAPER"),
+            }
+
+        if self._late_start_mode and evidence_mode != "HISTORICALLY_RECONSTRUCTED":
+            blocked_state = _blocked_paper_state(
+                current_state=current_state,
+                continuity=continuity,
+                reason="LATE_START_NO_NEW_ENTRY",
+                now=now,
+            )
+            return {
+                "state": blocked_state,
+                "outcome": _outcome_from_state(instance=instance, state=blocked_state, decision="NO_ORDER"),
+            }
+
+        if current_entry_state not in {"NORMAL_ENTRY_STILL_VALID", "RC_ENTRY_STILL_VALID"}:
+            waiting_state = _blocked_paper_state(
+                current_state=current_state,
+                continuity=continuity,
+                reason=current_entry_state or str(continuity.get("status") or "WAITING"),
+                now=now,
+            )
+            return {
+                "state": waiting_state,
+                "outcome": _outcome_from_state(instance=instance, state=waiting_state, decision="NO_ORDER"),
+            }
+
+        if not selected_contract:
+            missing_state = _blocked_paper_state(
+                current_state=current_state,
+                continuity=continuity,
+                reason="SELECTED_CONTRACT_MISSING",
+                now=now,
+            )
+            return {
+                "state": missing_state,
+                "outcome": _outcome_from_state(instance=instance, state=missing_state, decision="NO_ORDER"),
+            }
+
+        intent = _build_entry_intent(
+            instance=instance,
+            continuity=continuity,
+            now=now,
+            trading_session_id=self.session_id,
+        )
+        grant = _build_internal_paper_grant(intent)
+        position_identity = self._build_position_cycle_identity(
+            instance=instance,
+            intent=intent,
+            continuity=continuity,
+        )
+        validation = ExecutionIntentValidator().validate(
+            build_validation_input(intent, validation_id=f"live-supervisor:{instance.strategy_instance_id}:{sequence}")
+        )
+        if validation.decision is not IntentValidationDecision.VALIDATED_NOT_SUBMITTABLE:
+            failed_state = _blocked_paper_state(
+                current_state=current_state,
+                continuity=continuity,
+                reason=f"VALIDATION_{validation.decision.value}",
+                now=now,
+            )
+            return {
+                "state": failed_state,
+                "outcome": _outcome_from_state(
+                    instance=instance,
+                    state=failed_state,
+                    decision="NO_ORDER",
+                    extra={"validation_failures": [item.code for item in validation.failures]},
+                ),
+            }
+
+        snapshot = account_snapshots.get(intent.broker_account_id) or _build_account_snapshot(intent.broker_account_id)
+        required_margin = snapshot.margin_per_quantity * Decimal(intent.action.requested_quantity)
+        available_margin = snapshot.available_paper_margin + snapshot.active_order_reservation
+        effective_available_margin = available_margin - snapshot.active_order_reservation
+        if effective_available_margin < required_margin:
+            warning_state = _blocked_paper_state(
+                current_state=current_state,
+                continuity=continuity,
+                reason="INSUFFICIENT_MARGIN",
+                now=now,
+            )
+            return {
+                "state": warning_state,
+                "outcome": _outcome_from_state(
+                    instance=instance,
+                    state=warning_state,
+                    decision="ORDER_NOT_SUBMITTED_INSUFFICIENT_MARGIN",
+                    extra={
+                        "required_margin": str(required_margin),
+                        "available_margin": str(available_margin),
+                        "effective_available_margin": str(effective_available_margin),
+                        "shortfall": str(required_margin - effective_available_margin),
+                    },
+                ),
+            }
+
+        state = dict(current_state)
+        if not state.get("client_order_id"):
+            coordinator = AccountCoordinator(
+                AccountCoordinator.build_identity(
+                    broker_account_id=intent.broker_account_id,
+                    trading_session_id=intent.trading_session_id,
+                ),
+                snapshot,
+            )
+            client_order = coordinator.create_client_order(
+                intent=intent,
+                validation_result=validation,
+                grant=grant,
+                evaluated_at=now,
+            )
+            creation_event = create_creation_event(client_order, now)
+            coordinator.record_event(creation_event)
+            coordinator.account_snapshot = margin_after_reservation(coordinator.account_snapshot, client_order.quantity)
+            snapshot = coordinator.account_snapshot
+            account_snapshots[intent.broker_account_id] = snapshot
+            self._persist_internal_paper_client_order(
+                instance=instance,
+                intent=intent,
+                grant=grant,
+                client_order=client_order,
+                creation_event=creation_event,
+                account_snapshot=snapshot,
+            )
+            state = {
+                "client_order_id": client_order.client_order_id,
+                "execution_intent_id": intent.execution_intent_id,
+                "selected_contract": selected_contract,
+                "order_state": "READY_INTERNAL",
+                "fill_state": "NO_FILL",
+                "final_state": "READY_INTERNAL",
+                "position_cycle_id": position_identity.position_cycle_id,
+                "filled_quantity": 0,
+                "remaining_quantity": 0,
+                "average_entry": "0.00",
+                "entry_price": str(intent.action.limit_price or continuity.get("entry") or "0.00"),
+                "entry_time": now.isoformat(),
+                "exit_time": None,
+                "latest_event": "CLIENT_ORDER_CREATED",
+                "failure": None,
+                "decision": "ORDER_ACCEPTED_PENDING_FILL",
+                "quantity": intent.action.requested_quantity,
+                "required_margin": str(required_margin),
+                "available_margin": str(available_margin),
+                "effective_available_margin": str(effective_available_margin),
+                "account_reference": intent.broker_account_id,
+            }
+        else:
+            account_snapshots[intent.broker_account_id] = snapshot
+
+        limit_price = Decimal(str(state.get("entry_price") or continuity.get("entry") or "0.00"))
+        if _quote_allows_limit_sell_fill(continuity.get("quote") or {}, limit_price):
+            coordinator = AccountCoordinator(
+                AccountCoordinator.build_identity(
+                    broker_account_id=intent.broker_account_id,
+                    trading_session_id=intent.trading_session_id,
+                ),
+                snapshot,
+            )
+            restored_order = _client_order_from_state(intent=intent, state=state)
+            coordinator.restore_client_order(restored_order)
+            coordinator.record_event(create_creation_event(restored_order, _optional_datetime(state.get("entry_time")) or now))
+            scenario = _build_live_fill_scenario(intent=intent, continuity=continuity, now=now)
+            result = adapter.execute(
+                restored_order,
+                scenario,
+                snapshot,
+                starting_state=InternalPaperOrderState.READY_FOR_INTERNAL_PAPER,
+            )
+            coordinator.apply_result(result)
+            account_snapshots[intent.broker_account_id] = coordinator.account_snapshot
+            self._persist_internal_paper_fill_ledger(
+                instance=instance,
+                intent=intent,
+                grant=grant,
+                continuity=continuity,
+                result=result,
+                now=now,
+                position_identity=position_identity,
+            )
+            filled_state_payload = {
+                **state,
+                "order_state": "FILLED_INTERNAL",
+                "fill_state": "FILLED_INTERNAL",
+                "final_state": "FILLED_INTERNAL",
+                "filled_quantity": intent.action.requested_quantity,
+                "remaining_quantity": intent.action.requested_quantity,
+                "average_entry": str(result.fills[-1].fill_price if result.fills else limit_price),
+                "entry_price": str(result.fills[-1].fill_price if result.fills else limit_price),
+                "entry_time": result.fills[-1].recorded_timestamp.isoformat() if result.fills else now.isoformat(),
+                "latest_event": "INTERNAL_FULL_FILL",
+                "failure": None,
+                "decision": "PROCESSED_INTERNAL_PAPER",
+                "mark": str((continuity.get("quote") or {}).get("ltp") or result.fills[-1].fill_price if result.fills else limit_price),
+                "position_open": True,
+            }
+            refreshed = _refresh_open_position_state(current_state=filled_state_payload, continuity=continuity, now=now)
+            return {
+                "state": refreshed,
+                "outcome": _outcome_from_state(instance=instance, state=refreshed, decision="PROCESSED_INTERNAL_PAPER"),
+            }
+
+        pending_state = {
+            **state,
+            "order_state": "READY_INTERNAL",
+            "fill_state": "NO_FILL",
+            "final_state": "READY_INTERNAL",
+            "latest_event": "WAITING_FOR_FILL",
+            "decision": "ORDER_ACCEPTED_PENDING_FILL",
+            "mark": str((continuity.get("quote") or {}).get("ltp") or ""),
+        }
+        return {
+            "state": pending_state,
+            "outcome": _outcome_from_state(instance=instance, state=pending_state, decision="ORDER_ACCEPTED_PENDING_FILL"),
+        }
+
+    def _persist_internal_paper_client_order(
+        self,
+        *,
+        instance: EnabledStrategyInstance,
+        intent: Any,
+        grant: Any,
+        client_order: Any,
+        creation_event: Any,
+        account_snapshot: SimulatedPaperAccountSnapshot,
+    ) -> None:
+        db = PersistenceDatabase(self.config.db_path)
+        with UnitOfWork(db) as uow:
+            self._ensure_authoritative_runtime_identity(uow=uow, instance=instance, broker_account_id=intent.broker_account_id)
+            uow.repo.put_internal_paper_client_order(
+                grant=grant,
+                client_order=client_order,
+                creation_event=creation_event,
+                account_snapshot=account_snapshot,
+                expected_account_projection_version=None,
+            )
+
+    def _persist_internal_paper_fill_ledger(
+        self,
+        *,
+        instance: EnabledStrategyInstance,
+        intent: Any,
+        grant: Any,
+        continuity: Mapping[str, Any],
+        result: Any,
+        now: datetime,
+        position_identity: Any,
+    ) -> None:
+        position_transition = self._build_entry_position_transition(
+            instance=instance,
+            intent=intent,
+            continuity=continuity,
+            result=result,
+            position_identity=position_identity,
+        )
+        accounting_result = self._build_open_position_accounting_result(
+            instance=instance,
+            intent=intent,
+            continuity=continuity,
+            result=result,
+            position_transition=position_transition,
+            now=now,
+        )
+        db = PersistenceDatabase(self.config.db_path)
+        with UnitOfWork(db) as uow:
+            self._ensure_authoritative_runtime_identity(uow=uow, instance=instance, broker_account_id=intent.broker_account_id)
+            uow.repo.put_internal_paper_result(
+                grant=grant,
+                result=result,
+                expected_account_projection_version=None,
+            )
+            uow.repo.put_position_cycle_identity(
+                position_cycle_id=position_identity.position_cycle_id,
+                strategy_instance_id=instance.strategy_instance_id,
+                trading_session_id=self.session_id,
+                payload=position_identity.to_dict(),
+            )
+            uow.repo.put_internal_position_transition(
+                transition=position_transition.to_dict(),
+                expected_projection_version=None,
+            )
+            uow.repo.put_accounting_build_result(
+                build_result=accounting_result.to_dict(),
+                expected_projection_version=None,
+            )
+
+    def _ensure_authoritative_runtime_identity(
+        self,
+        *,
+        uow: Any,
+        instance: EnabledStrategyInstance,
+        broker_account_id: str,
+    ) -> None:
+        uow.repo.put_trading_session(
+            trading_session_id=self.session_id,
+            trading_date=self.session_date,
+            market="NSE",
+            timezone_name="Asia/Calcutta",
+            payload={
+                "session_id": self.session_id,
+                "state": "LIVE_INTERNAL_PAPER",
+                "authority": "INTERNAL_PAPER_ONLY",
+            },
+        )
+        account_payload = self._account_payload_for_reference(instance.account_reference)
+        uow.repo.put_broker_account_identity(
+            broker_account_id=broker_account_id,
+            provider=str(account_payload.get("broker") or "INTERNAL_PAPER"),
+            environment="internal_paper",
+            account_hash=canonical_hash(account_payload),
+            payload=account_payload,
+        )
+        uow.repo.put_strategy_instance(
+            strategy_instance_id=instance.strategy_instance_id,
+            strategy_definition_id=instance.strategy_definition_id,
+            strategy_version=instance.strategy_version,
+            configuration_hash=instance.rule_config_hash,
+            payload=instance.to_dict(),
+        )
+
+    def _account_payload_for_reference(self, account_reference: str) -> dict[str, Any]:
+        for account in self.registry.accounts:
+            if str(account.get("account_reference") or "") == account_reference:
+                return dict(account)
+        return {"account_reference": account_reference, "broker": "INTERNAL_PAPER"}
+
+    def _build_position_cycle_identity(
+        self,
+        *,
+        instance: EnabledStrategyInstance,
+        intent: Any,
+        continuity: Mapping[str, Any],
+    ) -> Any:
+        coordinator = PositionCycleCoordinator()
+        return coordinator.build_identity(
+            trading_session_id=self.session_id,
+            originating_trading_date=self.session_date,
+            broker_account_id=intent.broker_account_id,
+            logical_account_reference=instance.account_reference,
+            strategy_family_id=intent.strategy_family_id,
+            strategy_definition_id=intent.strategy_definition_id,
+            strategy_version=intent.strategy_version,
+            strategy_instance_id=intent.strategy_instance_id,
+            originating_execution_plan_id=intent.source_artifact_id,
+            originating_entry_execution_intent_id=intent.execution_intent_id,
+            normalized_contract=intent.instrument.contract,
+            direction=str(continuity.get("selected_branch") or instance.deterministic_projection.get("branch") or "UNKNOWN"),
+            side=intent.action.side,
+        )
+
+    def _build_entry_position_transition(
+        self,
+        *,
+        instance: EnabledStrategyInstance,
+        intent: Any,
+        continuity: Mapping[str, Any],
+        result: Any,
+        position_identity: Any,
+    ) -> Any:
+        fill = result.fills[-1]
+        client_order_payload = result.client_order.to_dict() | {
+            "lot_size": intent.instrument.lot_size,
+            "multiplier": str(intent.instrument.multiplier),
+            "currency": intent.instrument.currency,
+        }
+        lifecycle_prices = {
+            "target": continuity.get("target") or instance.deterministic_projection.get("target"),
+            "original_sl": continuity.get("original_sl") or instance.deterministic_projection.get("original_sl"),
+        }
+        return PositionCycleCoordinator().apply_entry_fill(
+            None,
+            identity=position_identity,
+            client_order=client_order_payload,
+            fill=fill.to_dict(),
+            requested_quantity=intent.action.requested_quantity,
+            source_rule_ids=tuple(intent.evidence.source_rule_ids),
+            lifecycle_prices=lifecycle_prices,
+        )
+
+    def _build_open_position_accounting_result(
+        self,
+        *,
+        instance: EnabledStrategyInstance,
+        intent: Any,
+        continuity: Mapping[str, Any],
+        result: Any,
+        position_transition: Any,
+        now: datetime,
+    ) -> Any:
+        quote = continuity.get("quote") if isinstance(continuity.get("quote"), Mapping) else {}
+        projection = position_transition.projection.to_dict()
+        option_type = intent.instrument.option_type
+        if option_type == "CE":
+            option_type = "CALL"
+        elif option_type == "PE":
+            option_type = "PUT"
+        instrument = InstrumentDimensions(
+            exchange=intent.instrument.exchange,
+            product=intent.instrument.product,
+            underlying=intent.instrument.underlying,
+            contract=intent.instrument.contract,
+            expiry=intent.instrument.expiry.isoformat() if intent.instrument.expiry else None,
+            strike=intent.instrument.strike,
+            option_type=option_type,
+            direction=str(continuity.get("selected_branch") or instance.deterministic_projection.get("branch") or "UNKNOWN"),
+            lot_size=intent.instrument.lot_size,
+            multiplier=intent.instrument.multiplier,
+            tick_size=intent.instrument.tick_size,
+            currency=intent.instrument.currency,
+            metadata_version=str(continuity.get("evidence") or instance.evidence_quality),
+        )
+        charge_evidence = ChargeEvidence(
+            charges=Decimal("0.00"),
+            quality=AccountingQuality.PROVISIONAL_ESTIMATED_CHARGES,
+            source="UNIFIED_INTERNAL_PAPER_SUPERVISOR",
+        )
+        mark_snapshot = MarkSnapshot(
+            contract=intent.instrument.contract,
+            trading_date=self.session_date,
+            bid=_optional_decimal(quote.get("bid")),
+            ask=_optional_decimal(quote.get("ask")),
+            ltp=_optional_decimal(quote.get("ltp")),
+            source_timestamp=_optional_datetime(quote.get("source_timestamp")) or now,
+            captured_timestamp=_optional_datetime(quote.get("receipt_timestamp")) or now,
+            freshness_seconds=0,
+            snapshot_hash=canonical_hash({"contract": intent.instrument.contract, "quote": dict(quote)}),
+        )
+        trade_fact = TradeFactBuilder().build(
+            projection=projection,
+            instrument=instrument,
+            requested_entry_quantity=intent.action.requested_quantity,
+            entry_fills=tuple(fill.to_dict() for fill in result.fills),
+            exit_fills=(),
+            lifecycle_requirements=tuple(item.to_dict() for item in position_transition.requirements),
+            charge_evidence=charge_evidence,
+            decision_context={
+                "normal_gap_path": str(continuity.get("current_entry_state") or "UNKNOWN"),
+                "orpt_rc_path": "RC" if str(continuity.get("current_entry_state") or "").startswith("RC_") else "NORMAL",
+                "strategy_branch": str(continuity.get("selected_branch") or instance.deterministic_projection.get("branch") or "UNKNOWN"),
+                "configured_lots": int(instance.configured_quantity.get("lots", 0) or 0),
+                "lot_size": int(intent.instrument.lot_size),
+                "exchange_quantity": int(intent.action.requested_quantity),
+                "capital_or_margin_estimate": str(Decimal("100") * Decimal(int(intent.action.requested_quantity))),
+                "contract_observations": (),
+                "source_plan_context_decision_hashes": {
+                    "premarket": str((continuity.get("live_plan") or {}).get("plan_hash") or intent.source_artifact_hash),
+                    "opening": canonical_hash({"quote": dict(quote), "selected_contract": intent.instrument.contract}),
+                    "effective_plan": canonical_hash(
+                        {
+                            "entry": str(continuity.get("entry") or ""),
+                            "target": str(continuity.get("target") or ""),
+                            "original_sl": str(continuity.get("original_sl") or ""),
+                        }
+                    ),
+                },
+            },
+            source_hashes={
+                "intent_hash": intent.intent_hash,
+                "result_hash": result.result_hash,
+                "position_cycle_hash": position_transition.projection.projection_hash,
+                "position_event_ids": (position_transition.event.event_id,),
+            },
+            mark_snapshot=mark_snapshot,
+            exit_order_purpose=None,
+            configuration_hash=intent.evidence.configuration_hash,
+            rule_matrix_version=intent.evidence.rule_matrix_version,
+        )
+        pnl_facts = PnLFactBuilder().build(
+            trade_fact=trade_fact,
+            as_of_timestamp=now,
+            charge_evidence=charge_evidence,
+        )
+        return build_accounting_result(trade_fact=trade_fact, pnl_facts=pnl_facts)
+
     def _build_projection(self, now: datetime, *, live_context: Mapping[str, Any], final_state: str) -> dict[str, Any]:
+        action_bundle = self._evaluate_internal_paper_actions(now=now, live_context=live_context)
         instance_results = {
             item.strategy_instance_id: _live_instance_result(
                 item,
@@ -732,6 +1380,7 @@ class UnifiedInternalPaperSupervisor:
                 timing=live_context["timing"]["instances"].get(item.strategy_instance_id) or {},
                 selected_contract_reads=tuple(live_context["selected_contract_reads"].get(item.strategy_instance_id) or ()),
                 late_start=self._late_start_mode,
+                action_state=action_bundle["states"].get(item.strategy_instance_id) or {},
             )
             for item in self.registry.enabled_instances
         }
@@ -775,6 +1424,7 @@ class UnifiedInternalPaperSupervisor:
                 "subscription_owner": self.subscription_owner.to_dict(),
             }
         )
+        projection["decision_explanations"] = list(projection["decision_explanations"]) + list(action_bundle["explanation_facts"])
         projection["audit"] = list(projection["audit"]) + list(self._timeline)
         projection["alerts"] = list(projection["alerts"]) + _global_alerts(
             late_start=self._late_start_mode,
@@ -815,6 +1465,8 @@ class UnifiedInternalPaperSupervisor:
             "subscription_owner": self.subscription_owner.to_dict(),
             "continuity": live_context.get("continuity", {}),
             "selected_contract_reads": live_context.get("selected_contract_reads", {}),
+            "paper_execution_state": self._paper_execution_state,
+            "paper_account_snapshots": self._paper_account_snapshots,
             "timing": live_context.get("timing", {}),
             "market_state": live_context.get("market_session_state"),
             "updated_at": now.isoformat(),
@@ -832,6 +1484,8 @@ class UnifiedInternalPaperSupervisor:
                 "subscription_owner": checkpoint_payload["subscription_owner"],
                 "continuity": checkpoint_payload["continuity"],
                 "selected_contract_reads": checkpoint_payload["selected_contract_reads"],
+                "paper_execution_state": checkpoint_payload["paper_execution_state"],
+                "paper_account_snapshots": checkpoint_payload["paper_account_snapshots"],
                 "timing": checkpoint_payload["timing"],
                 "market_state": checkpoint_payload["market_state"],
                 "authority": checkpoint_payload["authority"],
@@ -1215,6 +1869,20 @@ class UnifiedInternalPaperSupervisor:
                 for strategy_instance_id, values in restored_reads.items()
                 if isinstance(values, list)
             }
+        restored_execution = payload.get("paper_execution_state") or {}
+        if isinstance(restored_execution, Mapping):
+            self._paper_execution_state = {
+                str(strategy_instance_id): dict(state)
+                for strategy_instance_id, state in restored_execution.items()
+                if isinstance(state, Mapping)
+            }
+        restored_accounts = payload.get("paper_account_snapshots") or {}
+        if isinstance(restored_accounts, Mapping):
+            self._paper_account_snapshots = {
+                str(account_reference): dict(snapshot)
+                for account_reference, snapshot in restored_accounts.items()
+                if isinstance(snapshot, Mapping)
+            }
 
     def _load_checkpoint_payload(self) -> dict[str, Any]:
         try:
@@ -1427,6 +2095,8 @@ def run_continuous_supervisor(
     dashboard_port: int = 8766,
     poll_seconds: float = 5.0,
     max_iterations: int = 0,
+    session_date: date | None = None,
+    reconstruct_if_late: bool = False,
 ) -> ContinuousSupervisorRunResult:
     config = ContinuousSupervisorConfig(
         repo_root=Path(repo_root),
@@ -1438,7 +2108,9 @@ def run_continuous_supervisor(
         dashboard_port=dashboard_port,
         poll_seconds=poll_seconds,
         max_iterations=max_iterations,
+        session_date=session_date,
     )
+    _ = reconstruct_if_late
     return UnifiedInternalPaperSupervisor(config).run()
 
 
@@ -1711,6 +2383,7 @@ def _live_instance_result(
     timing: Mapping[str, Any],
     selected_contract_reads: list[Mapping[str, Any]] | tuple[Mapping[str, Any], ...],
     late_start: bool,
+    action_state: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     selected_contract = continuity.get("selected_contract")
     selected_contract_text = str(selected_contract) if selected_contract else None
@@ -1721,6 +2394,7 @@ def _live_instance_result(
     recovered_late_start = recovery_mode == "HISTORICALLY_RECONSTRUCTED"
     entry_still_valid = current_entry_state in {"NORMAL_ENTRY_STILL_VALID", "RC_ENTRY_STILL_VALID"}
     late_start_blocked = late_start and not recovered_late_start
+    action_state = action_state or {}
     entry = str(continuity.get("entry") or live_plan.get("entry") or instance.deterministic_projection.get("entry") or "")
     target = str(continuity.get("target") or live_plan.get("target") or instance.deterministic_projection.get("target") or "")
     sl = str(
@@ -1738,9 +2412,18 @@ def _live_instance_result(
     evidence_quality = str(continuity.get("evidence") or instance.evidence_quality)
     alert_items = list(_instance_alerts(instance, continuity, late_start=late_start))
     quantity = int(instance.configured_quantity["lots"]) * int(instance.configured_quantity["lot_size"])
-    risk_result = "DEFERRED" if late_start_blocked else ("ACCEPTED" if entry_still_valid or not recovered_late_start else "BLOCKED_BY_RULE")
-    order_state = "NO_ORDER" if late_start_blocked or (recovered_late_start and not entry_still_valid) else "READY_INTERNAL"
-    fill_state = "NO_FILL"
+    has_action_state = bool(action_state)
+    risk_result = (
+        str(action_state.get("risk_result") or "ACCEPTED")
+        if has_action_state
+        else ("DEFERRED" if late_start_blocked else ("ACCEPTED" if entry_still_valid else "BLOCKED_BY_RULE"))
+    )
+    order_state = (
+        str(action_state.get("order_state") or "NO_ORDER")
+        if has_action_state
+        else ("NO_ORDER" if late_start_blocked or not entry_still_valid else "NO_ORDER")
+    )
+    fill_state = str(action_state.get("fill_state") or "NO_FILL") if has_action_state else "NO_FILL"
     live_market_references = live_plan.get("market_references") if isinstance(live_plan.get("market_references"), Mapping) else {}
     live_timing = live_plan.get("timing") if isinstance(live_plan.get("timing"), Mapping) else {}
     first_read = selected_contract_reads[0] if selected_contract_reads else {}
@@ -1798,41 +2481,48 @@ def _live_instance_result(
             "rc_state": continuity.get("rc_result") or timing.get("rc"),
             "effective_entry": entry,
             "execution_intent": (
-                "PENDING_VALIDATION"
-                if entry_still_valid
-                else ("NOT_CREATED_LATE_START" if late_start_blocked else "NOT_CREATED_RECONSTRUCTED_MISSED")
+                "VALIDATED_NOT_SUBMITTABLE"
+                if order_state in {"READY_INTERNAL", "FILLED_INTERNAL"}
+                else ("PENDING_VALIDATION" if entry_still_valid else ("NOT_CREATED_LATE_START" if late_start_blocked else "NOT_CREATED_RECONSTRUCTED_MISSED"))
             ),
             "risk_result": risk_result,
             "order_state": order_state,
             "fill_state": fill_state,
             "order_purpose": "ENTRY",
-            "filled_quantity": 0,
-            "protection_generation": 0,
-            "order_age": "00:00:00",
-            "latest_event": timing.get("market_open"),
-            "failure": blocked_reason,
+            "filled_quantity": int(action_state.get("filled_quantity") or 0),
+            "protection_generation": 1 if fill_state == "FILLED_INTERNAL" else 0,
+            "order_age": _age_from_iso_timestamp(action_state.get("entry_time"), now=now) if action_state.get("entry_time") else "00:00:00",
+            "latest_event": str(action_state.get("latest_event") or timing.get("market_open")),
+            "failure": str(action_state.get("failure") or blocked_reason) if (action_state.get("failure") or blocked_reason) else None,
             "simulated_or_observed": "INTERNAL_PAPER_SIMULATED",
         },
         "position": {
-            "position_cycle": f"pc:{canonical_hash(instance.strategy_instance_id)[:16]}",
+            "position_cycle": str(action_state.get("position_cycle_id") or f"pc:{canonical_hash(instance.strategy_instance_id)[:16]}"),
             "selected_contract": selected_contract_text,
             "quantity": quantity,
-            "average_entry": entry,
-            "remaining_quantity": 0,
-            "mark": "",
+            "average_entry": str(action_state.get("average_entry") or ("0.00" if fill_state != "FILLED_INTERNAL" else entry)),
+            "remaining_quantity": int(action_state.get("remaining_quantity") or (quantity if fill_state == "FILLED_INTERNAL" else 0)),
+            "mark": str(action_state.get("mark") or quote.get("ltp") or ""),
             "target": target,
             "active_protection": sl,
-            "protection_status": "NO_POSITION",
+            "protection_status": "PROTECTED" if fill_state == "FILLED_INTERNAL" else "NO_POSITION",
             "fresh_or_carried": "CARRIED" if bool(instance.deterministic_projection.get("scenario_flags", {}).get("carried_position_candidate")) else "FRESH",
             "carried_state": "OBSERVATION_ONLY" if late_start_blocked else "NOT_CARRIED",
-            "exit_reason": "OPEN" if not late_start_blocked else "NO_NEW_ENTRY",
+            "exit_reason": "OPEN" if fill_state == "FILLED_INTERNAL" else ("NO_NEW_ENTRY" if late_start_blocked else "PENDING_ENTRY"),
             "exit_deadline": EOD_DECISION.isoformat(),
-            "health": "NO_POSITION",
+            "health": "OPEN_PROTECTED" if fill_state == "FILLED_INTERNAL" else "NO_POSITION",
+            "entry_time": action_state.get("entry_time"),
+            "exit_time": action_state.get("exit_time"),
         },
         "accounting": {
             "selected_contract": selected_contract_text,
-            "realized_pnl": "0.00" if late_start_blocked else str(instance.deterministic_projection.get("realized_pnl") or "0.00"),
-            "unrealized_pnl": "0.00" if late_start_blocked else str(instance.deterministic_projection.get("unrealized_pnl") or "0.00"),
+            "realized_pnl": "0.00",
+            "unrealized_pnl": _live_unrealized_pnl(
+                entry_price=action_state.get("average_entry") or action_state.get("entry_price"),
+                mark_price=action_state.get("mark") or quote.get("ltp"),
+                quantity=int(action_state.get("remaining_quantity") or 0),
+                side="SELL",
+            ) if fill_state == "FILLED_INTERNAL" else "0.00",
             "charges_quality": "PROVISIONAL_INTERNAL_PAPER",
             "trade_classification": (
                 "NO_TRADE_LATE_START"
@@ -1852,6 +2542,9 @@ def _live_instance_result(
             "broker_data_health": continuity.get("status", "UNKNOWN"),
             "authority_mode": instance.authority_mode,
             "evidence_label": evidence_quality,
+            "entry_time": action_state.get("entry_time"),
+            "exit_time": action_state.get("exit_time"),
+            "lots": int(instance.configured_quantity["lots"]),
         },
     }
 
@@ -2027,23 +2720,30 @@ def _market_session_state(now: datetime) -> str:
 def _load_underlying_symbols(root: Path) -> dict[str, str]:
     data = yaml.safe_load((root / "config" / "monthly_status_instruments.yaml").read_text(encoding="utf-8")) or {}
     instruments = data.get("instruments") or {}
-    return {
-        "NIFTY": str(instruments["NIFTY"]["spot_symbol"]),
-        "BANKNIFTY": str(instruments["BANKNIFTY"]["spot_symbol"]),
-        "RELIANCE": "NSE:RELIANCE-EQ",
+    symbols = {
+        str(symbol): str(details.get("spot_symbol"))
+        for symbol, details in instruments.items()
+        if isinstance(details, Mapping) and details.get("spot_symbol")
     }
+    symbols.setdefault("RELIANCE", "NSE:RELIANCE-EQ")
+    return symbols
 
 
 def _resolve_underlying_symbol(symbol: str, underlying_symbols: Mapping[str, str]) -> str:
-    if symbol == "RELIANCE":
-        return "NSE:RELIANCE-EQ"
-    return str(underlying_symbols[symbol])
+    return str(underlying_symbols.get(symbol) or f"NSE:{symbol}-EQ")
 
 
-def _revised_entry_for_instance(instance: EnabledStrategyInstance) -> Decimal | None:
-    if instance.strategy_instance_id == "S22_RELIANCE_INTERNAL_PAPER_A":
-        return Decimal("57.00")
-    return None
+def _revised_entry_for_instance(instance: EnabledStrategyInstance, *, continuity: Mapping[str, Any]) -> Decimal | None:
+    raw_value = continuity.get("revised_entry")
+    if raw_value in (None, ""):
+        live_plan = continuity.get("live_plan") if isinstance(continuity.get("live_plan"), Mapping) else {}
+        raw_prices = live_plan.get("raw_prices") if isinstance(live_plan.get("raw_prices"), Mapping) else {}
+        raw_value = raw_prices.get("revised_entry")
+    if raw_value in (None, ""):
+        if instance.strategy_instance_id == "S22_RELIANCE_INTERNAL_PAPER_A":
+            return Decimal("57.00")
+        return None
+    return Decimal(str(raw_value))
 
 
 def _latest_reliance_snapshot_contract(root: Path) -> str | None:
@@ -2056,6 +2756,51 @@ def _latest_reliance_snapshot_contract(root: Path) -> str | None:
     return str(selected) if selected else None
 
 
+def _read_symbol_master_cache(path: Path) -> tuple[Any, ...]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return ()
+    except (json.JSONDecodeError, OSError, TypeError, ValueError):
+        return ()
+    rows = payload.get("rows")
+    downloaded_at_raw = payload.get("downloaded_at")
+    if not isinstance(rows, list) or not downloaded_at_raw:
+        return ()
+    try:
+        downloaded_at = datetime.fromisoformat(str(downloaded_at_raw))
+    except ValueError:
+        return ()
+    try:
+        return normalize_symbol_master_rows(
+            rows,
+            exchange=str(payload.get("exchange") or "NSEFO"),
+            source_version=str(payload.get("source_version") or "LOCAL_SYMBOL_MASTER_CACHE"),
+            downloaded_at=downloaded_at,
+        )
+    except Exception:
+        return ()
+
+
+def _write_symbol_master_cache(
+    path: Path,
+    *,
+    exchange: str,
+    source_version: str,
+    downloaded_at: datetime,
+    records: tuple[Any, ...],
+) -> None:
+    payload = {
+        "exchange": exchange,
+        "source_version": source_version,
+        "downloaded_at": downloaded_at.isoformat(),
+        "record_count": len(records),
+        "rows": [dict(getattr(record, "source_row", {})) for record in records],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def _account_risk_matrix(
     registry: EnabledStrategyRegistry,
     continuity: Mapping[str, Any],
@@ -2064,10 +2809,15 @@ def _account_risk_matrix(
 ) -> dict[str, Any]:
     rows: dict[str, Any] = {}
     for instance in registry.enabled_instances:
-        status = continuity.get(instance.strategy_instance_id, {}).get("status")
+        continuity_payload = continuity.get(instance.strategy_instance_id, {}) if isinstance(continuity.get(instance.strategy_instance_id), Mapping) else {}
+        status = continuity_payload.get("status")
+        selected_contract = continuity_payload.get("selected_contract")
+        entry = continuity_payload.get("entry")
         if late_start:
             decision = "DEFERRED_INTENT"
         elif status in {"IDENTIFIABLE", "PREMARKET_SELECTED_CONTRACT_PINNED"}:
+            decision = "ACCEPTED_INTENT"
+        elif selected_contract and entry and not str(status or "").startswith("BLOCKED"):
             decision = "ACCEPTED_INTENT"
         else:
             decision = "BLOCKED_ACCOUNT"
@@ -2175,3 +2925,223 @@ def _load_projection_version(db_path: Path, strategy_instance_id: str) -> int | 
             return int(row["version"]) if row is not None else 0
     except Exception:
         return 0
+
+
+def _action_ready_continuity(payload: Mapping[str, Any]) -> dict[str, Any]:
+    continuity = dict(payload)
+    if "plan_payload" not in continuity and isinstance(payload.get("live_plan"), Mapping):
+        continuity["plan_payload"] = dict(payload["live_plan"])
+    if "quote" not in continuity and isinstance(payload.get("selected_contract_quote"), Mapping):
+        continuity["quote"] = dict(payload["selected_contract_quote"])
+    return continuity
+
+
+def _account_snapshot_from_dict(payload: Mapping[str, Any]) -> SimulatedPaperAccountSnapshot:
+    return SimulatedPaperAccountSnapshot(
+        broker_account_id=str(payload.get("broker_account_id") or ""),
+        opening_paper_cash=Decimal(str(payload.get("opening_paper_cash") or "0")),
+        reserved_margin=Decimal(str(payload.get("reserved_margin") or "0")),
+        released_margin=Decimal(str(payload.get("released_margin") or "0")),
+        available_paper_margin=Decimal(str(payload.get("available_paper_margin") or "0")),
+        simulated_charges=Decimal(str(payload.get("simulated_charges") or "0")),
+        active_order_reservation=Decimal(str(payload.get("active_order_reservation") or "0")),
+        margin_per_quantity=Decimal(str(payload.get("margin_per_quantity") or "0")),
+        account_enabled=bool(payload.get("account_enabled", True)),
+        account_blocked=bool(payload.get("account_blocked", False)),
+        active_order_count=int(payload.get("active_order_count") or 0),
+        max_active_order_count=int(payload.get("max_active_order_count") or 10),
+    )
+
+
+def _optional_decimal(value: Any) -> Decimal | None:
+    if value in (None, ""):
+        return None
+    try:
+        return Decimal(str(value))
+    except Exception:
+        return None
+
+
+def _optional_datetime(value: Any) -> datetime | None:
+    if value in (None, ""):
+        return None
+    try:
+        return datetime.fromisoformat(str(value))
+    except Exception:
+        return None
+
+
+def _quote_allows_limit_sell_fill(quote: Mapping[str, Any], limit_price: Decimal) -> bool:
+    for key in ("bid", "ltp", "ask"):
+        value = quote.get(key)
+        if value in (None, ""):
+            continue
+        try:
+            if Decimal(str(value)) >= limit_price:
+                return True
+        except Exception:
+            continue
+    return False
+
+
+def _client_order_from_state(*, intent: Any, state: Mapping[str, Any]) -> ClientOrder:
+    coordinator_identity = AccountCoordinator.build_identity(
+        broker_account_id=intent.broker_account_id,
+        trading_session_id=intent.trading_session_id,
+    )
+    idempotency_payload = {
+        "account_coordinator_id": coordinator_identity.account_coordinator_id,
+        "execution_intent_id": intent.execution_intent_id,
+        "broker_account_id": intent.broker_account_id,
+        "purpose": intent.action.purpose.value,
+        "protection_generation": intent.action.protection_generation,
+        "intent_hash": intent.intent_hash,
+    }
+    return ClientOrder(
+        client_order_id=str(state.get("client_order_id") or ""),
+        execution_intent_id=intent.execution_intent_id,
+        account_coordinator_id=coordinator_identity.account_coordinator_id,
+        broker_account_id=intent.broker_account_id,
+        strategy_instance_id=intent.strategy_instance_id,
+        trading_session_id=intent.trading_session_id,
+        position_cycle_id=intent.position_cycle_id,
+        idempotency_key="client-order:" + canonical_hash(idempotency_payload),
+        normalized_contract=intent.instrument.contract,
+        side=intent.action.side,
+        quantity=intent.action.requested_quantity,
+        order_purpose=intent.action.purpose.value,
+        order_type=intent.action.order_type,
+        limit_price=intent.action.limit_price,
+        trigger_price=intent.action.trigger_price,
+        time_in_force=intent.action.time_in_force,
+        authorized_time=intent.action.authorized_not_before,
+        protection_generation=intent.action.protection_generation,
+        source_intent_hash=intent.intent_hash,
+    )
+
+
+def _build_live_fill_scenario(
+    *,
+    intent: Any,
+    continuity: Mapping[str, Any],
+    now: datetime,
+) -> DeterministicExecutionScenarioDefinition:
+    quote = continuity.get("quote") or {}
+    limit_price = intent.action.limit_price or Decimal(str(continuity.get("entry") or "0.00"))
+    return DeterministicExecutionScenarioDefinition(
+        scenario_id=f"live-supervisor:{intent.strategy_instance_id}:{now.isoformat()}",
+        scenario=InternalPaperExecutionScenario.IMMEDIATE_FULL_FILL,
+        market_evidence=DeterministicMarketEvidence(
+            bid=Decimal(str(quote.get("bid") or limit_price)),
+            ask=Decimal(str(quote.get("ask") or limit_price)),
+            ltp=Decimal(str(quote.get("ltp") or limit_price)),
+            high=Decimal(str(quote.get("ltp") or limit_price)),
+            low=Decimal(str(quote.get("ltp") or limit_price)),
+            source_timestamp=now,
+            snapshot_hash=canonical_hash({"contract": intent.instrument.contract, "quote": dict(quote), "at": now.isoformat()}),
+        ),
+        event_time=now,
+        fill_quantity=intent.action.requested_quantity,
+        fill_price=limit_price,
+        rejection_reason=None,
+        cancel_reason=None,
+    )
+
+
+def _blocked_paper_state(
+    *,
+    current_state: Mapping[str, Any],
+    continuity: Mapping[str, Any],
+    reason: str,
+    now: datetime,
+) -> dict[str, Any]:
+    return {
+        **dict(current_state),
+        "selected_contract": continuity.get("selected_contract"),
+        "order_state": "NO_ORDER",
+        "fill_state": "NO_FILL",
+        "final_state": "NO_ORDER",
+        "failure": reason,
+        "latest_event": reason,
+        "decision": "NO_ORDER",
+        "mark": str(((continuity.get("quote") or {}).get("ltp") or "")),
+        "updated_at": now.isoformat(),
+    }
+
+
+def _refresh_open_position_state(
+    *,
+    current_state: Mapping[str, Any],
+    continuity: Mapping[str, Any],
+    now: datetime,
+) -> dict[str, Any]:
+    state = dict(current_state)
+    quote = continuity.get("quote") or {}
+    if quote.get("ltp") not in (None, ""):
+        state["mark"] = str(quote.get("ltp"))
+    state["updated_at"] = now.isoformat()
+    state.setdefault("position_open", True)
+    state.setdefault("order_state", "FILLED_INTERNAL")
+    state.setdefault("fill_state", "FILLED_INTERNAL")
+    state.setdefault("final_state", "FILLED_INTERNAL")
+    state.setdefault("latest_event", "POSITION_MONITORING")
+    return state
+
+
+def _outcome_from_state(
+    *,
+    instance: EnabledStrategyInstance,
+    state: Mapping[str, Any],
+    decision: str,
+    extra: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = {
+        "execution_intent_id": state.get("execution_intent_id"),
+        "strategy_instance_id": instance.strategy_instance_id,
+        "broker_account_id": instance.account_reference,
+        "instrument": state.get("selected_contract") or instance.symbol,
+        "queue_position": 1,
+        "decision": decision,
+        "required_margin": state.get("required_margin"),
+        "available_margin": state.get("available_margin"),
+        "effective_available_margin": state.get("effective_available_margin"),
+        "shortfall": state.get("shortfall"),
+        "reservation_created": decision == "ORDER_ACCEPTED_PENDING_FILL",
+        "reservation_released": decision == "PROCESSED_INTERNAL_PAPER",
+        "reservation_reconciled": decision == "PROCESSED_INTERNAL_PAPER",
+        "client_order_id": state.get("client_order_id"),
+        "final_state": state.get("final_state"),
+        "result_hash": canonical_hash({"strategy_instance_id": instance.strategy_instance_id, "state": dict(state), "decision": decision}),
+        "reason": state.get("failure"),
+    }
+    if extra:
+        payload.update(dict(extra))
+    return payload
+
+
+def _live_unrealized_pnl(
+    *,
+    entry_price: Any,
+    mark_price: Any,
+    quantity: int,
+    side: str,
+) -> str:
+    if quantity <= 0 or entry_price in (None, "") or mark_price in (None, ""):
+        return "0.00"
+    entry = Decimal(str(entry_price))
+    mark = Decimal(str(mark_price))
+    diff = (entry - mark) if side.upper() == "SELL" else (mark - entry)
+    return str(diff * Decimal(quantity))
+
+
+def _age_from_iso_timestamp(timestamp: Any, *, now: datetime) -> str:
+    if not timestamp:
+        return "00:00:00"
+    try:
+        observed = datetime.fromisoformat(str(timestamp))
+    except ValueError:
+        return "00:00:00"
+    seconds = max(0, int((now - observed).total_seconds()))
+    hours, remainder = divmod(seconds, 3600)
+    minutes, secs = divmod(remainder, 60)
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}"

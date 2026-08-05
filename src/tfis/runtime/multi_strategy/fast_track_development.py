@@ -34,6 +34,9 @@ from .registry import EnabledStrategyInstance
 
 
 RULE_MATRIX_VERSION = "tfis_authoritative_workbook_rule_matrix.v1"
+MONTHLY_DERIVATION_REPORTS: dict[str, tuple[str, ...]] = {
+    "S22_RELIANCE_INTERNAL_PAPER_A": ("reports/s22_reliance/s22_reliance_monthly_status.json",),
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -76,6 +79,137 @@ class DecisionExplanationFact:
             "evidence_mode": self.evidence_mode,
             "parent_decision_id": self.parent_decision_id,
         }
+
+
+def _load_monthly_derivation_for_fast_track(
+    *,
+    instance: EnabledStrategyInstance,
+    continuity: Mapping[str, Any],
+) -> dict[str, Any]:
+    payload: Mapping[str, Any] | None = None
+    source_path: str | None = None
+    repo_root = Path(__file__).resolve().parents[4]
+    for relative_path in MONTHLY_DERIVATION_REPORTS.get(instance.strategy_instance_id, ()):
+        target = repo_root / relative_path
+        try:
+            candidate = json.loads(target.read_text(encoding="utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError, OSError):
+            continue
+        if isinstance(candidate, Mapping):
+            payload = candidate
+            source_path = relative_path
+            break
+
+    final_status = continuity.get("monthly_status") or continuity.get("plan_payload", {}).get("monthly_status")
+    if payload is None:
+        return {
+            "available": False,
+            "source_path": source_path,
+            "rule_id": continuity.get("plan_payload", {}).get("monthly_status_rule_id") or "MONTHLY_STATUS.GENERIC.ENGINE.001",
+            "workbook_source": "MONTHLY_STATUS_ENGINE_SUMMARY_ONLY",
+            "formula_text": "Monthly Status came from the generic monthly-status engine, but this snapshot does not include the full monthly reference packet for this instrument.",
+            "evaluation_timestamp": None,
+            "current_window_direct_status": None,
+            "borrowed_window_status": None,
+            "lookback_used": None,
+            "checked_lookback_windows": None,
+            "trigger_name": None,
+            "threshold_value": None,
+            "reason": f"Final Monthly Status is {final_status or 'not available'}, but the step-by-step monthly reference packet was not persisted for this instrument in the current fast-track snapshot.",
+            "references": {},
+            "steps": [
+                {
+                    "step": 1,
+                    "title": "Read the final Monthly Status from the generic engine output",
+                    "result": final_status or "Not available in this snapshot",
+                    "detail": "This fast-track snapshot preserved the final Monthly Status value but did not persist the full monthly reference packet for this instrument.",
+                    "values": {
+                        "monthly_status": final_status,
+                        "instrument": instance.symbol,
+                    },
+                },
+                {
+                    "step": 2,
+                    "title": "Use that status as the first gate before branch selection",
+                    "result": continuity.get("selected_branch") or continuity.get("plan_payload", {}).get("selected_branch") or "Branch not available",
+                    "detail": "TFIS uses Monthly Status first. Only after that does the strategy continue to branch mapping and contract selection.",
+                    "values": {
+                        "selected_branch": continuity.get("selected_branch") or continuity.get("plan_payload", {}).get("selected_branch"),
+                    },
+                },
+            ],
+        }
+
+    references = payload.get("source_monthly_references") if isinstance(payload.get("source_monthly_references"), Mapping) else {}
+    transition_evidence = payload.get("transition_evidence") if isinstance(payload.get("transition_evidence"), Mapping) else {}
+    trace = transition_evidence.get("trace") if isinstance(transition_evidence.get("trace"), list) else []
+    steps = [
+        {
+            "step": 1,
+            "title": "Load monthly and weekly reference levels",
+            "result": "Reference levels loaded",
+            "detail": "TFIS loaded the previous-month, current-month, previous-week, current-week, and current-price levels needed by the generic monthly-status engine.",
+            "values": dict(references),
+        },
+        {
+            "step": 2,
+            "title": "Check whether the current month alone is decisive",
+            "result": payload.get("current_window_direct_status") or "Not available in this snapshot",
+            "detail": "The engine first asks whether the current month directly proves a bullish or bearish monthly state.",
+            "values": {
+                "current_window_direct_status": payload.get("current_window_direct_status"),
+                "evaluation_timestamp": payload.get("evaluation_timestamp"),
+            },
+        },
+    ]
+    for item in trace:
+        if not isinstance(item, Mapping):
+            continue
+        steps.append(
+            {
+                "step": len(steps) + 1,
+                "title": f"Evaluate {str(item.get('window_label') or 'historical context').replace('_', ' ')}",
+                "result": item.get("status") or "Not available in this snapshot",
+                "detail": str(item.get("notes") or "The engine reviewed this context while resolving the final Monthly Status."),
+                "values": {
+                    "context_month": item.get("context_month_label"),
+                    "context_week": item.get("context_week_label"),
+                    "trigger_name": item.get("trigger_name"),
+                    "threshold_value": item.get("threshold_value"),
+                    "used_for_resolution": item.get("used_for_resolution"),
+                },
+            }
+        )
+    steps.append(
+        {
+            "step": len(steps) + 1,
+            "title": "Lock the final Monthly Status",
+            "result": payload.get("monthly_status") or final_status or "Not available in this snapshot",
+            "detail": str(payload.get("reason") or transition_evidence.get("notes") or "The engine resolved the final Monthly Status."),
+            "values": {
+                "trigger_name": payload.get("trigger_name"),
+                "threshold_value": payload.get("threshold_value"),
+                "lookback_used": payload.get("lookback_used"),
+            },
+        }
+    )
+    return {
+        "available": True,
+        "source_path": source_path,
+        "rule_id": payload.get("source_rule_id") or "MONTHLY_STATUS.GENERIC.ENGINE.001",
+        "workbook_source": "MONTHLY_STATUS_ENGINE_AUTHORITY_PACKET",
+        "formula_text": "Monthly Status is derived by the generic monthly-status engine from monthly and weekly reference levels, then resolved through direct classification or lookback continuation logic.",
+        "evaluation_timestamp": payload.get("evaluation_timestamp"),
+        "current_window_direct_status": payload.get("current_window_direct_status"),
+        "borrowed_window_status": payload.get("borrowed_window_status"),
+        "lookback_used": payload.get("lookback_used"),
+        "checked_lookback_windows": payload.get("checked_lookback_windows"),
+        "trigger_name": payload.get("trigger_name"),
+        "threshold_value": payload.get("threshold_value"),
+        "reason": payload.get("reason"),
+        "references": dict(references),
+        "steps": steps,
+    }
 
 
 def build_current_entry_actions(
@@ -206,9 +340,37 @@ def build_explanation_facts(
     evidence_mode = str(continuity.get("recovery_mode") or "LIVE_OBSERVED")
     selected_branch = str(continuity.get("selected_branch") or plan.get("selected_branch") or instance.deterministic_projection.get("branch") or "")
     rejected_candidates = list(continuity.get("rejected_candidates") or plan.get("rejected_candidates") or ())
+    selected_contract_payload = plan.get("selected_contract") if isinstance(plan.get("selected_contract"), Mapping) else {}
+    evaluated_contracts = list(plan.get("evaluated_contracts") or ())
+    monthly_derivation = _load_monthly_derivation_for_fast_track(instance=instance, continuity=continuity)
 
     decision_root = f"{instance.strategy_instance_id}:{canonical_hash({'contract': selected_contract, 'ts': now.isoformat()})[:12]}"
     facts: list[DecisionExplanationFact] = [
+        DecisionExplanationFact(
+            decision_id=f"{decision_root}:monthly",
+            trading_session_id=trading_session_id,
+            strategy_instance_id=instance.strategy_instance_id,
+            instrument=instance.symbol,
+            stage="MONTHLY_STATUS",
+            rule_id=str(monthly_derivation.get("rule_id") or "MONTHLY_STATUS.GENERIC.ENGINE.001"),
+            workbook_source=str(monthly_derivation.get("workbook_source") or "MONTHLY_STATUS_ENGINE"),
+            formula_text=str(monthly_derivation.get("formula_text") or "Monthly Status emitted by the generic monthly-status engine."),
+            input_values={
+                "instrument": instance.symbol,
+                "evaluation_timestamp": monthly_derivation.get("evaluation_timestamp"),
+                "monthly_references": dict(monthly_derivation.get("references") or {}),
+            },
+            output_value={
+                "monthly_status": continuity.get("monthly_status"),
+                "derivation_summary": monthly_derivation.get("reason"),
+            },
+            candidate_evidence={"derivation": monthly_derivation},
+            rejection_reason=None,
+            evidence_source=str(continuity.get("evidence") or "UNKNOWN"),
+            evidence_quality=str(monthly_derivation.get("available") and "DERIVATION_PACKET_AVAILABLE" or "SUMMARY_ONLY"),
+            calculation_timestamp=now.isoformat(),
+            evidence_mode=evidence_mode,
+        ),
         DecisionExplanationFact(
             decision_id=f"{decision_root}:contract",
             trading_session_id=trading_session_id,
@@ -217,28 +379,44 @@ def build_explanation_facts(
             stage="CONTRACT_SELECTION",
             rule_id=str(plan.get("contract_selection_rule_id") or "LIVE.ACTUAL_CHAIN.CONTRACT_SELECTION.001"),
             workbook_source=", ".join(plan.get("source_cells") or ["TFIS authoritative rule matrix / accepted selection policy"]),
-            formula_text="Select the first qualifying actual listed option contract from the authoritative traversal.",
+            formula_text=(
+                "Scan actual listed contracts for the approved expiry set, then keep only the contracts that satisfy branch, option side, "
+                "strike search path, OI, and premium rules before freezing one final selected contract."
+            ),
             input_values={
                 "monthly_status": continuity.get("monthly_status"),
                 "branch": selected_branch,
                 "candidate_count": continuity.get("candidate_count") or plan.get("candidate_count"),
+                "market_references": dict(plan.get("market_references") or {}),
+                "source_cells": list(plan.get("source_cells") or ()),
             },
             output_value={
                 "selected_contract": selected_contract or None,
                 "selected_option_type": continuity.get("selected_option_type"),
                 "selected_expiry": continuity.get("selected_expiry"),
                 "selected_strike": continuity.get("selected_strike"),
+                "premium": quote.get("ltp") or selected_contract_payload.get("ltp"),
+                "oi": quote.get("oi") or selected_contract_payload.get("oi"),
             },
             candidate_evidence={
-                "evaluated_contracts": list(plan.get("evaluated_contracts") or ()),
+                "evaluated_contracts": evaluated_contracts,
                 "rejected_candidates": rejected_candidates,
                 "plan_hash": plan.get("plan_hash"),
+                "selection_source": plan.get("selection_source") or continuity.get("evidence"),
+                "selection_report_path": plan.get("selection_report_path"),
+                "source_cells": list(plan.get("source_cells") or ()),
+                "workbook_row_id": plan.get("workbook_row_id"),
+                "selected_option_references": dict(plan.get("selected_option_references") or {}),
+                "formula_catalog": dict(formulas),
+                "evidence_origin": dict(plan.get("evidence_origin") or {}),
+                "quote": dict(quote),
             },
             rejection_reason=None if selected_contract else str(continuity.get("unresolved_gap") or continuity.get("status") or "NO_QUALIFYING_CONTRACT"),
             evidence_source=str(continuity.get("evidence") or "UNKNOWN"),
             evidence_quality=str(continuity.get("option_history_status") or "UNKNOWN"),
             calculation_timestamp=now.isoformat(),
             evidence_mode=evidence_mode,
+            parent_decision_id=f"{decision_root}:monthly",
         ),
         DecisionExplanationFact(
             decision_id=f"{decision_root}:plan",
@@ -264,12 +442,17 @@ def build_explanation_facts(
                 "selected_option_references": dict(plan.get("selected_option_references") or {}),
             },
             output_value={
+                "base_entry": continuity.get("entry") or normalized_prices.get("base_entry"),
+                "target": continuity.get("target") or normalized_prices.get("target"),
+                "original_sl": continuity.get("original_sl") or normalized_prices.get("original_sl"),
                 "raw_prices": dict(raw_prices),
                 "normalized_prices": dict(normalized_prices),
             },
             candidate_evidence={
                 "workbook_row_id": plan.get("workbook_row_id"),
                 "rule_matrix_version": plan.get("rule_matrix_version"),
+                "formula_catalog": dict(formulas),
+                "source_cells": list(plan.get("source_cells") or ()),
             },
             rejection_reason=None,
             evidence_source=str((plan.get("evidence_origin") or {}).get("selected_option_history") or continuity.get("evidence") or "UNKNOWN"),
@@ -475,13 +658,47 @@ def build_development_dashboard_projection(
             }
         )
 
+    strategy_instances = _build_fast_track_strategy_instances(strategies)
+    strategy_definitions = _build_fast_track_strategy_definitions(strategy_instances)
+    strategy_status_counts = _build_fast_track_strategy_status_counts(strategy_instances)
+    strategy_filter_options = _build_fast_track_strategy_filter_options(strategy_instances, strategy_definitions)
+    navigation = {
+        "operator_mode": [
+            "Command Centre",
+            "Strategies",
+            "Orders",
+            "Positions",
+            "Accounts",
+            "Risk",
+            "Historical Trades",
+            "Alerts",
+            "Audit",
+            "Settings",
+        ],
+        "engineering_mode": [
+            "Decision Explorer",
+            "Monthly Status",
+            "Contract Selection",
+            "Manual Validation",
+            "Replay",
+            "Explanation Library",
+            "Diagnostics",
+            "Source Trace",
+        ],
+        "strategy_groups": _build_fast_track_strategy_groups(strategy_definitions, strategy_status_counts),
+        "product_modes_share_backend_truth": True,
+    }
+    strategy_families = _build_fast_track_strategy_families(strategy_instances)
+
     projection = {
-        "schema_version": "tfis.fast_track.dashboard_projection.v2",
+        "schema_version": "tfis.fast_track.dashboard_projection.v3",
         "system": {
             "broker_order_authority": "NONE",
             "session": trading_session_id,
             "generated_at": now.isoformat(),
+            "projection_version": "dashboard_v3",
         },
+        "navigation": navigation,
         "command_centre": {
             "active_orders": len(orders),
             "blocked_instances": sum(1 for item in strategies if item["execution"]["order_state"] != "FILLED_INTERNAL"),
@@ -496,7 +713,13 @@ def build_development_dashboard_projection(
             "system_state": "HEALTHY" if not alerts else "CONDITIONAL",
             "unprotected_positions": 0,
             "unrealized_pnl": f"{unrealized_total:.2f}",
+            "strategy_definition_summaries": strategy_definitions,
         },
+        "strategy_families": strategy_families,
+        "strategy_definitions": strategy_definitions,
+        "strategy_instances": strategy_instances,
+        "strategy_status_counts": strategy_status_counts,
+        "strategy_filter_options": strategy_filter_options,
         "strategies": strategies,
         "accounts": accounts,
         "orders": orders,
@@ -513,6 +736,175 @@ def build_development_dashboard_projection(
     }
     projection["projection_hash"] = canonical_hash({k: v for k, v in projection.items() if k != "projection_hash"})
     return projection
+
+
+def _build_fast_track_strategy_instances(strategies: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for item in strategies:
+        runtime_stage = str(item.get("state", {}).get("runtime_stage") or "")
+        position_state = str(item.get("position", {}).get("health") or "")
+        execution_state = str(item.get("execution", {}).get("order_state") or "")
+        evidence = item.get("state", {}).get("evidence_quality")
+        rows.append(
+            {
+                "strategy_instance_id": item.get("identity", {}).get("instance"),
+                "strategy_definition_id": item.get("identity", {}).get("strategy"),
+                "strategy_code": item.get("identity", {}).get("strategy"),
+                "strategy_display_name": item.get("identity", {}).get("strategy"),
+                "family": item.get("identity", {}).get("product_label") or item.get("identity", {}).get("product") or "Unknown",
+                "segment": item.get("identity", {}).get("segment_label") or item.get("identity", {}).get("segment") or "Unknown",
+                "instrument": item.get("identity", {}).get("instrument"),
+                "enabled": True,
+                "enabled_label": "Enabled",
+                "account": item.get("identity", {}).get("account"),
+                "monthly_status": item.get("state", {}).get("monthly_status"),
+                "branch": item.get("state", {}).get("branch"),
+                "current_stage": runtime_stage,
+                "selected_contract": item.get("plan", {}).get("selected_contract"),
+                "entry": item.get("plan", {}).get("base_entry"),
+                "position": position_state,
+                "position_label": position_state.replace("_", " ").title(),
+                "fresh_or_carried": item.get("position", {}).get("fresh_or_carried") or "FRESH",
+                "realized_pnl": item.get("accounting", {}).get("realized_pnl") or "0.00",
+                "unrealized_pnl": item.get("accounting", {}).get("unrealized_pnl") or "0.00",
+                "health": item.get("state", {}).get("health"),
+                "health_label": str(item.get("state", {}).get("health") or "").replace("_", " ").title(),
+                "evidence": evidence,
+                "evidence_label": str(evidence or "").replace("_", " ").title(),
+                "last_update": item.get("state", {}).get("last_update"),
+                "alerts": tuple(item.get("operations", {}).get("alerts") or ()),
+                "has_alerts": bool(item.get("operations", {}).get("alerts")),
+                "entry_available": runtime_stage in {"NORMAL_ENTRY_STILL_VALID", "RC_ENTRY_STILL_VALID", "ENTRY_AVAILABLE"},
+                "blocked": runtime_stage.startswith("BLOCKED"),
+                "no_trade": execution_state == "NO_ORDER" and not position_state.startswith("OPEN"),
+                "qualified": bool(item.get("plan", {}).get("selected_contract")),
+            }
+        )
+    return rows
+
+
+def _build_fast_track_strategy_definitions(strategy_instances: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in strategy_instances:
+        grouped.setdefault(str(row["strategy_definition_id"]), []).append(row)
+    rows: list[dict[str, Any]] = []
+    for definition_id, items in sorted(grouped.items()):
+        rows.append(
+            {
+                "strategy_definition_id": definition_id,
+                "strategy_code": definition_id,
+                "display_name": definition_id,
+                "family": items[0]["family"],
+                "segment": items[0]["segment"],
+                "supported_count": len(items),
+                "enabled_count": len(items),
+                "prepared_count": sum(1 for item in items if item["current_stage"]),
+                "qualified_count": sum(1 for item in items if item["qualified"]),
+                "entry_available_count": sum(1 for item in items if item["entry_available"]),
+                "open_count": sum(1 for item in items if str(item["position"]).startswith("OPEN")),
+                "carried_count": sum(1 for item in items if item["fresh_or_carried"] == "CARRIED"),
+                "blocked_count": sum(1 for item in items if item["blocked"]),
+                "no_trade_count": sum(1 for item in items if item["no_trade"]),
+                "realized_pnl": f"{sum(Decimal(str(item['realized_pnl'])) for item in items):.2f}",
+                "unrealized_pnl": f"{sum(Decimal(str(item['unrealized_pnl'])) for item in items):.2f}",
+                "margin_usage_pct": sum(18 for item in items if str(item["position"]).startswith("OPEN")),
+                "health": "HEALTHY" if all(str(item["health"]).upper() == "HEALTHY" for item in items) else "DEGRADED_EVIDENCE",
+                "evidence_quality": ", ".join(sorted({str(item["evidence"]) for item in items if item["evidence"]})),
+                "last_update": max(str(item["last_update"] or "") for item in items),
+            }
+        )
+    return rows
+
+
+def _build_fast_track_strategy_status_counts(strategy_instances: list[dict[str, Any]]) -> dict[str, Any]:
+    def counts(items: list[dict[str, Any]]) -> dict[str, int]:
+        return {
+            "all": len(items),
+            "enabled": sum(1 for item in items if item["enabled"]),
+            "entry_available": sum(1 for item in items if item["entry_available"]),
+            "open_positions": sum(1 for item in items if str(item["position"]).startswith("OPEN")),
+            "carried": sum(1 for item in items if item["fresh_or_carried"] == "CARRIED"),
+            "blocked": sum(1 for item in items if item["blocked"]),
+            "no_trade": sum(1 for item in items if item["no_trade"]),
+            "missing_evidence": sum(1 for item in items if str(item["evidence"]).upper() in {"DEGRADED_EVIDENCE", "DETERMINISTIC_TIMING_SUPPLEMENT"}),
+            "alerts": sum(1 for item in items if item["has_alerts"]),
+        }
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for row in strategy_instances:
+        grouped.setdefault(str(row["strategy_definition_id"]), []).append(row)
+    return {
+        "global": counts(strategy_instances),
+        "by_definition": {definition_id: counts(items) for definition_id, items in sorted(grouped.items())},
+    }
+
+
+def _build_fast_track_strategy_filter_options(
+    strategy_instances: list[dict[str, Any]],
+    strategy_definitions: list[dict[str, Any]],
+) -> dict[str, Any]:
+    return {
+        "definitions": [
+            {
+                "strategy_definition_id": item["strategy_definition_id"],
+                "strategy_code": item["strategy_code"],
+                "display_name": item["display_name"],
+            }
+            for item in strategy_definitions
+        ],
+        "accounts": sorted({str(item["account"]) for item in strategy_instances}),
+        "monthly_statuses": sorted({str(item["monthly_status"]) for item in strategy_instances if item["monthly_status"]}),
+        "branches": sorted({str(item["branch"]) for item in strategy_instances if item["branch"]}),
+        "stages": sorted({str(item["current_stage"]) for item in strategy_instances if item["current_stage"]}),
+        "health": sorted({str(item["health"]) for item in strategy_instances if item["health"]}),
+        "evidence": sorted({str(item["evidence"]) for item in strategy_instances if item["evidence"]}),
+        "sort_fields": [
+            {"key": "realized_pnl", "label": "Realized P&L"},
+            {"key": "unrealized_pnl", "label": "Unrealized P&L"},
+            {"key": "current_stage", "label": "Current Stage"},
+            {"key": "last_update", "label": "Last Update"},
+            {"key": "instrument", "label": "Instrument"},
+        ],
+        "page_sizes": [10, 20, 50],
+    }
+
+
+def _build_fast_track_strategy_groups(
+    strategy_definitions: list[dict[str, Any]],
+    strategy_status_counts: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    definitions = []
+    family = strategy_definitions[0]["family"] if strategy_definitions else "Unclassified"
+    for item in strategy_definitions:
+        definitions.append(
+            {
+                "strategy_definition_id": item["strategy_definition_id"],
+                "strategy_code": item["strategy_code"],
+                "display_name": item["display_name"],
+                "enabled_count": item["enabled_count"],
+                "supported_count": item["supported_count"],
+                "status_counts": strategy_status_counts.get("by_definition", {}).get(item["strategy_definition_id"], {}),
+            }
+        )
+    return [{"family": family, "definitions": definitions}]
+
+
+def _build_fast_track_strategy_families(strategy_instances: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    family = strategy_instances[0]["family"] if strategy_instances else "Unclassified"
+    return [
+        {
+            "family": family,
+            "instrument_count": len(strategy_instances),
+            "strategy_count": len({str(item["strategy_code"]) for item in strategy_instances}),
+            "active_positions": sum(1 for item in strategy_instances if str(item["position"]).startswith("OPEN")),
+            "blocked": sum(1 for item in strategy_instances if item["blocked"]),
+            "no_trade": sum(1 for item in strategy_instances if item["no_trade"]),
+            "daily_pnl": f"{sum(Decimal(str(item['realized_pnl'])) + Decimal(str(item['unrealized_pnl'])) for item in strategy_instances):.2f}",
+            "evidence_quality": ", ".join(sorted({str(item["evidence"]) for item in strategy_instances if item["evidence"]})),
+            "health": "HEALTHY" if all(str(item["health"]).upper() == "HEALTHY" for item in strategy_instances) else "DEGRADED_EVIDENCE",
+            "scalability_demo": False,
+        }
+    ]
 
 
 def build_candidate_rejection_audit(

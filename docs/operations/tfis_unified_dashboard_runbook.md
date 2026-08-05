@@ -37,6 +37,30 @@ renders backend snapshot fields plus immutable explainability facts where
 available, and it visibly marks missing or partial explanation stages instead
 of hiding them.
 
+The current scalable `Strategies` review path is:
+
+1. open the strategy-definition summary table
+2. select one strategy definition such as `S22`
+3. review the compact instance list using search, quick views, filters, sort,
+   and pagination
+4. open one selected instance in the workbench
+5. use `Previous`, `Next`, and `Back To List` without losing the active list
+   context
+
+Operator routing is now explicit rather than one shared `Strategies` page
+selection:
+
+- `#opportunity-queue` opens the definition summary plus compact instance list
+- `#decision-workbench` opens the selected-instance review path
+- if no instance is selected, the workbench shows an empty-state instruction
+  instead of leaking a stale default strategy
+- selected definition, selected instance, mode, and explanation step are now
+  preserved in the browser hash when available
+
+This layout is intended for 30+ stock instances and future strategy families;
+the sidebar must not permanently dump every instrument as a full primary
+navigation item.
+
 ## Build Certification Reports
 
 ```powershell

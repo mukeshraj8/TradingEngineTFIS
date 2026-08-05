@@ -1,5 +1,5 @@
 {
-  "captured_at": "2026-08-04T12:15:20.327502+05:30",
+  "captured_at": "2026-08-05T17:02:05.850789+05:30",
   "scenarios": [
     {
       "failure": "S21 data missing",
@@ -35,5 +35,5 @@
     }
   ],
   "schema_version": "tfis.live_supervisor.failure_isolation_matrix.v1",
-  "session_id": "NSE:2026-08-04:UNIFIED_INTERNAL_PAPER"
+  "session_id": "NSE:2026-08-05:UNIFIED_INTERNAL_PAPER"
 }

@@ -36,10 +36,11 @@
           <span id="strategyCount" class="mini-badge">0</span>
         </div>
         <p class="rail-copy">Pick one strategy to inspect its inputs, rule path, contract selection, entry state, and protection.</p>
+        <input id="strategyRailSearch" type="search" placeholder="Search family, strategy, instrument">
         <div id="strategyRail" class="strategy-rail"></div>
       </section>
       <section class="rail-panel">
-        <h2>How To Read This</h2>
+        <h2>Operator Workflows</h2>
         <div id="workflowGuide" class="guide-list"></div>
       </section>
     </aside>
@@ -48,17 +49,17 @@
       <section id="tab-command-centre" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">System Health</p>
-            <h2>Command Centre</h2>
+            <p class="section-kicker">Workflow 1 - Monitor the system</p>
+            <h2>Is everything healthy?</h2>
           </div>
         </div>
         <div id="statusGrid" class="metric-grid"></div>
-        <div class="layout-two">
+        <div class="layout-two monitor-top-grid">
           <article class="surface-panel">
             <div class="panel-head">
               <div>
-                <p class="section-kicker">Operator Focus</p>
-                <h3>Today At A Glance</h3>
+                <p class="section-kicker">Workflow focus</p>
+                <h3>Operator focus</h3>
               </div>
             </div>
             <div id="overviewNarrative" class="narrative-list"></div>
@@ -66,14 +67,14 @@
           <article class="surface-panel">
             <div class="panel-head">
               <div>
-                <p class="section-kicker">Run Boundaries</p>
-                <h3>Authority And Safety</h3>
+                <p class="section-kicker">Safety boundary</p>
+                <h3>Runtime boundary</h3>
               </div>
             </div>
             <div id="authoritySummary" class="key-value-grid"></div>
           </article>
         </div>
-        <div class="layout-two">
+        <div class="layout-two monitor-grid">
           <article class="surface-panel">
             <div class="panel-head"><h3>Critical Alerts</h3></div>
             <div id="commandCentreAlerts" class="panel-list"></div>
@@ -83,7 +84,7 @@
             <div id="commandCentreEvents" class="panel-list"></div>
           </article>
         </div>
-        <div class="layout-two">
+        <div class="layout-two monitor-grid">
           <article class="surface-panel">
             <div class="panel-head"><h3>Active Trades</h3></div>
             <div id="commandCentreTrades" class="panel-list"></div>
@@ -93,7 +94,7 @@
             <div id="commandCentreActions" class="panel-list"></div>
           </article>
         </div>
-        <div class="layout-two">
+        <div class="layout-two monitor-grid">
           <article class="surface-panel">
             <div class="panel-head"><h3>Strategy Health</h3></div>
             <div id="commandCentreStrategyHealth" class="panel-list"></div>
@@ -108,56 +109,120 @@
       <section id="tab-strategies" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">Hierarchy And Workbench</p>
-            <h2>Strategies</h2>
+            <p id="strategyRouteKicker" class="section-kicker">Workflow 2 - Review opportunities</p>
+            <h2 id="strategyRouteTitle">What is ready to trade?</h2>
           </div>
-          <div id="selectedStrategyBadge" class="selection-badge"></div>
-          <input id="strategyFilter" type="search" placeholder="Filter strategy, instrument, branch, status">
+          <div class="toolbar-actions">
+            <div id="strategyBreadcrumb" class="selection-badge"></div>
+            <div id="selectedStrategyBadge" class="selection-badge"></div>
+          </div>
         </div>
-        <div class="surface-panel">
-          <div class="panel-head">
-            <div>
-              <p class="section-kicker">Strategy Families</p>
-              <h3>Family Summary</h3>
+        <div id="projectionWarnings" class="warning-stack"></div>
+        <div id="opportunityQueuePanels" class="opportunity-layout">
+          <div class="surface-panel">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Opportunity landscape</p>
+                <h3>Strategy overview</h3>
+              </div>
             </div>
+            <div id="strategyFamilyGrid" class="strategy-grid"></div>
           </div>
-          <div id="strategyFamilyGrid" class="strategy-grid"></div>
+          <div class="surface-panel opportunity-secondary">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Definition summary</p>
+                <h3>Active strategy definitions</h3>
+              </div>
+            </div>
+            <div id="strategyWorkbenchSummary" class="inline-summary"></div>
+            <div class="table-wrap"><table id="strategyDefinitionsTable"></table></div>
+          </div>
+          <div class="surface-panel opportunity-primary">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Opportunity list</p>
+                <h3 id="strategyInstanceListTitle">Review trade-ready instances</h3>
+              </div>
+              <div class="toolbar-actions">
+                <button id="strategyDensityToggle" type="button" class="action-button">Density: Compact</button>
+                <button id="strategySaveView" type="button" class="action-button">Save View</button>
+                <button id="strategyExport" type="button" class="action-button">Export</button>
+              </div>
+            </div>
+            <div id="strategyQuickViews" class="inline-summary"></div>
+            <div class="filter-toolbar">
+              <input id="strategyFilter" type="search" placeholder="Search instrument, contract, account, branch">
+              <select id="strategyStatusFilter"></select>
+              <select id="strategyMonthlyFilter"></select>
+              <select id="strategyBranchFilter"></select>
+              <select id="strategyHealthFilter"></select>
+              <select id="strategyEvidenceFilter"></select>
+              <select id="strategyAccountFilter"></select>
+              <select id="strategyEnabledFilter"></select>
+              <select id="strategySortKey"></select>
+              <button id="strategySortDirection" type="button" class="action-button">Desc</button>
+              <select id="strategyPageSize"></select>
+              <select id="strategySavedViews"></select>
+            </div>
+            <div id="strategyInstanceSummary" class="inline-summary"></div>
+            <div class="table-wrap strategy-instance-wrap"><table id="strategyInstancesTable"></table></div>
+            <div id="strategyPagination" class="pagination-bar"></div>
+          </div>
         </div>
-        <div id="strategyWorkbenchSummary" class="inline-summary"></div>
-        <div id="strategyWorkbench" class="strategy-grid"></div>
-        <div class="surface-panel hero-panel">
-          <div class="panel-head">
-            <div>
-              <p class="section-kicker">Validation Path</p>
-              <h3 id="explorerTitle">Select a strategy</h3>
+        <div id="decisionWorkbenchPanels" class="decision-workbench-shell">
+          <aside class="surface-panel hero-panel decision-sidebar">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Workflow 3 - Validate one decision</p>
+                <h3 id="explorerTitle">Select a strategy</h3>
+              </div>
+              <div id="explorerHealth" class="badge badge-neutral">Awaiting selection</div>
             </div>
-            <div id="explorerHealth" class="badge badge-neutral">Awaiting selection</div>
-          </div>
-          <div class="layout-two compact-layout">
+            <div id="selectedStrategySummary" class="summary-grid"></div>
             <div id="selectedStrategyContext" class="key-value-grid"></div>
             <div id="selectedStrategyChecklist" class="panel-list"></div>
-          </div>
-          <div id="selectedStrategySummary" class="summary-grid"></div>
-          <div id="selectedStrategyFlow" class="flow-strip"></div>
-        </div>
-
-        <div class="surface-panel">
-          <div class="panel-head">
-            <div>
-              <p class="section-kicker">Stepwise Review</p>
-              <h3>Explanation Tabs</h3>
+            <div class="surface-divider"></div>
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Strategy set</p>
+                <h3 id="selectedDefinitionTitle">Selected strategy definition</h3>
+              </div>
             </div>
-          </div>
-          <div id="explainTabs" class="subtabs" aria-label="Strategy explanation sections"></div>
-          <div id="explainPanel" class="explain-panel"></div>
+            <div id="selectedDefinitionSummary" class="inline-summary"></div>
+            <div id="selectedInstanceNavigator" class="instance-switcher"></div>
+            <div class="panel-head decision-nav-head">
+              <div>
+                <p class="section-kicker">Decision path</p>
+                <h3>Review steps</h3>
+              </div>
+              <div class="toolbar-actions">
+                <button id="strategyBackToList" type="button" class="action-button">Back To List</button>
+                <button id="strategyPrevInstance" type="button" class="action-button">Previous</button>
+                <button id="strategyNextInstance" type="button" class="action-button">Next</button>
+              </div>
+            </div>
+            <div id="selectedStrategyFlow" class="flow-strip"></div>
+          </aside>
+
+          <section class="surface-panel decision-main">
+            <div class="panel-head">
+              <div>
+                <p class="section-kicker">Decision detail</p>
+                <h3>Selected step</h3>
+              </div>
+            </div>
+            <div id="explainTabs" class="subtabs" aria-label="Strategy explanation sections"></div>
+            <div id="explainPanel" class="explain-panel"></div>
+          </section>
         </div>
       </section>
 
       <section id="tab-orders" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">Execution State</p>
-            <h2>Orders</h2>
+            <p class="section-kicker">Workflow 4 - Manage positions</p>
+            <h2>Order state</h2>
           </div>
         </div>
         <div id="ordersSummary" class="inline-summary"></div>
@@ -167,8 +232,8 @@
       <section id="tab-positions" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">Open And Carried Exposure</p>
-            <h2>Positions</h2>
+            <p class="section-kicker">Workflow 4 - Manage positions</p>
+            <h2>Open positions</h2>
           </div>
         </div>
         <div id="positionsSummary" class="inline-summary"></div>
@@ -178,8 +243,8 @@
       <section id="tab-accounts" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">Configuration And Summary</p>
-            <h2>Accounts</h2>
+            <p class="section-kicker">Workflow 6 - Configure the platform</p>
+            <h2>Accounts and authority boundaries</h2>
           </div>
         </div>
         <div class="layout-two">
@@ -197,8 +262,8 @@
       <section id="tab-risk" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">Monitoring</p>
-            <h2>Risk</h2>
+            <p class="section-kicker">Workflow 4 - Manage positions</p>
+            <h2>Exposure and limits</h2>
           </div>
         </div>
         <div class="layout-two">
@@ -228,8 +293,8 @@
       <section id="tab-historical-trades" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">Closed And Open Trade Story</p>
-            <h2>Historical Trades</h2>
+            <p class="section-kicker">Workflow 5 - Review history</p>
+            <h2>What happened previously and why?</h2>
           </div>
         </div>
         <div id="historicalSummary" class="inline-summary"></div>
@@ -239,8 +304,8 @@
       <section id="tab-alerts" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">Exceptions And Attention</p>
-            <h2>Alerts</h2>
+            <p class="section-kicker">Workflow 1 - Monitor the system</p>
+            <h2>What needs attention now?</h2>
           </div>
         </div>
         <div id="alertsSummary" class="inline-summary"></div>
@@ -253,8 +318,8 @@
       <section id="tab-audit" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">History And Controls</p>
-            <h2>Audit</h2>
+            <p class="section-kicker">Workflow 5 - Review history</p>
+            <h2>What changed, and when?</h2>
           </div>
         </div>
         <div id="auditSummary" class="inline-summary"></div>
@@ -264,8 +329,8 @@
       <section id="tab-settings" class="workspace-tab">
         <div class="section-head">
           <div>
-            <p class="section-kicker">Runtime Metadata</p>
-            <h2>Settings And Snapshot</h2>
+            <p class="section-kicker">Workflow 6 - Configure the platform</p>
+            <h2>Platform settings and snapshot truth</h2>
           </div>
         </div>
         <div class="layout-two">
