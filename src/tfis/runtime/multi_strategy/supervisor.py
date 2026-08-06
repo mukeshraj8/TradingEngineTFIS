@@ -1973,7 +1973,7 @@ class UnifiedInternalPaperSupervisor:
             if order_row.get("projected_state") is not None
             else order_row.get("current_state") or ""
         )
-        selected_contract = str(order_payload.get("normalized_contract") or "")
+        selected_contract = self._extract_authoritative_order_contract(order_payload)
         base_state: dict[str, Any] = {
             "selected_contract": selected_contract,
             "client_order_id": str(order_row.get("client_order_id") or ""),
@@ -2009,6 +2009,31 @@ class UnifiedInternalPaperSupervisor:
         lifecycle_state = str(position_projection.get("lifecycle_state") or "") if isinstance(position_projection, Mapping) else ""
         remaining_quantity = int(position_projection.get("remaining_quantity") or 0) if isinstance(position_projection, Mapping) else 0
 
+        # The client-order projection may not carry position_cycle_id even though the
+        # authoritative position projection and fill rows do. Resolve the identity
+        # before filtering fills; otherwise valid fill evidence is discarded and a
+        # filled order is incorrectly restored as NO_ORDER.
+        order_position_cycle_id = str(base_state.get("position_cycle_id") or "")
+        projected_position_cycle_id = (
+            str(position_projection.get("position_cycle_id") or "")
+            if isinstance(position_projection, Mapping)
+            else ""
+        )
+        if (
+            order_position_cycle_id
+            and projected_position_cycle_id
+            and order_position_cycle_id != projected_position_cycle_id
+        ):
+            return _blocked_paper_state(
+                current_state=base_state,
+                continuity={"selected_contract": selected_contract},
+                reason="AUTHORITATIVE_POSITION_IDENTITY_CONFLICT",
+                now=self.now_provider(),
+            ) | {"authoritative_state": True}
+
+        authoritative_position_cycle_id = order_position_cycle_id or projected_position_cycle_id
+        base_state["position_cycle_id"] = authoritative_position_cycle_id
+
         decoded_fills: list[Mapping[str, Any]] = []
         for fill_row in fills:
             payload = self._decode_canonical_payload(fill_row.get("payload_json"))
@@ -2016,7 +2041,12 @@ class UnifiedInternalPaperSupervisor:
                 continue
             if str(fill_row.get("client_order_id") or "") != base_state["client_order_id"]:
                 continue
-            if str(fill_row.get("position_cycle_id") or "") not in {"", base_state["position_cycle_id"]}:
+            fill_position_cycle_id = str(fill_row.get("position_cycle_id") or "")
+            if (
+                authoritative_position_cycle_id
+                and fill_position_cycle_id
+                and fill_position_cycle_id != authoritative_position_cycle_id
+            ):
                 continue
             decoded_fills.append(payload)
 
@@ -2035,11 +2065,11 @@ class UnifiedInternalPaperSupervisor:
                     reason="AUTHORITATIVE_POSITION_EVIDENCE_MISSING",
                     now=self.now_provider(),
                 ) | {"authoritative_state": True}
-            if str(position_projection.get("position_cycle_id") or "") != base_state["position_cycle_id"]:
+            if not authoritative_position_cycle_id:
                 return _blocked_paper_state(
                     current_state=base_state,
                     continuity={"selected_contract": selected_contract},
-                    reason="AUTHORITATIVE_POSITION_IDENTITY_CONFLICT",
+                    reason="AUTHORITATIVE_POSITION_IDENTITY_MISSING",
                     now=self.now_provider(),
                 ) | {"authoritative_state": True}
 
@@ -2100,6 +2130,32 @@ class UnifiedInternalPaperSupervisor:
             reason=f"UNHANDLED_AUTH_ORDER_STATE_{order_state}",
             now=self.now_provider(),
         ) | {"authoritative_state": True}
+
+    def _extract_authoritative_order_contract(self, order_payload: Mapping[str, Any]) -> str:
+        """Return the contract persisted with the order without using config/fixture fallbacks."""
+        direct = order_payload.get("normalized_contract") or order_payload.get("contract")
+        if direct:
+            return str(direct)
+
+        instrument = order_payload.get("instrument")
+        if isinstance(instrument, Mapping):
+            nested = instrument.get("normalized_contract") or instrument.get("contract") or instrument.get("symbol")
+            if nested:
+                return str(nested)
+
+        action = order_payload.get("action")
+        if isinstance(action, Mapping):
+            action_instrument = action.get("instrument")
+            if isinstance(action_instrument, Mapping):
+                nested = (
+                    action_instrument.get("normalized_contract")
+                    or action_instrument.get("contract")
+                    or action_instrument.get("symbol")
+                )
+                if nested:
+                    return str(nested)
+
+        return ""
 
     def _decode_canonical_payload(self, payload_json: Any) -> Any:
         if not isinstance(payload_json, str) or not payload_json:

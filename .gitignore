@@ -222,3 +222,5 @@ tmp_pytest
 reports/
 .pytest_tmp2/
 .pytest_tmp/
+reports/
+*.zip

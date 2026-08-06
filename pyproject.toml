@@ -27,6 +27,7 @@ pythonpath = [
 testpaths = [
   "tests",
 ]
+addopts = "--basetemp=.pytest_tmp"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -34,5 +35,4 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.pytest.ini_options]
-addopts = "--basetemp=.pytest_tmp"
+

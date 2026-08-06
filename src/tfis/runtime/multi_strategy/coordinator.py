@@ -281,7 +281,8 @@ def _write_dashboard_v2_reports(report_dir: Path, *, registry: EnabledStrategyRe
 def _s22_scalability_projection(registry: EnabledStrategyRegistry, projection: Mapping[str, Any]) -> dict[str, Any]:
     s22 = next((item for item in projection["strategies"] if item["identity"]["strategy"] == "S22"), None)
     base = s22 or {}
-    symbols = ["RELIANCE"] + [f"S22_SIM_{index:02d}" for index in range(1, 31)]
+    reference_symbol = str((base.get("identity") or {}).get("instrument") or "S22_STOCK_00")
+    symbols = [reference_symbol] + [f"S22_SIM_{index:02d}" for index in range(1, 31)]
     rows = []
     for index, symbol in enumerate(symbols, start=1):
         rows.append(
@@ -315,7 +316,7 @@ def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRe
         {"strategy_family": "Futures", "strategy_code": "FUT_UI", "instrument": "NIFTY_FUT_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Futures"},
         {"strategy_family": "Commodity", "strategy_code": "CMD_UI", "instrument": "CRUDEOIL_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Commodity"},
         {"strategy_family": "Currency", "strategy_code": "CUR_UI", "instrument": "USDINR_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Currency"},
-        {"strategy_family": "Equity", "strategy_code": "EQ_UI", "instrument": "RELIANCE_EQ_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Equity"},
+        {"strategy_family": "Equity", "strategy_code": "EQ_UI", "instrument": "EQUITY_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Equity"},
         {"strategy_family": "Option Buying", "strategy_code": "OB_UI", "instrument": "BANKNIFTY_CALL_BUY_UI_FIXTURE", "status": "UI_COMPATIBILITY_FIXTURE", "segment": "Index Options"},
     ]
     reports: dict[str, Any] = {
@@ -642,7 +643,7 @@ def _write_dashboard_v3_reports(report_dir: Path, *, registry: EnabledStrategyRe
 
 def _build_s22_scalability_fixture(projection: Mapping[str, Any]) -> dict[str, Any]:
     statuses = (
-        ("RELIANCE", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL_CF", "BULL_CALL", True),
+        ("S22_STOCK_01", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BULL_CF", "BULL_CALL", True),
         ("TCS", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "HEALTHY", "LIVE_READ_ONLY_CAPTURE", "BEAR_CF", "BEAR_CALL", True),
         ("INFY", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "DEGRADED_EVIDENCE", "DETERMINISTIC_TIMING_SUPPLEMENT", "BULL_CF", "BULL_CALL", True),
         ("ICICIBANK", "ENTRY_AVAILABLE", "NO_POSITION", "FRESH", "HEALTHY", "FIXTURE_BACKED", "BEAR_CF", "BEAR_CALL", True),
@@ -1089,7 +1090,7 @@ def _gap_register() -> dict[str, Any]:
             {
                 "gap_id": "DASH-V1-G001",
                 "classification": "S22_LIVE_EVIDENCE_PENDING",
-                "description": "S22 RELIANCE opening/ORPT/RC evidence remains deterministic timing supplement until the next eligible FYERS trading session.",
+                "description": "The enabled S22 stock opening/ORPT/RC evidence remains a deterministic timing supplement until an eligible FYERS trading session.",
                 "blocks": ["complete real-session S22 evidence certification"],
                 "does_not_block": ["unified internal-paper runtime", "dashboard implementation"],
             },
@@ -1151,8 +1152,8 @@ def _summary(result: Mapping[str, Any], dry_run: Mapping[str, Any]) -> str:
         "# Unified S21/S22/S23 Internal-Paper Runtime and Dashboard\n\n"
         "Verdict: TFIS_MULTI_STRATEGY_DASHBOARD_CONDITIONAL\n\n"
         "Implemented a configuration-driven unified internal-paper projection for S21/BANKNIFTY, "
-        "S22/RELIANCE and S23/NIFTY, plus a professional read-only dashboard data contract. "
-        "The certification is conditional because S22 RELIANCE still lacks real live-session "
+        "S22 stock instances and S23/NIFTY, plus a professional read-only dashboard data contract. "
+        "The certification is conditional because the enabled S22 stock still lacks real live-session "
         "opening/ORPT/RC capture evidence.\n\n"
         f"Dry-run scenarios: {dry_run['scenario_count']} passed.\n\n"
         f"Projection hash: {result['dashboard_projection']['projection_hash']}\n\n"
