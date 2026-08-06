@@ -61,6 +61,149 @@ class PersistenceRepositories:
     def __init__(self, connection: sqlite3.Connection) -> None:
         self.connection = connection
 
+    def get_internal_client_order_records_by_session(
+        self,
+        *,
+        trading_session_id: str,
+        strategy_instance_id: str | None = None,
+    ) -> list[dict[str, Any]]:
+        if strategy_instance_id is None:
+            rows = self.connection.execute(
+                """
+                SELECT
+                    o.client_order_id,
+                    o.execution_intent_id,
+                    o.account_coordinator_id,
+                    o.broker_account_id,
+                    o.strategy_instance_id,
+                    o.trading_session_id,
+                    o.position_cycle_id,
+                    o.idempotency_key,
+                    o.order_hash,
+                    o.order_purpose,
+                    o.current_state,
+                    o.authority_source,
+                    o.payload_json,
+                    o.created_timestamp,
+                    o.updated_timestamp,
+                    p.current_state AS projected_state,
+                    p.cumulative_filled_quantity,
+                    p.latest_event_id,
+                    p.version AS projection_version
+                FROM internal_client_order_records o
+                LEFT JOIN latest_internal_client_order_projection p ON p.client_order_id = o.client_order_id
+                WHERE o.trading_session_id = ?
+                ORDER BY o.updated_timestamp DESC, o.created_timestamp DESC
+                """,
+                (trading_session_id,),
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                """
+                SELECT
+                    o.client_order_id,
+                    o.execution_intent_id,
+                    o.account_coordinator_id,
+                    o.broker_account_id,
+                    o.strategy_instance_id,
+                    o.trading_session_id,
+                    o.position_cycle_id,
+                    o.idempotency_key,
+                    o.order_hash,
+                    o.order_purpose,
+                    o.current_state,
+                    o.authority_source,
+                    o.payload_json,
+                    o.created_timestamp,
+                    o.updated_timestamp,
+                    p.current_state AS projected_state,
+                    p.cumulative_filled_quantity,
+                    p.latest_event_id,
+                    p.version AS projection_version
+                FROM internal_client_order_records o
+                LEFT JOIN latest_internal_client_order_projection p ON p.client_order_id = o.client_order_id
+                WHERE o.trading_session_id = ? AND o.strategy_instance_id = ?
+                ORDER BY o.updated_timestamp DESC, o.created_timestamp DESC
+                """,
+                (trading_session_id, strategy_instance_id),
+            ).fetchall()
+
+        return [dict(row) for row in rows]
+
+    def get_internal_paper_account_projections_for_session(
+        self,
+        *,
+        trading_session_id: str,
+    ) -> list[dict[str, Any]]:
+        rows = self.connection.execute(
+            """
+            SELECT
+                projection_id,
+                broker_account_id,
+                trading_session_id,
+                account_coordinator_id,
+                latest_snapshot_hash,
+                active_order_count,
+                available_paper_margin,
+                payload_json,
+                version,
+                updated_timestamp
+            FROM internal_paper_account_projections
+            WHERE trading_session_id = ?
+            ORDER BY updated_timestamp DESC
+            """,
+            (trading_session_id,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+    def get_latest_internal_paper_position_projection(
+        self,
+        *,
+        trading_session_id: str,
+        strategy_instance_id: str,
+    ) -> dict[str, Any] | None:
+        row = self.connection.execute(
+            """
+            SELECT
+                position_cycle_id,
+                lifecycle_state,
+                confirmed_entry_quantity,
+                remaining_quantity,
+                realized_quantity,
+                projection_hash,
+                payload_json,
+                authority_source,
+                version,
+                updated_timestamp
+            FROM internal_position_cycle_projections
+            WHERE trading_session_id = ? AND strategy_instance_id = ?
+            ORDER BY updated_timestamp DESC
+            LIMIT 1
+            """,
+            (trading_session_id, strategy_instance_id),
+        ).fetchone()
+        return dict(row) if row else None
+
+    def get_internal_paper_fills_for_order(self, *, client_order_id: str) -> list[dict[str, Any]]:
+        rows = self.connection.execute(
+            """
+            SELECT
+                internal_fill_id,
+                client_order_id,
+                broker_account_id,
+                strategy_instance_id,
+                position_cycle_id,
+                fill_hash,
+                payload_json,
+                created_timestamp
+            FROM internal_paper_fills
+            WHERE client_order_id = ?
+            ORDER BY created_timestamp ASC
+            """,
+            (client_order_id,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
     def put_trading_session(
         self,
         *,

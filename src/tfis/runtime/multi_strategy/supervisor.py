@@ -42,10 +42,12 @@ from tfis.internal_paper import (
 from tfis.internal_position import PositionCycleCoordinator
 from tfis.persistence import (
     PersistenceDatabase,
+    PersistenceRepositories,
     UnitOfWork,
     apply_migrations,
     assess_recovery,
     canonical_hash,
+    from_canonical_json,
     run_integrity_scan,
 )
 from tfis.read_models.operations.models import OperationalReadModel
@@ -293,6 +295,7 @@ class UnifiedInternalPaperSupervisor:
         self._selected_contract_history: dict[str, list[dict[str, Any]]] = {}
         self._paper_execution_state: dict[str, dict[str, Any]] = {}
         self._paper_account_snapshots: dict[str, dict[str, Any]] = {}
+        self._restore_checkpoint_if_available()
 
     def run(self) -> ContinuousSupervisorRunResult:
         self._acquire_process_lock()
@@ -890,11 +893,22 @@ class UnifiedInternalPaperSupervisor:
         selected_contract = str(continuity.get("selected_contract") or "")
         evidence_mode = str(continuity.get("recovery_mode") or "LIVE_OBSERVED")
         filled_state = str(current_state.get("final_state") or "")
-        if filled_state == "FILLED_INTERNAL":
+        if filled_state == "FILLED_INTERNAL" and bool(current_state.get("authoritative_state")):
             refreshed = _refresh_open_position_state(current_state=current_state, continuity=continuity, now=now)
             return {
                 "state": refreshed,
                 "outcome": _outcome_from_state(instance=instance, state=refreshed, decision="PROCESSED_INTERNAL_PAPER"),
+            }
+        if filled_state == "FILLED_INTERNAL":
+            blocked_state = _blocked_paper_state(
+                current_state=current_state,
+                continuity=continuity,
+                reason="AUTHORITATIVE_FILL_EVIDENCE_MISSING",
+                now=now,
+            )
+            return {
+                "state": blocked_state,
+                "outcome": _outcome_from_state(instance=instance, state=blocked_state, decision="NO_ORDER"),
             }
 
         if self._late_start_mode and evidence_mode != "HISTORICALLY_RECONSTRUCTED":
@@ -1041,6 +1055,7 @@ class UnifiedInternalPaperSupervisor:
                 "available_margin": str(available_margin),
                 "effective_available_margin": str(effective_available_margin),
                 "account_reference": intent.broker_account_id,
+                "authoritative_state": True,
             }
         else:
             account_snapshots[intent.broker_account_id] = snapshot
@@ -1090,6 +1105,7 @@ class UnifiedInternalPaperSupervisor:
                 "decision": "PROCESSED_INTERNAL_PAPER",
                 "mark": str((continuity.get("quote") or {}).get("ltp") or result.fills[-1].fill_price if result.fills else limit_price),
                 "position_open": True,
+                "authoritative_state": True,
             }
             refreshed = _refresh_open_position_state(current_state=filled_state_payload, continuity=continuity, now=now)
             return {
@@ -1105,6 +1121,7 @@ class UnifiedInternalPaperSupervisor:
             "latest_event": "WAITING_FOR_FILL",
             "decision": "ORDER_ACCEPTED_PENDING_FILL",
             "mark": str((continuity.get("quote") or {}).get("ltp") or ""),
+            "authoritative_state": True,
         }
         return {
             "state": pending_state,
@@ -1850,39 +1867,209 @@ class UnifiedInternalPaperSupervisor:
 
     def _restore_checkpoint_if_available(self) -> None:
         payload = self._load_checkpoint_payload()
-        if not payload:
+        if payload and payload.get("session_date") == self.session_date.isoformat():
+            session_started_at = payload.get("session_started_at")
+            if isinstance(session_started_at, str):
+                try:
+                    self._session_started_at = datetime.fromisoformat(session_started_at)
+                except ValueError:
+                    pass
+            self._late_start_mode = bool(payload.get("late_start_mode"))
+            self.subscription_owner = SubscriptionOwner.from_dict(payload.get("subscription_owner") or {})
+            restored_reads = payload.get("selected_contract_reads") or {}
+            if isinstance(restored_reads, Mapping):
+                self._selected_contract_history = {
+                    str(strategy_instance_id): [dict(item) for item in values if isinstance(item, Mapping)]
+                    for strategy_instance_id, values in restored_reads.items()
+                    if isinstance(values, list)
+                }
+            restored_execution = payload.get("paper_execution_state") or {}
+            if isinstance(restored_execution, Mapping):
+                self._paper_execution_state = {
+                    str(strategy_instance_id): dict(state)
+                    for strategy_instance_id, state in restored_execution.items()
+                    if isinstance(state, Mapping)
+                }
+            restored_accounts = payload.get("paper_account_snapshots") or {}
+            if isinstance(restored_accounts, Mapping):
+                self._paper_account_snapshots = {
+                    str(account_reference): dict(snapshot)
+                    for account_reference, snapshot in restored_accounts.items()
+                    if isinstance(snapshot, Mapping)
+                }
+        self._restore_internal_paper_state_from_ledger()
+
+    def _restore_internal_paper_state_from_ledger(self) -> None:
+        if not self.config.db_path.exists():
             return
-        if payload.get("session_date") != self.session_date.isoformat():
+        db = PersistenceDatabase(self.config.db_path, read_only=True)
+        try:
+            with db.connect() as connection:
+                repo = PersistenceRepositories(connection)
+                restored_order_states: dict[str, dict[str, Any]] = {}
+                for instance in self.registry.enabled_instances:
+                    order_rows = repo.get_internal_client_order_records_by_session(
+                        trading_session_id=self.session_id,
+                        strategy_instance_id=instance.strategy_instance_id,
+                    )
+                    if not order_rows:
+                        continue
+                    order_row = order_rows[0]
+                    restored = self._reconstruct_internal_paper_execution_state_from_order_rows(
+                        instance=instance,
+                        order_row=order_row,
+                        fills=repo.get_internal_paper_fills_for_order(client_order_id=str(order_row["client_order_id"])),
+                        position_projection=repo.get_latest_internal_paper_position_projection(
+                            trading_session_id=self.session_id,
+                            strategy_instance_id=instance.strategy_instance_id,
+                        ),
+                    )
+                    if restored:
+                        restored_order_states[instance.strategy_instance_id] = restored
+                if restored_order_states:
+                    self._paper_execution_state = restored_order_states
+
+                account_rows = repo.get_internal_paper_account_projections_for_session(
+                    trading_session_id=self.session_id,
+                )
+                for row in account_rows:
+                    account_reference = str(row.get("broker_account_id") or "")
+                    if not account_reference:
+                        continue
+                    payload = self._decode_canonical_payload(row.get("payload_json"))
+                    if not isinstance(payload, Mapping):
+                        continue
+                    self._paper_account_snapshots.setdefault(account_reference, {})
+                    self._paper_account_snapshots[account_reference] = self._normalize_account_snapshot_payload(payload)
+        except Exception:
             return
-        session_started_at = payload.get("session_started_at")
-        if isinstance(session_started_at, str):
+
+    def _reconstruct_internal_paper_execution_state_from_order_rows(
+        self,
+        *,
+        instance: EnabledStrategyInstance,
+        order_row: Mapping[str, Any],
+        fills: list[dict[str, Any]],
+        position_projection: Mapping[str, Any] | None,
+    ) -> dict[str, Any] | None:
+        order_payload = self._decode_canonical_payload(order_row.get("payload_json"))
+        if not isinstance(order_payload, Mapping):
+            return None
+        order_state = str(
+            order_row.get("projected_state")
+            if order_row.get("projected_state") is not None
+            else order_row.get("current_state") or ""
+        )
+        selected_contract = str(
+            order_payload.get("normalized_contract")
+            or self._paper_execution_state.get(instance.strategy_instance_id, {}).get("selected_contract")
+            or instance.deterministic_projection.get("selected_contract", "")
+        )
+        filled_quantity = int(order_row.get("cumulative_filled_quantity") or 0)
+        quantity = int(order_payload.get("quantity") or 0)
+        latest_fill_payload: Mapping[str, Any] | None = None
+        if fills:
+            latest_fill_payload = self._decode_canonical_payload(fills[-1].get("payload_json"))
+            fill_payload = latest_fill_payload if isinstance(latest_fill_payload, Mapping) else {}
+            fill_price = fill_payload.get("fill_price")
+            fill_time = fill_payload.get("recorded_timestamp")
+            fill_time_iso = (
+                fill_time.isoformat()
+                if hasattr(fill_time, "isoformat")
+                else str(fill_time or (order_row.get("created_timestamp") or ""))
+            )
+            average_entry = str(fill_price or order_payload.get("limit_price") or "0.00")
+        else:
+            fill_time_iso = ""
+            average_entry = ""
+        lifecycle_state = str(position_projection.get("lifecycle_state") if isinstance(position_projection, Mapping) else "")
+        remaining_quantity = int(position_projection.get("remaining_quantity") or 0) if isinstance(position_projection, Mapping) else 0
+        if remaining_quantity <= 0 and filled_quantity > 0:
+            remaining_quantity = filled_quantity
+        protected_state: dict[str, Any] = {
+            "selected_contract": selected_contract,
+            "client_order_id": str(order_row.get("client_order_id") or ""),
+            "execution_intent_id": str(order_row.get("execution_intent_id") or ""),
+            "position_cycle_id": str(order_row.get("position_cycle_id") or ""),
+            "quantity": quantity,
+            "entry_price": str(order_payload.get("limit_price") or order_payload.get("entry_price") or "0.00"),
+            "latest_event": "HISTORICAL_RECONSTRUCTION",
+            "filled_quantity": filled_quantity,
+            "entry_time": fill_time_iso,
+            "exit_time": None,
+            "position_open": str(lifecycle_state).startswith("OPEN_"),
+            "mark": str(self._paper_execution_state.get(instance.strategy_instance_id, {}).get("mark") or ""),
+            "average_entry": average_entry,
+            "decision": "RESTORED_FROM_LEDGER",
+            "account_reference": str(order_row.get("broker_account_id") or ""),
+        }
+        if order_state == "FILLED_INTERNAL" and fills:
+            protected_state.update(
+                {
+                    "order_state": "FILLED_INTERNAL",
+                    "fill_state": "FILLED_INTERNAL",
+                    "final_state": "FILLED_INTERNAL",
+                    "failure": None,
+                }
+            )
+            return protected_state
+        if order_state in {"PARTIALLY_FILLED_INTERNAL", "READY_FOR_INTERNAL_PAPER", "VALIDATION_PENDING", "ACKNOWLEDGED_INTERNAL", "SUBMISSION_PENDING_INTERNAL"}:
+            protected_state.update(
+                {
+                    "order_state": "READY_INTERNAL",
+                    "fill_state": "NO_FILL" if not fills else "PARTIALLY_FILLED_INTERNAL",
+                    "final_state": "READY_INTERNAL",
+                    "failure": None,
+                }
+            )
+            return protected_state
+        if order_state in {"REJECTED_INTERNAL", "CANCEL_PENDING_INTERNAL", "CANCELLED_INTERNAL", "EXPIRED_INTERNAL", "TERMINAL_ERROR", "UNKNOWN_INTERNAL_REVIEW_REQUIRED"}:
+            return _blocked_paper_state(
+                current_state=protected_state,
+                continuity=instance.deterministic_projection,
+                reason=f"AUTHORITATIVE_ORDER_{order_state}",
+                now=self.now_provider(),
+            )
+        if order_state == "FILLED_INTERNAL" and not fills:
+            return _blocked_paper_state(
+                current_state=protected_state,
+                continuity=instance.deterministic_projection,
+                reason="AUTHORITATIVE_FILL_EVIDENCE_MISSING",
+                now=self.now_provider(),
+            )
+        return _blocked_paper_state(
+            current_state=protected_state,
+            continuity=instance.deterministic_projection,
+            reason=f"UNHANDLED_AUTH_ORDER_STATE_{order_state}",
+            now=self.now_provider(),
+        )
+
+    def _decode_canonical_payload(self, payload_json: Any) -> Any:
+        if not isinstance(payload_json, str) or not payload_json:
+            return None
+        try:
+            return from_canonical_json(payload_json)
+        except Exception:
             try:
-                self._session_started_at = datetime.fromisoformat(session_started_at)
-            except ValueError:
-                pass
-        self._late_start_mode = bool(payload.get("late_start_mode"))
-        self.subscription_owner = SubscriptionOwner.from_dict(payload.get("subscription_owner") or {})
-        restored_reads = payload.get("selected_contract_reads") or {}
-        if isinstance(restored_reads, Mapping):
-            self._selected_contract_history = {
-                str(strategy_instance_id): [dict(item) for item in values if isinstance(item, Mapping)]
-                for strategy_instance_id, values in restored_reads.items()
-                if isinstance(values, list)
-            }
-        restored_execution = payload.get("paper_execution_state") or {}
-        if isinstance(restored_execution, Mapping):
-            self._paper_execution_state = {
-                str(strategy_instance_id): dict(state)
-                for strategy_instance_id, state in restored_execution.items()
-                if isinstance(state, Mapping)
-            }
-        restored_accounts = payload.get("paper_account_snapshots") or {}
-        if isinstance(restored_accounts, Mapping):
-            self._paper_account_snapshots = {
-                str(account_reference): dict(snapshot)
-                for account_reference, snapshot in restored_accounts.items()
-                if isinstance(snapshot, Mapping)
-            }
+                return json.loads(payload_json)
+            except Exception:
+                return None
+
+    def _normalize_account_snapshot_payload(self, payload: Mapping[str, Any]) -> dict[str, Any]:
+        return {
+            "broker_account_id": str(payload.get("broker_account_id") or ""),
+            "opening_paper_cash": str(payload.get("opening_paper_cash") or "0"),
+            "reserved_margin": str(payload.get("reserved_margin") or "0"),
+            "released_margin": str(payload.get("released_margin") or "0"),
+            "available_paper_margin": str(payload.get("available_paper_margin") or "0"),
+            "simulated_charges": str(payload.get("simulated_charges") or "0"),
+            "active_order_reservation": str(payload.get("active_order_reservation") or "0"),
+            "margin_per_quantity": str(payload.get("margin_per_quantity") or "0"),
+            "account_enabled": bool(payload.get("account_enabled", True)),
+            "account_blocked": bool(payload.get("account_blocked", False)),
+            "active_order_count": int(payload.get("active_order_count") or 0),
+            "max_active_order_count": int(payload.get("max_active_order_count") or 10),
+        }
 
     def _load_checkpoint_payload(self) -> dict[str, Any]:
         try:
