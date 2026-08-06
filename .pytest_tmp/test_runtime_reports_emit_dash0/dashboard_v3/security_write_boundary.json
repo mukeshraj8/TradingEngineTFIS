@@ -1,7 +1,0 @@
-{
-  "broker_credential_editing": "PROHIBITED",
-  "external_broker_authority": "NONE",
-  "live_money_enablement": "PROHIBITED",
-  "local_internal_paper_writes_only": true,
-  "schema_version": "tfis.dashboard_v3.security_write_boundary.v1"
-}

@@ -1,5 +1,0 @@
-{
-  "reason": "Fast-track completion reused runtime and report facts only; no separate manual replay surface was added in this patch.",
-  "schema_version": "tfis.fast_track.manual_replay_result.v1",
-  "status": "NOT_IMPLEMENTED_IN_THIS_SLICE"
-}

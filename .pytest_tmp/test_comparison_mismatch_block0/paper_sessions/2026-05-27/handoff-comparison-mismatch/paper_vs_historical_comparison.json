@@ -1,9 +1,0 @@
-{
-  "artifact_version": 1,
-  "comparison_reason": "Paper and historical planning fields matched.",
-  "go_no_go": "GO: the persisted paper intent matches the expected historical trade-plan decision.",
-  "session_date": "2026-05-27",
-  "session_id": "handoff-comparison-mismatch",
-  "status": "MATCH",
-  "strategy_code": "S23"
-}

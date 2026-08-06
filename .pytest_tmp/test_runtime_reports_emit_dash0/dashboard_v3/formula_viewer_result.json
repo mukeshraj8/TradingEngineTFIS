@@ -1,8 +1,0 @@
-{
-  "formula_fact_stages": [
-    "ENTRY_ELIGIBILITY",
-    "PLAN_COMPOSITION"
-  ],
-  "frontend_formula_calculation": false,
-  "schema_version": "tfis.dashboard_v3.formula_viewer_result.v1"
-}

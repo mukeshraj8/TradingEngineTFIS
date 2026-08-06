@@ -1,8 +1,0 @@
-{
-  "active": false,
-  "audit_event_id": "CLEAR_KILL_SWITCH:2026-07-22T08:47:00+00:00:operator",
-  "available": true,
-  "reason": "risk_clear",
-  "updated_at": "2026-07-22T08:47:00+00:00",
-  "updated_by": "operator"
-}

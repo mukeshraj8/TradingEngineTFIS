@@ -1,8 +1,0 @@
-{
-  "approved": true,
-  "approved_at": "2026-07-22T08:45:00+00:00",
-  "approved_by": "operator",
-  "audit_event_id": "APPROVE_LIVE_MODE:2026-07-22T08:45:00+00:00:operator",
-  "expires_at": "2026-07-22T16:45:00+00:00",
-  "reason": "approved_live_dry_run_window"
-}

@@ -1,5 +1,0 @@
-
-version: bad
-identity_compositions:
-  S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0:
-    gap_missed_entry_policy: legacy.s23.gap_missed_entry.unresolved_put_v1

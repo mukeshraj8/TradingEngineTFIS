@@ -1,9 +1,0 @@
-{
-  "artifact_version": 1,
-  "comparison_reason": "Paper and historical planning fields matched.",
-  "go_no_go": "GO",
-  "session_date": "2026-05-27",
-  "session_id": "arm-runtime-intent-status",
-  "status": "MATCH",
-  "strategy_code": "S23"
-}

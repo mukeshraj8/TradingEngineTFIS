@@ -1,6 +1,0 @@
-{
-  "frontend_calculates_strategy_rules": false,
-  "frontend_compares_local_manual_values_only": true,
-  "frontend_creates_authoritative_state": false,
-  "schema_version": "tfis.dashboard_v3.frontend_business_logic_audit.v1"
-}

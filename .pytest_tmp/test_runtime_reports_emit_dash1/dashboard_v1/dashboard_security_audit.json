@@ -1,7 +1,0 @@
-{
-  "bind_default": "127.0.0.1",
-  "dashboard_failure_can_create_financial_action": false,
-  "external_order_authority": "NONE",
-  "schema_version": "tfis.dashboard_security_audit.v1",
-  "secrets_in_api_ui_events": false
-}

@@ -1,8 +1,0 @@
-{
-  "broker_sandbox_external_paper_planning": "BLOCKED_BY_REAL_BROKER_READ_CERTIFICATION_AND_CAPTURE_GAPS",
-  "continued_complete_s23_observation": "READY",
-  "multiple_naturally_selected_sessions": "READY_WITH_FIXTURE_BACKED_EVIDENCE",
-  "real_broker_read_certification": "READY_AS_SEPARATE_READ_ONLY_TASK",
-  "s21_source_extraction": "NOT_NEXT_UNTIL_COMPLETE_S23_OBSERVATION_ACCEPTED",
-  "second_authoritative_internal_paper_instance": "NOT_READY_WAIT_FOR_MORE_OBSERVATIONS"
-}

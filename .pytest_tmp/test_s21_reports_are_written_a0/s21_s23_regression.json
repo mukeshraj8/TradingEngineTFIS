@@ -1,8 +1,0 @@
-{
-  "expected_s23_behavior_change": "NONE",
-  "regression_hash": "eca97a2f599e428db506d18a654e1e82c644f77e1dd207cfe1fb0dbe5703c060",
-  "regression_scope": "No S23 code/config changed; focused S23 tests remain required in validation.",
-  "s23_files_changed_by_this_milestone": [],
-  "s23_strategy_contracts_modified": false,
-  "schema_version": "s21.s23_regression_guard.v1"
-}

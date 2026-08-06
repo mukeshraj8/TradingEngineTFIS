@@ -1,9 +1,0 @@
-strategy_code: S23
-unique_code: NIFTY_OP_SELL_WK_DIFF_2D_3D
-source_sheet: AB6 OS
-source_branch: Bull/Bull CF Call
-source_cells:
-  start_strike_formula: G162
-sample_calculation:
-  expected:
-    ideal_premium: 264
