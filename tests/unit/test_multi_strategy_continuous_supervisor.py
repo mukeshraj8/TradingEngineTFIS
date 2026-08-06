@@ -648,6 +648,8 @@ def test_supervisor_reconstructs_internal_paper_execution_state_from_ledger_with
     assert restored_state is not None
     assert restored_state["final_state"] == "FILLED_INTERNAL"
     assert restored_state["fill_state"] == "FILLED_INTERNAL"
+    assert restored_state["authoritative_state"] is True
+    assert restored_state["position_lifecycle_state"] == "OPEN_UNPROTECTED"
 
 
 def test_supervisor_blocks_fill_restoration_without_fill_evidence_even_if_checkpoint_had_filled_state(tmp_path: Path) -> None:
@@ -772,6 +774,55 @@ def test_supervisor_blocks_fill_restoration_without_fill_evidence_even_if_checkp
     assert restored_state["failure"] == "AUTHORITATIVE_FILL_EVIDENCE_MISSING"
     assert restored_state["order_state"] == "NO_ORDER"
 
+
+
+def test_supervisor_blocks_filled_restoration_without_position_projection(tmp_path: Path) -> None:
+    _write_test_repo_files(tmp_path)
+    now = datetime(2026, 8, 5, 9, 40, tzinfo=IST)
+    config = ContinuousSupervisorConfig(
+        repo_root=tmp_path,
+        registry_path=tmp_path / "config" / "internal_paper_strategy_instances.yaml",
+        report_dir=tmp_path / "reports" / "live_supervisor",
+        state_root=tmp_path / "tmp" / "tfis_supervisor_state",
+        dashboard_output_root=tmp_path / "tmp" / "tfis_dashboard_v1",
+        db_path=tmp_path / "data" / "internal_paper" / "unified_supervisor.sqlite",
+    )
+    supervisor = UnifiedInternalPaperSupervisor(config, now_provider=lambda: now)
+    instance = next(item for item in supervisor.registry.enabled_instances if item.strategy_instance_id == "S21_BANKNIFTY_INTERNAL_PAPER_A")
+    continuity = {
+        "selected_contract": "NSE:BANKNIFTY26AUG47000CE",
+        "selected_branch": "BULL_CALL",
+        "selected_option_type": "CE",
+        "selected_expiry": "2026-08-27",
+        "selected_strike": "47000",
+        "entry": "925.00",
+        "target": "370.00",
+        "original_sl": "1337.50",
+        "monthly_status": "BULL_CF",
+        "current_entry_state": "NORMAL_ENTRY_STILL_VALID",
+        "evidence": "LIVE_FYERS_READ_ONLY_CAPTURE",
+        "quote": {"symbol": "NSE:BANKNIFTY26AUG47000CE", "ltp": "925.00", "bid": "925.00", "ask": "925.05", "source_timestamp": now.isoformat(), "receipt_timestamp": now.isoformat()},
+        "selected_contract_quote": {"symbol": "NSE:BANKNIFTY26AUG47000CE", "ltp": "925.00", "bid": "925.00", "ask": "925.05", "source_timestamp": now.isoformat(), "receipt_timestamp": now.isoformat()},
+    }
+    filled = supervisor._evaluate_single_internal_paper_action(
+        now=now, instance=instance, continuity=continuity, current_state={},
+        account_snapshots={}, adapter=DeterministicInternalPaperAdapter(), sequence=1,
+    )
+    assert filled["state"]["final_state"] == "FILLED_INTERNAL"
+
+    db = PersistenceDatabase(config.db_path, read_only=False)
+    with db.connect() as connection:
+        connection.execute(
+            "DELETE FROM internal_position_cycle_projections WHERE strategy_instance_id = ?",
+            (instance.strategy_instance_id,),
+        )
+        connection.commit()
+
+    restored = UnifiedInternalPaperSupervisor(config, now_provider=lambda: now)
+    restored_state = restored._paper_execution_state[instance.strategy_instance_id]
+    assert restored_state["final_state"] != "FILLED_INTERNAL"
+    assert restored_state["failure"] == "AUTHORITATIVE_POSITION_EVIDENCE_MISSING"
+    assert restored_state["authoritative_state"] is True
 
 def test_complete_session_preflight_ignores_stale_pid_metadata(tmp_path: Path) -> None:
     _write_test_repo_files(tmp_path)

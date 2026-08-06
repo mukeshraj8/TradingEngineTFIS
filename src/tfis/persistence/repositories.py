@@ -93,7 +93,7 @@ class PersistenceRepositories:
                 FROM internal_client_order_records o
                 LEFT JOIN latest_internal_client_order_projection p ON p.client_order_id = o.client_order_id
                 WHERE o.trading_session_id = ?
-                ORDER BY o.updated_timestamp DESC, o.created_timestamp DESC
+                ORDER BY COALESCE(p.version, 0) DESC, o.updated_timestamp DESC, o.created_timestamp DESC, o.client_order_id DESC
                 """,
                 (trading_session_id,),
             ).fetchall()
@@ -123,7 +123,7 @@ class PersistenceRepositories:
                 FROM internal_client_order_records o
                 LEFT JOIN latest_internal_client_order_projection p ON p.client_order_id = o.client_order_id
                 WHERE o.trading_session_id = ? AND o.strategy_instance_id = ?
-                ORDER BY o.updated_timestamp DESC, o.created_timestamp DESC
+                ORDER BY COALESCE(p.version, 0) DESC, o.updated_timestamp DESC, o.created_timestamp DESC, o.client_order_id DESC
                 """,
                 (trading_session_id, strategy_instance_id),
             ).fetchall()
@@ -150,7 +150,7 @@ class PersistenceRepositories:
                 updated_timestamp
             FROM internal_paper_account_projections
             WHERE trading_session_id = ?
-            ORDER BY updated_timestamp DESC
+            ORDER BY updated_timestamp ASC, version ASC, projection_id ASC
             """,
             (trading_session_id,),
         ).fetchall()
@@ -177,7 +177,7 @@ class PersistenceRepositories:
                 updated_timestamp
             FROM internal_position_cycle_projections
             WHERE trading_session_id = ? AND strategy_instance_id = ?
-            ORDER BY updated_timestamp DESC
+            ORDER BY version DESC, updated_timestamp DESC, position_cycle_id DESC
             LIMIT 1
             """,
             (trading_session_id, strategy_instance_id),

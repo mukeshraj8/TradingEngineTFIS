@@ -295,6 +295,7 @@ class UnifiedInternalPaperSupervisor:
         self._selected_contract_history: dict[str, list[dict[str, Any]]] = {}
         self._paper_execution_state: dict[str, dict[str, Any]] = {}
         self._paper_account_snapshots: dict[str, dict[str, Any]] = {}
+        self._ledger_recovery_errors: list[str] = []
         self._restore_checkpoint_if_available()
 
     def run(self) -> ContinuousSupervisorRunResult:
@@ -1926,23 +1927,34 @@ class UnifiedInternalPaperSupervisor:
                     )
                     if restored:
                         restored_order_states[instance.strategy_instance_id] = restored
+                # Ledger-backed financial state replaces checkpoint financial state for
+                # every instance for which authoritative ledger rows exist.
                 if restored_order_states:
-                    self._paper_execution_state = restored_order_states
+                    self._paper_execution_state.update(restored_order_states)
 
                 account_rows = repo.get_internal_paper_account_projections_for_session(
                     trading_session_id=self.session_id,
                 )
+                # Rows are ordered oldest-to-newest so the last row for an account is
+                # the authoritative latest projection.
                 for row in account_rows:
                     account_reference = str(row.get("broker_account_id") or "")
                     if not account_reference:
                         continue
                     payload = self._decode_canonical_payload(row.get("payload_json"))
                     if not isinstance(payload, Mapping):
+                        self._ledger_recovery_errors.append(
+                            f"ACCOUNT_PROJECTION_PAYLOAD_INVALID:{account_reference}"
+                        )
                         continue
-                    self._paper_account_snapshots.setdefault(account_reference, {})
                     self._paper_account_snapshots[account_reference] = self._normalize_account_snapshot_payload(payload)
-        except Exception:
-            return
+        except Exception as exc:
+            # Recovery failures must remain observable; silently swallowing them can
+            # make checkpoint state look authoritative. The supervisor can continue
+            # for unaffected instances, but the error is retained for reporting/tests.
+            self._ledger_recovery_errors.append(
+                f"LEDGER_RECOVERY_FAILED:{type(exc).__name__}:{exc}"
+            )
 
     def _reconstruct_internal_paper_execution_state_from_order_rows(
         self,
@@ -1955,94 +1967,139 @@ class UnifiedInternalPaperSupervisor:
         order_payload = self._decode_canonical_payload(order_row.get("payload_json"))
         if not isinstance(order_payload, Mapping):
             return None
+
         order_state = str(
             order_row.get("projected_state")
             if order_row.get("projected_state") is not None
             else order_row.get("current_state") or ""
         )
-        selected_contract = str(
-            order_payload.get("normalized_contract")
-            or self._paper_execution_state.get(instance.strategy_instance_id, {}).get("selected_contract")
-            or instance.deterministic_projection.get("selected_contract", "")
-        )
-        filled_quantity = int(order_row.get("cumulative_filled_quantity") or 0)
-        quantity = int(order_payload.get("quantity") or 0)
-        latest_fill_payload: Mapping[str, Any] | None = None
-        if fills:
-            latest_fill_payload = self._decode_canonical_payload(fills[-1].get("payload_json"))
-            fill_payload = latest_fill_payload if isinstance(latest_fill_payload, Mapping) else {}
-            fill_price = fill_payload.get("fill_price")
-            fill_time = fill_payload.get("recorded_timestamp")
-            fill_time_iso = (
-                fill_time.isoformat()
-                if hasattr(fill_time, "isoformat")
-                else str(fill_time or (order_row.get("created_timestamp") or ""))
-            )
-            average_entry = str(fill_price or order_payload.get("limit_price") or "0.00")
-        else:
-            fill_time_iso = ""
-            average_entry = ""
-        lifecycle_state = str(position_projection.get("lifecycle_state") if isinstance(position_projection, Mapping) else "")
-        remaining_quantity = int(position_projection.get("remaining_quantity") or 0) if isinstance(position_projection, Mapping) else 0
-        if remaining_quantity <= 0 and filled_quantity > 0:
-            remaining_quantity = filled_quantity
-        protected_state: dict[str, Any] = {
+        selected_contract = str(order_payload.get("normalized_contract") or "")
+        base_state: dict[str, Any] = {
             "selected_contract": selected_contract,
             "client_order_id": str(order_row.get("client_order_id") or ""),
             "execution_intent_id": str(order_row.get("execution_intent_id") or ""),
             "position_cycle_id": str(order_row.get("position_cycle_id") or ""),
-            "quantity": quantity,
+            "quantity": int(order_payload.get("quantity") or 0),
             "entry_price": str(order_payload.get("limit_price") or order_payload.get("entry_price") or "0.00"),
-            "latest_event": "HISTORICAL_RECONSTRUCTION",
-            "filled_quantity": filled_quantity,
-            "entry_time": fill_time_iso,
+            "latest_event": "LEDGER_RECOVERY",
+            "filled_quantity": int(order_row.get("cumulative_filled_quantity") or 0),
+            "entry_time": "",
             "exit_time": None,
-            "position_open": str(lifecycle_state).startswith("OPEN_"),
-            "mark": str(self._paper_execution_state.get(instance.strategy_instance_id, {}).get("mark") or ""),
-            "average_entry": average_entry,
+            "position_open": False,
+            "mark": "",
+            "average_entry": "",
             "decision": "RESTORED_FROM_LEDGER",
             "account_reference": str(order_row.get("broker_account_id") or ""),
+            "authoritative_state": True,
         }
-        if order_state == "FILLED_INTERNAL" and fills:
-            protected_state.update(
+
+        if not selected_contract:
+            return _blocked_paper_state(
+                current_state=base_state,
+                continuity={},
+                reason="AUTHORITATIVE_ORDER_CONTRACT_MISSING",
+                now=self.now_provider(),
+            ) | {"authoritative_state": True}
+
+        position_payload = (
+            self._decode_canonical_payload(position_projection.get("payload_json"))
+            if isinstance(position_projection, Mapping)
+            else None
+        )
+        lifecycle_state = str(position_projection.get("lifecycle_state") or "") if isinstance(position_projection, Mapping) else ""
+        remaining_quantity = int(position_projection.get("remaining_quantity") or 0) if isinstance(position_projection, Mapping) else 0
+
+        decoded_fills: list[Mapping[str, Any]] = []
+        for fill_row in fills:
+            payload = self._decode_canonical_payload(fill_row.get("payload_json"))
+            if not isinstance(payload, Mapping):
+                continue
+            if str(fill_row.get("client_order_id") or "") != base_state["client_order_id"]:
+                continue
+            if str(fill_row.get("position_cycle_id") or "") not in {"", base_state["position_cycle_id"]}:
+                continue
+            decoded_fills.append(payload)
+
+        if order_state == "FILLED_INTERNAL":
+            if not decoded_fills:
+                return _blocked_paper_state(
+                    current_state=base_state,
+                    continuity={"selected_contract": selected_contract},
+                    reason="AUTHORITATIVE_FILL_EVIDENCE_MISSING",
+                    now=self.now_provider(),
+                ) | {"authoritative_state": True}
+            if not isinstance(position_projection, Mapping):
+                return _blocked_paper_state(
+                    current_state=base_state,
+                    continuity={"selected_contract": selected_contract},
+                    reason="AUTHORITATIVE_POSITION_EVIDENCE_MISSING",
+                    now=self.now_provider(),
+                ) | {"authoritative_state": True}
+            if str(position_projection.get("position_cycle_id") or "") != base_state["position_cycle_id"]:
+                return _blocked_paper_state(
+                    current_state=base_state,
+                    continuity={"selected_contract": selected_contract},
+                    reason="AUTHORITATIVE_POSITION_IDENTITY_CONFLICT",
+                    now=self.now_provider(),
+                ) | {"authoritative_state": True}
+
+            latest_fill = decoded_fills[-1]
+            fill_time = latest_fill.get("recorded_timestamp")
+            base_state.update(
                 {
                     "order_state": "FILLED_INTERNAL",
                     "fill_state": "FILLED_INTERNAL",
                     "final_state": "FILLED_INTERNAL",
                     "failure": None,
+                    "average_entry": str(latest_fill.get("fill_price") or base_state["entry_price"]),
+                    "entry_time": fill_time.isoformat() if hasattr(fill_time, "isoformat") else str(fill_time or order_row.get("created_timestamp") or ""),
+                    "remaining_quantity": remaining_quantity,
+                    "position_open": lifecycle_state.startswith("OPEN_"),
+                    "position_lifecycle_state": lifecycle_state,
+                    "position_projection": dict(position_payload) if isinstance(position_payload, Mapping) else {},
                 }
             )
-            return protected_state
-        if order_state in {"PARTIALLY_FILLED_INTERNAL", "READY_FOR_INTERNAL_PAPER", "VALIDATION_PENDING", "ACKNOWLEDGED_INTERNAL", "SUBMISSION_PENDING_INTERNAL"}:
-            protected_state.update(
+            return base_state
+
+        if order_state in {
+            "PARTIALLY_FILLED_INTERNAL",
+            "READY_FOR_INTERNAL_PAPER",
+            "VALIDATION_PENDING",
+            "ACKNOWLEDGED_INTERNAL",
+            "SUBMISSION_PENDING_INTERNAL",
+        }:
+            base_state.update(
                 {
                     "order_state": "READY_INTERNAL",
-                    "fill_state": "NO_FILL" if not fills else "PARTIALLY_FILLED_INTERNAL",
+                    "fill_state": "PARTIALLY_FILLED_INTERNAL" if decoded_fills else "NO_FILL",
                     "final_state": "READY_INTERNAL",
                     "failure": None,
+                    "remaining_quantity": remaining_quantity,
                 }
             )
-            return protected_state
-        if order_state in {"REJECTED_INTERNAL", "CANCEL_PENDING_INTERNAL", "CANCELLED_INTERNAL", "EXPIRED_INTERNAL", "TERMINAL_ERROR", "UNKNOWN_INTERNAL_REVIEW_REQUIRED"}:
+            return base_state
+
+        if order_state in {
+            "REJECTED_INTERNAL",
+            "CANCEL_PENDING_INTERNAL",
+            "CANCELLED_INTERNAL",
+            "EXPIRED_INTERNAL",
+            "TERMINAL_ERROR",
+            "UNKNOWN_INTERNAL_REVIEW_REQUIRED",
+        }:
             return _blocked_paper_state(
-                current_state=protected_state,
-                continuity=instance.deterministic_projection,
+                current_state=base_state,
+                continuity={"selected_contract": selected_contract},
                 reason=f"AUTHORITATIVE_ORDER_{order_state}",
                 now=self.now_provider(),
-            )
-        if order_state == "FILLED_INTERNAL" and not fills:
-            return _blocked_paper_state(
-                current_state=protected_state,
-                continuity=instance.deterministic_projection,
-                reason="AUTHORITATIVE_FILL_EVIDENCE_MISSING",
-                now=self.now_provider(),
-            )
+            ) | {"authoritative_state": True}
+
         return _blocked_paper_state(
-            current_state=protected_state,
-            continuity=instance.deterministic_projection,
+            current_state=base_state,
+            continuity={"selected_contract": selected_contract},
             reason=f"UNHANDLED_AUTH_ORDER_STATE_{order_state}",
             now=self.now_provider(),
-        )
+        ) | {"authoritative_state": True}
 
     def _decode_canonical_payload(self, payload_json: Any) -> Any:
         if not isinstance(payload_json, str) or not payload_json:
