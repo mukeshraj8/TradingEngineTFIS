@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "D:\\TradingEngineTFISRefactored\\.venv\\Lib\\site-packages\\pytest\\__main__.py",
+    "--basetemp=.pytest_tmp"
+  ],
+  "created_at": "2026-08-06T15:54:27.025191+00:00",
+  "cwd": "D:\\TradingEngineTFISRefactored",
+  "label": "s21-supervised-decision:trade-1",
+  "metadata": {},
+  "pid": 5678
+}

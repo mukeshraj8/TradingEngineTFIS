@@ -1,0 +1,48 @@
+{
+  "artifact_version": 1,
+  "blocking_event_type": null,
+  "blocking_source_id": null,
+  "execution_started": false,
+  "fill_simulation_started": false,
+  "guardrail_code": null,
+  "guardrail_message": null,
+  "operator_action_required": null,
+  "order_plan": {
+    "end_strike": null,
+    "fsl_price": null,
+    "ideal_premium": null,
+    "lots": null,
+    "minimum_premium": null,
+    "monthly_status": "BULL",
+    "order_reference_label": null,
+    "order_reference_time": null,
+    "order_side": null,
+    "overlays_enabled": [
+      "S23_CURRENT_DAY_FSL_TRP"
+    ],
+    "planned_entry_price": null,
+    "planning_timestamp": "2026-05-27T09:30:10+05:30",
+    "quantity": null,
+    "required_snapshot_labels": [
+      "0915",
+      "ORPT",
+      "RC"
+    ],
+    "selected_contract_expiry": "2026-05-28",
+    "selected_contract_ltp": 199.5,
+    "selected_contract_option_type": "PUT",
+    "selected_contract_symbol": "NIFTY_20260528_22400_PE",
+    "session_date": "2026-05-27",
+    "source_workbook_rule": null,
+    "start_strike": null,
+    "stoploss_price": null,
+    "strategy_branch": null,
+    "strategy_code": "S23",
+    "target_price": null,
+    "workbook_row_number": null
+  },
+  "selected_contract_quote_present": true,
+  "selected_contract_symbol": "NIFTY_20260528_22400_PE",
+  "session_id": "bundle-session",
+  "state": "ORDER_PLANNED"
+}

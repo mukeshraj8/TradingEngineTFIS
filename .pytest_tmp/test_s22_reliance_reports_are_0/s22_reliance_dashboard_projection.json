@@ -1,0 +1,51 @@
+{
+  "account": "S22_ACCOUNT_A_INTERNAL_PAPER",
+  "active_sl_protection_generation": 1,
+  "alerts": [
+    "selected option historical candles absent from FYERS fixture; deterministic supplement used"
+  ],
+  "block_reason": null,
+  "branch": "BEAR_CALL",
+  "carried_state": "NOT_CARRIED_IN_TARGET_SCENARIO",
+  "effective_entry": "57.5",
+  "evidence_quality": "FYERS_METADATA_AND_OPTION_CHAIN_WITH_DETERMINISTIC_TIMING_AND_OPTION_REFERENCE_SUPPLEMENTS",
+  "health": "CONDITIONAL",
+  "last_update": "2026-08-02T12:43:59.105603+05:30",
+  "metadata_state": "METADATA_GATE_PASSED",
+  "metadata_version": "fyers-symbol-master:NSEFO:2026-08-02",
+  "monthly_status": "BEAR_CF",
+  "oi_quality": "SOURCE_UNSPECIFIED_UNIT_EXPLICIT",
+  "order_state": "FILLED_INTERNAL",
+  "orpt_rc_state": "ENTRY_NOT_MISSED",
+  "plan_state": "PREPARED",
+  "position_cycle_state": "CLOSED",
+  "premium_quality": "FYERS_CAPTURED_MARKET_CLOSED",
+  "projection_hash": "9cfd7e403a1ebfc187d35e0dce8d706ad9936ce504e84faa1cfa13a6d4ca896a",
+  "projection_version": "s22.reliance.dashboard.v1",
+  "realized_pnl": "17250.00",
+  "schema_version": "s22.strategy_instance_status_projection.v1",
+  "selected_contract": {
+    "exchange": "NSE",
+    "expiry": "2026-08-25",
+    "metadata": {
+      "branch_id": "BEAR_CALL",
+      "configured_lots": 1,
+      "currency": "INR",
+      "lot_size": 500,
+      "tick_size": "0.05",
+      "underlying": "RELIANCE"
+    },
+    "option_type": "CE",
+    "product_type": "OPTION_SELLING",
+    "segment": "OPTIONS_SELL",
+    "strike": 1260.0,
+    "symbol": "NSE:RELIANCE26AUG1260CE"
+  },
+  "strategy_definition": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+  "strategy_instance": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+  "strategy_version": "1.0.0",
+  "target": "23.00",
+  "trading_session": "NSE:2026-08-03",
+  "underlying": "RELIANCE",
+  "unrealized_pnl": "0.00"
+}

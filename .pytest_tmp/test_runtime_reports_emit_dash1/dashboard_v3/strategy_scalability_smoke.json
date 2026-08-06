@@ -1,0 +1,17 @@
+{
+  "definition_row_count": 3,
+  "external_broker_authority": "NONE",
+  "future_family_compatibility_fixture_count": 5,
+  "landing_page_uses_definition_rows": true,
+  "no_live_labelling_in_fixture": true,
+  "s22_fixture_rows": 30,
+  "schema_version": "tfis.dashboard_v3.strategy_scalability_smoke.v1",
+  "selected_instance_workbench_retained": true,
+  "supports_density_toggle": true,
+  "supports_export": true,
+  "supports_filters": true,
+  "supports_pagination": true,
+  "supports_saved_views": true,
+  "supports_search": true,
+  "supports_sort": true
+}

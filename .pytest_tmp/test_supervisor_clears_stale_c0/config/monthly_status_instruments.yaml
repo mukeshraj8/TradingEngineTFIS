@@ -1,0 +1,5 @@
+instruments:
+  NIFTY:
+    spot_symbol: NSE:NIFTY50-INDEX
+  BANKNIFTY:
+    spot_symbol: NSE:NIFTYBANK-INDEX

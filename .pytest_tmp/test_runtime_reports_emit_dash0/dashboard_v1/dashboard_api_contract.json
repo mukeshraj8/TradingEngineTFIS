@@ -1,0 +1,21 @@
+{
+  "endpoints": [
+    "/api/system",
+    "/api/brokers",
+    "/api/accounts",
+    "/api/strategy-definitions",
+    "/api/strategy-instances",
+    "/api/plans",
+    "/api/orders",
+    "/api/positions",
+    "/api/carried-positions",
+    "/api/pnl",
+    "/api/analytics",
+    "/api/alerts",
+    "/api/audit",
+    "/api/events",
+    "/api/health"
+  ],
+  "read_only_by_default": true,
+  "schema_version": "tfis.dashboard_api_contract.v1"
+}

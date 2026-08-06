@@ -1,0 +1,256 @@
+{
+  "near_and_next_fail": {
+    "candidates": [
+      {
+        "contract": {
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "metadata": {
+            "branch_id": "BULL_CALL",
+            "configured_lots": 1,
+            "currency": "INR",
+            "lot_size": 15,
+            "tick_size": "0.05",
+            "underlying": "BANKNIFTY"
+          },
+          "option_type": "CE",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 47000.0,
+          "symbol": "BANKNIFTY_20240125_47000_CE"
+        },
+        "expiry": "2024-01-25",
+        "expiry_kind": "NEAR",
+        "open_interest_lots": 133,
+        "open_interest_units": 2000,
+        "option_type": "CE",
+        "premium": "600.00",
+        "qualifies": false,
+        "rejection": "PREMIUM_AND_OI_NOT_MET",
+        "strike": "47000"
+      },
+      {
+        "contract": {
+          "exchange": "NSE",
+          "expiry": "2024-02-29",
+          "metadata": {
+            "branch_id": "BULL_CALL",
+            "configured_lots": 1,
+            "currency": "INR",
+            "lot_size": 15,
+            "tick_size": "0.05",
+            "underlying": "BANKNIFTY"
+          },
+          "option_type": "CE",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 47000.0,
+          "symbol": "BANKNIFTY_20240229_47000_CE"
+        },
+        "expiry": "2024-02-29",
+        "expiry_kind": "NEXT",
+        "open_interest_lots": 66,
+        "open_interest_units": 1000,
+        "option_type": "CE",
+        "premium": "650.00",
+        "qualifies": false,
+        "rejection": "PREMIUM_AND_OI_NOT_MET",
+        "strike": "47000"
+      }
+    ],
+    "decision": "NO_TRADE",
+    "no_contract_reason": "NO_NEAR_OR_NEXT_CONTRACT_SATISFIED_PREMIUM_AND_OI",
+    "result_hash": "1b0c46344f2c0ff0f481eab8f6e5b9254a7dc50fa8ff02f94f39aa129946c280",
+    "scenario_id": "near_and_next_fail",
+    "selected_contract": null,
+    "selected_expiry_kind": null,
+    "source_rule_ids": [
+      "S21.CONTRACT_SELECTION.001"
+    ]
+  },
+  "near_fails_next_selected": {
+    "candidates": [
+      {
+        "contract": {
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "metadata": {
+            "branch_id": "BULL_CALL",
+            "configured_lots": 1,
+            "currency": "INR",
+            "lot_size": 15,
+            "tick_size": "0.05",
+            "underlying": "BANKNIFTY"
+          },
+          "option_type": "CE",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 47000.0,
+          "symbol": "BANKNIFTY_20240125_47000_CE"
+        },
+        "expiry": "2024-01-25",
+        "expiry_kind": "NEAR",
+        "open_interest_lots": 200,
+        "open_interest_units": 3000,
+        "option_type": "CE",
+        "premium": "980.00",
+        "qualifies": false,
+        "rejection": "OI_BELOW_CONFIGURED_THRESHOLD",
+        "strike": "47000"
+      },
+      {
+        "contract": {
+          "exchange": "NSE",
+          "expiry": "2024-02-29",
+          "metadata": {
+            "branch_id": "BULL_CALL",
+            "configured_lots": 1,
+            "currency": "INR",
+            "lot_size": 15,
+            "tick_size": "0.05",
+            "underlying": "BANKNIFTY"
+          },
+          "option_type": "CE",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 47000.0,
+          "symbol": "BANKNIFTY_20240229_47000_CE"
+        },
+        "expiry": "2024-02-29",
+        "expiry_kind": "NEXT",
+        "open_interest_lots": 733,
+        "open_interest_units": 11000,
+        "option_type": "CE",
+        "premium": "970.00",
+        "qualifies": true,
+        "rejection": null,
+        "strike": "47000"
+      }
+    ],
+    "decision": "SELECTED",
+    "no_contract_reason": null,
+    "result_hash": "be6b7abefe0ddff51ea56db0d05b59bcfbfcd363401640125e9c14a7a2a0b6ee",
+    "scenario_id": "near_fails_next_selected",
+    "selected_contract": {
+      "exchange": "NSE",
+      "expiry": "2024-02-29",
+      "metadata": {
+        "branch_id": "BULL_CALL",
+        "configured_lots": 1,
+        "currency": "INR",
+        "lot_size": 15,
+        "tick_size": "0.05",
+        "underlying": "BANKNIFTY"
+      },
+      "option_type": "CE",
+      "product_type": "OPTION_SELLING",
+      "segment": "OPTIONS_SELL",
+      "strike": 47000.0,
+      "symbol": "BANKNIFTY_20240229_47000_CE"
+    },
+    "selected_expiry_kind": "NEXT",
+    "source_rule_ids": [
+      "S21.CONTRACT_SELECTION.001"
+    ]
+  },
+  "normal": {
+    "candidates": [
+      {
+        "contract": {
+          "exchange": "NSE",
+          "expiry": "2024-01-25",
+          "metadata": {
+            "branch_id": "BULL_CALL",
+            "configured_lots": 1,
+            "currency": "INR",
+            "lot_size": 15,
+            "tick_size": "0.05",
+            "underlying": "BANKNIFTY"
+          },
+          "option_type": "CE",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 47000.0,
+          "symbol": "BANKNIFTY_20240125_47000_CE"
+        },
+        "expiry": "2024-01-25",
+        "expiry_kind": "NEAR",
+        "open_interest_lots": 600,
+        "open_interest_units": 9000,
+        "option_type": "CE",
+        "premium": "980.00",
+        "qualifies": true,
+        "rejection": null,
+        "strike": "47000"
+      },
+      {
+        "contract": {
+          "exchange": "NSE",
+          "expiry": "2024-02-29",
+          "metadata": {
+            "branch_id": "BULL_CALL",
+            "configured_lots": 1,
+            "currency": "INR",
+            "lot_size": 15,
+            "tick_size": "0.05",
+            "underlying": "BANKNIFTY"
+          },
+          "option_type": "CE",
+          "product_type": "OPTION_SELLING",
+          "segment": "OPTIONS_SELL",
+          "strike": 47000.0,
+          "symbol": "BANKNIFTY_20240229_47000_CE"
+        },
+        "expiry": "2024-02-29",
+        "expiry_kind": "NEXT",
+        "open_interest_lots": 733,
+        "open_interest_units": 11000,
+        "option_type": "CE",
+        "premium": "970.00",
+        "qualifies": true,
+        "rejection": null,
+        "strike": "47000"
+      }
+    ],
+    "decision": "SELECTED",
+    "no_contract_reason": null,
+    "result_hash": "9b928f9e8dca744ef9325daca1e83f901a5008280b286ecc20a29bf72cc42962",
+    "scenario_id": "normal_near_selected",
+    "selected_contract": {
+      "exchange": "NSE",
+      "expiry": "2024-01-25",
+      "metadata": {
+        "branch_id": "BULL_CALL",
+        "configured_lots": 1,
+        "currency": "INR",
+        "lot_size": 15,
+        "tick_size": "0.05",
+        "underlying": "BANKNIFTY"
+      },
+      "option_type": "CE",
+      "product_type": "OPTION_SELLING",
+      "segment": "OPTIONS_SELL",
+      "strike": 47000.0,
+      "symbol": "BANKNIFTY_20240125_47000_CE"
+    },
+    "selected_expiry_kind": "NEAR",
+    "source_rule_ids": [
+      "S21.CONTRACT_SELECTION.001"
+    ]
+  },
+  "policy": {
+    "arbitrary_expression_evaluation": false,
+    "branch": "BULL_CALL",
+    "directional_traversal": "START_TO_END_CALL_SELL_BULL",
+    "expiry_order": [
+      "NEAR",
+      "NEXT"
+    ],
+    "ideal_premium_phase": "SUPPORTED_BY_SOURCE",
+    "minimum_premium_phase": "SUPPORTED_BY_SOURCE",
+    "oi_threshold_lots": 500,
+    "oi_threshold_units": 7500
+  },
+  "rule_id": "S21.CONTRACT_SELECTION.001",
+  "schema_version": "s21.contract_selection.first_branch.v1"
+}

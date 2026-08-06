@@ -1,0 +1,7 @@
+start_strike_formula: ROUND_DOWN(PRV_3DLL + PARAM(strike_buffer_pct)%)
+end_strike_formula: ROUND_DOWN(PRV_3DLL) - PARAM(strike_step)
+ideal_premium_formula: PRV_3DLL * PARAM(ideal_premium_pct)%
+minimum_premium_formula: PRV_3DLL * PARAM(minimum_premium_pct)%
+entry_formula: PRV_3DLL - PARAM(entry_discount_pct)%
+target_formula: ENTRY - PARAM(target_pct)%
+stoploss_formula: MIN(ENTRY + PARAM(sl_entry_pct)%, OPT_PRV_2DHH + PARAM(sl_reference_pct)%)

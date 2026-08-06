@@ -1,0 +1,1 @@
+{"event_type": "PAPER_POSITION_CLOSED", "lifecycle_status": "PAPER_POSITION_CLOSED", "message": "Closed cleanly.", "provenance_source_ids": [], "reason_code": "target_hit", "selected_contract_symbol": "NIFTY_20260723_24200_PE", "session_date": "2026-07-20", "strategy_code": "S23", "timestamp": "2026-07-20T10:16:00", "unique_code": "CLOSED_BRANCH"}

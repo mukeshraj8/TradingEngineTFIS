@@ -1,0 +1,423 @@
+{
+  "strategy_path": "config\\strategies\\options_sell\\nifty\\S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "strategy_root": null,
+  "use_monthly_status_engine": false,
+  "mode": "historical",
+  "eod_policy": "mark_no_exit",
+  "cost_model": {
+    "slippage_points_per_side": 0.0,
+    "brokerage_points_per_trade": 0.0,
+    "other_cost_points_per_trade": 0.0
+  },
+  "input_metadata": {
+    "datasets": {
+      "daily": {
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_daily_multi.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_levels": {
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_option_levels_multi.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "spot_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "monthly": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "weekly": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "option_chain": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "contract_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      }
+    },
+    "synthetic_fixture_data_used": false,
+    "project_fixture_data_used": true
+  },
+  "evaluations": [
+    {
+      "timestamp": "2026-05-18T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22200,
+        "entry_price": 197.95,
+        "target_price": 79.18,
+        "stoploss_price": 314.58,
+        "ideal_premium": 263.4,
+        "minimum_premium": 197.55
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": []
+      },
+      "market_snapshot": {
+        "d2hh": 22410.0,
+        "d2ll": 22010.0,
+        "d3hh": 22410.0,
+        "d3ll": 21950.0,
+        "d4hh": 22410.0,
+        "d4ll": 21880.0,
+        "current_day_high": 22440.0,
+        "current_day_low": 22190.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 294.0,
+          "OPT_PRV_2DLL": 204.0,
+          "OPT_PRV_3DHH": 304.0,
+          "OPT_PRV_3DLL": 214.0
+        }
+      },
+      "lifecycle_result": null,
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-19T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22250,
+        "entry_price": 199.8,
+        "target_price": 79.92000000000002,
+        "stoploss_price": 316.72,
+        "ideal_premium": 264.12,
+        "minimum_premium": 198.09000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": []
+      },
+      "market_snapshot": {
+        "d2hh": 22440.0,
+        "d2ll": 22120.0,
+        "d3hh": 22440.0,
+        "d3ll": 22010.0,
+        "d4hh": 22440.0,
+        "d4ll": 21950.0,
+        "current_day_high": 22300.0,
+        "current_day_low": 21900.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 296.0,
+          "OPT_PRV_2DLL": 205.0,
+          "OPT_PRV_3DHH": 306.0,
+          "OPT_PRV_3DLL": 216.0
+        }
+      },
+      "lifecycle_result": null,
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-20T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22150,
+        "entry_price": 201.65,
+        "target_price": 80.66000000000001,
+        "stoploss_price": 318.86,
+        "ideal_premium": 262.8,
+        "minimum_premium": 197.10000000000002
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": []
+      },
+      "market_snapshot": {
+        "d2hh": 22440.0,
+        "d2ll": 21900.0,
+        "d3hh": 22440.0,
+        "d3ll": 21900.0,
+        "d4hh": 22440.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22000.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 298.0,
+          "OPT_PRV_2DLL": 207.0,
+          "OPT_PRV_3DHH": 308.0,
+          "OPT_PRV_3DLL": 218.0
+        }
+      },
+      "lifecycle_result": null,
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-21T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22150,
+        "entry_price": 202.575,
+        "target_price": 81.03,
+        "stoploss_price": 319.93,
+        "ideal_premium": 262.8,
+        "minimum_premium": 197.10000000000002
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": []
+      },
+      "market_snapshot": {
+        "d2hh": 22400.0,
+        "d2ll": 21900.0,
+        "d3hh": 22440.0,
+        "d3ll": 21900.0,
+        "d4hh": 22440.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22500.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 299.0,
+          "OPT_PRV_2DLL": 208.0,
+          "OPT_PRV_3DHH": 309.0,
+          "OPT_PRV_3DLL": 219.0
+        }
+      },
+      "lifecycle_result": null,
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-22T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22150,
+        "entry_price": 198.875,
+        "target_price": 79.55000000000001,
+        "stoploss_price": 315.65,
+        "ideal_premium": 262.8,
+        "minimum_premium": 197.10000000000002
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": []
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22000.0,
+        "d3hh": 22500.0,
+        "d3ll": 21900.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22450.0,
+        "current_day_low": 22200.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 295.0,
+          "OPT_PRV_2DLL": 205.0,
+          "OPT_PRV_3DHH": 305.0,
+          "OPT_PRV_3DLL": 215.0
+        }
+      },
+      "lifecycle_result": null,
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    },
+    {
+      "timestamp": "2026-05-23T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22250,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": []
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22100.0,
+        "d3hh": 22500.0,
+        "d3ll": 22000.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 300.0,
+          "OPT_PRV_2DLL": 210.0,
+          "OPT_PRV_3DHH": 310.0,
+          "OPT_PRV_3DLL": 220.0
+        }
+      },
+      "lifecycle_result": null,
+      "monthly_status": null,
+      "monthly_status_trigger": null,
+      "reversal_dominated": null,
+      "selected_branch_unique_codes": [],
+      "monthly_status_candidates": []
+    }
+  ],
+  "metrics": {
+    "total_evaluations": 6,
+    "accepted_candidates": 6,
+    "rejected_candidates": 0,
+    "rejection_reason_distribution": {},
+    "entered_trades": 0,
+    "expiry_day_candidates": 0,
+    "expiry_day_entered": 0,
+    "expiry_day_exit_satisfied": 0,
+    "expiry_day_exit_pending": 0,
+    "target_hits": 0,
+    "stoploss_hits": 0,
+    "no_entry": 0,
+    "no_exit": 0,
+    "eod_square_off": 0,
+    "carry_forward_pending": 0,
+    "total_pnl_points": 0.0,
+    "average_pnl_points": 0.0,
+    "total_gross_pnl_points": 0.0,
+    "total_cost_points": 0.0,
+    "total_net_pnl_points": 0.0,
+    "average_net_pnl_points": 0.0,
+    "total_gross_pnl_rupees": 0.0,
+    "total_cost_rupees": 0.0,
+    "total_net_pnl_rupees": 0.0,
+    "average_net_pnl_rupees": 0.0,
+    "final_net_pnl_rupees": 0.0,
+    "max_drawdown_rupees": 0.0,
+    "max_drawdown_points": 0.0,
+    "best_trade_net_rupees": 0.0,
+    "worst_trade_net_rupees": 0.0,
+    "average_mfe": 0.0,
+    "average_mae": 0.0,
+    "win_rate": 0.0,
+    "loss_rate": 0.0,
+    "no_entry_rate": 0.0,
+    "no_exit_rate": 0.0
+  },
+  "monthly_status_skips": []
+}

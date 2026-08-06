@@ -1,0 +1,297 @@
+{
+  "accounting_result": {
+    "exit_reason": "CARRIED_FORWARD",
+    "gross_realized_pnl": "0.00",
+    "net_realized_pnl": "0.00",
+    "quality": "OPEN_PROVISIONAL",
+    "trade_fact_id": "trade-fact:4a2b0439d8d577ca3982948b",
+    "win_loss": "OPEN"
+  },
+  "authority": {
+    "authority_grant_id": "phase5a-pre-cert-authority:aec323eafefb445a",
+    "authority_mode": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+    "broker_account_id": "INTERNAL_PAPER_ACCOUNT",
+    "broker_sandbox_submission_permitted": false,
+    "external_broker_submission_permitted": false,
+    "external_order_mutation_permitted": false,
+    "external_position_mutation_permitted": false,
+    "grant_hash": "ffb8c2d84f35312346c0521a39e13c4a317d6677a732935a4de04a7c0538faa4",
+    "live_submission_permitted": false,
+    "reusable_as_live_authority": false,
+    "strategy_instance_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+    "trading_session_id": "NSE:2026-07-30",
+    "valid_scope": "S23_CALL_SIDE_INTERNAL_PAPER_CERTIFICATION"
+  },
+  "component_artifacts": {
+    "authority_grant_hash": "4263dbcc9abb53776cbbe093c56558db0708da75a8967add4eff248da5f7833c",
+    "client_order_id": "client-order:71b3e7b42b112178bf841467",
+    "execution_intent_id": "exec-intent:f2f3a26c93a2548e922ccf02",
+    "internal_paper_result_hash": "07aa6d6910bfc9ccc549dcea704db5e49d4d63f09345e3ac40b4cfdcfb749677",
+    "pnl_fact_ids": [
+      "pnl-fact:0c473e4fc2e55c608294c0d4"
+    ],
+    "position_cycle_id": "ipc:bfe6688457352436a935d48b",
+    "position_projection_hash": "f4282173a27497a2ac9ff62d46c3867b7b3eb3ceeaaa7b4298169456b5425bd2",
+    "projection_hashes": [
+      "e804167f75fc78248384f4022e640a1b2932a6c783e3d6cc5ce45d6bf90ec298",
+      "98dc29390f131b10218adf7edc1e1427bab852b3209e3cf99d9264feb5364ee8",
+      "0cfa4e4e482a02a4fc52394ff3daed5e5de187e4c39ece003651d122f913293d",
+      "286f3acc8854c90026787c6f06f7125bf48e223cea33622808031c2da32ce885",
+      "171bf20deccb497ead71fb0d5209f2768a241f19509660952acd14634601c46d",
+      "9522122fc801a9f1c67a1017401cb6091a5f2b9caa381f466759c5d12ec939dd"
+    ],
+    "risk_validation_hash": "48de3a1aca0e18134e110c88a179bc9b16fb5058174dcf0122d8f18a9e26b323",
+    "trade_fact_hash": "4b8a63b50b5f94bc351e2505732fb4c9f0be230bfad84c6658a090c839645a7f",
+    "trade_fact_id": "trade-fact:4a2b0439d8d577ca3982948b"
+  },
+  "event_counts": {
+    "internal_order_events": 3,
+    "lifecycle_requirements": 0,
+    "pnl_facts": 1,
+    "position_transitions": 0,
+    "projection_updates": 6,
+    "runtime_events": 1,
+    "trade_facts": 1
+  },
+  "failures": [],
+  "fill_counts": {
+    "duplicate_fills": 0,
+    "entry_fills": 1,
+    "exit_fills": 0
+  },
+  "idempotency": {
+    "authority_grant": "grant:S23_ACCOUNT_A_SHADOW:NSE:2026-07-30:s23",
+    "carry_event": "ipc:bfe6688457352436a935d48b:carry",
+    "client_order": "client-order:71b3e7b42b112178bf841467",
+    "collision_scope": "account:strategy_instance:trading_session:position_cycle:order_purpose",
+    "decision": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+    "evaluation": "carry_recovery:evaluation",
+    "execution_intent": "exec-intent:f2f3a26c93a2548e922ccf02",
+    "fill": [
+      "internal-fill:7b59f0d0adb5ac6b5948db60"
+    ],
+    "lifecycle_requirement": [],
+    "order_event": [
+      "event:818e5020f888b6a665370e51",
+      "event:2a80e0d6c6ddee0e008d4e35",
+      "event:e4e26dcb3d8d12ee50433ad6"
+    ],
+    "plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+    "pnl_fact": [
+      "pnl-fact:0c473e4fc2e55c608294c0d4"
+    ],
+    "position_cycle_transition": null,
+    "projection_update": [
+      "accounting-projection:daily_portfolio:b5e3b6801008d912",
+      "accounting-projection:account:c02ab302f5acdfd4",
+      "accounting-projection:strategy:4feeccbd762e84a9",
+      "accounting-projection:instrument:4ce6547193f8b10a",
+      "accounting-projection:exit_reason:29a7a910084839a3",
+      "accounting-projection:path:982009db1aaafc2b"
+    ],
+    "protection_generation": 1,
+    "runtime_event": "carry_recovery:runtime-event",
+    "trade_fact": "trade-fact:4a2b0439d8d577ca3982948b"
+  },
+  "order_counts": {
+    "client_orders": 1,
+    "entry_orders": 1,
+    "exit_or_protection_orders": 1
+  },
+  "position_result": {
+    "carry_forward_count": 1,
+    "lifecycle_state": "CARRIED_FORWARD",
+    "position_cycle_id": "ipc:bfe6688457352436a935d48b",
+    "protected_quantity": 50,
+    "realized_quantity": 0,
+    "remaining_quantity": 50,
+    "terminal_state": "CARRIED_FORWARD"
+  },
+  "projection_result": {
+    "projection_hashes": [
+      "e804167f75fc78248384f4022e640a1b2932a6c783e3d6cc5ce45d6bf90ec298",
+      "98dc29390f131b10218adf7edc1e1427bab852b3209e3cf99d9264feb5364ee8",
+      "0cfa4e4e482a02a4fc52394ff3daed5e5de187e4c39ece003651d122f913293d",
+      "286f3acc8854c90026787c6f06f7125bf48e223cea33622808031c2da32ce885",
+      "171bf20deccb497ead71fb0d5209f2768a241f19509660952acd14634601c46d",
+      "9522122fc801a9f1c67a1017401cb6091a5f2b9caa381f466759c5d12ec939dd"
+    ],
+    "reconciled": true
+  },
+  "scenario_hash": "531a87d1d308e1efb36052118b9c4aef59cc4a1f4aecce05a41feede42c33355",
+  "scenario_id": "carry_recovery",
+  "shutdown_sequence": [
+    "STOP_ACCEPTING_NEW_ENTRY_INTENTS",
+    "COMPLETE_REQUIRED_PERSISTENCE_TRANSACTIONS",
+    "CHECKPOINT_RUNTIME_STATE",
+    "PERSIST_ACTIVE_CLIENT_ORDERS",
+    "PERSIST_OPEN_POSITIONCYCLES",
+    "PERSIST_PROTECTION_GENERATIONS",
+    "PERSIST_PROJECTION_WATERMARKS",
+    "PRODUCE_SHUTDOWN_ASSESSMENT",
+    "CLASSIFY_PENDING_STATES"
+  ],
+  "startup_sequence": [
+    "SCHEMA_DATABASE_VALIDATION",
+    "CONFIGURATION_RULE_VERSION_VALIDATION",
+    "TRADING_SESSION_INITIALIZATION",
+    "RECOVERY_ASSESSMENT",
+    "BROKER_OBSERVATION_SNAPSHOT_LOAD",
+    "ADVISORY_RECONCILIATION",
+    "AUTHORITY_GRANT_VALIDATION",
+    "STRATEGY_ENABLEMENT",
+    "PRE_MARKET_PLANNING",
+    "MARKET_DATA_SUBSCRIPTION_READINESS",
+    "RUNTIME_EVENT_PROCESSING",
+    "INTENT_ORDER_LIFECYCLE_OPERATION"
+  ],
+  "status": "PASSED",
+  "trace": [
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "phase4i-s23-config",
+      "next_node_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "node_type": "TradingSession",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "NSE:2026-07-30",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "phase4i-s23-config",
+      "next_node_id": "phase4i-premarket",
+      "node_type": "StrategyInstance",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "phase5a-pre-plan",
+      "next_node_id": "phase4i-opening",
+      "node_type": "PreMarketStrategyPlan",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "phase4i-premarket",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "phase5a-pre-opening",
+      "next_node_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "node_type": "OpeningMarketContext",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "phase4i-opening",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "next_node_id": "exec-intent:f2f3a26c93a2548e922ccf02",
+      "node_type": "EffectiveExecutionPlan",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "993f11ce909255c722b719fea619f4bac83c3548e51f28a07a885fda39ccad1a",
+      "next_node_id": "validation:valid_bull_call_entry",
+      "node_type": "ExecutionIntent",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "exec-intent:f2f3a26c93a2548e922ccf02",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "48de3a1aca0e18134e110c88a179bc9b16fb5058174dcf0122d8f18a9e26b323",
+      "next_node_id": "phase5a-pre-cert-authority:aec323eafefb445a",
+      "node_type": "RiskValidationResult",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "validation:valid_bull_call_entry",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "ffb8c2d84f35312346c0521a39e13c4a317d6677a732935a4de04a7c0538faa4",
+      "next_node_id": "client-order:71b3e7b42b112178bf841467",
+      "node_type": "InternalPaperAuthorityGrant",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "phase5a-pre-cert-authority:aec323eafefb445a",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "14ef123790876cc917c9f19667713b3f7bdd457d77635e9dff3cc73e2effd3f3",
+      "next_node_id": "carry_recovery:events",
+      "node_type": "ClientOrder",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "client-order:71b3e7b42b112178bf841467",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "07aa6d6910bfc9ccc549dcea704db5e49d4d63f09345e3ac40b4cfdcfb749677",
+      "next_node_id": "carry_recovery:fills",
+      "node_type": "InternalPaperOrderEvents",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "carry_recovery:events",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "d20c708d74d1f9e16fbb507d46b99cc13d497755b3357673562d0b8f9a3c7181",
+      "next_node_id": "ipc:bfe6688457352436a935d48b",
+      "node_type": "InternalPaperFills",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "carry_recovery:fills",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "f4282173a27497a2ac9ff62d46c3867b7b3eb3ceeaaa7b4298169456b5425bd2",
+      "next_node_id": "carry_recovery:lifecycle",
+      "node_type": "PositionCycle",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "ipc:bfe6688457352436a935d48b",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "72833776d602e216d25690a0c0dd5d66306333f1813399f6e8a38757a3911f56",
+      "next_node_id": "trade-fact:4a2b0439d8d577ca3982948b",
+      "node_type": "LifecycleRequirements",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "carry_recovery:lifecycle",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "4b8a63b50b5f94bc351e2505732fb4c9f0be230bfad84c6658a090c839645a7f",
+      "next_node_id": "carry_recovery:pnl",
+      "node_type": "TradeFact",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "trade-fact:4a2b0439d8d577ca3982948b",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "1b9bbc7a07de617d3e2d2db7e5095e0bdf1a81d80d67d6c963b7413560535c98",
+      "next_node_id": "carry_recovery:projections",
+      "node_type": "PnLFact",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "carry_recovery:pnl",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    },
+    {
+      "authority_classification": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+      "hash": "c67ebb77eeff4d65c202e1c4d3bb2c20704d3d8bc523b44b7ba33d6c777b222a",
+      "node_type": "ReadOnlyProjections",
+      "source_provenance": "PHASE5A_PRE_DETERMINISTIC_CERTIFICATION",
+      "stable_id": "carry_recovery:projections",
+      "timestamp": "2026-06-05T09:15:00+05:30"
+    }
+  ],
+  "warnings": [
+    "NEXT_DAY_EXIT_USES_ACCEPTED_ACCOUNTING_OPEN_CARRY_FIXTURE"
+  ]
+}

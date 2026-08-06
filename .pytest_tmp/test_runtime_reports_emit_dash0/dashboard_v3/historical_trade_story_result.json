@@ -1,0 +1,20 @@
+{
+  "schema_version": "tfis.dashboard_v3.historical_trade_story_result.v1",
+  "story_sections": [
+    "Monthly Status",
+    "Branch",
+    "Contract Selection",
+    "Entry Calculation",
+    "Order",
+    "Fill",
+    "Position",
+    "Protection",
+    "Exit",
+    "P&L",
+    "Timeline",
+    "Source Evidence",
+    "Explanation Snapshot",
+    "Replay"
+  ],
+  "trade_count": 3
+}

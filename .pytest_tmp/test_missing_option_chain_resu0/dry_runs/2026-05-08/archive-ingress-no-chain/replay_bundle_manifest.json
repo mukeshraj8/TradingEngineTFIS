@@ -1,0 +1,38 @@
+{
+  "artifact_files": [
+    {
+      "relative_path": "audit_events.jsonl",
+      "sha256": "453e9da34e29b4bc9a5dfa9f00b1ce280305f1876d316530c37cc695085c41aa",
+      "size_bytes": 3687
+    },
+    {
+      "relative_path": "decision_summary.json",
+      "sha256": "8ae68d2c81a58e7ccbe4afb6b76765bd3263faf490e372b82416d0b5fd495a04",
+      "size_bytes": 3114
+    },
+    {
+      "relative_path": "no_trade_summary.json",
+      "sha256": "ccf67449d6ae3d2988fcad52cea4cb36a35559c717d438b6f6884eb10dd967e9",
+      "size_bytes": 2819
+    },
+    {
+      "relative_path": "selected_contract.json",
+      "sha256": "18ee640aef53fdde89a3fcf9ed77976afa8fc67b0152d7bf2940ab4332a295ad",
+      "size_bytes": 698
+    },
+    {
+      "relative_path": "session_manifest.json",
+      "sha256": "afdc5c7d913c65fe7c7debdfb21202e58281d8d865a0d09240f3128fdb374f98",
+      "size_bytes": 2641
+    }
+  ],
+  "bundle_version": 1,
+  "created_at": "2026-05-08T09:30:04+05:30",
+  "session_date": "2026-05-08",
+  "session_id": "archive-ingress-no-chain",
+  "source_artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_option_chain_resu0\\dry_runs",
+  "source_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_option_chain_resu0\\dry_runs\\2026-05-08\\archive-ingress-no-chain",
+  "strategy_code": "S23",
+  "terminal_reason_code": "missing_option_chain_snapshot",
+  "terminal_state": "NO_TRADE"
+}

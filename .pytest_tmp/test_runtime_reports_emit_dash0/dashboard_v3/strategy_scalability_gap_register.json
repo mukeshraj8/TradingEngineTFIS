@@ -1,0 +1,15 @@
+{
+  "gaps": [
+    {
+      "description": "Monthly Status, branch mapping, and formula derivation still rely on projection-derived facts rather than full authoritative stage-by-stage engine facts.",
+      "gap_id": "DASHBOARD_V3_SCALABILITY_GAP_001",
+      "status": "OPEN"
+    },
+    {
+      "description": "Virtualised rendering is not yet required for the 30-row baseline because pagination is in place, but should be considered before very large multi-account estates.",
+      "gap_id": "DASHBOARD_V3_SCALABILITY_GAP_002",
+      "status": "OPEN"
+    }
+  ],
+  "schema_version": "tfis.dashboard_v3.gap_register.v1"
+}

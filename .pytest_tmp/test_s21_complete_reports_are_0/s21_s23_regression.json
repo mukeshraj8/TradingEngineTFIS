@@ -1,0 +1,9 @@
+{
+  "approved_generic_metadata_change": "CALCULATION_VERSION now tfis.short_option_accounting.v1; business accounting values unchanged by tests.",
+  "expected_s23_behavior_change": "NONE",
+  "regression_hash": "8281085f905234ff3ee66d50d02a84475f771959844bdd068f29887afa6b8935",
+  "regression_scope": "No S23 code/config changed; focused S23 tests remain required in validation.",
+  "s23_files_changed_by_this_milestone": [],
+  "s23_strategy_contracts_modified": false,
+  "schema_version": "s21.s23_regression_guard.v1"
+}

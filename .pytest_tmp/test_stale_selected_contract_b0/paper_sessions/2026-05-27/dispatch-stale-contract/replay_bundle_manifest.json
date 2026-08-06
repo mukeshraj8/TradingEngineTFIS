@@ -1,0 +1,38 @@
+{
+  "artifact_files": [
+    {
+      "relative_path": "audit_events.jsonl",
+      "sha256": "885d4f97f58af7ef97f95eed673e918e4c298a52821053decc616aa4c2532f4a",
+      "size_bytes": 3902
+    },
+    {
+      "relative_path": "decision_summary.json",
+      "sha256": "22f089dc22837f7da6d18a68ff875c11bdccb274fdae381c158e7c28e4d3cee9",
+      "size_bytes": 2478
+    },
+    {
+      "relative_path": "paper_order_plan.json",
+      "sha256": "96f55254cd04eef0f98176ab85ce8f72d3f72d3a0d55338da2c91ba7236565e2",
+      "size_bytes": 1405
+    },
+    {
+      "relative_path": "selected_contract.json",
+      "sha256": "766f55b7cffeca29176f3a17c7a5402efa2f329cc26aed58881803bf7008ddfa",
+      "size_bytes": 673
+    },
+    {
+      "relative_path": "session_manifest.json",
+      "sha256": "08d4cc8f0de816bdbd5ab5f9df9d819ae830a33eaa5129e7dd12db1bfc9df2cd",
+      "size_bytes": 2189
+    }
+  ],
+  "bundle_version": 1,
+  "created_at": "2026-05-27T09:31:00+05:30",
+  "session_date": "2026-05-27",
+  "session_id": "dispatch-stale-contract",
+  "source_artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_stale_selected_contract_b0\\paper_sessions",
+  "source_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_stale_selected_contract_b0\\paper_sessions\\2026-05-27\\dispatch-stale-contract",
+  "strategy_code": "S23",
+  "terminal_reason_code": null,
+  "terminal_state": "ORDER_PLANNED"
+}

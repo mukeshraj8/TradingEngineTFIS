@@ -1,0 +1,6 @@
+source_mode: broker_fyers_live_fill_mode
+paper:
+  paper_mode_enabled: false
+  no_live_orders_allowed: false
+  kill_switch_enabled: false
+  session_kill_switch_active: true

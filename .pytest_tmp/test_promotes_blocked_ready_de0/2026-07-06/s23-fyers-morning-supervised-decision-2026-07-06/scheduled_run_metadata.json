@@ -1,0 +1,17 @@
+{
+  "branch_order_placement_blocked": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL": false
+  },
+  "branch_order_placement_promoted_after_carry_exit": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL": true
+  },
+  "branch_order_placement_promoted_at": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL": "2026-07-06T10:09:51+05:30"
+  },
+  "branch_order_placement_promotion_reason": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL": "Prior carry-forward position exited and no active paper position remained; promoted the blocked READY decision to a waiting paper order."
+  },
+  "branch_order_state_json": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_promotes_blocked_ready_de0\\2026-07-06\\s23-fyers-morning-supervised-decision-2026-07-06\\NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL\\paper_order_state.json"
+  }
+}

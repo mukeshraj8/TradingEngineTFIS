@@ -1,0 +1,10 @@
+{
+  "schema_version": "tfis.dashboard_v3.engineering_workflow_map.v1",
+  "workflow": [
+    "Switch to Engineering Mode",
+    "Open Decision Explorer",
+    "Review Monthly Status, Branch, Market Structure, Contract Selection",
+    "Review Entry, ORPT/RC, Protection, Order, Position, P&L",
+    "Use Manual Validation, Explanation Library, Diagnostics, and Source Trace"
+  ]
+}

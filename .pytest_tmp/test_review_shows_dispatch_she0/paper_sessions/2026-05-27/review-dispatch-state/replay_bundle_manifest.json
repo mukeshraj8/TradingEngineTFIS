@@ -1,0 +1,38 @@
+{
+  "artifact_files": [
+    {
+      "relative_path": "audit_events.jsonl",
+      "sha256": "885d4f97f58af7ef97f95eed673e918e4c298a52821053decc616aa4c2532f4a",
+      "size_bytes": 3902
+    },
+    {
+      "relative_path": "decision_summary.json",
+      "sha256": "5d2b02f8d50c9c38b1a6a546c1fa12a5b80fddd043cf18e604c0d11ef45681d2",
+      "size_bytes": 2476
+    },
+    {
+      "relative_path": "paper_order_plan.json",
+      "sha256": "04abf3071d877f176fb72a8ee0caeed5baf734d57cc35dd624ed465586978217",
+      "size_bytes": 1403
+    },
+    {
+      "relative_path": "selected_contract.json",
+      "sha256": "766f55b7cffeca29176f3a17c7a5402efa2f329cc26aed58881803bf7008ddfa",
+      "size_bytes": 673
+    },
+    {
+      "relative_path": "session_manifest.json",
+      "sha256": "08d4cc8f0de816bdbd5ab5f9df9d819ae830a33eaa5129e7dd12db1bfc9df2cd",
+      "size_bytes": 2189
+    }
+  ],
+  "bundle_version": 1,
+  "created_at": "2026-05-27T09:31:00+05:30",
+  "session_date": "2026-05-27",
+  "session_id": "review-dispatch-state",
+  "source_artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_review_shows_dispatch_she0\\paper_sessions",
+  "source_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_review_shows_dispatch_she0\\paper_sessions\\2026-05-27\\review-dispatch-state",
+  "strategy_code": "S23",
+  "terminal_reason_code": null,
+  "terminal_state": "ORDER_PLANNED"
+}

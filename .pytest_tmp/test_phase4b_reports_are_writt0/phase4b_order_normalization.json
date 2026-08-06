@@ -1,0 +1,115 @@
+{
+  "orders": [
+    {
+      "account": {
+        "account_hash": "c86b8d51beaeb23ff99ec5f9fe5277fdb075ea0276db4cc2d957b202307285e1",
+        "account_id": "FY***45",
+        "display_name": "TFIS Fixture",
+        "environment": "fixture",
+        "provider": "fyers"
+      },
+      "average_fill_price": null,
+      "created_at": "2026-06-05T09:16:00+05:30",
+      "filled_quantity": 0,
+      "instrument": {
+        "broker_symbol": "NSE:NIFTY2660922650CE",
+        "exchange": "NSE",
+        "expiry": "2026-06-09",
+        "lot_size": 75,
+        "normalized_symbol": "NIFTY_20260609_22650_CE",
+        "option_type": "CALL",
+        "product": "OPTION",
+        "provider": "fyers",
+        "strike": 22650.0,
+        "tick_size": 0.05,
+        "underlying": "NIFTY"
+      },
+      "limit_price": 120.0,
+      "order_id": "OID-OPEN-TGT",
+      "order_type": "LIMIT",
+      "product_type": "NRML",
+      "quantity": 75,
+      "rejection_reason": null,
+      "remaining_quantity": 75,
+      "side": "BUY",
+      "source_status": "OPEN",
+      "status": "OPEN",
+      "trigger_price": null,
+      "updated_at": "2026-06-05T09:16:00+05:30"
+    },
+    {
+      "account": {
+        "account_hash": "c86b8d51beaeb23ff99ec5f9fe5277fdb075ea0276db4cc2d957b202307285e1",
+        "account_id": "FY***45",
+        "display_name": "TFIS Fixture",
+        "environment": "fixture",
+        "provider": "fyers"
+      },
+      "average_fill_price": 100.0,
+      "created_at": "2026-06-05T09:16:00+05:30",
+      "filled_quantity": 75,
+      "instrument": {
+        "broker_symbol": "NSE:NIFTY2660922650CE",
+        "exchange": "NSE",
+        "expiry": "2026-06-09",
+        "lot_size": 75,
+        "normalized_symbol": "NIFTY_20260609_22650_CE",
+        "option_type": "CALL",
+        "product": "OPTION",
+        "provider": "fyers",
+        "strike": 22650.0,
+        "tick_size": 0.05,
+        "underlying": "NIFTY"
+      },
+      "limit_price": 100.0,
+      "order_id": "OID-PARTIAL",
+      "order_type": "LIMIT",
+      "product_type": "NRML",
+      "quantity": 150,
+      "rejection_reason": null,
+      "remaining_quantity": 75,
+      "side": "SELL",
+      "source_status": "PARTIALLY_FILLED",
+      "status": "PARTIALLY_FILLED",
+      "trigger_price": null,
+      "updated_at": "2026-06-05T09:16:00+05:30"
+    },
+    {
+      "account": {
+        "account_hash": "c86b8d51beaeb23ff99ec5f9fe5277fdb075ea0276db4cc2d957b202307285e1",
+        "account_id": "FY***45",
+        "display_name": "TFIS Fixture",
+        "environment": "fixture",
+        "provider": "fyers"
+      },
+      "average_fill_price": null,
+      "created_at": "2026-06-05T09:16:00+05:30",
+      "filled_quantity": 0,
+      "instrument": {
+        "broker_symbol": "NSE:NIFTY2660922650PE",
+        "exchange": "NSE",
+        "expiry": "2026-06-09",
+        "lot_size": 75,
+        "normalized_symbol": "NIFTY_20260609_22650_PE",
+        "option_type": "PUT",
+        "product": "OPTION",
+        "provider": "fyers",
+        "strike": 22650.0,
+        "tick_size": 0.05,
+        "underlying": "NIFTY"
+      },
+      "limit_price": 150.0,
+      "order_id": "OID-REJECTED",
+      "order_type": "STOP_LIMIT",
+      "product_type": "NRML",
+      "quantity": 75,
+      "rejection_reason": "fixture rejection",
+      "remaining_quantity": 75,
+      "side": "SELL",
+      "source_status": "REJECTED",
+      "status": "REJECTED",
+      "trigger_price": 151.0,
+      "updated_at": "2026-06-05T09:16:00+05:30"
+    }
+  ]
+}

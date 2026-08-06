@@ -1,0 +1,1 @@
+{"payload": {"contracts": [{"symbol": "NIFTY_20260609_24250_PE", "option_type": "PUT", "strike": 24250, "ltp": 171.55, "oi": 656045}, {"symbol": "NIFTY_20260609_24200_PE", "option_type": "PUT", "strike": 24200, "ltp": 142.8, "oi": 3795415}, {"symbol": "NIFTY_20260609_24150_CE", "option_type": "CALL", "strike": 24150, "ltp": 320.0, "oi": 999999}]}}

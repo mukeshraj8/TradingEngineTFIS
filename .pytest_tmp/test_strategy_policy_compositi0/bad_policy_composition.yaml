@@ -1,0 +1,5 @@
+version: bad
+strategies:
+  TEST_BRANCH:
+    strategy_code: S23
+    product_policy: legacy.s23.option_selling.product

@@ -1,0 +1,25 @@
+{
+  "ask": 201.0,
+  "bid": 198.0,
+  "envelope": {
+    "captured_at": "2026-05-27T09:30:00+05:30",
+    "data_quality_flags": [],
+    "effective_timestamp": "2026-05-27T09:29:59+05:30",
+    "event_type": "SELECTED_CONTRACT_QUOTE",
+    "integrity_hash": null,
+    "normalized_by": "test-fixture",
+    "session_date": "2026-05-27",
+    "source_id": "selected_contract_quote-source",
+    "source_sequence": null,
+    "source_type": "paper_fixture",
+    "synthetic_fixture": true,
+    "timezone": "Asia/Kolkata"
+  },
+  "expiry": "2026-05-28",
+  "ltp": 199.5,
+  "oi": 1200.0,
+  "option_type": "PUT",
+  "strike": 22400.0,
+  "symbol": "NIFTY_20260528_22400_PE",
+  "volume": 250.0
+}

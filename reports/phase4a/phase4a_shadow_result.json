@@ -57,7 +57,7 @@
     "opening_context_id": "m10-s23-partial-real-opening-context",
     "orpt_event_id": null,
     "performance": {
-      "coordination_seconds": 0.04771020001498982,
+      "coordination_seconds": 0.050523700017947704,
       "event_count": 5
     },
     "policy_identities": {

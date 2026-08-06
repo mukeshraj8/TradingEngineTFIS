@@ -1,7 +1,7 @@
 {
   "authority_mode": "SHADOW_ONLY",
   "event_hash": "958bdcc11e3e30ce036128b5221ffbfd4c101b1790b2293623a4eb615dca89e5",
-  "evidence_hash": "4d26f5466c00b1226eb4b53707fbf29801c3bc9b985fc6c9fa52b12642fcb0fe",
+  "evidence_hash": "9fb80b95b2949f4598e1676d417ae1b369ef4f243cc5b467678a546efd9c9f2c",
   "runtime_hash": "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69",
   "schema_version": "tfis.phase4a.shadow_evidence_packet.v1",
   "session": {
@@ -27,5 +27,5 @@
     "strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
     "trading_date": "2026-06-05"
   },
-  "shadow_handoff_hash": "01d7363613d23a03f1f0b32cd3760e0ac328b82cfbe393945514c1b17262c781"
+  "shadow_handoff_hash": "2be21b8dc35fcbda97ff8cad2a1ab76b0ccf50567cb0e79918ce2fd160922e0c"
 }

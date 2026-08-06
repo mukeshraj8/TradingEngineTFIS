@@ -1,0 +1,90 @@
+{
+  "abort_reasons": [],
+  "brokerage_per_lot": 20.0,
+  "contract_cycle": "WEEKLY",
+  "cost_slippage_version": "paper-cost-v1",
+  "data_sources": [
+    {
+      "event_type": "CALENDAR_CONTEXT",
+      "source_id": "D:/TradingData/captures/context_sessions/2026-05-08/live_20260508_092504_prod_pid19984/ticks_context.csv",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "COST_SLIPPAGE_SETTINGS",
+      "source_id": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_accep0\\paper.s23.yaml",
+      "source_type": "live_paper_config",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "MONTHLY_STATUS_INPUT",
+      "source_id": "D:/TradingData/captures/context_sessions/2026-05-08/live_20260508_092504_prod_pid19984/monthly_status.json",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "OPTION_CHAIN_SNAPSHOT",
+      "source_id": "normalized_option_chain:2026-05-08",
+      "source_type": "archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "PAPER_SESSION_CONFIG",
+      "source_id": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_accep0\\paper.s23.yaml",
+      "source_type": "live_paper_config",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "SELECTED_CONTRACT_QUOTE",
+      "source_id": "normalized_selected_contract:NSE:NIFTY2651225000PE",
+      "source_type": "archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "TRADE_PLAN_INPUT",
+      "source_id": "normalized_trade_plan:s23_bear_put_row186",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "UNDERLYING_QUOTE",
+      "source_id": "normalized_underlying_quote:nifty",
+      "source_type": "archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "source_id": "normalized_snapshot:0915",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "source_id": "normalized_snapshot:orpt",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "source_id": "normalized_snapshot:rc",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    }
+  ],
+  "evaluated_state": "ORDER_PLANNED",
+  "generated_at": "2026-05-08T09:30:04+05:30",
+  "mode": "paper",
+  "no_trade_reasons": [],
+  "overlays_enabled": [
+    "S23_CURRENT_DAY_FSL_TRP"
+  ],
+  "readiness_status": "READY",
+  "session_date": "2026-05-08",
+  "slippage_entry_points": 1.0,
+  "slippage_exit_points": 1.0,
+  "spread_buffer_policy": "bid_ask_guard",
+  "strategy_code": "S23",
+  "symbol": "NIFTY",
+  "synthetic_fixture_used": false,
+  "warnings": []
+}

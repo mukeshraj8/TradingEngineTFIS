@@ -1,0 +1,3 @@
+broker:
+  provider: fyers
+  timezone: Asia/Kolkata

@@ -1,0 +1,9 @@
+{
+  "artifact_version": 1,
+  "comparison_reason": "Selected contract differed.",
+  "go_no_go": "NO-GO: paper and historical planning diverged.",
+  "session_date": "2026-05-27",
+  "session_id": "execution-comparison-mismatch",
+  "status": "MISMATCH",
+  "strategy_code": "S23"
+}

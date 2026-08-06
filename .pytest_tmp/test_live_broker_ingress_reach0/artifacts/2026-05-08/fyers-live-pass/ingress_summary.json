@@ -1,0 +1,27 @@
+{
+  "artifact_version": 1,
+  "broker_health_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_reach0\\artifacts\\2026-05-08\\fyers-live-pass\\broker_health.json",
+  "broker_name": "fyers",
+  "config_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_reach0\\paper.s23.yaml",
+  "engine_event_count": 11,
+  "explicit_disclaimer": "Broker market-data only: no order was placed, no fill was simulated, and no lifecycle monitoring occurred.",
+  "no_trade_or_order_plan_summary_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_reach0\\artifacts\\2026-05-08\\fyers-live-pass\\no_trade_or_order_plan_summary.json",
+  "normalized_events_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_reach0\\artifacts\\2026-05-08\\fyers-live-pass\\normalized_events.jsonl",
+  "observed_stream_event_count": 1,
+  "operational_readiness": "PASS",
+  "prelude_path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\paper\\s23_fyers_prelude.jsonl",
+  "readiness_status": "READY",
+  "review_md_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_reach0\\artifacts\\2026-05-08\\fyers-live-pass\\paper_session_review.md",
+  "selected_contract_audit_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_reach0\\artifacts\\2026-05-08\\fyers-live-pass\\selected_contract_audit.json",
+  "selected_contract_symbol": "NIFTY_20260512_25000_PE",
+  "session_date": "2026-05-08",
+  "session_id": "fyers-live-pass",
+  "source_mode": "broker_fyers_live_paper_ingress",
+  "subscribed_symbols": [
+    "NIFTY",
+    "NIFTY_20260512_25000_PE"
+  ],
+  "terminal_state": "ORDER_PLANNED",
+  "uses_broker_market_data": true,
+  "weekly_expiry": "2026-05-12"
+}

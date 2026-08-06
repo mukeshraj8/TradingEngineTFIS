@@ -1,0 +1,84 @@
+{
+  "abort_reasons": [],
+  "artifact_version": 1,
+  "blocking_event_type": null,
+  "blocking_source_id": null,
+  "contract_cycle": "WEEKLY",
+  "data_sources": [
+    {
+      "event_type": "CALENDAR_CONTEXT",
+      "source_id": "calendar_context-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "COST_SLIPPAGE_SETTINGS",
+      "source_id": "cost_slippage_settings-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "MONTHLY_STATUS_INPUT",
+      "source_id": "monthly_status_input-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "OPTION_CHAIN_SNAPSHOT",
+      "source_id": "option_chain_snapshot-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "PAPER_SESSION_CONFIG",
+      "source_id": "paper_session_config-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "SELECTED_CONTRACT_QUOTE",
+      "source_id": "selected_contract_quote-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "UNDERLYING_QUOTE",
+      "source_id": "underlying_quote-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "source_id": "underlying_snapshot-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    }
+  ],
+  "evaluated_state": "ORDER_PLANNED",
+  "guardrail_code": null,
+  "guardrail_message": null,
+  "missing_snapshot_labels": [],
+  "mode": "paper",
+  "no_trade_reasons": [],
+  "operator_action_required": null,
+  "overlays_enabled": [
+    "S23_CURRENT_DAY_FSL_TRP"
+  ],
+  "paper_order_planned": true,
+  "readiness_status": "READY",
+  "required_snapshot_labels": [
+    "0915",
+    "ORPT",
+    "RC"
+  ],
+  "selected_contract_available": true,
+  "selected_contract_symbol": "NIFTY_20260528_22400_PE",
+  "session_date": "2026-05-27",
+  "session_id": "planned-session",
+  "state": "ORDER_PLANNED",
+  "strategy_code": "S23",
+  "symbol": "NIFTY",
+  "synthetic_fixture_used": true,
+  "terminal_reason_code": null,
+  "warning_flags": []
+}

@@ -1,0 +1,35 @@
+{
+  "engineering_mode": [
+    "Decision Explorer",
+    "Monthly Status",
+    "Contract Selection",
+    "Manual Validation",
+    "Replay",
+    "Explanation Library",
+    "Diagnostics",
+    "Source Trace"
+  ],
+  "frontend_business_calculation": false,
+  "operator_mode": [
+    "Command Centre",
+    "Strategies",
+    "Orders",
+    "Positions",
+    "Accounts",
+    "Risk",
+    "Historical Trades",
+    "Alerts",
+    "Audit",
+    "Settings"
+  ],
+  "schema_version": "tfis.dashboard_v3.information_architecture.v1",
+  "strategy_hierarchy": [
+    "Strategy Family",
+    "Strategy Definition",
+    "Strategy Instance",
+    "Instrument",
+    "Contract",
+    "Trade/Position"
+  ],
+  "technical_details_secondary": true
+}

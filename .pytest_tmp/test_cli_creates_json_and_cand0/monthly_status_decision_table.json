@@ -1,0 +1,72 @@
+{
+  "instrument_group": "nifty",
+  "thresholds": {
+    "instrument_group": "nifty",
+    "a_pct": 0.75,
+    "b_pct": 0.75,
+    "c_pct": 0.15
+  },
+  "input_levels": {
+    "PMH": 100.0,
+    "PML": 90.0,
+    "CMH": 102.0,
+    "CML": 91.0,
+    "PWH": 101.0,
+    "PWL": 92.0,
+    "CWH": 102.0,
+    "CWL": 93.0,
+    "current_price": 103.0
+  },
+  "bullish_value": null,
+  "bearish_value": null,
+  "candidates": [
+    {
+      "candidate_status": "BULL",
+      "trigger_name": "BULL_A_THRESHOLD",
+      "threshold_value": 100.75,
+      "condition_met": true,
+      "confidence": "HIGH",
+      "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+    },
+    {
+      "candidate_status": "BEAR",
+      "trigger_name": "BEAR_A_THRESHOLD",
+      "threshold_value": 89.325,
+      "condition_met": false,
+      "confidence": "HIGH",
+      "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+    },
+    {
+      "candidate_status": "BULL_CF",
+      "trigger_name": "BULL_CF_B_THRESHOLD",
+      "threshold_value": null,
+      "condition_met": null,
+      "confidence": "LOW",
+      "notes": "Bullish reference value is not available yet; BULL_CF remains unresolved until the future engine defines or provides it."
+    },
+    {
+      "candidate_status": "BEAR_CF",
+      "trigger_name": "BEAR_CF_B_THRESHOLD",
+      "threshold_value": null,
+      "condition_met": null,
+      "confidence": "LOW",
+      "notes": "Bearish reference value is not available yet; BEAR_CF remains unresolved until the future engine defines or provides it."
+    },
+    {
+      "candidate_status": "BULL",
+      "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+      "threshold_value": 102.153,
+      "condition_met": true,
+      "confidence": "MEDIUM",
+      "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+    },
+    {
+      "candidate_status": "BEAR",
+      "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+      "threshold_value": 91.86200000000001,
+      "condition_met": false,
+      "confidence": "MEDIUM",
+      "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+    }
+  ]
+}

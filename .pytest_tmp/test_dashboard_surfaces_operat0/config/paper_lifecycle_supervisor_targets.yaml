@@ -1,0 +1,11 @@
+targets:
+  - strategy_code: S23
+    config_path: config/paper.s23.test.yaml
+    artifact_root: s23-artifacts
+    process_lock_root: tmp/process_locks/test
+    strategy_path: config/strategies/options_sell/test
+    reference_packet_path: config/reference_packets/test.json
+    session_id_prefix: test-session
+    executor: paper_morning_supervised
+    runner_script_path: scripts/run_test.py
+    wrapper_script_path: scripts/start_test.ps1

@@ -1,0 +1,12 @@
+{
+  "financially_material_open_questions": [],
+  "gap_register_hash": "09e476fad27929fe11818b8c56bc359c46c8e206376eeb24db43fe9f1f51e074",
+  "known_limitations": [
+    "Selected-option historical references are not present in the FYERS read-only fixture and are deterministic supplements.",
+    "Opening, ORPT and RC observations are deterministic timing supplements because capture occurred on Sunday outside an exchange session.",
+    "Only RELIANCE is enabled; no second stock or fan-out proof is implemented.",
+    "No broker, external paper, sandbox or live authority is added."
+  ],
+  "runtime_activation": "NOT_ENABLED",
+  "schema_version": "s22.reliance.gap_register.v1"
+}

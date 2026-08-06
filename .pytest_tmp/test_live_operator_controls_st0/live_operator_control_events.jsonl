@@ -1,0 +1,3 @@
+{"action": "APPROVE_LIVE_MODE", "actor": "operator", "event_id": "APPROVE_LIVE_MODE:2026-07-22T08:45:00+00:00:operator", "occurred_at": "2026-07-22T08:45:00+00:00", "reason": "approved_live_dry_run_window"}
+{"action": "ACTIVATE_KILL_SWITCH", "actor": "operator", "event_id": "ACTIVATE_KILL_SWITCH:2026-07-22T08:46:00+00:00:operator", "occurred_at": "2026-07-22T08:46:00+00:00", "reason": "risk_stop"}
+{"action": "CLEAR_KILL_SWITCH", "actor": "operator", "event_id": "CLEAR_KILL_SWITCH:2026-07-22T08:47:00+00:00:operator", "occurred_at": "2026-07-22T08:47:00+00:00", "reason": "risk_clear"}

@@ -1,0 +1,8 @@
+{
+  "empty_states_meaningful": true,
+  "error_states_meaningful": true,
+  "focus_states_visible": true,
+  "keyboard_navigation": true,
+  "minimum_readable_font": true,
+  "schema_version": "tfis.dashboard_v3.accessibility_validation.v1"
+}

@@ -1,0 +1,21 @@
+targets:
+  - strategy_code: S23
+    config_path: config/paper.s23.fyers_connect_test.yaml
+    artifact_root: data/strategies/S23/fyers_morning_supervised_decision
+    process_lock_root: tmp/process_locks/s23_paper_watch
+    strategy_path: config/strategies/S23
+    reference_packet_path: config/reference_packets/s23.json
+    session_id_prefix: s23-fyers-morning-supervised-decision
+    executor: paper_morning_supervised
+    runner_script_path: scripts/run_s23.py
+    wrapper_script_path: scripts/start_s23.ps1
+  - strategy_code: S21
+    config_path: config/paper.s21.fyers_connect_test.yaml
+    artifact_root: data/strategies/S21/fyers_morning_supervised_decision
+    process_lock_root: tmp/process_locks/s21_paper_watch
+    strategy_path: config/strategies/S21
+    reference_packet_path: config/reference_packets/s21.json
+    session_id_prefix: s21-fyers-morning-supervised-decision
+    executor: paper_morning_supervised
+    runner_script_path: scripts/run_s21.py
+    wrapper_script_path: scripts/start_s21.ps1

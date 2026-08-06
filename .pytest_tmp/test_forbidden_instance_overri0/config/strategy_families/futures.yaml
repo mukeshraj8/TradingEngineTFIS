@@ -1,0 +1,28 @@
+schema_version: phase3a.v1
+family_id: FUTURES
+display_name: Futures
+product_type: FUTURES
+required_capabilities:
+  - market_structure
+  - monthly_status
+optional_capabilities:
+  - gap
+  - missed_entry
+  - target
+  - msl
+  - tsl
+  - aps
+  - execution
+  - lifecycle
+allowed_policy_stages:
+  - product
+  - entry
+  - gap
+  - missed_entry
+  - target
+  - msl
+family_defaults:
+  parameters: {}
+supported_segments:
+  - FUTURES
+supported_instruments: []

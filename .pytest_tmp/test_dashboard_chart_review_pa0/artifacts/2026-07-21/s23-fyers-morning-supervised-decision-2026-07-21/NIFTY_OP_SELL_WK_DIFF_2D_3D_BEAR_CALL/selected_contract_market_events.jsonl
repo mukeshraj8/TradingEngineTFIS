@@ -1,0 +1,2 @@
+{"artifact_version": 1, "event_kind": "selected_contract_quote", "observed_at": "2026-07-21T09:31:00+05:30", "symbol": "NIFTY_20260721_24150_CE", "trade_id": "T1", "supervisor_pid": 1234, "payload": {"ltp": 245.5, "bid": 245.0, "ask": 246.0}}
+{"artifact_version": 1, "event_kind": "selected_contract_quote", "observed_at": "2026-07-21T09:32:00+05:30", "symbol": "NIFTY_20260721_24150_CE", "trade_id": "T1", "supervisor_pid": 1234, "payload": {"ltp": 241.25, "bid": 241.0, "ask": 241.5}}

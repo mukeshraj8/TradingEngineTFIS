@@ -1,0 +1,20 @@
+{
+  "capture_calendar_day": "Sunday",
+  "capture_is_exchange_session": false,
+  "capture_timestamp": "2026-08-02T12:43:59.105603+05:30",
+  "completed_daily_candles_used": 123,
+  "instrument_effective_date": "2026-07-31",
+  "latest_completed_nse_trading_session": "2026-07-31",
+  "market_closed_evidence_label": "FYERS_READ_ONLY_MARKET_CLOSED_CAPTURE",
+  "metadata_snapshot_date": "2026-08-02",
+  "opening_orpt_rc_evidence": "DETERMINISTIC_TIMING_SUPPLEMENT",
+  "option_chain_source_timestamp": [
+    "2026-08-02T12:45:10.929040+05:30",
+    "2026-08-02T12:45:11.031262+05:30"
+  ],
+  "schema_version": "s22.reliance.time_semantics.v1",
+  "source_quote_timestamp": null,
+  "sunday_candle_fabricated": false,
+  "target_internal_paper_evaluation_date": "2026-08-03",
+  "time_semantics_hash": "63199f14320687f476f3f8679f132b2a87abb66ed6351cd29c48ea5b1bff106a"
+}

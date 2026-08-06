@@ -1,0 +1,30 @@
+{
+  "schema_version": "tfis.dashboard_v2.future_segment_compatibility.v1",
+  "segments": [
+    {
+      "segment": "Index Options",
+      "status": "ACTIVE_IN_PROJECTION"
+    },
+    {
+      "segment": "Stock Options",
+      "status": "ACTIVE_IN_PROJECTION"
+    },
+    {
+      "segment": "Futures",
+      "status": "METADATA_COMPATIBLE_PLACEHOLDER"
+    },
+    {
+      "segment": "Equity",
+      "status": "METADATA_COMPATIBLE_PLACEHOLDER"
+    },
+    {
+      "segment": "Commodity",
+      "status": "METADATA_COMPATIBLE_PLACEHOLDER"
+    },
+    {
+      "segment": "Currency",
+      "status": "METADATA_COMPATIBLE_PLACEHOLDER"
+    }
+  ],
+  "strategy_neutral_rendering": true
+}

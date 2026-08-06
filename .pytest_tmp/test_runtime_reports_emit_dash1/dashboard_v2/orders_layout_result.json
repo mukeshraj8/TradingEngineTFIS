@@ -1,0 +1,20 @@
+{
+  "primary_columns": [
+    "time",
+    "account",
+    "strategy",
+    "instrument",
+    "contract",
+    "side",
+    "purpose",
+    "quantity",
+    "price",
+    "status",
+    "mode",
+    "warning_or_error",
+    "actions"
+  ],
+  "row_count": 0,
+  "sample_rows": [],
+  "schema_version": "tfis.dashboard_v2.orders_layout_result.v1"
+}

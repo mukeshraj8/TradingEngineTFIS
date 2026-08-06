@@ -1,0 +1,15 @@
+{
+  "config_files_changed": [],
+  "duplicated_implementation_avoided": true,
+  "generic_change_reasons": {
+    "src/tfis/internal_paper/runtime/profile.py": "Phase 5B requires controlled S23 profile to permit BULL_PUT and BEAR_PUT."
+  },
+  "generic_files_changed": [
+    "src/tfis/internal_paper/runtime/profile.py"
+  ],
+  "new_reusable_capability_added": "controlled profile now declares all four S23 branches",
+  "pipeline_reused_percent": 92,
+  "strategy_specific_files_changed": [
+    "src/tfis/adapters/phase5b/s23_put_four_branch.py"
+  ]
+}

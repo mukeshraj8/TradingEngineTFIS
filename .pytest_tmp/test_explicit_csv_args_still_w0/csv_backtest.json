@@ -1,0 +1,134 @@
+{
+  "strategy_path": "config\\strategies\\options_sell\\nifty\\S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "mode": "csv",
+  "cost_model": {
+    "slippage_points_per_side": 0.0,
+    "brokerage_points_per_trade": 0.0,
+    "other_cost_points_per_trade": 0.0
+  },
+  "input_metadata": {
+    "datasets": {
+      "daily": {
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_daily.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_levels": {
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_option_levels.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "spot_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "monthly": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "weekly": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "option_chain": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "contract_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      }
+    },
+    "synthetic_fixture_data_used": false,
+    "project_fixture_data_used": true
+  },
+  "validation": {
+    "strategy_config_ok": true,
+    "formula_safety_findings": []
+  },
+  "result": {
+    "strategy_code": "S23",
+    "trade_plan": {
+      "strategy_code": "S23",
+      "symbol": "NIFTY",
+      "option_type": "CALL",
+      "start_strike": 22250,
+      "end_strike": 21950,
+      "ideal_premium": 264.0,
+      "minimum_premium": 198.00000000000003,
+      "entry_price": 203.5,
+      "stoploss_price": 321.0,
+      "target_price": 81.4
+    },
+    "order_intent": {
+      "strategy_code": "S23",
+      "symbol": "NIFTY",
+      "option_type": "CALL",
+      "side": "SELL",
+      "quantity": 50,
+      "order_type": "MARKET",
+      "product_type": "MIS",
+      "reference_price": 203.5,
+      "reason": "Planned options-sell entry intent from TradePlan"
+    },
+    "risk_decision": {
+      "approved": true,
+      "reason": "Approved",
+      "checks": {
+        "paper_only": true,
+        "max_lots_per_trade": 100,
+        "max_trades_per_day": 3,
+        "trades_taken_today": 1,
+        "allow_short_options": true,
+        "requested_quantity": 50,
+        "side": "SELL"
+      }
+    },
+    "validation": {
+      "strategy_config_ok": true,
+      "formula_safety_findings": []
+    },
+    "accepted": true,
+    "reason": "Approved"
+  },
+  "metrics": {
+    "total_candidates": 1,
+    "accepted_trades": 1,
+    "rejected_trades": 0,
+    "rejection_reasons": {}
+  }
+}

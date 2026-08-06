@@ -1,0 +1,173 @@
+{
+  "audit_transition_count": 5,
+  "audit_transitions": [
+    {
+      "event_type": "COST_SLIPPAGE_SETTINGS",
+      "guardrail_code": null,
+      "new_state": "PRE_MARKET_READY",
+      "previous_state": "NOT_STARTED",
+      "reason": "pre_market_inputs_ready",
+      "terminal_code": null,
+      "timestamp": "2026-05-08T09:00:51+05:30"
+    },
+    {
+      "event_type": "COST_SLIPPAGE_SETTINGS",
+      "guardrail_code": null,
+      "new_state": "WAITING_FOR_0915",
+      "previous_state": "PRE_MARKET_READY",
+      "reason": "awaiting_0915_snapshot",
+      "terminal_code": null,
+      "timestamp": "2026-05-08T09:00:51+05:30"
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "guardrail_code": null,
+      "new_state": "WAITING_FOR_ORPT",
+      "previous_state": "WAITING_FOR_0915",
+      "reason": "awaiting_orpt_snapshot",
+      "terminal_code": null,
+      "timestamp": "2026-05-08T09:15:01+05:30"
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "guardrail_code": null,
+      "new_state": "WAITING_FOR_RC",
+      "previous_state": "WAITING_FOR_ORPT",
+      "reason": "awaiting_rc_snapshot",
+      "terminal_code": null,
+      "timestamp": "2026-05-08T09:25:01+05:30"
+    },
+    {
+      "event_type": "SELECTED_CONTRACT_QUOTE",
+      "guardrail_code": "stale_ingest_quote",
+      "new_state": "ABORTED",
+      "previous_state": "WAITING_FOR_RC",
+      "reason": "ingest_guardrail_failed",
+      "terminal_code": "stale_ingest_quote",
+      "timestamp": "2026-05-08T09:30:02+05:30"
+    }
+  ],
+  "bundle_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_stale_selected_contract_q0\\artifacts\\2026-05-08\\stale-selected-quote",
+  "data_provenance": {
+    "cost_slippage_version": "paper-cost-v1",
+    "data_source_count": 8,
+    "source_ids": [
+      "D:/TradingData/captures/context_sessions/2026-05-08/live_20260508_092504_prod_pid19984/monthly_status.json",
+      "D:/TradingData/captures/context_sessions/2026-05-08/live_20260508_092504_prod_pid19984/ticks_context.csv",
+      "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_stale_selected_contract_q0\\paper.s23.yaml",
+      "fyers:quotes:nifty",
+      "normalized_snapshot:0915",
+      "normalized_snapshot:orpt",
+      "normalized_snapshot:rc"
+    ],
+    "source_types": [
+      "broker_fyers",
+      "live_paper_config",
+      "normalized_archive_export"
+    ],
+    "synthetic_fixture_used": true
+  },
+  "fill_phase": null,
+  "freshness": {
+    "planning_timestamp": null,
+    "selected_contract_captured_at": null,
+    "selected_contract_effective_timestamp": null,
+    "selected_contract_quote_age_seconds_at_planning": null,
+    "selected_contract_quote_present": false,
+    "stale_warning_present": false,
+    "warning_flags": []
+  },
+  "guardrail": {
+    "blocking_event_type": "SELECTED_CONTRACT_QUOTE",
+    "blocking_source_id": null,
+    "code": "stale_ingest_quote",
+    "message": "Paper quote event exceeded the allowed freshness window at ingestion time.",
+    "operator_action_required": "Refresh the affected live-paper data source before planning S23."
+  },
+  "lifecycle_phase": null,
+  "no_execution_disclaimer": "No order was placed, no fill was simulated, no position was opened, and no lifecycle monitoring occurred yet; this review covers planning and fillless pre-execution shell artifacts only.",
+  "order_intent": {
+    "available": false,
+    "blocking_event_type": null,
+    "blocking_source_id": null,
+    "bundle_validated": true,
+    "disclaimer": "No order was placed, no fill was simulated, no position was opened, and no lifecycle monitoring occurred yet; this is a pre-execution paper-shell journal.",
+    "dispatch_shell_status": null,
+    "execution_shell_status": null,
+    "fsl_price": null,
+    "future_fill_simulation_eligible": false,
+    "guardrail_code": null,
+    "guardrail_message": null,
+    "handoff_shell_status": null,
+    "historical_comparison_go_no_go": null,
+    "historical_comparison_reason": null,
+    "historical_comparison_status": null,
+    "lots": null,
+    "message": "No paper order intent created because the S23 paper session ended in ABORTED.",
+    "operator_action_required": "Refresh the affected live-paper data source before planning S23.",
+    "order_reference_label": null,
+    "order_reference_time": null,
+    "order_side": null,
+    "planned_entry_price": null,
+    "quantity": null,
+    "reason_code": "stale_ingest_quote",
+    "source_branch": null,
+    "source_workbook_rule": null,
+    "status": "INTENT_SKIPPED",
+    "stoploss_price": null,
+    "target_price": null,
+    "workbook_row_number": null
+  },
+  "order_plan": null,
+  "readiness_status": "ABORTED",
+  "replay_bundle": {
+    "bundle_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_stale_selected_contract_q0\\artifacts\\2026-05-08\\stale-selected-quote",
+    "errors": [],
+    "is_valid": true,
+    "manifest_present": true,
+    "terminal_reason_code": "stale_ingest_quote",
+    "terminal_state": "ABORTED",
+    "validation_performed": true,
+    "warnings": []
+  },
+  "runtime_contracts": {
+    "fill": null,
+    "intent": null,
+    "lifecycle": null,
+    "shell": {
+      "dispatch_shell_status": null,
+      "execution_shell_status": null,
+      "handoff_shell_status": null,
+      "historical_comparison_go_no_go": null,
+      "historical_comparison_reason": null,
+      "historical_comparison_status": null,
+      "intent_status": "INTENT_SKIPPED",
+      "selected_contract_symbol": "n/a",
+      "session_date": "2026-05-08",
+      "session_id": "stale-selected-quote",
+      "strategy_code": "S23",
+      "terminal_state": "ABORTED"
+    }
+  },
+  "selected_contract": {
+    "ask": null,
+    "available": false,
+    "bid": null,
+    "captured_at": null,
+    "effective_timestamp": null,
+    "expiry": null,
+    "ltp": null,
+    "oi": null,
+    "option_type": null,
+    "strike": null,
+    "symbol": null,
+    "volume": null
+  },
+  "session_date": "2026-05-08",
+  "session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_stale_selected_contract_q0\\artifacts\\2026-05-08\\stale-selected-quote",
+  "session_id": "stale-selected-quote",
+  "strategy_code": "S23",
+  "terminal_reason_code": "stale_ingest_quote",
+  "terminal_reason_message": "Paper quote event exceeded the allowed freshness window at ingestion time.",
+  "terminal_state": "ABORTED"
+}

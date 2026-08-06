@@ -1,0 +1,9 @@
+source_mode: broker_fyers_live_paper_ingress
+broker:
+  provider: fyers
+  timezone: Asia/Kolkata
+paper:
+  paper_mode_enabled: true
+  no_live_orders_allowed: false
+  kill_switch_enabled: true
+  session_kill_switch_active: false

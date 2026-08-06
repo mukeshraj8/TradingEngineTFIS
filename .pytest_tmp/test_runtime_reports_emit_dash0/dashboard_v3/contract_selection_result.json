@@ -1,0 +1,11 @@
+{
+  "decision_fact_stages": [
+    "CONTRACT_SELECTION"
+  ],
+  "schema_version": "tfis.dashboard_v3.contract_selection_result.v1",
+  "selected_contracts": [
+    "BANKNIFTY24JAN47000CE",
+    "NSE:RELIANCE26AUG1260CE",
+    "NIFTY_PHASE5C_PUT_FIXTURE"
+  ]
+}

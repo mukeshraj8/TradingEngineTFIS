@@ -1,0 +1,14 @@
+{
+  "existing_stack": {
+    "backend": "Python stdlib http.server plus static dashboard builder",
+    "decision": "REUSE_EXISTING_STATIC_LOCAL_STACK",
+    "existing_scripts": [
+      "scripts/build_operator_dashboard.py",
+      "scripts/serve_operator_dashboard.py"
+    ],
+    "frontend": "Generated static HTML/CSS/JavaScript",
+    "new_ui_framework_added": false
+  },
+  "reason": "Existing stack is local, read-only, dependency-light, broker-write free and suitable for deterministic internal-paper operations.",
+  "schema_version": "tfis.dashboard_v1.architecture_audit.v1"
+}

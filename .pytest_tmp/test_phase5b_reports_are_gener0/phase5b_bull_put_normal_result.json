@@ -1,0 +1,423 @@
+{
+  "accounting": {
+    "pnl_facts": [
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2026-06-05T15:01:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "1.25",
+        "currency": "INR",
+        "evidence_hash": "ed4d8c33b1fe4bc30964893927a738fb55b7b3d4640616d0a7850dee2215fb8e",
+        "fact_hash": "2ac75408ba231f8f8a62d780f9f1963728545f29ab4693dc0cfd34bb2d1c82fb",
+        "fact_type": "REALIZED_TRADE_PNL",
+        "gross_pnl": "5675.00",
+        "instrument": {
+          "contract": "NIFTY_BULL_PUT_PE",
+          "currency": "INR",
+          "direction": "CALL_SIDE_VERTICAL",
+          "exchange": "NSE",
+          "expiry": null,
+          "lot_size": 75,
+          "metadata_version": "tfis.option_selling.instrument.v1",
+          "multiplier": "1",
+          "option_type": "PUT",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": null,
+          "tick_size": "0.05",
+          "underlying": "NIFTY"
+        },
+        "metadata_version": "tfis.option_selling.instrument.v1",
+        "net_pnl": "5673.75",
+        "pnl_fact_id": "pnl-fact:6ac93558edf1e9544fd8be96",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "REALIZED",
+        "source_identities": {
+          "position_cycle_id": "ipc:bfe6688457352436a935d48b",
+          "source_fill_ids": [
+            "internal-fill:7b59f0d0adb5ac6b5948db60",
+            "internal-fill:d850d2467289a328380bdff9"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:9347f2292081558c7b0a4cca"
+        },
+        "strategy": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2026-06-05"
+      },
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT",
+        "as_of_timestamp": "2026-06-05T15:01:00+05:30",
+        "calculation_version": "tfis.short_option_accounting.v1",
+        "charges": "1.25",
+        "currency": "INR",
+        "evidence_hash": "a5a0bce0456fd594f07cbeaffb8f7fdd32d036448fd728d2999537467d78d0ae",
+        "fact_hash": "c442f03bf3275876000f2c41ac0cd96dc1d821ad748159bceb56c1c124ac6f25",
+        "fact_type": "CHARGE_ESTIMATE",
+        "gross_pnl": "0.00",
+        "instrument": {
+          "contract": "NIFTY_BULL_PUT_PE",
+          "currency": "INR",
+          "direction": "CALL_SIDE_VERTICAL",
+          "exchange": "NSE",
+          "expiry": null,
+          "lot_size": 75,
+          "metadata_version": "tfis.option_selling.instrument.v1",
+          "multiplier": "1",
+          "option_type": "PUT",
+          "product": "OPTION_SELLING",
+          "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+          "strike": null,
+          "tick_size": "0.05",
+          "underlying": "NIFTY"
+        },
+        "metadata_version": "tfis.option_selling.instrument.v1",
+        "net_pnl": "-1.25",
+        "pnl_fact_id": "pnl-fact:f4e8c7fe2d1c615429c0b1ea",
+        "quality_state": "PROVISIONAL_ESTIMATED_CHARGES",
+        "realized_unrealized": "CHARGE",
+        "source_identities": {
+          "position_cycle_id": "ipc:bfe6688457352436a935d48b",
+          "source_fill_ids": [
+            "internal-fill:7b59f0d0adb5ac6b5948db60",
+            "internal-fill:d850d2467289a328380bdff9"
+          ],
+          "supersession_reason": null,
+          "trade_fact_id": "trade-fact:9347f2292081558c7b0a4cca"
+        },
+        "strategy": "S23_NIFTY_ACCOUNT_A_PAPER",
+        "supersedes_pnl_fact_id": null,
+        "trading_date": "2026-06-05"
+      }
+    ],
+    "trade_fact": {
+      "accounting_truth": "INTERNAL_PAPER_ACCOUNTING_TRUTH",
+      "configuration_hash": "phase4i-s23-config",
+      "decision_context": {
+        "acknowledgements_affect_pnl": false,
+        "branch": "BULL_PUT",
+        "capital_or_margin_estimate": "5000.00",
+        "contract_observations": [
+          {
+            "price": "100.00"
+          },
+          {
+            "price": "85.00"
+          },
+          {
+            "price": "125.00"
+          }
+        ],
+        "fresh_carried": "FRESH_ENTRY",
+        "monthly_status": "BULLISH_CONFIRMED",
+        "normal_gap_path": "NORMAL_RETAINED",
+        "orpt_rc_path": "ORPT",
+        "planned_prices_are_not_pnl_inputs": true,
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "selected_contract_evidence": "PHASE4H_SELECTED_CONTRACT_FIXTURE",
+        "source_entry_rule_ids": [
+          "S23-BULL-PUT-AB6OS-165-166"
+        ],
+        "source_exit_rule_ids": [
+          "S23-BULL_PUT-TARGET"
+        ],
+        "source_plan_context_decision_hashes": {
+          "effective_plan": "phase3d-m3-s23-bull-call:premarket:m10-s23_bull_call_opening:execution:1",
+          "opening": "phase4i-opening",
+          "premarket": "phase4i-premarket"
+        }
+      },
+      "execution": {
+        "average_entry": "203.50",
+        "average_exit": "90.00",
+        "confirmed_entry_quantity": 50,
+        "confirmed_exit_quantity": 50,
+        "entry_fill_count": 1,
+        "exit_fill_count": 1,
+        "final_exit_timestamp": "2026-06-05T15:00:00+05:30",
+        "first_entry_timestamp": "2026-06-05T09:15:00+05:30",
+        "first_exit_timestamp": "2026-06-05T15:00:00+05:30",
+        "last_entry_timestamp": "2026-06-05T09:15:00+05:30",
+        "partial_exit": false,
+        "partial_fill": false,
+        "remaining_quantity": 0,
+        "requested_entry_quantity": 50
+      },
+      "fact_hash": "faae941e9dafd8fa88818fca50fcd76eb5efbfe6830f8e795facbbb8ad7184ff",
+      "final_trading_date": "2026-06-05",
+      "instrument": {
+        "contract": "NIFTY_BULL_PUT_PE",
+        "currency": "INR",
+        "direction": "CALL_SIDE_VERTICAL",
+        "exchange": "NSE",
+        "expiry": null,
+        "lot_size": 75,
+        "metadata_version": "tfis.option_selling.instrument.v1",
+        "multiplier": "1",
+        "option_type": "PUT",
+        "product": "OPTION_SELLING",
+        "quantity_unit": "PHASE4H_CONFIRMED_UNITS",
+        "strike": null,
+        "tick_size": "0.05",
+        "underlying": "NIFTY"
+      },
+      "lifecycle": {
+        "carry_forward_count": 0,
+        "eod_exit": false,
+        "final_exit_reason": "TARGET",
+        "original_sl_hit": false,
+        "original_sl_linked": false,
+        "revised_sl_hit": false,
+        "revised_sl_linked": false,
+        "target_hit": true,
+        "target_linked": false,
+        "terminal_state": "CLOSED",
+        "win_loss": "WIN"
+      },
+      "logical_paper_account": "INTERNAL_PAPER_ACCOUNT",
+      "originating_trading_date": "2026-07-30",
+      "performance_inputs": {
+        "accounting_quality": "PROVISIONAL_ESTIMATED_CHARGES",
+        "capital_or_margin_estimate": "5000.00",
+        "current_unrealized_pnl": "0.00",
+        "duration_seconds": 20700,
+        "gross_realized_pnl": "5675.00",
+        "mark_quality": "EXECUTABLE_SIDE",
+        "mfe_mae": {
+          "evidence_hash": "a98692eeb4958bb54cfc75a5ac41912cc6fc4682e82b9ccf260deca91250744b",
+          "mae": "-78.50",
+          "mfe": "118.50",
+          "observation_count": 3,
+          "quality": "COMPLETE"
+        },
+        "net_realized_pnl": "5673.75",
+        "provisional_charges": "1.25"
+      },
+      "position_cycle_id": "ipc:bfe6688457352436a935d48b",
+      "provenance": {
+        "correction_source": "NONE",
+        "reconciliation_quality": "INTERNAL_PAPER_ONLY_NOT_BROKER_RECONCILED",
+        "source_fill_ids": [
+          "internal-fill:7b59f0d0adb5ac6b5948db60",
+          "internal-fill:d850d2467289a328380bdff9"
+        ],
+        "source_hashes": {
+          "position_cycle_hash": "8e5a5067d17b462c2028e49de21cc0fbf92f91565f7511916c3a9d836ae4ea0b",
+          "position_event_ids": [
+            "phase4h-position-event"
+          ]
+        },
+        "source_lifecycle_requirement_ids": [],
+        "source_order_ids": [
+          "entry-order-0",
+          "TARGET-order"
+        ],
+        "source_position_event_ids": [
+          "phase4h-position-event"
+        ]
+      },
+      "rule_matrix_version": "s23_authoritative_matrix_phase3d_m13b",
+      "state": "CLOSED_PROVISIONAL",
+      "strategy_definition": "S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+      "strategy_family": "S23",
+      "strategy_instance": "S23_NIFTY_ACCOUNT_A_PAPER",
+      "strategy_version": "1.0.0",
+      "supersedes_trade_fact_id": null,
+      "trade_fact_id": "trade-fact:9347f2292081558c7b0a4cca",
+      "trade_fact_version": "tfis.short_option_accounting.v1",
+      "trade_id": "trade:ipc:bfe6688457352436a935d48b",
+      "trading_session_id": "NSE:2026-07-30"
+    }
+  },
+  "authority": "INTERNAL_PAPER_ONLY",
+  "branch": "BULL_PUT",
+  "case": "bull_put_target",
+  "contract_selection": {
+    "expiry_order": [
+      "NEAR",
+      "NEXT_IF_NEAR_FAILS"
+    ],
+    "fallback": "FAIL_CLOSED_IF_NEAR_AND_NEXT_DO_NOT_QUALIFY",
+    "oi_threshold": "500 Lots",
+    "option_type": "PUT",
+    "premium_phases": [
+      "IDEAL_PREMIUM",
+      "MINIMUM_PREMIUM"
+    ],
+    "rejected_candidates_preserved": true,
+    "selected_contract": "NIFTY_BULL_PUT_PE",
+    "status": "PASSED",
+    "strike_range": {
+      "end_cell": "G166",
+      "start_cell": "G165"
+    },
+    "traversal_direction": "START_TO_END_ASCENDING"
+  },
+  "effective_execution_plan": {
+    "authorized_time": "09:24:59",
+    "blocked_insufficient_evidence_plan": {
+      "reason": "MISSING_SOURCE_AUTHORITY_FAIL_CLOSED",
+      "status": "BLOCKED"
+    },
+    "branch": "BULL_PUT",
+    "effective_entry": "BASE_ENTRY",
+    "original_sl_msl": "SOURCE_BACKED_ORIGINAL_SL_MSL",
+    "rule_ids": [
+      "S23-BULL-PUT-AB6OS-165-166",
+      "S23-PUT-MISSED-ENTRY-OPTION-LOW"
+    ],
+    "status": "PASSED",
+    "target": "SOURCE_BACKED_TARGET"
+  },
+  "execution_intents": [
+    {
+      "branch": "BULL_PUT",
+      "option_type": "PUT",
+      "purpose": "ENTRY",
+      "status": "VALIDATED_NOT_SUBMITTABLE"
+    },
+    {
+      "branch": "BULL_PUT",
+      "option_type": "PUT",
+      "purpose": "TARGET",
+      "status": "VALIDATED_NOT_SUBMITTABLE"
+    },
+    {
+      "branch": "BULL_PUT",
+      "option_type": "PUT",
+      "purpose": "ORIGINAL_SL",
+      "status": "VALIDATED_NOT_SUBMITTABLE"
+    },
+    {
+      "branch": "BULL_PUT",
+      "option_type": "PUT",
+      "purpose": "REVISED_SL",
+      "status": "VALIDATED_NOT_SUBMITTABLE"
+    },
+    {
+      "branch": "BULL_PUT",
+      "option_type": "PUT",
+      "purpose": "EOD_EXIT",
+      "status": "VALIDATED_NOT_SUBMITTABLE"
+    }
+  ],
+  "external_broker_live_authority": "NONE",
+  "opening_context": {
+    "branch": "BULL_PUT",
+    "ce_events_can_satisfy": false,
+    "comparison": "OPTION_LOW < BASE_ENTRY",
+    "missed_entry_observation_source": "OPTION_LOW",
+    "normal_gap_path": "NORMAL_RETAINED",
+    "option_type": "PUT",
+    "wrong_strike_or_expiry_can_satisfy": false
+  },
+  "position_cycle": {
+    "exit_reason": "TARGET",
+    "option_type": "PUT",
+    "position_cycle_id": "ipc:bfe6688457352436a935d48b",
+    "remaining_quantity": 0
+  },
+  "premarket_plan": {
+    "base_entry": "OPT : PRV : 2DLL - 7.50%",
+    "branch": "BULL_PUT",
+    "original_sl_msl": "Min ( PE : Entry + 60.00% & OPT : PRV : 3DHH + 10.00% )",
+    "orpt": "09:24:59",
+    "plan_hash": "3e1d5d568538da3454f5f32d21f5fa03e0b43a24e58d5bd215b70f9977c24827",
+    "quantity": 50,
+    "rc": "09:29:59",
+    "rule_ids": [
+      "S23-BULL-PUT-AB6OS-165-166"
+    ],
+    "selected_contract": "NIFTY_BULL_PUT_PE",
+    "source_trace": {
+      "base_entry": "M165",
+      "end_strike": "G166",
+      "ideal_premium": "H165",
+      "minimum_premium": "H166",
+      "monthly_status": "D162",
+      "oi": "I165",
+      "option_type": "F165",
+      "original_sl_msl": "M166",
+      "start_strike": "G165",
+      "target": "O165"
+    },
+    "status": "PASSED",
+    "target": "PE : Entry - 60.00%"
+  },
+  "source_rule_ids": [
+    "S23-BULL-PUT-AB6OS-165-166"
+  ],
+  "status": "PASSED",
+  "trace": [
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "8bfd3960a18b528714bebf2b4748172c8503b510148018a580f7609715aafcf9",
+      "node_type": "MonthlyStatus",
+      "stable_id": "bull_put_target:MonthlyStatus"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "9ef9052a05a31e05a2ba69f27774f873033328f5fb54b9a812f99d097db0782a",
+      "node_type": "BranchResolution",
+      "stable_id": "bull_put_target:BranchResolution"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "2072ef7c45aede0202a0b93664eb600d81d9c47bcecc7b277c8f0f572c78a4d3",
+      "node_type": "ContractSelection",
+      "stable_id": "bull_put_target:ContractSelection"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "9f9e039714bc402d8d33942e72d97a59758ea753b1134f7079e38d61f41f6460",
+      "node_type": "EffectiveExecutionPlan",
+      "stable_id": "bull_put_target:EffectiveExecutionPlan"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "3ee74e29f9e4ac2a5512ac68250b2692b68d530b04a50546e258448bba8dabe1",
+      "node_type": "ExecutionIntent",
+      "stable_id": "bull_put_target:ExecutionIntent"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "280323b60c3e871363d603b6777984c2c950974677513e5f22821324ced2ab84",
+      "node_type": "ClientOrder",
+      "stable_id": "bull_put_target:ClientOrder"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "ab5dffd661dab3648dccda8f0760d38d8aa28c134b634ab90674b3b6b7014d2f",
+      "node_type": "InternalPaperFill",
+      "stable_id": "bull_put_target:InternalPaperFill"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "a21a096ef50cf44999f180d73ed69b44f1ca74caf529667456808c7fe0a16ec1",
+      "node_type": "PositionCycle",
+      "stable_id": "bull_put_target:PositionCycle"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "ca1c84123afa952daf49a9dc6a8807092e5819ac932b901bd269d7460f51ad74",
+      "node_type": "TradeFact",
+      "stable_id": "bull_put_target:TradeFact"
+    },
+    {
+      "authority": "INTERNAL_PAPER_ONLY",
+      "branch": "BULL_PUT",
+      "hash": "19f520b8ad1a13633e17b9039a1f5409dfeb14bd9cc839afbcaa83fb7ddbfc52",
+      "node_type": "PnLFact",
+      "stable_id": "bull_put_target:PnLFact"
+    }
+  ]
+}

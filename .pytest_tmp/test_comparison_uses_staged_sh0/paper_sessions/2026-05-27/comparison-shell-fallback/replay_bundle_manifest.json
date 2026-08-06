@@ -1,0 +1,38 @@
+{
+  "artifact_files": [
+    {
+      "relative_path": "audit_events.jsonl",
+      "sha256": "885d4f97f58af7ef97f95eed673e918e4c298a52821053decc616aa4c2532f4a",
+      "size_bytes": 3902
+    },
+    {
+      "relative_path": "decision_summary.json",
+      "sha256": "d439cb46ecdab381496f7113b99877e641a2f7e2fda70f58d7328b59ee8b10b1",
+      "size_bytes": 2480
+    },
+    {
+      "relative_path": "paper_order_plan.json",
+      "sha256": "67c814bdca703bdaaa2a8dd9d48125ecf6d6a7f1b371a614d0c251a038008c22",
+      "size_bytes": 1438
+    },
+    {
+      "relative_path": "selected_contract.json",
+      "sha256": "766f55b7cffeca29176f3a17c7a5402efa2f329cc26aed58881803bf7008ddfa",
+      "size_bytes": 673
+    },
+    {
+      "relative_path": "session_manifest.json",
+      "sha256": "08d4cc8f0de816bdbd5ab5f9df9d819ae830a33eaa5129e7dd12db1bfc9df2cd",
+      "size_bytes": 2189
+    }
+  ],
+  "bundle_version": 1,
+  "created_at": "2026-05-27T09:31:00+05:30",
+  "session_date": "2026-05-27",
+  "session_id": "comparison-shell-fallback",
+  "source_artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_comparison_uses_staged_sh0\\paper_sessions",
+  "source_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_comparison_uses_staged_sh0\\paper_sessions\\2026-05-27\\comparison-shell-fallback",
+  "strategy_code": "S23",
+  "terminal_reason_code": null,
+  "terminal_state": "ORDER_PLANNED"
+}

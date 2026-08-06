@@ -1,0 +1,38 @@
+{
+  "artifact_files": [
+    {
+      "relative_path": "audit_events.jsonl",
+      "sha256": "885d4f97f58af7ef97f95eed673e918e4c298a52821053decc616aa4c2532f4a",
+      "size_bytes": 3902
+    },
+    {
+      "relative_path": "decision_summary.json",
+      "sha256": "93e86985ea1f9aa2bd0ebd8e2989bab169f2662ab268de547ebd1d7f4fd50e34",
+      "size_bytes": 2477
+    },
+    {
+      "relative_path": "paper_order_plan.json",
+      "sha256": "4b83a67453a47cbd5cfde96a423a020d1f7b1cee7a781b987cad3b9195833bb4",
+      "size_bytes": 1404
+    },
+    {
+      "relative_path": "selected_contract.json",
+      "sha256": "766f55b7cffeca29176f3a17c7a5402efa2f329cc26aed58881803bf7008ddfa",
+      "size_bytes": 673
+    },
+    {
+      "relative_path": "session_manifest.json",
+      "sha256": "08d4cc8f0de816bdbd5ab5f9df9d819ae830a33eaa5129e7dd12db1bfc9df2cd",
+      "size_bytes": 2189
+    }
+  ],
+  "bundle_version": 1,
+  "created_at": "2026-05-27T09:31:00+05:30",
+  "session_date": "2026-05-27",
+  "session_id": "execution-manual-abort",
+  "source_artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_manual_abort_creates_exec0\\paper_sessions",
+  "source_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_manual_abort_creates_exec0\\paper_sessions\\2026-05-27\\execution-manual-abort",
+  "strategy_code": "S23",
+  "terminal_reason_code": null,
+  "terminal_state": "ORDER_PLANNED"
+}

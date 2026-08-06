@@ -1,0 +1,82 @@
+{
+  "branch_final_summary_json": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_summary.json"
+  },
+  "branch_final_summary_markdown": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_summary.md"
+  },
+  "branch_finalization_reason": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": "ORPT_BASE_ENTRY_VALID"
+  },
+  "branch_finalization_stage": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": "ORPT Snapshot"
+  },
+  "branch_finalization_trigger_time": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": "2026-05-28T09:25:00+05:30"
+  },
+  "branch_order_placement_block_reason": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": "OPEN_CARRY_FORWARD_POSITION"
+  },
+  "branch_order_placement_blocked": {
+    "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT": true
+  },
+  "branch_order_state_json": {},
+  "branch_position_state_json": {},
+  "final_summary_json": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_summary.json",
+  "final_summary_markdown": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_summary.md",
+  "if_past": "run_now",
+  "session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28",
+  "stages": [
+    {
+      "can_finalize_trade_decision": false,
+      "delay_seconds": 0.0,
+      "initial_check_time": "2026-05-28T09:16:00+05:30",
+      "monthly_status_json": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\monthly_status_stage_0916.json",
+      "monthly_status_markdown": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\monthly_status_stage_0916.md",
+      "schedule_note": "Scheduled run time 09:16 is already due; running immediately at 2026-05-28T09:16:00+05:30.",
+      "snapshot_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-0916-2026-05-28",
+      "stage_explainer_json": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_explainer_stage_0916.json",
+      "stage_explainer_markdown": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_explainer_stage_0916.md",
+      "stage_name": "Opening Snapshot",
+      "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+      "target_hour": 9,
+      "target_minute": 16,
+      "trigger_time": "2026-05-28T09:16:00+05:30"
+    },
+    {
+      "can_finalize_trade_decision": true,
+      "delay_seconds": 0.0,
+      "initial_check_time": "2026-05-28T09:25:00+05:30",
+      "monthly_status_json": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\monthly_status_stage_0925.json",
+      "monthly_status_markdown": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\monthly_status_stage_0925.md",
+      "schedule_note": "Scheduled run time 09:25 is already due; running immediately at 2026-05-28T09:25:00+05:30.",
+      "snapshot_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-0925-2026-05-28",
+      "stage_explainer_json": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_explainer_stage_0925.json",
+      "stage_explainer_markdown": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_explainer_stage_0925.md",
+      "stage_name": "ORPT Snapshot",
+      "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+      "target_hour": 9,
+      "target_minute": 25,
+      "trigger_time": "2026-05-28T09:25:00+05:30"
+    },
+    {
+      "can_finalize_trade_decision": true,
+      "delay_seconds": 0.0,
+      "initial_check_time": "2026-05-28T09:30:00+05:30",
+      "monthly_status_json": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\monthly_status_stage_0930.json",
+      "monthly_status_markdown": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\monthly_status_stage_0930.md",
+      "schedule_note": "Scheduled run time 09:30 is already due; running immediately at 2026-05-28T09:30:00+05:30.",
+      "snapshot_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-0930-2026-05-28",
+      "stage_explainer_json": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_explainer_stage_0930.json",
+      "stage_explainer_markdown": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_explainer_stage_0930.md",
+      "stage_name": "RC Snapshot",
+      "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+      "target_hour": 9,
+      "target_minute": 30,
+      "trigger_time": "2026-05-28T09:30:00+05:30"
+    }
+  ],
+  "timeline_json": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_explainer.json",
+  "timeline_markdown": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_morning_supervised_runner1\\artifacts\\2026-05-28\\timeline-test-2026-05-28\\trade_decision_explainer.md",
+  "timezone": "Asia/Kolkata"
+}

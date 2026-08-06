@@ -1,0 +1,7 @@
+{
+  "broker_order_authority": "NONE",
+  "dashboard": "TFIS Professional Operations Dashboard",
+  "frontend_formula_calculation": false,
+  "projection_hash": "f34fd73b54acb73f598fce09fc2fde6ae958b92cbed3a8201840affcc6849656",
+  "snapshot": "api/snapshot.json"
+}

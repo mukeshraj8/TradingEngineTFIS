@@ -1,0 +1,22 @@
+{
+  "not_implemented_in_this_milestone": [
+    "BULL_PUT",
+    "BEAR_CALL",
+    "BEAR_PUT"
+  ],
+  "reason": "S21 first branch is limited to BULL_CALL because BULL_CF maps to the Bull branch and this branch has complete source closure.",
+  "rule_ids": [
+    "S21.MONTHLY_STATUS_TO_BRANCH.001",
+    "S21.BULL_CALL.STATIC.001",
+    "S21.CONTRACT_SELECTION.001",
+    "S21.FRESH_ENTRY_ORPT_RC.001",
+    "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001",
+    "GLOBAL.OPTION_SELLING.APS_NOT_APPLICABLE_ONE_LOT.001"
+  ],
+  "selected_branch": "BULL_CALL",
+  "selected_branch_unique_code": "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+  "selection_hash": "85f30a29b63e14e68bd8364fe10824e3f23a3343d0efe1a9ce9b39b9584f5098",
+  "source_monthly_status": "BULL_CF",
+  "strategy_definition_id": "S21_BANKNIFTY_OP_SELL_MONTHLY",
+  "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER"
+}

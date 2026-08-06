@@ -1,0 +1,90 @@
+{
+  "architecture_boundary_verdict": "PASS",
+  "capability_reuse_gate": [
+    {
+      "capability": "Monthly Status",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Market Structure",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Contract Selection",
+      "change_required": "S21 policy only",
+      "reuse": true
+    },
+    {
+      "capability": "Gap/Missed Entry",
+      "change_required": "No; S21 uses ORPT/RC only",
+      "reuse": true
+    },
+    {
+      "capability": "Entry Engine",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Runtime",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Persistence",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Reconciliation",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "ExecutionIntent",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "AccountCoordinator",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Order Simulation",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "PositionCycle",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Accounting",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "TradeFact",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "PnLFact",
+      "change_required": "No",
+      "reuse": true
+    }
+  ],
+  "common_pipeline_reuse_percentage": "100.00",
+  "configuration_change_count": 0,
+  "generic_files_changed": [],
+  "limitations": [],
+  "reuse_report_hash": "43ebb95e188d36e0875230f88d1208b32f058be2d269dfb6bd25e262b22e8034",
+  "runtime_generic_change_count": 0,
+  "s21_specific_files_changed": [
+    "src/tfis/adapters/phase5d/s21_first_branch.py"
+  ],
+  "schema_version": "s21.platform_reuse.first_branch.v1"
+}

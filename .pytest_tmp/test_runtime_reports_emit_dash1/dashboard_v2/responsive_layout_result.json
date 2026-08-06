@@ -1,0 +1,6 @@
+{
+  "filters_sticky": true,
+  "primary_horizontal_scroll_contract": "NO_PRIMARY_PAGE_MANDATORY_HORIZONTAL_SCROLL_ON_NORMAL_DESKTOP_WIDTH",
+  "schema_version": "tfis.dashboard_v2.responsive_layout_result.v1",
+  "secondary_data_in_drawers_or_expanders": true
+}

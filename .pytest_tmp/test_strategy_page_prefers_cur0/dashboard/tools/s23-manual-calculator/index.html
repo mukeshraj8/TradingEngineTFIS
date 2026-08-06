@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>S23 Manual Calculator</title>
+  <style>
+    :root { --bg: #f4f6f8; --card: #ffffff; --ink: #111827; --muted: #5b6675; --accent: #0f766e; --accent-2: #475569; --border: #d8dee8; --soft-border: #e6ebf2; --soft-fill: #f8fafc; --good: #15803d; --bad: #b42318; --pending: #b7791f; --unknown: #4f46e5; }
+    body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.45; }
+    a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+    .hero { padding: 26px 40px 18px; border-bottom: 1px solid var(--border); background: #ffffff; }
+    .hero h1 { margin: 0 0 8px; font-size: 1.85rem; letter-spacing: 0; }
+    .freshness-bar { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; justify-content: space-between; padding: 9px 40px; border-bottom: 1px solid var(--border); background: #eef6f5; color: #134e4a; font-size: 0.82rem; }
+    .freshness-bar code { color: inherit; background: transparent; padding: 0; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.78rem; font-weight: 700; margin-bottom: 10px; }
+    nav { padding: 16px 40px 0; }
+    section { padding: 24px 40px; }
+    .grid, .stage-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .strategy-card, .stage-card, .session-summary { display: block; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05); }
+    .strategy-card { transition: transform 160ms ease, box-shadow 160ms ease; } .strategy-card:hover { transform: translateY(-2px); box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08); text-decoration: none; }
+    .strategy-card h2, .stage-card h3 { margin: 0 0 8px; font-family: 'Segoe UI', Arial, sans-serif; }
+    .summary-shell { padding: 22px; }
+    .summary-shell + .summary-shell { margin-top: 14px; }
+    .summary-grid, .stage-metrics, .decision-strip { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .metric { background: var(--soft-fill); border: 1px solid var(--soft-border); border-radius: 8px; padding: 11px 12px; min-width: 0; }
+    .metric span { display: block; color: var(--muted); font-size: 0.76rem; line-height: 1.2; margin-bottom: 6px; font-weight: 700; }
+    .metric strong, .metric .value { font-size: 0.98rem; line-height: 1.25; font-weight: 750; overflow-wrap: anywhere; }
+    .metric-row { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 8px 0; border-top: 1px dashed #e5d9c8; }
+    .metric-row:first-of-type { border-top: 0; }
+    .stage-topline { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .snapshot-panel { padding: 0; overflow: hidden; }
+    .stage-summary { display: block; cursor: pointer; list-style: none; padding: 18px 20px; }
+    .stage-summary::-webkit-details-marker { display: none; }
+    .stage-summary .stage-topline::before { content: '▶'; color: var(--accent); font-size: 0.78rem; margin-top: 4px; transition: transform 160ms ease; }
+    .snapshot-panel[open] .stage-summary .stage-topline::before { transform: rotate(90deg); }
+    .stage-detail { padding: 0 20px 20px; border-top: 1px solid var(--soft-border); }
+    .stage-detail .stage-metrics { margin-top: 16px; }
+    .badge-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .badge { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 4px 9px; font-size: 0.72rem; line-height: 1.15; font-weight: 750; letter-spacing: 0; border: 1px solid currentColor; white-space: nowrap; }
+    .badge-ready, .badge-pass, .badge-selected, .badge-bull, .badge-bear, .badge-bull_cf, .badge-bear_cf, .badge-yes { color: var(--good); background: rgba(33,110,57,0.09); }
+    .badge-in_progress, .badge-unknown, .badge-no_trigger, .badge-n_a, .badge-none { color: var(--unknown); background: rgba(91,95,151,0.1); }
+    .badge-active { color: var(--good); background: rgba(21,128,61,0.09); }
+    .badge-warning, .badge-pending, .badge-stale, .badge-degraded { color: var(--pending); background: rgba(183,121,31,0.12); }
+    .badge-no_go, .badge-failed, .badge-rejected, .badge-fail, .badge-unavailable, .badge-no { color: var(--bad); background: rgba(180,35,24,0.1); }
+    .badge-position_closed, .badge-close { color: #0f766e; background: rgba(15,118,110,0.12); }
+    .badge-order_not_filled { color: #b45309; background: rgba(180,83,9,0.13); }
+    .badge-order_waiting_for_trigger, .badge-order_waiting { color: #4338ca; background: rgba(67,56,202,0.11); }
+    .badge-fresh_entry, .badge-fresh_entry_required, .badge-reverse_entry, .badge-rollover { color: #92400e; background: rgba(217,119,6,0.14); }
+    .focus-panel { margin: 14px 0; padding: 14px 16px; border-radius: 8px; background: #fff9f0; border: 1px solid #e9dcc7; }
+    .focus-panel p { margin: 0 0 10px; } .focus-panel p:last-child { margin-bottom: 0; }
+    .rule-step-panel, .formula-panel, .candidate-panel { margin-top: 14px; padding-top: 12px; border-top: 1px dashed #e1d3bd; }
+    .rule-step-panel h4, .formula-panel h4, .candidate-panel h4 { margin: 0 0 10px; font-size: 1rem; }
+    .candidate-table { display: block; overflow-x: auto; font-size: 0.86rem; border-radius: 8px; }
+    .candidate-table thead, .candidate-table tbody { display: table; width: 100%; }
+    .candidate-table th, .candidate-table td { vertical-align: top; }
+    .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .section-heading h3 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; }
+    .section-heading span { color: var(--muted); font-size: 0.82rem; font-weight: 650; }
+    .final-leg-panel { overflow-x: auto; }
+    .final-leg-table { display: table; table-layout: fixed; width: 100%; min-width: 1260px; overflow: hidden; font-size: 0.82rem; }
+    .final-leg-table thead, .final-leg-table tbody { display: table-row-group; width: auto; }
+    .final-leg-table thead { display: table-header-group; }
+    .final-leg-table th, .final-leg-table td { padding: 10px 12px; vertical-align: middle; }
+    .final-leg-table th:nth-child(1), .final-leg-table td:nth-child(1) { width: 190px; }
+    .final-leg-table th:nth-child(2), .final-leg-table td:nth-child(2) { width: 230px; }
+    .final-leg-table th:nth-child(3), .final-leg-table td:nth-child(3) { width: 100px; }
+    .final-leg-table th:nth-child(4), .final-leg-table td:nth-child(4) { width: 90px; }
+    .final-leg-table th:nth-child(5), .final-leg-table td:nth-child(5) { width: 80px; }
+    .final-leg-table th:nth-child(6), .final-leg-table td:nth-child(6) { width: 90px; }
+    .final-leg-table th:nth-child(7), .final-leg-table td:nth-child(7) { width: 105px; }
+    .final-leg-table th:nth-child(8), .final-leg-table td:nth-child(8) { width: 90px; }
+    .final-leg-table th:nth-child(9), .final-leg-table td:nth-child(9) { width: 90px; }
+    .final-leg-table th:nth-child(10), .final-leg-table td:nth-child(10) { width: 80px; }
+    .final-leg-table th:nth-child(11), .final-leg-table td:nth-child(11) { width: 170px; }
+    .final-leg-table th { color: #405047; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; }
+    .final-leg-table tbody tr:nth-child(even) td { background: #fffaf3; }
+    .text-cell { text-align: left; }
+    .number-cell { text-align: right; font-variant-numeric: tabular-nums; }
+    .status-cell { text-align: center; }
+    .expiry-cell { white-space: nowrap; font-variant-numeric: tabular-nums; color: #43524a; }
+    .reason-cell { white-space: normal; overflow-wrap: anywhere; word-break: normal; line-height: 1.35; }
+    .code-cell { font-family: Consolas, 'Courier New', monospace; font-size: 0.78rem; overflow-wrap: anywhere; }
+    .contract-cell strong { display: inline-block; font-family: Consolas, 'Courier New', monospace; font-size: 0.82rem; background: #f6efe4; border: 1px solid #e3d6c2; border-radius: 6px; padding: 3px 6px; white-space: nowrap; }
+    .side-cell { font-weight: 800; color: var(--accent); white-space: nowrap; }
+    .final-leg-table .code-cell { font-size: 0.76rem; line-height: 1.3; }
+    .final-leg-table .contract-cell strong { box-sizing: border-box; max-width: 100%; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; font-size: 0.78rem; padding: 4px 7px; }
+    .final-leg-table .side-cell { font-size: 0.78rem; letter-spacing: 0; }
+    .final-leg-table .number-cell { white-space: nowrap; }
+    .final-leg-table .badge { font-size: 0.66rem; padding: 4px 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+    .leg-explanation-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(520px, 100%), 1fr)); gap: 16px; align-items: start; }
+    .explanation-panel { cursor: default; }
+    .explanation-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; list-style: none; }
+    .explanation-summary::-webkit-details-marker { display: none; }
+    .explanation-summary::before { content: '▶'; color: var(--accent); font-size: 0.82rem; transition: transform 160ms ease; }
+    .explanation-panel[open] .explanation-summary::before { transform: rotate(90deg); }
+    .explanation-summary span { font-family: Georgia, 'Times New Roman', serif; font-size: 1.12rem; font-weight: 700; }
+    .explanation-summary small { color: var(--muted); font-size: 0.82rem; font-weight: 650; }
+    .explanation-panel[open] .focus-panel { margin-top: 16px; }
+    .leg-explanation-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+    .leg-explanation-nav a { padding: 6px 10px; border-radius: 999px; border: 1px solid var(--soft-border); background: #fff8ef; font-size: 0.82rem; font-weight: 700; }
+    .leg-explanation-card { border: 1px solid var(--soft-border); border-radius: 8px; background: #fffaf3; padding: 16px; min-width: 0; }
+    .leg-explanation-card h3 { margin: 0 0 12px; font-size: 1rem; color: var(--accent); font-family: Georgia, 'Times New Roman', serif; }
+    .eligible-strike-panel { margin: 14px 0; }
+    .eligible-strike-panel h4 { margin: 0 0 10px; font-size: 0.98rem; color: var(--ink); font-family: 'Segoe UI', Arial, sans-serif; font-weight: 800; }
+    .eligible-strike-table { display: table; table-layout: fixed; width: 100%; overflow: hidden; font-size: 0.86rem; }
+    .eligible-strike-table thead, .eligible-strike-table tbody { display: table-row-group; width: auto; }
+    .eligible-strike-table thead { display: table-header-group; }
+    .eligible-strike-table th, .eligible-strike-table td { padding: 11px 14px; vertical-align: middle; }
+    .eligible-strike-table th { font-size: 0.74rem; letter-spacing: 0.04em; }
+    .eligible-strike-table th.number-cell, .eligible-strike-table td.number-cell { text-align: right; font-variant-numeric: tabular-nums; }
+    .eligible-strike-table th.text-cell, .eligible-strike-table td.text-cell { text-align: left; }
+    .eligible-strike-table th.status-cell, .eligible-strike-table td.status-cell { text-align: center; }
+    .eligible-strike-table th:nth-child(1), .eligible-strike-table td:nth-child(1) { width: 88px; }
+    .eligible-strike-table th:nth-child(2), .eligible-strike-table td:nth-child(2) { width: 240px; }
+    .eligible-strike-table th:nth-child(3), .eligible-strike-table td:nth-child(3), .eligible-strike-table th:nth-child(4), .eligible-strike-table td:nth-child(4), .eligible-strike-table th:nth-child(5), .eligible-strike-table td:nth-child(5) { width: 112px; }
+    .eligible-strike-table th:nth-child(6), .eligible-strike-table td:nth-child(6) { width: 116px; }
+    .eligible-strike-table .contract-cell strong { display: inline-block; max-width: 100%; box-sizing: border-box; font-size: 0.78rem; padding: 4px 7px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+    .eligible-strike-table .badge { min-width: 78px; }
+    .table-help { margin: 0 0 12px; color: var(--ink); font-size: 0.9rem; line-height: 1.45; }
+    .full-scan-panel { margin-top: 14px; border: 1px solid var(--soft-border); border-radius: 8px; background: #fffaf3; overflow: hidden; }
+    .full-scan-panel summary { cursor: pointer; padding: 11px 14px; color: var(--accent); font-weight: 800; list-style: none; border-bottom: 1px solid transparent; }
+    .full-scan-panel summary::-webkit-details-marker { display: none; }
+    .full-scan-panel summary::before { content: '▶'; display: inline-block; margin-right: 8px; font-size: 0.78rem; transition: transform 160ms ease; }
+    .full-scan-panel[open] summary { border-bottom-color: var(--soft-border); }
+    .full-scan-panel[open] summary::before { transform: rotate(90deg); }
+    .full-scan-panel .table-help { margin: 12px 14px; }
+    .full-scan-table-wrap { overflow-x: auto; padding-bottom: 4px; }
+    .full-scan-table { table-layout: fixed; width: 100%; min-width: 1180px; border-left: 0; border-right: 0; border-bottom: 0; border-radius: 0; font-size: 0.79rem; }
+    .full-scan-table th, .full-scan-table td { padding: 9px 10px; vertical-align: middle; }
+    .full-scan-table th { font-size: 0.68rem; line-height: 1.2; }
+    .full-scan-table th:nth-child(1), .full-scan-table td:nth-child(1) { width: 72px; }
+    .full-scan-table th:nth-child(2), .full-scan-table td:nth-child(2) { width: 96px; }
+    .full-scan-table th:nth-child(3), .full-scan-table td:nth-child(3) { width: 250px; }
+    .full-scan-table th:nth-child(4), .full-scan-table td:nth-child(4) { width: 90px; }
+    .full-scan-table th:nth-child(5), .full-scan-table td:nth-child(5) { width: 104px; }
+    .full-scan-table th:nth-child(6), .full-scan-table td:nth-child(6) { width: 118px; }
+    .full-scan-table th:nth-child(7), .full-scan-table td:nth-child(7) { width: 112px; }
+    .full-scan-table th:nth-child(8), .full-scan-table td:nth-child(8) { width: 338px; }
+    .full-scan-table .contract-cell strong { font-size: 0.72rem; padding: 3px 6px; max-width: 230px; }
+    .full-scan-table .badge { min-width: 76px; font-size: 0.64rem; padding: 3px 8px; }
+    .full-scan-table .reason-cell { color: var(--muted); font-size: 0.76rem; line-height: 1.3; white-space: normal; overflow-wrap: normal; word-break: normal; }
+    .explanation-list { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+    .explanation-list li { padding-left: 4px; }
+    .explanation-table { margin-top: 14px; }
+    .rule-step-table th, .rule-step-table td { padding: 8px 10px; vertical-align: top; text-align: left; }
+    .rule-step-table td:first-child { width: 70px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+    .rule-step-table td:nth-child(2) { width: 160px; font-weight: 700; }
+    .compact-error { margin-top: 10px; }
+    .artifact-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; font-size: 0.9rem; }
+    .artifact-links a { padding: 6px 10px; border-radius: 999px; background: #f4ecdf; border: 1px solid #e4d6c1; font-size: 0.82rem; }
+    .top-links { margin-top: 16px; }
+    .trade-summary { margin-bottom: 14px; }
+    .trade-table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+    .trade-table { display: table; table-layout: fixed; width: 100%; min-width: 1620px; border: 0; border-radius: 0; font-family: 'Segoe UI', Arial, sans-serif; font-size: 0.82rem; line-height: 1.32; }
+    .trade-table th, .trade-table td { padding: 10px 10px; vertical-align: top; }
+    .trade-table th { color: #3f493f; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .trade-table .badge { display: inline-flex; max-width: 100%; padding: 4px 8px; font-size: 0.68rem; line-height: 1; white-space: nowrap; }
+    .trade-table tbody tr.trade-row-closed td { background: rgba(15, 118, 110, 0.07); }
+    .trade-table tbody tr.trade-row-action td { background: rgba(217, 119, 6, 0.08); }
+    .trade-table tbody tr.trade-row-not-filled td { background: rgba(180, 83, 9, 0.08); }
+    .trade-table tbody tr.trade-row-waiting td { background: rgba(67, 56, 202, 0.07); }
+    .trade-table tbody tr.trade-row-open td { background: rgba(14, 116, 144, 0.07); }
+    .trade-table tbody tr.trade-row-neutral td { background: transparent; }
+    .history-filter-shell { display: grid; gap: 14px; margin-bottom: 14px; }
+    .history-filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .historical-summary-grid { margin-top: 0; }
+    .historical-table-wrap { margin-top: 8px; }
+    .historical-trade-table { min-width: 1480px; }
+    .good-text { color: #0f766e; }
+    .bad-text { color: #b45309; }
+    .trade-time { width: 105px; white-space: normal; }
+    .trade-event { width: 118px; text-align: center; }
+    .trade-strategy { width: 95px; overflow-wrap: anywhere; }
+    .trade-contract { width: 185px; overflow-wrap: anywhere; }
+    .trade-side { width: 82px; }
+    .trade-number { width: 78px; text-align: right; font-variant-numeric: tabular-nums; }
+    .trade-current { width: 112px; white-space: nowrap; }
+    .trade-stream { width: 150px; text-align: left; }
+    .stream-cell { display: grid; gap: 3px; min-width: 0; }
+    .stream-cell .status-badges { margin-bottom: 2px; }
+    .stream-cell .muted-text { font-size: 0.72rem; }
+    .price-label { color: var(--muted); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.03em; }
+    .trade-status { width: 275px; }
+    .trade-manage { width: 185px; }
+    .trade-links { margin-top: 0; min-width: 0; gap: 6px; }
+    .trade-links a { padding: 5px 9px; }
+    .status-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
+    .trade-reason { color: var(--ink); font-size: 0.78rem; }
+    .trade-followup-note { display: block; margin-top: 4px; color: var(--muted); font-size: 0.74rem; }
+    .compact-cell { display: grid; gap: 3px; min-width: 0; }
+    .compact-cell strong { display: block; min-width: 0; overflow-wrap: anywhere; }
+    .compact-cell .muted-text { font-size: 0.74rem; }
+    .contract-compact strong { font-family: Consolas, 'Courier New', monospace; font-size: 0.78rem; }
+    .code-text { font-family: Consolas, 'Courier New', monospace; overflow-wrap: anywhere; }
+    .muted-text { color: var(--muted); font-size: 0.82rem; word-break: break-word; }
+    .empty-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; color: var(--muted); }
+    .tool-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+    .operator-nav-strip { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+    .operator-nav-link { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--soft-border); background: #ffffff; color: #334155; border-radius: 8px; padding: 8px 12px; font-size: 0.84rem; font-weight: 700; }
+    .operator-nav-link:hover { text-decoration: none; border-color: rgba(15,118,110,0.42); color: var(--accent); }
+    .operator-nav-link-active { background: var(--accent); color: white; border-color: var(--accent); }
+    .operator-status-shell { display: grid; gap: 14px; padding: 18px 20px; }
+    .operator-health-strip { display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); gap: 10px; align-items: stretch; }
+    .operator-health-item { min-width: 0; border: 1px solid var(--soft-border); border-radius: 8px; background: var(--soft-fill); padding: 10px 12px; }
+    .operator-health-item span { display: block; color: var(--muted); font-size: 0.72rem; line-height: 1.2; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 7px; }
+    .operator-health-value { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; min-width: 0; color: var(--ink); font-weight: 800; font-variant-numeric: tabular-nums; }
+    .operator-status-groups { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 12px; align-items: start; }
+    .operator-status-group { min-width: 0; border: 1px solid var(--soft-border); border-radius: 8px; background: #ffffff; overflow: hidden; }
+    .operator-status-group h3 { margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--soft-border); background: #f8fafc; color: #334155; font-size: 0.8rem; font-family: 'Segoe UI', Arial, sans-serif; font-weight: 850; text-transform: uppercase; letter-spacing: 0.04em; }
+    .operator-status-group-body { display: grid; gap: 0; }
+    .operator-status-item { display: grid; grid-template-columns: minmax(105px, 0.9fr) minmax(0, 1.4fr); gap: 10px; align-items: center; min-width: 0; padding: 10px 12px; border-top: 1px solid #eef2f7; }
+    .operator-status-item:first-child { border-top: 0; }
+    .operator-status-item span { color: var(--muted); font-size: 0.76rem; line-height: 1.25; font-weight: 750; }
+    .operator-status-value { min-width: 0; color: var(--ink); font-size: 0.9rem; line-height: 1.28; font-weight: 760; overflow-wrap: anywhere; }
+    .operator-status-item-compact { grid-template-columns: minmax(150px, 0.35fr) minmax(0, 1fr); align-items: start; }
+    .operator-status-item-compact .operator-status-value { font-family: Consolas, 'Courier New', monospace; font-size: 0.78rem; color: #334155; }
+    .operator-diagnostics { border: 1px solid var(--soft-border); border-radius: 8px; background: #ffffff; overflow: hidden; }
+    .operator-diagnostics summary { cursor: pointer; list-style: none; padding: 10px 12px; color: #334155; font-weight: 850; text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.78rem; }
+    .operator-diagnostics summary::-webkit-details-marker { display: none; }
+    .operator-diagnostics summary::before { content: '+'; display: inline-flex; width: 18px; margin-right: 8px; color: var(--accent); font-weight: 900; }
+    .operator-diagnostics[open] summary::before { content: '-'; }
+    .operator-diagnostics-grid { display: grid; gap: 0; border-top: 1px solid var(--soft-border); }
+    .operator-alert-list { display: grid; gap: 10px; }
+    .operator-alert { border-radius: 8px; padding: 11px 12px; border: 1px solid var(--soft-border); background: #ffffff; color: var(--ink); font-weight: 650; }
+    .operator-alert-good { border-color: rgba(21,128,61,0.28); background: rgba(21,128,61,0.07); color: var(--good); }
+    .operator-alert-warning { border-color: rgba(183,121,31,0.34); background: rgba(183,121,31,0.09); color: #8a5a12; }
+    .operator-alert-bad { border-color: rgba(180,35,24,0.28); background: rgba(180,35,24,0.08); color: var(--bad); }
+    .operator-command-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+    .operator-command-strip code { display: inline-flex; align-items: center; border: 1px solid var(--soft-border); border-radius: 8px; background: #f8fafc; padding: 7px 10px; font-size: 0.78rem; overflow-wrap: anywhere; }
+    @media (max-width: 1280px) { .operator-health-strip { grid-template-columns: repeat(3, minmax(150px, 1fr)); } .operator-status-groups { grid-template-columns: repeat(2, minmax(240px, 1fr)); } }
+    @media (max-width: 720px) { .operator-health-strip, .operator-status-groups { grid-template-columns: 1fr; } .operator-status-item, .operator-status-item-compact { grid-template-columns: 1fr; gap: 4px; } }
+    .chart-review-summary p { margin: 0 0 14px; }
+    .chart-review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(520px, 100%), 1fr)); gap: 18px; }
+    .chart-review-card { border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 18px; display: grid; gap: 14px; }
+    .chart-review-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .chart-review-card-header h3 { margin: 4px 0 0; font-size: 1.05rem; overflow-wrap: anywhere; }
+    .chart-review-price { font-size: 1.3rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .chart-review-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+    .chart-review-meta { border: 1px solid var(--soft-border); border-radius: 8px; padding: 8px 10px; background: #fffaf3; }
+    .chart-review-meta span { display: block; color: var(--muted); font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .chart-review-meta strong { display: block; margin-top: 4px; font-size: 0.92rem; overflow-wrap: anywhere; }
+    .selected-contract-chart-wrap { border: 1px solid #263348; border-radius: 10px; background: #0d1320; overflow: hidden; }
+    .selected-contract-chart { display: block; width: 100%; height: 240px; }
+    .selected-contract-chart-bg { fill: #0d1320; }
+    .selected-contract-chart-axis { stroke: #526174; stroke-width: 1; }
+    .selected-contract-chart-line { fill: none; stroke: #2dd4bf; stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; }
+    .selected-contract-chart-dot { fill: #facc15; stroke: #0d1320; stroke-width: 2; }
+    .selected-contract-chart-label { fill: #d6dee9; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .chart-review-empty { display: grid; place-items: center; min-height: 240px; border: 1px dashed #3d4d63; border-radius: 10px; background: #111827; color: #cbd5e1; padding: 16px; text-align: center; }
+    .chart-review-links { display: flex; gap: 12px; flex-wrap: wrap; }
+    .chart-review-links a { font-weight: 700; }
+    .tool-link, button { display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--accent); background: var(--accent); color: white; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; font: inherit; }
+    .tool-link:hover, button:hover { text-decoration: none; filter: brightness(0.95); }
+    button[type='button'] { background: #fff8ef; color: var(--accent); }
+    .calculator-shell { display: grid; grid-template-columns: 1fr; gap: 20px; padding: 24px 40px; }
+    .calc-panel { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; box-shadow: 0 16px 32px rgba(47,39,22,0.07); }
+    .market-chart-panel { padding: 0; overflow: hidden; }
+    .chart-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px; border-bottom: 1px solid var(--soft-border); }
+    .chart-heading h2 { margin: 0 0 4px; font-size: 1.15rem; }
+    .chart-subtitle { color: var(--muted); font-size: 0.86rem; font-weight: 650; }
+    .chart-tabs { display: inline-flex; gap: 6px; padding: 4px; border: 1px solid var(--soft-border); border-radius: 10px; background: #f7efe2; }
+    .chart-tab { border: 0; border-radius: 7px; padding: 7px 11px; background: transparent; color: var(--muted); font-size: 0.82rem; }
+    .chart-tab.active { background: var(--accent); color: #fff; }
+    .chart-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 10px; padding: 14px 18px 0; }
+    .chart-chip { border: 1px solid #273447; background: #121a27; color: #d6dee9; border-radius: 8px; padding: 8px 10px; min-width: 0; }
+    .chart-chip span { display: block; color: #8ea0b6; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .chart-chip strong { display: block; margin-top: 3px; color: #f5f7fb; font-size: 0.94rem; overflow-wrap: anywhere; }
+    .chart-inspector { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; padding: 10px 18px 0; }
+    .inspector-cell { border: 1px solid #d9cdbb; background: #fff8ee; border-radius: 8px; padding: 7px 9px; min-width: 0; }
+    .inspector-cell span { display: block; color: var(--muted); font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; }
+    .inspector-cell strong { display: block; margin-top: 2px; color: var(--ink); font-size: 0.88rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+    .chart-level-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; padding: 12px 18px 0; color: var(--muted); font-size: 0.82rem; font-weight: 750; }
+    .chart-level-controls label { display: inline-flex; grid-auto-flow: column; align-items: center; gap: 6px; width: auto; color: inherit; font-size: inherit; }
+    .chart-level-controls input { width: auto; accent-color: var(--accent); }
+    .chart-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; padding: 10px 18px 0; }
+    .legend-item { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; border: 1px solid var(--soft-border); background: #fffaf3; border-radius: 8px; padding: 8px 10px; }
+    .legend-item i { display: block; height: 0; margin-top: 10px; border-top: 3px dashed currentColor; }
+    .legend-item strong { display: block; font-size: 0.8rem; color: var(--ink); }
+    .legend-item strong span { color: var(--muted); font-weight: 750; }
+    .legend-item em { display: block; color: var(--muted); font-size: 0.74rem; font-style: normal; line-height: 1.25; }
+    .legend-monthly { color: #f59e0b; } .legend-monthly-low { color: #38bdf8; } .legend-weekly { color: #a78bfa; } .legend-weekly-low { color: #34d399; } .legend-current { color: #f43f5e; } .legend-current i { border-top-style: solid; } .legend-review { color: #475569; }
+    .chart-wrap { position: relative; margin: 14px 18px 18px; min-height: 360px; border: 1px solid #263348; border-radius: 10px; background: #0d1320; overflow: hidden; }
+    .ohlc-chart { display: block; width: 100%; height: min(58vh, 560px); min-height: 360px; font-family: 'Segoe UI', Arial, sans-serif; }
+    .chart-bg { fill: #0d1320; }
+    .chart-grid-line { stroke: #253149; stroke-width: 1; }
+    .chart-axis { stroke: #526174; stroke-width: 1; }
+    .chart-axis-label, .chart-x-label { fill: #9aa9bb; font-size: 13px; font-variant-numeric: tabular-nums; }
+    .chart-x-label { text-anchor: middle; font-size: 11px; }
+    .chart-candle line { stroke-width: 1.4; }
+    .chart-candle.up line, .chart-candle.up rect { stroke: #00b386; fill: #00a077; }
+    .chart-candle.down line, .chart-candle.down rect { stroke: #ff5b64; fill: #e94d5a; }
+    .chart-hilo { fill: #dbe5f0; font-size: 11px; font-weight: 650; paint-order: stroke; stroke: #0d1320; stroke-width: 3px; stroke-linejoin: round; }
+    .chart-high { fill: #f7c948; }
+    .chart-low { fill: #7dd3fc; }
+    .chart-reference line { stroke-width: 1.5; stroke-dasharray: 7 5; }
+    .chart-reference text { font-size: 12px; font-weight: 750; paint-order: stroke; stroke: #0d1320; stroke-width: 3px; stroke-linejoin: round; }
+    .chart-reference-monthly-high line, .chart-reference-monthly-high text, .chart-reference-current-month-high line, .chart-reference-current-month-high text { stroke: #f59e0b; fill: #f59e0b; }
+    .chart-reference-monthly-low line, .chart-reference-monthly-low text, .chart-reference-current-month-low line, .chart-reference-current-month-low text { stroke: #38bdf8; fill: #38bdf8; }
+    .chart-reference-weekly-high line, .chart-reference-weekly-high text, .chart-reference-current-week-high line, .chart-reference-current-week-high text { stroke: #a78bfa; fill: #a78bfa; }
+    .chart-reference-weekly-low line, .chart-reference-weekly-low text, .chart-reference-current-week-low line, .chart-reference-current-week-low text { stroke: #34d399; fill: #34d399; }
+    .chart-reference-current-price line { stroke-width: 2; stroke-dasharray: 0; }
+    .chart-reference-current-price line, .chart-reference-current-price text { stroke: #f43f5e; fill: #f43f5e; }
+    .chart-review-marker line { stroke: #f8fafc; stroke-width: 1.2; stroke-dasharray: 3 6; opacity: 0.72; }
+    .chart-review-marker text { fill: #f8fafc; font-size: 12px; font-weight: 800; paint-order: stroke; stroke: #0d1320; stroke-width: 3px; }
+    .chart-hit-area { fill: transparent; pointer-events: all; cursor: crosshair; }
+    .chart-crosshair line { stroke: #b8c7da; stroke-width: 1; stroke-dasharray: 4 4; opacity: 0.86; pointer-events: none; }
+    .chart-crosshair rect { fill: #111827; stroke: #3d4d63; stroke-width: 1; opacity: 0.96; pointer-events: none; }
+    .chart-crosshair text { fill: #f8fafc; font-size: 12px; font-weight: 750; text-anchor: middle; font-variant-numeric: tabular-nums; pointer-events: none; }
+    #crosshairPriceLabel { text-anchor: start; }
+    .chart-tooltip { position: absolute; z-index: 3; width: 104px; max-width: calc(100% - 24px); padding: 8px 9px; border: 1px solid #40506a; border-radius: 8px; background: rgba(15, 23, 42, 0.92); color: #e5edf7; box-shadow: 0 10px 22px rgba(0,0,0,0.26); pointer-events: none; }
+    .tooltip-title { font-weight: 850; color: #fff; margin-bottom: 2px; }
+    .tooltip-subtitle { color: #9fb0c5; font-size: 0.76rem; margin-bottom: 9px; }
+    .tooltip-grid { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; font-size: 0.78rem; }
+    .tooltip-grid.compact { gap: 3px 8px; }
+    .tooltip-grid span { color: #9fb0c5; }
+    .tooltip-grid strong { color: #f8fafc; font-variant-numeric: tabular-nums; }
+    .chart-empty { position: absolute; inset: 0; display: grid; place-items: center; color: #aeb9c8; font-weight: 700; background: rgba(13,19,32,0.82); }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 14px; }
+    label { display: grid; gap: 6px; color: var(--muted); font-weight: 700; font-size: 0.88rem; }
+    input, select, textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 10px; padding: 9px 10px; background: #fffaf2; color: var(--ink); font: inherit; }
+    textarea { min-height: 150px; resize: vertical; font-family: Consolas, 'Courier New', monospace; font-size: 0.88rem; }
+    .form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .two-column-output { display: grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 18px; margin: 12px 0 18px; }
+    .strike-editor { display: grid; gap: 6px; }
+    .strike-row { display: grid; grid-template-columns: 92px repeat(4, minmax(92px, 1fr)); gap: 8px; align-items: center; padding: 8px; border: 1px solid #eadcc9; border-radius: 10px; background: #fff8ef; }
+    .strike-row-header { background: #f4eadb; color: var(--muted); font-size: 0.78rem; font-weight: 700; }
+    .strike-row input { padding: 7px 8px; border-radius: 8px; }
+    .strike-value { font-weight: 700; }
+    .result-summary { margin-bottom: 16px; }
+    .trace-list { display: grid; gap: 8px; padding-left: 22px; }
+    .trace-list li { padding: 8px 10px; background: #fff8ef; border: 1px solid #eadcc9; border-radius: 10px; }
+    .error-box { padding: 12px; border: 1px solid var(--bad); color: var(--bad); background: rgba(154,52,18,0.08); border-radius: 10px; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: #f2e8d8; color: #405047; font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 800; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .risk-table { display: block; overflow-x: auto; white-space: nowrap; }
+    .risk-table tbody, .risk-table thead { display: table; width: 100%; }
+    .active-risk-row td { background: rgba(15,94,89,0.08); }
+    @media (max-width: 980px) { .two-column-output { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .strike-row { grid-template-columns: 1fr 1fr; } .strike-row-header { display: none; } }
+    @media (max-width: 720px) { .hero, section, nav, .calculator-shell { padding-left: 18px; padding-right: 18px; } }
+  </style>
+</head>
+<body>
+<div class="freshness-bar"><span>Dashboard built at <code>2026-08-06T21:18:27+05:30</code></span><span>Serving refreshes rebuild stale pages automatically; use dashboard refresh for an immediate rebuild.</span></div>
+<div class="operator-nav-strip"><a class="operator-nav-link" href="../../index.html">Operator Home</a><a class="operator-nav-link" href="../../trades/index.html">Active Trades Monitor</a><a class="operator-nav-link" href="../../orders/index.html">Orders Manager</a><a class="operator-nav-link" href="../../trades/history/index.html">Historical Trades</a><a class="operator-nav-link" href="../charts/index.html">Charts</a><a class="operator-nav-link" href="../monthly-status-calculator/index.html">Monthly Status Calculator</a><a class="operator-nav-link operator-nav-link-active" href="index.html">Manual S23 Calculator</a><a class="operator-nav-link" href="../../strategies/S23/index.html">S23</a></div>
+<header class="hero">
+  <div class="eyebrow">Review Mode</div>
+  <h1>S23 Manual Calculator</h1>
+  <p>Enter reference levels, calculate eligible strikes, add premium/OI values, and review the final S23 entry, target, stoploss, and strike selection.</p>
+</header>
+<main class="calculator-shell">
+  <section class="calc-panel">
+    <h2>Manual Inputs</h2>
+    <div id="s23-calculator-form">
+      <div class="form-grid">
+        <label>Monthly Group<select id="monthlyGroup"><option value="bullish">Bullish / Bullish Confirmed</option><option value="bearish">Bearish / Bearish Confirmed</option></select></label>
+        <label>Strike Step<input id="strikeStep" type="number" step="50" value="50"></label>
+        <label>NIFTY Lot Size<input id="lotSize" type="number" step="1" value="65"></label>
+        <label>Minimum OI Lots<input id="minOiLots" type="number" step="1" value="500"></label>
+        <label>Near Contract Label<input id="nearLabel" value="near"></label>
+        <label>Next Contract Label<input id="nextLabel" value="next"></label>
+        <label>Review Date<input id="reviewDate" type="date"></label>
+        <label>Strike Buffer %<input id="strikeBufferPct" type="number" step="0.05" value="1.2"></label>
+        <label>Ideal Premium %<input id="idealPremiumPct" type="number" step="0.05" value="1.20"></label>
+        <label>Minimum Premium %<input id="minimumPremiumPct" type="number" step="0.05" value="0.90"></label>
+        <label>Entry Discount %<input id="entryDiscountPct" type="number" step="0.05" value="7.5"></label>
+        <label>Target %<input id="targetPct" type="number" step="0.05" value="60.0"></label>
+        <label>SL Entry %<input id="slEntryPct" type="number" step="0.05" value="60.0"></label>
+        <label>SL Ref 2DHH %<input id="slRef2dhhPct" type="number" step="0.05" value="7.0"></label>
+        <label>SL Ref 3DHH %<input id="slRef3dhhPct" type="number" step="0.05" value="10.0"></label>
+      </div>
+
+      <h3>Spot References</h3>
+      <div class="form-grid">
+        <label>PRV 2DHH<input id="d2hh" type="number" step="0.05" value="24108.20"></label>
+        <label>PRV 2DLL<input id="d2ll" type="number" step="0.05" value="23888.20"></label>
+        <label>PRV 3DHH<input id="d3hh" type="number" step="0.05" value="24108.20"></label>
+        <label>PRV 3DLL<input id="d3ll" type="number" step="0.05" value="23817.80"></label>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="calculateStrikes">CalculateStrikes</button>
+        <button type="button" id="fetchS23Data">Fetch Captured Premium/OI</button>
+      </div>
+      <div id="fetchStatus" class="result-summary"></div>
+    </div>
+  </section>
+
+  <section class="calc-panel output-panel">
+    <h2>Eligible Strikes</h2>
+    <div id="strikeSummary" class="result-summary"></div>
+    <div class="two-column-output">
+      <div>
+        <h3>Eligible CE Strikes</h3>
+        <div id="ceStrikeRows" class="strike-editor"></div>
+      </div>
+      <div>
+        <h3>Eligible PE Strikes</h3>
+        <div id="peStrikeRows" class="strike-editor"></div>
+      </div>
+    </div>
+    <div id="finalStrikeSummary" class="result-summary"></div>
+  </section>
+
+  <section class="calc-panel output-panel">
+    <h2>Rule Sheet Steps</h2>
+    <div id="manualRuleSteps" class="result-summary"></div>
+  </section>
+
+  <section class="calc-panel output-panel">
+      <h3>Option Reference Premiums</h3>
+      <div class="form-grid">
+        <label>OPT PRV 2DHH<input id="opt2dhh" type="number" step="0.05" value="242"></label>
+        <label>OPT PRV 2DLL<input id="opt2dll" type="number" step="0.05" value="210"></label>
+        <label>OPT PRV 3DHH<input id="opt3dhh" type="number" step="0.05" value="220"></label>
+        <label>OPT PRV 3DLL<input id="opt3dll" type="number" step="0.05" value="230"></label>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" id="calculateRisk">Calculate</button>
+        <button type="button" id="loadBearPut">Load Bear PE Sample</button>
+        <button type="button" id="loadBullCall">Load Bull CE Sample</button>
+      </div>
+    <h2>Calculated Result</h2>
+    <div id="resultSummary" class="result-summary"></div>
+    <ol id="calculationSteps" class="trace-list"></ol>
+  </section>
+</main>
+<script>
+const BRANCHES = {
+  bullish: {
+    CE: { trade: "Sell Call", spotRef: "d3ll", entryRef: "opt3dll", slRef: "opt2dhh", slPctId: "slRef2dhhPct", direction: "down" },
+    PE: { trade: "Sell Put", spotRef: "d2hh", entryRef: "opt2dll", slRef: "opt3dhh", slPctId: "slRef3dhhPct", direction: "up" }
+  },
+  bearish: {
+    CE: { trade: "Sell Call", spotRef: "d2ll", entryRef: "opt2dll", slRef: "opt3dhh", slPctId: "slRef3dhhPct", direction: "down" },
+    PE: { trade: "Sell Put", spotRef: "d3hh", entryRef: "opt3dll", slRef: "opt2dhh", slPctId: "slRef2dhhPct", direction: "up" }
+  }
+};
+
+function number(id) {
+  const value = Number(document.getElementById(id).value);
+  if (!Number.isFinite(value)) throw new Error(`${id} must be a number`);
+  return value;
+}
+function text(id) { return document.getElementById(id).value.trim(); }
+function setDefaultDate() { if (!text("reviewDate")) document.getElementById("reviewDate").value = new Date().toISOString().slice(0, 10); }
+function roundDown(value, step) { return Math.floor(value / step) * step; }
+function roundUp(value, step) { return Math.ceil(value / step) * step; }
+function fmt(value) { return Number.isFinite(value) ? value.toFixed(2).replace(/\.00$/, "") : "n/a"; }
+function branchLabel(group, side) {
+  return `${group === "bullish" ? "Bullish / Bullish Confirmed" : "Bearish / Bearish Confirmed"} ${side}`;
+}
+function refs() {
+  return {
+    d2hh: number("d2hh"), d2ll: number("d2ll"), d3hh: number("d3hh"), d3ll: number("d3ll"),
+    opt2dhh: number("opt2dhh"), opt2dll: number("opt2dll"), opt3dhh: number("opt3dhh"), opt3dll: number("opt3dll")
+  };
+}
+function strikePlan(group, side) {
+  const branch = BRANCHES[group][side];
+  const step = number("strikeStep");
+  const strikeBufferPct = number("strikeBufferPct");
+  const idealPremiumPct = number("idealPremiumPct");
+  const minimumPremiumPct = number("minimumPremiumPct");
+  const ref = refs()[branch.spotRef];
+  const start = branch.direction === "down" ? roundDown(ref * (1 + strikeBufferPct / 100), step) : roundUp(ref * (1 - strikeBufferPct / 100), step);
+  const end = branch.direction === "down" ? roundDown(ref, step) - step : roundUp(ref, step) + step;
+  const low = Math.min(start, end);
+  const high = Math.max(start, end);
+  const strikes = [];
+  if (start > end) {
+    for (let strike = start; strike >= end; strike -= step) strikes.push(strike);
+  } else {
+    for (let strike = start; strike <= end; strike += step) strikes.push(strike);
+  }
+  return { group, side, branch, ref, start, end, low, high, strikes, idealPremium: ref * (idealPremiumPct / 100), minimumPremium: ref * (minimumPremiumPct / 100) };
+}
+function inputValue(selector) {
+  const element = document.querySelector(selector);
+  if (!element) return Number.NaN;
+  return Number(element.value);
+}
+function renderStrikeRows(targetId, plan) {
+  const target = document.getElementById(targetId);
+  target.innerHTML = `
+    <div class="strike-row strike-row-header">
+      <span>Strike</span><span>Near Premium</span><span>Near OI</span><span>Next Premium</span><span>Next OI</span>
+    </div>
+    ${plan.strikes.map((strike, index) => `
+      <div class="strike-row" data-side="${plan.side}" data-strike="${strike}">
+        <span class="strike-value">${fmt(strike)}</span>
+        <input data-role="near-premium" type="number" step="0.05" value="${index === 0 ? fmt(plan.idealPremium) : ""}">
+        <input data-role="near-oi" type="number" step="1" value="">
+        <input data-role="next-premium" type="number" step="0.05" value="">
+        <input data-role="next-oi" type="number" step="1" value="">
+      </div>`).join("")}`;
+}
+function readStrikeRows(side) {
+  return [...document.querySelectorAll(`.strike-row[data-side="${side}"]`)].map(row => ({
+    side,
+    strike: Number(row.dataset.strike),
+    nearPremium: Number(row.querySelector('[data-role="near-premium"]').value),
+    nearOi: Number(row.querySelector('[data-role="near-oi"]').value),
+    nextPremium: Number(row.querySelector('[data-role="next-premium"]').value),
+    nextOi: Number(row.querySelector('[data-role="next-oi"]').value)
+  }));
+}
+function rowQualified(row, contract, plan, minOiContracts) {
+  const premium = contract === "near" ? row.nearPremium : row.nextPremium;
+  const oi = contract === "near" ? row.nearOi : row.nextOi;
+  if (!Number.isFinite(premium) || !Number.isFinite(oi)) return false;
+  return oi >= minOiContracts && premium >= plan.minimumPremium;
+}
+function selectFromRows(rows, plan, minOiContracts) {
+  const nearRows = rows.filter(row => rowQualified(row, "near", plan, minOiContracts));
+  const nearIdeal = nearRows.find(row => row.nearPremium >= plan.idealPremium);
+  if (nearIdeal) return { row: nearIdeal, contract: text("nearLabel") || "near", premium: nearIdeal.nearPremium, oi: nearIdeal.nearOi, reason: "Near contract ideal premium qualified." };
+  if (nearRows.length) {
+    const row = [...nearRows].reverse()[0];
+    return { row, contract: text("nearLabel") || "near", premium: row.nearPremium, oi: row.nearOi, reason: "Near contract minimum premium fallback qualified." };
+  }
+  const nextRows = rows.filter(row => rowQualified(row, "next", plan, minOiContracts));
+  const nextIdeal = nextRows.find(row => row.nextPremium >= plan.idealPremium);
+  if (nextIdeal) return { row: nextIdeal, contract: text("nextLabel") || "next", premium: nextIdeal.nextPremium, oi: nextIdeal.nextOi, reason: "Near contract failed; next contract ideal premium qualified." };
+  if (nextRows.length) {
+    const row = [...nextRows].reverse()[0];
+    return { row, contract: text("nextLabel") || "next", premium: row.nextPremium, oi: row.nextOi, reason: "Near contract failed; next contract minimum premium fallback qualified." };
+  }
+  return { row: null, contract: "", premium: Number.NaN, oi: Number.NaN, reason: "No near or next contract row met minimum OI and minimum premium." };
+}
+function calculateStrikes() {
+  const group = text("monthlyGroup");
+  const cePlan = strikePlan(group, "CE");
+  const pePlan = strikePlan(group, "PE");
+  renderStrikeRows("ceStrikeRows", cePlan);
+  renderStrikeRows("peStrikeRows", pePlan);
+  document.getElementById("strikeSummary").innerHTML = `
+    <div class="summary-grid">
+      <div class="metric"><span>CE Range</span><div class="value">${fmt(cePlan.start)} -> ${fmt(cePlan.end)}</div></div>
+      <div class="metric"><span>CE Ideal / Min</span><div class="value">${fmt(cePlan.idealPremium)} / ${fmt(cePlan.minimumPremium)}</div></div>
+      <div class="metric"><span>PE Range</span><div class="value">${fmt(pePlan.start)} -> ${fmt(pePlan.end)}</div></div>
+      <div class="metric"><span>PE Ideal / Min</span><div class="value">${fmt(pePlan.idealPremium)} / ${fmt(pePlan.minimumPremium)}</div></div>
+    </div>`;
+  updateFinalStrikes();
+}
+async function fetchJson(path) {
+  const response = await fetch(path, { cache: "no-store" });
+  if (!response.ok) throw new Error(`Unable to load ${path}: HTTP ${response.status}`);
+  return response.json();
+}
+function applyCapturedS23Data(payload) {
+  const expiries = [...new Set((payload.contracts || []).map(row => row.expiry).filter(Boolean))].sort();
+  const nearExpiry = expiries[0];
+  const nextExpiry = expiries[1];
+  let applied = 0;
+  for (const side of ["CE", "PE"]) {
+    for (const row of document.querySelectorAll(`.strike-row[data-side="${side}"]`)) {
+      const strike = Number(row.dataset.strike);
+      const near = (payload.contracts || []).find(item => item.option_type === side && Number(item.strike) === strike && item.expiry === nearExpiry);
+      const next = (payload.contracts || []).find(item => item.option_type === side && Number(item.strike) === strike && item.expiry === nextExpiry);
+      if (near) {
+        row.querySelector('[data-role="near-premium"]').value = near.premium ?? "";
+        row.querySelector('[data-role="near-oi"]').value = near.oi ?? "";
+        applied += 1;
+      }
+      if (next) {
+        row.querySelector('[data-role="next-premium"]').value = next.premium ?? "";
+        row.querySelector('[data-role="next-oi"]').value = next.oi ?? "";
+        applied += 1;
+      }
+    }
+  }
+  updateFinalStrikes();
+  return { applied, nearExpiry, nextExpiry };
+}
+async function fetchCapturedS23Data() {
+  setDefaultDate();
+  calculateStrikes();
+  const date = text("reviewDate");
+  const index = await fetchJson("../../data/review/strategies/S23/index.json");
+  const dataPath = index.dates && index.dates[date];
+  if (!dataPath) throw new Error(`No captured S23 review data found for ${date}. Run a snapshot for that date first.`);
+  const payload = await fetchJson(`../../${dataPath}`);
+  const result = applyCapturedS23Data(payload);
+  document.getElementById("fetchStatus").innerHTML = `<div class="metric"><span>Captured Data</span><div class="value">Loaded ${result.applied} values for ${date}. Near expiry: ${result.nearExpiry || "n/a"}; next expiry: ${result.nextExpiry || "n/a"}.</div></div>`;
+}
+function updateFinalStrikes() {
+  const group = text("monthlyGroup");
+  const minOiContracts = number("minOiLots") * number("lotSize");
+  const cePlan = strikePlan(group, "CE");
+  const pePlan = strikePlan(group, "PE");
+  const ce = selectFromRows(readStrikeRows("CE"), cePlan, minOiContracts);
+  const pe = selectFromRows(readStrikeRows("PE"), pePlan, minOiContracts);
+  document.getElementById("finalStrikeSummary").innerHTML = `
+    <div class="summary-grid">
+      <div class="metric"><span>Final CE Strike</span><div class="value">${ce.row ? `${fmt(ce.row.strike)} ${ce.contract}` : "No qualified CE"}</div></div>
+      <div class="metric"><span>Final CE Premium / OI</span><div class="value">${ce.row ? `${fmt(ce.premium)} / ${fmt(ce.oi)}` : "n/a"}</div></div>
+      <div class="metric"><span>CE Reason</span><div class="value">${ce.reason}</div></div>
+      <div class="metric"><span>Final PE Strike</span><div class="value">${pe.row ? `${fmt(pe.row.strike)} ${pe.contract}` : "No qualified PE"}</div></div>
+      <div class="metric"><span>Final PE Premium / OI</span><div class="value">${pe.row ? `${fmt(pe.premium)} / ${fmt(pe.oi)}` : "n/a"}</div></div>
+      <div class="metric"><span>PE Reason</span><div class="value">${pe.reason}</div></div>
+    </div>`;
+  return { CE: ce, PE: pe };
+}
+function riskForSide(group, side, selectedBySide) {
+  const plan = strikePlan(group, side);
+  const branch = plan.branch;
+  const refValues = refs();
+  const selected = selectedBySide[side];
+  const entryReference = refValues[branch.entryRef];
+  const entryDiscountPct = number("entryDiscountPct");
+  const targetPct = number("targetPct");
+  const slEntryPct = number("slEntryPct");
+  const slReferencePct = number(branch.slPctId);
+  const entry = entryReference * (1 - entryDiscountPct / 100);
+  const target = entry * (1 - targetPct / 100);
+  const percentSl = entry * (1 + slEntryPct / 100);
+  const structureReference = refValues[branch.slRef];
+  const structureSl = structureReference * (1 + slReferencePct / 100);
+  const stoploss = Math.min(percentSl, structureSl);
+  return {
+    side,
+    plan,
+    branch,
+    selected,
+    entryReference,
+    entry,
+    target,
+    percentSl,
+    structureReference,
+    slReferencePct,
+    structureSl,
+    stoploss,
+    status: selected.row ? "READY" : "NO ORDER"
+  };
+}
+function riskRowHtml(result) {
+  const selected = result.selected;
+  const strike = selected.row ? fmt(selected.row.strike) : "n/a";
+  const contract = selected.row ? selected.contract : "n/a";
+  const premium = selected.row ? fmt(selected.premium) : "n/a";
+  const oi = selected.row ? fmt(selected.oi) : "n/a";
+  return `<tr>
+    <td>${result.side}</td>
+    <td>${result.branch.trade}</td>
+    <td>${result.branch.spotRef.toUpperCase()}</td>
+    <td>${fmt(result.plan.start)} -> ${fmt(result.plan.end)}</td>
+    <td>${strike}</td>
+    <td>${contract}</td>
+    <td>${premium}</td>
+    <td>${oi}</td>
+    <td>${result.branch.entryRef.toUpperCase()} = ${fmt(result.entryReference)}</td>
+    <td>${fmt(result.entry)}</td>
+    <td>${fmt(result.target)}</td>
+    <td>${result.branch.slRef.toUpperCase()} = ${fmt(result.structureReference)}</td>
+    <td>${fmt(result.stoploss)}</td>
+    <td>${result.status}</td>
+  </tr>`;
+}
+function calculate() {
+  const group = text("monthlyGroup");
+  const selectedBySide = updateFinalStrikes();
+  const ce = riskForSide(group, "CE", selectedBySide);
+  const pe = riskForSide(group, "PE", selectedBySide);
+  const minOiContracts = number("minOiLots") * number("lotSize");
+
+  const summary = document.getElementById("resultSummary");
+  summary.innerHTML = `
+    <table class="risk-table">
+      <thead>
+        <tr>
+          <th>Side</th><th>Trade</th><th>Spot Ref</th><th>Strike Range</th><th>Final Strike</th><th>Contract</th><th>Premium</th><th>OI</th><th>Entry Ref</th><th>Entry</th><th>Target</th><th>SL Ref</th><th>Final SL</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${riskRowHtml(ce)}
+        ${riskRowHtml(pe)}
+      </tbody>
+    </table>`;
+  renderManualRuleSteps(group, ce, pe, minOiContracts);
+  const steps = [
+    `${branchLabel(group, "CE")}: spot ref ${ce.branch.spotRef.toUpperCase()} = ${fmt(ce.plan.ref)}, range ${fmt(ce.plan.start)} -> ${fmt(ce.plan.end)}, final strike ${ce.selected.row ? fmt(ce.selected.row.strike) : "not selected"}; ${ce.selected.reason}`,
+    `${branchLabel(group, "PE")}: spot ref ${pe.branch.spotRef.toUpperCase()} = ${fmt(pe.plan.ref)}, range ${fmt(pe.plan.start)} -> ${fmt(pe.plan.end)}, final strike ${pe.selected.row ? fmt(pe.selected.row.strike) : "not selected"}; ${pe.selected.reason}`,
+    `Minimum OI = ${fmt(number("minOiLots"))} lots * ${fmt(number("lotSize"))} = ${fmt(minOiContracts)} contracts. Manual OI fields are used on this static review page.`,
+    `CE final calculation: entry = ${ce.branch.entryRef.toUpperCase()} ${fmt(ce.entryReference)} - ${fmt(number("entryDiscountPct"))}% = ${fmt(ce.entry)}; target = entry - ${fmt(number("targetPct"))}% = ${fmt(ce.target)}; SL = min(entry + ${fmt(number("slEntryPct"))}% = ${fmt(ce.percentSl)}, ${ce.branch.slRef.toUpperCase()} + ${fmt(ce.slReferencePct)}% = ${fmt(ce.structureSl)}) = ${fmt(ce.stoploss)}.`,
+    `PE final calculation: entry = ${pe.branch.entryRef.toUpperCase()} ${fmt(pe.entryReference)} - ${fmt(number("entryDiscountPct"))}% = ${fmt(pe.entry)}; target = entry - ${fmt(number("targetPct"))}% = ${fmt(pe.target)}; SL = min(entry + ${fmt(number("slEntryPct"))}% = ${fmt(pe.percentSl)}, ${pe.branch.slRef.toUpperCase()} + ${fmt(pe.slReferencePct)}% = ${fmt(pe.structureSl)}) = ${fmt(pe.stoploss)}.`
+  ];
+  document.getElementById("calculationSteps").innerHTML = steps.map(stepText => `<li>${stepText}</li>`).join("");
+}
+function renderManualRuleSteps(group, ce, pe, minOiContracts) {
+  const groupLabel = group === "bullish" ? "Bullish group: evaluate CE Sell Call and PE Sell Put" : "Bearish group: evaluate CE Sell Call and PE Sell Put";
+  const ceFinal = ce.selected.row ? `${fmt(ce.selected.row.strike)} ${ce.selected.contract}` : "No qualified CE";
+  const peFinal = pe.selected.row ? `${fmt(pe.selected.row.strike)} ${pe.selected.contract}` : "No qualified PE";
+  const rows = [
+    ["Step 1", "Preparation date/time", text("reviewDate") || "today"],
+    ["Step 2", "Monthly status", text("monthlyGroup") === "bullish" ? "BULLISH / BULLISH_CONFIRMED" : "BEARISH / BEARISH_CONFIRMED"],
+    ["Step 3", "Rule group", groupLabel],
+    ["Step 4", "Strike range", `CE ${fmt(ce.plan.start)} -> ${fmt(ce.plan.end)}; PE ${fmt(pe.plan.start)} -> ${fmt(pe.plan.end)}`],
+    ["Step 5", "Near contract search", `${ce.selected.reason}; ${pe.selected.reason}`],
+    ["Step 6", "Minimum OI", `${fmt(number("minOiLots"))} lots * ${fmt(number("lotSize"))} = ${fmt(minOiContracts)} contracts`],
+    ["Step 7", "Final weekly options", `CE: ${ceFinal}; PE: ${peFinal}`],
+    ["Step 8", "Entry / Target / SL", `CE ${fmt(ce.entry)} / ${fmt(ce.target)} / ${fmt(ce.stoploss)}; PE ${fmt(pe.entry)} / ${fmt(pe.target)} / ${fmt(pe.stoploss)}`],
+  ];
+  document.getElementById("manualRuleSteps").innerHTML = `
+    <table class="candidate-table rule-step-table">
+      <thead><tr><th>Step</th><th>Rule Sheet Item</th><th>Manual Review Value</th></tr></thead>
+      <tbody>${rows.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join("")}</tbody>
+    </table>`;
+}
+document.getElementById("calculateStrikes").addEventListener("click", () => { try { calculateStrikes(); } catch (error) { document.getElementById("strikeSummary").innerHTML = `<div class="error-box">${error.message}</div>`; } });
+document.getElementById("fetchS23Data").addEventListener("click", async () => { try { await fetchCapturedS23Data(); } catch (error) { document.getElementById("fetchStatus").innerHTML = `<div class="error-box">${error.message}</div>`; } });
+document.getElementById("calculateRisk").addEventListener("click", () => { try { calculate(); } catch (error) { document.getElementById("resultSummary").innerHTML = `<div class="error-box">${error.message}</div>`; } });
+document.addEventListener("input", event => { if (event.target.closest(".strike-editor")) updateFinalStrikes(); });
+document.getElementById("loadBearPut").addEventListener("click", () => { document.getElementById("monthlyGroup").value = "bearish"; calculateStrikes(); calculate(); });
+document.getElementById("loadBullCall").addEventListener("click", () => { document.getElementById("monthlyGroup").value = "bullish"; calculateStrikes(); calculate(); });
+setDefaultDate();
+calculateStrikes();
+calculate();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+targets:
+  - strategy_code: S23
+    config_path: config/paper.s23.yaml
+    artifact_root: data/strategies/S23/fyers_morning_supervised_decision
+    process_lock_root: tmp/process_locks/s23_paper_watch
+    strategy_path: config/strategies/options_sell/nifty/S23_NIFTY_OP_SELL_WK_DIFF_2D_3D
+    reference_packet_path: config/reference_packets/s23_bear_put_live_decision_reference.json
+    session_id_prefix: s23-fyers-morning-supervised-decision
+    executor: paper_morning_supervised
+    runner_script_path: scripts/run_s23_fyers_0916_supervised_decision.py
+    wrapper_script_path: scripts/start_s23_fyers_morning_supervised_decision.ps1

@@ -1,0 +1,86 @@
+{
+  "abort_reasons": [],
+  "artifact_version": 1,
+  "execution_summary_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_selected_contract2\\dry_runs\\2026-05-08\\archive-ingress-no-selected\\execution_summary.json",
+  "explicit_disclaimer": "Ingress-only dry run: no order was placed, no fill was simulated, and no lifecycle monitoring occurred.",
+  "go_no_go": "NO_GO: the normalized ingress dry run ended in NO_TRADE due to `missing_selected_contract_quote` before an intent-only handoff could be accepted.",
+  "ingress_health_metrics": {
+    "late_event_count": 0,
+    "max_quote_age_seconds_at_finalize": null,
+    "max_snapshot_arrival_lag_seconds": 2.0,
+    "missing_option_chain_count": 0,
+    "missing_selected_contract_count": 1,
+    "no_trade_rate": 1.0,
+    "processed_events": 10,
+    "selected_contract_availability_ratio": 0.0,
+    "stale_event_count": 0,
+    "timezone_mismatch_count": 0,
+    "total_events": 10,
+    "unsupported_continuation_count": 0
+  },
+  "no_trade_reasons": [
+    "missing_selected_contract_quote"
+  ],
+  "operational_readiness": "FAIL",
+  "readiness_status": "NO_TRADE",
+  "replay_bundle_created": true,
+  "review_json_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_selected_contract2\\dry_runs\\2026-05-08\\archive-ingress-no-selected\\paper_session_review.json",
+  "review_md_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_selected_contract2\\dry_runs\\2026-05-08\\archive-ingress-no-selected\\paper_session_review.md",
+  "selected_contract_audit": {
+    "expiry": null,
+    "option_chain_source_id": "normalized_option_chain:2026-05-08",
+    "option_type": null,
+    "present_in_option_chain": false,
+    "quote_age_seconds_at_finalize": null,
+    "quote_captured_at": null,
+    "quote_effective_timestamp": null,
+    "quote_fresh_at_finalize": null,
+    "selected_contract_quote_present": false,
+    "selected_contract_source_id": null,
+    "strike": null,
+    "symbol": null
+  },
+  "session_date": "2026-05-08",
+  "session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_selected_contract2\\dry_runs\\2026-05-08\\archive-ingress-no-selected",
+  "session_id": "archive-ingress-no-selected",
+  "source_mode": "normalized_archive_export_jsonl",
+  "source_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_selected_contract2\\events.jsonl",
+  "terminal_state": "NO_TRADE",
+  "thresholds": {
+    "max_missing_chains": 0,
+    "max_no_trade_rate": 0.0,
+    "max_stale_events": 0,
+    "max_timing_drift_seconds": 5.0,
+    "required_selected_contract_availability_ratio": 1.0
+  },
+  "timing_audit": [
+    {
+      "arrival_lag_seconds": 1.0,
+      "captured_at": "2026-05-08T09:15:01+05:30",
+      "effective_drift_seconds": 0.0,
+      "effective_timestamp": "2026-05-08T09:15:00+05:30",
+      "expected_timestamp": "2026-05-08T09:15:00+05:30",
+      "snapshot_label": "0915",
+      "within_drift_threshold": true
+    },
+    {
+      "arrival_lag_seconds": 2.0,
+      "captured_at": "2026-05-08T09:25:01+05:30",
+      "effective_drift_seconds": 0.0,
+      "effective_timestamp": "2026-05-08T09:24:59+05:30",
+      "expected_timestamp": "2026-05-08T09:24:59+05:30",
+      "snapshot_label": "ORPT",
+      "within_drift_threshold": true
+    },
+    {
+      "arrival_lag_seconds": 2.0,
+      "captured_at": "2026-05-08T09:30:01+05:30",
+      "effective_drift_seconds": 0.0,
+      "effective_timestamp": "2026-05-08T09:29:59+05:30",
+      "expected_timestamp": "2026-05-08T09:29:59+05:30",
+      "snapshot_label": "RC",
+      "within_drift_threshold": true
+    }
+  ],
+  "warning_flags": []
+}

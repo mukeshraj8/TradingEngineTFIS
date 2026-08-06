@@ -1,0 +1,86 @@
+{
+  "ACCEPTED": {
+    "label": "Accepted"
+  },
+  "ACTIVE": {
+    "label": "Active"
+  },
+  "AVAILABLE": {
+    "label": "Available"
+  },
+  "CARRIED": {
+    "label": "Carried"
+  },
+  "CRITICAL": {
+    "label": "Critical"
+  },
+  "DEGRADED": {
+    "label": "Degraded"
+  },
+  "DEGRADED_EVIDENCE": {
+    "label": "Evidence Limited"
+  },
+  "DETERMINISTIC_TIMING_SUPPLEMENT": {
+    "label": "Deterministic Timing Supplement"
+  },
+  "FILLED_INTERNAL": {
+    "label": "Filled - Internal Paper"
+  },
+  "FIXTURE_BACKED": {
+    "label": "Fixture Backed"
+  },
+  "FRESH": {
+    "label": "Fresh"
+  },
+  "HEALTHY": {
+    "label": "Healthy"
+  },
+  "HISTORICAL_RECONSTRUCTION": {
+    "label": "Reconstructed from Market History"
+  },
+  "INTERNAL_PAPER_CONTROLLED": {
+    "label": "Internal Paper Controlled"
+  },
+  "MISSING_PROTECTION": {
+    "label": "Protection Missing"
+  },
+  "NORMAL_ENTRY_STILL_VALID": {
+    "label": "Entry Available"
+  },
+  "NO_ORDER": {
+    "label": "No Order"
+  },
+  "NO_POSITION": {
+    "label": "No Position"
+  },
+  "OPEN_PROTECTED": {
+    "label": "Open and Protected"
+  },
+  "OPEN_UNPROTECTED": {
+    "label": "Open and Unprotected"
+  },
+  "PROCESSED_INTERNAL_PAPER": {
+    "label": "Internal Paper Order Processed"
+  },
+  "PROTECTED": {
+    "label": "Protected"
+  },
+  "RC_ENTRY_STILL_VALID": {
+    "label": "RC Entry Available"
+  },
+  "RC_WAITING": {
+    "label": "Waiting For RC"
+  },
+  "READ_ONLY_OR_INTERNAL": {
+    "label": "Read Only / Internal"
+  },
+  "REJECTED": {
+    "label": "Rejected"
+  },
+  "VALIDATION_REJECTED": {
+    "label": "Validation Blocked"
+  },
+  "WARNING": {
+    "label": "Warning"
+  }
+}

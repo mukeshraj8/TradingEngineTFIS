@@ -1,0 +1,144 @@
+{
+  "accounting": {
+    "realized_pnl": "0.00",
+    "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+    "unrealized_pnl": "0.00"
+  },
+  "action": {
+    "decision": "PROCESSED_INTERNAL_PAPER",
+    "final_state": "FILLED_INTERNAL"
+  },
+  "captured_at": "2026-08-04T12:00:00+05:30",
+  "dashboard_account": {
+    "accepted_instances": [
+      "S21_BANKNIFTY_INTERNAL_PAPER_A"
+    ],
+    "account_reference": "INTERNAL_PAPER_ACCOUNT_A",
+    "alerts": [],
+    "limits": {
+      "max_margin_usage_pct": 70,
+      "max_new_entries_per_session": 3
+    },
+    "projection_hash": "41234cf63df9f5086db50fc4181f18b0ceee317c1ff0160b3745cc081715d7b6",
+    "rejected_instances": [],
+    "status": "HEALTHY",
+    "usage": {
+      "accepted_instances": 1,
+      "rejected_instances": 0
+    }
+  },
+  "dashboard_strategy": {
+    "accounting": {
+      "realized_pnl": "0.00",
+      "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+      "unrealized_pnl": "0.00"
+    },
+    "execution": {
+      "order_state": "FILLED_INTERNAL",
+      "selected_contract": "NSE:BANKNIFTY26AUG57000CE"
+    },
+    "identity": {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "instance": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+      "instrument": "BANKNIFTY",
+      "strategy": "S21"
+    },
+    "operations": {
+      "alerts": [
+        {
+          "code": "NO_ALERT",
+          "severity": "INFO"
+        }
+      ]
+    },
+    "plan": {
+      "base_entry": null,
+      "block_reason": null,
+      "candidate_contract_count": null,
+      "evidence_quality": null,
+      "expiry_candidates": [],
+      "market_references": {},
+      "oi": null,
+      "original_sl": null,
+      "orpt": null,
+      "premium": null,
+      "rc": null,
+      "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+      "target": null
+    },
+    "position": {
+      "health": "OPEN_PROTECTED",
+      "selected_contract": "NSE:BANKNIFTY26AUG57000CE"
+    },
+    "state": {
+      "branch": null,
+      "evidence_quality": null,
+      "health": "HEALTHY",
+      "monthly_status": null,
+      "runtime_stage": "NORMAL_ENTRY_STILL_VALID"
+    }
+  },
+  "decision_explanations": [
+    {
+      "decision_id": "x",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"
+    }
+  ],
+  "external_broker_order_authority": "NONE",
+  "identity": {
+    "account": "INTERNAL_PAPER_ACCOUNT_A",
+    "instrument": "BANKNIFTY",
+    "strategy": "S21"
+  },
+  "position_cycle": {
+    "orders": [
+      {
+        "account": "INTERNAL_PAPER_ACCOUNT_A",
+        "age": "00:00:00",
+        "contract": "NSE:BANKNIFTY26AUG57000CE",
+        "execution_contract": "NSE:BANKNIFTY26AUG57000CE",
+        "failure": "",
+        "filled_quantity": 15,
+        "generation": 1,
+        "instance": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+        "instrument": "BANKNIFTY",
+        "latest_event": "INTERNAL_FULL_FILL",
+        "position_cycle": "",
+        "price": null,
+        "purpose": "ENTRY",
+        "requested_quantity": 15,
+        "state": "FILLED_INTERNAL",
+        "strategy": "S21"
+      }
+    ],
+    "position": {
+      "account": "INTERNAL_PAPER_ACCOUNT_A",
+      "active_sl": null,
+      "average_entry": null,
+      "contract": "NSE:BANKNIFTY26AUG57000CE",
+      "exit_deadline": "15:00:00",
+      "fresh_or_carried": "FRESH",
+      "health": "OPEN_PROTECTED",
+      "instrument": "BANKNIFTY",
+      "mark": null,
+      "position_contract": "NSE:BANKNIFTY26AUG57000CE",
+      "protection_status": "PROTECTED",
+      "quantity": 15,
+      "realized_pnl": "0.00",
+      "strategy": "S21",
+      "target": null,
+      "unrealized_pnl": "0.00"
+    }
+  },
+  "reconstruction": {
+    "current_entry_state": "NORMAL_ENTRY_STILL_VALID"
+  },
+  "schema_version": "tfis.fast_track.strategy_isolated_result.v1",
+  "selection": {
+    "recovery_mode": "HISTORICALLY_RECONSTRUCTED",
+    "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+    "symbol": "BANKNIFTY"
+  },
+  "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A",
+  "trading_session_id": "NSE:2026-08-04:FAST_TRACK_DEVELOPMENT"
+}

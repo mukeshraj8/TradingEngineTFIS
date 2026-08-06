@@ -1,0 +1,97 @@
+{
+  "health": {
+    "as_of": "2026-05-08T09:30:02+05:30",
+    "connection_state": "CONNECTED",
+    "cooldown_seconds": 0.0,
+    "diagnostics": [
+      "payload_fixture_mode"
+    ],
+    "is_connected": true,
+    "rate_limit_limit": 100,
+    "rate_limit_remaining": 98,
+    "reconnect_attempts": 0,
+    "source_id": "fyers:health",
+    "warnings": []
+  },
+  "option_chain": {
+    "captured_at": "2026-05-08T09:30:02+05:30",
+    "optionsChain": [
+      {
+        "ask_price1": 800.0,
+        "bid_price1": 798.3,
+        "expiry": "2026-05-12",
+        "lp": 799.1,
+        "oi": 1400,
+        "option_type": "PE",
+        "strike_price": 25000,
+        "symbol": "NSE:NIFTY2651225000PE",
+        "vol_traded_today": 325
+      }
+    ],
+    "source_id": "fyers:option_chain:nifty",
+    "timestamp": "2026-05-08T09:29:59+05:30"
+  },
+  "stream_ticks": [
+    {
+      "bar_end": "2026-05-08T09:30:59+05:30",
+      "bar_start": "2026-05-08T09:30:00+05:30",
+      "captured_at": "2026-05-08T09:31:00+05:30",
+      "close": 798.3,
+      "effective_timestamp": "2026-05-08T09:30:59+05:30",
+      "high": 800.0,
+      "low": 798.0,
+      "open": 799.1,
+      "session_date": "2026-05-08",
+      "source_id": "fyers:stream:selected_contract_bar",
+      "symbol": "NSE:NIFTY2651225000PE",
+      "type": "selected_contract_bar",
+      "volume": 20
+    }
+  ],
+  "underlying_history_bars": {
+    "candles": [
+      [
+        1778211840,
+        22410.0,
+        22425.0,
+        22395.0,
+        22420.0,
+        100
+      ],
+      [
+        1778212440,
+        22420.0,
+        22455.0,
+        22400.0,
+        22448.0,
+        120
+      ],
+      [
+        1778212740,
+        22448.0,
+        22462.0,
+        22435.0,
+        22440.0,
+        140
+      ]
+    ],
+    "source_id": "fyers:history:nifty"
+  },
+  "underlying_quote": {
+    "captured_at": "2026-05-08T09:30:01+05:30",
+    "d": [
+      {
+        "last_traded_time": "2026-05-08T09:29:59+05:30",
+        "n": "NSE:NIFTY50-INDEX",
+        "v": {
+          "ask": 22440.5,
+          "bid": 22439.5,
+          "lp": 22440.0,
+          "source_latency_ms": 500,
+          "vol_traded_today": 1000
+        }
+      }
+    ],
+    "source_id": "fyers:quotes:nifty"
+  }
+}

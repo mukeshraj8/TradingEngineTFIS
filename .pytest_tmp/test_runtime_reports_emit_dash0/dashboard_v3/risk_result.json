@@ -1,0 +1,35 @@
+{
+  "aggregate": {
+    "available_margin": 460000,
+    "daily_loss_limit": 50000,
+    "margin_usage_pct": 54,
+    "open_positions": 3,
+    "pending_orders": 0,
+    "rejected_intents": 0,
+    "reserved_margin": 0,
+    "risk_state": "Active",
+    "unprotected_positions": 0,
+    "used_margin": 540000
+  },
+  "per_account": [
+    {
+      "account": "FYERS Read-Only Internal Paper Account",
+      "account_reference": "INTERNAL_PAPER_ACCOUNT_A",
+      "available_margin": 460000,
+      "daily_loss_limit": 50000,
+      "margin_usage_pct": 54,
+      "remaining_capacity": 46,
+      "reserved_margin": 0,
+      "status": "Active",
+      "used_margin": 540000,
+      "warnings": [
+        "S22_LIVE_OPEN_ORPT_RC_PENDING"
+      ]
+    }
+  ],
+  "worst_position": {
+    "contract": "NSE:RELIANCE26AUG1260CE",
+    "instrument": "RELIANCE",
+    "pnl": "-2500.00"
+  }
+}

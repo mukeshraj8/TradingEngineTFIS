@@ -1,0 +1,15 @@
+{
+  "counts": {
+    "blocked": 3,
+    "carried": 2,
+    "enabled": 30,
+    "entry_available": 5,
+    "no_trade": 15,
+    "open_positions": 5,
+    "prepared": 30,
+    "qualified": 10,
+    "supported": 188
+  },
+  "schema_version": "tfis.dashboard_v3.s22_status_counts.v1",
+  "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D"
+}

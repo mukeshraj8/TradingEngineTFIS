@@ -1,0 +1,1743 @@
+{
+  "experiment_path": "D:\\TradingEngineTFISRefactored\\config\\experiments\\S23_parameter_sweep.yaml",
+  "base_strategy": "D:\\TradingEngineTFISRefactored\\config\\strategies\\options_sell\\nifty\\S23_NIFTY_OP_SELL_WK_DIFF_2D_3D",
+  "variants": [
+    {
+      "variant_id": "variant_001",
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 22650,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 122.1
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 1.0000000000000004
+    },
+    {
+      "variant_id": "variant_002",
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 22650,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 122.1
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 0.6927659574468086
+    },
+    {
+      "variant_id": "variant_003",
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 22650,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 101.75
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 1.2500000000000004
+    },
+    {
+      "variant_id": "variant_004",
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 22650,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 101.75
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 0.8659574468085106
+    },
+    {
+      "variant_id": "variant_005",
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 22650,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 81.4
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.5000000000000004
+    },
+    {
+      "variant_id": "variant_006",
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 22650,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 81.4
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.0391489361702126
+    },
+    {
+      "variant_id": "variant_007",
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23100,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 122.1
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 1.0000000000000004
+    },
+    {
+      "variant_id": "variant_008",
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23100,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 122.1
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 0.6927659574468086
+    },
+    {
+      "variant_id": "variant_009",
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23100,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 101.75
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 1.2500000000000004
+    },
+    {
+      "variant_id": "variant_010",
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23100,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 101.75
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 0.8659574468085106
+    },
+    {
+      "variant_id": "variant_011",
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23100,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 81.4
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.5000000000000004
+    },
+    {
+      "variant_id": "variant_012",
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23100,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 81.4
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.0391489361702126
+    },
+    {
+      "variant_id": "variant_013",
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23500,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 122.1
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 1.0000000000000004
+    },
+    {
+      "variant_id": "variant_014",
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23500,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 122.1
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 0.6927659574468086
+    },
+    {
+      "variant_id": "variant_015",
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23500,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 101.75
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 1.2500000000000004
+    },
+    {
+      "variant_id": "variant_016",
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23500,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 101.75
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 0.8659574468085106
+    },
+    {
+      "variant_id": "variant_017",
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 40.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23500,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 284.9,
+          "target_price": 81.4
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.5000000000000004
+    },
+    {
+      "variant_id": "variant_018",
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0
+      },
+      "success": true,
+      "error": null,
+      "result": {
+        "strategy_code": "S23",
+        "trade_plan": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "start_strike": 23500,
+          "end_strike": 21950,
+          "ideal_premium": 264.0,
+          "minimum_premium": 198.00000000000003,
+          "entry_price": 203.5,
+          "stoploss_price": 321.0,
+          "target_price": 81.4
+        },
+        "order_intent": {
+          "strategy_code": "S23",
+          "symbol": "NIFTY",
+          "option_type": "CALL",
+          "side": "SELL",
+          "quantity": 50,
+          "order_type": "MARKET",
+          "product_type": "MIS",
+          "reference_price": 203.5,
+          "reason": "Planned options-sell entry intent from TradePlan"
+        },
+        "risk_decision": {
+          "approved": true,
+          "reason": "Approved",
+          "checks": {
+            "paper_only": true,
+            "max_lots_per_trade": 100,
+            "max_trades_per_day": 3,
+            "trades_taken_today": 1,
+            "allow_short_options": true,
+            "requested_quantity": 50,
+            "side": "SELL"
+          }
+        },
+        "validation": {
+          "strategy_config_ok": true,
+          "formula_safety_findings": []
+        },
+        "accepted": true,
+        "reason": "Approved"
+      },
+      "metrics": {
+        "total_candidates": 1,
+        "accepted_trades": 1,
+        "rejected_trades": 0,
+        "rejection_reasons": {}
+      },
+      "accepted": true,
+      "rejection_reason": null,
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.0391489361702126
+    }
+  ],
+  "summary": {
+    "total_variants": 18,
+    "successful_variants": 18,
+    "failed_variants": 0,
+    "accepted_trades": 18,
+    "rejected_trades": 0
+  },
+  "ranking": [
+    {
+      "rank": 1,
+      "variant_id": "variant_005",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.5000000000000004
+    },
+    {
+      "rank": 2,
+      "variant_id": "variant_011",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.5000000000000004
+    },
+    {
+      "rank": 3,
+      "variant_id": "variant_017",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.5000000000000004
+    },
+    {
+      "rank": 4,
+      "variant_id": "variant_003",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 1.2500000000000004
+    },
+    {
+      "rank": 5,
+      "variant_id": "variant_009",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 1.2500000000000004
+    },
+    {
+      "rank": 6,
+      "variant_id": "variant_015",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 1.2500000000000004
+    },
+    {
+      "rank": 7,
+      "variant_id": "variant_001",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 1.0000000000000004
+    },
+    {
+      "rank": 8,
+      "variant_id": "variant_007",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 1.0000000000000004
+    },
+    {
+      "rank": 9,
+      "variant_id": "variant_013",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 40.0
+      },
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 284.9,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 81.39999999999998,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 1.0000000000000004
+    },
+    {
+      "rank": 10,
+      "variant_id": "variant_006",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.0391489361702126
+    },
+    {
+      "rank": 11,
+      "variant_id": "variant_012",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.0391489361702126
+    },
+    {
+      "rank": 12,
+      "variant_id": "variant_018",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 122.1,
+      "reward_risk_ratio": 1.0391489361702126
+    },
+    {
+      "rank": 13,
+      "variant_id": "variant_004",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 0.8659574468085106
+    },
+    {
+      "rank": 14,
+      "variant_id": "variant_010",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 0.8659574468085106
+    },
+    {
+      "rank": 15,
+      "variant_id": "variant_016",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 50.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 101.75,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 101.75,
+      "reward_risk_ratio": 0.8659574468085106
+    },
+    {
+      "rank": 16,
+      "variant_id": "variant_002",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 3.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 22650,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 0.6927659574468086
+    },
+    {
+      "rank": 17,
+      "variant_id": "variant_008",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 5.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 23100,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 0.6927659574468086
+    },
+    {
+      "rank": 18,
+      "variant_id": "variant_014",
+      "accepted": true,
+      "rejection_reason": null,
+      "parameters": {
+        "strike_buffer_pct": 7.0,
+        "target_pct": 40.0,
+        "sl_entry_pct": 60.0
+      },
+      "trade_outputs": {
+        "start_strike": 23500,
+        "entry_price": 203.5,
+        "target_price": 122.1,
+        "stoploss_price": 321.0,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "risk_distance": 117.5,
+      "reward_distance": 81.4,
+      "reward_risk_ratio": 0.6927659574468086
+    }
+  ]
+}

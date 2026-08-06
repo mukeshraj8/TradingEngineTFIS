@@ -1,0 +1,9 @@
+{
+  "expected_s21_behavior_change": "NONE",
+  "expected_s23_behavior_change": "NONE",
+  "regression_hash": "afb62e3292eeaa66715ffe5b622a257f17caf203ea6d9c902c79609d320f7210",
+  "regression_scope": "Focused S21/S23 tests validate unchanged shared platform behavior.",
+  "s21_files_changed_by_this_milestone": [],
+  "s23_files_changed_by_this_milestone": [],
+  "schema_version": "s22.reliance.regression.v1"
+}

@@ -1,0 +1,14 @@
+{
+  "frontend_formula_calculation": false,
+  "schema_version": "tfis.dashboard_read_model_catalog.v1",
+  "sections": [
+    "IDENTITY",
+    "STATE",
+    "PLAN",
+    "EXECUTION",
+    "POSITION",
+    "ACCOUNTING",
+    "OPERATIONS"
+  ],
+  "strategy_neutral": true
+}

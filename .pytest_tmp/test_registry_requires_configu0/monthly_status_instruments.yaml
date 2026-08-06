@@ -1,0 +1,10 @@
+
+default_symbol: INFY
+default_price_source: spot
+instruments:
+  INFY:
+    label: INFY
+    instrument_group: stock
+    spot_symbol: NSE:INFY-EQ
+    futures_continuous_symbol: null
+    lot_size: 400

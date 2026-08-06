@@ -1,0 +1,39 @@
+{
+  "artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_dry_run_prelude_build_wor0\\artifacts",
+  "artifact_version": 1,
+  "can_run": true,
+  "config_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_dry_run_prelude_build_wor0\\paper.s23.yaml",
+  "contract_cycle": "WEEKLY",
+  "dry_run_build_prelude_requested": true,
+  "expected_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_dry_run_prelude_build_wor0\\artifacts\\2026-05-08\\snapshot-build-prelude",
+  "explicit_disclaimer": "Snapshot preflight collects one-shot FYERS normalized inputs for S23 paper readiness only. It never starts a socket loop, never executes lifecycle logic, and never places broker orders.",
+  "issues": [
+    {
+      "code": "payload_fixture_mode_enabled",
+      "message": "Payload fixture mode is enabled; snapshot preflight remains safe, but this is not a live FYERS data run.",
+      "severity": "WARNING"
+    }
+  ],
+  "kill_switch_enabled": true,
+  "mode": "paper",
+  "no_live_orders_allowed": true,
+  "option_chain_collected": true,
+  "option_chain_contract_count": 2,
+  "option_chain_has_complete_oi": true,
+  "paper_mode_enabled": true,
+  "preflight_status": "READY",
+  "prelude_generated": true,
+  "provider": "fyers",
+  "runtime_fixture_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_dry_run_prelude_build_wor0\\runtime_fixture.json",
+  "session_date": "2026-05-08",
+  "session_id": "snapshot-build-prelude",
+  "session_kill_switch_active": false,
+  "strategy_branch_reference": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+  "strategy_code": "S23",
+  "strategy_path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_dry_run_prelude_build_wor0\\strategy",
+  "symbol": "NIFTY",
+  "underlying_quote_collected": true,
+  "uses_payload_fixture": true,
+  "weekly_expiry": "2026-05-12",
+  "will_connect_to_broker": true
+}

@@ -1,0 +1,48 @@
+{
+  "artifact_version": 1,
+  "blocking_event_type": null,
+  "blocking_source_id": null,
+  "execution_started": false,
+  "fill_simulation_started": false,
+  "guardrail_code": null,
+  "guardrail_message": null,
+  "operator_action_required": null,
+  "order_plan": {
+    "end_strike": null,
+    "fsl_price": 352.0,
+    "ideal_premium": null,
+    "lots": 2,
+    "minimum_premium": null,
+    "monthly_status": "BULL",
+    "order_reference_label": "ORPT",
+    "order_reference_time": "2026-05-27T09:24:59+05:30",
+    "order_side": "SELL",
+    "overlays_enabled": [
+      "S23_CURRENT_DAY_FSL_TRP"
+    ],
+    "planned_entry_price": 199.5,
+    "planning_timestamp": "2026-05-27T09:30:10+05:30",
+    "quantity": 100,
+    "required_snapshot_labels": [
+      "0915",
+      "ORPT",
+      "RC"
+    ],
+    "selected_contract_expiry": "2026-05-28",
+    "selected_contract_ltp": 199.5,
+    "selected_contract_option_type": "PUT",
+    "selected_contract_symbol": "NIFTY_20260528_22400_PE",
+    "session_date": "2026-05-27",
+    "source_workbook_rule": "AB6_OS_Z184",
+    "start_strike": null,
+    "stoploss_price": 320.0,
+    "strategy_branch": "S23_BEAR_PUT",
+    "strategy_code": "S23",
+    "target_price": 80.0,
+    "workbook_row_number": 184
+  },
+  "selected_contract_quote_present": true,
+  "selected_contract_symbol": "NIFTY_20260528_22400_PE",
+  "session_id": "review-blocked-intent",
+  "state": "ORDER_PLANNED"
+}

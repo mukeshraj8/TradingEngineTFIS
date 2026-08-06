@@ -1,0 +1,89 @@
+{
+  "architecture_boundary_verdict": "PASS",
+  "capability_reuse_gate": [
+    {
+      "capability": "Monthly Status",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Market Structure",
+      "change_required": "No generic change; S22 adapter uses completed-session reference calculation",
+      "reuse": true
+    },
+    {
+      "capability": "Contract Selection",
+      "change_required": "S22 policy only",
+      "reuse": true
+    },
+    {
+      "capability": "Gap/Missed Entry",
+      "change_required": "S22 policy only",
+      "reuse": true
+    },
+    {
+      "capability": "Entry Engine",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Runtime",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Persistence",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Reconciliation",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "ExecutionIntent",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "AccountCoordinator",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Order Simulation",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "PositionCycle",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "Accounting",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "TradeFact",
+      "change_required": "No",
+      "reuse": true
+    },
+    {
+      "capability": "PnLFact",
+      "change_required": "No",
+      "reuse": true
+    }
+  ],
+  "configuration_change_count": 0,
+  "generic_code_branching_added": false,
+  "generic_files_changed": [],
+  "reuse_report_hash": "19c7f91617dbf1073e65d6087a340db28a644714e03fbaaabcb5fb1fa8a9d335",
+  "runtime_generic_change_count": 0,
+  "s22_specific_files_changed": [
+    "src/tfis/adapters/phase5e/s22_reliance.py"
+  ],
+  "schema_version": "s22.reliance.platform_reuse.v1"
+}

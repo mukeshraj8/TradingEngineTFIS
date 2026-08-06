@@ -1,0 +1,93 @@
+version: phase2c
+identity_compositions:
+  S21_BANKNIFTY_OP_SELL_MONTHLY@1.0.0:
+    product_policy: legacy.s21.option_selling.product
+    entry_policy: legacy.s21.option_selling.entry
+    gap_policy: legacy.option_selling.gap.not_configured
+    missed_entry_policy: legacy.option_selling.missed_entry.not_configured
+    gap_missed_entry_policy: legacy.s21.gap_missed_entry.evidence_only_v1
+    contract_selection_policy: legacy.s21.option_selling.contract_selection
+    target_policy: legacy.s21.option_selling.target
+    msl_policy: legacy.s21.option_selling.msl
+  S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0:
+    product_policy: legacy.s23.option_selling.product
+    entry_policy: legacy.s23.option_selling.entry
+    gap_policy: legacy.s23.gap.not_configured
+    missed_entry_policy: legacy.s23.missed_entry.not_configured
+    gap_missed_entry_policy: legacy.s23.gap_missed_entry.paper_live_high_v1
+    contract_selection_policy: legacy.s23.option_selling.contract_selection
+    target_policy: legacy.s23.option_selling.target
+    msl_policy: legacy.s23.option_selling.msl
+strategies:
+  BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL:
+    strategy_code: S21
+    product_policy: legacy.s21.option_selling.product
+    entry_policy: legacy.s21.option_selling.entry
+    gap_policy: legacy.option_selling.gap.not_configured
+    missed_entry_policy: legacy.option_selling.missed_entry.not_configured
+    contract_selection_policy: legacy.s21.option_selling.contract_selection
+    target_policy: legacy.s21.option_selling.target
+    msl_policy: legacy.s21.option_selling.msl
+  BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT:
+    strategy_code: S21
+    product_policy: legacy.s21.option_selling.product
+    entry_policy: legacy.s21.option_selling.entry
+    gap_policy: legacy.option_selling.gap.not_configured
+    missed_entry_policy: legacy.option_selling.missed_entry.not_configured
+    contract_selection_policy: legacy.s21.option_selling.contract_selection
+    target_policy: legacy.s21.option_selling.target
+    msl_policy: legacy.s21.option_selling.msl
+  BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL:
+    strategy_code: S21
+    product_policy: legacy.s21.option_selling.product
+    entry_policy: legacy.s21.option_selling.entry
+    gap_policy: legacy.option_selling.gap.not_configured
+    missed_entry_policy: legacy.option_selling.missed_entry.not_configured
+    contract_selection_policy: legacy.s21.option_selling.contract_selection
+    target_policy: legacy.s21.option_selling.target
+    msl_policy: legacy.s21.option_selling.msl
+  BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT:
+    strategy_code: S21
+    product_policy: legacy.s21.option_selling.product
+    entry_policy: legacy.s21.option_selling.entry
+    gap_policy: legacy.option_selling.gap.not_configured
+    missed_entry_policy: legacy.option_selling.missed_entry.not_configured
+    contract_selection_policy: legacy.s21.option_selling.contract_selection
+    target_policy: legacy.s21.option_selling.target
+    msl_policy: legacy.s21.option_selling.msl
+  NIFTY_OP_SELL_WK_DIFF_2D_3D:
+    strategy_code: S23
+    product_policy: legacy.s23.option_selling.product
+    entry_policy: legacy.s23.option_selling.entry
+    gap_policy: legacy.s23.gap.not_configured
+    missed_entry_policy: legacy.s23.missed_entry.not_configured
+    contract_selection_policy: legacy.s23.option_selling.contract_selection
+    target_policy: legacy.s23.option_selling.target
+    msl_policy: legacy.s23.option_selling.msl
+  NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL:
+    strategy_code: S23
+    product_policy: legacy.s23.option_selling.product
+    entry_policy: legacy.s23.option_selling.entry
+    gap_policy: legacy.s23.gap.not_configured
+    missed_entry_policy: legacy.s23.missed_entry.not_configured
+    contract_selection_policy: legacy.s23.option_selling.contract_selection
+    target_policy: legacy.s23.option_selling.target
+    msl_policy: legacy.s23.option_selling.msl
+  NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT:
+    strategy_code: S23
+    product_policy: legacy.s23.option_selling.product
+    entry_policy: legacy.s23.option_selling.entry
+    gap_policy: legacy.s23.gap.not_configured
+    missed_entry_policy: legacy.s23.missed_entry.not_configured
+    contract_selection_policy: legacy.s23.option_selling.contract_selection
+    target_policy: legacy.s23.option_selling.target
+    msl_policy: legacy.s23.option_selling.msl
+  NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT:
+    strategy_code: S23
+    product_policy: legacy.s23.option_selling.product
+    entry_policy: legacy.s23.option_selling.entry
+    gap_policy: legacy.s23.gap.not_configured
+    missed_entry_policy: legacy.s23.missed_entry.not_configured
+    contract_selection_policy: legacy.s23.option_selling.contract_selection
+    target_policy: legacy.s23.option_selling.target
+    msl_policy: legacy.s23.option_selling.msl

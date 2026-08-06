@@ -1,0 +1,1 @@
+{"artifact_version": 1, "event_kind": "selected_contract_quote", "observed_at": "2026-06-10T09:31:02+05:30", "watcher_pid": 9876, "symbol": "NIFTY_20260602_23850_CE", "payload": {"ltp": 239.0, "bid": 238.5, "ask": 239.5, "envelope": {"source_id": "fixture_order_feed", "source_type": "quote", "effective_timestamp": "2026-06-10T09:31:02+05:30"}}}

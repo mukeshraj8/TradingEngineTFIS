@@ -1,0 +1,20 @@
+{
+  "downloaded_at": "2026-08-05T08:45:00+05:30",
+  "exchange": "NSEFO",
+  "record_count": 1,
+  "rows": [
+    {
+      "expiry": "2026-08-26",
+      "fyToken": "token-1",
+      "instrument_type": "OPTION",
+      "lot_size": "50",
+      "option_type": "CE",
+      "segment": "NSEFO",
+      "strike": "24300",
+      "symbol": "NSE:NIFTY26AUG24300CE",
+      "tick_size": "0.05",
+      "underlying": "NIFTY"
+    }
+  ],
+  "source_version": "FYERS_TEST_CACHE"
+}

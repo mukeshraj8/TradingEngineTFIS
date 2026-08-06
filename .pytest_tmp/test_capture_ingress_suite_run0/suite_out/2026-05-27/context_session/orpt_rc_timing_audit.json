@@ -1,0 +1,24 @@
+{
+  "artifact_version": 1,
+  "entries": [
+    {
+      "arrival_lag_seconds": 0.0,
+      "captured_at": "2026-05-27T09:24:59+05:30",
+      "effective_drift_seconds": 0.0,
+      "effective_timestamp": "2026-05-27T09:24:59+05:30",
+      "expected_timestamp": "2026-05-27T09:24:59+05:30",
+      "snapshot_label": "ORPT",
+      "within_drift_threshold": true
+    },
+    {
+      "arrival_lag_seconds": 0.0,
+      "captured_at": "2026-05-27T09:29:59+05:30",
+      "effective_drift_seconds": 0.0,
+      "effective_timestamp": "2026-05-27T09:29:59+05:30",
+      "expected_timestamp": "2026-05-27T09:29:59+05:30",
+      "snapshot_label": "RC",
+      "within_drift_threshold": true
+    }
+  ],
+  "session_id": "context_session"
+}

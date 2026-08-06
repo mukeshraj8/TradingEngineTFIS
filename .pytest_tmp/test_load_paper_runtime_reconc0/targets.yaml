@@ -1,0 +1,21 @@
+targets:
+  - strategy_code: S23
+    config_path: config/paper.s23.yaml
+    artifact_root: data/strategies/S23/root
+    process_lock_root: tmp/process_locks/s23
+    strategy_path: config/strategies/options_sell/s23
+    reference_packet_path: config/reference_packets/s23.json
+    session_id_prefix: s23-session
+    executor: paper_morning_supervised
+    runner_script_path: scripts/run_s23.py
+    wrapper_script_path: scripts/start_s23.ps1
+  - strategy_code: S21
+    config_path: config/paper.s23.yaml
+    artifact_root: data/strategies/S21/root
+    process_lock_root: tmp/process_locks/s21
+    strategy_path: config/strategies/options_sell/s21
+    reference_packet_path: config/reference_packets/s21.json
+    session_id_prefix: s21-session
+    executor: paper_morning_supervised
+    runner_script_path: scripts/run_s21.py
+    wrapper_script_path: scripts/start_s21.ps1

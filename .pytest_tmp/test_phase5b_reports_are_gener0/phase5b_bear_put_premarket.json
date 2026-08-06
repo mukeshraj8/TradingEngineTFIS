@@ -1,0 +1,27 @@
+{
+  "base_entry": "OPT : PRV : 3DLL - 7.50%",
+  "branch": "BEAR_PUT",
+  "original_sl_msl": "Min ( PE : Entry + 60.00% & OPT : PRV : 2DHH + 7.00% )",
+  "orpt": "09:24:59",
+  "plan_hash": "16617d4265a5a4962dba627787eaabc2a6aa0e3f2b6e91570e9ddc8e70adf28b",
+  "quantity": 50,
+  "rc": "09:29:59",
+  "rule_ids": [
+    "S23-BEAR-PUT-AB6OS-171-172"
+  ],
+  "selected_contract": "NIFTY_BEAR_PUT_PE",
+  "source_trace": {
+    "base_entry": "M171",
+    "end_strike": "G172",
+    "ideal_premium": "H171",
+    "minimum_premium": "H172",
+    "monthly_status": "D168",
+    "oi": "I171",
+    "option_type": "F171",
+    "original_sl_msl": "M172",
+    "start_strike": "G171",
+    "target": "O171"
+  },
+  "status": "PASSED",
+  "target": "PE : Entry - 60.00%"
+}

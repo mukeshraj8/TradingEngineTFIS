@@ -1,0 +1,82 @@
+{
+  "abort_reasons": [
+    "stale_ingest_quote"
+  ],
+  "artifact_version": 1,
+  "blocking_event_type": "SELECTED_CONTRACT_QUOTE",
+  "blocking_source_id": null,
+  "contract_cycle": "WEEKLY",
+  "data_sources": [
+    {
+      "event_type": "CALENDAR_CONTEXT",
+      "source_id": "D:/TradingData/captures/context_sessions/2026-05-08/live_20260508_092504_prod_pid19984/ticks_context.csv",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "COST_SLIPPAGE_SETTINGS",
+      "source_id": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_stale_selected_contract_q0\\paper.s23.yaml",
+      "source_type": "live_paper_config",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "MONTHLY_STATUS_INPUT",
+      "source_id": "D:/TradingData/captures/context_sessions/2026-05-08/live_20260508_092504_prod_pid19984/monthly_status.json",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "PAPER_SESSION_CONFIG",
+      "source_id": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_stale_selected_contract_q0\\paper.s23.yaml",
+      "source_type": "live_paper_config",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "UNDERLYING_QUOTE",
+      "source_id": "fyers:quotes:nifty",
+      "source_type": "broker_fyers",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "source_id": "normalized_snapshot:0915",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "source_id": "normalized_snapshot:orpt",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "source_id": "normalized_snapshot:rc",
+      "source_type": "normalized_archive_export",
+      "synthetic_fixture": false
+    }
+  ],
+  "evaluated_state": "WAITING_FOR_RC",
+  "guardrail_code": "stale_ingest_quote",
+  "guardrail_message": "Paper quote event exceeded the allowed freshness window at ingestion time.",
+  "missing_snapshot_labels": [],
+  "mode": "paper",
+  "no_trade_reasons": [],
+  "operator_action_required": "Refresh the affected live-paper data source before planning S23.",
+  "overlays_enabled": [
+    "S23_CURRENT_DAY_FSL_TRP"
+  ],
+  "paper_order_planned": false,
+  "readiness_status": "ABORTED",
+  "required_snapshot_labels": [],
+  "selected_contract_available": false,
+  "selected_contract_symbol": null,
+  "session_date": "2026-05-08",
+  "session_id": "stale-selected-quote",
+  "state": "ABORTED",
+  "strategy_code": "S23",
+  "symbol": "NIFTY",
+  "synthetic_fixture_used": true,
+  "terminal_reason_code": "stale_ingest_quote",
+  "warning_flags": []
+}

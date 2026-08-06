@@ -1,0 +1,52 @@
+{
+  "authority": {
+    "broker_submission_permitted": false,
+    "external_paper_submission_permitted": false,
+    "fyers_order_authority": "NONE",
+    "internal_paper_authority": "INTERNAL_PAPER_ONLY",
+    "live_submission_permitted": false,
+    "mode": "OFFLINE_INTERNAL_PAPER_ONLY",
+    "real_position_mutation_permitted": false
+  },
+  "pipeline": [
+    "fyers_fixture",
+    "metadata_validation",
+    "generic_monthly_status",
+    "completed_session_market_structure",
+    "s22_branch_policy",
+    "contract_selection",
+    "premarket_plan",
+    "opening_orpt_rc_supplement",
+    "effective_execution_plan",
+    "execution_intent",
+    "internal_paper_client_order",
+    "simulated_fill",
+    "position_cycle",
+    "lifecycle",
+    "trade_fact",
+    "pnl_fact",
+    "dashboard_projection"
+  ],
+  "runtime_impact": "ONE-STOCK S22 INTERNAL-PAPER SUPPORT",
+  "scenario_hashes": [
+    "106a127a10bb595606a806a894602ca3c008be1ca7f9a8f167addd435f2659a3",
+    "fc4e19631a3b0b97e97cb91aef44061c563bc987f3e430e134f17978cbb668b3",
+    "1620827e60b4ae8e30e9f0abf56edb6659c72cbcfe806dac7213c636b18375bb",
+    "1e50e52794868dbfb88459b3c5a21e389fa124db6c761ccfef2b43afe57d66f4",
+    "1722d466cfb1c558e4ca7806b73788fd5e9e64a85d90c341b4edfcd6aeb62fea",
+    "d98649886c150f7e8f613e36d0692c28fd9b7e29c8df654d899c39ccabeea2b4",
+    "2e6d5ab45a4411a3e460a48cfdecdd657c9ecd9b301e432e4366a2fee818c993",
+    "c1e951160be4c06c41c91cf082ac5250e51efae8dfcfe7a4c73c695b2a4cfee5",
+    "e1b63f85edce9eb43fb840d0eecf535582f518cb87315d19e51877a54f6fd3f9",
+    "3127f0b979480400ad4fab8942bc1d266cbf5707087b6233b34b2df20256f609",
+    "0097e26b716102821a58ec9d5e42965e280773ba7e79ec1aec1dacf9d94548d0",
+    "d7d0323c9783b2f980de77c3d504f814d90bec3120c80705fdb9dc34d97cfaa4",
+    "da80c7a9a825be29af0bd1afcbdefdf770d983ac8147f101fb7ba2155bb4bafd",
+    "66b00dc7d0b6aa61f8959976f796424d84ba37d63ddf2d935798a1844e9f0b9d",
+    "604160ec83de1e919ba45916ca400e9aa4fade64c386d5b5635396fef2ad0af4",
+    "3a4828612d15a09d01ab9c5885a5298e20c3f2fcacce99f683ae0f8e3a63ef8b",
+    "63b2625bee598d8cc985c31bdc6d8cf06a1cb7366fd1e4da4564b04f14fcf814"
+  ],
+  "schema_version": "s22.reliance.complete_trace.v1",
+  "trace_hash": "a9a5e0cd5fa83b448bf1870258ed13b18e416eb308f4d053e8fd8d45eaec8356"
+}

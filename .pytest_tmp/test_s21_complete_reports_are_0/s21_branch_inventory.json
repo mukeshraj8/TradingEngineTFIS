@@ -1,0 +1,218 @@
+{
+  "branches": [
+    {
+      "aps": {
+        "applicability": "NOT_APPLICABLE_ONE_LOT",
+        "rule_id": "GLOBAL.OPTION_SELLING.APS_NOT_APPLICABLE_ONE_LOT.001"
+      },
+      "base_entry": {
+        "reference": "3DLL",
+        "rule_id": "S21.BULL_CALL.STATIC.001",
+        "source_cells": "AB6 OS!100:102",
+        "value": "925.00"
+      },
+      "branch_identity": "BULL_CALL",
+      "contract_selection_rule": "S21.CONTRACT_SELECTION.001",
+      "eod_carry_behavior": {
+        "operator": "Close > Original SL exits; Close <= Original SL carries",
+        "rule_id": "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+      },
+      "monthly_status_conditions": [
+        "BULL",
+        "BULL_CF"
+      ],
+      "option_type": "CALL",
+      "order_side": "SELL entry, BUY exits",
+      "original_sl_msl": {
+        "formula": "Min(Entry + 60%, OPT PRV 2DHH + 7%)",
+        "rule_id": "S21.BULL_CALL.STATIC.001",
+        "value": "1337.50"
+      },
+      "orpt_comparison": {
+        "raw": "09:24:59 AM LL < Entry",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "source_cells": "AB6 OS!A113:AA118"
+      },
+      "rc_recalculation": {
+        "effective_entry": "910.00",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "time": "09:29:59"
+      },
+      "revised_sl_fsl_trp": {
+        "formula": "09:29:59 HH + 7%",
+        "rule_id": "S21.CARRIED_CALL.FSL_TRP.001",
+        "value": "1284.00"
+      },
+      "target": {
+        "formula": "Entry - 60%",
+        "rule_id": "S21.BULL_CALL.STATIC.001",
+        "value": "370.00"
+      },
+      "unique_code": "BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL"
+    },
+    {
+      "aps": {
+        "applicability": "NOT_APPLICABLE_ONE_LOT",
+        "rule_id": "GLOBAL.OPTION_SELLING.APS_NOT_APPLICABLE_ONE_LOT.001"
+      },
+      "base_entry": {
+        "reference": "2DLL",
+        "rule_id": "S21.BULL_PUT.STATIC.001",
+        "source_cells": "AB6 OS!103:104",
+        "value": "880.00"
+      },
+      "branch_identity": "BULL_PUT",
+      "contract_selection_rule": "S21.CONTRACT_SELECTION.001",
+      "eod_carry_behavior": {
+        "operator": "Close > Original SL exits; Close <= Original SL carries",
+        "rule_id": "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+      },
+      "monthly_status_conditions": [
+        "BULL",
+        "BULL_CF"
+      ],
+      "option_type": "PUT",
+      "order_side": "SELL entry, BUY exits",
+      "original_sl_msl": {
+        "formula": "Min(Entry + 60%, OPT PRV 3DHH + 10%)",
+        "rule_id": "S21.BULL_PUT.STATIC.001",
+        "value": "1320.00"
+      },
+      "orpt_comparison": {
+        "raw": "09:24:59 AM LL < Entry",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "source_cells": "AB6 OS!A113:AA118"
+      },
+      "rc_recalculation": {
+        "effective_entry": "865.00",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "time": "09:29:59"
+      },
+      "revised_sl_fsl_trp": {
+        "formula": "09:29:59 HH + 10%",
+        "rule_id": "S21.CARRIED_PUT.FSL_TRP.001",
+        "value": "1265.00"
+      },
+      "target": {
+        "formula": "Entry - 60%",
+        "rule_id": "S21.BULL_PUT.STATIC.001",
+        "value": "352.00"
+      },
+      "unique_code": "BANKNIFTY_OP_SELL_MONTHLY_BULL_PUT"
+    },
+    {
+      "aps": {
+        "applicability": "NOT_APPLICABLE_ONE_LOT",
+        "rule_id": "GLOBAL.OPTION_SELLING.APS_NOT_APPLICABLE_ONE_LOT.001"
+      },
+      "base_entry": {
+        "reference": "2DLL",
+        "rule_id": "S21.BEAR_CALL.STATIC.001",
+        "source_cells": "AB6 OS!106:108",
+        "value": "840.00"
+      },
+      "branch_identity": "BEAR_CALL",
+      "contract_selection_rule": "S21.CONTRACT_SELECTION.001",
+      "eod_carry_behavior": {
+        "operator": "Close > Original SL exits; Close <= Original SL carries",
+        "rule_id": "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+      },
+      "monthly_status_conditions": [
+        "BEAR",
+        "BEAR_CF"
+      ],
+      "option_type": "CALL",
+      "order_side": "SELL entry, BUY exits",
+      "original_sl_msl": {
+        "formula": "Min(Entry + 60%, OPT PRV 3DHH + 10%)",
+        "rule_id": "S21.BEAR_CALL.STATIC.001",
+        "value": "1260.00"
+      },
+      "orpt_comparison": {
+        "raw": "09:24:59 AM LL < Entry",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "source_cells": "AB6 OS!A113:AA118"
+      },
+      "rc_recalculation": {
+        "effective_entry": "825.00",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "time": "09:29:59"
+      },
+      "revised_sl_fsl_trp": {
+        "formula": "09:29:59 HH + 10%",
+        "rule_id": "S21.CARRIED_CALL.FSL_TRP.001",
+        "value": "1232.00"
+      },
+      "target": {
+        "formula": "Entry - 60%",
+        "rule_id": "S21.BEAR_CALL.STATIC.001",
+        "value": "336.00"
+      },
+      "unique_code": "BANKNIFTY_OP_SELL_MONTHLY_BEAR_CALL"
+    },
+    {
+      "aps": {
+        "applicability": "NOT_APPLICABLE_ONE_LOT",
+        "rule_id": "GLOBAL.OPTION_SELLING.APS_NOT_APPLICABLE_ONE_LOT.001"
+      },
+      "base_entry": {
+        "reference": "3DLL",
+        "rule_id": "S21.BEAR_PUT.STATIC.001",
+        "source_cells": "AB6 OS!109:110",
+        "value": "900.00"
+      },
+      "branch_identity": "BEAR_PUT",
+      "contract_selection_rule": "S21.CONTRACT_SELECTION.001",
+      "eod_carry_behavior": {
+        "operator": "Close > Original SL exits; Close <= Original SL carries",
+        "rule_id": "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+      },
+      "monthly_status_conditions": [
+        "BEAR",
+        "BEAR_CF"
+      ],
+      "option_type": "PUT",
+      "order_side": "SELL entry, BUY exits",
+      "original_sl_msl": {
+        "formula": "Min(Entry + 60%, OPT PRV 2DHH + 7%)",
+        "rule_id": "S21.BEAR_PUT.STATIC.001",
+        "value": "1284.00"
+      },
+      "orpt_comparison": {
+        "raw": "09:24:59 AM LL < Entry",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "source_cells": "AB6 OS!A113:AA118"
+      },
+      "rc_recalculation": {
+        "effective_entry": "885.00",
+        "rule_id": "S21.FRESH_ENTRY_ORPT_RC.001",
+        "time": "09:29:59"
+      },
+      "revised_sl_fsl_trp": {
+        "formula": "09:29:59 HH + 7%",
+        "rule_id": "S21.CARRIED_PUT.FSL_TRP.001",
+        "value": "1248.00"
+      },
+      "target": {
+        "formula": "Entry - 60%",
+        "rule_id": "S21.BEAR_PUT.STATIC.001",
+        "value": "360.00"
+      },
+      "unique_code": "BANKNIFTY_OP_SELL_MONTHLY_BEAR_PUT"
+    }
+  ],
+  "inventory_hash": "d471207a64431a6ef7fe52937e361ec91539dee649c761957ece17ef8961b0d8",
+  "legacy_authority_used": false,
+  "schema_version": "s21.branch_inventory.complete_strategy.v1",
+  "source_rule_ids": [
+    "GLOBAL.OPTION_SELLING.APS_NOT_APPLICABLE_ONE_LOT.001",
+    "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001",
+    "S21.BEAR_CALL.STATIC.001",
+    "S21.BEAR_PUT.STATIC.001",
+    "S21.BULL_CALL.STATIC.001",
+    "S21.BULL_PUT.STATIC.001",
+    "S21.CONTRACT_SELECTION.001",
+    "S21.FRESH_ENTRY_ORPT_RC.001"
+  ],
+  "verdict": "WORKBOOK_VERIFIED"
+}

@@ -1,0 +1,23 @@
+{
+  "fact_count": 1,
+  "fact_fields": [
+    "decision_id",
+    "trading_session_id",
+    "strategy_instance_id",
+    "instrument",
+    "stage",
+    "rule_id",
+    "workbook_source",
+    "formula_text",
+    "input_values",
+    "output_value",
+    "candidate_evidence",
+    "rejection_reason",
+    "evidence_source",
+    "evidence_quality",
+    "calculation_timestamp",
+    "evidence_mode",
+    "parent_decision_id"
+  ],
+  "schema_version": "tfis.fast_track.explanation_fact_contract.v1"
+}

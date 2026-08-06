@@ -1,0 +1,15 @@
+strategy_definition_id: S21_BANKNIFTY_OP_SELL_MONTHLY
+strategy_version: 1.0.0
+effective_from: "2026-07-29T00:00:00+05:30"
+retired_at:
+configuration_hash: s21-phase3a-config-v1
+formula_hash: s21-existing-formulas-v1
+policy_composition_hash: s21-policy-composition-phase2c
+source_references:
+  - config/strategies/options_sell/banknifty
+change_description: Phase 3A identity/version wrapper around existing S21 rules.
+status: PUBLISHED
+version_values:
+  formula_config_ref: config/strategies/options_sell/banknifty
+  parameters:
+    version_marker: 1

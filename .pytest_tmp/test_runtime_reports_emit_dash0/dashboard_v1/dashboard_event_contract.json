@@ -1,0 +1,14 @@
+{
+  "event_types": [
+    "SNAPSHOT_READY",
+    "INSTANCE_UPDATED",
+    "ORDER_UPDATED",
+    "POSITION_UPDATED",
+    "ALERT_RAISED",
+    "AUDIT_APPENDED"
+  ],
+  "raw_tick_streaming": false,
+  "schema_version": "tfis.dashboard_event_contract.v1",
+  "snapshot_plus_events_after_watermark": true,
+  "transport": "SSE"
+}

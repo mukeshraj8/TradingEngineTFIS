@@ -1,0 +1,1888 @@
+{
+  "strategy_path": null,
+  "strategy_root": "config\\strategies\\options_sell\\nifty",
+  "use_monthly_status_engine": true,
+  "mode": "historical",
+  "eod_policy": "square_off_at_close",
+  "cost_model": {
+    "slippage_points_per_side": 0.0,
+    "brokerage_points_per_trade": 0.0,
+    "other_cost_points_per_trade": 0.0
+  },
+  "input_metadata": {
+    "datasets": {
+      "daily": {
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_daily_multi.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_levels": {
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_option_levels_multi.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_intraday": {
+        "path": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_orpt_snapshot_pro0\\sparse_intraday.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "spot_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": "current_day_market_levels",
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "monthly": {
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_monthly.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "weekly": {
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_weekly.csv",
+        "provided": true,
+        "used": true,
+        "fallback_behavior": null,
+        "project_fixture": true,
+        "synthetic_fixture": false
+      },
+      "option_chain": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      },
+      "contract_intraday": {
+        "path": null,
+        "provided": false,
+        "used": false,
+        "fallback_behavior": null,
+        "project_fixture": false,
+        "synthetic_fixture": false
+      }
+    },
+    "synthetic_fixture_data_used": false,
+    "project_fixture_data_used": true
+  },
+  "evaluations": [
+    {
+      "timestamp": "2026-05-18T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22200,
+        "entry_price": 197.95,
+        "target_price": 79.18,
+        "stoploss_price": 314.58,
+        "ideal_premium": 263.4,
+        "minimum_premium": 197.55
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "CALL",
+            "start_strike": 22200,
+            "end_strike": 21900,
+            "ideal_premium": 263.4,
+            "minimum_premium": 197.55,
+            "entry_price": 197.95,
+            "stoploss_price": 314.58,
+            "target_price": 79.18
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22410.0,
+        "d2ll": 22010.0,
+        "d3hh": 22410.0,
+        "d3ll": 21950.0,
+        "d4hh": 22410.0,
+        "d4ll": 21880.0,
+        "current_day_high": 22440.0,
+        "current_day_low": 22190.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 294.0,
+          "OPT_PRV_2DLL": 204.0,
+          "OPT_PRV_3DHH": 304.0,
+          "OPT_PRV_3DLL": 214.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BULL",
+      "monthly_status_trigger": "BULL_CONTINUES",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-18T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22150,
+        "entry_price": 188.7,
+        "target_price": 75.48,
+        "stoploss_price": 301.91999999999996,
+        "ideal_premium": 268.92,
+        "minimum_premium": 201.69000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 22150,
+            "end_strike": 22500,
+            "ideal_premium": 268.92,
+            "minimum_premium": 201.69000000000003,
+            "entry_price": 188.7,
+            "stoploss_price": 301.91999999999996,
+            "target_price": 75.48
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22410.0,
+        "d2ll": 22010.0,
+        "d3hh": 22410.0,
+        "d3ll": 21950.0,
+        "d4hh": 22410.0,
+        "d4ll": 21880.0,
+        "current_day_high": 22440.0,
+        "current_day_low": 22190.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 294.0,
+          "OPT_PRV_2DLL": 204.0,
+          "OPT_PRV_3DHH": 304.0,
+          "OPT_PRV_3DLL": 214.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BULL",
+      "monthly_status_trigger": "BULL_CONTINUES",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-19T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22250,
+        "entry_price": 199.8,
+        "target_price": 79.92000000000002,
+        "stoploss_price": 316.72,
+        "ideal_premium": 264.12,
+        "minimum_premium": 198.09000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "CALL",
+            "start_strike": 22250,
+            "end_strike": 21950,
+            "ideal_premium": 264.12,
+            "minimum_premium": 198.09000000000003,
+            "entry_price": 199.8,
+            "stoploss_price": 316.72,
+            "target_price": 79.92000000000002
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22440.0,
+        "d2ll": 22120.0,
+        "d3hh": 22440.0,
+        "d3ll": 22010.0,
+        "d4hh": 22440.0,
+        "d4ll": 21950.0,
+        "current_day_high": 22300.0,
+        "current_day_low": 21900.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 296.0,
+          "OPT_PRV_2DLL": 205.0,
+          "OPT_PRV_3DHH": 306.0,
+          "OPT_PRV_3DLL": 216.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BULL_CF",
+      "monthly_status_trigger": "BULL_CF_CONTINUES",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": true,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-19T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22200,
+        "entry_price": 189.625,
+        "target_price": 75.85000000000001,
+        "stoploss_price": 303.4,
+        "ideal_premium": 269.28000000000003,
+        "minimum_premium": 201.96000000000004
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 22200,
+            "end_strike": 22500,
+            "ideal_premium": 269.28000000000003,
+            "minimum_premium": 201.96000000000004,
+            "entry_price": 189.625,
+            "stoploss_price": 303.4,
+            "target_price": 75.85000000000001
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22440.0,
+        "d2ll": 22120.0,
+        "d3hh": 22440.0,
+        "d3ll": 22010.0,
+        "d4hh": 22440.0,
+        "d4ll": 21950.0,
+        "current_day_high": 22300.0,
+        "current_day_low": 21900.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 296.0,
+          "OPT_PRV_2DLL": 205.0,
+          "OPT_PRV_3DHH": 306.0,
+          "OPT_PRV_3DLL": 216.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BULL_CF",
+      "monthly_status_trigger": "BULL_CF_CONTINUES",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": true,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-20T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22150,
+        "entry_price": 201.65,
+        "target_price": 80.66000000000001,
+        "stoploss_price": 318.86,
+        "ideal_premium": 262.8,
+        "minimum_premium": 197.10000000000002
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "CALL",
+            "start_strike": 22150,
+            "end_strike": 21850,
+            "ideal_premium": 262.8,
+            "minimum_premium": 197.10000000000002,
+            "entry_price": 201.65,
+            "stoploss_price": 318.86,
+            "target_price": 80.66000000000001
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22440.0,
+        "d2ll": 21900.0,
+        "d3hh": 22440.0,
+        "d3ll": 21900.0,
+        "d4hh": 22440.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22000.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 298.0,
+          "OPT_PRV_2DLL": 207.0,
+          "OPT_PRV_3DHH": 308.0,
+          "OPT_PRV_3DLL": 218.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BULL_CF",
+      "monthly_status_trigger": "BULL_CF_CONTINUES",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-20T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22200,
+        "entry_price": 191.475,
+        "target_price": 76.59,
+        "stoploss_price": 306.36,
+        "ideal_premium": 269.28000000000003,
+        "minimum_premium": 201.96000000000004
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 22200,
+            "end_strike": 22500,
+            "ideal_premium": 269.28000000000003,
+            "minimum_premium": 201.96000000000004,
+            "entry_price": 191.475,
+            "stoploss_price": 306.36,
+            "target_price": 76.59
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22440.0,
+        "d2ll": 21900.0,
+        "d3hh": 22440.0,
+        "d3ll": 21900.0,
+        "d4hh": 22440.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22000.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 298.0,
+          "OPT_PRV_2DLL": 207.0,
+          "OPT_PRV_3DHH": 308.0,
+          "OPT_PRV_3DLL": 218.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BULL_CF",
+      "monthly_status_trigger": "BULL_CF_CONTINUES",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-21T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22150,
+        "entry_price": 192.4,
+        "target_price": 76.96000000000001,
+        "stoploss_price": 307.84000000000003,
+        "ideal_premium": 262.8,
+        "minimum_premium": 197.10000000000002
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "CALL",
+            "start_strike": 22150,
+            "end_strike": 21850,
+            "ideal_premium": 262.8,
+            "minimum_premium": 197.10000000000002,
+            "entry_price": 192.4,
+            "stoploss_price": 307.84000000000003,
+            "target_price": 76.96000000000001
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22400.0,
+        "d2ll": 21900.0,
+        "d3hh": 22440.0,
+        "d3ll": 21900.0,
+        "d4hh": 22440.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22500.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 299.0,
+          "OPT_PRV_2DLL": 208.0,
+          "OPT_PRV_3DHH": 309.0,
+          "OPT_PRV_3DLL": 219.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BEAR",
+      "monthly_status_trigger": "BEAR_A_THRESHOLD",
+      "reversal_dominated": true,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-21T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22200,
+        "entry_price": 202.575,
+        "target_price": 81.03,
+        "stoploss_price": 319.93,
+        "ideal_premium": 269.28000000000003,
+        "minimum_premium": 201.96000000000004
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 22200,
+            "end_strike": 22500,
+            "ideal_premium": 269.28000000000003,
+            "minimum_premium": 201.96000000000004,
+            "entry_price": 202.575,
+            "stoploss_price": 319.93,
+            "target_price": 81.03
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22400.0,
+        "d2ll": 21900.0,
+        "d3hh": 22440.0,
+        "d3ll": 21900.0,
+        "d4hh": 22440.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22500.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 299.0,
+          "OPT_PRV_2DLL": 208.0,
+          "OPT_PRV_3DHH": 309.0,
+          "OPT_PRV_3DLL": 219.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BEAR",
+      "monthly_status_trigger": "BEAR_A_THRESHOLD",
+      "reversal_dominated": true,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-22T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22250,
+        "entry_price": 189.625,
+        "target_price": 75.85000000000001,
+        "stoploss_price": 303.4,
+        "ideal_premium": 264.0,
+        "minimum_premium": 198.00000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "CALL",
+            "start_strike": 22250,
+            "end_strike": 21950,
+            "ideal_premium": 264.0,
+            "minimum_premium": 198.00000000000003,
+            "entry_price": 189.625,
+            "stoploss_price": 303.4,
+            "target_price": 75.85000000000001
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22000.0,
+        "d3hh": 22500.0,
+        "d3ll": 21900.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22450.0,
+        "current_day_low": 22200.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 295.0,
+          "OPT_PRV_2DLL": 205.0,
+          "OPT_PRV_3DHH": 305.0,
+          "OPT_PRV_3DLL": 215.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BEAR_CF",
+      "monthly_status_trigger": "BEAR_CF_B_THRESHOLD",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": true,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-22T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22250,
+        "entry_price": 198.875,
+        "target_price": 79.55000000000001,
+        "stoploss_price": 315.65,
+        "ideal_premium": 270.0,
+        "minimum_premium": 202.50000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 22250,
+            "end_strike": 22550,
+            "ideal_premium": 270.0,
+            "minimum_premium": 202.50000000000003,
+            "entry_price": 198.875,
+            "stoploss_price": 315.65,
+            "target_price": 79.55000000000001
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22000.0,
+        "d3hh": 22500.0,
+        "d3ll": 21900.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22450.0,
+        "current_day_low": 22200.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 295.0,
+          "OPT_PRV_2DLL": 205.0,
+          "OPT_PRV_3DHH": 305.0,
+          "OPT_PRV_3DLL": 215.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BEAR_CF",
+      "monthly_status_trigger": "BEAR_CF_B_THRESHOLD",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": true,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-23T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22350,
+        "entry_price": 194.25,
+        "target_price": 77.7,
+        "stoploss_price": 310.8,
+        "ideal_premium": 265.2,
+        "minimum_premium": 198.90000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 10.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "CALL",
+            "start_strike": 22350,
+            "end_strike": 22050,
+            "ideal_premium": 265.2,
+            "minimum_premium": 198.90000000000003,
+            "entry_price": 194.25,
+            "stoploss_price": 310.8,
+            "target_price": 77.7
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22100.0,
+        "d3hh": 22500.0,
+        "d3ll": 22000.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 300.0,
+          "OPT_PRV_2DLL": 210.0,
+          "OPT_PRV_3DHH": 310.0,
+          "OPT_PRV_3DLL": 220.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BEAR_CF",
+      "monthly_status_trigger": "BEAR_CF_B_THRESHOLD",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": true,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-05-23T15:30:00",
+      "strategy_code": "S23",
+      "accepted": true,
+      "rejection_reason": "Approved",
+      "trade_outputs": {
+        "start_strike": 22250,
+        "entry_price": 203.5,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
+        "ideal_premium": 270.0,
+        "minimum_premium": 202.50000000000003
+      },
+      "parameters": {
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
+        "ideal_premium_pct": 1.2,
+        "minimum_premium_pct": 0.9,
+        "entry_discount_pct": 7.5,
+        "target_pct": 60.0,
+        "sl_entry_pct": 60.0,
+        "sl_reference_pct": 7.0
+      },
+      "validation": {
+        "strategy_config_ok": true,
+        "formula_safety_findings": [],
+        "s23_recalculation": {
+          "enabled": true,
+          "branch_unique_code": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+          "recalculation_applied": false,
+          "entry_missed": null,
+          "base_trade_plan": {
+            "strategy_code": "S23",
+            "symbol": "NIFTY",
+            "option_type": "PUT",
+            "start_strike": 22250,
+            "end_strike": 22550,
+            "ideal_premium": 270.0,
+            "minimum_premium": 202.50000000000003,
+            "entry_price": 203.5,
+            "stoploss_price": 321.0,
+            "target_price": 81.4
+          },
+          "recalculated_trade_plan": null,
+          "entry_missed_result": null,
+          "recalculation_result": null,
+          "unresolved_open_questions": [],
+          "resolved_workbook_corrections": [],
+          "warning": "Missing ORPT snapshot at or before 09:24:59; base trade plan kept."
+        }
+      },
+      "market_snapshot": {
+        "d2hh": 22500.0,
+        "d2ll": 22100.0,
+        "d3hh": 22500.0,
+        "d3ll": 22000.0,
+        "d4hh": 22500.0,
+        "d4ll": 21900.0,
+        "current_day_high": 22400.0,
+        "current_day_low": 22100.0,
+        "opt_levels": {
+          "OPT_PRV_2DHH": 300.0,
+          "OPT_PRV_2DLL": 210.0,
+          "OPT_PRV_3DHH": 310.0,
+          "OPT_PRV_3DLL": 220.0
+        }
+      },
+      "lifecycle_result": {
+        "entered": false,
+        "entry_price": null,
+        "exit_price": null,
+        "entry_timestamp": null,
+        "exit_timestamp": null,
+        "bars_held": 0,
+        "exit_reason": "NO_ENTRY",
+        "pnl_points": null,
+        "max_favorable_excursion": null,
+        "max_adverse_excursion": null,
+        "notes": "Entry price was never touched by the intraday option bars",
+        "quantity": 50,
+        "gross_pnl_points": null,
+        "total_cost_points": null,
+        "net_pnl_points": null,
+        "gross_pnl_rupees": null,
+        "cost_rupees": null,
+        "net_pnl_rupees": null,
+        "cumulative_net_pnl_rupees": null,
+        "drawdown_rupees": null
+      },
+      "monthly_status": "BEAR_CF",
+      "monthly_status_trigger": "BEAR_CF_B_THRESHOLD",
+      "reversal_dominated": false,
+      "selected_branch_unique_codes": [
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_CALL",
+        "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT"
+      ],
+      "monthly_status_candidates": [
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "BULL_A_THRESHOLD",
+          "threshold_value": 100.75,
+          "condition_met": false,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BULL candidate from PMH plus a-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "BEAR_A_THRESHOLD",
+          "threshold_value": 89.325,
+          "condition_met": true,
+          "confidence": "HIGH",
+          "notes": "Diagnostic BEAR candidate from PML minus a-percent threshold."
+        },
+        {
+          "candidate_status": "BULL_CF",
+          "trigger_name": "BULL_CF_B_THRESHOLD",
+          "threshold_value": 101.50562500000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BULL_CF candidate from bullish reference plus b-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR_CF",
+          "trigger_name": "BEAR_CF_B_THRESHOLD",
+          "threshold_value": 88.65506250000001,
+          "condition_met": true,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic BEAR_CF candidate from bearish reference minus b-percent threshold."
+        },
+        {
+          "candidate_status": "BULL",
+          "trigger_name": "REVERSAL_BULL_C_THRESHOLD",
+          "threshold_value": 110.165,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BULL candidate from MAX(PWH, CWH) plus c-percent threshold."
+        },
+        {
+          "candidate_status": "BEAR",
+          "trigger_name": "REVERSAL_BEAR_C_THRESHOLD",
+          "threshold_value": 79.88000000000001,
+          "condition_met": false,
+          "confidence": "MEDIUM",
+          "notes": "Diagnostic reversal BEAR candidate from MIN(PWL, CWL) minus c-percent threshold."
+        }
+      ]
+    }
+  ],
+  "metrics": {
+    "total_evaluations": 12,
+    "accepted_candidates": 12,
+    "rejected_candidates": 0,
+    "rejection_reason_distribution": {},
+    "entered_trades": 0,
+    "expiry_day_candidates": 0,
+    "expiry_day_entered": 0,
+    "expiry_day_exit_satisfied": 0,
+    "expiry_day_exit_pending": 0,
+    "target_hits": 0,
+    "stoploss_hits": 0,
+    "no_entry": 12,
+    "no_exit": 0,
+    "eod_square_off": 0,
+    "carry_forward_pending": 0,
+    "total_pnl_points": 0.0,
+    "average_pnl_points": 0.0,
+    "total_gross_pnl_points": 0.0,
+    "total_cost_points": 0.0,
+    "total_net_pnl_points": 0.0,
+    "average_net_pnl_points": 0.0,
+    "total_gross_pnl_rupees": 0.0,
+    "total_cost_rupees": 0.0,
+    "total_net_pnl_rupees": 0.0,
+    "average_net_pnl_rupees": 0.0,
+    "final_net_pnl_rupees": 0.0,
+    "max_drawdown_rupees": 0.0,
+    "max_drawdown_points": 0.0,
+    "best_trade_net_rupees": 0.0,
+    "worst_trade_net_rupees": 0.0,
+    "average_mfe": 0.0,
+    "average_mae": 0.0,
+    "win_rate": 0.0,
+    "loss_rate": 0.0,
+    "no_entry_rate": 1.0,
+    "no_exit_rate": 0.0
+  },
+  "monthly_status_skips": [],
+  "enable_s23_recalculation": true
+}

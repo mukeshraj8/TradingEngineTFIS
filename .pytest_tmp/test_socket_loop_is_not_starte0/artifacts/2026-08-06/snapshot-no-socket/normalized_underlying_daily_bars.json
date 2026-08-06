@@ -1,0 +1,72 @@
+{
+  "bars": [
+    {
+      "bar_end": "2026-05-02T15:29:59+05:30",
+      "bar_start": "2026-05-02T15:15:00+05:30",
+      "close": 22560.0,
+      "high": 22680.0,
+      "low": 22510.0,
+      "open": 22620.0,
+      "source_id": "unit-test-daily-bars",
+      "symbol": "NIFTY",
+      "volume": 1000.0
+    },
+    {
+      "bar_end": "2026-05-03T15:29:59+05:30",
+      "bar_start": "2026-05-03T15:15:00+05:30",
+      "close": 22480.0,
+      "high": 22610.0,
+      "low": 22420.0,
+      "open": 22560.0,
+      "source_id": "unit-test-daily-bars",
+      "symbol": "NIFTY",
+      "volume": 1000.0
+    },
+    {
+      "bar_end": "2026-05-04T15:29:59+05:30",
+      "bar_start": "2026-05-04T15:15:00+05:30",
+      "close": 22410.0,
+      "high": 22520.0,
+      "low": 22360.0,
+      "open": 22480.0,
+      "source_id": "unit-test-daily-bars",
+      "symbol": "NIFTY",
+      "volume": 1000.0
+    },
+    {
+      "bar_end": "2026-05-05T15:29:59+05:30",
+      "bar_start": "2026-05-05T15:15:00+05:30",
+      "close": 22390.0,
+      "high": 22480.0,
+      "low": 22310.0,
+      "open": 22410.0,
+      "source_id": "unit-test-daily-bars",
+      "symbol": "NIFTY",
+      "volume": 1000.0
+    },
+    {
+      "bar_end": "2026-05-06T15:29:59+05:30",
+      "bar_start": "2026-05-06T15:15:00+05:30",
+      "close": 22340.0,
+      "high": 22430.0,
+      "low": 22290.0,
+      "open": 22390.0,
+      "source_id": "unit-test-daily-bars",
+      "symbol": "NIFTY",
+      "volume": 1000.0
+    },
+    {
+      "bar_end": "2026-05-08T15:29:59+05:30",
+      "bar_start": "2026-05-08T09:15:00+05:30",
+      "close": 22440.0,
+      "high": 22462.0,
+      "low": 22395.0,
+      "open": 22410.0,
+      "source_id": "unit-test-daily-bars",
+      "symbol": "NIFTY",
+      "volume": 1000.0
+    }
+  ],
+  "session_date": "2026-08-06",
+  "symbol": "NIFTY"
+}

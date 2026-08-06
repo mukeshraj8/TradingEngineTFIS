@@ -1,0 +1,7 @@
+{
+  "business_hashes_regenerated_after_accounting_metadata_correction": true,
+  "required_validation_strategy": "split_batches_to_avoid_timeouts",
+  "schema_version": "s21.validation_summary.complete_strategy.v1",
+  "status": "PENDING_FINAL_VALIDATION",
+  "validation_hash": "1bf05f7d1cfd5b733fdf6a2875a05c16fdd842645b43a6758b6dce562d8faf03"
+}

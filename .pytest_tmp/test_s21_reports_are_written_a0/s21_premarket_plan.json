@@ -1,0 +1,40 @@
+{
+  "base_entry": "925.00",
+  "branch_selection_hash": "85f30a29b63e14e68bd8364fe10824e3f23a3343d0efe1a9ce9b39b9584f5098",
+  "configured_lots": 1,
+  "contract_selection_hash": "9b928f9e8dca744ef9325daca1e83f901a5008280b286ecc20a29bf72cc42962",
+  "exchange_quantity": 15,
+  "lot_size": 15,
+  "monthly_status_result_hash": "48e65768fcb9cd94c24e6a66c829e68535c45d571354c0eacbb37c9e3284916a",
+  "original_sl": "1337.50",
+  "orpt_time": "09:19:59",
+  "premarket_plan_hash": "3c17921127280845cb614ea51397a20c41452473e4ebaee3f30663cfd85cb850",
+  "premarket_plan_id": "s21-premarket:3c17921127280845cb614ea5",
+  "rc_time": "09:29:59",
+  "schema_version": "s21.premarket_plan.first_branch.v1",
+  "selected_contract": {
+    "exchange": "NSE",
+    "expiry": "2024-01-25",
+    "metadata": {
+      "branch_id": "BULL_CALL",
+      "configured_lots": 1,
+      "currency": "INR",
+      "lot_size": 15,
+      "tick_size": "0.05",
+      "underlying": "BANKNIFTY"
+    },
+    "option_type": "CE",
+    "product_type": "OPTION_SELLING",
+    "segment": "OPTIONS_SELL",
+    "strike": 47000.0,
+    "symbol": "BANKNIFTY_20240125_47000_CE"
+  },
+  "source_rule_ids": [
+    "S21.BULL_CALL.STATIC.001",
+    "S21.CONTRACT_SELECTION.001",
+    "S21.FRESH_ENTRY_ORPT_RC.001"
+  ],
+  "strategy_instance_id": "S21_BANKNIFTY_ACCOUNT_A_PAPER",
+  "target": "370.00",
+  "trading_date": "2024-01-23"
+}

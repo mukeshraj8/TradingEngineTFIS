@@ -1,0 +1,19 @@
+{
+  "accounting_seconds": 0,
+  "branch_resolution_seconds": 0,
+  "conflation_backpressure": "NOT_LIVE_MEASURED",
+  "contract_selection_seconds": 0,
+  "database_growth_bytes": 0,
+  "duplicate_replay": "PASSED",
+  "event_normalization_seconds": 0,
+  "intent_order_fill_seconds": 0,
+  "measurement_type": "LOCAL_FIXTURE_OBSERVATION_NOT_LIVE_PERFORMANCE",
+  "memory_high_water_mark_mb": "NOT_MEASURED",
+  "position_cycle_seconds": 0,
+  "runtime_processing_seconds": 0.110927,
+  "sequential_multi_session_run": "PASSED",
+  "session_inventory_parsing_seconds": 0,
+  "stress_10x_or_100x": "NOT_RUN_NOT_REQUIRED_FOR_FIXTURE_OBSERVATION",
+  "three_run_determinism": true,
+  "total_seconds": 0.110927
+}

@@ -1,0 +1,17 @@
+{
+  "authority_mode": "INTERNAL_PAPER_CERTIFICATION_ONLY",
+  "contract": "EndToEndCertificationRun",
+  "required_identity": [
+    "certification_run_id",
+    "scenario_id",
+    "trading_session_id",
+    "strategy_instance_id",
+    "logical_paper_account",
+    "configuration_hash",
+    "rule_matrix_version",
+    "source_fixture_identity",
+    "initial_schema_version",
+    "authority_grant_id",
+    "run_hash"
+  ]
+}

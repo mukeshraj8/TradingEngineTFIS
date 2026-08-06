@@ -1,0 +1,48 @@
+{
+  "artifact_version": 1,
+  "blocking_event_type": null,
+  "blocking_source_id": null,
+  "execution_started": false,
+  "fill_simulation_started": false,
+  "guardrail_code": null,
+  "guardrail_message": null,
+  "operator_action_required": null,
+  "order_plan": {
+    "end_strike": 25000.0,
+    "fsl_price": 816.35,
+    "ideal_premium": 790.0,
+    "lots": 1,
+    "minimum_premium": 760.0,
+    "monthly_status": "BEAR",
+    "order_reference_label": "RC",
+    "order_reference_time": "2026-05-08T09:29:59+05:30",
+    "order_side": "SELL",
+    "overlays_enabled": [
+      "S23_CURRENT_DAY_FSL_TRP"
+    ],
+    "planned_entry_price": 798.3,
+    "planning_timestamp": "2026-05-08T09:30:04+05:30",
+    "quantity": 100,
+    "required_snapshot_labels": [
+      "0915",
+      "ORPT",
+      "RC"
+    ],
+    "selected_contract_expiry": "2026-05-12",
+    "selected_contract_ltp": 799.1,
+    "selected_contract_option_type": "PUT",
+    "selected_contract_symbol": "NIFTY_20260512_25000_PE",
+    "session_date": "2026-05-08",
+    "source_workbook_rule": "AB6_OS_Z186",
+    "start_strike": 24625.0,
+    "stoploss_price": 816.35,
+    "strategy_branch": "NIFTY_OP_SELL_WK_DIFF_2D_3D_BEAR_PUT",
+    "strategy_code": "S23",
+    "target_price": 791.85,
+    "workbook_row_number": 186
+  },
+  "selected_contract_quote_present": true,
+  "selected_contract_symbol": "NIFTY_20260512_25000_PE",
+  "session_id": "generic-adapter-pass",
+  "state": "ORDER_PLANNED"
+}

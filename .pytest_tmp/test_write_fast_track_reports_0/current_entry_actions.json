@@ -1,0 +1,15 @@
+{
+  "captured_at": "2026-08-04T12:00:00+05:30",
+  "explanation_facts": [
+    {
+      "decision_id": "x",
+      "strategy_instance_id": "S21_BANKNIFTY_INTERNAL_PAPER_A"
+    }
+  ],
+  "outcomes": {
+    "S21_BANKNIFTY_INTERNAL_PAPER_A": {
+      "decision": "PROCESSED_INTERNAL_PAPER",
+      "final_state": "FILLED_INTERNAL"
+    }
+  }
+}

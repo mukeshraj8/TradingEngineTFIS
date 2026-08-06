@@ -1,0 +1,174 @@
+{
+  "audit_transition_count": 5,
+  "audit_transitions": [
+    {
+      "event_type": "COST_SLIPPAGE_SETTINGS",
+      "guardrail_code": null,
+      "new_state": "PRE_MARKET_READY",
+      "previous_state": "NOT_STARTED",
+      "reason": "pre_market_inputs_ready",
+      "terminal_code": null,
+      "timestamp": "2026-05-08T09:00:51+05:30"
+    },
+    {
+      "event_type": "COST_SLIPPAGE_SETTINGS",
+      "guardrail_code": null,
+      "new_state": "WAITING_FOR_0915",
+      "previous_state": "PRE_MARKET_READY",
+      "reason": "awaiting_0915_snapshot",
+      "terminal_code": null,
+      "timestamp": "2026-05-08T09:00:51+05:30"
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "guardrail_code": null,
+      "new_state": "WAITING_FOR_ORPT",
+      "previous_state": "WAITING_FOR_0915",
+      "reason": "awaiting_orpt_snapshot",
+      "terminal_code": null,
+      "timestamp": "2026-05-08T09:15:01+05:30"
+    },
+    {
+      "event_type": "UNDERLYING_SNAPSHOT",
+      "guardrail_code": null,
+      "new_state": "WAITING_FOR_RC",
+      "previous_state": "WAITING_FOR_ORPT",
+      "reason": "awaiting_rc_snapshot",
+      "terminal_code": null,
+      "timestamp": "2026-05-08T09:25:01+05:30"
+    },
+    {
+      "event_type": null,
+      "guardrail_code": "missing_selected_contract_quote",
+      "new_state": "NO_TRADE",
+      "previous_state": "WAITING_FOR_RC",
+      "reason": "session_finalize_no_trade",
+      "terminal_code": "missing_selected_contract_quote",
+      "timestamp": "2026-05-08T09:30:04+05:30"
+    }
+  ],
+  "bundle_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_selected_contract2\\dry_runs\\2026-05-08\\archive-ingress-no-selected",
+  "data_provenance": {
+    "cost_slippage_version": "paper-cost-v1",
+    "data_source_count": 10,
+    "source_ids": [
+      "D:/TradingData/captures/context_sessions/2026-05-08/live_20260508_092504_prod_pid19984/monthly_status.json",
+      "D:/TradingData/captures/context_sessions/2026-05-08/live_20260508_092504_prod_pid19984/ticks_context.csv",
+      "normalized_config:s23_ingress_dry_run",
+      "normalized_costs:s23_ingress_dry_run",
+      "normalized_option_chain:2026-05-08",
+      "normalized_snapshot:0915",
+      "normalized_snapshot:orpt",
+      "normalized_snapshot:rc",
+      "normalized_trade_plan:s23_bear_put_row186",
+      "normalized_underlying_quote:nifty"
+    ],
+    "source_types": [
+      "archive_export"
+    ],
+    "synthetic_fixture_used": false
+  },
+  "fill_phase": null,
+  "freshness": {
+    "planning_timestamp": null,
+    "selected_contract_captured_at": null,
+    "selected_contract_effective_timestamp": null,
+    "selected_contract_quote_age_seconds_at_planning": null,
+    "selected_contract_quote_present": false,
+    "stale_warning_present": false,
+    "warning_flags": []
+  },
+  "guardrail": {
+    "blocking_event_type": "SELECTED_CONTRACT_QUOTE",
+    "blocking_source_id": null,
+    "code": "missing_selected_contract_quote",
+    "message": "Decision-ready paper sessions require a selected contract quote.",
+    "operator_action_required": "Refresh or reselect the chosen contract quote before continuing the S23 paper shell."
+  },
+  "lifecycle_phase": null,
+  "no_execution_disclaimer": "No order was placed, no fill was simulated, no position was opened, and no lifecycle monitoring occurred yet; this review covers planning and fillless pre-execution shell artifacts only.",
+  "order_intent": {
+    "available": false,
+    "blocking_event_type": null,
+    "blocking_source_id": null,
+    "bundle_validated": true,
+    "disclaimer": "No order was placed, no fill was simulated, no position was opened, and no lifecycle monitoring occurred yet; this is a pre-execution paper-shell journal.",
+    "dispatch_shell_status": null,
+    "execution_shell_status": null,
+    "fsl_price": null,
+    "future_fill_simulation_eligible": false,
+    "guardrail_code": null,
+    "guardrail_message": null,
+    "handoff_shell_status": null,
+    "historical_comparison_go_no_go": null,
+    "historical_comparison_reason": null,
+    "historical_comparison_status": null,
+    "lots": null,
+    "message": "No paper order intent created because the S23 paper session ended in NO_TRADE.",
+    "operator_action_required": "Refresh or reselect the chosen contract quote before continuing the S23 paper shell.",
+    "order_reference_label": null,
+    "order_reference_time": null,
+    "order_side": null,
+    "planned_entry_price": null,
+    "quantity": null,
+    "reason_code": "missing_selected_contract_quote",
+    "source_branch": null,
+    "source_workbook_rule": null,
+    "status": "INTENT_SKIPPED",
+    "stoploss_price": null,
+    "target_price": null,
+    "workbook_row_number": null
+  },
+  "order_plan": null,
+  "readiness_status": "NO_TRADE",
+  "replay_bundle": {
+    "bundle_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_selected_contract2\\dry_runs\\2026-05-08\\archive-ingress-no-selected",
+    "errors": [],
+    "is_valid": true,
+    "manifest_present": true,
+    "terminal_reason_code": "missing_selected_contract_quote",
+    "terminal_state": "NO_TRADE",
+    "validation_performed": true,
+    "warnings": []
+  },
+  "runtime_contracts": {
+    "fill": null,
+    "intent": null,
+    "lifecycle": null,
+    "shell": {
+      "dispatch_shell_status": null,
+      "execution_shell_status": null,
+      "handoff_shell_status": null,
+      "historical_comparison_go_no_go": null,
+      "historical_comparison_reason": null,
+      "historical_comparison_status": null,
+      "intent_status": "INTENT_SKIPPED",
+      "selected_contract_symbol": "n/a",
+      "session_date": "2026-05-08",
+      "session_id": "archive-ingress-no-selected",
+      "strategy_code": "S23",
+      "terminal_state": "NO_TRADE"
+    }
+  },
+  "selected_contract": {
+    "ask": null,
+    "available": false,
+    "bid": null,
+    "captured_at": null,
+    "effective_timestamp": null,
+    "expiry": null,
+    "ltp": null,
+    "oi": null,
+    "option_type": null,
+    "strike": null,
+    "symbol": null,
+    "volume": null
+  },
+  "session_date": "2026-05-08",
+  "session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_missing_selected_contract2\\dry_runs\\2026-05-08\\archive-ingress-no-selected",
+  "session_id": "archive-ingress-no-selected",
+  "strategy_code": "S23",
+  "terminal_reason_code": "missing_selected_contract_quote",
+  "terminal_reason_message": "Decision-ready paper sessions require a selected contract quote.",
+  "terminal_state": "NO_TRADE"
+}

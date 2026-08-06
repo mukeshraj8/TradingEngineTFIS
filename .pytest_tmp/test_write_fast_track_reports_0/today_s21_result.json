@@ -1,0 +1,10 @@
+{
+  "reconstruction": {
+    "current_entry_state": "NORMAL_ENTRY_STILL_VALID"
+  },
+  "selection": {
+    "recovery_mode": "HISTORICALLY_RECONSTRUCTED",
+    "selected_contract": "NSE:BANKNIFTY26AUG57000CE",
+    "symbol": "BANKNIFTY"
+  }
+}

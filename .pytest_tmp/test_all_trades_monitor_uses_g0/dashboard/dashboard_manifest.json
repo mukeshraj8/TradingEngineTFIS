@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-07-20T10:30:00+05:30",
+  "historical_trades_page": "trades\\history\\index.html",
+  "orders_page": "orders\\index.html",
+  "review_data": {
+    "monthly_status_index": "data\\review\\monthly-status\\index.json"
+  },
+  "strategies": [
+    {
+      "artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_all_trades_monitor_uses_g0\\s23-artifacts",
+      "display_name": "S23 Operator Dashboard",
+      "page": "strategies\\S23\\index.html",
+      "sessions": [
+        {
+          "final_decision_status": "NO_GO",
+          "final_monthly_status": "BULL",
+          "final_selected_contract_symbol": null,
+          "final_selected_contract_symbols": [
+            "NIFTY_20260721_23950_CE"
+          ],
+          "session_date": "2026-07-17",
+          "session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_all_trades_monitor_uses_g0\\s23-artifacts\\2026-07-17\\s23-fyers-morning-supervised-decision-2026-07-17",
+          "session_status": "NO_GO",
+          "stage_count": 0
+        }
+      ],
+      "strategy_code": "S23"
+    },
+    {
+      "artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_all_trades_monitor_uses_g0\\s21-artifacts",
+      "display_name": "S21 Operator Dashboard",
+      "page": "strategies\\S21\\index.html",
+      "sessions": [
+        {
+          "final_decision_status": "READY",
+          "final_monthly_status": "BULL_CF",
+          "final_selected_contract_symbol": null,
+          "final_selected_contract_symbols": [
+            "BANKNIFTY_20260728_57300_CE"
+          ],
+          "session_date": "2026-07-20",
+          "session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_all_trades_monitor_uses_g0\\s21-artifacts\\2026-07-20\\s21-fyers-morning-supervised-decision-2026-07-20",
+          "session_status": "READY",
+          "stage_count": 0
+        }
+      ],
+      "strategy_code": "S21"
+    }
+  ],
+  "tools": {
+    "charts": "tools\\charts\\index.html",
+    "monthly_status_calculator": "tools\\monthly-status-calculator\\index.html",
+    "s23_manual_calculator": "tools\\s23-manual-calculator\\index.html"
+  },
+  "trades_page": "trades\\index.html"
+}

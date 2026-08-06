@@ -1,0 +1,48 @@
+{
+  "abort_reasons": [],
+  "brokerage_per_lot": 20.0,
+  "contract_cycle": "WEEKLY",
+  "cost_slippage_version": "paper-cost-v1",
+  "data_sources": [
+    {
+      "event_type": "CALENDAR_CONTEXT",
+      "source_id": "calendar_context-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "COST_SLIPPAGE_SETTINGS",
+      "source_id": "cost_slippage_settings-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "MONTHLY_STATUS_INPUT",
+      "source_id": "monthly_status_input-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    },
+    {
+      "event_type": "PAPER_SESSION_CONFIG",
+      "source_id": "paper_session_config-source",
+      "source_type": "paper_fixture",
+      "synthetic_fixture": true
+    }
+  ],
+  "evaluated_state": "PRE_MARKET_READY",
+  "generated_at": "2026-05-27T09:03:01+05:30",
+  "mode": "paper",
+  "no_trade_reasons": [
+    "monthly_status_unknown"
+  ],
+  "overlays_enabled": [],
+  "readiness_status": "NO_TRADE",
+  "session_date": "2026-05-27",
+  "slippage_entry_points": 1.0,
+  "slippage_exit_points": 1.0,
+  "spread_buffer_policy": "bid_ask_guard",
+  "strategy_code": "S23",
+  "symbol": "NIFTY",
+  "synthetic_fixture_used": true,
+  "warnings": []
+}

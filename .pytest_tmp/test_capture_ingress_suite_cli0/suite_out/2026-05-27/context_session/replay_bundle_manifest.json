@@ -1,0 +1,38 @@
+{
+  "artifact_files": [
+    {
+      "relative_path": "audit_events.jsonl",
+      "sha256": "e20b785da5d9c3fe869835c8d6ed2e4bf6b0941a745e8c5ea25b3da9c748b52a",
+      "size_bytes": 3987
+    },
+    {
+      "relative_path": "decision_summary.json",
+      "sha256": "8d88fec8f5fbeb8d4dfef6fa1864cd053ad3a420f32529b51a4a627dd4a91792",
+      "size_bytes": 3147
+    },
+    {
+      "relative_path": "paper_order_plan.json",
+      "sha256": "08dd0c10cf9069d0dfac1da8a0d543744c2a7ccc192703fef6656926ff18b184",
+      "size_bytes": 1458
+    },
+    {
+      "relative_path": "selected_contract.json",
+      "sha256": "9641d85733c03b4cf1a9b1b7d00b3848cd58fba391f39fdff6e79b9c951e82b9",
+      "size_bytes": 900
+    },
+    {
+      "relative_path": "session_manifest.json",
+      "sha256": "008702d19831a6451365bec882e484e7e1d7d1c4c5eaa3d7f339e3cd11f89eec",
+      "size_bytes": 2874
+    }
+  ],
+  "bundle_version": 1,
+  "created_at": "2026-05-27T09:30:02+05:30",
+  "session_date": "2026-05-27",
+  "session_id": "context_session",
+  "source_artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_capture_ingress_suite_cli0\\suite_out",
+  "source_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_capture_ingress_suite_cli0\\suite_out\\2026-05-27\\context_session",
+  "strategy_code": "S23",
+  "terminal_reason_code": null,
+  "terminal_state": "ORDER_PLANNED"
+}

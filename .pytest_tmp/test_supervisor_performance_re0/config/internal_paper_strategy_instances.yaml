@@ -1,0 +1,46 @@
+schema_version: tfis.enabled_strategy_instances.v1
+session_scope:
+  trading_session_id: NSE:2026-08-03:INTERNAL_PAPER
+  timezone: Asia/Calcutta
+  authority_mode: INTERNAL_PAPER_CONTROLLED
+accounts:
+  - account_reference: INTERNAL_PAPER_ACCOUNT_A
+risk:
+  maximum_new_entries_per_session: 3
+  maximum_concurrent_positions: 3
+  maximum_account_margin_usage_pct: 70
+  aggregate_option_selling_exposure: 3
+  daily_loss_limit: 50000
+  global_halt: false
+instances:
+  - strategy_definition_id: S21_BANKNIFTY_OP_SELL_MONTHLY
+    strategy_version: s21.test.v1
+    strategy_instance_id: S21_BANKNIFTY_INTERNAL_PAPER_A
+    account_reference: INTERNAL_PAPER_ACCOUNT_A
+    underlying:
+      exchange: NSE
+      symbol: BANKNIFTY
+      instrument_type: INDEX
+    product: OPTION_SELLING
+    enabled: true
+    configured_quantity:
+      lots: 1
+      lot_size: 15
+    authority_mode: INTERNAL_PAPER_CONTROLLED
+    market_data_source: CERTIFICATION_FIXTURE
+    rule_config_hash: cfg-s21
+    risk_allocation:
+      max_positions: 1
+      max_margin_usage_pct: 25
+    operator_approval_status: APPROVED_INTERNAL_PAPER
+    evidence_quality: FIXTURE_BACKED
+    source_reports: {}
+    deterministic_projection:
+      branch: BULL_CALL
+      selected_contract: BANKNIFTY24JAN47000CE
+      entry: '925.00'
+      target: '370.00'
+      original_sl: '1337.50'
+      monthly_status: BULL_CF
+      market_references: {}
+      expiry_candidates: []

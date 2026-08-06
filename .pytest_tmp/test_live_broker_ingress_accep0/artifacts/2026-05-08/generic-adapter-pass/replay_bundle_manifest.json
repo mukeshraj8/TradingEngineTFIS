@@ -1,0 +1,38 @@
+{
+  "artifact_files": [
+    {
+      "relative_path": "audit_events.jsonl",
+      "sha256": "8014fcaeacae2abdefd5b4e02dcd63123d4a748f5aa30d9cac2df652dd6e90da",
+      "size_bytes": 3902
+    },
+    {
+      "relative_path": "decision_summary.json",
+      "sha256": "ff7d5a56f89dd2e5371f3cc078b3c5bc6799be6fce82c32648cbf0eb9e7aab4e",
+      "size_bytes": 3256
+    },
+    {
+      "relative_path": "paper_order_plan.json",
+      "sha256": "fd44e74938a8bda1bd786d45c729d920565a45d2bd0866ffba18c4b2585dc82e",
+      "size_bytes": 1436
+    },
+    {
+      "relative_path": "selected_contract.json",
+      "sha256": "18ee640aef53fdde89a3fcf9ed77976afa8fc67b0152d7bf2940ab4332a295ad",
+      "size_bytes": 698
+    },
+    {
+      "relative_path": "session_manifest.json",
+      "sha256": "b9dbfa7b9bb32b012f400e2f584a0bb710e3a92239fac0c0ee3f327c8d138d79",
+      "size_bytes": 2970
+    }
+  ],
+  "bundle_version": 1,
+  "created_at": "2026-05-08T09:30:04+05:30",
+  "session_date": "2026-05-08",
+  "session_id": "generic-adapter-pass",
+  "source_artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_accep0\\artifacts",
+  "source_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_live_broker_ingress_accep0\\artifacts\\2026-05-08\\generic-adapter-pass",
+  "strategy_code": "S23",
+  "terminal_reason_code": null,
+  "terminal_state": "ORDER_PLANNED"
+}

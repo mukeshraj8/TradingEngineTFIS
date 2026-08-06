@@ -1,0 +1,10 @@
+[
+  {
+    "gap_id": "PHASE5B_EXTERNAL_AUTHORITY_NONE",
+    "status": "INTENTIONAL"
+  },
+  {
+    "gap_id": "PHASE5B_REAL_CAPTURE_BREADTH",
+    "status": "DEFER_TO_MULTI_SESSION_OBSERVATION"
+  }
+]

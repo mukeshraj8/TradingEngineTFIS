@@ -1,0 +1,14 @@
+{
+  "late_event_count": 0,
+  "max_quote_age_seconds_at_finalize": null,
+  "max_snapshot_arrival_lag_seconds": 2.0,
+  "missing_option_chain_count": 0,
+  "missing_selected_contract_count": 1,
+  "no_trade_rate": 1.0,
+  "processed_events": 10,
+  "selected_contract_availability_ratio": 0.0,
+  "stale_event_count": 0,
+  "timezone_mismatch_count": 0,
+  "total_events": 10,
+  "unsupported_continuation_count": 0
+}

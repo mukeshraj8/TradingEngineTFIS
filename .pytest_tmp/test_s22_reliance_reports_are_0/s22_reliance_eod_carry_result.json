@@ -1,0 +1,152 @@
+{
+  "eod_exit": {
+    "entry_order_state": "FILLED_INTERNAL",
+    "entry_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "exit_order_state": "FILLED_INTERNAL",
+    "exit_validation_decision": "VALIDATED_NOT_SUBMITTABLE",
+    "pnl_fact_ids": [
+      "pnl-fact:b271eb894fe9dd887c49d524",
+      "pnl-fact:d7f07d14199c086dbab98b59"
+    ],
+    "remaining_quantity": 0,
+    "scenario_hash": "30615fa57f3bc810c5fe5bab6a1d9a289a1843751ca60730b87e1ca8762b8c4f",
+    "terminal_position_state": "CLOSED",
+    "trade_fact_id": "trade-fact:037bd87133b79bb43aad40cb"
+  },
+  "equality_carry": {
+    "equality_outcome": "CARRY_FORWARD",
+    "observed_price": "92.00",
+    "operator": "<=",
+    "original_sl": "92.00",
+    "projection": {
+      "active_order_references": [],
+      "active_original_sl": null,
+      "active_revised_sl": null,
+      "active_target": null,
+      "average_entry_price": "57.5",
+      "average_exit_price": null,
+      "cancelled_protections": [],
+      "carry_forward_status": "EOD_EQUAL_OR_BELOW_ORIGINAL_SL_CARRY_FORWARD",
+      "confirmed_entry_quantity": 500,
+      "currency": "INR",
+      "entry_fill_ids": [
+        "internal-fill:eaa26a333ff61361d1b6ef38"
+      ],
+      "exit_fill_ids": [],
+      "filled_exit_order_id": null,
+      "identity": {
+        "authority_classification": "INTERNAL_PAPER_ONLY",
+        "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+        "broker_reconciliation_authority": false,
+        "direction": "BEAR_CALL",
+        "external_broker_position": false,
+        "live_position": false,
+        "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+        "normalized_contract": "NSE:RELIANCE26AUG1260CE",
+        "originating_entry_execution_intent_id": "exec-intent:0a490cfe6d215482d0477059",
+        "originating_execution_plan_id": "s22-reliance-effective:normal",
+        "originating_trading_date": "2026-08-03",
+        "position_cycle_hash": "7a800d3cf3254c79aba5f2eff3bad0740a68f365e89a026076467118548c1ce0",
+        "position_cycle_id": "ipc:d00b18471ef647c474a95848",
+        "side": "SELL",
+        "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+        "strategy_family_id": "OPTION_SELLING",
+        "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+        "strategy_version": "1.0.0",
+        "trading_session_id": "NSE:2026-08-03"
+      },
+      "lifecycle_state": "CARRIED_FORWARD",
+      "lot_size": 500,
+      "multiplier": "1",
+      "next_trading_session_id": "NSE:2026-08-04",
+      "originating_trading_date": "2026-08-03",
+      "projection_hash": "5a5d95f0bdab578ad45f8fe81d9ff88b1b3680ec67e636857157df9c3ab6bd0d",
+      "projection_version": 3,
+      "protection_generation": 0,
+      "realized_quantity": 0,
+      "remaining_quantity": 500,
+      "superseded_protections": [],
+      "terminal_status": null
+    },
+    "source_rule_id": "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001",
+    "transition": {
+      "consistency_status": "MATCHED",
+      "event": {
+        "event_hash": "51b0b6fa43ce10dd994880d8baa5677772d101647420acda8d88a2a834cafcd9",
+        "event_id": "position-event:33b47540ec19e880ddc0eab8",
+        "event_sequence": 3,
+        "event_timestamp": "2026-08-03T15:00:00+05:30",
+        "event_type": "CARRY_FORWARD_RECORDED",
+        "new_state": "CARRIED_FORWARD",
+        "position_cycle_id": "ipc:d00b18471ef647c474a95848",
+        "price_evidence": {
+          "equality_behavior": "CARRY_FORWARD",
+          "observed_price": "92.00",
+          "original_sl": "92.00"
+        },
+        "prior_state": "OPEN_UNPROTECTED",
+        "quantity_after": 500,
+        "quantity_before": 500,
+        "rule_ids": [
+          "GLOBAL.OPTION_SELLING.EOD_CARRY_GT_EXIT_LTE_CARRY.001"
+        ],
+        "source_client_order_id": null,
+        "source_fill_id": null,
+        "source_requirement_id": null
+      },
+      "projection": {
+        "active_order_references": [],
+        "active_original_sl": null,
+        "active_revised_sl": null,
+        "active_target": null,
+        "average_entry_price": "57.5",
+        "average_exit_price": null,
+        "cancelled_protections": [],
+        "carry_forward_status": "EOD_EQUAL_OR_BELOW_ORIGINAL_SL_CARRY_FORWARD",
+        "confirmed_entry_quantity": 500,
+        "currency": "INR",
+        "entry_fill_ids": [
+          "internal-fill:eaa26a333ff61361d1b6ef38"
+        ],
+        "exit_fill_ids": [],
+        "filled_exit_order_id": null,
+        "identity": {
+          "authority_classification": "INTERNAL_PAPER_ONLY",
+          "broker_account_id": "S22_ACCOUNT_A_INTERNAL_PAPER",
+          "broker_reconciliation_authority": false,
+          "direction": "BEAR_CALL",
+          "external_broker_position": false,
+          "live_position": false,
+          "logical_account_reference": "INTERNAL_PAPER_ACCOUNT",
+          "normalized_contract": "NSE:RELIANCE26AUG1260CE",
+          "originating_entry_execution_intent_id": "exec-intent:0a490cfe6d215482d0477059",
+          "originating_execution_plan_id": "s22-reliance-effective:normal",
+          "originating_trading_date": "2026-08-03",
+          "position_cycle_hash": "7a800d3cf3254c79aba5f2eff3bad0740a68f365e89a026076467118548c1ce0",
+          "position_cycle_id": "ipc:d00b18471ef647c474a95848",
+          "side": "SELL",
+          "strategy_definition_id": "S22_STOCKS_OP_SELL_MONTHLY_DIFF_2D_4D",
+          "strategy_family_id": "OPTION_SELLING",
+          "strategy_instance_id": "S22_RELIANCE_ACCOUNT_A_INTERNAL_PAPER",
+          "strategy_version": "1.0.0",
+          "trading_session_id": "NSE:2026-08-03"
+        },
+        "lifecycle_state": "CARRIED_FORWARD",
+        "lot_size": 500,
+        "multiplier": "1",
+        "next_trading_session_id": "NSE:2026-08-04",
+        "originating_trading_date": "2026-08-03",
+        "projection_hash": "5a5d95f0bdab578ad45f8fe81d9ff88b1b3680ec67e636857157df9c3ab6bd0d",
+        "projection_version": 3,
+        "protection_generation": 0,
+        "realized_quantity": 0,
+        "remaining_quantity": 500,
+        "superseded_protections": [],
+        "terminal_status": null
+      },
+      "requirements": [],
+      "transition_hash": "7c7139c1ee0e1b2a749d7b385a8dea509b9f184d961124811060883d7f702c1e",
+      "transition_id": "position-transition:7dcd134c77aebdd5486dacb9"
+    }
+  }
+}

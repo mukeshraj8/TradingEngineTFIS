@@ -1,0 +1,71 @@
+{
+  "certification_hash": "2d1f5dd97335c7597dcb7d3f59112d1f55fd8cc19fa5fdafecd860b36506727e",
+  "external_authority": {
+    "broker_sandbox_submission": "NONE",
+    "external_broker_submission": "NONE",
+    "external_order_mutation": "NONE",
+    "external_position_mutation": "NONE",
+    "live_submission": "NONE"
+  },
+  "scenario_count": 14,
+  "scenarios": {
+    "account_risk_accepts_all": {
+      "result_hash": "0ea6ed148d88c73da5bf889e2856912dbf7ad19520d571214279c659a1f1b848",
+      "status": "PASSED"
+    },
+    "account_risk_accepts_some": {
+      "result_hash": "2af6c90c8705e6a26dbf06f5702cb1242395ea957876ef31a4dfcf49c719aaa7",
+      "status": "PASSED"
+    },
+    "all_prepare_successfully": {
+      "result_hash": "92e13a23c412fa1e71c627455f056b728e9f47a43a4a8daabe71e5edcdeda196",
+      "status": "PASSED"
+    },
+    "all_three_qualify": {
+      "result_hash": "95e52dd241b734dfe7e10fb66d7a08b86228642804ed6e8c04f89a8facedf68f",
+      "status": "PASSED"
+    },
+    "dashboard_reflects_transitions": {
+      "result_hash": "c207d4a4eec83102201e6a15794f3f85ce07b1a29f74c1a1e1988128deb05c5f",
+      "status": "PASSED"
+    },
+    "no_duplicate_financial_action": {
+      "result_hash": "0a0f510045483d0c8e1966196da0d3234dfa28307c0862a4d9f0016cbc280eca",
+      "status": "PASSED"
+    },
+    "one_order_rejected_without_contamination": {
+      "result_hash": "5330734db96d20a06c38fa68e8f58930a452773cee86272ef7c38aabd9942dd3",
+      "status": "PASSED"
+    },
+    "one_position_carried": {
+      "result_hash": "c925443a11fbdd1b49e9ec9d67e944adc86e07ee5e91a96d182664dddedde5da",
+      "status": "PASSED"
+    },
+    "one_position_loses_protection_alert": {
+      "result_hash": "34e1bb4a9d0bca58942cfbf18f371c79faee4e52e30de04c34774c575b5ef304",
+      "status": "PASSED"
+    },
+    "one_strategy_blocked_two_continue": {
+      "result_hash": "103ac0dc3974714c35c90c4d992dadfa5daea145be662c8685ec354e7b445d76",
+      "status": "PASSED"
+    },
+    "one_waits_for_rc_another_opens_normally": {
+      "result_hash": "7f4f9964879c94ce01c2fcafd681505f40ca5e54dd63c93c02f8a6ddb3c4e4f3",
+      "status": "PASSED"
+    },
+    "pnl_separated_by_strategy_account_instrument": {
+      "result_hash": "03d3f9967950c26a9c17d4d453ad0b93de663857eeea425759bd5bdda7981041",
+      "status": "PASSED"
+    },
+    "restart_restores_independent_states": {
+      "result_hash": "fa5ed4cde30f1200f062d7f793c804b3503a8763515c9bcb218651f4a6084ced",
+      "status": "PASSED"
+    },
+    "s21_s23_qualify_simultaneously": {
+      "result_hash": "38692ddd168149aa3a94045666b861e78e1e2226f3759ddb2ff1a7052be8b104",
+      "status": "PASSED"
+    }
+  },
+  "schema_version": "tfis.multi_strategy_dry_run.v1",
+  "verdict": "PASSED"
+}

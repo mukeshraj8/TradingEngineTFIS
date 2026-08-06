@@ -1,0 +1,38 @@
+{
+  "artifact_files": [
+    {
+      "relative_path": "audit_events.jsonl",
+      "sha256": "8014fcaeacae2abdefd5b4e02dcd63123d4a748f5aa30d9cac2df652dd6e90da",
+      "size_bytes": 3902
+    },
+    {
+      "relative_path": "decision_summary.json",
+      "sha256": "af7bd0bae4cd7fbe5d84cb2f74c91e6a46bad3fd8c61535d2831f8b836920932",
+      "size_bytes": 3199
+    },
+    {
+      "relative_path": "paper_order_plan.json",
+      "sha256": "a35786a9d0c023988b1a09d016fb48d0fa3aea0e3d9e0a65c77fe9fd8736999e",
+      "size_bytes": 1433
+    },
+    {
+      "relative_path": "selected_contract.json",
+      "sha256": "d75f0094af4a2ecd7c91bfc13d95fd5b2c33f3faa32e7bbe212c2f41623ef0b9",
+      "size_bytes": 677
+    },
+    {
+      "relative_path": "session_manifest.json",
+      "sha256": "b2b44a237ea8b7741fc10460c186442860d21fed34a9803fd9279464573b0156",
+      "size_bytes": 2916
+    }
+  ],
+  "bundle_version": 1,
+  "created_at": "2026-05-08T09:30:04+05:30",
+  "session_date": "2026-05-08",
+  "session_id": "cli-fyers-ingress",
+  "source_artifact_root": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_run_s23_fyers_paper_ingre0\\artifacts",
+  "source_session_directory": "D:\\TradingEngineTFISRefactored\\.pytest_tmp\\test_run_s23_fyers_paper_ingre0\\artifacts\\2026-05-08\\cli-fyers-ingress",
+  "strategy_code": "S23",
+  "terminal_reason_code": null,
+  "terminal_state": "ORDER_PLANNED"
+}

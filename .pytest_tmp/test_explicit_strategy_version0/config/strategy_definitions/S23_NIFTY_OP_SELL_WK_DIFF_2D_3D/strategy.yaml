@@ -1,0 +1,32 @@
+strategy_definition_id: S23_NIFTY_OP_SELL_WK_DIFF_2D_3D
+family_id: OPTION_SELLING
+unique_strategy_code: S23_NIFTY_OP_SELL_WK_DIFF_2D_3D
+display_name: S23 NIFTY Weekly Option Selling
+description: Existing S23 NIFTY weekly option-selling business rule set.
+product_type: OPTION_SELLING
+supported_underlyings:
+  - NIFTY
+policy_composition_ref: S23_NIFTY_OP_SELL_WK_DIFF_2D_3D@1.0.0
+formula_config_ref: config/strategies/options_sell/nifty
+required_input_capabilities:
+  - market_structure
+  - monthly_status
+  - gap
+  - missed_entry
+  - option_chain
+  - expiry_selection
+  - strike_selection
+  - premium_filter
+  - oi_filter
+  - target
+  - msl
+supported_monthly_status_branches:
+  - BULL
+  - BULL_CF
+  - BEAR
+  - BEAR_CF
+lifecycle_status: ACTIVE
+provenance: normalized_strategy_folder
+source_references:
+  - docs/architecture/s23_weekly_option_selling_engine_contract.md
+  - docs/TFIS_FTAS_v0.7_Business_Engines_Market_Data_Structure_Monthly_Status.docx

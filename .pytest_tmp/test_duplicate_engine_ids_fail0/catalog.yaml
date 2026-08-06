@@ -1,0 +1,48 @@
+
+schema_version: test
+engines:
+  - engine_id: duplicate
+    display_name: One
+    purpose: one
+    stage: MARKET_STRUCTURE
+    schema_version: test
+    required_inputs: []
+    optional_inputs: []
+    produced_outputs: []
+    evidence_outputs: []
+    validation_rules: []
+    failure_modes: []
+    quality_metrics: []
+    state_requirements: STATELESS
+    dependencies: []
+    required_capabilities: []
+    provided_capabilities: [MARKET_STRUCTURE]
+    supported_products: [FUTURES]
+    supported_strategy_families: ["*"]
+    performance: &perf
+      expected_execution_frequency: once
+      expected_input_size: bounded
+      cacheable: true
+      deterministic: true
+      parallel_safe: true
+      state_requirement: STATELESS
+      criticality: LOW
+  - engine_id: duplicate
+    display_name: Two
+    purpose: two
+    stage: MARKET_STRUCTURE
+    schema_version: test
+    required_inputs: []
+    optional_inputs: []
+    produced_outputs: []
+    evidence_outputs: []
+    validation_rules: []
+    failure_modes: []
+    quality_metrics: []
+    state_requirements: STATELESS
+    dependencies: []
+    required_capabilities: []
+    provided_capabilities: [MARKET_STRUCTURE]
+    supported_products: [FUTURES]
+    supported_strategy_families: ["*"]
+    performance: *perf

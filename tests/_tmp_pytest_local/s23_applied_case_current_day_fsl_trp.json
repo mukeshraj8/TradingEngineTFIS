@@ -12,7 +12,7 @@
   "input_metadata": {
     "datasets": {
       "daily": {
-        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_current_day_applied\\daily.csv",
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_current_day_applied\\daily.csv",
         "provided": true,
         "used": true,
         "fallback_behavior": null,
@@ -20,7 +20,7 @@
         "synthetic_fixture": false
       },
       "option_levels": {
-        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_current_day_applied\\option_levels.csv",
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_current_day_applied\\option_levels.csv",
         "provided": true,
         "used": true,
         "fallback_behavior": null,
@@ -28,7 +28,7 @@
         "synthetic_fixture": false
       },
       "option_intraday": {
-        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_current_day_applied\\option_intraday.csv",
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_current_day_applied\\option_intraday.csv",
         "provided": true,
         "used": true,
         "fallback_behavior": null,
@@ -36,7 +36,7 @@
         "synthetic_fixture": false
       },
       "spot_intraday": {
-        "path": "D:\\TradingEngineTFIS\\tests\\fixtures\\backtest\\s23_current_day_applied\\spot_intraday.csv",
+        "path": "D:\\TradingEngineTFISRefactored\\tests\\fixtures\\backtest\\s23_current_day_applied\\spot_intraday.csv",
         "provided": true,
         "used": true,
         "fallback_behavior": null,
@@ -86,15 +86,16 @@
       "accepted": true,
       "rejection_reason": "Approved",
       "trade_outputs": {
-        "start_strike": 22785,
+        "start_strike": 21960,
         "entry_price": 194.25,
-        "target_price": 80.0,
-        "stoploss_price": 320.0,
+        "target_price": 81.4,
+        "stoploss_price": 321.0,
         "ideal_premium": 260.4,
         "minimum_premium": 195.3
       },
       "parameters": {
-        "strike_buffer_pct": 5.0,
+        "strike_buffer_pct": 1.2,
+        "strike_step": 50.0,
         "ideal_premium_pct": 1.2,
         "minimum_premium_pct": 0.9,
         "entry_discount_pct": 7.5,
@@ -113,25 +114,25 @@
             "strategy_code": "S23",
             "symbol": "NIFTY",
             "option_type": "CALL",
-            "start_strike": 23100,
-            "end_strike": 21999,
+            "start_strike": 22250,
+            "end_strike": 21950,
             "ideal_premium": 264.0,
             "minimum_premium": 198.00000000000003,
             "entry_price": 203.5,
-            "stoploss_price": 320.0,
-            "target_price": 80.0
+            "stoploss_price": 321.0,
+            "target_price": 81.4
           },
           "effective_trade_plan": {
             "strategy_code": "S23",
             "symbol": "NIFTY",
             "option_type": "CALL",
-            "start_strike": 22785,
+            "start_strike": 21960,
             "end_strike": 21699,
             "ideal_premium": 260.4,
             "minimum_premium": 195.3,
             "entry_price": 194.25,
-            "stoploss_price": 320.0,
-            "target_price": 80.0
+            "stoploss_price": 321.0,
+            "target_price": 81.4
           },
           "trigger_snapshot": {
             "timestamp": "2026-05-23T09:15:00",
@@ -152,7 +153,7 @@
             "fsl_trp_missed": false,
             "rule_name": "S23_CURRENT_DAY_FSL_TRP_0915_OPTION_HIGH_CHECK_V1",
             "compared_value": 250.0,
-            "threshold_stoploss_price": 320.0,
+            "threshold_stoploss_price": 321.0,
             "notes": [
               "Applied workbook FSL/TRP trigger at 09:15:00 using current-day option high versus the base stoploss price.",
               "Checked CALL side at 2026-05-23T09:15:00: current_day_option_high > stoploss_price."
@@ -163,7 +164,7 @@
             "reason": "s23_current_day_fsl_trp_row_183_applied",
             "row_number": 183,
             "effective_option_type": "CALL",
-            "recalculated_start_strike": 22785,
+            "recalculated_start_strike": 21960,
             "recalculated_end_strike": 21699,
             "recalculated_ideal_premium": 260.4,
             "recalculated_minimum_premium": 195.3,
@@ -179,7 +180,7 @@
             "audit_notes": [
               "Row 183 applied exactly as workbook-backed current-day Bull/Bull CF Call not-missed handling.",
               "Used MIN(PRV_3DLL, CDLL_at_ORPT) for current-day strike and premium recalculation.",
-              "Used MIN(OPT_PRV_3DLL, OPT_CDLL_at_ORPT) minus 7.50% for the current-day option entry override from AB6_OS_Z183.",
+              "Used MIN(OPT_PRV_3DLL, OPT_CDLL_at_ORPT) minus 7.5% for the current-day option entry override from AB6_OS_Z183.",
               "Target and stoploss remain inherited from the base trade plan because row 183 does not confirm additional override cells for those fields."
             ]
           },
@@ -218,23 +219,23 @@
       "lifecycle_result": {
         "entered": true,
         "entry_price": 194.25,
-        "exit_price": 80.0,
+        "exit_price": 81.4,
         "entry_timestamp": "2026-05-23T09:30:00",
         "exit_timestamp": "2026-05-23T09:30:00",
         "bars_held": 1,
         "exit_reason": "TARGET_HIT",
-        "pnl_points": 114.25,
+        "pnl_points": 112.85,
         "max_favorable_excursion": 119.25,
         "max_adverse_excursion": 15.75,
         "notes": "Target threshold hit on the entry bar",
         "quantity": 50,
-        "gross_pnl_points": 114.25,
+        "gross_pnl_points": 112.85,
         "total_cost_points": 0.0,
-        "net_pnl_points": 114.25,
-        "gross_pnl_rupees": 5712.5,
+        "net_pnl_points": 112.85,
+        "gross_pnl_rupees": 5642.5,
         "cost_rupees": 0.0,
-        "net_pnl_rupees": 5712.5,
-        "cumulative_net_pnl_rupees": 5712.5,
+        "net_pnl_rupees": 5642.5,
+        "cumulative_net_pnl_rupees": 5642.5,
         "drawdown_rupees": 0.0
       },
       "monthly_status": null,
@@ -260,21 +261,21 @@
     "no_exit": 0,
     "eod_square_off": 0,
     "carry_forward_pending": 0,
-    "total_pnl_points": 114.25,
-    "average_pnl_points": 114.25,
-    "total_gross_pnl_points": 114.25,
+    "total_pnl_points": 112.85,
+    "average_pnl_points": 112.85,
+    "total_gross_pnl_points": 112.85,
     "total_cost_points": 0.0,
-    "total_net_pnl_points": 114.25,
-    "average_net_pnl_points": 114.25,
-    "total_gross_pnl_rupees": 5712.5,
+    "total_net_pnl_points": 112.85,
+    "average_net_pnl_points": 112.85,
+    "total_gross_pnl_rupees": 5642.5,
     "total_cost_rupees": 0.0,
-    "total_net_pnl_rupees": 5712.5,
-    "average_net_pnl_rupees": 5712.5,
-    "final_net_pnl_rupees": 5712.5,
+    "total_net_pnl_rupees": 5642.5,
+    "average_net_pnl_rupees": 5642.5,
+    "final_net_pnl_rupees": 5642.5,
     "max_drawdown_rupees": 0.0,
     "max_drawdown_points": 0.0,
-    "best_trade_net_rupees": 5712.5,
-    "worst_trade_net_rupees": 5712.5,
+    "best_trade_net_rupees": 5642.5,
+    "worst_trade_net_rupees": 5642.5,
     "average_mfe": 119.25,
     "average_mae": 15.75,
     "win_rate": 1.0,

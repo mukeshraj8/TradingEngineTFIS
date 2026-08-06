@@ -1,0 +1,39 @@
+{
+  "bars": [
+    {
+      "bar_end": "2026-05-08T09:14:59+05:30",
+      "bar_start": "2026-05-08T09:14:00+05:30",
+      "close": 22420.0,
+      "high": 22425.0,
+      "low": 22395.0,
+      "open": 22410.0,
+      "source_id": "unit-test-bars",
+      "symbol": "NIFTY",
+      "volume": 100.0
+    },
+    {
+      "bar_end": "2026-05-08T09:24:59+05:30",
+      "bar_start": "2026-05-08T09:24:00+05:30",
+      "close": 22448.0,
+      "high": 22455.0,
+      "low": 22400.0,
+      "open": 22420.0,
+      "source_id": "unit-test-bars",
+      "symbol": "NIFTY",
+      "volume": 120.0
+    },
+    {
+      "bar_end": "2026-05-08T09:29:59+05:30",
+      "bar_start": "2026-05-08T09:29:00+05:30",
+      "close": 22440.0,
+      "high": 22462.0,
+      "low": 22435.0,
+      "open": 22448.0,
+      "source_id": "unit-test-bars",
+      "symbol": "NIFTY",
+      "volume": 140.0
+    }
+  ],
+  "session_date": "2026-05-08",
+  "symbol": "NIFTY"
+}

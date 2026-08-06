@@ -1,0 +1,12 @@
+{
+  "schema_version": "tfis.dashboard_v3.operator_workflow_map.v1",
+  "workflow": [
+    "Open Command Centre",
+    "Review alerts and unprotected positions",
+    "Review active positions and pending actions",
+    "Open Strategies for one strategy instance",
+    "Validate workbench summary",
+    "Open Orders/Positions/Risk/Accounts as needed",
+    "Use Historical Trades and Alerts/Audit for follow-up"
+  ]
+}

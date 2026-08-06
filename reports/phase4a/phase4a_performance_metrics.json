@@ -1,5 +1,5 @@
 {
-  "archive_parse_to_report_seconds": 0.9765882999927271,
+  "archive_parse_to_report_seconds": 0.9976179999648593,
   "checkpoint_resume": {
     "checkpoint_hashes": {
       "primary": "9f6808fce16cd5089a7988ce6bb03beb8252427fe9449d4ce1c332014c0f5d88"
@@ -137,7 +137,7 @@
     }
   ],
   "maximum_pending_updates": 2,
-  "median_event_processing_time_seconds": 9.565001528244466e-05,
+  "median_event_processing_time_seconds": 9.345001308247447e-05,
   "multi_instance": {
     "account_credentials_required": false,
     "independent_results": true,
@@ -151,7 +151,7 @@
   },
   "multi_instance_strategy_instances": 2,
   "normalized_events": 12,
-  "p95_event_processing_time_seconds": 0.0001981999957934022,
+  "p95_event_processing_time_seconds": 0.0002112000365741551,
   "schema_version": "tfis.phase4a.performance_metrics.v1",
   "source_rows": 6,
   "strategy_instances": 1,
@@ -160,5 +160,5 @@
     "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69",
     "1ed3f424e98b7cd1856916c24138840b3bf81abc698326b956edae1178ca8a69"
   ],
-  "total_processing_time_seconds": 0.09696510000503622
+  "total_processing_time_seconds": 0.1035416999948211
 }
