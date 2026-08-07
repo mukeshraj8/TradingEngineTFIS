@@ -149,7 +149,12 @@ def run_s23_morning_supervised_decision(
     ingress_config = PaperLiveIngressConfig.from_yaml(config_path)
     base_reference_packet = load_s23_decision_reference_packet(reference_packet_path)
     collector = S23FyersSnapshotCollector(artifact_root=artifact_root)
-    decision_builder = PaperLiveDecisionBuilder()
+    if primary_strategy_rule.strategy_code.upper() == "S21":
+        from .s21_live_decision import S21PaperLiveDecisionBuilder
+
+        decision_builder = S21PaperLiveDecisionBuilder(config_path=str(config_path))
+    else:
+        decision_builder = PaperLiveDecisionBuilder()
     timeline_builder = PaperLiveDecisionTimelineBuilder(decision_builder=decision_builder)
     dashboard_builder = _build_dashboard_builder(
         artifact_root=artifact_root,
