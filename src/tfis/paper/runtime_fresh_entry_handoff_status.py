@@ -220,16 +220,16 @@ def _latest_rows_by_trade(rows: list[dict[str, object]]) -> list[dict[str, objec
     return list(latest_by_trade.values())
 
 
-def _iter_jsonl_dicts(path: Path) -> list[dict[str, object]]:
-    rows: list[dict[str, object]] = []
-    for line in path.read_text(encoding="utf-8-sig").splitlines():
-        text = line.strip()
-        if not text:
-            continue
-        payload = json.loads(text.lstrip("\ufeff"))
-        if isinstance(payload, dict):
-            rows.append(payload)
-    return rows
+def _iter_jsonl_dicts(path: Path):
+    """Yield ledger rows incrementally instead of reading the full JSONL at once."""
+    with path.open("r", encoding="utf-8-sig") as handle:
+        for line in handle:
+            text = line.strip()
+            if not text:
+                continue
+            payload = json.loads(text.lstrip("\ufeff"))
+            if isinstance(payload, dict):
+                yield payload
 
 
 def _parse_datetime(value: object) -> datetime | None:

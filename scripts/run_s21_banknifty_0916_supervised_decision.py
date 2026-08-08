@@ -15,9 +15,9 @@ from tfis.paper import (
     PaperFyersSnapshotCollectorError,
     paper_morning_supervised_market_closed_no_action,
     paper_morning_supervised_process_lock_path,
-    run_paper_morning_supervised_decision,
     run_paper_morning_supervised_decision_with_no_candle_retries,
 )
+from tfis.paper.s21_strategy_session import run_s21_strategy_session
 from tfis.runtime import ProcessLockError, ProcessLockHandle, acquire_process_lock
 
 
@@ -100,10 +100,9 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     try:
         result = run_paper_morning_supervised_decision_with_no_candle_retries(
-            lambda: run_paper_morning_supervised_decision(
+            lambda: run_s21_strategy_session(
                 tfis_root=args.tfis_root,
                 config_path=args.config,
-                strategy_path=strategy_paths[0],
                 strategy_paths=strategy_paths,
                 reference_packet_path=args.reference_packet,
                 artifact_root=args.artifact_root,

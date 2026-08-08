@@ -220,3 +220,6 @@ data/
 tmp/
 tmp_pytest
 .pytest_tmp
+s21_real_day_audit_2026-08-06_20260807_214717.zip
+reports/
+*.zip

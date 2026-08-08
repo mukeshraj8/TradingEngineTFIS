@@ -79,15 +79,28 @@ def _reconciliation_status_for_spec(
         )
 
     conflicts: list[str] = []
-    checked_trade_count = 0
+
+    # Load persisted states once, then scan the global ledger once for only the
+    # trade IDs that are actually needed. Previously the global JSONL ledger
+    # was re-read in full for every persisted position state, which made
+    # dashboard construction O(number_of_states * ledger_size).
+    loaded_states: list[tuple[Path, object, str]] = []
     for state_path in state_paths:
         state_dir = state_path.parent
         state = state_store.load_state(state_dir)
+        loaded_states.append((state_dir, state, ledger_store.trade_id_for_state(state)))
+
+    global_latest_rows = _latest_trade_rows_by_id(
+        ledger_store.global_ledger_path,
+        trade_ids={trade_id for _, _, trade_id in loaded_states},
+    )
+
+    checked_trade_count = 0
+    for state_dir, state, trade_id in loaded_states:
         checked_trade_count += 1
-        trade_id = ledger_store.trade_id_for_state(state)
         latest_row = _latest_trade_row_for_state(
             state_dir=state_dir,
-            global_ledger_path=ledger_store.global_ledger_path,
+            global_latest_row=global_latest_rows.get(trade_id),
             trade_id=trade_id,
         )
         if latest_row is None:
@@ -158,51 +171,90 @@ def _reconciliation_status_for_spec(
 def _latest_trade_row_for_state(
     *,
     state_dir: Path,
-    global_ledger_path: Path,
+    global_latest_row: dict[str, object] | None,
     trade_id: str,
 ) -> dict[str, object] | None:
-    candidates: list[dict[str, object]] = []
-    session_ledger_path = state_dir / "paper_trade_ledger.jsonl"
-    for path in (session_ledger_path, global_ledger_path):
-        if not path.exists():
-            continue
-        for row in _iter_jsonl_dicts(path):
-            if str(row.get("trade_id") or "") != trade_id:
-                continue
-            candidates.append(row)
+    # Session ledgers are normally small and are authoritative for the local
+    # state directory. Scan them once, streaming line-by-line, then compare
+    # against the already-indexed global row.
+    session_latest = _latest_trade_row_in_path(
+        state_dir / "paper_trade_ledger.jsonl",
+        trade_id=trade_id,
+    )
+    candidates = [row for row in (session_latest, global_latest_row) if row is not None]
     if not candidates:
         return None
-    candidates.sort(
+    return max(
+        candidates,
         key=lambda row: _parse_datetime(row.get("event_timestamp")) or datetime.min,
-        reverse=True,
     )
-    return candidates[0]
+
+
+def _latest_trade_row_in_path(
+    path: Path,
+    *,
+    trade_id: str,
+) -> dict[str, object] | None:
+    latest: dict[str, object] | None = None
+    latest_timestamp = datetime.min
+    if not path.exists():
+        return None
+    for row in _iter_jsonl_dicts(path):
+        if str(row.get("trade_id") or "") != trade_id:
+            continue
+        row_timestamp = _parse_datetime(row.get("event_timestamp")) or datetime.min
+        if latest is None or row_timestamp >= latest_timestamp:
+            latest = row
+            latest_timestamp = row_timestamp
+    return latest
+
+
+def _latest_trade_rows_by_id(
+    path: Path,
+    *,
+    trade_ids: set[str],
+) -> dict[str, dict[str, object]]:
+    if not trade_ids or not path.exists():
+        return {}
+
+    latest_rows: dict[str, dict[str, object]] = {}
+    latest_timestamps: dict[str, datetime] = {}
+    for row in _iter_jsonl_dicts(path):
+        trade_id = str(row.get("trade_id") or "")
+        if trade_id not in trade_ids:
+            continue
+        row_timestamp = _parse_datetime(row.get("event_timestamp")) or datetime.min
+        current_timestamp = latest_timestamps.get(trade_id)
+        if current_timestamp is None or row_timestamp >= current_timestamp:
+            latest_rows[trade_id] = row
+            latest_timestamps[trade_id] = row_timestamp
+    return latest_rows
 
 
 def _latest_order_event_for_state(state_dir: Path) -> dict[str, object] | None:
     events_path = state_dir / "paper_order_events.jsonl"
     if not events_path.exists():
         return None
-    candidates = _iter_jsonl_dicts(events_path)
-    if not candidates:
-        return None
-    candidates.sort(
-        key=lambda row: _parse_datetime(row.get("timestamp")) or datetime.min,
-        reverse=True,
-    )
-    return candidates[0]
+    latest: dict[str, object] | None = None
+    latest_timestamp = datetime.min
+    for row in _iter_jsonl_dicts(events_path):
+        row_timestamp = _parse_datetime(row.get("timestamp")) or datetime.min
+        if latest is None or row_timestamp >= latest_timestamp:
+            latest = row
+            latest_timestamp = row_timestamp
+    return latest
 
 
-def _iter_jsonl_dicts(path: Path) -> list[dict[str, object]]:
-    rows: list[dict[str, object]] = []
-    for line in path.read_text(encoding="utf-8-sig").splitlines():
-        text = line.strip()
-        if not text:
-            continue
-        payload = json.loads(text.lstrip("\ufeff"))
-        if isinstance(payload, dict):
-            rows.append(payload)
-    return rows
+def _iter_jsonl_dicts(path: Path):
+    """Yield JSON object rows without loading the complete ledger into memory."""
+    with path.open("r", encoding="utf-8-sig") as handle:
+        for line in handle:
+            text = line.strip()
+            if not text:
+                continue
+            payload = json.loads(text.lstrip("\ufeff"))
+            if isinstance(payload, dict):
+                yield payload
 
 
 def _parse_datetime(value: object) -> datetime | None:

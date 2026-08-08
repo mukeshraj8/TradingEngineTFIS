@@ -201,19 +201,19 @@ class S21PaperLivePreludeBuilder(PaperLivePreludeBuilder):
             request.strategy_rule,
             request.session_context.session_date,
         )
-        later_expiries = self._fallback_expiries_from_snapshot(
-            request.option_chain_snapshot,
-            near_expiry=near_expiry,
-        )
-        expiry_order = (near_expiry, *later_expiries)
+        # AB6 OS S21 authority: "No. of Expiry to Check" = 1 Exp.
+        # S21 therefore evaluates only the resolved Near monthly expiry.
+        # Do not fall through to Next merely because Near does not qualify.
+        expiry_order = (near_expiry,)
 
         effective_lot_size = float(request.quantity) / float(request.lots)
         minimum_oi = (
             float(request.strategy_rule.parameters.get("minimum_lots", 500.0))
             * effective_lot_size
         )
-        leg_rule = get_s21_leg_rule(request.strategy_rule.unique_code)
-        qualification_alias = leg_rule.entry_reference_alias
+        # Contract qualification follows the same S23 option-selling stage
+        # semantics: exact contract premium + exact contract OI. Historical
+        # OPT_PRV aliases are loaded only after final contract selection.
 
         aggregate_rejected: dict[str, int] = {}
         attempted: list[date] = []
@@ -224,7 +224,6 @@ class S21PaperLivePreludeBuilder(PaperLivePreludeBuilder):
                 trade_plan=trade_plan,
                 expiry=expiry,
                 minimum_oi=minimum_oi,
-                qualification_alias=qualification_alias,
             )
             for key, count in result.rejected_candidate_counts.items():
                 aggregate_rejected[key] = aggregate_rejected.get(key, 0) + count
@@ -246,8 +245,8 @@ class S21PaperLivePreludeBuilder(PaperLivePreludeBuilder):
             selected=False,
             failure_code=PaperContractSelectionFailureCode.NO_CONTRACT_SELECTED,
             selection_reason=(
-                "No S21 candidate satisfied rule-book historical premium and OI "
-                "qualification across Near/Next monthly expiry."
+                "No S21 candidate satisfied rule-book option-chain premium and OI "
+                "qualification in the single allowed monthly expiry."
             ),
             selected_contract_symbol=None,
             expiry_date=None,
@@ -267,7 +266,6 @@ class S21PaperLivePreludeBuilder(PaperLivePreludeBuilder):
         trade_plan: TradePlan,
         expiry: date,
         minimum_oi: float,
-        qualification_alias: str,
     ) -> S23PaperContractSelectionResult:
         assert request.option_chain_snapshot is not None
         lower = min(float(trade_plan.start_strike), float(trade_plan.end_strike))
@@ -320,17 +318,11 @@ class S21PaperLivePreludeBuilder(PaperLivePreludeBuilder):
                 reverse=not ascending,
             )
         )
-        refs_by_symbol = self._reference_provider.get_many(
-            contracts=forward,
-            session_date=request.session_context.session_date,
-        )
-
         def premium(contract: OptionChainContract) -> float | None:
-            refs = refs_by_symbol.get(contract.symbol)
-            if not refs:
-                return None
-            value = refs.get(qualification_alias)
-            return float(value) if value is not None else None
+            # Match the proven S23 contract-selection stage: use the premium
+            # carried by this exact option-chain contract. Do not substitute a
+            # historical OPT_PRV entry reference.
+            return float(contract.ltp) if contract.ltp is not None else None
 
         selected: OptionChainContract | None = None
         selected_premium: float | None = None
@@ -338,7 +330,7 @@ class S21PaperLivePreludeBuilder(PaperLivePreludeBuilder):
         for contract in forward:
             value = premium(contract)
             if value is None:
-                bump("missing_historical_option_reference")
+                bump("missing_option_chain_premium")
                 continue
             if value >= float(trade_plan.ideal_premium):
                 selected = contract
@@ -362,8 +354,8 @@ class S21PaperLivePreludeBuilder(PaperLivePreludeBuilder):
                 selected=False,
                 failure_code=PaperContractSelectionFailureCode.MINIMUM_PREMIUM_NOT_MET,
                 selection_reason=(
-                    f"S21 candidates did not satisfy {qualification_alias} against "
-                    "Ideal/Minimum Premium using completed prior option history."
+                    "S21 candidates did not satisfy exact-contract option-chain "
+                    "premium against Ideal/Minimum Premium."
                 ),
                 selected_contract_symbol=None,
                 expiry_date=None,
@@ -382,7 +374,7 @@ class S21PaperLivePreludeBuilder(PaperLivePreludeBuilder):
             failure_code=None,
             selection_reason=(
                 f"S21 selected {selected.symbol} via {phase}; "
-                f"{qualification_alias}={selected_premium:.4f}, "
+                f"option_chain_ltp={selected_premium:.4f}, "
                 f"OI={float(selected.oi or 0.0):.0f}, minimum_OI={minimum_oi:.0f}."
             ),
             selected_contract_symbol=selected.symbol,
