@@ -278,11 +278,11 @@ class S23PaperContractSelector:
         if selected is None:
             selected = next(
                 contract
-                for contract in reversed(ideal_search_order)
+                for contract in ideal_search_order
                 if contract.ltp >= request.minimum_premium
             )
             selection_reason = (
-                "Selected first strike meeting minimum premium in reverse rule-sheet search order."
+                "Selected first strike meeting minimum premium in rule-sheet search order."
             )
         ranking = S23PaperContractSelectionRanking(
             premium_distance=abs(float(selected.ltp) - request.ideal_premium),

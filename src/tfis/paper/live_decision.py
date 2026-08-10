@@ -316,12 +316,12 @@ class S23PaperLiveDecisionBuilder:
                 "recalculated_trade_plan": None,
             }
         entry_price = float(trade_plan.entry_price)
+        orpt_option_low = orpt_option_bar.low or 0.0
+        entry_missed = orpt_option_low < entry_price
         if option_type is OptionType.CALL:
-            entry_missed = (orpt_option_bar.low or 0.0) < entry_price
             missed_rule = "CALL missed-entry test: ORPT option low < base entry."
         else:
-            entry_missed = (orpt_option_bar.high or 0.0) < entry_price
-            missed_rule = "PUT missed-entry test: ORPT option high < base entry."
+            missed_rule = "PUT missed-entry test: ORPT option low < base entry."
         if not entry_missed:
             return {
                 "status": "BASE_ENTRY_VALID",

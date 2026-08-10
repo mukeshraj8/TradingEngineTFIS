@@ -75,7 +75,7 @@ def test_option_chain_csv_fixture_loads() -> None:
     assert contracts[0].option_type in {OptionType.CALL, OptionType.PUT}
 
 
-def test_selects_first_minimum_premium_in_reverse_rule_order() -> None:
+def test_selects_first_minimum_premium_in_rule_order() -> None:
     selector = OptionChainSelector()
     result = selector.select(
         _request(),
@@ -87,9 +87,9 @@ def test_selects_first_minimum_premium_in_reverse_rule_order() -> None:
 
     assert result.selected is True
     assert result.selected_contract is not None
-    assert result.selected_contract.strike == 22000
+    assert result.selected_contract.strike == 22100
     assert result.selection_reason == (
-        "Selected first strike meeting minimum premium in reverse rule-sheet search order."
+        "Selected first strike meeting minimum premium in rule-sheet search order."
     )
 
 

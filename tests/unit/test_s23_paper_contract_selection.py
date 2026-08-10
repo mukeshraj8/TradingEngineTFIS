@@ -166,6 +166,25 @@ def test_selects_best_contract_by_ideal_premium_proximity() -> None:
     assert result.ranking.premium_distance == 1.0
 
 
+def test_minimum_premium_fallback_uses_rule_sheet_search_order() -> None:
+    selector = S23PaperContractSelector()
+
+    result = selector.select(
+        _request(ideal_premium=220.0, minimum_premium=180.0),
+        _snapshot(
+            _contract(symbol="NIFTY_20260528_22300_PE", strike=22300.0, ltp=198.0, oi=900.0),
+            _contract(symbol="NIFTY_20260528_22400_PE", strike=22400.0, ltp=201.0, oi=700.0),
+            _contract(symbol="NIFTY_20260528_22500_PE", strike=22500.0, ltp=205.0, oi=1400.0),
+        ),
+    )
+
+    assert result.selected is True
+    assert result.selected_contract_symbol == "NIFTY_20260528_22300_PE"
+    assert result.selection_reason == (
+        "Selected first strike meeting minimum premium in rule-sheet search order."
+    )
+
+
 def test_rejects_missing_oi() -> None:
     selector = S23PaperContractSelector()
 

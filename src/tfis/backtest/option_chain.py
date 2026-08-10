@@ -248,13 +248,13 @@ class OptionChainSelector:
 
         selected_contract = next(
             contract
-            for contract in reversed(ideal_search_order)
+            for contract in ideal_search_order
             if contract.ltp >= request.minimum_premium
         )
         return OptionSelectionResult(
             selected=True,
             selected_contract=selected_contract,
-            selection_reason="Selected first strike meeting minimum premium in reverse rule-sheet search order.",
+            selection_reason="Selected first strike meeting minimum premium in rule-sheet search order.",
             candidate_count=len(premium_matches),
         )
 

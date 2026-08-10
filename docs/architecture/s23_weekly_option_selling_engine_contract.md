@@ -57,8 +57,9 @@ S23 must follow the rule-sheet steps in order.
      entry rule.
    - For CE sell, entry is missed when the ORPT selected-contract low is below
      the base CE entry.
-   - For PE sell, entry is missed when the ORPT selected-contract high is below
-     the base PE entry, matching the updated S23 text.
+   - For PE sell, entry is missed when the ORPT selected-contract low is below
+     the base PE entry, matching the workbook row:
+     `For Put Sell Entry Check If 09:24:59 AM LL < Put Sell Entry`.
    - If entry is not missed, keep the base selected contract and place the
      waiting paper order at ORPT.
    - If entry is missed, wait for RC (`09:29:59`), recalculate the branch's
@@ -128,6 +129,8 @@ Use this exact matrix. Do not infer references from option side alone.
 
 Strike range rules:
 
+- authoritative strike buffer = `5%` from the NIFTY weekly option selling
+  rule sheet.
 - CE start = round down `(spot reference + 5%)`
 - CE end = round down `spot reference` minus one strike
 - PE start = round up `(spot reference - 5%)`
@@ -135,13 +138,21 @@ Strike range rules:
 
 Qualification rules:
 
-- minimum OI = `500 lots * lot_size`
+- minimum OI = `500 lots`
+- historical minimum OI units = `500 * effective historical lot size`
+- January 2024 NIFTY lot-size authority is `50`, so HSRE uses
+  `minimum_oi_units = 25000` for January 2024 contract selection.
+- January 2026 NIFTY lot-size authority is `65`, so current-date S23 may use
+  `minimum_oi_units = 32500`.
 - ideal premium = `spot range reference * 1.20%`
 - minimum premium = `spot range reference * 0.90%`
 - ideal search = start to end
-- minimum search = end to start
+- minimum search = start to end
 - near contract is searched first
 - next contract is searched only if near contract has no qualifying strike
+- selected-contract option history must use the same final option contract:
+  same expiry, same strike, and same CE/PE. If three completed prior sessions
+  are unavailable for the final selected contract, historical S23 fails closed.
 
 Trade level rules:
 
@@ -160,9 +171,9 @@ reference candles.
 | Monthly Group | Side | Missed-entry test at ORPT | RC strike / premium reference | RC entry reference | RC SL reference |
 |---|---|---|---|---|---|
 | Bullish | CE | ORPT option low `<` base CE entry | `MIN(PRV_3DLL, RC spot low)` | `MIN(OPT_PRV_3DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.07)` |
-| Bullish | PE | ORPT option high `<` base PE entry | strike uses `MAX(PRV_2DHH, RC spot high)`; premium uses `MIN(PRV_2DHH, RC spot low)` | `MIN(OPT_PRV_2DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.10)` |
+| Bullish | PE | ORPT option low `<` base PE entry | strike uses `MAX(PRV_2DHH, RC spot high)`; premium uses `MIN(PRV_2DHH, RC spot low)` | `MIN(OPT_PRV_2DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.10)` |
 | Bearish | CE | ORPT option low `<` base CE entry | `MIN(PRV_2DLL, RC spot low)` | `MIN(OPT_PRV_2DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.10)` |
-| Bearish | PE | ORPT option high `<` base PE entry | strike uses `MAX(PRV_3DHH, RC spot high)`; premium uses `MIN(PRV_3DHH, RC spot low)` | `MIN(OPT_PRV_3DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.07)` |
+| Bearish | PE | ORPT option low `<` base PE entry | strike uses `MAX(PRV_3DHH, RC spot high)`; premium uses `MIN(PRV_3DHH, RC spot low)` | `MIN(OPT_PRV_3DLL, RC option low)` | `MIN(RC entry * 1.60, RC option high * 1.07)` |
 
 For recalculated CE legs:
 
@@ -336,7 +347,7 @@ Before claiming S23 complete, tests must prove:
 - Bearish PE uses spot 3DHH and final-strike previous 3DLL entry premium
 - each side searches near first, then next
 - failed near and next contracts produce no order for that side
-- minimum OI uses current configured lot size
+- minimum OI uses `500 lots * effective lot size` for the session date
 - selected trade becomes waiting order before any paper position is opened
 - broker adapter can be mocked in unit tests
 - live final decisions fail closed when selected-contract ORPT/RC bars are

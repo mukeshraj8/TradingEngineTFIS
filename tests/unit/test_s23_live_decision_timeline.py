@@ -1,7 +1,7 @@
 ﻿from __future__ import annotations
 
 import json
-from dataclasses import replace
+from dataclasses import dataclass, replace
 from datetime import date, datetime, time
 from pathlib import Path
 from types import SimpleNamespace
@@ -29,7 +29,7 @@ from tfis.paper import (
     S23PaperPreludeSessionContext,
     run_s23_morning_supervised_decision,
 )
-from tfis.paper.models import SelectedContractBarEvent, UnderlyingQuoteEvent
+from tfis.paper.models import SelectedContractBarEvent, SnapshotLabel, UnderlyingQuoteEvent
 
 
 IST = ZoneInfo("Asia/Kolkata")
@@ -435,6 +435,57 @@ def test_timeline_builder_marks_0916_as_partial() -> None:
     assert stage.monthly_status_trace[0]["window_label"] == "current"
     assert stage.provisional_formula_evaluation[0]["name"] == "start_strike"
     assert stage.decision_summary is None
+
+
+def test_timeline_builder_evaluates_s21_base_calculation_from_0915_only() -> None:
+    @dataclass(frozen=True)
+    class FakeDecisionSummary:
+        selected_contract_symbol: str
+        checkpoint_labels: tuple[str, ...]
+
+    class FakeDecisionBuilder:
+        def __init__(self) -> None:
+            self.required_snapshot_labels: tuple[SnapshotLabel, ...] | None = None
+            self.calls = 0
+
+        def build(self, **kwargs):
+            self.calls += 1
+            self.required_snapshot_labels = kwargs["required_snapshot_labels"]
+            return SimpleNamespace(
+                summary=FakeDecisionSummary(
+                    selected_contract_symbol="BANKNIFTY_FAKE_BASE",
+                    checkpoint_labels=("0915",),
+                ),
+                explanation={"orpt_rc_timing": {"status": "WAITING_FOR_ORPT"}},
+            )
+
+    fake_decision_builder = FakeDecisionBuilder()
+    stage_build = S23LiveDecisionTimelineBuilder(
+        decision_builder=fake_decision_builder
+    ).build_stage(
+        stage_name="Base Calculation 09:16",
+        stage_time=time(9, 16),
+        strategy_rule=replace(_strategy_rule(), strategy_code="S21", symbol="BANKNIFTY"),
+        reference_packet=replace(
+            _reference_packet(),
+            instrument_group="BANKNIFTY",
+            strategy_branch="BANKNIFTY_OP_SELL_MONTHLY_BULL_CALL",
+        ),
+        collected_inputs=_collected_inputs(),
+        require_orpt_rc_timing_bars=False,
+    )
+
+    stage = stage_build.stage
+    assert fake_decision_builder.calls == 1
+    assert fake_decision_builder.required_snapshot_labels == (SnapshotLabel.AT_0915,)
+    assert stage.available_checkpoint_labels == ("0915",)
+    assert stage.waiting_for_checkpoint_labels == ("ORPT", "RC")
+    assert stage.can_finalize_trade_decision is False
+    assert stage.decision_summary == {
+        "selected_contract_symbol": "BANKNIFTY_FAKE_BASE",
+        "checkpoint_labels": ("0915",),
+    }
+    assert stage_build.decision_result is not None
 
 
 def test_timeline_builder_writes_stage_monthly_status_artifacts(tmp_path: Path) -> None:

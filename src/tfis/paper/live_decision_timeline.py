@@ -183,9 +183,16 @@ class S23LiveDecisionTimelineBuilder:
             runtime_values=stage_runtime_values,
         )
 
-        can_evaluate_decision = not waiting_for or self._can_evaluate_orpt_stage(
-            stage_name=stage_name,
-            available_labels=available_labels,
+        can_evaluate_decision = (
+            not waiting_for
+            or self._can_evaluate_orpt_stage(
+                stage_name=stage_name,
+                available_labels=available_labels,
+            )
+            or self._can_evaluate_base_calculation_stage(
+                stage_name=stage_name,
+                available_labels=available_labels,
+            )
         )
         required_snapshot_labels = self._required_snapshot_labels_for_decision(
             stage_name=stage_name,
@@ -307,11 +314,21 @@ class S23LiveDecisionTimelineBuilder:
         return stage_name == "ORPT Snapshot" and {"0915", "ORPT"}.issubset(set(available_labels))
 
     @staticmethod
+    def _can_evaluate_base_calculation_stage(
+        *,
+        stage_name: str,
+        available_labels: tuple[str, ...],
+    ) -> bool:
+        return stage_name == "Base Calculation 09:16" and "0915" in available_labels
+
+    @staticmethod
     def _required_snapshot_labels_for_decision(
         *,
         stage_name: str,
         waiting_for: tuple[str, ...],
     ) -> tuple[SnapshotLabel, ...] | None:
+        if stage_name == "Base Calculation 09:16":
+            return (SnapshotLabel.AT_0915,)
         if stage_name == "ORPT Snapshot" and waiting_for == ("RC",):
             return (SnapshotLabel.AT_0915, SnapshotLabel.ORPT)
         return None

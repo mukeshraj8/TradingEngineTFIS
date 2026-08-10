@@ -4228,11 +4228,6 @@ class TfisOperatorDashboardBuilder:
             if is_pe
             else "Start Strike down to End Strike"
         )
-        reverse_search_direction = (
-            "End Strike down to Start Strike"
-            if is_pe
-            else "End Strike up to Start Strike"
-        )
         option_side_name = "PUT" if is_pe else "CALL"
         attempted_expiries = self._s23_attempted_expiries_text(leg)
         expiry_search_text = (
@@ -4271,9 +4266,9 @@ class TfisOperatorDashboardBuilder:
             else:
                 step_8b = (
                     f"<strong>Step 8b - Near contract minimum premium fallback.</strong> Since Step 8a did not select a strike, TFIS scans "
-                    f"<strong>{html.escape(reverse_search_direction)}</strong> and chooses the first {html.escape(option_side_name)} strike "
+                    f"<strong>{html.escape(search_direction)}</strong> and chooses the first {html.escape(option_side_name)} strike "
                     f"that passes option side, strike range, minimum OI, and minimum premium "
-                    f"({self._fmt_number(leg.get('minimum_premium'))}). Expand the Step 8b strike matching audit below to validate the reverse search."
+                    f"({self._fmt_number(leg.get('minimum_premium'))}). Expand the Step 8b strike matching audit below to validate the fallback search."
                     f"{step_8b_audit}"
                 )
             if selected_in_8a or selected_in_8b:
@@ -4324,9 +4319,9 @@ class TfisOperatorDashboardBuilder:
             )
             step_8b = (
                 f"<strong>Step 8b - Near contract minimum premium fallback.</strong> If Step 8a finds no strike, TFIS scans "
-                f"<strong>{html.escape(reverse_search_direction)}</strong> and chooses the first {html.escape(option_side_name)} strike "
+                f"<strong>{html.escape(search_direction)}</strong> and chooses the first {html.escape(option_side_name)} strike "
                 f"that passes option side, strike range, minimum OI, and minimum premium "
-                f"({self._fmt_number(leg.get('minimum_premium'))}). Expand the Step 8b strike matching audit below to validate the reverse search."
+                f"({self._fmt_number(leg.get('minimum_premium'))}). Expand the Step 8b strike matching audit below to validate the fallback search."
                 f"{step_8b_audit}"
             )
             step_8c = (
@@ -4414,8 +4409,8 @@ class TfisOperatorDashboardBuilder:
             )
         else:
             comparison = (
-                f"PUT sell miss test is ORPT option high < base entry. "
-                f"ORPT high was {self._fmt_number(audit.get('orpt_option_high'))}; base entry was {base_entry}."
+                f"PUT sell miss test is ORPT option low < base entry. "
+                f"ORPT low was {self._fmt_number(audit.get('orpt_option_low'))}; base entry was {base_entry}."
             )
         if status == "BASE_ENTRY_VALID":
             return (

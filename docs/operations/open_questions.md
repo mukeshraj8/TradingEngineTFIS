@@ -1,13 +1,14 @@
 # Open Questions
 
-## S23 Premium Formula Semantics
+## S23 Premium Formula Semantics - Resolved
 
-The manually encoded S23 rule currently keeps the premium formulas exactly as explicit arithmetic:
+Status: `RESOLVED` as of 2026-08-09.
 
-- `ideal_premium_formula: "PRV_3DLL + 1.20%"`
-- `minimum_premium_formula: "PRV_3DLL + 0.90%"`
+Authoritative current S23 premium filters from the NIFTY weekly option selling
+rule sheet are:
 
-Open question:
-- Should these premium formulas remain percentage adjustments on the referenced value, or were they intended to behave like a multiplication-based premium model in the original TFIS source?
+- ideal premium = `reference * 1.20%`
+- minimum premium = `reference * 0.90%`
 
-For now the runtime behavior matches the literal configured formulas so the test path remains deterministic and explicit.
+The later `1.60%` / `1.20%` interpretation has been superseded for active S23
+strike selection by the attached rule-sheet review.

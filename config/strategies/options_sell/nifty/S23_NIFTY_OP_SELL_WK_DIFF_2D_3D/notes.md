@@ -24,9 +24,11 @@ Notes:
 - Spot/reference levels and option-premium reference levels are intentionally separated:
   - strike and premium formulas use spot/reference aliases such as `PRV_3DLL`
   - entry and stoploss reference formulas use option aliases such as `OPT_PRV_3DLL` and `OPT_PRV_2DHH`
-- This folder-based S23 now follows the Excel-discovered premium semantics:
-  - `AB6 OS!H162 = SPT : PRV : 3DLL * 1.20%`
-  - `AB6 OS!H163 = SPT : PRV : 3DLL * 0.90%`
+- This folder-based S23 follows the NIFTY weekly option selling rule-sheet
+  strike/premium authority:
+  - start strike buffer = `5%`
+  - ideal premium = `SPT : PRV : 3DLL * 1.20%`
+  - minimum premium = `SPT : PRV : 3DLL * 0.90%`
   - Example: `PRV_3DLL = 22000` gives ideal premium `264` and minimum premium `198`
 - Example option-level separation:
   - `OPT_PRV_3DLL = 220` gives entry price `203.5`

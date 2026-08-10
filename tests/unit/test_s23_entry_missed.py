@@ -8,13 +8,15 @@ from tfis.backtest import EntryMissedInput, IntradaySnapshot, S23EntryMissedDete
 from tfis.domain.enums import OptionType
 
 
-def _orpt_snapshot(*, option_low: float | None) -> IntradaySnapshot:
+def _orpt_snapshot(
+    *, option_low: float | None, option_high: float = 228.0
+) -> IntradaySnapshot:
     return IntradaySnapshot(
         timestamp=datetime(2026, 5, 23, 9, 24, 59),
         spot_low=22120.0,
         spot_high=22380.0,
         option_low=option_low,  # type: ignore[arg-type]
-        option_high=228.0,
+        option_high=option_high,
     )
 
 
@@ -61,6 +63,19 @@ def test_put_sell_entry_is_missed_when_option_low_is_below_entry() -> None:
     assert result.entry_missed is True
     assert result.compared_value == pytest.approx(180.0)
     assert result.threshold_entry_price == pytest.approx(186.85)
+
+
+def test_put_sell_entry_is_missed_when_low_crosses_even_if_high_is_above_entry() -> None:
+    result = S23EntryMissedDetector().detect(
+        EntryMissedInput(
+            option_type=OptionType.PUT,
+            entry_price=186.85,
+            orpt_snapshot=_orpt_snapshot(option_low=180.0, option_high=220.0),
+        )
+    )
+
+    assert result.entry_missed is True
+    assert result.compared_value == pytest.approx(180.0)
 
 
 @pytest.mark.parametrize("option_low", [186.85, 190.0])

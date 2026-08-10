@@ -6,6 +6,197 @@ way.
 
 ## Immediate Next Priorities
 
+0.33. `DONE` Correct the S21 09:16 base-calculation drift found on the
+   operator dashboard. S21's morning session runner expects `Base Calculation
+   09:16` to build the base plan from the `0915` snapshot before ORPT/RC gate
+   that plan, but the shared timeline had skipped evaluation whenever ORPT/RC
+   were still pending. The timeline now evaluates only that named base stage
+   from `0915`; S23's `Opening Snapshot` remains partial. Next: run the normal
+   S21/S23 pre-market startup/readiness flow and confirm the dashboard shows
+   either selected base/final contracts or explicit rule rejection reasons,
+   not silent `NO_BASE_DECISION`.
+
+0.32. `DONE` Extend the read-only Historical Market Explorer into a
+   configurable Manual Workbench for workbook-style option-selling review.
+   The workbench can scan a selected expiry/side from start strike to end
+   strike using direct or factor-derived ideal/minimum premium thresholds,
+   optional minimum OI, and configurable exact-contract lookback sessions for
+   `DLL` / `DHH`. It reports every candidate with pass/fail reasons, chooses
+   the first ideal strike or first minimum fallback in start-to-end order,
+   exports the scan, and shows selected-strike daily candles with `MISSING`
+   rows for unavailable dates. It remains read-only and does not run or change
+   S23/backtests/paper/live behavior. Next: use this utility to manually
+   verify specific S23 dates and workbook variants before changing strategy
+   rules.
+
+0.31. `DONE` Build the read-only TFIS Historical Market Explorer for manual
+   spot/options inspection. The tool uses a dependency-free local browser GUI
+   backed by existing HSRE historical data/provider semantics. It supports
+   instrument/date/expiry/strike/option-type selection, selected-contract
+   candles, volume, OI, spot candles, exact-contract prior history, S23
+   workbook-reference inputs, option-chain inspection, search-order
+   visualization, CSV exports, and data-quality warnings. Launcher:
+   `scripts/run_historical_market_explorer.py`; docs:
+   `docs/tools/historical_market_explorer.md`. Next: use the explorer to
+   manually inspect suspicious S23 dates before making further rule changes.
+
+0.30. `DONE` Run active S23 HSRE across all locally available 2024 NIFTY
+   historical sessions. The date-range runner reuses the same accepted S23
+   pipeline and report writer as January without changing S23 formulas,
+   ORPT/RC, strike-selection behavior, or lifecycle rules. Local data under
+   `D:\HistoricalData\Nifty` currently covers `2024-01-01` through
+   `2024-10-31` only, so the output represents 209 observed sessions rather
+   than a full calendar year. Report output:
+   `reports/hsre/S23/2024/`. Result: 77 ready orders, 17 entry triggers,
+   12 target/SL closed trades, 5 triggered `NO_EXIT` rows, 60 ready orders not
+   triggered, 132 final-order-not-ready sessions, and net points `-8.68575`.
+   Next: review monthly funnel and trade list before changing rules again;
+   add November/December 2024 data before claiming a complete 2024 calendar
+   result.
+
+0.29. `DONE` Add the first S23 January rule-combination table row and run the
+   start-to-end minimum-premium fallback variant. Step 8b now searches from
+   start strike to end strike instead of reversing after Step 8a fails; this
+   is aligned in both historical and paper contract selectors. The combination
+   table is `reports/hsre/S23/s23_rule_combination_results.md`. The January
+   output is `reports/hsre/S23/2024-01-rule-sheet-start-to-end-min/` and
+   produced 8 ready orders, 1 target-hit trade, and net points `75.61875`;
+   the sole trade is `2024-01-17` `NIFTY18JAN2421700CE`. Next: continue
+   adding rows for explicitly requested combinations only.
+
+0.28. `DONE` Re-align active S23 strike selection to the attached NIFTY weekly
+   option selling rule sheet and rerun January 2024 HSRE. Active S23 branch
+   parameters now use `strike_buffer_pct=5.0`, `ideal_premium_pct=1.20`, and
+   `minimum_premium_pct=0.90`, while ORPT/RC/recalculation/lifecycle and
+   date-aware minimum OI remain unchanged. The run output is
+   `reports/hsre/S23/2024-01-rule-sheet/`. Result: 22 observed sessions,
+   8 normal ready orders, 1 triggered/closed trade, 7 ready-but-not-triggered
+   orders, 14 final-order-not-ready sessions, 0 ORPT misses, 0 recalculations,
+   and net point P&L `90.4095`. The only trade is the `2024-01-17`
+   `NIFTY18JAN2421650CE` CALL target hit. Next: use the sheet-rule January
+   artifacts for S23 behavior review; any further rule change should be made
+   from explicit workbook/sheet evidence.
+
+0.27. `DONE` Complete the narrow S23 rule-authority correction and January
+   2024 HSRE rerun. Active S23 parameters now use the confirmed workbook
+   authority `strike_buffer_pct=1.2`, `ideal_premium_pct=1.60`, and
+   `minimum_premium_pct=1.20`. HSRE minimum OI is now date-aware through
+   `500 lots * effective NIFTY lot size`, so January 2024 uses lot size `50`
+   and minimum OI `25000`; January 2026 uses lot size `65` and minimum OI
+   `32500`. The corrected January run was written to
+   `reports/hsre/S23/2024-01-rule-corrected/` without overwriting the old M5
+   artifacts. Corrected results: 22 observed sessions, 8 ready orders, 0
+   triggered entries, 0 trades, 0 net points, 2 CALL ready, 6 PUT ready,
+   0 ORPT misses, 0 recalculations, and average entry-distance `134.1534375`
+   points. `VALIDATE_S23_RULE_AUTHORITY_AND_HSRE_JAN2024_RERUN.ps1` passed
+   with expected regression signatures and deterministic hash parity. Next:
+   strategy-behavior analysis may use the corrected January artifacts, but
+   multi-month inference, parameter optimization, rupee P&L certification, or
+   S23 formula changes require a separate scoped request.
+
+0.26. `DONE` Complete HSRE Milestone 5 as the S23 January 2024 end-to-end
+   historical month run. The month runner applies the accepted M1A-M4 path to
+   all observed January 2024 NIFTY sessions and writes
+   `daily_decisions.csv`, `trades.csv`, `non_trades.csv`,
+   `rejected_candidates_summary.csv`, `entry_distance.csv`, `summary.json`,
+   and `summary.md` under `reports/hsre/S23/2024-01/`. The run covered 22
+   observed sessions, produced 8 final ready orders, 1 triggered/closed trade,
+   7 ready-but-not-triggered orders, 14 final-order-not-ready days, 0 ORPT
+   missed entries, 0 recalculations, 0 incomplete trades, and net
+   authoritative point P&L of `90.4095`; rupee P&L remains `NOT_CERTIFIED`.
+   Validation passed via `VALIDATE_HSRE_M5_S23_JAN2024.ps1`, including
+   repeat-run CSV hash parity. Next: HSRE may move to broader/monthly
+   portfolio reporting or lot-size certification only by a separate scoped
+   request; do not infer rupee P&L from M5.
+
+0.25. `DONE` Complete the next HSRE milestone for Jan-3 actual entry trigger
+   and lifecycle/P&L only. The final M3 order for
+   `NIFTY04JAN2421900PE` became valid at `09:24:59`; M4 used exact
+   selected-contract bars strictly after that boundary and existing
+   `TradeLifecycleSimulator` semantics. Entry `85.60875` was never touched:
+   post-order low was `279.0` at `09:32:00`, post-order high was `419.0` at
+   `15:16:00`, and the result is `ENTRY_NOT_TRIGGERED` with gross/net points
+   `0.0`. Rupee P&L remains `NOT_CERTIFIED` because historical Jan-2024
+   quantity/lot-size effective-date treatment was not certified in this slice.
+   Next: January 2024 end-to-end can be considered, but only with explicit
+   certification criteria for quantity/lot-size, carry-forward evidence, and
+   expected pre-existing baseline drift.
+
+0.24. `DONE` Complete HSRE Milestone 3 as the first real historical S23
+   ORPT/RC/recalculation final-order decision only. The new
+   `HsreS23FinalOrderDecisionBuilder` reuses the M2 base packet plus existing
+   S23 entry-missed, recalculation, option-chain selection, and exact
+   selected-contract reference components. The accepted real `2024-01-03`
+   decision is `NORMAL_ORDER_READY`: ORPT selected-contract low `285.1` is not
+   below base entry `85.60875`, so RC/recalculation is not required and the
+   final effective order remains `NIFTY04JAN2421900PE` with entry/target/SL
+   `85.60875` / `34.243500000000004` / `136.974`; deterministic M3 hash
+   `9f8ca5ff51ed216a7832856060ac8826422c9bb5bae1e7b449bbe07699eb1fb8`.
+   Next: the following HSRE slice may scan Jan-3 for actual entry trigger and
+   lifecycle/P&L, but only after a separate scoped request.
+
+0.23. `DONE` Resolve the S23 PUT ORPT entry-missed authority alignment before
+   HSRE Milestone 3. Workbook/rule-sheet evidence is authoritative:
+   `For Put Sell Entry Check If 09:24:59 AM LL < Put Sell Entry`, so both
+   CALL and PUT missed-entry checks use `ORPT option LOW < base entry`.
+   Active historical and current paper S23 behavior must use LOW; older
+   PUT-HIGH wording is stale documentation or non-authoritative legacy/evidence
+   only. Next: HSRE Milestone 3 is `GO` for read-only ORPT/RC/recalculation
+   decision-packet implementation, still excluding fills, lifecycle, P&L,
+   broker behavior, and S23 formula/config changes.
+
+0.22. `DONE` Complete HSRE Milestone 2 as the first real historical S23 base
+   decision packet only. `HsreS23BaseDecisionBuilder` now runs the permitted
+   two-pass flow for one January 2024 session: M1B context -> existing
+   monthly-status branch selection -> pre-selection S23 formulas through
+   `FormulaEngine` -> actual 09:16 option chain -> existing
+   `OptionChainSelector` -> M1C exact selected-contract references ->
+   `OptionLevelsSnapshot` -> existing `StrategyEvaluator` -> base Entry,
+   Target, and Stoploss. Real discovery attempted `2024-01-01` first
+   (`INSUFFICIENT_OPTION_LOOKBACK` for the selected candidate), then
+   `2024-01-02` (`NO_QUALIFYING_CONTRACT`), and found the first READY packet
+   on `2024-01-03` for branch
+   `NIFTY_OP_SELL_WK_DIFF_2D_3D_BULL_PUT`, selected
+   `NIFTY04JAN2421900PE`, premium `294.9`, OI `1209400`, hash
+   `cf5f29fb064b156a562a4e23dfee53fff4cc3e160662768805419432310b083a`.
+   Next: Milestone 3 is conditional `GO` for read-only ORPT/RC/recalculation
+   evidence design, but remains `NO_GO` for fills, lifecycle, P&L, paper/live
+   runtime, broker behavior, or S23 rule/config changes.
+
+0.21. `DONE` Complete HSRE Milestone 1C as a selected-contract historical
+   reference builder only. `NiftyHsreSelectedContractReferenceBuilder` accepts
+   an explicit `HistoricalOptionIdentity`, finds completed prior sessions
+   where that exact underlying/expiry/strike/CE-or-PE traded, computes
+   `OPT_PRV_2DHH`, `OPT_PRV_2DLL`, `OPT_PRV_3DHH`, and `OPT_PRV_3DLL` only
+   when three exact prior contract sessions exist, records per-session
+   provenance, fails closed as `INSUFFICIENT_OPTION_LOOKBACK`, and converts
+   READY packets into the existing `OptionLevelsSnapshot` model consumed by
+   historical strategy evaluation. Real January discovery showed representative
+   Jan-1 `04JAN24` CE/PE contracts were insufficient, while 11JAN and 25JAN
+   examples were READY from actual exact prior rows. Next: Milestone 2 remains
+   conditional `GO` for a first historical S23 decision packet design, but
+   actual S23 execution remains `NO_GO` until the next slice proves option
+   chain selection, selected-contract reference handoff, ORPT/RC chronology,
+   and lifecycle identity without changing S23 business rules.
+
+0.20. `DONE` Start the TFIS Historical Strategy Research Engine (HSRE) with an
+   audit-first S23 NIFTY historical-data integration track through Milestone
+   1B only. Milestone 1A added the strategy-neutral
+   `NiftyHsreHistoricalMarketDataProvider`; Milestone 1B added
+   `NiftyHsreMarketContextBuilder`, which produces one-day NIFTY market
+   context packets from completed prior sessions plus current-day spot minutes
+   only through the evaluation timestamp, reuses existing market-structure and
+   monthly-status engines, records daily/weekly/monthly provenance, fails
+   closed on insufficient lookback, and emits deterministic packet hashes. The
+   real January 2024 discovery found first underlying-lookback-ready,
+   monthly-status-ready, and fully context-ready dates all at `2024-01-01`,
+   with the first ready packet reporting monthly status `BULL_CF` and hash
+   `1a74f0e72a5788f920dfd143f1964721c790a7dce8c6797b75771b5da9930d3d`.
+   Next: Milestone 2 may prepare the first carefully gated historical S23
+   decision packet path, but should remain `NO_GO` until it explicitly proves
+   selected-contract option references and chronology without changing S23
+   YAML/formulas/rule matrix.
+
 0.19. `DONE` Resolve the August 4 FYERS valid-expiry startup failure and
    rerun the paper engine for the current session. The scheduled startup
    launched at `09:08:38` but both S21 and S23 failed because TFIS supplied

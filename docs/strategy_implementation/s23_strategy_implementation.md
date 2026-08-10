@@ -108,14 +108,15 @@ Option reference aliases used in S23:
 
 Shared S23 parameters:
 
-- `strike_buffer_pct = 1.2`
+- `strike_buffer_pct = 5.0`
 - `ideal_premium_pct = 1.20`
 - `minimum_premium_pct = 0.90`
 - `entry_discount_pct = 7.50`
 - `target_pct = 60.0`
 - `sl_entry_pct = 60.0`
 - `sl_reference_pct = 7.0`
-- `minimum_oi = 500`
+- `minimum_oi_lots = 500`
+- `minimum_oi_units = 500 * effective NIFTY lot size for the session date`
 
 ## 5. Base Branch Formulas
 
