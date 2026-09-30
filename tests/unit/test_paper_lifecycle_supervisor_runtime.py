@@ -1508,6 +1508,23 @@ def test_runtime_environment_preparation_is_deduped_per_provider(
     assert calls == [("fyers", False)]
 
 
+def test_shared_supervisor_process_lock_is_session_scoped(tmp_path: Path) -> None:
+    script_path = Path(__file__).resolve().parents[2] / "scripts" / "run_tfis_paper_lifecycle_supervisor.py"
+    spec = importlib.util.spec_from_file_location("run_tfis_paper_lifecycle_supervisor", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+
+    lock_path = module._process_lock_path(
+        process_lock_root=tmp_path / "locks",
+        session_date="2026-08-14",
+    )
+
+    assert lock_path == tmp_path / "locks" / "tfis_paper_lifecycle_supervisor_2026-08-14.pid.json"
+    assert module._process_lock_session_label("2026-08-14") == "2026-08-14"
+
+
 def test_supervisor_main_prepares_environment_before_building_adapters(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

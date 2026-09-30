@@ -6,6 +6,34 @@ way.
 
 ## Immediate Next Priorities
 
+0.35. `DONE` Recover the August 17 TFIS paper runtime after the scheduled
+   startup did not leave any `D:\TradingEngineTFIS` dashboard or lifecycle
+   processes running. The FYERS token had refreshed successfully at 09:08 and
+   explicit broker health passed. The shared paper lifecycle supervisor was
+   started, the operator dashboard was rebuilt on port `8182`, and the missed
+   S23/S21 morning supervised decision wrappers were run. S23 remains in
+   carry-forward management for the August 12
+   `NIFTY_20260825_24450_CE` paper position; August 17 fresh S23 candidates
+   were blocked from order creation by `OPEN_CARRY_FORWARD_POSITION`. S21
+   produced no August 17 order because both eligible `BULL_CF` legs returned
+   `NO_CONTRACT_SELECTED`. Next: inspect the Windows scheduled task or startup
+   automation that should launch TFIS before market open, because the manual
+   recovery path worked but the scheduled start apparently did not.
+
+0.34. `DONE` Recover and harden the August 14 S21/S23 paper lifecycle
+   supervisor stall. The operator dashboard warning was caused by stale
+   heartbeat/stream evidence after an August 12 supervisor process kept the
+   shared global lock and blocked the August 14 supervisor launch. The stale
+   process was stopped, the supervisor was restarted, and the dashboard was
+   refreshed. S21 is now managing the waiting
+   `BANKNIFTY_20260825_57000_CE` paper order, while S23 is managing the
+   carried `NIFTY_20260825_24450_CE` paper position. The lifecycle supervisor
+   lock is now session-scoped by date, and the runtime status script no longer
+   reports restart recovery as required when fresh supervisor heartbeat
+   evidence is present but process command-line inspection is unavailable.
+   Next: keep using the normal readiness/status commands before market open
+   and investigate only if fresh heartbeat evidence goes stale again.
+
 0.33. `DONE` Correct the S21 09:16 base-calculation drift found on the
    operator dashboard. S21's morning session runner expects `Base Calculation
    09:16` to build the base plan from the `0915` snapshot before ORPT/RC gate
@@ -1074,7 +1102,7 @@ way.
    The same reset command now starts the local dashboard server with
    `serve_operator_dashboard.py --skip-build` after the explicit rebuild step,
    so the expected operator experience is one visible rebuild followed by the
-   dashboard opening on `127.0.0.1:8765` without a second hidden startup build.
+   dashboard opening on `127.0.0.1:8182` without a second hidden startup build.
    It now also starts one shared supervisor console instead of one watcher
    window per target.
    The remaining operator-time validation is to confirm the next scheduled

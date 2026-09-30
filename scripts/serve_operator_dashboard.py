@@ -171,7 +171,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Build and serve the TFIS operator dashboard locally."
     )
     parser.add_argument("--output-root", default="tmp/operator_dashboard")
-    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--port", type=int, default=8182)
     parser.add_argument(
         "--skip-build",
         action="store_true",

@@ -144,9 +144,13 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         process_lock_handle = acquire_process_lock(
-            Path(args.process_lock_root) / "tfis_paper_lifecycle_supervisor.pid.json",
+            _process_lock_path(
+                process_lock_root=Path(args.process_lock_root),
+                session_date=args.session_date,
+            ),
             label="tfis-paper-lifecycle-supervisor",
             metadata={
+                "session_date": _process_lock_session_label(args.session_date),
                 "targets_config": str(Path(args.targets_config).resolve()),
                 "dashboard_output_root": str((REPO_ROOT / args.dashboard_output_root).resolve()),
             },
@@ -1096,6 +1100,17 @@ def _all_targets_past_cutoff(*, now_by_strategy: dict[str, datetime], until_time
     if not now_by_strategy:
         return False
     return all(now.timetz().replace(tzinfo=None) >= until_time for now in now_by_strategy.values())
+
+
+def _process_lock_session_label(session_date: str | None) -> str:
+    if session_date:
+        return date.fromisoformat(session_date).isoformat()
+    return datetime.now(ZoneInfo("Asia/Kolkata")).date().isoformat()
+
+
+def _process_lock_path(*, process_lock_root: Path, session_date: str | None) -> Path:
+    session_label = _process_lock_session_label(session_date)
+    return process_lock_root / f"tfis_paper_lifecycle_supervisor_{session_label}.pid.json"
 
 
 def _order_id_for_state(state: PaperOrderState | None) -> str:

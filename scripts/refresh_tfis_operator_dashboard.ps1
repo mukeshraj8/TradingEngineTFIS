@@ -1,6 +1,6 @@
 param(
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
-    [int]$DashboardPort = 8765,
+    [int]$DashboardPort = 8182,
     [switch]$RestartDashboardServer
 )
 

@@ -3552,3 +3552,23 @@ def test_reconstructed_s23_candidate_rows_keep_full_strike_range(tmp_path: Path)
     assert {row["expiry"] for row in rows} == {"2026-06-30"}
     assert any(row["symbol"] == "NIFTY_20260630_23000_PE" for row in rows)
     assert any(row["symbol"] == "NIFTY_20260630_24250_PE" for row in rows)
+
+
+def test_dashboard_port_defaults_and_explicit_override() -> None:
+    spec = importlib.util.spec_from_file_location(
+        "serve_operator_dashboard_port_test",
+        _repo_root() / "scripts" / "serve_operator_dashboard.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.build_parser().parse_args([]).port == 8182
+    assert module.build_parser().parse_args(["--port", "9191"]).port == 9191
+    for name in (
+        "refresh_tfis_operator_dashboard.ps1",
+        "reset_tfis_dashboard_and_watchers.ps1",
+        "show_tfis_runtime_status.ps1",
+        "start_tfis_paper_lifecycle_supervisor.ps1",
+    ):
+        script = (_repo_root() / "scripts" / name).read_text(encoding="utf-8")
+        assert "[int]$DashboardPort = 8182," in script, name

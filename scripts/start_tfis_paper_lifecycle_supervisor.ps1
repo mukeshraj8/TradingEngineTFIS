@@ -2,7 +2,7 @@ param(
     [string]$TfisRoot,
     [string]$TargetsConfig = "config/paper_lifecycle_supervisor_targets.yaml",
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
-    [int]$DashboardPort = 8765,
+    [int]$DashboardPort = 8182,
     [datetime]$SessionDate,
     [double]$PollSeconds = 5.0,
     [string]$Until = "15:30",

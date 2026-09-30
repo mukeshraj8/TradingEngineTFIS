@@ -6,6 +6,37 @@ change in a meaningful way.
 
 ## Current Focus
 
+- as of Monday, August 17, 2026, TFIS was found stopped during active market
+  even though FYERS token refresh had completed successfully at 09:08. No
+  `D:\TradingEngineTFIS` dashboard or paper lifecycle processes were running;
+  only sibling `D:\TradingEngineProd` processes were visible. Broker health
+  passed with the refreshed TFIS token when checked outside the restricted
+  sandbox. Recovery started the shared paper lifecycle supervisor, rebuilt and
+  served the operator dashboard on port `8182`, and ran the missed August 17
+  S23/S21 morning supervised decision wrappers. S23 produced fresh planning
+  candidates for `NIFTY_20260825_24200_CE` and `NIFTY_20260825_24500_PE`, but
+  fresh paper order creation was blocked by `OPEN_CARRY_FORWARD_POSITION`
+  because the August 12 `NIFTY_20260825_24450_CE` paper position remains open
+  and is now being supervised. S21 ran for August 17 with monthly status
+  `BULL_CF`; both eligible BankNifty legs ended `NO_CONTRACT_SELECTED`, so no
+  S21 paper order was created. Final runtime status showed dashboard ready,
+  fresh S23 heartbeat, lifecycle audit pass, waiting-order audit pass,
+  runtime reconciliation pass, and restart recovery `RUNNING`.
+- as of Friday, August 14, 2026, the active paper-mode S21/S23 supervisor
+  stall shown on the operator dashboard was diagnosed and recovered. The
+  warning meant one visible S21 active order had no fresh selected-contract
+  stream evidence and the filesystem supervisor heartbeat was stale. Root
+  cause was an old August 12 shared lifecycle supervisor process still holding
+  the single global process lock, which blocked the August 14 supervisor from
+  starting. The stale August 12 TFIS supervisor processes were stopped, the
+  shared supervisor was restarted, and the dashboard was rebuilt. S21 now has
+  fresh heartbeat/stream evidence for the waiting paper order
+  `BANKNIFTY_20260825_57000_CE`; S23 has fresh heartbeat/stream evidence for
+  the carried paper position `NIFTY_20260825_24450_CE`. The supervisor process
+  lock is now session-scoped by date so a stale prior-session process cannot
+  block a later market day. `show_tfis_runtime_status.ps1` also treats fresh
+  supervisor heartbeats as runtime evidence when local process command-line
+  discovery is unavailable.
 - as of Monday, August 10, 2026, S21 morning paper-mode base calculation drift
   has been corrected. The shared paper decision timeline now treats S21's
   `Base Calculation 09:16` stage as a base-plan evaluation using only the

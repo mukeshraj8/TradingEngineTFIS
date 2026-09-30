@@ -2,6 +2,27 @@
 
 ## Current Snapshot
 
+- as of Monday, August 17, 2026, TFIS paper runtime was manually recovered
+  after no `D:\TradingEngineTFIS` engine/dashboard processes were running
+  during active market. The refreshed FYERS token was valid, the shared paper
+  lifecycle supervisor and dashboard were started, and the missed August 17
+  S23/S21 morning supervised decision wrappers completed. S23 continues to
+  manage the August 12 carry-forward `NIFTY_20260825_24450_CE` paper
+  position; fresh August 17 S23 plans were blocked from order placement by
+  the open carry-forward position. S21 had monthly status `BULL_CF` but no
+  selected BankNifty contract for either eligible leg. Runtime status after
+  recovery reported dashboard ready, lifecycle audit pass, waiting-order
+  audit pass, reconciliation pass, and restart recovery running.
+- as of Friday, August 14, 2026, TFIS paper-mode runtime supervision was
+  recovered and hardened after the operator dashboard showed stale S21
+  heartbeat/stream evidence. An August 12 shared paper lifecycle supervisor
+  process had remained alive with the global process lock and prevented the
+  August 14 supervisor from starting. After stopping the stale TFIS supervisor
+  processes and starting recovery, S21 and S23 both showed fresh heartbeats,
+  lifecycle audit passed, waiting-order audit passed, and runtime
+  reconciliation passed. The supervisor lock is now date/session scoped, and
+  status reporting recognizes fresh heartbeat evidence when process discovery
+  is blind.
 - as of Monday, August 10, 2026, S21 paper-mode morning base decision
   generation was restored. The shared live decision timeline now evaluates
   S21's explicitly named `Base Calculation 09:16` stage from the `0915`
@@ -1438,7 +1459,7 @@
 - TFIS dashboard startup no longer pays the full rebuild cost twice during the
   normal reset flow. `reset_tfis_dashboard_and_watchers.ps1` now performs the
   single explicit build and launches `serve_operator_dashboard.py` with
-  `--skip-build`, so the server opens port `8765` without repeating the same
+  `--skip-build`, so the server opens port `8182` without repeating the same
   dashboard generation step in-process.
 - The local pre-live readiness gate is currently green for the prod-paper
   profile. On `2026-07-16`,

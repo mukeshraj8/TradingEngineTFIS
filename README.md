@@ -442,7 +442,7 @@ python scripts/build_operator_dashboard.py --output-root tmp/operator_dashboard
 Serve the dashboard locally:
 
 ```powershell
-python scripts/serve_operator_dashboard.py --output-root tmp/operator_dashboard --port 8765
+python scripts/serve_operator_dashboard.py --output-root tmp/operator_dashboard --port 8182
 ```
 
 The dashboard is read-only and artifact-backed. It currently includes:

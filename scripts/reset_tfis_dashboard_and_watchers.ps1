@@ -1,7 +1,7 @@
 param(
     [string]$TfisRoot,
     [string]$DashboardOutputRoot = "tmp/operator_dashboard",
-    [int]$DashboardPort = 8765,
+    [int]$DashboardPort = 8182,
     [string]$TargetsConfig = "config/paper_lifecycle_supervisor_targets.yaml",
     [string]$S23Config = "config/paper.s23.fyers_connect_test.yaml",
     [string]$S23ArtifactRoot = "data/strategies/S23/fyers_morning_supervised_decision",

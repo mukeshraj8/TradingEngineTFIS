@@ -127,6 +127,9 @@ def test_status_script_reads_shared_runtime_and_operator_control_state() -> None
     assert '$lifecycleAuditArgs += @("--stale-after-seconds", "86400")' in status_script
     assert "WaitingOrders:" in status_script
     assert "RestartRecoveryStatus:" in status_script
+    assert "SupervisorHeartbeatFresh:" in status_script
+    assert "$freshSupervisorHeartbeatVisible" in status_script
+    assert "$effectiveSupervisorProcessCount" in status_script
     assert "READY_FOR_MORNING_STARTUP" in status_script
     assert "ACTION_REQUIRED" in status_script
     assert "STOPPED_AFTER_MARKET" in status_script

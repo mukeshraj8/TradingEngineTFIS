@@ -47,7 +47,7 @@ This is an operational recovery hardening, not a strategy-formula change.
 - The shared paper lifecycle supervisor started and produced live paper-order
   state for both strategies.
 - The dashboard URL reported by the runtime remained:
-  - `http://127.0.0.1:8765/index.html`
+  - `http://127.0.0.1:8182/index.html`
 
 ## Important Runtime Truth
 

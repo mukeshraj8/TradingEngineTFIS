@@ -1,6 +1,6 @@
 param(
     [string]$TfisRoot,
-    [int]$DashboardPort = 8765,
+    [int]$DashboardPort = 8182,
     [switch]$RequireToken,
     [datetime]$RunDate = (Get-Date),
     [string]$TradingHolidayCalendar = "config/nse_trading_holidays_2026.json"
@@ -306,6 +306,10 @@ $heartbeatRequiresSupervisor = @(
     $heartbeatLines |
     Where-Object { $_ -match "status=(OK|DEGRADED|STALE)" }
 ).Count -gt 0
+$freshSupervisorHeartbeatVisible = @(
+    $heartbeatLines |
+    Where-Object { $_ -match "status=OK" }
+).Count -gt 0
 $lifecycleAuditHasActionableState = @(
     $lifecycleAuditLines |
     Where-Object { $_ -match "actionable_state_count=([1-9]\d*)" }
@@ -322,10 +326,16 @@ $requiresSupervisorDuringActiveMarket = (
     $lifecycleAuditHasActionableState -or
     $waitingOrdersRequireSupervisor
 )
+$effectiveSupervisorProcessCount = if ($freshSupervisorHeartbeatVisible) {
+    [Math]::Max(1, $supervisorProcesses.Count)
+}
+else {
+    $supervisorProcesses.Count
+}
 $restartRecoveryStatus = Get-TfisRestartRecoveryStatus `
     -DashboardReady:$dashboardReady `
     -DashboardProcessCount $dashboardProcesses.Count `
-    -SupervisorProcessCount $supervisorProcesses.Count `
+    -SupervisorProcessCount $effectiveSupervisorProcessCount `
     -OtherProcessCount $otherProcesses.Count `
     -WaitingOrderFailure:$waitingOrderFailure `
     -MarketSessionPhase $marketSessionPhase `
@@ -435,6 +445,7 @@ Write-Host "RuntimeProcesses: $($runtimeProcesses.Count)"
 Write-Host "RuntimeProcessComponents: $($logicalRuntimeProcesses.Count)"
 Write-Host "DashboardProcesses: $($dashboardProcesses.Count)"
 Write-Host "SupervisorProcesses: $($supervisorProcesses.Count)"
+Write-Host "SupervisorHeartbeatFresh: $(if ($freshSupervisorHeartbeatVisible) { 'YES' } else { 'NO' })"
 Write-Host "OtherTfisProcesses: $($otherProcesses.Count)"
 foreach ($proc in $logicalRuntimeProcesses) {
     Write-Host (" - ComponentPID={0} PIDs={1} Name={2} Role={3}" -f `
